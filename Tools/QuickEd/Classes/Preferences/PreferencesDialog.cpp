@@ -19,7 +19,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)
     , treeView(new PropertiesTreeView(this))
 {
-    setWindowTitle(tr("Editor preferences"));
+    setWindowTitle(tr("Preferences"));
     resize(800, 600);
     QVBoxLayout* verticalLayout = new QVBoxLayout(this);
     preferencesModel = new PreferencesModel(this);

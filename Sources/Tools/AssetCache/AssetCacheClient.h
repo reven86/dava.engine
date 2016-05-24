@@ -54,9 +54,9 @@ public:
         REGISTER_PREFERENCES(ConnectionParams)
 
         INTROSPECTION(ConnectionParams,
-                      MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                      MEMBER(port, "Asset cache/Asset Cache Port", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                      MEMBER(timeoutms, "Asset cache/Asset Cache Timeout (ms)", DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                      MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_PREFERENCE)
+                      MEMBER(port, "Asset cache/Asset Cache Port", DAVA::I_PREFERENCE)
+                      MEMBER(timeoutms, "Asset cache/Asset Cache Timeout (ms)", DAVA::I_PREFERENCE)
                       )
     };
 
