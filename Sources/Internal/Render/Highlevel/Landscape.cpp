@@ -110,6 +110,16 @@ void Landscape::RestoreGeometry()
             if (rhi::NeedRestoreIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer)))
                 rhi::UpdateIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer), restoreData.data, 0, restoreData.dataSize);
             break;
+
+        case RestoreBufferData::RESTORE_TEXTURE:
+            // if (rhi::NeedRestoreTexture(static_cast<rhi::HTexture>(restoreData.buffer)))
+            // we are not checking condition above,
+            // because texture is marked as restored immediately after updating zero level
+            rhi::UpdateTexture(static_cast<rhi::HTexture>(restoreData.buffer), restoreData.data, restoreData.level, rhi::TextureFace::TEXTURE_FACE_POSITIVE_X);
+            break;
+
+        default:
+            DVASSERT_MSG(0, "Invalid RestoreBufferData type");
         }
     }
 }
@@ -299,11 +309,26 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
     Vector<Image*> textureData = CreateHeightTextureData(heightmap, renderMode);
 
     Texture* tx = Texture::CreateFromData(textureData);
+    tx->texDescriptor->pathname = "Landscape - height";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
+    uint32 level = 0;
     for (Image* img : textureData)
+    {
+        bufferRestoreData.emplace_back();
+
+        auto& restore = bufferRestoreData.back();
+        restore.bufferType = RestoreBufferData::RESTORE_TEXTURE;
+        restore.buffer = tx->handle;
+        restore.dataSize = img->dataSize;
+        restore.data = new uint8[img->dataSize];
+        restore.level = level;
+        memcpy(restore.data, img->data, img->dataSize);
+
         img->Release();
+        ++level;
+    }
 
     return tx;
 }
@@ -387,11 +412,24 @@ Texture* Landscape::CreateTangentTexture()
     Vector<Image*> textureData = CreateTangentBasisTextureData();
 
     Texture* tx = Texture::CreateFromData(textureData);
+    tx->texDescriptor->pathname = "Landscape - tangents";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
+    uint32 level = 0;
     for (Image* img : textureData)
+    {
+        auto& restore = bufferRestoreData.back();
+        restore.bufferType = RestoreBufferData::RESTORE_TEXTURE;
+        restore.buffer = tx->handle;
+        restore.dataSize = img->dataSize;
+        restore.data = new uint8[img->dataSize];
+        restore.level = level;
+        memcpy(restore.data, img->data, img->dataSize);
+
         img->Release();
+        ++level;
+    }
 
     return tx;
 }
@@ -697,7 +735,7 @@ int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 q
 #if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(landscapeVertices);
 #else
-    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, RestoreBufferData::RESTORE_BUFFER_VERTEX });
+    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
 #endif
 
     return int16(vertexBuffers.size() - 1);
@@ -965,8 +1003,8 @@ void Landscape::AllocateGeometryDataInstancing()
     SafeDeleteArray(patchVertices);
     SafeDeleteArray(patchIndices);
 #else
-    bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, RestoreBufferData::RESTORE_BUFFER_VERTEX });
-    bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, RestoreBufferData::RESTORE_BUFFER_INDEX });
+    bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
+    bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, 0, RestoreBufferData::RESTORE_BUFFER_INDEX });
 #endif
 
     RenderBatch* batch = new RenderBatch();

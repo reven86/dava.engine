@@ -922,15 +922,7 @@ void Texture::RestoreRenderResource()
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
     }
-    else if (pathType == FilePath::PATH_EMPTY) // textures, created from data in memory
-    {
-        Image* img = Image::Create(width, height, FORMAT_RGBA8888);
-        img->cubeFaceID = 0;
-        img->mipmapLevel = 0;
-        std::fill(img->data, img->data + img->dataSize, 0);
-        images.push_back(img);
-    }
-    else if (isPink)
+    else if (isPink || (pathType == FilePath::PATH_EMPTY))
     {
         if (texDescriptor->IsCubeMap())
         {
