@@ -53,7 +53,6 @@ protected:
     DAVA::int32 deletedLodIndex;
     DAVA::int32 requestedSwitchIndex;
 
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     DAVA::Vector<DeleteRenderBatchCommand*> deletedBatches;
 };
 

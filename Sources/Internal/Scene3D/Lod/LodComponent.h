@@ -48,71 +48,26 @@ public:
     static const float32 MAX_LOD_DISTANCE;
     static const float32 INVALID_DISTANCE;
 
-    struct LodDistance : public InspBase
-    {
-        float32 distance = INVALID_DISTANCE;
-        float32 nearDistanceSq = INVALID_DISTANCE;
-        float32 farDistanceSq = INVALID_DISTANCE;
-
-        void SetDistance(const float32& newDistance);
-        float32 GetDistance() const
-        {
-            return distance;
-        };
-
-        void SetNearDistance(const float32& newDistance);
-        void SetFarDistance(const float32& newDistance);
-
-        float32 GetNearDistance() const;
-        float32 GetFarDistance() const;
-
-        INTROSPECTION(LodDistance,
-                      PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW)
-                      MEMBER(nearDistanceSq, "Near Distance", I_SAVE | I_VIEW)
-                      MEMBER(farDistanceSq, "Far Distance", I_SAVE | I_VIEW)
-                      );
-
-    private:
-    };
-
-public:
     LodComponent();
 
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    float32 GetLodLayerDistance(int32 layerNum) const;
-    float32 GetLodLayerNearSquare(int32 layerNum) const;
-    float32 GetLodLayerFarSquare(int32 layerNum) const;
-
-    void SetCurrentLod(int32 lod);
-    int32 GetCurrentLod();
-    Vector<LodDistance> lodLayersArray;
-
-    //force lod - for editors only
-    int32 forceLodLayer;
-    void SetForceDistance(const float32& newDistance);
-    float32 GetForceDistance() const;
-
     void SetLodLayerDistance(int32 layerNum, float32 distance);
+    float32 GetLodLayerDistance(int32 layerNum) const;
 
-    void SetForceLodLayer(int32 layer);
-    int32 GetForceLodLayer() const;
-
-    void CopyLODSettings(const LodComponent* fromLOD);
+    int32 GetCurrentLod() const;
 
 private:
     static float32 GetDefaultDistance(int32 layer);
-    float32 forceDistance;
-    float32 forceDistanceSq;
     int32 currentLod;
+    Vector<float32> distances;
+    void SetCurrentLod(int32 lod);
 
 public:
     INTROSPECTION_EXTEND(LodComponent, Component,
-                         COLLECTION(lodLayersArray, "Lod Layers Array", I_SAVE | I_VIEW)
-                         MEMBER(forceLodLayer, "Force Lod Layer", I_SAVE | I_VIEW)
-                         PROPERTY("forceDistance", "Force Distance", GetForceDistance, SetForceDistance, I_SAVE | I_VIEW)
+                         COLLECTION(distances, "Lod Distances", I_SAVE | I_VIEW)
                          );
 
     friend class LodSystem;
@@ -125,7 +80,7 @@ inline void LodComponent::SetCurrentLod(int32 lod)
     currentLod = lod;
 }
 
-inline int32 LodComponent::GetCurrentLod()
+inline int32 LodComponent::GetCurrentLod() const
 {
     return currentLod;
 }
@@ -133,19 +88,7 @@ inline int32 LodComponent::GetCurrentLod()
 inline float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
 {
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-    return lodLayersArray[layerNum].distance;
-}
-
-inline float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
-{
-    DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-    return lodLayersArray[layerNum].nearDistanceSq;
-}
-
-inline float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
-{
-    DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-    return lodLayersArray[layerNum].farDistanceSq;
+    return distances[layerNum];
 }
 
 };

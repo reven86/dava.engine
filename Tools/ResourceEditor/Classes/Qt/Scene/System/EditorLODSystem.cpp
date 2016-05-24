@@ -49,6 +49,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Scene3D/Lod/LodSystem.h"
 
 using namespace DAVA;
 
@@ -167,14 +168,12 @@ void LODComponentHolder::ApplyForce(const ForceValues& force)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
-            lc->SetCurrentLod(LodComponent::INVALID_LOD_LAYER);
-            lc->SetForceLodLayer(force.layer);
+            scene->lodSystem->SetForceLodLayer(lc, force.layer);
         }
 
         if (force.flag & ForceValues::APPLY_DISTANCE)
         {
-            lc->SetCurrentLod(LodComponent::INVALID_LOD_LAYER);
-            lc->SetForceDistance(force.distance);
+            scene->lodSystem->SetForceLodDistance(lc, force.distance);
         }
     }
 }

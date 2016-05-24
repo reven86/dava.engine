@@ -50,35 +50,44 @@ public:
     void RemoveEntity(Entity* entity) override;
     void RegisterComponent(Entity* entity, Component* component) override;
     void UnregisterComponent(Entity* entity, Component* component) override;
+    void ImmediateEvent(Component* component, uint32 event) override;
+
+    void SetForceLodLayer(LodComponent* forComponent, int32 layer);
+    int32 GetForceLodLayer(LodComponent* forComponent);
+
+    void SetForceLodDistance(LodComponent* forComponent, float32 distance);
+    float32 GetForceLodDistance(LodComponent* forComponent);
 
 private:
-    struct LodComponentInternal
+    struct SlowStruct
     {
-        LodComponentInternal(Entity* entity_,
-                             TransformComponent* transform_,
-                             LodComponent* lod_,
-                             ParticleEffectComponent* effect_,
-                             int32 index_)
-        {
-            entity = entity_;
-            transform = transform_;
-            lod = lod_;
-            effect = effect_;
-            index = index_;
-        }
+        Array<float32, LodComponent::MAX_LOD_LAYERS> farSquares;
+        Array<float32, LodComponent::MAX_LOD_LAYERS> nearSquares;
         Entity* entity;
-        TransformComponent* transform;
+        int32 forceLodLayer;
+        float32 forceLodDistance;
         LodComponent* lod;
-        ParticleEffectComponent* effect;
-        int32 index;
     };
-    UnorderedMap<Entity*, LodComponentInternal*> fastMap;
-    Vector<LodComponentInternal> fastVector;
-    Vector<LodComponent*> lodComponents;
+    Vector<SlowStruct> slowVector;
+
+    struct FastStruct
+    {
+        ParticleEffectComponent* effect;
+        Vector3 position;
+        int32 currentLod;
+        float32 nearSquare;
+        float32 farSquare;
+        int32 slowIndex;
+        bool effectStopped;
+    };
+    UnorderedMap<Entity*, int32> fastMap;
+    Vector<FastStruct> fastVector;
+
+    void UpdateDistances(LodComponent* from, LodSystem::SlowStruct* to);
 
     static void SetEntityLod(Entity* entity, int32 currentLod);
 
-    Camera* camera = nullptr;
+    bool forceLodUsed = false;
 };
 
 }

@@ -269,7 +269,7 @@ void LODEditor::SetupDistancesUI()
     InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
     InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
     InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
-    InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
+    InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 3);
 }
 
 void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index)

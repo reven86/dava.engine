@@ -47,8 +47,6 @@ DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex
     DVASSERT(ro);
     DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
 
-    savedDistances = lodComponent->lodLayersArray;
-
     //save renderBatches
     DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
     for (DAVA::int32 i = count - 1; i >= 0; --i)
@@ -97,27 +95,6 @@ void DeleteLODCommand::Redo()
             batch->Release();
         }
     }
-
-    //update distances
-    for (DAVA::int32 i = deletedLodIndex; i < DAVA::LodComponent::MAX_LOD_LAYERS - 1; ++i)
-    {
-        lodComponent->lodLayersArray[i] = lodComponent->lodLayersArray[i + 1];
-    }
-
-    //last lod
-    DAVA::uint32 layersSize = ro->GetMaxLodIndex() + 1;
-    if (layersSize)
-    {
-        lodComponent->lodLayersArray[layersSize - 1].SetFarDistance(2 * DAVA::LodComponent::MAX_LOD_DISTANCE);
-    }
-
-    //first lod
-    lodComponent->SetLodLayerDistance(0, 0);
-    lodComponent->lodLayersArray[0].SetNearDistance(0.0f);
-
-    //visual part
-    lodComponent->SetCurrentLod(DAVA::LodComponent::INVALID_LOD_LAYER);
-    lodComponent->forceLodLayer = DAVA::LodComponent::INVALID_LOD_LAYER;
 }
 
 void DeleteLODCommand::Undo()
@@ -147,9 +124,6 @@ void DeleteLODCommand::Undo()
     {
         UndoInternalCommand(deletedBatches[i]);
     }
-
-    //restore lodlayers and distances
-    lodComponent->lodLayersArray = savedDistances;
 }
 
 DAVA::Entity* DeleteLODCommand::GetEntity() const

@@ -51,9 +51,7 @@ void CreatePlaneLODCommand::Redo()
 
     auto entity = GetEntity();
     auto renderObject = DAVA::GetRenderObject(entity);
-    float lodDistance = 2.0f * request->lodComponent->GetLodLayerDistance(request->newLodIndex - 1);
     renderObject->AddRenderBatch(request->planeBatch, request->newLodIndex, -1);
-    request->lodComponent->SetLodLayerDistance(request->newLodIndex, lodDistance);
 }
 
 void CreatePlaneLODCommand::Undo()
@@ -63,15 +61,6 @@ void CreatePlaneLODCommand::Undo()
     //restore batches
     ro->RemoveRenderBatch(request->planeBatch);
 
-    //restore distances
-    request->lodComponent->lodLayersArray = request->savedDistances;
-
-    // fix visibility settings
-    DAVA::int32 maxLodIndex = ro->GetMaxLodIndex();
-    if (request->lodComponent->forceLodLayer > maxLodIndex)
-        request->lodComponent->forceLodLayer = maxLodIndex;
-
-    request->lodComponent->SetCurrentLod(DAVA::LodComponent::INVALID_LOD_LAYER);
     DeleteTextureFiles();
 }
 
