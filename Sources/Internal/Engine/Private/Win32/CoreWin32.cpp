@@ -1,12 +1,13 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-//#include "Platform/SystemTimer.h"
-
 #include "Engine/Private/EngineBackend.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "Engine/Private/Win32/CoreWin32.h"
 #include "Engine/Private/Win32/WindowWin32.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -47,7 +48,7 @@ int CoreWin32::RunGUI()
     EngineBackend::instance->OnGameLoopStarted();
     for (;;)
     {
-        //uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
 
         while (::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
@@ -59,9 +60,18 @@ int CoreWin32::RunGUI()
             ::DispatchMessage(&msg);
         }
 
-        EngineBackend::instance->OnFrame();
-        //uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        //uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int32 fps = EngineBackend::instance->OnFrame();
+        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
+        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+
+        int32 sleep = 1;
+        if (fps > 0)
+        {
+            sleep = 1000 / fps - frameDuration;
+            if (sleep < 1)
+                sleep = 1;
+        }
+        Sleep(sleep);
 
         if (quitLoop)
             break;

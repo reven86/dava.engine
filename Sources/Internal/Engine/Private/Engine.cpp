@@ -5,38 +5,6 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 
-#include "Logger/Logger.h"
-#include "DAVAClassRegistrator.h"
-#include "FileSystem/FileSystem.h"
-#include "Base/ObjectFactory.h"
-#include "Core/ApplicationCore.h"
-#include "Core/PerformanceSettings.h"
-#include "Platform/SystemTimer.h"
-#include "UI/UIScreenManager.h"
-#include "UI/UIControlSystem.h"
-#include "Input/InputSystem.h"
-#include "Debug/DVAssert.h"
-#include "Render/2D/TextBlock.h"
-#include "Debug/Replay.h"
-#include "Sound/SoundSystem.h"
-#include "Sound/SoundEvent.h"
-#include "Input/InputSystem.h"
-#include "Platform/DPIHelper.h"
-#include "Base/AllocatorFactory.h"
-#include "Render/2D/FTFont.h"
-#include "Scene3D/SceneFile/VersionInfo.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "DLC/Downloader/DownloadManager.h"
-#include "DLC/Downloader/CurlDownloader.h"
-#include "Render/OcclusionQuery.h"
-#include "Notification/LocalNotificationController.h"
-#include "Platform/DeviceInfo.h"
-#include "Render/Renderer.h"
-#include "UI/UIControlSystem.h"
-#include "Job/JobManager.h"
-
 namespace DAVA
 {
 namespace
@@ -55,14 +23,17 @@ Engine::Engine()
     engineSingleton = this;
     engineBackend = Private::EngineBackend::instance;
     engineBackend->engine = this;
-
-    new Logger();
 }
 
 Engine::~Engine()
 {
     engineBackend = nullptr;
     engineSingleton = nullptr;
+}
+
+AppContext* Engine::Context() const
+{
+    return engineBackend->context;
 }
 
 Window* Engine::PrimaryWindow() const
@@ -72,55 +43,7 @@ Window* Engine::PrimaryWindow() const
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)
 {
-    Logger::Debug("****** Engine::Init enter");
-
     engineBackend->Init(consoleMode);
-
-    // init modules
-
-    new AllocatorFactory();
-    new JobManager();
-    new FileSystem();
-    FilePath::InitializeBundleName();
-    FileSystem::Instance()->SetDefaultDocumentsDirectory();
-    FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
-
-    Logger::Info("SoundSystem init start");
-    new SoundSystem();
-    Logger::Info("SoundSystem init finish");
-
-    DeviceInfo::InitializeScreenInfo();
-
-    new LocalizationSystem();
-    new SystemTimer();
-    new Random();
-    new AnimationManager();
-    new FontManager();
-    new UIControlSystem();
-    new InputSystem();
-    new PerformanceSettings();
-    new VersionInfo();
-    new ImageSystem();
-    new FrameOcclusionQueryManager();
-    new VirtualCoordinatesSystem();
-    new RenderSystem2D();
-    new UIScreenManager();
-
-    Thread::InitMainThread();
-
-    new DownloadManager();
-    DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-
-    new LocalNotificationController();
-
-    RegisterDAVAClasses();
-
-    //new Net::NetCore();
-
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-
-    Logger::Debug("****** Engine::Init leave");
 }
 
 int Engine::Run()
@@ -140,7 +63,7 @@ void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 
 uint32 Engine::GetGlobalFrameIndex() const
 {
-    return 0;
+    return engineBackend->globalFrameIndex;
 }
 
 const Vector<String>& Engine::GetCommandLine() const
@@ -151,17 +74,17 @@ const Vector<String>& Engine::GetCommandLine() const
 
 bool Engine::IsConsoleMode() const
 {
-    return false;
+    return engineBackend->consoleMode;
 }
 
-void Engine::SetOptions(KeyedArchive* options_)
+void Engine::SetOptions(KeyedArchive* options)
 {
-    options = options_;
+    engineBackend->options = options;
 }
 
 KeyedArchive* Engine::GetOptions()
 {
-    return options;
+    return engineBackend->options;
 }
 
 } // namespace DAVA

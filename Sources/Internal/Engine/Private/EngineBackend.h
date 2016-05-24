@@ -10,7 +10,7 @@
 
 namespace DAVA
 {
-struct IGame;
+class AppContext;
 class Engine;
 
 namespace Private
@@ -32,7 +32,7 @@ public:
     void OnGameLoopStopped();
 
     void DoEvents();
-    void OnFrame();
+    int32 OnFrame();
 
     void OnBeginFrame();
     void OnDraw();
@@ -45,6 +45,7 @@ public:
     void HandleWindowDestroyed(const DispatcherEvent& e);
     void HandleWindowSizeChanged(const DispatcherEvent& e);
     void HandleWindowFocusChanged(const DispatcherEvent& e);
+    void HandleWindowVisibilityChanged(const DispatcherEvent& e);
     void HandleMouseClick(const DispatcherEvent& e);
     void HandleMouseWheel(const DispatcherEvent& e);
     void HandleMouseMove(const DispatcherEvent& e);
@@ -61,10 +62,13 @@ public:
     // TODO: replace raw pointers with std::unique_ptr after work is done
     Dispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;
+    AppContext* context = nullptr;
 
     bool consoleMode = false;
     Engine* engine = nullptr;
     Window* primaryWindow = nullptr;
+    KeyedArchive* options = nullptr;
+    uint32 globalFrameIndex = 0;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 

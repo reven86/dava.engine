@@ -46,8 +46,6 @@ private:
 
     void BindNativeWindow(Private::PlatformWindow* nativeWindow_);
 
-    void HandleEvent(const Private::DispatcherEvent& e);
-
     void PreHandleWindowCreated(const Private::DispatcherEvent& e);
     void HandleWindowCreated(const Private::DispatcherEvent& e);
 
@@ -55,6 +53,9 @@ private:
 
     void PreHandleSizeScaleChanged(const Private::DispatcherEvent& e);
     void HandleSizeScaleChanged(const Private::DispatcherEvent& e);
+
+    void HandleFocusChanged(const Private::DispatcherEvent& e);
+    void HandleVisibilityChanged(const Private::DispatcherEvent& e);
 
 private:
     Private::PlatformWindow* nativeWindow = nullptr;

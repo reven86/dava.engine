@@ -77,21 +77,18 @@ void Window::HandleSizeScaleChanged(const Private::DispatcherEvent& /*e*/)
     signalSizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
 }
 
-void Window::HandleEvent(const Private::DispatcherEvent& e)
+void Window::HandleFocusChanged(const Private::DispatcherEvent& e)
 {
-    using Private::DispatcherEvent;
-    if (e.type == DispatcherEvent::WINDOW_FOCUS_CHANGED)
-    {
-        Logger::Error("****** WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state);
-        hasFocus = e.stateEvent.state != 0;
-        signalFocusChanged.Emit(this, hasFocus);
-    }
-    else if (e.type == DispatcherEvent::WINDOW_VISIBILITY_CHANGED)
-    {
-        Logger::Error("****** WINDOW_VISIBILITY_CHANGED: state=%u", e.stateEvent.state);
-        isVisible = e.stateEvent.state != 0;
-        signalVisibilityChanged.Emit(this, isVisible);
-    }
+    Logger::Error("****** WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state);
+    hasFocus = e.stateEvent.state != 0;
+    signalFocusChanged.Emit(this, hasFocus);
+}
+
+void Window::HandleVisibilityChanged(const Private::DispatcherEvent& e)
+{
+    Logger::Error("****** WINDOW_VISIBILITY_CHANGED: state=%u", e.stateEvent.state);
+    isVisible = e.stateEvent.state != 0;
+    signalVisibilityChanged.Emit(this, isVisible);
 }
 
 } // namespace DAVA

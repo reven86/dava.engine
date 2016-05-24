@@ -5,11 +5,11 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
+#include "Engine/Public/AppContext.h"
 #include "Engine/Private/EngineFwd.h"
 
 namespace DAVA
 {
-struct IGame;
 class Window;
 
 class Engine final
@@ -26,21 +26,22 @@ public:
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
 
+    AppContext* Context() const;
     Window* PrimaryWindow() const;
 
     void Init(bool consoleMode, const Vector<String>& modules);
     int Run();
     void Quit();
 
-    // Dummy methods for now
-    uint32 GetGlobalFrameIndex() const;
-    const Vector<String>& GetCommandLine() const;
-    bool IsConsoleMode() const;
+    void RunAsyncOnMainThread(const Function<void()>& task);
 
+    // Methods taken from class Core
     void SetOptions(KeyedArchive* options_);
     KeyedArchive* GetOptions();
 
-    void RunAsyncOnMainThread(const Function<void()>& task);
+    uint32 GetGlobalFrameIndex() const;
+    const Vector<String>& GetCommandLine() const;
+    bool IsConsoleMode() const;
 
 public:
     // Signals
@@ -55,7 +56,6 @@ public:
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
-    KeyedArchive* options = nullptr;
 };
 
 } // namespace DAVA

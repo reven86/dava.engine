@@ -15,7 +15,7 @@ struct DispatcherEvent final
 {
     enum eType : int32
     {
-        DUMMY,
+        DUMMY = 0,
         WINDOW_CREATED,
         WINDOW_DESTROYED,
         WINDOW_FOCUS_CHANGED,

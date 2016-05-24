@@ -6,8 +6,36 @@
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
+#if defined(__DAVAENGINE_COREV2__)
+
+// Emulate Instance method
+JobManager* JobManager::Instance()
+{
+    return Engine::Instance()->Context()->jobManager;
+}
+
+JobManager::JobManager(Engine* e)
+    : mainJobIDCounter(1)
+    , mainJobLastExecutedID(0)
+    , workerDoneSem(0)
+    , engine(e)
+{
+    uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
+    workerThreads.reserve(cpuCoresCount);
+
+    for (uint32 i = 0; i < cpuCoresCount; ++i)
+    {
+        JobThread* thread = new JobThread(&workerQueue, &workerDoneSem);
+        workerThreads.push_back(thread);
+    }
+
+    sigPreUpdateId = e->signalPreUpdate.Connect(this, &JobManager::Update);
+}
+#else
 JobManager::JobManager()
     : mainJobIDCounter(1)
     , mainJobLastExecutedID(0)
@@ -22,9 +50,14 @@ JobManager::JobManager()
         workerThreads.push_back(thread);
     }
 }
+#endif
 
 JobManager::~JobManager()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->signalPreUpdate.Disconnect(sigPreUpdateId);
+#endif
+
     {
         LockGuard<Mutex> guard(mainQueueMutex);
         mainJobs.clear();
@@ -41,7 +74,11 @@ JobManager::~JobManager()
     workerThreads.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void JobManager::Update(float32 /*frameDelta*/)
+#else
 void JobManager::Update()
+#endif
 {
     bool hasFinishedJobs = false;
 

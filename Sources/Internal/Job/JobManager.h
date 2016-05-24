@@ -14,7 +14,15 @@
 
 namespace DAVA
 {
+#if defined(__DAVAENGINE_COREV2__)
+
+class AppContext;
+class Engine;
+
+class JobManager final
+#else
 class JobManager : public Singleton<JobManager>
+#endif
 {
 public:
     /*! Available types of main-thread job. */
@@ -26,13 +34,22 @@ public:
     };
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    static JobManager* Instance();
+    JobManager(Engine* e);
+#else
     JobManager();
+#endif
     virtual ~JobManager();
 
     /*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
 		will be performed inside this function. 
 	*/
+#if defined(__DAVAENGINE_COREV2__)
+    void Update(float32 frameDelta = 0.0f);
+#else
     void Update();
+#endif
 
     /*! Add function to execute in the main-thread.
 		\param [in] fn Function to execute.
@@ -101,6 +118,11 @@ protected:
     Semaphore workerDoneSem;
     JobQueueWorker workerQueue;
     Vector<JobThread*> workerThreads;
+
+#if defined(__DAVAENGINE_COREV2__)
+    Engine* engine = nullptr;
+    size_t sigPreUpdateId = 0;
+#endif
 };
 }
 

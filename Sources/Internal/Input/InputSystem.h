@@ -28,7 +28,7 @@ public:
     };
 
 #if defined(__DAVAENGINE_COREV2__)
-    friend class Engine;
+    friend class Private::EngineBackend;
 #else
     friend void Core::CreateSingletons();
 #endif

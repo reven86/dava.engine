@@ -2,6 +2,7 @@
 
 #include "Engine/Public/Engine.h"
 
+#include "Engine/Public/AppContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
@@ -54,13 +55,17 @@ EngineBackend* EngineBackend::instance = nullptr;
 EngineBackend::EngineBackend()
     : dispatcher(new Dispatcher)
     , platformCore(new PlatformCore)
+    , context(new AppContext)
 {
     //DVASSERT(instance == nullptr);
     instance = this;
+
+    new Logger;
 }
 
 EngineBackend::~EngineBackend()
 {
+    delete context;
     delete dispatcher;
     delete platformCore;
     instance = nullptr;
@@ -68,6 +73,8 @@ EngineBackend::~EngineBackend()
 
 void EngineBackend::Init(bool consoleMode_)
 {
+    Logger::Debug("****** EngineBackend::Init enter");
+
     consoleMode = consoleMode_;
     if (!consoleMode)
     {
@@ -75,15 +82,57 @@ void EngineBackend::Init(bool consoleMode_)
         primaryWindow = CreateWindowFrontend(true);
 #endif
     }
+
+    // init modules
+
+    context->jobManager = new JobManager(engine);
+
+    new AllocatorFactory();
+    new FileSystem();
+    FilePath::InitializeBundleName();
+    FileSystem::Instance()->SetDefaultDocumentsDirectory();
+    FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
+
+    Logger::Info("SoundSystem init start");
+    new SoundSystem();
+    Logger::Info("SoundSystem init finish");
+
+    DeviceInfo::InitializeScreenInfo();
+
+    new LocalizationSystem();
+    new SystemTimer();
+    new Random();
+    new AnimationManager();
+    new FontManager();
+    new UIControlSystem();
+    new InputSystem();
+    new PerformanceSettings();
+    new VersionInfo();
+    new FrameOcclusionQueryManager();
+    new VirtualCoordinatesSystem();
+    new RenderSystem2D();
+    new UIScreenManager();
+
+    Thread::InitMainThread();
+
+    new DownloadManager();
+    DownloadManager::Instance()->SetDownloader(new CurlDownloader());
+
+    new LocalNotificationController();
+
+    RegisterDAVAClasses();
+
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+
+    Logger::Debug("****** EngineBackend::Init leave");
 }
 
 int EngineBackend::Run()
 {
     if (!consoleMode)
     {
-#if defined(__DAVAENGINE_WIN32__)
         platformCore->CreateNativeWindow(primaryWindow);
-#endif
     }
     return platformCore->Run(consoleMode);
 }
@@ -101,6 +150,7 @@ void EngineBackend::OnGameLoopStarted()
 void EngineBackend::OnGameLoopStopped()
 {
     engine->signalGameLoopStopped.Emit();
+    Renderer::Uninitialize();
 }
 
 void EngineBackend::DoEvents()
@@ -108,7 +158,7 @@ void EngineBackend::DoEvents()
     dispatcher->ProcessEvents(MakeFunction(this, &EngineBackend::EventHandler));
 }
 
-void EngineBackend::OnFrame()
+int32 EngineBackend::OnFrame()
 {
     DoEvents();
 
@@ -121,10 +171,11 @@ void EngineBackend::OnFrame()
     InputSystem::Instance()->OnBeforeUpdate();
     LocalNotificationController::Instance()->Update();
     DownloadManager::Instance()->Update();
-    JobManager::Instance()->Update();
     SoundSystem::Instance()->Update(frameDelta);
     AnimationManager::Instance()->Update(frameDelta);
     UIControlSystem::Instance()->Update();
+
+    // JobManager::Update() is invoked through signalPreUpdate
     engine->signalPreUpdate.Emit(frameDelta);
 
     engine->signalUpdate.Emit(frameDelta);
@@ -134,6 +185,8 @@ void EngineBackend::OnFrame()
 
     OnDraw();
     OnEndFrame();
+
+    return Renderer::GetDesiredFPS();
 }
 
 void EngineBackend::OnBeginFrame()
@@ -197,6 +250,9 @@ void EngineBackend::EventHandler(const DispatcherEvent& e)
     case DispatcherEvent::WINDOW_FOCUS_CHANGED:
         HandleWindowFocusChanged(e);
         break;
+    case DispatcherEvent::WINDOW_VISIBILITY_CHANGED:
+        HandleWindowVisibilityChanged(e);
+        break;
     case DispatcherEvent::WINDOW_CREATED:
         HandleWindowCreated(e);
         break;
@@ -204,10 +260,6 @@ void EngineBackend::EventHandler(const DispatcherEvent& e)
         HandleWindowDestroyed(e);
         break;
     default:
-        if (e.window != nullptr)
-        {
-            e.window->HandleEvent(e);
-        }
         break;
     }
 }
@@ -241,7 +293,12 @@ void EngineBackend::HandleWindowFocusChanged(const DispatcherEvent& e)
 {
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
-    e.window->HandleEvent(e);
+    e.window->HandleFocusChanged(e);
+}
+
+void EngineBackend::HandleWindowVisibilityChanged(const DispatcherEvent& e)
+{
+    e.window->HandleVisibilityChanged(e);
 }
 
 void EngineBackend::HandleMouseClick(const DispatcherEvent& e)
@@ -399,8 +456,6 @@ void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
 
 void EngineBackend::CreateRenderer()
 {
-    KeyedArchive* options = engine->options;
-
     rhi::InitParam rendererParams;
     rhi::Api renderer = rhi::RHI_DX9; //static_cast<rhi::Api>(options->GetInt32("renderer"));
 
