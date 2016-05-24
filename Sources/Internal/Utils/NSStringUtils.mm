@@ -13,12 +13,12 @@ namespace DAVA
 // remove 3, insert 4
 // charsToInsert 6 - 6 + (6 + 4 - 7) = 3 //with cut
 // return YES - if need apply changes, or NO
-BOOL NSStringCheck(const NSRange* origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr)
+BOOL NSStringModified(const NSRange& origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr)
 {
     BOOL stringModify = NO;
     NSUInteger replStrLength = [*replStr length];
     NSUInteger origStrLength = [origStr length];
-    NSUInteger removeSymbols = origRange->length;
+    NSUInteger removeSymbols = origRange.length;
     NSUInteger insertSymbols = replStrLength;
     NSUInteger finalStrLength = replStrLength + origStrLength - removeSymbols;
     NSUInteger cutSymbols = 0;

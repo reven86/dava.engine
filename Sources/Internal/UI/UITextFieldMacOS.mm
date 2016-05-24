@@ -1402,7 +1402,7 @@ doCommandBySelector:(SEL)commandSelector
 
     if ([replString length] > 0)
     {
-        applyChanges = !DAVA::NSStringCheck(&correctRange, inOrigString, cppTextField->GetMaxLength(), &replString);
+        applyChanges = !DAVA::NSStringModified(correctRange, inOrigString, cppTextField->GetMaxLength(), &replString);
     }
 
     DAVA::WideString clientString = L"";
@@ -1410,7 +1410,11 @@ doCommandBySelector:(SEL)commandSelector
     DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
     const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
     DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
-    BOOL clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
+    BOOL clientApply = NO;
+    if (correctRange.length > 0 || !clientString.empty())
+    {
+        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
+    }
     if (clientApply)
     {
         if (!applyChanges)
@@ -1419,17 +1423,18 @@ doCommandBySelector:(SEL)commandSelector
             *partialStringPtr = [inOrigString stringByReplacingCharactersInRange:correctRange withString:replString];
             proposedSelRangePtr->location = correctRange.location + [replString length];
 
-            DAVA::WideString oldStr = cppTextField->GetText();
-            DAVA::WideString newStr;
-            const char* cstr = [*partialStringPtr cStringUsingEncoding:NSUTF8StringEncoding];
-            DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
         }
+        DAVA::WideString oldStr = cppTextField->GetText();
+        DAVA::WideString newStr;
+        const char* cstr = [*partialStringPtr cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
     }
     else
     {
-        *partialStringPtr = inOrigString;
-        *proposedSelRangePtr = origSelRange;
+        partialStringPtr = &inOrigString;
+        proposedSelRangePtr = &origSelRange;
+        return NO;
     }
     return applyChanges;
 }
@@ -1493,7 +1498,7 @@ doCommandBySelector:(SEL)commandSelector
     cppTextField->StartEdit();
     if ([replStr length] > 0)
     {
-        applyChanges = !DAVA::NSStringCheck(&affectedCharRange, origString, cppTextField->GetMaxLength(), &replStr);
+        applyChanges = !DAVA::NSStringModified(affectedCharRange, origString, cppTextField->GetMaxLength(), &replStr);
     }
 
     DAVA::WideString clientString = L"";
@@ -1501,7 +1506,10 @@ doCommandBySelector:(SEL)commandSelector
     DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
     const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
     DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
-    clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
+    if (affectedCharRange.length > 0 || !clientString.empty())
+    {
+        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
+    }
     if (clientApply)
     {
         if (!applyChanges)

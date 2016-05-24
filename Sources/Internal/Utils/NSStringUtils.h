@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-BOOL NSStringCheck(const NSRange* origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr);
+BOOL NSStringModified(const NSRange& origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr);
 
 NSString* NSStringSafeCut(const NSString* inStr, NSUInteger newLength);
 

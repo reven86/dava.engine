@@ -150,11 +150,10 @@
     NSString* origString = [textCtrl valueForKey:@"text"];
     NSString* replStr = string;
     DAVA::int32 maxLength = cppTextField->GetMaxLength();
-    BOOL clientApply = NO;
 
     if ([replStr length] > 0)
     {
-        applyChanges = !DAVA::NSStringCheck(&range, origString, maxLength, &replStr);
+        applyChanges = !DAVA::NSStringModified(range, origString, maxLength, &replStr);
         if (!applyChanges)
         {
             // remove all changes for undoMansger
@@ -174,7 +173,11 @@
     DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
     const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
     DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
-    clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+    BOOL clientApply = NO;
+    if (range.length > 0 || !clientString.empty())
+    {
+        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+    }
     if (clientApply)
     {
         if (!applyChanges)
