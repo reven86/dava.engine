@@ -1,6 +1,10 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if (NOT QT_VERSION)
+    set(QT_VERSION "QT5")
+endif()
+
 if( WIN32 )
     if( NOT X64_MODE )
         message( FATAL_ERROR "We don't support x86 platform on windows"  )
@@ -10,7 +14,8 @@ elseif ( MACOS )
     set (PLATFORM_SPEC "MAC")
 endif ()
 
-set(QT_ACTUAL_PATH ${QT5_PATH_${PLATFORM_SPEC}})
+set(VARIABLE_NAME "${QT_VERSION}_PATH_${PLATFORM_SPEC}")
+set(QT_ACTUAL_PATH ${${VARIABLE_NAME}})
 
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
