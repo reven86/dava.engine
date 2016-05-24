@@ -73,6 +73,7 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_a
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_android.a"
                                     "-lEGL"
                                     "-lGLESv1_CM"
                                     "-llog"
