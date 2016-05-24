@@ -87,6 +87,49 @@ void PackRequest::StartLoadingCRC32File()
     subRequest.status = SubRequest::LoadingCRC32File;
 }
 
+static String DownloadErrorToString(DownloadError e)
+{
+    String errorMsg;
+    switch (e)
+    {
+    case DLE_CANCELLED: // download was cancelled by our side
+        errorMsg = "DLE_CANCELLED";
+        break;
+    case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
+        errorMsg = "DLE_COULDNT_RESUME";
+        break;
+    case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
+        errorMsg = "DLE_COULDNT_RESOLVE_HOST";
+        break;
+    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+        errorMsg = "DLE_COULDNT_CONNECT";
+        break;
+    case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
+        errorMsg = "DLE_CONTENT_NOT_FOUND";
+        break;
+    case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
+        errorMsg = "DLE_NO_RANGE_REQUEST";
+        break;
+    case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
+        errorMsg = "DLE_COMMON_ERROR";
+        break;
+    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+        errorMsg = "DLE_INIT_ERROR";
+        break;
+    case DLE_FILE_ERROR: // file read and write errors
+        errorMsg = "DLE_FILE_ERROR";
+        break;
+    case DLE_UNKNOWN: // we cannot determine the error
+        errorMsg = "DLE_UNKNOWN";
+        break;
+    case DLE_NO_ERROR:
+    {
+        break;
+    }
+    } // end switch downloadError
+    return errorMsg;
+}
+
 bool PackRequest::DoneLoadingCRC32File()
 {
     bool result = false;
@@ -109,37 +152,28 @@ bool PackRequest::DoneLoadingCRC32File()
         DownloadError downloadError = DLE_NO_ERROR;
         if (dm->GetError(subRequest.taskId, downloadError))
         {
-            switch (downloadError)
+            if (DLE_NO_ERROR == downloadError)
             {
-            case DLE_CANCELLED: // download was cancelled by our side
-            case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
-            case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
-            case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
-            case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
-            case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
-            case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
-            case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
-            case DLE_FILE_ERROR: // file read and write errors
-            case DLE_UNKNOWN: // we cannot determine the error
+                result = true;
+            }
+            else
+            {
+                String errorMsg = DownloadErrorToString(downloadError);
+
                 // inform user about error
                 {
                     PackManager::Pack& pack = *subRequest.pack;
 
                     pack.state = PackManager::Pack::Status::ErrorLoading;
                     pack.downloadError = downloadError;
-                    pack.otherErrorMsg = "can't load CRC32 file for pack: " + pack.name;
+                    pack.otherErrorMsg = "can't load CRC32 file for pack: " + pack.name + " dlc: " + errorMsg;
 
                     subRequest.status = SubRequest::Error;
 
                     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
                     break;
                 }
-            case DLE_NO_ERROR:
-            {
-                result = true;
-                break;
             }
-            } // end switch downloadError
         }
         else
         {
@@ -219,38 +253,24 @@ bool PackRequest::DoneLoadingPackFile()
         DownloadError downloadError = DLE_NO_ERROR;
         if (dm->GetError(subRequest.taskId, downloadError))
         {
-            switch (downloadError)
-            {
-            case DLE_CANCELLED: // download was cancelled by our side
-            case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
-            case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
-            case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
-            case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
-            case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
-            case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
-            case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
-            case DLE_FILE_ERROR: // file read and write errors
-            case DLE_UNKNOWN: // we cannot determine the error
-                // inform user about error
-                {
-                    pack.state = PackManager::Pack::Status::ErrorLoading;
-                    pack.downloadError = downloadError;
-                    pack.otherErrorMsg = "can't load pack: " + pack.name;
-
-                    subRequest.status = SubRequest::Error;
-
-                    packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
-                    break;
-                }
-            case DLE_NO_ERROR:
+            if (DLE_NO_ERROR == downloadError)
             {
                 result = true;
 
                 pack.downloadProgress = 1.0f;
                 packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
-                break;
             }
-            } // end switch downloadError
+            else
+            {
+                String errorMsg = DownloadErrorToString(downloadError);
+                pack.state = PackManager::Pack::Status::ErrorLoading;
+                pack.downloadError = downloadError;
+                pack.otherErrorMsg = "can't load pack: " + pack.name + " dlc: " + errorMsg;
+
+                subRequest.status = SubRequest::Error;
+
+                packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+            }
         }
         else
         {
