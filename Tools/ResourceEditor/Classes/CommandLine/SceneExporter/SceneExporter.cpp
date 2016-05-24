@@ -368,19 +368,6 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
 
         for (FilePath& path : imagePathnames)
         {
-            DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(path);
-            if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
-            {
-                Logger::Error("Can't export non-square image %s into compression format %s",
-                              path.GetStringValue().c_str(),
-                              GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
-                return;
-            }
-            else if (imgInfo.width < DAVA::Texture::MINIMAL_WIDTH || imgInfo.height < DAVA::Texture::MINIMAL_HEIGHT)
-            {
-                Logger::Error("Can't export image %s because of small size(%dx%d) of source image", path.GetStringValue().c_str(), imgInfo.width, imgInfo.height);
-                return;
-            }
         }
 
         FilePath compressedTexturePathname = CompressTexture(*descriptor);

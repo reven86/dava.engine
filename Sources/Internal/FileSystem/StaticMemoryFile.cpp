@@ -87,7 +87,7 @@ uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
     return 0;
 }
 
-bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
+bool StaticMemoryFile::Seek(int32 position, eFileSeek seekType)
 {
     int32 pos = 0;
     switch (seekType)
