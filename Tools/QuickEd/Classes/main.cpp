@@ -71,7 +71,6 @@ int main(int argc, char* argv[])
         Themes::InitFromQApplication();
         Q_INIT_RESOURCE(QtToolsResources);
 
-
         InitPVRTexTool();
         {
             EditorCore editorCore;
