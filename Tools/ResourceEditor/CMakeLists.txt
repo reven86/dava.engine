@@ -141,12 +141,8 @@ set( LIBRARIES            ${BEAST_LIB} NgtTools)
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 
-if ( WIN32 AND X64_MODE )
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
-else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
-endif ()
-
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
 DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"

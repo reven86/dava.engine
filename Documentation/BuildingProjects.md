@@ -129,7 +129,7 @@ Qt 5 можно установить через online installer (рекомен
 
 > QT5\_PATH\_WIN = c:\\Qt\\5.6\\msvc2013
 >
-> QT5\_PATH\_WIN64 = c:\\Qt\\5.6\\msvc2013\_64\_opengl
+> QT5\_PATH\_WIN64 = c:\\Qt\\5.6\\msvc2013\_64
 >
 > QT5\_PATH\_MAC = $ENV{HOME}/Qt/5.6/clang\_64
 >
