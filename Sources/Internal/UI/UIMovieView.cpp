@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/Platform.h"
 
 #include "UI/UIMovieView.h"
@@ -38,6 +10,8 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
+#elif defined(__DAVAENGINE_WIN32__)
+#include "Platform/TemplateWin32/MovieViewControlWin32.h"
 #else
 // UIMovieView is not implemented for this platform yet, using stub one.
 #define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
@@ -53,6 +27,7 @@ UIMovieView::UIMovieView(const Rect& rect)
     , movieViewControl(new MovieViewControl())
 {
     movieViewControl->Initialize(rect);
+    UpdateControlRect();
 }
 
 UIMovieView::~UIMovieView()
@@ -68,17 +43,13 @@ void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& pa
 void UIMovieView::SetPosition(const Vector2& position)
 {
     UIControl::SetPosition(position);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::SetSize(const Vector2& newSize)
 {
     UIControl::SetSize(newSize);
-
-    Rect newRect = GetRect();
-    movieViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIMovieView::Play()
@@ -101,9 +72,15 @@ void UIMovieView::Resume()
     movieViewControl->Resume();
 }
 
-bool UIMovieView::IsPlaying()
+bool UIMovieView::IsPlaying() const
 {
     return movieViewControl->IsPlaying();
+}
+
+void UIMovieView::UpdateControlRect()
+{
+    Rect rect = GetAbsoluteRect();
+    movieViewControl->SetRect(rect);
 }
 
 void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
@@ -123,6 +100,18 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData)
 #endif
 }
 
+void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
+{
+    UIControl::Draw(parentGeometricData);
+    movieViewControl->Draw(parentGeometricData);
+}
+
+void UIMovieView::Update(float32 timeElapsed)
+{
+    UIControl::Update(timeElapsed);
+    movieViewControl->Update();
+}
+
 void UIMovieView::OnVisible()
 {
     UIControl::OnVisible();
@@ -135,11 +124,16 @@ void UIMovieView::OnInvisible()
     movieViewControl->SetVisible(false);
 }
 
+void UIMovieView::OnActive()
+{
+    UIControl::OnActive();
+    UpdateControlRect();
+}
+
 UIMovieView* UIMovieView::Clone()
 {
     UIMovieView* uiMoviewView = new UIMovieView(GetRect());
     uiMoviewView->CopyDataFrom(this);
     return uiMoviewView;
 }
-
 } // namespace DAVA

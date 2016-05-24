@@ -12,7 +12,9 @@ set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR}
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
 
 set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared        
-                                    $ENV{DXSDK_DIR}/include )
+                                    $ENV{DXSDK_DIR}/include 
+                                    ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
+
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 
@@ -64,6 +66,8 @@ set( STATIC_LIBRARIES_WINUAP_RELEASE ${DAVA_STATIC_LIBRARIES_WINUAP_RELEASE} )
 set( STATIC_LIBRARIES_WINUAP_DEBUG  ${DAVA_STATIC_LIBRARIES_WINUAP_DEBUG} )
 
 set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so )
+set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
+set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
 set( SOURCE_FOLDERS                 "." )
 
@@ -120,6 +124,10 @@ endif ()
 
 if( DAVA_USE_RENDERSTATS )
     list( APPEND DEFINITIONS -D__DAVAENGINE_RENDERSTATS__ )
+endif()
+
+if( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+	list( APPEND DEFINITIONS -DDAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
 endif()
 
 setup_main_module()
