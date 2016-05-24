@@ -169,19 +169,46 @@
 
 - (BOOL)textField:(UITextField*)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string
 {
+    BOOL applyChanges = YES;
+    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    {
+        return applyChanges;
+    }
+
     // Get string after changing
     NSString* origString = [textCtrl valueForKey:@"text"];
     NSString* replStr = string;
-    NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
-
+    DAVA::int32 maxLength = cppTextField->GetMaxLength();
     BOOL clientApply = NO;
-    BOOL applyChanges = NO;
-    applyChanges = DAVA::NSStringCheck(range.location, origString, newString, cppTextField, &replStr, clientApply);
-    if (clientApply)
+
+    if ([replStr length] > 0)
     {
-        newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
+        applyChanges = !DAVA::NSStringCheck(&range, origString, maxLength, &replStr);
         if (!applyChanges)
         {
+            // remove all changes for undoMansger
+            NSUndoManager* undoManager = [textField_ undoManager];
+            [undoManager removeAllActions];
+        }
+    }
+    // if we revert insert text
+    if (range.location + range.length > [origString length])
+    {
+        range.length = [origString length] - range.location;
+        applyChanges = NO;
+    }
+
+    DAVA::WideString clientString = L"";
+    const char* cutfstr = [replStr cStringUsingEncoding:NSUTF8StringEncoding];
+    DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
+    const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
+    DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
+    clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+    if (clientApply)
+    {
+        if (!applyChanges)
+        {
+            NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
             [textCtrl setValue:newString forKey:@"text"];
             UITextPosition* caret = textField_.beginningOfDocument;
             caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];

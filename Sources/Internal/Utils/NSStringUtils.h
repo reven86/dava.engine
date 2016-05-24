@@ -36,7 +36,7 @@
 
 namespace DAVA
 {
-BOOL NSStringCheck(NSUInteger insertLocation, const NSString* origStr, const NSString* newStr, DAVA::UITextField* cppTextField, NSString** replStr, BOOL& clientApply);
+BOOL NSStringCheck(const NSRange* origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr);
 
 NSString* NSStringSafeCut(const NSString* inStr, NSUInteger newLength);
 

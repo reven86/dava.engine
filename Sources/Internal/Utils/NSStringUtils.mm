@@ -29,7 +29,6 @@
 
 #include "NSStringUtils.h"
 #include "UTF8Utils.h"
-#include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
@@ -43,72 +42,30 @@ namespace DAVA
 // remove 3, insert 4
 // charsToInsert 6 - 6 + (6 + 4 - 7) = 3 //with cut
 // return YES - if need apply changes, or NO
-BOOL NSStringCheck(NSUInteger insertLocation, const NSString* origStr, const NSString* newStr, DAVA::UITextField* cppTextField, NSString** replStr, BOOL& clientApply)
+BOOL NSStringCheck(const NSRange* origRange, const NSString* origStr, DAVA::int32 maxLength, NSString** replStr)
 {
-    // if user paste text with gesture in native control
-    // we need make dava control in sync with focus
-    if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
-    {
-        DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
-    }
-
-    BOOL applyChanges = YES;
-    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
-    {
-        return applyChanges;
-    }
+    BOOL stringModify = NO;
     NSUInteger replStrLength = [*replStr length];
     NSUInteger origStrLength = [origStr length];
-    NSUInteger finalStrLength = [newStr length];
-    // only if (maxLength > 0), we need cut the replStr. if it's really need
-    DAVA::int32 maxLength = cppTextField->GetMaxLength();
-    NSUInteger removeSymbols = Max(finalStrLength, origStrLength + replStrLength) - Min(finalStrLength, origStrLength + replStrLength);
+    NSUInteger removeSymbols = origRange->length;
     NSUInteger insertSymbols = replStrLength;
+    NSUInteger finalStrLength = replStrLength + origStrLength - removeSymbols;
     NSUInteger cutSymbols = 0;
     // only if need cut text
     if (maxLength > 0 && replStrLength > 0 && finalStrLength > maxLength)
     {
         NSUInteger charsToInsert = maxLength - origStrLength + removeSymbols;
-        applyChanges = NO;
+        stringModify = YES;
         *replStr = DAVA::NSStringSafeCut(*replStr, charsToInsert);
         insertSymbols = [*replStr length];
         cutSymbols = replStrLength - insertSymbols;
     }
-    // Length check OK, continue with the delegate.
-    DAVA::WideString clientString = L"";
-    const char* cutfstr = [*replStr cStringUsingEncoding:NSUTF8StringEncoding];
-    if (nullptr != cutfstr) //cause strlen(nullptr) will crash
-    {
-        DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-        const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-        DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
-    }
-    else
-    {
-        const char* finalString = [newStr cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::Logger::Error("NSStringUtils::CheckText: Error! cStringUsingEncoding:NSUTF8StringEncoding with string %s, info - m_kiselev", finalString);
-        return NO;
-    }
-    clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(insertLocation), static_cast<DAVA::int32>(removeSymbols), clientString);
-    if (clientApply)
-    {
-        NSString* newClientStr = [origStr stringByReplacingCharactersInRange:NSMakeRange(insertLocation, removeSymbols) withString:*replStr];
-        DAVA::WideString oldStr = cppTextField->GetText();
-        DAVA::WideString newStr;
-        const char* cstr = [newClientStr cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
-    }
-    else
-    {
-        return NO;
-    }
-    return applyChanges;
+    return stringModify;
 }
 
 // replString input string
 // newLength - sought length, may be less
-// example replString = 1234👨‍👩‍👧‍👦, newLength = 6
+// example replString = 1234(emoji > 2), newLength = 6
 // outString = 1234
 NSString* NSStringSafeCut(const NSString* replString, NSUInteger newLength)
 {
@@ -132,12 +89,7 @@ NSString* NSStringSafeCut(const NSString* replString, NSUInteger newLength)
         index++;
     }
     while ((rangeCharacter.location + rangeCharacter.length) < charsToInsert);
-    // change replacement string and final string, if needs
-    // removeSumbols - length characters for remove from replString
-    //    removeSumbols = replStrLength - position;
     NSString* outString = [replString substringWithRange:NSMakeRange(0, position)];
-    //    replStrLength = position;
-    //    replRange.length = position;
     return outString;
 }
 
