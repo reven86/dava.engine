@@ -105,7 +105,7 @@ bool CubemapEditorDialog::LoadImageTo(const DAVA::FilePath& filePath, int face, 
 
     QString fileName = filePath.GetAbsolutePathname().c_str();
     QString errorString;
-    ImageInfo loadedImageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+    ImageInfo loadedImageInfo = ImageSystem::GetImageInfo(filePath);
 
     bool verified = false;
     bool isFirstImage = false;
@@ -176,12 +176,6 @@ ClickableQLabel* CubemapEditorDialog::GetLabelForFace(int face)
 
 bool CubemapEditorDialog::VerifyFirstImage(ImageInfo imgInfo, QString& errorString)
 {
-    if (!IsFormatValid(imgInfo))
-    {
-        errorString = QString("Incorrect format.");
-        return false;
-    }
-
     if (imgInfo.width != imgInfo.height)
     {
         errorString = QString("Width and height are not equal");
@@ -217,23 +211,6 @@ bool CubemapEditorDialog::VerifyNextImage(ImageInfo imgInfo, QString& errorStrin
     else
     {
         return true;
-    }
-}
-
-bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo& info)
-{
-    switch (info.format)
-    {
-    case FORMAT_RGBA4444:
-    case FORMAT_RGBA5551:
-    case FORMAT_RGBA8888:
-    case FORMAT_RGB888:
-    case FORMAT_RGB565:
-    case FORMAT_A8:
-    case FORMAT_A16:
-        return true;
-    default:
-        return false;
     }
 }
 
@@ -407,7 +384,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
             {
                 ScopedPtr<Image> image(CreateTopLevelImage(targetFacePathes[i]));
                 image->RotateDeg(faceLabel->GetRotation());
-                ImageSystem::Instance()->Save(targetFacePathes[i], image);
+                ImageSystem::Save(targetFacePathes[i], image);
                 faceLabel->SetRotation(0);
             }
         }

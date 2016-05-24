@@ -180,7 +180,7 @@ public:
 
     static void SetPixelization(bool value);
 
-    int32 GetBaseMipMap() const;
+    uint32 GetBaseMipMap() const;
 
     static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
 

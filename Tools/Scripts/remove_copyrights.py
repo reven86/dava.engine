@@ -12,12 +12,9 @@ import platform;
 import re;
 import codecs;
   
-excludeDirs = [ "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
+excludeDirs = [ "cmake", "CMake.app", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
 excludeFiles = ["Classes/Tests/TextSizeTest.cpp"]
 includePaths = {}
-
-excludeLogFile = open("excludeLog.log", "w");
-includeLogFile = open("includeLog.log", "w");
 
 supported_exts = [".cpp", ".h", ".hpp", ".mm"];
 
@@ -46,7 +43,7 @@ def process_files(arg, dirname, names):
 	relPath = os.path.relpath(dirname); 
 	for exDir in excludeDirs:	
 		if (string.find(relPath, exDir) != -1):
-			excludeLogFile.write("exclude: " + relPath + "\n");
+			print("exclude: ", relPath);
 			return;
 
 	(dirhead, dirtail) = os.path.split(dirname);
@@ -73,8 +70,3 @@ def process_files(arg, dirname, names):
 
 export_script_dir = os.getcwd() + "/../../../";
 os.path.walk(export_script_dir, process_files, None);
-
-excludeLogFile.close();
-includeLogFile.close();
-
-#process_file("Animation/AnimatedObject.cpp")

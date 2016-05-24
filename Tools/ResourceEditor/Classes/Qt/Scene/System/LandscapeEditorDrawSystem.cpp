@@ -495,7 +495,7 @@ bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
 
         if (image)
         {
-            DAVA::ImageSystem::Instance()->Save(sourceTilemaskPath, image);
+            DAVA::ImageSystem::Save(sourceTilemaskPath, image);
             SafeRelease(image);
         }
 

@@ -9,27 +9,28 @@ namespace DAVA
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_TGA, // image format type
+      "TGA", // image format name
+      { ".tga", ".tpic" }, // image format extensions
+      { FORMAT_RGBA8888, // supported pixel formats
+        FORMAT_RGBA5551,
+        FORMAT_RGBA4444,
+        FORMAT_RGB888,
+        FORMAT_RGB565,
+        FORMAT_RGBA16161616,
+        FORMAT_RGBA32323232,
+        FORMAT_A8,
+        FORMAT_A16 })
 {
-    name.assign("TGA");
-    supportedExtensions.emplace_back(".tga");
-    supportedExtensions.emplace_back(".tpic");
-    supportedFormats = { { FORMAT_RGBA8888,
-                           FORMAT_RGBA5551,
-                           FORMAT_RGBA4444,
-                           FORMAT_RGB888,
-                           FORMAT_RGB565,
-                           FORMAT_RGBA16161616,
-                           FORMAT_RGBA32323232,
-                           FORMAT_A8,
-                           FORMAT_A16 } };
 }
 
-bool LibTgaHelper::CanProcessFile(File* infile) const
+bool LibTgaHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
     return !(GetImageInfo(infile).isEmpty());
 }
 
-ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibTgaHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     DVASSERT(infile);
 
@@ -47,6 +48,8 @@ ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
         imageInfo.width = tgaInfo.width;
         imageInfo.dataSize = tgaInfo.width * tgaInfo.height * tgaInfo.bytesPerPixel;
         imageInfo.format = tgaInfo.pixelFormat;
+        imageInfo.mipmapsCount = 1;
+        imageInfo.faceCount = 1;
     }
 
     return imageInfo;
@@ -181,7 +184,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibTgaHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 

@@ -179,3 +179,8 @@ void SpritesPackerModule::DisconnectCacheClientInternal(DAVA::AssetCacheClient* 
     cacheClientForDisconnect->Disconnect();
     SafeDelete(cacheClientForDisconnect);
 }
+
+bool SpritesPackerModule::IsRunning() const
+{
+    return spritesPacker->IsRunning();
+}

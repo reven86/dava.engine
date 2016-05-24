@@ -44,19 +44,20 @@ void jpegErrorExit(j_common_ptr cinfo)
 }
 
 LibJpegHelper::LibJpegHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_JPEG, // image format type
+      "JPG", // image format name
+      { ".jpg", ".jpeg" }, // image format extensions
+      { FORMAT_RGB888, FORMAT_A8 }) // supported pixel formats
 {
-    name.assign("JPG");
-    supportedExtensions.emplace_back(".jpg");
-    supportedExtensions.emplace_back(".jpeg");
-    supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };
 }
 
-bool LibJpegHelper::CanProcessFile(File* infile) const
+bool LibJpegHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }
 
-eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -66,6 +67,8 @@ eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const
         unsetenv("JPEGMEM");
     };
 #endif
+
+    DVASSERT(infile);
 
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
@@ -274,10 +277,12 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-DAVA::ImageInfo LibJpegHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
+
+    DVASSERT(infile);
 
     infile->Seek(0, File::SEEK_FROM_START);
     uint32 fileSize = infile->GetSize();
@@ -325,6 +330,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File* infile) const
     }
     info.dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
 
     jpeg_destroy_decompress(&cinfo);
     SafeDeleteArray(fileBuffer);
