@@ -127,18 +127,28 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
-            TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
-
-            ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
-            TEST_VERIFY(file);
-            if (file)
+            if (pack.state != PackManager::Pack::Status::ErrorLoading)
             {
-                String fileContent(file->GetSize(), '\0');
-                file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
+                TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
 
-                uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
+                ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
+                TEST_VERIFY(file);
+                if (file)
+                {
+                    String fileContent(file->GetSize(), '\0');
+                    file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
 
-                TEST_VERIFY(crc32 == 0xc8101bca); // crc32 for monkey.sc2
+                    uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
+
+                    TEST_VERIFY(crc32 == 0xc8101bca); // crc32 for monkey.sc2
+                }
+            }
+            else
+            {
+                // if device without wifi
+                const Vector<PackManager::Pack>& allPacks = packManager.GetPacks();
+                TEST_VERIFY(allPacks.at(0).name == "pack1");
+                TEST_VERIFY(allPacks.at(0).downloadError == DLE_COULDNT_RESOLVE_HOST);
             }
         }
         catch (std::exception& ex)
