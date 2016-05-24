@@ -507,7 +507,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedArchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
@@ -670,6 +669,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\CRCAdditionInterface.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\DDSHandlers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\NvttHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\DDS\QualcommHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\Image.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageConvert.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.h" />
@@ -995,7 +997,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\KeyedUnarchiver.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LocalizationWindows.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
@@ -1124,7 +1125,11 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\DDSHandlers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\NvttHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\DDS\QualcommHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageConvert.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />

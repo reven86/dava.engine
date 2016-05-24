@@ -17,12 +17,16 @@ RowLayout {
     onPathChanged: loader.item.text = path
     Layout.minimumWidth: label.width + button.width + image.width + spacing * 3 + 50
     Layout.minimumHeight: Math.max(label.height, button.height, image.height, loader.item.height)
-    function isPathValid(path) {
-        if(selectFolders) {
-            return fileSystemHelper.IsDirExists(path);
-        } else {
-            return fileSystemHelper.IsFileExists(path);
-        }
+    property bool pathIsValid: selectFolders
+                               ? fileSystemHelper.IsDirExists(loader.item.text)
+                               : fileSystemHelper.IsFileExists(loader.item.text)
+
+    //refresh exists icon when path is the same
+    function refreshPath()
+    {
+        var txt = loader.item.text;
+        loader.item.text = "";
+        loader.item.text = txt;
     }
 
     Label {
@@ -44,8 +48,8 @@ RowLayout {
         onAccepted: {
             var url = fileDialog.fileUrls[0].toString()
             url = fileSystemHelper.ResolveUrl(url);
-            loader.item.text = "";
             loader.item.text = url;
+            refreshPath();
         }
     }
 
@@ -60,6 +64,7 @@ RowLayout {
                 }
                 fileDialog.folder = "file:///" + folder
             }
+
             fileDialog.open();
         }
     }
@@ -68,6 +73,6 @@ RowLayout {
         id: image
         width: height
         height: parent.height
-        source: "qrc:///Icons/" + (isPathValid(loader.item.text) ? "ok" : "error") + ".png"
+        source: "qrc:///Icons/" + (pathIsValid ? "ok" : "error") + ".png"
     }
 }
