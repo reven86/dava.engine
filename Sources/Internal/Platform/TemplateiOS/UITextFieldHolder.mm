@@ -140,94 +140,58 @@
 
 - (BOOL)textField:(UITextField*)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string
 {
-    // range.location - charracter from
-    // range.lenght - count of replaced charracters
+    BOOL applyChanges = YES;
     if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
     {
-        return YES;
+        return applyChanges;
     }
 
-    DAVA::int32 maxLength = cppTextField->GetMaxLength();
-    // if maxLength didn't set, it equal (-1), it incorrect
-    if (maxLength < 0)
-    {
-        maxLength = 0;
-    }
-    NSUInteger replStrLength = [string length];
-    bool replaceString = (range.length > 0 && replStrLength != 0);
-    bool removeString = (range.length > 0 && replStrLength == 0);
-    bool insertString = (range.length == 0);
-    DVASSERT(removeString != insertString);
-    NSString* newString = nullptr;
+    // Get string after changing
     NSString* origString = [textCtrl valueForKey:@"text"];
-    NSUInteger origStrLength = [origString length];
-    BOOL ignoreDelegateResult = NO;
+    NSString* replStr = string;
+    DAVA::int32 maxLength = cppTextField->GetMaxLength();
+    BOOL clientApply = NO;
 
-    if (removeString || replaceString)
+    if ([replStr length] > 0)
     {
-        if (range.location + range.length > origStrLength)
+        applyChanges = !DAVA::NSStringCheck(&range, origString, maxLength, &replStr);
+        if (!applyChanges)
         {
-            range.length = origStrLength - range.location;
-            ignoreDelegateResult = YES;
+            // remove all changes for undoMansger
+            NSUndoManager* undoManager = [textField_ undoManager];
+            [undoManager removeAllActions];
         }
     }
-    if (insertString || replaceString)
+    // if we revert insert text
+    if (range.location + range.length > [origString length])
     {
-        NSUInteger charsToInsert = [string length];
-        if (charsToInsert > (maxLength - origStrLength))
-        {
-            charsToInsert = maxLength - origStrLength;
-        }
-        // safe remove
-        {
-            // new cut characters
-            NSUInteger position = 0;
-            NSRange rangeCharacter;
-            NSInteger lengthStr = [string length];
-            NSInteger index = 0;
-            do
-            {
-                rangeCharacter = [string rangeOfComposedCharacterSequenceAtIndex:index];
-                if ((rangeCharacter.location + rangeCharacter.length) > charsToInsert)
-                {
-                    position = rangeCharacter.location;
-                    break;
-                }
-                position = rangeCharacter.location + rangeCharacter.length;
-                index++;
-            }
-            while ((rangeCharacter.location + rangeCharacter.length) < charsToInsert);
-            string = [string substringWithRange:NSMakeRange(0, position)];
-        }
-        // safe remove end
+        range.length = [origString length] - range.location;
+        applyChanges = NO;
     }
 
-    newString = [origString stringByReplacingCharactersInRange:range withString:string];
-    ignoreDelegateResult = YES; // return NO at the end of the function
-
-    // Length check OK, continue with the delegate.
-    DAVA::WideString repString;
-    const char* cutfstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
-    if (nullptr != cutfstr) //cause strlen(nullptr) will crash
+    DAVA::WideString clientString = L"";
+    const char* cutfstr = [replStr cStringUsingEncoding:NSUTF8StringEncoding];
+    DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
+    const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
+    DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
+    clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+    if (clientApply)
     {
-        DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-        const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-        DAVA::UTF8Utils::EncodeToWideString(str, len, repString);
-    }
-
-    BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), repString);
-
-    if (ignoreDelegateResult)
-    {
-        // We need to apply change manually.
-        [textCtrl setValue:newString forKey:@"text"];
-        return NO;
+        if (!applyChanges)
+        {
+            NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
+            [textCtrl setValue:newString forKey:@"text"];
+            UITextPosition* caret = textField_.beginningOfDocument;
+            caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
+            UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
+            [textField_ setSelectedTextRange:rangeCaret];
+        }
     }
     else
     {
-        // We did't changed difference string. Just apply it if delegate allows.
-        return delegateResult;
+        return NO;
     }
+    return applyChanges;
 }
 
 - (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString*)string
