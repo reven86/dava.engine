@@ -94,6 +94,8 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
         page_t page;
 
         page.size = _page_sz;
+        while (page.size < size)
+            page.size *= 2;
         page.buffer = [_Metal_Device newBufferWithLength:page.size options:MTLResourceOptionCPUCacheModeDefault];
         DVASSERT(page.buffer);
         [page.buffer retain];
