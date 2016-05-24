@@ -94,19 +94,20 @@ DAVA_TESTCLASS (PackManagerTest)
         FilePath sqliteDbFile(dbFile);
 
         PackManager& packManager = Core::Instance()->GetPackManager();
-        packManager.Initialize(sqliteDbFile,
-                               folderWithDownloadedPacks,
-                               commonPacksUrl,
-                               gpuPacksUrl);
-
-        GameClient client(packManager);
-
-        packManager.EnableProcessing();
 
         FilePath fileInPack("~res:/Data/3d/Objects/monkey.sc2");
 
         try
         {
+            packManager.Initialize(sqliteDbFile,
+                                   folderWithDownloadedPacks,
+                                   commonPacksUrl,
+                                   gpuPacksUrl);
+
+            GameClient client(packManager);
+
+            packManager.EnableProcessing();
+
             String packName = "vpack";
 
             const PackManager::Pack& pack = packManager.RequestPack(packName);
