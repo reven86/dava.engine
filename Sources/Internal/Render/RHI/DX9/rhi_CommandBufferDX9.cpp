@@ -1383,12 +1383,13 @@ _DX9_ExecuteQueuedCommands()
             }
             else
             {
-                Logger::Info("device reset failed (%08X) : %s", hr, D3D9ErrorText(hr));
+                DAVA::String info = DAVA::Format("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
+                DVASSERT_MSG(0, info.c_str());
             }
         }
         else
         {
-            Logger::Info("can't reset now\n");
+            Logger::Info("Can't reset now");
             ::Sleep(100);
         }
     }

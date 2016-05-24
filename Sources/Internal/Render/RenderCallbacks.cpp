@@ -6,9 +6,18 @@ namespace DAVA
 {
 namespace
 {
+enum class CallbackOperation : uint32
+{
+    Execute,
+    Remove
+};
+
+Mutex pendingListMutex;
+Vector<Function<void()>> pendingRestoreCallbacks;
+
 Mutex callbackListMutex;
-Vector<Function<void()>> resourceRestoreCallbacks;
-Vector<Function<void()>> postRestoreCallbacks;
+Vector<std::pair<CallbackOperation, Function<void()>>> resourceRestoreCallbacks;
+Vector<std::pair<CallbackOperation, Function<void()>>> postRestoreCallbacks;
 
 struct SyncCallback
 {
@@ -25,39 +34,67 @@ namespace RenderCallbacks
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    LockGuard<Mutex> guard(callbackListMutex);
-    resourceRestoreCallbacks.push_back(callback);
+    if (isInRestore)
+    {
+        LockGuard<Mutex> guard(pendingListMutex);
+        pendingRestoreCallbacks.push_back(callback);
+    }
+    else
+    {
+        LockGuard<Mutex> guard(callbackListMutex);
+        resourceRestoreCallbacks.emplace_back(CallbackOperation::Execute, callback);
+    }
 }
+
 void UnRegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
+
+    bool found = false;
     LockGuard<Mutex> guard(callbackListMutex);
-    for (size_t i = 0, sz = resourceRestoreCallbacks.size(); i < sz; ++i)
+    for (auto& cb : resourceRestoreCallbacks)
     {
-        if (resourceRestoreCallbacks[i].Target() == callback.Target())
+        if (cb.second.Target() == callback.Target())
         {
-            RemoveExchangingWithLast(resourceRestoreCallbacks, i);
-            return;
+            cb.first = CallbackOperation::Remove;
+            found = true;
         }
     }
-    DVASSERT_MSG(false, "trying to unregister callback that was not perviously registered");
+
+    LockGuard<Mutex> pendingGuard(pendingListMutex);
+    for (auto i = pendingRestoreCallbacks.begin(); i != pendingRestoreCallbacks.end();)
+    {
+        if (i->Target() == callback.Target())
+        {
+            found = true;
+            i = pendingRestoreCallbacks.erase(i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+
+    DVASSERT(found);
 }
 
 void RegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
     LockGuard<Mutex> guard(callbackListMutex);
-    postRestoreCallbacks.push_back(callback);
+    postRestoreCallbacks.emplace_back(CallbackOperation::Execute, callback);
 }
+
 void UnRegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
     LockGuard<Mutex> guard(callbackListMutex);
     for (size_t i = 0, sz = postRestoreCallbacks.size(); i < sz; ++i)
     {
-        if (postRestoreCallbacks[i].Target() == callback.Target())
+        auto& cb = postRestoreCallbacks[i];
+        if (cb.second.Target() == callback.Target())
         {
-            RemoveExchangingWithLast(postRestoreCallbacks, i);
+            cb.first = CallbackOperation::Remove;
             return;
         }
     }
@@ -66,28 +103,48 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
 
 void ProcessFrame()
 {
+    if (!pendingRestoreCallbacks.empty())
+    {
+        LockGuard<Mutex> pendingGuard(pendingListMutex);
+        LockGuard<Mutex> cbGuard(callbackListMutex);
+        for (const auto& i : pendingRestoreCallbacks)
+        {
+            resourceRestoreCallbacks.emplace_back(CallbackOperation::Execute, i);
+        }
+        pendingRestoreCallbacks.clear();
+    }
+
     if (rhi::NeedRestoreResources())
     {
         isInRestore = true;
-        LockGuard<Mutex> guard(callbackListMutex);
-        for (auto& callback : resourceRestoreCallbacks)
+        for (auto i = resourceRestoreCallbacks.begin(); i != resourceRestoreCallbacks.end();)
         {
-            callback();
-        }
-        Logger::Debug("Resources still need restore: ");
-        rhi::NeedRestoreResources();
-    }
-    else
-    {
-        if (isInRestore)
-        {
-            isInRestore = false;
-            LockGuard<Mutex> guard(callbackListMutex);
-            for (auto& callback : postRestoreCallbacks)
+            if (i->first == CallbackOperation::Execute)
             {
-                callback();
+                i->second();
+                ++i;
+            }
+            else
+            {
+                i = resourceRestoreCallbacks.erase(i);
             }
         }
+    }
+    else if (isInRestore)
+    {
+        for (auto i = postRestoreCallbacks.begin(); i != postRestoreCallbacks.end();)
+        {
+            if (i->first == CallbackOperation::Execute)
+            {
+                i->second();
+                ++i;
+            }
+            else
+            {
+                i = postRestoreCallbacks.erase(i);
+            }
+        }
+        isInRestore = false;
     }
 
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
