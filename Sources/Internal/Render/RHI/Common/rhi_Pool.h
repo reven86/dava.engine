@@ -3,6 +3,7 @@
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
+#include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
@@ -118,13 +119,10 @@ template <class T, ResourceType RT, class DT, bool nr>
 inline void
 ResourcePool<T, RT, DT, nr>::Reserve(unsigned maxCount)
 {
-    ObjectSync.Lock();
-
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
     DVASSERT(Object == nullptr);
     DVASSERT(maxCount < HANDLE_INDEX_MASK);
     ObjectCount = maxCount;
-
-    ObjectSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -133,10 +131,9 @@ template <class T, ResourceType RT, class DT, bool nr>
 inline Handle
 ResourcePool<T, RT, DT, nr>::Alloc()
 {
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+
     uint32 handle = InvalidHandle;
-
-    ObjectSync.Lock();
-
     if (!Object)
     {
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL);
@@ -168,8 +165,6 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
     ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
 
-    ObjectSync.Unlock();
-
     DVASSERT(handle != InvalidHandle);
 
     return handle;
@@ -190,11 +185,9 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     DVASSERT(e->allocated);
 
     ObjectSync.Lock();
-
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
     e->allocated = false;
-
     ObjectSync.Unlock();
 }
 
@@ -252,8 +245,9 @@ template <class T, ResourceType RT, typename DT, bool nr>
 inline unsigned
 ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
-    unsigned count = 0;
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
+    unsigned count = 0;
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
@@ -263,7 +257,6 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
         i->MarkNeedRestore();
         ++count;
     }
-
     return count;
 }
 
@@ -291,7 +284,9 @@ public:
     void UpdateCreationDesc(const DT& desc)
     {
         creationDesc = desc;
+        Memset(&creationDesc.initialData, 0, sizeof(creationDesc.initialData));
     }
+
     void MarkNeedRestore()
     {
         if (!needRestore && creationDesc.needRestore)
