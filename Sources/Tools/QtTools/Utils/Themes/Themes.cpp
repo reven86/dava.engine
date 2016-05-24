@@ -30,7 +30,7 @@ QColor darkWindowColor(0x32, 0x32, 0x32);
 void SetupClassicTheme();
 void SetupDarkTheme();
 
-void InitFromQApplication()
+void InitFromQApplication(eTheme defaultTheme)
 {
 #if defined(Q_OS_MAC)
     //this is default font on MAC OS X
@@ -51,16 +51,10 @@ void InitFromQApplication()
     });
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.beginGroup(Themes_namespace::themeSettingsGroup);
-    auto value = settings.value(Themes_namespace::themeSettingsKey);
+    QVariant value = settings.value(Themes_namespace::themeSettingsKey, QVariant::fromValue(static_cast<int>(defaultTheme)));
     settings.endGroup();
-    if (value.canConvert<int>())
-    {
-        currentTheme = static_cast<eTheme>(value.value<int>());
-    }
-    else
-    {
-        currentTheme = Light;
-    }
+    DVASSERT(value.canConvert<int>());
+    currentTheme = static_cast<eTheme>(value.toInt());
     SetCurrentTheme(currentTheme);
 }
 

@@ -15,6 +15,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "QtTools/Utils/Themes/Themes.h"
 #include "NgtTools/Application/NGTApplication.h"
 
 #include "Deprecated/EditorConfig.h"
@@ -62,6 +63,8 @@ protected:
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("Resource Editor");
+
+        Themes::InitFromQApplication(Themes::Dark);
     }
 };
 

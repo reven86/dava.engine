@@ -12,7 +12,7 @@ enum eTheme : int
     Light,
     Dark
 };
-void InitFromQApplication();
+void InitFromQApplication(eTheme defaultTheme = Light);
 QStringList ThemesNames();
 void SetCurrentTheme(const QString& theme);
 void SetCurrentTheme(eTheme theme);

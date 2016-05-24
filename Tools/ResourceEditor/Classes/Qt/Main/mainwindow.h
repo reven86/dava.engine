@@ -192,6 +192,7 @@ protected:
     bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
+    void SetupThemeActions();
     void SetupToolBars();
     void SetupStatusBar();
     void SetupDocks();
