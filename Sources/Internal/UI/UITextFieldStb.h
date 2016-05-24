@@ -42,6 +42,7 @@ class Font;
 class Color;
 class UIEvent;
 class Vector2;
+class TextBox;
 struct Rect;
 
 // This implementation simulate iOS/Android native controls,
@@ -104,14 +105,14 @@ public:
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
-    const Vector<TextBlock::Line>& GetMultilineInfo() override;
-    const Vector<float32>& GetCharactersSizes() override;
+    const TextBox* GetTextBox() override;
     uint32 GetTextLength() override;
     WideString::value_type GetCharAt(uint32 i) override;
 
 private:
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
+    void UpdateOffset(const Rect& visibleRect);
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
@@ -127,7 +128,9 @@ private:
     Vector<Rect> selectionRects;
     Rect cursorRect;
     Vector2 staticTextOffset;
-    void UpdateOffset(const Rect& visibleRect);
+    uint32 lastCursorPos = uint32(-1);
+    uint32 lastSelStart = uint32(-1);
+    uint32 lastSelEnd = uint32(-1);
 };
 
 } // end namespace DAVA

@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "StbTextEditBridge.h"
+#include "Utils/TextBox.h"
 
 #if __clang__
 #pragma clang diagnostic push
@@ -44,20 +45,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
-    DAVA::uint32 start = static_cast<DAVA::uint32>(start_i);
-    if (start >= str->GetDelegate()->GetTextLength())
+    const DAVA::TextBox* tb = str->GetDelegate()->GetTextBox();
+    if (DAVA::uint32(start_i) >= tb->GetCharactersCount())
+    {
         return;
+    }
 
-    const DAVA::Vector<DAVA::TextBlock::Line>& linesInfo = str->GetDelegate()->GetMultilineInfo();
-    if (linesInfo.empty())
-        return;
+    const DAVA::TextBox::Character& ch = tb->GetCharacter(start_i);
+    const DAVA::TextBox::Line& line = tb->GetLine(ch.lineIndex);
 
-    auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [start](const DAVA::TextBlock::Line& l)
-                                   {
-                                       return l.offset == static_cast<DAVA::uint32>(start);
-                                   });
-    DVASSERT(lineInfoIt != linesInfo.end());
-    const DAVA::TextBlock::Line& line = *lineInfoIt;
     row->num_chars = line.length;
     row->x0 = line.xoffset;
     row->x1 = line.xoffset + line.xadvance;
@@ -69,40 +65,62 @@ inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int sta
     // lines to size of text field
     if (str->IsSingleLineMode())
     {
-        if (!linesInfo.empty() && lineInfoIt == linesInfo.begin())
+        if (ch.lineIndex == 0)
         {
             row->ymin = std::numeric_limits<float>::lowest();
         }
-        if (!linesInfo.empty() && lineInfoIt == linesInfo.end() - 1)
+        if (ch.lineIndex == tb->GetLinesCount() - 1)
         {
             row->ymax = std::numeric_limits<float>::max();
         }
     }
 }
 
+inline void stb_layoutchar(STB_TEXTEDIT_STRING* str, int n, int i, float* x0, float* x1)
+{
+    const DAVA::int32 li = n + i;
+    const DAVA::TextBox* tb = str->GetDelegate()->GetTextBox();
+    if (DAVA::uint32(li) >= tb->GetCharactersCount())
+    {
+        return;
+    }
+
+    const DAVA::TextBox::Character& ch = tb->GetCharacter(li);
+    if (x0 != nullptr)
+    {
+        *x0 = ch.xoffset;
+    }
+    if (x1 != nullptr)
+    {
+        *x1 = ch.xoffset + ch.xadvance;
+    }
+}
+
+inline float stb_getwidth(STB_TEXTEDIT_STRING* str, int n, int i)
+{
+    const DAVA::TextBox* tb = str->GetDelegate()->GetTextBox();
+    DAVA::int32 li = n + i;
+    if (tb->GetCharactersCount() > DAVA::uint32(li))
+    {
+        DAVA::int32 vi = tb->GetCharacter(li).visualIndex;
+        return tb->GetCharacter(vi).xadvance;
+    }
+    return 0.f;
+}
+
 inline int stb_insertchars(STB_TEXTEDIT_STRING* str, int pos, STB_TEXTEDIT_CHARTYPE* newtext, int num)
 {
-    return int(str->GetDelegate()->InsertText(static_cast<DAVA::uint32>(pos), newtext, static_cast<DAVA::uint32>(num)));
+    return int(str->GetDelegate()->InsertText(DAVA::uint32(pos), newtext, DAVA::uint32(num)));
 }
 
 inline int stb_deletechars(STB_TEXTEDIT_STRING* str, int pos, int num)
 {
-    return int(str->GetDelegate()->DeleteText(static_cast<DAVA::uint32>(pos), static_cast<DAVA::uint32>(num)));
+    return int(str->GetDelegate()->DeleteText(DAVA::uint32(pos), DAVA::uint32(num)));
 }
 
 inline int stb_stringlen(STB_TEXTEDIT_STRING* str)
 {
     return int(str->GetDelegate()->GetTextLength());
-}
-
-inline float stb_getwidth(STB_TEXTEDIT_STRING* str, int n, int i)
-{
-    const DAVA::Vector<DAVA::float32>& charsSizes = str->GetDelegate()->GetCharactersSizes();
-    if (static_cast<DAVA::uint32>(charsSizes.size()) > static_cast<DAVA::uint32>(n + i))
-    {
-        return charsSizes[n + i];
-    }
-    return 0.f;
 }
 
 inline int stb_keytotext(int key)
@@ -112,7 +130,7 @@ inline int stb_keytotext(int key)
 
 inline STB_TEXTEDIT_CHARTYPE stb_getchar(STB_TEXTEDIT_STRING* str, int i)
 {
-    return str->GetDelegate()->GetCharAt(static_cast<DAVA::uint32>(i));
+    return str->GetDelegate()->GetCharAt(DAVA::uint32(i));
 }
 
 inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
@@ -121,6 +139,7 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 }
 
 #define STB_TEXTEDIT_LAYOUTROW stb_layoutrow
+#define STB_DAVA_TEXTEDIT_LAYOUTCHAR stb_layoutchar
 #define STB_TEXTEDIT_INSERTCHARS stb_insertchars
 #define STB_TEXTEDIT_DELETECHARS stb_deletechars
 #define STB_TEXTEDIT_STRINGLEN stb_stringlen

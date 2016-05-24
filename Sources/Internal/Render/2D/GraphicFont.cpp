@@ -256,6 +256,10 @@ GraphicFont* GraphicFont::Create(const FilePath& descriptorPath, const FilePath&
 
 Font::StringMetrics GraphicFont::GetStringMetrics(const WideString& str, Vector<float32>* charSizes /* = 0*/) const
 {
+    if (charSizes != nullptr)
+    {
+        charSizes->clear();
+    }
     int32 charDrawed = 0;
     return DrawStringToBuffer(str, 0, 0, nullptr, charDrawed, charSizes);
 }

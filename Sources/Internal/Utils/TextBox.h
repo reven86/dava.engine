@@ -10,6 +10,38 @@ class TextBoxImpl;
 class TextBox
 {
 public:
+    class Splitter
+    {
+    public:
+        virtual ~Splitter() = default;
+        virtual uint32 split(const WideString& str, const uint32 from) = 0;
+    };
+
+    class EmptySplitter : public Splitter
+    {
+    public:
+        uint32 split(const WideString& str, const uint32 from) override;
+    };
+
+    class SimpleSplitter : public Splitter
+    {
+    public:
+        uint32 split(const WideString& str, const uint32 from) override;
+    };
+
+    class SmartSplitter : public Splitter
+    {
+    public:
+        SmartSplitter(Vector<uint8>* breaks, Vector<float32>* widths, const float32 maxWidth = FLT_MAX, const bool splitBySymbols = false);
+        uint32 split(const WideString& str, const uint32 from) override;
+
+    private:
+        Vector<uint8>* breaks = nullptr;
+        Vector<float32>* widths = nullptr;
+        float32 maxWidth = 0.f;
+        bool splitBySymbols = false;
+    };
+
     enum class DirectionMode : uint8
     {
         AUTO = 0,
@@ -35,13 +67,9 @@ public:
 
     struct Line
     {
-        virtual ~Line()
-        {
-        }
-
         int32 index = 0;
-        int32 shapedOffset = 0;
-        int32 shapedLength = 0;
+        int32 start = 0;
+        int32 length = 0;
         float32 xadvance = 0.f;
         float32 trimxadvance = 0.f;
         float32 yadvance = 0.f;
@@ -53,16 +81,15 @@ public:
 
     struct Character
     {
-        uint32 codepoint = 0;
         int32 logicIndex = -1;
-        int32 shapedIndex = -1;
         int32 visualIndex = -1;
-        int32 line = -1;
+        int32 lineIndex = -1;
         float32 xadvance = 0.f;
         float32 yadvance = 0.f;
         float32 xoffset = 0.f;
         float32 yoffset = 0.f;
         bool rtl = false;
+        bool skip = false;
     };
 
     TextBox();
@@ -72,10 +99,10 @@ public:
     void SetText(const WideString& str, const DirectionMode mode = DirectionMode::AUTO);
     void ChangeDirectionMode(const DirectionMode mode);
     void Shape();
-    void Wrap(const WrapMode mode = WrapMode::NO_WRAP, float32 maxWidth = 0.f, const Vector<float32>* characterSizes = nullptr, const Vector<uint8>* breaks = nullptr);
+    void Split(Splitter& splitter);
     void Reorder();
     void Measure(const Vector<float32>& characterSizes, float32 lineHeight, int32 fromLine, int32 toLine);
-    void CleanUp();
+    void SmartCleanUp();
 
     const WideString& GetText() const;
     const WideString GetShapedText() const;

@@ -103,7 +103,7 @@ TextBlock::TextBlock()
     , angle(0.f)
     , needCalculateCacheParams(false)
     , forceBiDiSupport(false)
-    , measure(false)
+    , needMeasureLines(false)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -158,7 +158,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , needCalculateCacheParams(src.needCalculateCacheParams)
     , needPrepareInternal(src.needPrepareInternal)
     , forceBiDiSupport(src.forceBiDiSupport)
-    , measure(src.measure)
+    , needMeasureLines(src.needMeasureLines)
 #if defined(LOCALIZATION_DEBUG)
     , fittingTypeUsed(src.fittingTypeUsed)
     , visualTextCroped(src.visualTextCroped)
@@ -292,18 +292,6 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
     }
 }
 
-const Vector<TextBlock::Line>& TextBlock::GetMultilineInfo()
-{
-    CalculateCacheParamsIfNeed();
-    return multitlineInfo;
-}
-
-const Vector<float32>& TextBlock::GetCharactersSize()
-{
-    CalculateCacheParamsIfNeed();
-    return charactersSizes;
-}
-
 DAVA::TextBox* TextBlock::GetTextBox() const
 {
     return textBox;
@@ -350,9 +338,9 @@ void TextBlock::SetForceBiDiSupportEnabled(bool value)
 
 void TextBlock::SetMeasureEnable(bool value)
 {
-    if (measure != value)
+    if (needMeasureLines != value)
     {
-        measure = value;
+        needMeasureLines = value;
         NeedPrepare();
     }
 }
@@ -462,8 +450,6 @@ void TextBlock::CalculateCacheParams()
     needCalculateCacheParams = false;
     stringSizes.clear();
     multilineStrings.clear();
-    charactersSizes.clear();
-    multitlineInfo.clear();
 
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = 0;
@@ -499,28 +485,40 @@ void TextBlock::CalculateCacheParams()
     auto originalFontSize = font->GetSize();
     renderSize = originalFontSize * scale.y;
 
-    textBox->SetText(logicalText);
-    isRtl = textBox->GetBaseDirection() == TextBox::Direction::RTL;
-    textBox->ChangeDirectionMode(isRtl ? TextBox::DirectionMode::STRONG_RTL : TextBox::DirectionMode::AUTO);
-    textBox->Shape();
-    visualText = textBox->GetShapedText();
+    bool useBiDi = IsBiDiSupportEnabled() || IsForceBiDiSupportEnabled();
 
-    font->SetSize(renderSize);
-    Font::StringMetrics textMetrics = font->GetStringMetrics(visualText, &charactersSizes);
+    textBox->SetText(logicalText);
+    if (useBiDi)
+    {
+        isRtl = textBox->GetBaseDirection() == TextBox::Direction::RTL;
+        textBox->ChangeDirectionMode(isRtl ? TextBox::DirectionMode::STRONG_RTL : TextBox::DirectionMode::AUTO);
+        textBox->Shape();
+    }
+
+    visualText = textBox->GetShapedText();
 
     Vector<uint8> breaks;
     StringUtils::GetLineBreaks(visualText, breaks);
 
+    Vector<float32> charactersSizes;
+    font->SetSize(renderSize);
+    Font::StringMetrics textMetrics = font->GetStringMetrics(visualText, &charactersSizes);
+
     if (isMultilineEnabled)
     {
-        textBox->Wrap(isMultilineBySymbolEnabled ? TextBox::WrapMode::SYMBOLS_WRAP : TextBox::WrapMode::WORD_WRAP, drawSize.dx, &charactersSizes, &breaks);
+        textBox->Split(TextBox::SmartSplitter(&breaks, &charactersSizes, drawSize.dx, isMultilineBySymbolEnabled));
         treatMultilineAsSingleLine = textBox->GetLinesCount() == 1;
     }
     else
     {
-        textBox->Wrap(TextBox::WrapMode::NO_WRAP);
+        textBox->Split(TextBox::EmptySplitter());
     }
-    textBox->Reorder();
+
+    if (useBiDi)
+    {
+        textBox->Reorder();
+    }
+    textBox->SmartCleanUp();
 
     if (!isMultilineEnabled || treatMultilineAsSingleLine)
     {
@@ -712,19 +710,10 @@ void TextBlock::CalculateCacheParams()
 #endif
         }
 
-        if (measure)
+        if (needMeasureLines)
         {
             textBox->Measure(charactersSizes, float32(textMetrics.height), 0, 1);
         }
-
-        Line lineInfo;
-        lineInfo.offset = 0;
-        lineInfo.length = uint32(visualText.size());
-        lineInfo.number = 0;
-        lineInfo.xadvance = std::accumulate(charactersSizes.begin(), charactersSizes.end(), 0.f);
-        lineInfo.visiblexadvance = static_cast<float32>(textMetrics.width);
-        lineInfo.yadvance = static_cast<float32>(textMetrics.height);
-        multitlineInfo.push_back(lineInfo);
 
         if (treatMultilineAsSingleLine)
         {
@@ -736,13 +725,12 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        Vector<TextBox::Line> lines = textBox->GetLines();
+        DVASSERT_MSG(textBox->GetLinesCount() > 0, "Empty lines information");
+
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
         textMetrics.width = textMetrics.drawRect.dx = 0;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(lines.size()) - yOffset;
-
-        DVASSERT_MSG(!lines.empty(), "Empty lines information");
+        textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
 
         if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
@@ -765,7 +753,7 @@ void TextBlock::CalculateCacheParams()
                             renderSize = lastSize;
                             font->SetSize(renderSize);
                             font->GetStringMetrics(visualText, &charactersSizes);
-                            textBox->Wrap(isMultilineBySymbolEnabled ? TextBox::WrapMode::SYMBOLS_WRAP : TextBox::WrapMode::WORD_WRAP, drawSize.dx, &charactersSizes, &breaks);
+                            textBox->Split(TextBox::SmartSplitter(&breaks, &charactersSizes, drawSize.dx, isMultilineBySymbolEnabled));
 
                             fontHeight = font->GetFontHeight() + yOffset;
                             textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
@@ -825,14 +813,19 @@ void TextBlock::CalculateCacheParams()
                 renderSize = finalSize;
                 font->SetSize(renderSize);
                 font->GetStringMetrics(visualText, &charactersSizes);
-                textBox->Wrap(isMultilineBySymbolEnabled ? TextBox::WrapMode::SYMBOLS_WRAP : TextBox::WrapMode::WORD_WRAP, drawSize.dx, &charactersSizes, &breaks);
-                textBox->Reorder();
-                lines = textBox->GetLines();
+                textBox->Split(TextBox::SmartSplitter(&breaks, &charactersSizes, drawSize.dx, isMultilineBySymbolEnabled));
 
                 fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(lines.size()) - yOffset;
+                textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
             };
         }
+
+        if (useBiDi)
+        {
+            textBox->Reorder();
+        }
+        textBox->SmartCleanUp();
+        const Vector<TextBox::Line>& lines = textBox->GetLines();
 
         // Detect visible lines
         int32 fromLine = 0;
@@ -840,14 +833,12 @@ void TextBlock::CalculateCacheParams()
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
             int32 needLines = Min(linesCount, int32(ceilf(drawSize.y / fontHeight)) + 1);
-            if (align & ALIGN_TOP)
-            {
-            }
-            else if (align & ALIGN_VCENTER)
+            // For align & ALIGN_TOP do nothing
+            if (align & ALIGN_VCENTER)
             {
                 fromLine = (linesCount - needLines + 1) / 2;
             }
-            else //if(ALIGN_BOTTOM)
+            else if (ALIGN_BOTTOM)
             {
                 fromLine = linesCount - needLines;
             }
@@ -855,29 +846,19 @@ void TextBlock::CalculateCacheParams()
         }
         textMetrics.height = textMetrics.drawRect.dy = fontHeight * linesCount - yOffset;
 
-        if (measure)
+        if (needMeasureLines)
         {
             textBox->Measure(charactersSizes, float32(fontHeight), fromLine, linesCount);
         }
 
         // Get lines as visual strings and its metrics
-        multitlineInfo.reserve(linesCount);
         stringSizes.reserve(linesCount);
         multilineStrings.reserve(linesCount);
-        Line lineInfo;
         for (int32 lineInd = 0; lineInd < linesCount; ++lineInd)
         {
             const TextBox::Line& line = lines.at(fromLine + lineInd);
             const WideString& visualLine = line.visualString;
             const Font::StringMetrics& stringSize = font->GetStringMetrics(visualLine);
-
-            lineInfo.offset = line.shapedOffset;
-            lineInfo.length = line.shapedLength;
-            lineInfo.number = lineInd;
-            lineInfo.xadvance = std::accumulate(charactersSizes.begin() + line.shapedOffset, charactersSizes.begin() + line.shapedOffset + line.shapedLength, 0.f); //static_cast<float32>(stringSize.width);
-            lineInfo.visiblexadvance = static_cast<float32>(stringSize.width);
-            lineInfo.yadvance = static_cast<float32>(stringSize.height);
-            multitlineInfo.push_back(lineInfo);
 
             multilineStrings.push_back(visualLine);
             stringSizes.push_back(stringSize.width);
@@ -916,38 +897,6 @@ void TextBlock::CalculateCacheParams()
     if (requestedSize.dx >= 0 && useJustify)
     {
         textMetrics.drawRect.dx = Max(textMetrics.drawRect.dx, int32(drawSize.dx));
-    }
-
-    float32 lyoffset = 0.f;
-    for (auto& line : multitlineInfo)
-    {
-        if (align & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
-        {
-            line.xoffset = 0.f;
-        }
-        else if (align & ALIGN_RIGHT)
-        {
-            line.xoffset = drawSize.x - line.visiblexadvance;
-        }
-        else //if (align & ALIGN_HCENTER)
-        {
-            line.xoffset = (drawSize.x - line.visiblexadvance) * 0.5f;
-        }
-
-        if (align & ALIGN_TOP)
-        {
-            line.yoffset = lyoffset;
-        }
-        else if (align & ALIGN_BOTTOM)
-        {
-            line.yoffset = lyoffset + drawSize.y - static_cast<float32>(textMetrics.height);
-        }
-        else //if (align & ALIGN_VCENTER)
-        {
-            line.yoffset = lyoffset + (drawSize.y - static_cast<float32>(textMetrics.height)) * 0.5f;
-        }
-
-        lyoffset += line.yadvance;
     }
 
     //calculate texture size
@@ -1042,7 +991,7 @@ TextBlock* TextBlock::Clone()
     block->SetFittingOption(fittingType);
     block->SetUseRtlAlign(useRtlAlign);
     block->SetForceBiDiSupportEnabled(forceBiDiSupport);
-    block->SetMeasureEnable(measure);
+    block->SetMeasureEnable(needMeasureLines);
 
     if (GetFont())
     {

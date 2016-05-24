@@ -231,6 +231,10 @@ Font::StringMetrics FTFont::DrawStringToBuffer(void* buffer, int32 bufWidth, int
 
 Font::StringMetrics FTFont::GetStringMetrics(const WideString& str, Vector<float32>* charSizes) const
 {
+    if (charSizes != nullptr)
+    {
+        charSizes->clear();
+    }
     return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, ascendScale, descendScale, charSizes);
 }
 

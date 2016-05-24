@@ -65,6 +65,7 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
     staticText->GetTextBlock()->SetMeasureEnable(true);
+    staticText->SetForceBiDiSupportEnabled(true);
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
@@ -153,26 +154,6 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             showCursor = !showCursor;
         }
         needRedraw = true;
-
-        UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
-        UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
-        UpdateOffset(cursorRect);
-
-        // Fix cursor position for multiline if end of some line contains many
-        // spaces over control size (same behavior in MS Word)
-        if (!stb->IsSingleLineMode())
-        {
-            const Vector2& controlSize = control->GetSize();
-            if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
-            {
-                cursorRect.dx = DEFAULT_CURSOR_WIDTH;
-                cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
-            }
-            else if (cursorRect.x + cursorRect.dx > controlSize.x)
-            {
-                cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
-            }
-        }
     }
     else if (showCursor)
     {
@@ -189,6 +170,40 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
     const WideString& txt = control->GetVisibleText();
     staticText->SetText(txt, UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
+
+    if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+    {
+        lastSelStart = stb->GetSelectionStart();
+        lastSelEnd = stb->GetSelectionEnd();
+        UpdateSelection(lastSelStart, lastSelEnd);
+    }
+
+    if (lastCursorPos != stb->GetCursorPosition())
+    {
+        // Show cursor again
+        cursorTime = 0.f;
+        showCursor = true;
+
+        lastCursorPos = stb->GetCursorPosition();
+
+        UpdateCursor(lastCursorPos, stb->IsInsertMode());
+        UpdateOffset(cursorRect);
+        // Fix cursor position for multiline if end of some line contains many
+        // spaces over control size (same behavior in MS Word)
+        if (!stb->IsSingleLineMode())
+        {
+            const Vector2& controlSize = control->GetSize();
+            if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
+            {
+                cursorRect.dx = DEFAULT_CURSOR_WIDTH;
+                cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
+            }
+            else if (cursorRect.x + cursorRect.dx > controlSize.x)
+            {
+                cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
+            }
+        }
+    }
 }
 
 void TextFieldStbImpl::SetAutoCapitalizationType(int32)
@@ -437,14 +452,9 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
     return 0;
 }
 
-const Vector<TextBlock::Line>& TextFieldStbImpl::GetMultilineInfo()
+const TextBox* TextFieldStbImpl::GetTextBox()
 {
-    return staticText->GetTextBlock()->GetMultilineInfo();
-}
-
-const Vector<float32>& TextFieldStbImpl::GetCharactersSizes()
-{
-    return staticText->GetTextBlock()->GetCharactersSize();
+    return staticText->GetTextBlock()->GetTextBox();
 }
 
 uint32 TextFieldStbImpl::GetTextLength()
@@ -457,16 +467,40 @@ WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
     return text[i];
 }
 
-static float32 calcVisSize(const int32 start, const int32 limit, const TextBox* tb, const float32* charsSizes)
+void CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight)
 {
-    float32 sum = 0.f;
-    int32 length = limit - start;
-    for (int32 logicInd = start; logicInd < length; ++logicInd)
+#if 1 // Simple correcting with RTL check
+    const uint32 charsCount = tb->GetCharactersCount();
+    if (pos < charsCount)
     {
-        int32 visIndex = tb->GetCharacter(logicInd).visualIndex;
-        sum += charsSizes[visIndex];
+        cursorRight = tb->GetCharacter(pos).rtl;
     }
-    return sum;
+    else
+    {
+        pos = charsCount - 1;
+        cursorRight = !tb->GetCharacter(pos).rtl;
+    }
+#else // Correct cursor like notepad (more complex)
+    int32 charsCount = tb->GetCharactersCount();
+    if (pos < charsCount)
+    {
+        while (pos > 0 && tb->GetCharacter(pos).skip)
+        {
+            pos--;
+        }
+        cursorRight = tb->GetCharacter(pos).rtl;
+        if ((pos > 0) && (tb->GetCharacter(pos - 1).rtl != tb->GetCharacter(pos).rtl))
+        {
+            pos--;
+            cursorRight = !tb->GetCharacter(pos).rtl;
+        }
+    }
+    else
+    {
+        pos = charsCount - 1;
+        cursorRight = !tb->GetCharacter(pos).rtl;
+    }
+#endif
 }
 
 void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
@@ -476,52 +510,47 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     uint32 selEnd = std::max(start, end);
     if (selStart < selEnd)
     {
-        const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-        const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
         const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-
-        for (const TextBlock::Line& line : linesInfo)
+        for (uint32 i = selStart; i < selEnd; ++i)
         {
-            if (selStart >= line.offset + line.length || selEnd <= line.offset)
+            const TextBox::Character& c = tb->GetCharacter(i);
+            if (c.skip)
             {
                 continue;
             }
 
             Rect r;
-            r.y += line.yoffset;
-            r.dy = line.yadvance;
-            if (selStart > line.offset)
+            r.x = staticTextOffset.x;
+            r.y = staticTextOffset.y;
+            r.x += c.xoffset;
+            r.dx = c.xadvance;
+            r.y += c.yoffset;
+            r.dy = c.yadvance;
+
+            // TODO: ALIGN
+            int32 ctrlAlign = control->GetTextAlign();
+            if (ctrlAlign & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
             {
-                //r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
-                //r.x += calcVisSize(line.offset, selStart, tb, charsSizes.data());
-                const TextBox::Character& c = tb->GetCharacter(selStart);
-                r.x += c.xoffset;
+            }
+            else if (ctrlAlign & ALIGN_RIGHT)
+            {
+                r.x += 0.f;
+            }
+            else //if (ctrlAlign & ALIGN_HCENTER)
+            {
+                r.x += 0.f;
             }
 
-            if (selEnd >= line.offset + line.length)
+            if (ctrlAlign & ALIGN_TOP)
             {
-                r.dx = line.xadvance;
             }
-            else
+            else if (ctrlAlign & ALIGN_BOTTOM)
             {
-                //r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
-                //r.dx = calcVisSize(line.offset, selEnd, tb, charsSizes.data());
-                const TextBox::Character& c = tb->GetCharacter(selEnd);
-                r.x += c.xoffset;
+                r.y += 0.f;
             }
-            r.dx -= r.x;
-            r.x += line.xoffset;
-
-            r.x += staticTextOffset.x;
-            r.y += staticTextOffset.y;
-
-            if (r.x > control->GetSize().x)
+            else //if (ctrlAlign & ALIGN_VCENTER)
             {
-                continue;
-            }
-            else if (r.x + r.dx > control->GetSize().x)
-            {
-                r.dx = control->GetSize().x - r.x;
+                r.y += 0.f;
             }
 
             selectionRects.push_back(r);
@@ -542,45 +571,18 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     int32 charsCount = tb->GetCharactersCount();
     if (charsCount > 0)
     {
-        if (cursorPos < charsCount)
+        bool atEnd = false;
+        CorrectPos(tb, cursorPos, atEnd);
+
+        const TextBox::Character& c = tb->GetCharacter(cursorPos);
+        r.y += c.yoffset;
+        r.dy = c.yadvance;
+        r.x += c.xoffset;
+        if (atEnd)
         {
-            if (cursorPos == 0)
-            {
-                const TextBox::Character& c = tb->GetCharacter(cursorPos);
-                r.y += c.yoffset;
-                r.dy = c.yadvance;
-                r.x += c.xoffset;
-                if (c.rtl)
-                {
-                    r.x += c.xadvance;
-                }
-                //r.x += line.xoffset;
-            }
-            else
-            {
-                const TextBox::Character& c = tb->GetCharacter(cursorPos - 1);
-                r.y += c.yoffset;
-                r.dy = c.yadvance;
-                r.x += c.xoffset;
-                if (!c.rtl)
-                {
-                    r.x += c.xadvance;
-                }
-                //r.x += line.xoffset;
-            }
+            r.x += c.xadvance;
         }
-        else
-        {
-            const TextBox::Character& c = tb->GetCharacter(charsCount - 1);
-            r.y += c.yoffset;
-            r.dy = c.yadvance;
-            r.x += c.xoffset;
-            if (!c.rtl)
-            {
-                r.x += c.xadvance;
-            }
-            //r.x += line.xoffset;
-        }
+        //r.x += line.xoffset;
     }
     else
     {
@@ -887,13 +889,13 @@ bool TextFieldStbImpl::PasteFromClipboard()
         {
             clipText = clip.GetText();
             // Remove not valid characters (include Font check)
-            clipText = StringUtils::RemoveNonPrintable(clipText);
-            StringUtils::RemoveEmoji(clipText);
-            clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
-                                          {
-                                              return !font->IsCharAvaliable(static_cast<char16>(ch));
-                                          }),
-                           clipText.end());
+            //             clipText = StringUtils::RemoveNonPrintable(clipText);
+            //             StringUtils::RemoveEmoji(clipText);
+            //             clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
+            //                                           {
+            //                                               return !font->IsCharAvaliable(static_cast<char16>(ch));
+            //                                           }),
+            //                            clipText.end());
 
             if (!clipText.empty())
             {

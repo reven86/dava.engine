@@ -148,6 +148,8 @@ void StaticTextTest::LoadResources()
     previewText->SetText(L"");
     previewText->SetDebugDraw(true);
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    previewText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
+    previewText->SetForceBiDiSupportEnabled(true);
     AddControl(previewText);
 
     label = new UIStaticText(Rect(20, 235, 400, 20));
@@ -163,6 +165,7 @@ void StaticTextTest::LoadResources()
     inputText->SetText(L"");
     inputText->SetDebugDraw(true);
     inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    inputText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
     inputDelegate = new InputDelegate(this);
     inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
@@ -269,6 +272,7 @@ void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
 void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
 {
     previewText->SetTextAlign(align);
+    inputText->SetTextAlign(align);
     for (auto btn : alignButtons)
     {
         btn->SetDebugDrawColor(btn->GetTag() == align ? GREEN : RED);

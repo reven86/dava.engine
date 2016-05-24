@@ -48,24 +48,12 @@ class TextBox;
 /**
     \ingroup render_2d
     \brief Class to render text on the screen. 
-    This class support to draw singleline / multiline text to sprites using font objects that available in SDK.
+    This class support to draw single line / multiline text to sprites using font objects that available in SDK.
     Normally you do not need it directly and you can use UIStaticText or TextGameObject. 
     */
 class TextBlock : public BaseObject
 {
 public:
-    struct Line
-    {
-        uint32 number = 0;
-        uint32 offset = 0;
-        uint32 length = 0;
-        float32 xadvance = 0.f;
-        float32 yadvance = 0.f;
-        float32 visiblexadvance = 0.f;
-        float32 xoffset = 0.f;
-        float32 yoffset = 0.f;
-    };
-
     enum eFitType
     {
         FITTING_ENLARGE = 0x1,
@@ -121,8 +109,6 @@ public:
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
-    virtual const Vector<Line>& GetMultilineInfo();
-    virtual const Vector<float32>& GetCharactersSize();
     virtual TextBox* GetTextBox() const;
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
@@ -172,7 +158,7 @@ public:
 
     bool IsMeasureEnabled() const
     {
-        return measure;
+        return needMeasureLines;
     }
     void SetMeasureEnable(bool measure);
 
@@ -225,8 +211,6 @@ private:
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
-    Vector<Line> multitlineInfo;
-    Vector<float32> charactersSizes;
     Vector<int32> stringSizes;
 
     bool isMultilineEnabled : 1;
@@ -238,7 +222,7 @@ private:
     bool isRtl : 1;
     bool needCalculateCacheParams : 1;
     bool forceBiDiSupport : 1;
-    bool measure : 1;
+    bool needMeasureLines : 1;
 
     static bool isBiDiSupportEnabled; //!< true if BiDi transformation support enabled
     static Set<TextBlock*> registredTextBlocks;
