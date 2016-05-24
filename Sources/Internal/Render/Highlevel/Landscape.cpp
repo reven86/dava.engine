@@ -940,6 +940,7 @@ void Landscape::AllocateGeometryDataInstancing()
         rhi::VertexBuffer::Descriptor instanceBufferDesc;
         instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
         instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+        instanceBufferDesc.needRestore = false;
 
         InstanceDataBuffer* instanceDataBuffer = new InstanceDataBuffer();
         instanceDataBuffer->bufferSize = instanceBufferDesc.size;
