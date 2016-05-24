@@ -1,11 +1,11 @@
-#include <cef/include/cef_app.h>
+#include "CEFDavaRenderApp.h"
 #include "Base/Platform.h"
 
-#ifdef __DAVAENGINE_WINDOWS__
+/*#ifdef __DAVAENGINE_WINDOWS__
 
-int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int)
 {
-    CefMainArgs mainArgs(::GetModuleHandle(nullptr));
+    CefMainArgs mainArgs(hInstance);
     return CefExecuteProcess(mainArgs, nullptr, nullptr);
 }
 
@@ -17,4 +17,10 @@ int main(int argc, char* argv[])
     return CefExecuteProcess(mainArgs, nullptr, nullptr);
 }
 
-#endif
+#endif*/
+
+int main(int argc, char* argv[])
+{
+    CefMainArgs mainArgs(::GetModuleHandle(nullptr));
+    return CefExecuteProcess(mainArgs, new CEFDavaRenderApp, nullptr);
+}

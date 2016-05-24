@@ -10,14 +10,17 @@ endif ()
 set ( DAVA_ENGINE_LIBS "${CMAKE_CURRENT_LIST_DIR}/../../Libs" )
 set ( DAVA_ENGINE_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Internal" )
 set ( CEF_LIBS "${DAVA_ENGINE_LIBS}/lib_CMake/win/${ARCH}/Release" )
+set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd" ) 
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT" ) 
 
 include_directories ( "${DAVA_ENGINE_INCLUDES}" 
                       "${DAVA_ENGINE_LIBS}/include" 
                       "${DAVA_ENGINE_LIBS}/include/cef" )
 
-add_executable( ${PROJECT_NAME} main.cpp )
+add_executable( ${PROJECT_NAME} main.cpp CEFDavaRenderApp.cpp )
 target_link_libraries( ${PROJECT_NAME} "${CEF_LIBS}/libcef.lib" "${CEF_LIBS}/libcef_dll_wrapper.lib" )
 
-set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:WINDOWS" )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
+if ( WIN32 )
+    #set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:WINDOWS" )
+    #set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
+endif ()

@@ -2,11 +2,13 @@
 
 #include <cef/include/cef_browser.h>
 #include <cef/include/cef_scheme.h>
+#include "UI/Private/CEFInterprocessMessages.h"
 #include "UI/Private/CEFWebPageRender.h"
 
 #include "UI/UIEvent.h"
 #include "UI/Private/CEFWebViewControl.h"
 #include "UI/UIWebView.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -41,6 +43,7 @@ void WebViewControl::Initialize(const Rect& rect)
 
 void WebViewControl::OpenURL(const String& url)
 {
+    requestedUrl = url;
     cefBrowser->GetMainFrame()->LoadURL(url);
 }
 
@@ -111,10 +114,32 @@ CefRefPtr<CefLoadHandler> WebViewControl::GetLoadHandler()
     return this;
 }
 
+bool WebViewControl::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                              CefProcessId source_process,
+                                              CefRefPtr<CefProcessMessage> message)
+{
+    // WebViewControl can process only URL loading request messages from render process
+    if (source_process == PID_RENDERER &&
+        cefBrowser->IsSame(browser) &&
+        message->GetName() == urlLoadingRequestMessageName)
+    {
+        URLLoadingRequest request;
+        if (!ParseUrlLoadingRequest(message, request))
+        {
+            return false;
+        }
+
+        OnURLLoadingRequst(request);
+        return true;
+    }
+
+    return false;
+}
+
 void WebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
                                CefRefPtr<CefFrame> frame, int httpStatusCode)
 {
-    if (delegate)
+    if (delegate && cefBrowser->IsSame(browser))
     {
         delegate->PageLoaded(&webView);
     }
@@ -122,11 +147,42 @@ void WebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
 
 void WebViewControl::LoadHtml(const CefString& html, const CefString& url)
 {
+    requestedUrl = "";
     CefRefPtr<CefFrame> frame = cefBrowser->GetMainFrame();
 
     // loading of "about:blank" is needed for loading string
     frame->LoadURL("about:blank");
     frame->LoadString(html, url);
+}
+
+void WebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
+{
+    // Always allow loading of URL from OpenURL method or if delegate is not set
+    if (request.url == requestedUrl || delegate == nullptr)
+    {
+        AllowURLLoading(request.url, request.frameID);
+        return;
+    }
+
+    bool isLinkActivation = request.navigation_type == NAVIGATION_LINK_CLICKED;
+    IUIWebViewDelegate::eAction action;
+    action = delegate->URLChanged(&webView, request.url, isLinkActivation);
+
+    if (action == IUIWebViewDelegate::PROCESS_IN_WEBVIEW)
+    {
+        AllowURLLoading(request.url, request.frameID);
+    }
+    else if (action == IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER)
+    {
+        DAVA::OpenURL(request.url);
+    }
+}
+
+void WebViewControl::AllowURLLoading(const String& url, int64 frameID)
+{
+    URLLoadingPermit permit = { url, frameID };
+    CefRefPtr<CefProcessMessage> msg = CreateUrlLoadingPermitMessage(permit);
+    cefBrowser->SendProcessMessage(PID_RENDERER, msg);
 }
 
 void WebViewControl::OnMouseMove(UIEvent* input)

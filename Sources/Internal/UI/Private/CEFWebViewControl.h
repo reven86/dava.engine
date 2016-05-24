@@ -61,12 +61,17 @@ private:
     // CefClient interface realization
     CefRefPtr<CefRenderHandler> GetRenderHandler() override;
     CefRefPtr<CefLoadHandler> GetLoadHandler() override;
+    bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                  CefProcessId source_process,
+                                  CefRefPtr<CefProcessMessage> message) override;
 
     // CefLoadHandler interface realization
     void OnLoadEnd(CefRefPtr<CefBrowser> browser,
                    CefRefPtr<CefFrame> frame, int httpStatusCode) override;
 
     void LoadHtml(const CefString& html, const CefString& url);
+    void OnURLLoadingRequst(const struct URLLoadingRequest& request);
+    void AllowURLLoading(const String& url, int64 frameID);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnKey(UIEvent* input);
@@ -76,8 +81,9 @@ private:
     UIWebView& webView;
     IUIWebViewDelegate* delegate = nullptr;
     CEFController cefController;
-    CefRefPtr<class CefBrowser> cefBrowser;
+    CefRefPtr<CefBrowser> cefBrowser;
     CefRefPtr<class CEFWebPageRender> webPageRender;
+    String requestedUrl;
 };
 
 } // namespace DAVA
