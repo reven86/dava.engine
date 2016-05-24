@@ -620,8 +620,8 @@ public:
     Function uses stable sort, sets layout dirty flag and invalidates iteration.
     \param[in] predicate sorting predicate. All predicates for std::stable_sort are allowed for this function too.
     */
-    template<class T>
-    void SortChildren(const T &predicate);
+    template <class T>
+    void SortChildren(const T& predicate);
     /*
      \brief Sets the contol name.
         Later you can find control by this name.
@@ -1409,8 +1409,8 @@ bool UIControl::GetMultiInput() const
     return multiInput;
 }
 
-template<class T>
-void UIControl::SortChildren(const T &predicate)
+template <class T>
+void UIControl::SortChildren(const T& predicate)
 {
     std::stable_sort(children.begin(), children.end(), predicate);
 
