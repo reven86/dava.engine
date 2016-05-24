@@ -46,6 +46,7 @@
 @interface MultilineDelegate : NSObject<NSTextViewDelegate>
 {
 @public
+    WideString lastString;
     DAVA::ObjCWrapper* text;
     int maxLength;
 }
@@ -72,6 +73,7 @@
 @interface CustomDelegate : NSObject<NSTextFieldDelegate>
 {
 @public
+    WideString lastString;
     DAVA::ObjCWrapper* text;
     CustomTextFieldFormatter* formatter;
 }
@@ -709,12 +711,6 @@ public:
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
 
-        UITextFieldDelegate* delegate = davaText->GetDelegate();
-        if (delegate != nullptr)
-        {
-            delegate->TextFieldOnTextChanged(davaText, string, oldText);
-        }
-
         // HACK if user click cleartext button and current
         // native control not in focus - remove focus from dava control too
         // to show hint to user
@@ -1267,8 +1263,20 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
     [super dealloc];
 }
 
-- (void)controlTextDidChange:(NSNotification*)aNotification
+- (void)controlTextDidBeginEditing:(NSNotification*)notification
 {
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    {
+        lastString = text->ctrl->davaText->GetText();
+    }
+}
+
+- (void)controlTextDidChange:(NSNotification*)notification
+{
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    {
+        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+    }
 }
 
 // https://developer.apple.com/library/mac/qa/qa1454/_index.html
@@ -1406,35 +1414,26 @@ doCommandBySelector:(SEL)commandSelector
     }
 
     DAVA::WideString clientString = L"";
-    const char* cutfstr = [replString cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-    const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-    DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
     BOOL clientApply = NO;
-    if (correctRange.length > 0 || !clientString.empty())
+    if (correctRange.length > 0 || [replString length] > 0)
     {
+        clientString = DAVA::WideStringFromNSString(replString);
         clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
     }
-    if (clientApply)
-    {
-        if (!applyChanges)
-        {
-            // change native textfield
-            *partialStringPtr = [inOrigString stringByReplacingCharactersInRange:correctRange withString:replString];
-            proposedSelRangePtr->location = correctRange.location + [replString length];
-
-        }
-        DAVA::WideString oldStr = cppTextField->GetText();
-        DAVA::WideString newStr;
-        const char* cstr = [*partialStringPtr cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<const DAVA::uint8*>(cstr), static_cast<DAVA::int32>(strlen(cstr)), newStr);
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newStr, oldStr);
-    }
-    else
+    if (!clientApply)
     {
         partialStringPtr = &inOrigString;
         proposedSelRangePtr = &origSelRange;
         return NO;
+    }
+    // when youself set changes in native control
+    if (!applyChanges)
+    {
+        NSString* newString = [inOrigString stringByReplacingCharactersInRange:correctRange withString:replString];
+        DAVA::WideString newDAVAString = L"";
+        newDAVAString = DAVA::WideStringFromNSString(newString);
+        (*text).ctrl->SetText(newDAVAString);
+        (*text).ctrl->SetCursorPos(correctRange.location + [replString length]);
     }
     return applyChanges;
 }
@@ -1461,6 +1460,10 @@ doCommandBySelector:(SEL)commandSelector
 
 - (BOOL)textShouldBeginEditing:(NSText*)textObject
 {
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    {
+        lastString = text->ctrl->davaText->GetText();
+    }
     DAVA::UITextField* textField = (*text).ctrl->davaText;
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
     {
@@ -1473,6 +1476,14 @@ doCommandBySelector:(SEL)commandSelector
             return NO;
     }
     return YES;
+}
+
+- (void)textDidChange:(NSNotification*)notification
+{
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    {
+        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+    }
 }
 
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
@@ -1502,32 +1513,22 @@ doCommandBySelector:(SEL)commandSelector
     }
 
     DAVA::WideString clientString = L"";
-    const char* cutfstr = [replStr cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-    const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-    DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
-    if (affectedCharRange.length > 0 || !clientString.empty())
+    if (affectedCharRange.length > 0 || [replStr length] > 0)
     {
+        clientString = DAVA::WideStringFromNSString(replStr);
         clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
     }
-    if (clientApply)
-    {
-        if (!applyChanges)
-        {
-            NSString* newString = [origString stringByReplacingCharactersInRange:affectedCharRange withString:replStr];
-            DAVA::WideString newWString = L"";
-            const char* newStr = [newString cStringUsingEncoding:NSUTF8StringEncoding];
-            DAVA::int32 lenNewStr = static_cast<DAVA::int32>(strlen(newStr));
-            const DAVA::uint8* new8Str = reinterpret_cast<const DAVA::uint8*>(newStr);
-            DAVA::UTF8Utils::EncodeToWideString(new8Str, lenNewStr, newWString);
-
-            (*text).ctrl->SetText(newWString);
-            (*text).ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
-        }
-    }
-    else
+    if (!clientApply)
     {
         return NO;
+    }
+    if (!applyChanges)
+    {
+        NSString* newString = [origString stringByReplacingCharactersInRange:affectedCharRange withString:replStr];
+        DAVA::WideString newDAVAString = L"";
+        newDAVAString = DAVA::WideStringFromNSString(newString);
+        (*text).ctrl->SetText(newDAVAString);
+        (*text).ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
     }
     return applyChanges;
 }

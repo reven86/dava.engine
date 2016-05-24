@@ -168,31 +168,25 @@
         applyChanges = NO;
     }
 
-    DAVA::WideString clientString = L"";
-    const char* cutfstr = [replStr cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-    const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-    DAVA::UTF8Utils::EncodeToWideString(str, len, clientString);
     BOOL clientApply = NO;
-    if (range.length > 0 || !clientString.empty())
+    DAVA::WideString clientString = L"";
+    if (range.length > 0 || [replStr length] > 0)
     {
+        clientString = DAVA::WideStringFromNSString(replStr);
         clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
     }
-    if (clientApply)
-    {
-        if (!applyChanges)
-        {
-            NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
-            [textCtrl setValue:newString forKey:@"text"];
-            UITextPosition* caret = textField_.beginningOfDocument;
-            caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
-            UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
-            [textField_ setSelectedTextRange:rangeCaret];
-        }
-    }
-    else
+    if (!clientApply)
     {
         return NO;
+    }
+    if (!applyChanges)
+    {
+        NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
+        [textCtrl setValue:newString forKey:@"text"];
+        UITextPosition* caret = textField_.beginningOfDocument;
+        caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
+        UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
+        [textField_ setSelectedTextRange:rangeCaret];
     }
     return applyChanges;
 }
