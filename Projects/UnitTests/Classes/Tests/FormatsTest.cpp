@@ -1,5 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Render/Image/ImageConvert.h"
 
 #include "Infrastructure/TextureUtils.h"
 
@@ -71,10 +72,10 @@ DAVA_TESTCLASS (FormatsTest)
 
             DAVA::Vector<DAVA::Image*> pngImages;
             DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
+            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Load(pngPathname, pngImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
+            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Load(compressedPathname, compressedImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())
@@ -133,10 +134,10 @@ DAVA_TESTCLASS (FormatsTest)
 
             DAVA::Vector<DAVA::Image*> pngImages;
             DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
+            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Load(pngPathname, pngImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
+            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Load(compressedPathname, compressedImages);
             TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())
@@ -145,13 +146,10 @@ DAVA_TESTCLASS (FormatsTest)
             }
             else
             {
-                const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
-                ?
-                static_cast<DAVA::PixelFormat>(requestedFormat)
-                :
-                DAVA::FORMAT_RGBA8888;
-
-                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
+                ScopedPtr<Image> convertedImage(Image::Create(compressedImages[0]->width, compressedImages[0]->height, FORMAT_RGBA8888));
+                TEST_VERIFY(ImageConvert::CanConvertFromTo(compressedImages[0]->format, FORMAT_RGBA8888) == true);
+                TEST_VERIFY(ImageConvert::ConvertImage(compressedImages[0], convertedImage) == true);
+                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], convertedImage, FORMAT_RGBA8888);
 
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
@@ -182,14 +180,11 @@ DAVA_TESTCLASS (FormatsTest)
         case FORMAT_DXT1A:
             requestedFormat = FORMAT_DXT1;
             break;
-        case FORMAT_DXT5NM:
-            requestedFormat = FORMAT_DXT5;
-            break;
         default:
             break;
         }
 
-        ImageInfo info = ImageSystem::Instance()->GetImageInfo(fileName);
+        ImageInfo info = ImageSystem::GetImageInfo(fileName);
         TEST_VERIFY(info.format == requestedFormat);
         TEST_VERIFY(info.width == 256);
         TEST_VERIFY(info.height == 256);
