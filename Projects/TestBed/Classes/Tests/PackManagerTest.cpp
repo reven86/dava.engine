@@ -88,7 +88,10 @@ void PackManagerTest::LoadResources()
         throw std::runtime_error("unknown gpu famili");
     }
 
-    urlPacksGpu.replace(urlPacksGpu.find("{gpu}"), 5, gpuName);
+    if (auto startPos = urlPacksGpu.find("{gpu}") != String::npos)
+    {
+        urlPacksGpu.replace(startPos, 5, gpuName);
+    }
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
