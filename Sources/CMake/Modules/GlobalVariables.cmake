@@ -30,6 +30,13 @@ if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
 endif ()
 
+if( TEAMCITY_DEPLOY )
+    set( OUTPUT_TO_BUILD_DIR true )
+    set( IGNORE_FILE_TREE_CHECK true )
+    set( DEBUG_INFO true )
+
+endif()
+
 #constants
 set( DAVA_ANDROID_MAX_LIB_SRC 700 )
 
