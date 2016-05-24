@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "LibraryWidget.h"
 #include "LibraryFileSystemModel.h"
 
@@ -107,7 +78,7 @@ void LibraryWidget::SetupFileTypes()
     sourceFiles.insert(DAVA::TextureDescriptor::GetDescriptorExtension());
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
-        auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
+        auto extensions = DAVA::ImageSystem::GetExtensionsFor(formatType);
         for (auto& ex : extensions)
         {
             sourceFiles.insert(ex.c_str());
@@ -123,7 +94,7 @@ void LibraryWidget::SetupFileTypes()
     DAVA::UnorderedSet<DAVA::String> compressedFiles;
     for (auto formatType : DAVA::TextureDescriptor::compressedTextureTypes)
     {
-        auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(formatType);
+        auto extensions = DAVA::ImageSystem::GetExtensionsFor(formatType);
         for (auto& ex : extensions)
         {
             compressedFiles.insert(ex.c_str());
@@ -158,7 +129,7 @@ void LibraryWidget::SetupFileTypes()
 
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
-        DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::Instance()->GetImageFormatInterface(formatType);
+        DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::GetImageFormatInterface(formatType);
         fileTypeValues.push_back(FileType(QString::fromStdString(formatHelper->Name()), GetExtensions(formatType)));
     }
 }
@@ -166,7 +137,7 @@ void LibraryWidget::SetupFileTypes()
 QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
 {
     QStringList extList;
-    auto extensions = DAVA::ImageSystem::Instance()->GetExtensionsFor(imageFormat);
+    auto extensions = DAVA::ImageSystem::GetExtensionsFor(imageFormat);
     for (auto& ex : extensions)
     {
         extList << QString("*") + ex.c_str();

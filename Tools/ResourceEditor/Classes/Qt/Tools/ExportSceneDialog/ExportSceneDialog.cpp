@@ -44,6 +44,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
+#include <QPushButton>
+
 ExportSceneDialog::ExportSceneDialog(QWidget* parent)
     : QDialog(parent)
 {

@@ -103,7 +103,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 ScopedPtr<File> infile(File::Create(td.path, File::OPEN | File::READ));
                 params.baseMipmap = td.fromMipmap;
                 params.firstMipmapIndex = 0;
-                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, params);
+                eErrorCode loadCode = ImageSystem::LoadWithoutDecompession(infile, imageSet, params);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount;
@@ -128,13 +128,13 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 FilePath savePath(td.path);
                 savePath.ReplaceDirectory(outFolderPathname);
 
-                eErrorCode saveCode = ImageSystem::Instance()->Save(savePath, imageSet, td.format);
+                eErrorCode saveCode = ImageSystem::Save(savePath, imageSet, td.format);
                 TEST_VERIFY(eErrorCode::SUCCESS == saveCode);
 
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet);
+                    eErrorCode loadCode = ImageSystem::LoadWithoutDecompession(infile, reLoadedImageSet);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 
@@ -184,7 +184,7 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 params.baseMipmap = td.fromMipmap;
                 params.firstMipmapIndex = 0;
 
-                eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, imageSet, params);
+                eErrorCode loadCode = ImageSystem::LoadWithoutDecompession(infile, imageSet, params);
                 TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
 
                 bool loaded = imageSet.size() == td.mipmapsCount * Texture::CUBE_FACE_COUNT;
@@ -214,13 +214,13 @@ DAVA_TESTCLASS (LibPVRHelperTest)
                 FilePath savePath(td.path);
                 savePath.ReplaceDirectory(outFolderPathname);
 
-                eErrorCode saveCode = ImageSystem::Instance()->SaveAsCubeMap(savePath, cubeImageSet, td.format);
+                eErrorCode saveCode = ImageSystem::SaveAsCubeMap(savePath, cubeImageSet, td.format);
                 TEST_VERIFY(eErrorCode::SUCCESS == saveCode);
 
                 Vector<Image*> reLoadedImageSet;
                 { // Load saved images
                     ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
-                    eErrorCode loadCode = ImageSystem::Instance()->LoadWithoutDecompession(infile, reLoadedImageSet);
+                    eErrorCode loadCode = ImageSystem::LoadWithoutDecompession(infile, reLoadedImageSet);
                     TEST_VERIFY(eErrorCode::SUCCESS == loadCode);
                 }
 

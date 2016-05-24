@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Render/Image/LibTgaHelper.h"
 
 #include "FileSystem/File.h"
@@ -37,27 +9,15 @@ namespace DAVA
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
-    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_TGA, "TGA")
+    : ImageFormatInterface( ImageFormat::IMAGE_FORMAT_TGA, "TGA", 
+                            { ".tga", ".tpic" }, 
+                            { FORMAT_RGBA8888, FORMAT_RGBA5551, FORMAT_RGBA4444, FORMAT_RGB888,
+                            FORMAT_RGB565, FORMAT_RGBA16161616, FORMAT_RGBA32323232, FORMAT_A8,
+                            FORMAT_A16 })
 {
-    supportedExtensions.emplace_back(".tga");
-    supportedExtensions.emplace_back(".tpic");
-    supportedFormats = { { FORMAT_RGBA8888,
-                           FORMAT_RGBA5551,
-                           FORMAT_RGBA4444,
-                           FORMAT_RGB888,
-                           FORMAT_RGB565,
-                           FORMAT_RGBA16161616,
-                           FORMAT_RGBA32323232,
-                           FORMAT_A8,
-                           FORMAT_A16 } };
 }
 
-bool LibTgaHelper::CanProcessFileInternal(File* infile) const
-{
-    return !(GetImageInfo(infile).IsEmpty());
-}
-
-ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibTgaHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     DVASSERT(infile);
 
@@ -75,6 +35,8 @@ ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
         imageInfo.width = tgaInfo.width;
         imageInfo.dataSize = tgaInfo.width * tgaInfo.height * tgaInfo.bytesPerPixel;
         imageInfo.format = tgaInfo.pixelFormat;
+        imageInfo.mipmapsCount = 1;
+        imageInfo.faceCount = 1;
     }
 
     return imageInfo;
@@ -117,7 +79,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
     return ReadTgaHeader(fileRead, tgaInfo);
 }
 
-DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File* infile, TgaInfo& tgaInfo) const
+DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const ScopedPtr<File>& infile, TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields;
     size_t bytesRead = infile->Read(&fields, static_cast<uint32>(fields.size()));
@@ -209,7 +171,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibTgaHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -313,7 +275,7 @@ PixelFormat LibTgaHelper::DefinePixelFormat(const TgaInfo& tgaInfo) const
         return FORMAT_INVALID;
 }
 
-eErrorCode LibTgaHelper::ReadUncompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadUncompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     auto readSize = infile->Read(image->data, image->dataSize);
     if (readSize != image->dataSize)
@@ -346,7 +308,7 @@ eErrorCode LibTgaHelper::ReadUncompressedTga(File* infile, const TgaInfo& tgaInf
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibTgaHelper::ReadCompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadCompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     uint8 chunkHeader;
     Array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;

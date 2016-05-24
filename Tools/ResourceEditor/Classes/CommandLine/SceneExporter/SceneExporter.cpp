@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 #include "AssetCache/AssetCacheClient.h"
@@ -400,7 +372,7 @@ void CollectSourceImageInfo(const DAVA::TextureDescriptor& descriptor, DAVA::Vec
     sourceImageInfos.reserve(imagePathnames.size());
     for (const FilePath& path : imagePathnames)
     {
-        sourceImageInfos.push_back(DAVA::ImageSystem::Instance()->GetImageInfo(path));
+        sourceImageInfos.push_back(DAVA::ImageSystem::GetImageInfo(path));
     }
 }
 }
@@ -444,7 +416,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                 DAVA::ImageFormat targetFormat = static_cast<DAVA::ImageFormat>(descriptor.compression[gpu].imageFormat);
                 if (exportingParams.useHDTextures && (targetFormat != DAVA::ImageFormat::IMAGE_FORMAT_DDS && targetFormat != IMAGE_FORMAT_PVR))
                 {
-                    Logger::Error("Can't create HD texure for ", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
+                    Logger::Error("Can't create HD texture for ", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
 
                     exportedStatus[gpu] = false;
                     continue;
@@ -565,7 +537,7 @@ bool SceneExporter::SplitHDTexture(const DAVA::TextureDescriptor& descriptor, DA
         }
     };
 
-    DAVA::eErrorCode loadError = DAVA::ImageSystem::Instance()->LoadWithoutDecompession(compressedTexturePath, loadedImages);
+    DAVA::eErrorCode loadError = DAVA::ImageSystem::LoadWithoutDecompession(compressedTexturePath, loadedImages);
     if (loadError != DAVA::eErrorCode::SUCCESS || loadedImages.empty())
     {
         Logger::Error("Can't load %s", compressedTexturePath.GetStringValue().c_str());
@@ -583,7 +555,7 @@ bool SceneExporter::SplitHDTexture(const DAVA::TextureDescriptor& descriptor, DA
 
     auto saveImages = [&](const DAVA::FilePath& path, const DAVA::Vector<DAVA::Image*> images)
     {
-        DAVA::eErrorCode saveError = DAVA::ImageSystem::Instance()->Save(path, images, targetFormat);
+        DAVA::eErrorCode saveError = DAVA::ImageSystem::Save(path, images, targetFormat);
         if (saveError != DAVA::eErrorCode::SUCCESS)
         {
             Logger::Error("Can't save %s", path.GetStringValue().c_str());

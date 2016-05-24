@@ -33,6 +33,7 @@
 #include "Base/Platform.h"
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
+#include "Render/Image/ImageSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <objc/objc.h>

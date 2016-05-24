@@ -1,50 +1,35 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/PixelFormatDescriptor.h"
 
-#include "FileSystem/FileSystem.h"
+#include "Render/Texture.h"
 #include "Logger/Logger.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
 #include "Utils/CRC32.h"
 
 namespace DAVA
 {
+
 LibPVRHelper::LibPVRHelper()
-    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR, "PVR")
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR, "PVR", { ".pvr" },
+    { FORMAT_RGBA8888,
+    FORMAT_RGBA5551,
+    FORMAT_RGBA4444,
+    FORMAT_RGB888,
+    FORMAT_RGB565,
+    FORMAT_A8,
+    FORMAT_A16,
+    FORMAT_PVR2,
+    FORMAT_PVR4,
+    FORMAT_ETC1,
+    })
 {
-    supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::CanProcessFileInternal(File* file) const
+bool LibPVRHelper::CanProcessFileInternal(const ScopedPtr<File>& file) const
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(file, false, false);
     if (pvrFile)
@@ -54,7 +39,7 @@ bool LibPVRHelper::CanProcessFileInternal(File* file) const
     return false;
 }
 
-eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPVRHelper::Load(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     if (PVRFormatHelper::LoadImages(infile, imageSet, loadingParams))
     {
@@ -65,7 +50,7 @@ eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, const Imag
     return eErrorCode::ERROR_READ_FAIL;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     eErrorCode loadResult = Load(infile, imageSet, loadingParams);
     if (eErrorCode::SUCCESS != loadResult || imageSet.empty())
@@ -166,7 +151,7 @@ eErrorCode LibPVRHelper::SaveCubeMap(const FilePath& fileName, const Vector<Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     ImageInfo info;
 
@@ -226,4 +211,23 @@ Image* LibPVRHelper::DecodeToRGBA8888(Image* encodedImage) const
 {
     return PVRFormatHelper::DecodeToRGBA8888(encodedImage);
 }
+
+bool LibPVRHelper::CanCompressAndDecompress(PixelFormat format)
+{
+    // todo: implement direct compress/decompress for pvr formats
+    return false;
+}
+
+bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Decompressing from PVR is not implemented yet");
+    return false;
+}
+
+bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
+    return false;
+}
+
 }

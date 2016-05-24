@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Utils/Utils.h"
@@ -48,6 +20,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif //PLATFORMS
 
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -71,7 +44,7 @@ namespace DAVA
 {
 namespace Validator
 {
-bool IsFormatSupported(PixelFormat format)
+bool IsFormatHardwareSupported(PixelFormat format)
 {
     const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     return formatDescriptor.isHardwareSupported;
@@ -119,31 +92,37 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
     Vector<Image*>& imageSet = *images;
 
     PixelFormat format = imageSet[0]->format;
-    if (IsFormatSupported(format))
+    if (IsFormatHardwareSupported(format))
     {
         return true;
     }
-
-    if (format == FORMAT_RGB888)
+    else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
     {
-        const uint32 count = static_cast<uint32>(imageSet.size());
-        for (uint32 i = 0; i < count; ++i)
+        for (Image*& image : imageSet)
         {
-            Image* image = imageSet[i];
             Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-            ImageConvert::ConvertImageDirect(image, newImage);
+            bool converted = ImageConvert::ConvertImage(image, newImage);
+            if (converted)
+            {
+                newImage->mipmapLevel = image->mipmapLevel;
+                newImage->cubeFaceID = image->cubeFaceID;
 
-            newImage->mipmapLevel = image->mipmapLevel;
-            newImage->cubeFaceID = image->cubeFaceID;
-
-            imageSet[i] = newImage;
-            image->Release();
+                image->Release();
+                image = newImage;
+            }
+            else
+            {
+                SafeRelease(newImage);
+                return false;
+            }
         }
 
         return true;
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 }
 
@@ -475,7 +454,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, params);
+            ImageSystem::Load(currentfacePath, faceImage, params);
             if (faceImage.empty())
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -525,15 +504,15 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 params.baseMipmap = 0;
                 params.firstMipmapIndex = static_cast<uint32>(images->size());
 
-                ImageSystem::Instance()->Load(imagePathnames[i], *images, params);
+                ImageSystem::Load(imagePathnames[i], *images, params);
             }
 
             params.baseMipmap = Max((int32)baseMipMap - (int32)singleMipCount, 0);
             params.firstMipmapIndex = static_cast<uint32>(images->size());
-            ImageSystem::Instance()->Load(imagePathnames[singleMipCount], *images, params);
+            ImageSystem::Load(imagePathnames[singleMipCount], *images, params);
         }
 
-        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
+        ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
             Image* img = *images->begin();
@@ -1144,7 +1123,7 @@ void Texture::SetPixelization(bool value)
     //RHI_COMPLETE
 }
 
-int32 Texture::GetBaseMipMap() const
+uint32 Texture::GetBaseMipMap() const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1153,7 +1132,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality* curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if (nullptr != curTxQuality)
         {
-            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
+            return static_cast<uint32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

@@ -35,7 +35,7 @@ CMake projects
 
 -   Visual Studio 12 (2013)
 
--   Qt 5.4.2 (для сборки редакторов )
+-   Qt 5.6 (для сборки редакторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
@@ -69,7 +69,7 @@ CMake projects
 
 -   Eclipse + ADT Plugin
 
--   Qt 5.4.2 (для сборки редакторов )
+-   Qt 5.6 (для сборки редакторов )
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
@@ -97,27 +97,27 @@ CMake можно скачать на сайте - <http://www.cmake.org/downloa
 
 Qt 5 можно установить через online installer (рекомендуется):
 
--   Ссылка для [Windows](http://download.qt.io/archive/qt/5.4/5.4.2/qt-opensource-windows-x86-msvc2013-5.4.2.exe)
+-   Ссылка для [Windows](http://download.qt.io/archive/qt/5.6/5.6.0/qt-opensource-windows-x86-msvc2013_64-5.6.0.exe)
 
--   Ссылка для [OS X](http://download.qt.io/archive/qt/5.4/5.4.2/qt-opensource-mac-x64-clang-5.4.2.dmg)
+-   Ссылка для [OS X](http://download.qt.io/archive/qt/5.6/5.6.0/qt-opensource-mac-x64-clang-5.6.0.dmg)
 
 Для установки под Windows нужно выбрать следующие компоненты:
 
--   Qt - Qt 5.4 - **msvc2013 64-bit** 
+-   Qt - Qt 5.6 - **msvc2013 64-bit** 
 
--   Qt - Qt 5.4 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
+-   Qt - Qt 5.6 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
 
 Для установки под OS X нужно выбрать следующие компоненты:
 
--   Qt - Qt 5.4 - **clang 64-bit **
+-   Qt - Qt 5.6 - **clang 64-bit **
 
--   Qt - Qt 5.4 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
+-   Qt - Qt 5.6 - **Source Components** (выбрать всё, если в планы воходит дебаг Qt)
 
  
 
 Так же рекомендуется установить под Windows: [Qt Visual Studio Add-in](http://download.qt-project.org/official_releases/vsaddin/qt-vs-addin-1.2.4-opensource.exe). Он позволяет при отладке просматривать содержимое Qt-шных типов данных (строки, контейнеры и т.п.).
 
-После его установки нужно открыть Visual Studio, зайти в меню Qt5 -&gt; Qt Options и добавить туда путь к установленному Qt. Например: c:\\Qt\\5.4\\msvc2013
+После его установки нужно открыть Visual Studio, зайти в меню Qt5 -&gt; Qt Options и добавить туда путь к установленному Qt. Например: c:\\Qt\\5.6\\msvc2013\_64
 
 ### Настройка проекта
 
@@ -127,11 +127,11 @@ Qt 5 можно установить через online installer (рекомен
 
  
 
-> QT5\_PATH\_WIN = c:\\Qt\\5.4\\msvc2013 
+> QT5\_PATH\_WIN = c:\\Qt\\5.6\\msvc2013
 >
-> QT5\_PATH\_WIN64 = c:\\Qt\\5.4\\msvc2013\_64\_opengl
+> QT5\_PATH\_WIN64 = c:\\Qt\\5.6\\msvc2013\_64\_opengl
 >
-> QT5\_PATH\_MAC = $ENV{HOME}/Qt/5.4/clang\_64
+> QT5\_PATH\_MAC = $ENV{HOME}/Qt/5.6/clang\_64
 >
 > ANDROID\_ANT  = d:\\apache-ant-1.9.4  
 > ANDROID\_NDK  = d:\\android-ndk-r10

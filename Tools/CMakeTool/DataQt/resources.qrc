@@ -4,6 +4,8 @@
         <file>Icons/ok.png</file>
         <file>Icons/openfolder.png</file>
         <file>Icons/run.png</file>
+        <file>Icons/stop.png</file>
+        <file>Icons/build.png</file>
         <file>main.qml</file>
         <file>UIComponents/ComboBoxBuilds.qml</file>
         <file>UIComponents/RowLayoutPath.qml</file>

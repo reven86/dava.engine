@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 
 #include "mainwindow.h"
@@ -772,7 +743,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
     QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
-    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(toggled(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
+    QObject::connect(ui->actionEnableVisibilitySystem, SIGNAL(triggered(bool)), this, SLOT(OnEnableVisibilitySystemToggle(bool)));
 
     QObject::connect(ui->actionRefreshVisibilitySystem, SIGNAL(triggered()), this, SLOT(OnRefreshVisibilitySystem()));
     QObject::connect(ui->actionFixCurrentFrame, SIGNAL(triggered()), this, SLOT(OnFixVisibilityFrame()));
@@ -1469,11 +1440,9 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
-    DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
-    if (enabled)
+    if (SetVisibilityToolEnabledIfPossible(enabled))
     {
-        ui->actionForceFirstLODonLandscape->setChecked(true);
-        OnForceFirstLod(true);
+        SetLandscapeInstancingEnabled(false);
     }
 }
 
@@ -1556,7 +1525,7 @@ void QtMainWindow::OnPivotCenterMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->selectionSystem->SetPivotPoint(ST_PIVOT_ENTITY_CENTER);
+        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::ObjectCenter);
         LoadModificationState(scene);
     }
 }
@@ -1566,7 +1535,7 @@ void QtMainWindow::OnPivotCommonMode()
     SceneEditor2* scene = GetCurrentScene();
     if (nullptr != scene)
     {
-        scene->selectionSystem->SetPivotPoint(ST_PIVOT_COMMON_CENTER);
+        scene->selectionSystem->SetPivotPoint(Selectable::TransformPivot::CommonCenter);
         LoadModificationState(scene);
     }
 }
@@ -1961,7 +1930,7 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         }
 
         // pivot point
-        if (scene->selectionSystem->GetPivotPoint() == ST_PIVOT_ENTITY_CENTER)
+        if (scene->selectionSystem->GetPivotPoint() == Selectable::TransformPivot::ObjectCenter)
         {
             ui->actionPivotCenter->setChecked(true);
             ui->actionPivotCommon->setChecked(false);
@@ -2296,35 +2265,41 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 
     UpdateConflictingActionsState(tools == 0);
 
-    bool shouldEnableFirstLod = false;
+    bool anyEditorEnabled = false;
     if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
     {
         ui->actionCustomColorsEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
     {
         ui->actionHeightMapEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_RULER)
     {
         ui->actionRulerTool->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR)
     {
         ui->actionTileMapEditor->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
     if (tools & SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
     {
         ui->actionShowNotPassableLandscape->setChecked(true);
-        shouldEnableFirstLod = true;
+        anyEditorEnabled = true;
     }
 
-    ui->actionForceFirstLODonLandscape->setChecked(shouldEnableFirstLod);
-    OnForceFirstLod(shouldEnableFirstLod);
+    if (anyEditorEnabled)
+    {
+        SetVisibilityToolEnabledIfPossible(false);
+    }
+    SetLandscapeInstancingEnabled(anyEditorEnabled);
+
+    ui->actionForceFirstLODonLandscape->setChecked(anyEditorEnabled);
+    OnForceFirstLod(anyEditorEnabled);
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -2736,6 +2711,9 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
 
 bool QtMainWindow::ShouldClose(QCloseEvent* e)
 {
+    if (spritesPacker->IsRunning())
+        return false;
+
     if (IsAnySceneChanged() == false)
         return true;
 
@@ -3202,4 +3180,38 @@ void QtMainWindow::RestartParticleEffects()
 void QtMainWindow::RemoveSelection()
 {
     ::RemoveSelection(GetCurrentScene());
+}
+
+bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
+{
+    SceneEditor2* scene = GetCurrentScene();
+    DAVA::int32 enabledTools = scene->GetEnabledTools();
+    if (enabled && (enabledTools != 0))
+    {
+        ShowErrorDialog("Please disable Landscape editing tools before enabling Visibility Check System");
+        enabled = false;
+    }
+
+    DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM, enabled);
+
+    if (enabled)
+    {
+        ui->actionForceFirstLODonLandscape->setChecked(true);
+        OnForceFirstLod(true);
+    }
+
+    ui->actionEnableVisibilitySystem->setChecked(enabled);
+    return enabled;
+}
+
+void QtMainWindow::SetLandscapeInstancingEnabled(bool enabled)
+{
+    DAVA::Landscape* landscape = FindLandscape(GetCurrentScene());
+
+    if (landscape == nullptr)
+        return;
+
+    landscape->SetRenderMode(enabled ?
+                             DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
+                             DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING);
 }
