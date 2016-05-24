@@ -150,14 +150,16 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         MTL_TRACE("--- next-frame");
         FrameMetal_t f;
 
-        f.drawable = [_Metal_Layer nextDrawable];
-        [f.drawable retain];
-        MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
-        [f.drawable retain]; // this is workaround, see Present()
-        _Metal_DefFrameBuf = f.drawable.texture;
+        @autoreleasepool
+        {
+            f.drawable = [_Metal_Layer nextDrawable];
+            [f.drawable retain];
+            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
+            _Metal_DefFrameBuf = f.drawable.texture;
 
-        _Metal_Frame.push_back(f);
-        _Metal_NewFramePending = false;
+            _Metal_Frame.push_back(f);
+            _Metal_NewFramePending = false;
+        }
     }
 
     if (!_Metal_Frame.back().drawable)
@@ -891,9 +893,6 @@ metal_Present(Handle syncObject)
         do_discard = true;
     _Metal_ScreenshotCallbackSync.Unlock();
 
-    if ([_Metal_Frame.back().drawable retainCount] < 3)
-        do_discard = true; // this is workaroud against drawable/cmd.buf being de-allocated in certain cases
-
     if (do_discard)
     {
         MTL_TRACE("  discard-frame %u", ++frame_n);
@@ -1105,8 +1104,8 @@ metal_Present(Handle syncObject)
             CommandBufferPool::Free(cbh);
         }
 
-        rp->desc.colorAttachments[0].texture = nil;
-        rp->desc.depthAttachment.texture = nil;
+        //        rp->desc.colorAttachments[0].texture = nil;
+        //        rp->desc.depthAttachment.texture = nil;
         rp->desc = nullptr;
 
         [rp->blit_encoder endEncoding];
@@ -1131,11 +1130,12 @@ metal_Present(Handle syncObject)
     ConstBufferMetal::InvalidateAllInstances();
     ConstBufferMetal::ResetRingBuffer();
 
-    [_Metal_Frame.back().drawable release]; // this additional 'release' is due to workaround
     [_Metal_Frame.back().drawable release];
     _Metal_Frame.back().drawable = nil;
     _Metal_NewFramePending = true;
     _Metal_Frame.clear();
+
+    _Metal_DefFrameBuf = nil;
 }
 
 namespace CommandBufferMetal
