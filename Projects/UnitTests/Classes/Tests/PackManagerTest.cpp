@@ -127,7 +127,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
-            if (pack.state != PackManager::Pack::Status::ErrorLoading)
+            if (pack.state != PackManager::Pack::Status::OtherError)
             {
                 TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
 
