@@ -34,20 +34,7 @@
 #include <Core/Core.h>
 #include <Platform/DeviceInfo.h>
 
-#include <cstdlib>
-
 #include "UnitTests/UnitTests.h"
-
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-
-void doProcess(const char* commandLine)
-{
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    std::system(commandLine);
-#else
-    throw std::runtime_error("this test need to start Python local HTTP server it works only on Win32 and MacOs");
-#endif
-}
 
 class GameClient
 {
@@ -95,8 +82,8 @@ DAVA_TESTCLASS (PackManagerTest)
         FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
         FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-        String commonPacksUrl("http://127.0.0.1:2424/packs/common/");
-        String gpuPacksUrl("http://127.0.0.1:2424/packs/{gpu}");
+        String commonPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/common/");
+        String gpuPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/{gpu}/");
 
         String gpuName = "noname";
 
@@ -130,8 +117,6 @@ DAVA_TESTCLASS (PackManagerTest)
 
         FilePath sqliteDbFile(dbFile);
 
-        doProcess("python scripts/start_local_http_server.py");
-
         PackManager& packManager = Core::Instance()->GetPackManager();
         packManager.Initialize(sqliteDbFile,
                                folderWithDownloadedPacks,
@@ -154,7 +139,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 TEST_VERIFY(pack.state == PackManager::Pack::Status::Downloading || pack.state == PackManager::Pack::Status::Requested);
             }
 
-            uint32 maxIter = 30;
+            uint32 maxIter = 60;
 
             while ((pack.state == PackManager::Pack::Status::Requested || pack.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
@@ -184,9 +169,5 @@ DAVA_TESTCLASS (PackManagerTest)
             Logger::Error("%s", ex.what());
             TEST_VERIFY(false);
         }
-
-        doProcess("python scripts/stop_local_http_server.py");
     }
 };
-
-#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
