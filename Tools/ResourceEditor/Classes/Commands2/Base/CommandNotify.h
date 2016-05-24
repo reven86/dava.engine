@@ -1,5 +1,4 @@
-#ifndef __COMMAND_NOTIFY_H__
-#define __COMMAND_NOTIFY_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -38,6 +37,3 @@ inline CommandNotify* CommandNotifyProvider::GetNotify() const
 {
     return curNotify;
 }
-
-
-#endif // __COMMAND_NOTIFY_H__

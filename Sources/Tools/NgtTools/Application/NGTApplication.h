@@ -1,5 +1,4 @@
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#pragma once
 
 #include "NGTCmdLineParser.h"
 
@@ -38,5 +37,3 @@ private:
     NGTCmdLineParser commandLineParser;
 };
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTAPPLICATION_H__

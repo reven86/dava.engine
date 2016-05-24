@@ -1,5 +1,4 @@
-#ifndef __COMMAND2_H__
-#define __COMMAND2_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Scene3D/Entity.h"
@@ -71,5 +70,3 @@ inline bool Command2::IsModifying() const
 {
     return true;
 }
-
-#endif // __COMMAND2_H__

@@ -1,5 +1,4 @@
-#ifndef __QTTOOLS_NGTCOLLECTIONSIMPL_H__
-#define __QTTOOLS_NGTCOLLECTIONSIMPL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -78,5 +77,3 @@ private:
 };
 
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTCOLLECTIONSIMPL_H__

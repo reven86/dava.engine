@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITOR_PROPERTYPANEL_H__
-#define __RESOURCEEDITOR_PROPERTYPANEL_H__
+#pragma once
 
 #include "core_ui_framework/i_view.hpp"
 #include "core_ui_framework/i_ui_framework.hpp"
@@ -48,5 +47,3 @@ private:
     bool isSelectionDirty = false;
     DAVA::InspBase* selectedObject = nullptr;
 };
-
-#endif // __RESOURCEEDITOR_PROPERTYPANEL_H__
