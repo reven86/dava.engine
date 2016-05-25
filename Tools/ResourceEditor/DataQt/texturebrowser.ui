@@ -20,7 +20,7 @@
    <string>Texture Converter</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="QtIcons.qrc">
+   <iconset resource="Resources.qrc">
     <normaloff>:/QtIcons/textureeditor.png</normaloff>:/QtIcons/textureeditor.png</iconset>
   </property>
   <property name="statusTip">
@@ -36,7 +36,16 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>3</number>
+   </property>
+   <property name="topMargin">
+    <number>3</number>
+   </property>
+   <property name="rightMargin">
+    <number>3</number>
+   </property>
+   <property name="bottomMargin">
     <number>3</number>
    </property>
    <item>
@@ -67,7 +76,16 @@
        <property name="spacing">
         <number>1</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
         <number>2</number>
        </property>
        <item>
@@ -105,7 +123,16 @@
           <property name="spacing">
            <number>3</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -145,7 +172,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="QtIcons.qrc">
+             <iconset resource="Resources.qrc">
               <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
             </property>
             <property name="autoRaise">
@@ -163,6 +190,15 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <property name="verticalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
          </property>
         </widget>
        </item>
@@ -183,7 +219,16 @@
        <property name="spacing">
         <number>5</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -251,7 +296,16 @@
           <property name="spacing">
            <number>1</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <property name="bottomMargin">
            <number>5</number>
           </property>
           <item>
@@ -289,7 +343,16 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_3" columnstretch="1,1">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <property name="spacing">
@@ -609,7 +672,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/red.png</normaloff>:/QtIconsTextureDialog/red.png</iconset>
    </property>
    <property name="text">
@@ -627,7 +690,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/green.png</normaloff>:/QtIconsTextureDialog/green.png</iconset>
    </property>
    <property name="text">
@@ -645,7 +708,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/blue.png</normaloff>:/QtIconsTextureDialog/blue.png</iconset>
    </property>
    <property name="text">
@@ -663,7 +726,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/alpha.png</normaloff>:/QtIconsTextureDialog/alpha.png</iconset>
    </property>
    <property name="text">
@@ -678,7 +741,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/view_pictures.png</normaloff>:/QtIconsTextureDialog/view_pictures.png</iconset>
    </property>
    <property name="text">
@@ -693,7 +756,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/view_list.png</normaloff>:/QtIconsTextureDialog/view_list.png</iconset>
    </property>
    <property name="text">
@@ -708,7 +771,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/border.png</normaloff>:/QtIconsTextureDialog/border.png</iconset>
    </property>
    <property name="text">
@@ -723,7 +786,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/opacity.png</normaloff>:/QtIconsTextureDialog/opacity.png</iconset>
    </property>
    <property name="text">
@@ -735,7 +798,7 @@
   </action>
   <action name="actionZoom100">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/zoom_100.png</normaloff>:/QtIconsTextureDialog/zoom_100.png</iconset>
    </property>
    <property name="text">
@@ -747,7 +810,7 @@
   </action>
   <action name="actionZoomFit">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/zoom_fit.png</normaloff>:/QtIconsTextureDialog/zoom_fit.png</iconset>
    </property>
    <property name="text">
@@ -762,7 +825,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/filter.png</normaloff>:/QtIconsTextureDialog/filter.png</iconset>
    </property>
    <property name="text">
@@ -774,7 +837,7 @@
   </action>
   <action name="actionConvert">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
@@ -786,7 +849,7 @@
   </action>
   <action name="actionConvertAll">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/convertall.png</normaloff>:/QtIconsTextureDialog/convertall.png</iconset>
    </property>
    <property name="text">
@@ -798,7 +861,7 @@
   </action>
   <action name="actionConvertModified">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/convertModified.png</normaloff>:/QtIconsTextureDialog/convertModified.png</iconset>
    </property>
    <property name="text">
@@ -810,7 +873,7 @@
   </action>
   <action name="actionConvertForAllGPU">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/convertallgpu.png</normaloff>:/QtIconsTextureDialog/convertallgpu.png</iconset>
    </property>
    <property name="text">
@@ -852,7 +915,7 @@
   <tabstop>clearFilterButton</tabstop>
  </tabstops>
  <resources>
-  <include location="QtIcons.qrc"/>
+  <include location="Resources.qrc"/>
  </resources>
  <connections/>
 </ui>
