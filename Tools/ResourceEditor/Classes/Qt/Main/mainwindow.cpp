@@ -545,6 +545,7 @@ void QtMainWindow::SetupThemeActions()
         if (action->isChecked())
         {
             Themes::SetCurrentTheme(action->text());
+            SceneSignals::Instance()->ThemeChanged();
         }
     });
 }
@@ -650,7 +651,7 @@ void QtMainWindow::SetupStatusBar()
 
     auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
     {
-        auto* statusBtn = new QToolButton();
+        QToolButton* statusBtn = new QToolButton();
         statusBtn->setDefaultAction(action);
         statusBtn->setAutoRaise(true);
         statusBtn->setMaximumSize(QSize(16, 16));

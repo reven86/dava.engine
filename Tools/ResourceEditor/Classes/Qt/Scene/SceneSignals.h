@@ -15,6 +15,8 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
     Q_OBJECT
 
 signals:
+    void ThemeChanged();
+
     // scene
     void Opened(SceneEditor2* scene);
     void Loaded(SceneEditor2* scene);

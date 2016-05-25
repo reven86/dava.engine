@@ -3,5 +3,8 @@
         <file>Icons/wand.png</file>
         <file>Icons/reset.png</file>
         <file>Icons/clear.png</file>
+        <file>Icons/close.png</file>
+        <file>Icons/checked-checkbox.png</file>
+        <file>Icons/unchecked-checkbox.png</file>
     </qresource>
 </RCC>
