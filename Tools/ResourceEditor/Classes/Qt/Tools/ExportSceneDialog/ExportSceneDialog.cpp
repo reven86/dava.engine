@@ -142,7 +142,7 @@ void ExportSceneDialog::SetupUI()
         QPushButton* exportButton = new QPushButton("Export", this);
         exportButton->setMinimumSize(UI_WIDTH, UI_HEIGHT);
         exportButton->setFixedHeight(UI_HEIGHT);
-        connect(exportButton, &QPushButton::clicked, this, &ExportSceneDialog::accept);
+        connect(exportButton, &QPushButton::clicked, this, &QDialog::accept);
 
         dialogLayout->addWidget(cancelButton, 2, 0);
         dialogLayout->addWidget(exportButton, 2, 1);
@@ -166,11 +166,6 @@ void ExportSceneDialog::InitializeValues()
     qualitySelector->setCurrentIndex(quality.AsInt32());
     optimizeOnExport->setCheckState(Qt::Checked);
     useHDtextures->setCheckState(Qt::Unchecked);
-}
-
-void ExportSceneDialog::accept()
-{
-    QDialog::accept();
 }
 
 DAVA::FilePath ExportSceneDialog::GetDataFolder() const

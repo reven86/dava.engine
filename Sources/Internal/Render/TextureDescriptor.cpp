@@ -176,12 +176,12 @@ bool TextureDescriptor::TextureDataSettings::GetIsNormalMap() const
 
 void TextureDescriptor::TextureDataSettings::SetSeparateHDTextures(bool separateHDTextures)
 {
-    EnableFlag(separateHDTextures, FLAG_HAS_SEPARATE_HD_MIP);
+    EnableFlag(separateHDTextures, FLAG_HAS_SEPARATE_HD_FILE);
 }
 
 bool TextureDescriptor::TextureDataSettings::GetSeparateHDTextures() const
 {
-    return IsFlagEnabled(FLAG_HAS_SEPARATE_HD_MIP);
+    return IsFlagEnabled(FLAG_HAS_SEPARATE_HD_FILE);
 }
 
 void TextureDescriptor::TextureDataSettings::EnableFlag(bool enable, int8 flag)
@@ -914,7 +914,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return 0;
 #else
         LibPVRHelper helper;
-        uint32 convertedCRC = helper.GetCRCFromFile(filePath);
+        uint32 convertedCRC = helper.GetCRCFromMetaData(filePath);
         if (convertedCRC != 0)
         {
             convertedCRC += GenerateDescriptorCRC(forGPU);
@@ -925,7 +925,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     else if (imageFormat == IMAGE_FORMAT_DDS)
     {
         LibDdsHelper helper;
-        uint32 convertedCRC = helper.GetCRCFromFile(filePath);
+        uint32 convertedCRC = helper.GetCRCFromMetaData(filePath);
         if (convertedCRC != 0)
         {
             convertedCRC += GenerateDescriptorCRC(forGPU);
@@ -960,7 +960,7 @@ Vector<FilePath> TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily g
     if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
     {
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
-        if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_MIP)
+        if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE)
         {
             pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
         }

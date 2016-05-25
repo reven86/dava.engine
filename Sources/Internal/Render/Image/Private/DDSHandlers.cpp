@@ -1,4 +1,4 @@
-#include "Render/Image/DDS/DDSHandlers.h"
+#include "Render/Image/Private/DDSHandlers.h"
 
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -1060,7 +1060,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
         return false;
     }
 
-    ImageSystem::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1) };
+    ImageSystem::LoadingParams ddsLoadingParams = { info.width, info.height, Min(loadingParams.baseMipmap, info.mipmapsCount - 1), loadingParams.firstMipmapIndex };
     uint32 baseMipMap = ImageSystem::GetBaseMipmap(ddsLoadingParams, loadingParams);
 
     const bool d3dUsed = fileStoresTextureInD3DFormat;
@@ -1121,7 +1121,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
                 Memcpy(fetchedImage->data, dataBuffer.data(), fetchedImage->dataSize);
             }
 
-            fetchedImage->mipmapLevel = mip - baseMipMap;
+            fetchedImage->mipmapLevel = mip - baseMipMap + ddsLoadingParams.firstMipmapIndex;
             fetchedImage->cubeFaceID = faceId;
 
             images.push_back(fetchedImage);

@@ -28,7 +28,7 @@ struct LoadingParams
     uint32 firstMipmapIndex = 0;
 };
 
-Image* LoadSingleMip(const FilePath& pathname, uint32 mip);
+Image* LoadSingleMip(const FilePath& pathname, uint32 mip = 0);
 
 eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 eErrorCode LoadWithoutDecompession(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());

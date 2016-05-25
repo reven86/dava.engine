@@ -1,8 +1,8 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/Image.h"
-#include "Render/Image/DDS/NvttHelper.h"
-#include "Render/Image/DDS/QualcommHelper.h"
-#include "Render/Image/DDS/DDSHandlers.h"
+#include "Render/Image/Private/NvttHelper.h"
+#include "Render/Image/Private/QualcommHelper.h"
+#include "Render/Image/Private/DDSHandlers.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Render/Texture.h"
@@ -29,9 +29,7 @@ LibDdsHelper::LibDdsHelper()
 
 bool LibDdsHelper::CanProcessFileInternal(const ScopedPtr<File>& infile) const
 {
-    DVASSERT(infile);
     std::unique_ptr<DDSReader> reader = DDSReader::CreateReader(infile);
-    infile->Seek(0, File::SEEK_FROM_START);
     return (reader.get() != nullptr);
 }
 
@@ -140,7 +138,7 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     }
 }
 
-uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
+uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname) const
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
     if (!ddsFile)
@@ -152,22 +150,18 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(ddsFile));
     if (reader)
     {
-        uint32 crc;
+        uint32 crc = 0;
         if (reader->GetCRC(crc))
         {
             return crc;
-        }
-        else
-        {
-            reader.reset();
-            return CRC32::ForFile(filePathname);
         }
     }
     else
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] %s is not a DDS file", filePathname.GetStringValue().c_str());
-        return false;
     }
+
+    return 0;
 }
 
 bool LibDdsHelper::CanCompressAndDecompress(PixelFormat format)

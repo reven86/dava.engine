@@ -87,15 +87,13 @@ void ImageSplitterDialog::PathSelected(const QString& path)
     SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(defaultPath.GetAbsolutePathname()));
 
     DAVA::FilePath imagePath(path.toStdString());
-    DAVA::Image* image = CreateTopLevelImage(imagePath);
-    if (NULL != image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(imagePath));
+    if (image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
     {
         lastSelectedFile = imagePath.GetAbsolutePathname();
         SetAcceptableImageSize(DAVA::Vector2(image->GetWidth(), image->GetHeight()));
 
         Channels channels = ImageTools::CreateSplittedImages(image);
-        DAVA::SafeRelease(image);
-
         ui->redImgLbl->SetImage(channels.red);
         ui->greenImgLbl->SetImage(channels.green);
         ui->blueImgLbl->SetImage(channels.blue);
@@ -107,7 +105,7 @@ void ImageSplitterDialog::PathSelected(const QString& path)
     {
         ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
         ui->path->SetPath(QString());
-        if (NULL == image)
+        if (!image)
         {
             QMessageBox::warning(this, "File error", "Couldn't load image.", QMessageBox::Ok);
         }
@@ -123,7 +121,7 @@ void ImageSplitterDialog::ImageAreaChanged()
     ImageArea* sender = dynamic_cast<ImageArea*>(QObject::sender());
     DAVA::Image* image = sender->GetImage();
     DAVA::Vector2 senderImageSize;
-    if (image != NULL)
+    if (image != nullptr)
     {
         senderImageSize.Set(image->GetWidth(), image->GetHeight());
     }

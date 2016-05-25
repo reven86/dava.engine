@@ -32,7 +32,7 @@ LandscapeProxy::LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node)
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
     landscape->PrepareMaterial(landscapeEditorMaterial);
 
-    DAVA::ScopedPtr<DAVA::Texture> texture(Create3DTextureFromPng("~res:/LandscapeEditor/Tools/cursor/cursor.png"));
+    DAVA::ScopedPtr<DAVA::Texture> texture(CreateTextureFromPng("~res:/LandscapeEditor/Tools/cursor/cursor.png"));
     texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
     landscapeEditorMaterial->AddTexture(LANDSCAPE_TEXTURE_CURSOR, texture);

@@ -1,5 +1,5 @@
-#include "Render/Image/DDS/QualcommHelper.h"
-#include "Render/Image/DDS/NvttHelper.h"
+#include "Render/Image/Private/QualcommHelper.h"
+#include "Render/Image/Private/NvttHelper.h"
 #include "Render/Image/Image.h"
 #include "Render/PixelFormatDescriptor.h"
 

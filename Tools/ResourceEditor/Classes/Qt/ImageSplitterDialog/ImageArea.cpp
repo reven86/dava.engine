@@ -45,10 +45,10 @@ void ImageArea::dragEnterEvent(QDragEnterEvent* event)
     {
         return;
     }
-    DAVA::Image* image = CreateTopLevelImage(mimeData->urls().first().toLocalFile().toStdString());
-    if (NULL != image)
+
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(mimeData->urls().first().toLocalFile().toStdString()));
+    if (image)
     {
-        DAVA::SafeRelease(image);
         event->acceptProposedAction();
     }
 }
@@ -117,25 +117,23 @@ void ImageArea::SetImage(DAVA::Image* selectedImage)
 
 void ImageArea::SetImage(const DAVA::FilePath& filePath)
 {
-    DAVA::Image* selectedImage = CreateTopLevelImage(filePath);
-    if (NULL == selectedImage)
+    DAVA::ImageInfo imageInfo = DAVA::ImageSystem::GetImageInfo(filePath);
+    if (imageInfo.IsEmpty())
     {
-        QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
+        QMessageBox::warning(this, "File error", "Can't load image.", QMessageBox::Ok);
         return;
     }
 
-    if ((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
+    if ((DAVA::FORMAT_INVALID == requestedFormat) || (imageInfo.format == requestedFormat))
     {
         const DAVA::FilePath path = filePath;
         SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
         imagePath = filePath;
-        SetImage(selectedImage);
     }
     else
     {
         QMessageBox::warning(this, "Format error", QString("Selected image must be in %1 format.").arg(DAVA::PixelFormatDescriptor::GetPixelFormatString(requestedFormat)), QMessageBox::Ok);
     }
-    DAVA::SafeRelease(selectedImage);
 }
 
 void ImageArea::ClearArea()

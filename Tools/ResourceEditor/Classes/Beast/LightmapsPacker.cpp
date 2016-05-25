@@ -62,13 +62,11 @@ DAVA::Vector2 LightmapsPacker::GetTextureSize(const DAVA::FilePath& filePath)
 
     DAVA::FilePath sourceTexturePathname = DAVA::FilePath::CreateWithNewExtension(filePath, DAVA::TextureDescriptor::GetLightmapTextureExtension());
 
-    DAVA::Image* image = CreateTopLevelImage(sourceTexturePathname);
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(sourceTexturePathname));
     if (image)
     {
         ret.x = static_cast<DAVA::float32>(image->GetWidth());
         ret.y = static_cast<DAVA::float32>(image->GetHeight());
-
-        SafeRelease(image);
     }
 
     return ret;

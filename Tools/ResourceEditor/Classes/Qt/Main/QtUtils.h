@@ -1,5 +1,4 @@
-#ifndef __QT_UTILS_H__
-#define __QT_UTILS_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include <QString>
@@ -16,8 +15,6 @@ void ShowActionWithText(QToolBar* toolbar, QAction* action, bool showText);
 
 DAVA::WideString SizeInBytesToWideString(DAVA::float32 size);
 DAVA::String SizeInBytesToString(DAVA::float32 size);
-
-DAVA::Image* CreateTopLevelImage(const DAVA::FilePath& imagePathname);
 
 void ShowErrorDialog(const DAVA::Set<DAVA::String>& errors, const DAVA::String& title = "");
 void ShowErrorDialog(const DAVA::String& errorMessage, const DAVA::String& title = "Error");
@@ -52,7 +49,5 @@ void SaveSpriteToFile(DAVA::Sprite* sprite, const DAVA::FilePath& path);
 void SaveTextureToFile(DAVA::Texture* texture, const DAVA::FilePath& path);
 void SaveImageToFile(DAVA::Image* image, const DAVA::FilePath& path);
 
-DAVA::Texture* Create3DTextureFromPng(const DAVA::FilePath& pngPathname);
+DAVA::Texture* CreateTextureFromPng(const DAVA::FilePath& pngPathname);
 
-
-#endif // __QT_UTILS_H__

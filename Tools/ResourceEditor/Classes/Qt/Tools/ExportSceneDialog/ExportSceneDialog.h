@@ -23,9 +23,6 @@ public:
     bool GetOptimizeOnExport() const;
     bool GetUseHDTextures() const;
 
-public Q_SLOTS:
-    void accept() override;
-
 private:
     void SetupUI();
     void InitializeValues();

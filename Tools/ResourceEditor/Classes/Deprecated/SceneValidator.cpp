@@ -558,7 +558,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
         DAVA::ScopedPtr<DAVA::Heightmap> heightmap(new DAVA::Heightmap());
         if (isSourceTexture)
         {
-            DAVA::ScopedPtr<DAVA::Image> image(CreateTopLevelImage(pathForValidation));
+            DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(pathForValidation));
             pathIsCorrect = heightmap->BuildFromImage(image);
         }
         else

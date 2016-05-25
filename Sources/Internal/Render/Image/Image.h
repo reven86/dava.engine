@@ -34,12 +34,6 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    bool operator==(const ImageInfo& another) const
-    {
-        return (width == another.width && height == another.height && format == another.format
-                && dataSize == another.dataSize && mipmapsCount == another.mipmapsCount);
-    }
-
     uint32 width = 0;
     uint32 height = 0;
     PixelFormat format = PixelFormat::FORMAT_INVALID;

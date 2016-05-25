@@ -52,7 +52,6 @@
 
 namespace DAVA
 {
-#pragma pack(push, 4)
 struct PVRHeaderV3
 {
     uint32 u32Version = PVRTEX3_IDENT; //Version of the file header, used to identify it.
@@ -68,9 +67,8 @@ struct PVRHeaderV3
     uint32 u32MIPMapCount = 1; //Number of MIP Maps in the texture - NB: Includes top level.
     uint32 u32MetaDataSize = 0; //Size of the accompanying meta data.
 };
-#pragma pack(pop)
 
-class PVRFile
+class PVRFile final
 {
 public:
     static const uint32 HEADER_SIZE = 52;
@@ -78,10 +76,7 @@ public:
 
     PVRHeaderV3 header;
     Vector<MetaDataBlock*> metaDatablocks;
-    Vector<uint8> metaData;
-
-    uint32 compressedDataSize = 0;
-    uint8* compressedData = nullptr;
+    Vector<uint8> compressedData;
 };
 
 class File;

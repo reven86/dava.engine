@@ -182,7 +182,7 @@ void CustomColorsSystem::UpdateToolImage(bool force)
 
 void CustomColorsSystem::CreateToolImage(const DAVA::FilePath& filePath)
 {
-    DAVA::Texture* toolTexture = Create3DTextureFromPng(filePath);
+    DAVA::Texture* toolTexture = CreateTextureFromPng(filePath);
     if (!toolTexture)
     {
         return;

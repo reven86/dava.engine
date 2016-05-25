@@ -191,7 +191,7 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     return PVRFormatHelper::WriteFile(filePathname, *pvrFile);
 }
 
-uint32 LibPVRHelper::GetCRCFromFile(const FilePath& filePathname) const
+uint32 LibPVRHelper::GetCRCFromMetaData(const FilePath& filePathname) const
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(filePathname, true, false);
     if (pvrFile)

@@ -1,6 +1,6 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/Image/DDS/NvttHelper.h"
+#include "Render/Image/Private/NvttHelper.h"
 #include "Base/GlobalEnum.h"
 
 #include <libdxt/nvtt.h>

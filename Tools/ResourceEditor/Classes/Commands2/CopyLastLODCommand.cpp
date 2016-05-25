@@ -26,8 +26,8 @@ CopyLastLODToLod0Command::CopyLastLODToLod0Command(DAVA::LodComponent* component
 
 CopyLastLODToLod0Command::~CopyLastLODToLod0Command()
 {
-    uint32 newBatchCount = newBatches.size();
-    for (uint32 ri = 0; ri < newBatchCount; ++ri)
+    DAVA::size_type newBatchCount = newBatches.size();
+    for (DAVA::size_type ri = 0; ri < newBatchCount; ++ri)
         newBatches[ri]->Release();
 
     newBatches.clear();

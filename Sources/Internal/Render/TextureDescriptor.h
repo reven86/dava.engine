@@ -49,7 +49,7 @@ public:
         {
             FLAG_GENERATE_MIPMAPS = 1 << 0,
             FLAG_IS_NORMAL_MAP = 1 << 1,
-            FLAG_HAS_SEPARATE_HD_MIP = 1 << 2,
+            FLAG_HAS_SEPARATE_HD_FILE = 1 << 2,
 
             FLAG_INVALID = 1 << 7,
 
@@ -178,7 +178,7 @@ public:
     bool DeserializeFromPreset(const KeyedArchive* presetArchive);
     bool SerializeToPreset(KeyedArchive* presetArchive) const;
 
-protected:
+private:
     const Compression* GetCompressionParams(eGPUFamily forGPU) const;
 
     //loading

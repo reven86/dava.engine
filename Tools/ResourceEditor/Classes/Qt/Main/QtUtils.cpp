@@ -64,20 +64,6 @@ WideString SizeInBytesToWideString(float32 size)
     return StringToWString(SizeInBytesToString(size));
 }
 
-Image* CreateTopLevelImage(const FilePath& imagePathname)
-{
-    Image* image = NULL;
-    Vector<Image*> imageSet;
-    ImageSystem::Load(imagePathname, imageSet);
-    if (0 != imageSet.size())
-    {
-        image = SafeRetain(imageSet[0]);
-        for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-    }
-
-    return image;
-}
-
 void ShowErrorDialog(const Set<String>& errors, const String& title /* = "" */)
 {
     if (errors.empty())
@@ -227,8 +213,8 @@ void SaveImageToFile(Image* image, const FilePath& path)
     ImageSystem::Save(path, image);
 }
 
-DAVA::Texture* Create3DTextureFromPng(const DAVA::FilePath& pngPathname)
+DAVA::Texture* CreateTextureFromPng(const DAVA::FilePath& pngPathname)
 {
-    DAVA::ScopedPtr<DAVA::Image> pngImage(CreateTopLevelImage(pngPathname));
+    DAVA::ScopedPtr<DAVA::Image> pngImage(DAVA::ImageSystem::LoadSingleMip(pngPathname));
     return Texture::CreateFromData(pngImage, false);
 }

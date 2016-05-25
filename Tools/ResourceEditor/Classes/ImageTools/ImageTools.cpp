@@ -28,7 +28,7 @@ void SaveImage(Image* image, const FilePath& pathname)
 
 Image* LoadImage(const FilePath& pathname)
 {
-    return CreateTopLevelImage(pathname);
+    return ImageSystem::LoadSingleMip(pathname);
 }
 
 uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
@@ -92,7 +92,7 @@ void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFam
 
 bool SplitImage(const FilePath& pathname)
 {
-    Image* loadedImage = CreateTopLevelImage(pathname);
+    ScopedPtr<Image> loadedImage(DAVA::ImageSystem::LoadSingleMip(pathname));
     if (!loadedImage)
     {
         Logger::Error("Can't load image %s", pathname.GetAbsolutePathname().c_str());
@@ -115,7 +115,6 @@ bool SplitImage(const FilePath& pathname)
     SaveImage(channels.alpha, folder + "a.png");
 
     channels.ReleaseImages();
-    SafeRelease(loadedImage);
     return true;
 }
 

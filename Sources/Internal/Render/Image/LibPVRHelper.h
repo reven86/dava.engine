@@ -15,7 +15,7 @@ public:
 
     // CRCAdditionInterface
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
-    uint32 GetCRCFromFile(const FilePath& filePathname) const override;
+    uint32 GetCRCFromMetaData(const FilePath& filePathname) const override;
 
     //ImageFormatInterface
     eErrorCode Load(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const;
