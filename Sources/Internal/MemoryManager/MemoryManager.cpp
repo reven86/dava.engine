@@ -448,7 +448,7 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
-size_t MemoryManager::MemorySize(void* ptr)
+size_type MemoryManager::MemorySize(void* ptr)
 {
     if (ptr != nullptr)
     {

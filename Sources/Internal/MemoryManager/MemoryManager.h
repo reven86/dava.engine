@@ -78,7 +78,7 @@ public:
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
     void* Reallocate(void* ptr, size_t newSize);
     void Deallocate(void* ptr);
-    size_t MemorySize(void* ptr);
+    size_type MemorySize(void* ptr);
 
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
