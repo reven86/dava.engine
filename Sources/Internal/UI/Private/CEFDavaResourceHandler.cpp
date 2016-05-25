@@ -9,8 +9,6 @@ namespace DAVA
 CEFDavaResourceHandler::CEFDavaResourceHandler(const FilePath& path)
     : davaPath(path)
 {
-    DVASSERT_MSG(FileSystem::Instance()->IsFile(davaPath),
-                 "CefDavaResourceHandler handles only exist files");
 }
 
 bool CEFDavaResourceHandler::ProcessRequest(CefRefPtr<CefRequest> request,
@@ -24,11 +22,24 @@ void CEFDavaResourceHandler::GetResponseHeaders(CefRefPtr<CefResponse> response,
                                                 int64& response_length,
                                                 CefString& redirectUrl)
 {
+    FileSystem* fs = FileSystem::Instance();
+    uint32 fileSize = 0;
+
+    if (!fs->Exists(davaPath))
+    {
+        // Not found
+        response->SetStatus(404);
+        return;
+    }
+    else if (!fs->IsFile(davaPath) || !fs->GetFileSize(davaPath, fileSize))
+    {
+        // Bad request
+        response->SetStatus(400);
+        return;
+    }
+
     // All is OK
     response->SetStatus(200);
-
-    uint32 fileSize = 0;
-    FileSystem::Instance()->GetFileSize(davaPath, fileSize);
     response_length = fileSize;
 }
 
