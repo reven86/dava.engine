@@ -110,6 +110,8 @@ public:
     WideString::value_type GetCharAt(uint32 i) override;
 
 private:
+    void DropLastCursorAndSelection();
+    void CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight);
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
     void UpdateOffset(const Rect& visibleRect);

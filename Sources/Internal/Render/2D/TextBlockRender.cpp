@@ -63,9 +63,10 @@ void TextBlockRender::DrawText()
         int32 stringsCnt = int32(textBlock->multilineStrings.size());
         for (int32 line = 0; line < stringsCnt; ++line)
         {
+            bool justify = textBlock->cacheUseJustify;
             if (line == int32(textBlock->multilineStrings.size()) - 1)
             {
-                textBlock->cacheUseJustify = false;
+                justify = false;
             }
             int32 xOffset = 0;
             int32 align = textBlock->GetVisualAlign();
@@ -85,7 +86,7 @@ void TextBlockRender::DrawText()
                     xOffset = 0;
                 }
             }
-            if (align & ALIGN_HJUSTIFY && textBlock->cacheUseJustify)
+            if (align & ALIGN_HJUSTIFY && justify)
             {
                 stringSize = textBlock->stringSizes[line];
                 blockWidth = textBlock->cacheW;

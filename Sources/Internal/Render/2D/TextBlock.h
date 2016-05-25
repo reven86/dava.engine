@@ -206,6 +206,7 @@ private:
 #endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
+    int32 visualAlign;
 
     Font* font;
     WideString logicalText;

@@ -36,9 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define STB_TEXTEDIT_CHARTYPE DAVA::WideString::value_type
 #define STB_TEXTEDIT_STRING DAVA::StbTextEditBridge
-//#define STB_TEXTEDIT_UNDOSTATECOUNT   99 // Use by default
-//#define STB_TEXTEDIT_UNDOCHARCOUNT   999 // Use by default
-//#define STB_TEXTEDIT_POSITIONTYPE    int // Use by default
 #define STB_TEXTEDIT_NEWLINE L'\n'
 
 #include <stb/stb_textedit.h>
@@ -86,13 +83,14 @@ inline void stb_layoutchar(STB_TEXTEDIT_STRING* str, int n, int i, float* x0, fl
     }
 
     const DAVA::TextBox::Character& ch = tb->GetCharacter(li);
+    const DAVA::TextBox::Line& line = tb->GetLine(ch.lineIndex);
     if (x0 != nullptr)
     {
-        *x0 = ch.xoffset;
+        *x0 = ch.xoffset + line.xoffset;
     }
     if (x1 != nullptr)
     {
-        *x1 = ch.xoffset + ch.xadvance;
+        *x1 = ch.xoffset + ch.xadvance + line.xoffset;
     }
 }
 
