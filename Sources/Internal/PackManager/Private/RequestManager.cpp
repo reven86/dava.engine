@@ -1,4 +1,4 @@
-﻿#include "PackManager/Private/RequestQueue.h"
+﻿#include "PackManager/Private/RequestManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "DLC/Downloader/DownloadManager.h"
@@ -89,7 +89,7 @@ PackRequest& RequestManager::Top()
 
 PackRequest& RequestManager::Find(const String& packName)
 {
-    auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
+    auto it = std::find_if(begin(items), end(items), [&packName](const PackRequest& r) -> bool
                            {
                                return r.GetPackName() == packName;
                            });

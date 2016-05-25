@@ -177,7 +177,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
 
     if (flags & SQLITE_OPEN_MAIN_JOURNAL)
     {
-        // TODO do we need in memory jornal file?
+        // do we need in memory jornal file?
         throw std::runtime_error("not implemented");
     }
 
@@ -197,7 +197,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     if (flags & SQLITE_OPEN_READWRITE)
     {
         // currently open DB only in READONLY mode
-        // becouse iOS, and Android where we can't modify file in APK
+        // becouse on iOS and Android we can't modify file in APK or Bundle
         oflags |= (DAVA::File::READ | /*DAVA::File::WRITE |*/ DAVA::File::OPEN);
     }
 

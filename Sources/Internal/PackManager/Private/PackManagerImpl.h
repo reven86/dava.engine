@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PackManager/Private/PacksDB.h"
-#include "PackManager/Private/RequestQueue.h"
+#include "PackManager/Private/RequestManager.h"
 
 namespace DAVA
 {

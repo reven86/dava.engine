@@ -1,62 +1,65 @@
 // Next python 2.7 code generate test.db
 
-//import sqlite3
-//import os
+/*
 
-//action = "create"
-//if action == "create":
-//os.remove('test.db')
+import sqlite3
+import os
 
-//conn = sqlite3.connect('test.db')
-//c = conn.cursor()
-//c.execute(
-//	'''CREATE TABLE packs (
-//	name TEXT PRIMARY KEY NOT NULL,
-//	hash text NOT NULL
-//)''')
-//pack_name = 'unit_test.pak'
-//c.execute("INSERT INTO packs VALUES (?, '9bec4b20')", (pack_name, ))
-//c.execute("INSERT INTO packs VALUES (?, '0')", ("virtual_test_pack.pak", ))  # empty hash for virtual pack
-//conn.commit()
-//c.execute(
-//	'''CREATE TABLE dependency (
-//	key INTEGER PRIMARY KEY, /* autoincrement if NULL inserted */
-//	pack TEXT NOT NULL,
-//	depends TEXT NOT NULL,
-//	FOREIGN KEY(pack) REFERENCES packs(name),
-//	FOREIGN KEY(depends) REFERENCES packs(name)
-//)''')
-//conn.commit()
-//c.execute(
-//	'''INSERT INTO dependency VALUES (NULL, "virtual_test_pack.pak", "unit_test.pak")'''
-//)
-//conn.commit()
-//c.execute(
-//	'''CREATE TABLE files (
-//	path TEXT PRIMARY KEY,
-//	pack TEXT NOT NULL,
-//	FOREIGN KEY(pack) REFERENCES packs(name)
-//)''')
-//path_to_test_bed = "d:/Users/l_chayka/job/dava.framework/Projects/UnitTests/Data"
-//#path_to_test_bed = "d:/Users/l_chayka/job/wot.blitz/Data"
-//for path, subdirs, files in os.walk(path_to_test_bed) :
-//	for name in files :
-//print("name: " + name + " path: " + path + " subdirs: ")
-//rel_path = os.path.relpath(os.path.join(path, name), path_to_test_bed)
-//rel_path = rel_path.replace("\\", "/")
-//c.execute("INSERT INTO files VALUES (?, ?)", (rel_path, pack_name))
-//conn.commit()
-//elif action == "read":
-//conn = sqlite3.connect('test.db')
-//c = conn.cursor()
-//print("----packs-------------")
-//for row in c.execute("SELECT * FROM packs ORDER BY name") :
-//	print(row)
-//	print("----files-------------")
-//	for row in c.execute("SELECT * FROM files ORDER BY path") :
-//		print(row)
-//		conn.close()
+action = "create"
+if action == "create":
+os.remove('test.db')
 
+conn = sqlite3.connect('test.db')
+c = conn.cursor()
+c.execute(
+	'''CREATE TABLE packs (
+	name TEXT PRIMARY KEY NOT NULL,
+	hash text NOT NULL
+)''')
+pack_name = 'unit_test.pak'
+c.execute("INSERT INTO packs VALUES (?, '9bec4b20')", (pack_name, ))
+c.execute("INSERT INTO packs VALUES (?, '0')", ("virtual_test_pack.pak", ))  # empty hash for virtual pack
+conn.commit()
+c.execute(
+	'''CREATE TABLE dependency (
+	key INTEGER PRIMARY KEY, // autoincrement if NULL inserted 
+	pack TEXT NOT NULL,
+	depends TEXT NOT NULL,
+	FOREIGN KEY(pack) REFERENCES packs(name),
+	FOREIGN KEY(depends) REFERENCES packs(name)
+)''')
+conn.commit()
+c.execute(
+	'''INSERT INTO dependency VALUES (NULL, "virtual_test_pack.pak", "unit_test.pak")'''
+)
+conn.commit()
+c.execute(
+	'''CREATE TABLE files (
+	path TEXT PRIMARY KEY,
+	pack TEXT NOT NULL,
+	FOREIGN KEY(pack) REFERENCES packs(name)
+)''')
+path_to_test_bed = "d:/Users/l_chayka/job/dava.framework/Projects/UnitTests/Data"
+#path_to_test_bed = "d:/Users/l_chayka/job/wot.blitz/Data"
+for path, subdirs, files in os.walk(path_to_test_bed) :
+	for name in files :
+print("name: " + name + " path: " + path + " subdirs: ")
+rel_path = os.path.relpath(os.path.join(path, name), path_to_test_bed)
+rel_path = rel_path.replace("\\", "/")
+c.execute("INSERT INTO files VALUES (?, ?)", (rel_path, pack_name))
+conn.commit()
+elif action == "read":
+conn = sqlite3.connect('test.db')
+c = conn.cursor()
+print("----packs-------------")
+for row in c.execute("SELECT * FROM packs ORDER BY name") :
+	print(row)
+	print("----files-------------")
+	for row in c.execute("SELECT * FROM files ORDER BY path") :
+		print(row)
+		conn.close()
+
+*/
 
 #include "PackManager/Private/PacksDB.h"
 #include <sqlite_modern_cpp.h>
@@ -113,6 +116,7 @@ public:
             &SqliteMemShutdown
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
+        DVASSERT(result == SQLITE_OK);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
 
         RegisterDavaVFSForSqlite3();
@@ -143,10 +147,7 @@ PacksDB::PacksDB(const FilePath& filePath)
     data.reset(new PacksDBData(filePath.GetAbsolutePathname()));
 }
 
-PacksDB::~PacksDB()
-{
-    data.reset();
-}
+PacksDB::~PacksDB() = default;
 
 const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 {

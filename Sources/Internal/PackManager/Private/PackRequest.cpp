@@ -1,4 +1,5 @@
 #include "PackManager/Private/PackRequest.h"
+#include "PackManager/Private/RequestManager.h"
 
 namespace DAVA
 {
@@ -233,7 +234,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                 }
                 else
                 {
-                    pack.downloadProgress = std::min(1.0f, static_cast<float>(progress) / total);
+                    pack.downloadProgress = std::min(1.0f, static_cast<float32>(progress) / total);
                     // fire event on update progress
                     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
                 }
