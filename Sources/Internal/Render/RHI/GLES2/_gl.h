@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #pragma once
 
 #include "../rhi_Type.h"
@@ -203,13 +175,69 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
 #endif
 
+#if !defined(GL_RED)
+#define GL_RED 0x1903
+#endif
+
+#if !defined(GL_RG)
+#define GL_RG 0x8227
+#endif
+
+#if !defined(GL_R8)
+#define GL_R8 0x8229
+#endif
+
+#if !defined(GL_R16)
+#define GL_R16 0x822A
+#endif
+
+#if !defined(GL_RG8)
+#define GL_RG8 0x822B
+#endif
+
+#if !defined(GL_RG16)
+#define GL_RG16 0x822C
+#endif
+
+#if !defined(GL_R16F)
+#define GL_R16F 0x822D
+#endif
+
+#if !defined(GL_R32F)
+#define GL_R32F 0x822E
+#endif
+
+#if !defined(GL_RG16F)
+#define GL_RG16F 0x822F
+#endif
+
+#if !defined(GL_RG32F)
+#define GL_RG32F 0x8230
+#endif
+
+#if !defined(GL_RGBA32F)
+#define GL_RGBA32F 0x8814
+#endif
+
+#if !defined(GL_RGB32F)
+#define GL_RGB32F 0x8815
+#endif
+
+#if !defined(GL_RGBA16F)
+#define GL_RGBA16F 0x881A
+#endif
+
+#if !defined(GL_RGB16F)
+#define GL_RGB16F 0x881B
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
     expr; \
     int err = glGetError(); \
     if (err != GL_NO_ERROR) \
-        Log::Error("gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err)); \
+        Logger::Error("gl", "FAILED  %s (%i)\n", #expr, err); \
 }
 
 #else

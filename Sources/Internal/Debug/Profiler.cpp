@@ -1,54 +1,29 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#include "Debug/Profiler.h"
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
-#include "Concurrency/Spinlock.h"
-#include "Concurrency/Mutex.h"
-#include "Base/BaseTypes.h"
-#include "Platform/SystemTimer.h"
-#include "FileSystem/File.h"
+#include "Profiler.h"
+    #include "Debug/DVAssert.h"
+    #include "Logger/Logger.h"
+    #include "Concurrency/Spinlock.h"
+    #include "Concurrency/Mutex.h"
+    #include "Base/BaseTypes.h"
+    #include "Platform/SystemTimer.h"
+    #include "FileSystem/File.h"
 using namespace DAVA;
 
-#include <stdio.h>
-#include <string.h>
-#include <vector>
+
+    #include <stdio.h>
+    #include <string.h>
+    #include <vector>
+
+//==============================================================================
+
+static inline long
+CurTimeUs()
+{
+    return static_cast<long>(SystemTimer::Instance()->GetAbsoluteUs());
+}
 
 namespace profiler
 {
 //==============================================================================
-
-static inline long CurTimeUs()
-{
-    return static_cast<long>(SystemTimer::Instance()->GetAbsoluteUs());
-}
 
 class Counter;
 
@@ -68,7 +43,8 @@ static uint64 totalTime0 = 0;
 static uint64 totalTime = 0;
 static DAVA::Spinlock counterSync;
 
-class Counter
+class
+Counter
 {
 public:
     Counter()
@@ -100,7 +76,6 @@ public:
 
         counterSync.Unlock();
     }
-
     void Start()
     {
         counterSync.Lock();
@@ -124,7 +99,6 @@ public:
 
         counterSync.Unlock();
     }
-
     void Stop()
     {
         counterSync.Lock();
@@ -194,14 +168,16 @@ private:
 
 //==============================================================================
 
-static Counter* GetCounter(uint32 id)
+static Counter*
+GetCounter(uint32 id)
 {
     return (id < maxCounterCount) ? curCounter + id : 0;
 }
 
 //------------------------------------------------------------------------------
 
-void Init(uint32 _maxCounterCount, uint32 _historyCount)
+void
+Init(uint32 _maxCounterCount, uint32 _historyCount)
 {
     DVASSERT(!profilerInited);
 
@@ -231,7 +207,8 @@ void Init(uint32 _maxCounterCount, uint32 _historyCount)
 
 //------------------------------------------------------------------------------
 
-void EnsureInited(uint32 _maxCounterCount, uint32 _historyCount)
+void
+EnsureInited(uint32 _maxCounterCount, uint32 _historyCount)
 {
     if (!profilerInited)
     {
@@ -241,7 +218,8 @@ void EnsureInited(uint32 _maxCounterCount, uint32 _historyCount)
 
 //------------------------------------------------------------------------------
 
-void Uninit()
+void
+Uninit()
 {
     if (profCounter)
     {
@@ -269,7 +247,8 @@ void Uninit()
 
 //------------------------------------------------------------------------------
 
-void SetCounterName(unsigned counterId, const char* name)
+void
+SetCounterName(unsigned counterId, const char* name)
 {
     DVASSERT(counterId < maxCounterCount);
 
@@ -284,7 +263,8 @@ void SetCounterName(unsigned counterId, const char* name)
 
 //------------------------------------------------------------------------------
 
-void StartCounter(uint32 counterId)
+void
+StartCounter(uint32 counterId)
 {
     DVASSERT(counterId < maxCounterCount);
 
@@ -295,7 +275,8 @@ void StartCounter(uint32 counterId)
 
 //------------------------------------------------------------------------------
 
-void StartCounter(uint32 counterId, const char* counterName)
+void
+StartCounter(uint32 counterId, const char* counterName)
 {
     DVASSERT(counterId < maxCounterCount);
 
@@ -310,7 +291,8 @@ void StartCounter(uint32 counterId, const char* counterName)
 
 //------------------------------------------------------------------------------
 
-void StopCounter(uint32 counterId)
+void
+StopCounter(uint32 counterId)
 {
     DVASSERT(counterId < maxCounterCount);
 
@@ -324,7 +306,8 @@ void StopCounter(uint32 counterId)
 
 //------------------------------------------------------------------------------
 
-void Start()
+void
+Start()
 {
     DVASSERT(!profStarted);
 
@@ -354,7 +337,8 @@ void Start()
 
 //------------------------------------------------------------------------------
 
-void Stop()
+void
+Stop()
 {
     DVASSERT(profStarted);
 
@@ -364,12 +348,14 @@ void Stop()
 
 //------------------------------------------------------------------------------
 
-static inline int fltDec(float f)
+static inline int
+fltDec(float f)
 {
     return int((f - float(int(f))) * 10.0f);
 }
 
-static void DumpInternal(const std::vector<CounterInfo>& result, bool showPercents = false)
+static void
+DumpInternal(const std::vector<CounterInfo>& result, bool showPercents = false)
 {
     size_t max_name_len = 0;
 
@@ -420,9 +406,17 @@ static void DumpInternal(const std::vector<CounterInfo>& result, bool showPercen
 
         if (showPercents)
         {
-            float pg = (totalTime) ? 100.0f * float(result[i].timeUs) / float(totalTime) : 0;
+            float pg = (totalTime)
+            ?
+            100.0f * float(result[i].timeUs) / float(totalTime)
+            :
+            0;
             const CounterInfo* pc = (result[i].parentIndex != DAVA::InvalidIndex) ? &(result[0]) + result[i].parentIndex : 0;
-            float pl = (pc && pc->timeUs) ? 100.0f * float(result[i].timeUs) / float(pc->timeUs) : 0;
+            float pl = (pc && pc->timeUs)
+            ?
+            100.0f * float(result[i].timeUs) / float(pc->timeUs)
+            :
+            0;
 
             text[text_len] = ' ';
             text_len = max_name_len + 2 + 1 + 5 + 2 + 5 + 1 + 2;
@@ -440,7 +434,8 @@ static void DumpInternal(const std::vector<CounterInfo>& result, bool showPercen
 
 //------------------------------------------------------------------------------
 
-void Dump()
+void
+Dump()
 {
     DVASSERT(!profStarted);
 
@@ -452,7 +447,8 @@ void Dump()
 
 //------------------------------------------------------------------------------
 
-bool DumpAverage()
+bool
+DumpAverage()
 {
     bool success = false;
     static std::vector<CounterInfo> result;
@@ -468,7 +464,8 @@ bool DumpAverage()
 
 //------------------------------------------------------------------------------
 
-static void CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vector<const Counter*>* result)
+static void
+CollectCountersWithChilds(const Counter* base, const Counter* counter, std::vector<const Counter*>* result)
 {
     for (const Counter *c = base, *c_end = base + maxCounterCount; c != c_end; ++c)
     {
@@ -482,7 +479,8 @@ static void CollectCountersWithChilds(const Counter* base, const Counter* counte
 
 //------------------------------------------------------------------------------
 
-static void CollectActiveCounters(Counter* cur_counter, std::vector<const Counter*>* result)
+static void
+CollectActiveCounters(Counter* cur_counter, std::vector<const Counter*>* result)
 {
     // get top-level counters, sorted by time
 
@@ -525,7 +523,8 @@ static void CollectActiveCounters(Counter* cur_counter, std::vector<const Counte
 
 //------------------------------------------------------------------------------
 
-void GetCounters(std::vector<CounterInfo>* info)
+void
+GetCounters(std::vector<CounterInfo>* info)
 {
     static std::vector<const Counter*> result;
 
@@ -552,7 +551,8 @@ void GetCounters(std::vector<CounterInfo>* info)
 
 //------------------------------------------------------------------------------
 
-bool GetAverageCounters(std::vector<CounterInfo>* info)
+bool
+GetAverageCounters(std::vector<CounterInfo>* info)
 {
     bool success = false;
 
@@ -620,7 +620,8 @@ bool GetAverageCounters(std::vector<CounterInfo>* info)
 
 //------------------------------------------------------------------------------
 
-struct Event
+struct
+Event
 {
     enum Phase
     {

@@ -1,64 +1,123 @@
 cmake_minimum_required (VERSION 3.0)
 
-macro ( set_deploy_dir TARGET_NAME )
+macro ( add_tool TARGET_NAME )
+    cmake_parse_arguments ( ARG ""  "ROOT_DIR" "" ${ARGN} )
+
     if( MACOS )
         set( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app )
 
     else()
         set( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app/${TARGET_NAME} )
 
-    endif()    
+    endif()  
+
+    if( ARG_ROOT_DIR )
+        add_subdirectory      ( "${ARG_ROOT_DIR}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+    else()
+        add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
+    endif() 
+
+    get_property( USE_NGT GLOBAL PROPERTY USE_NGT_${TARGET_NAME} )
+    get_property( DEPLOY_DIR_PRJ GLOBAL PROPERTY DEPLOY_DIR_${TARGET_NAME} )
+
+    if( USE_NGT AND DEPLOY )
+        ADD_CUSTOM_COMMAND ( TARGET NGT_DEPLOY_Megasolution POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/app/Megasolution ${DEPLOY_DIR_PRJ}            
+        )
+
+        add_dependencies( NGT_DEPLOY_Megasolution ${TARGET_NAME}  )
+
+    endif()
 
 endmacro ()
 
-project               ( Megasolution  )
+macro ( init_project )
 
-set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+	message("Creating " ${PROJECT_NAME} )
 
-include               ( CMake-common )
-include               ( NGTMacro )
+	set 	( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
+	set     ( DAVA_USE_QT_WIDGETS true )
+    set     ( DAVA_USE_RENDERSTATS true )
+	set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
-#configure_ngt(${PROJECT_NAME} ${CMAKE_BINARY_DIR}/app)
+	include ( CMake-common )
+	include ( NGTMacro )
 
-find_package          ( DavaFramework REQUIRED )
-find_package          ( DavaTools     REQUIRED )
+	if (DEPLOY)
+	    set (DEPLOY_ROOT ${DEPLOY_DIR})
 
-set                   ( IGNORE_FILE_TREE_CHECK 1 )#tmp
-set                   ( DAVA_MEGASOLUTION      1 )
+	    if ( WIN32 )
+	        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+	    endif()
 
-set                   ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set                   ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+	    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
+	   
+	    add_custom_target ( NGT_DEPLOY_Megasolution ALL )
 
-set_deploy_dir        ( ResourceEditor )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourceEditor" ${CMAKE_CURRENT_BINARY_DIR}/ResourceEditor )
+	endif()
 
-set_deploy_dir        ( QuickEd )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/QuickEd"        ${CMAKE_CURRENT_BINARY_DIR}/QuickEd )
+	configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
+	find_package ( NgtTools REQUIRED )
 
-set_deploy_dir        ( UnitTests )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_BINARY_DIR}/UnitTests )
+	set          ( DAVA_DISABLE_AUTOTESTS true )
+	find_package ( DavaFramework REQUIRED COMPONENTS ALL )
+	find_package ( DavaTools     REQUIRED )
 
-set_deploy_dir        ( TestBed)
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/TestBed"     ${CMAKE_CURRENT_BINARY_DIR}/TestBed )
+	set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
 
-set_deploy_dir        ( SceneViewer )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
+	set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+	set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+	set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
-set_deploy_dir        ( ResourcePacker )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ResourcePacker" ${CMAKE_CURRENT_BINARY_DIR}/ResourcePacker )
+endmacro()
 
-set_deploy_dir        ( ImageUnpacker )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/ImageUnpacker" ${CMAKE_CURRENT_BINARY_DIR}/ImageUnpacker )
+set(TARGETS "all" CACHE STRING "")
 
-set_deploy_dir        ( AssetCacheClient )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheClient" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheClient )
+if(TARGETS STREQUAL "all")
 
-set_deploy_dir        ( AssetCacheServer )
-add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/AssetCacheServer" ${CMAKE_CURRENT_BINARY_DIR}/AssetCacheServer )
+	project      ( Megasolution )
 
-if ( WIN32 )
-    set_deploy_dir    ( UWPRunner )
-    add_subdirectory  ( "${DAVA_ROOT_DIR}/Tools/UWPRunner"   ${CMAKE_CURRENT_BINARY_DIR}/UWPRunner )
-endif ()
+	init_project ()
+	set          ( DAVA_MEGASOLUTION      1 )
+
+	add_tool     ( ResourceEditor   )
+	add_tool     ( QuickEd          )
+	add_tool     ( ResourcePacker   )
+	add_tool     ( ResourcePatcher  )
+	add_tool     ( ImageUnpacker    )
+	add_tool     ( AssetCacheClient )
+	add_tool     ( AssetCacheServer )
+
+	add_tool     ( UnitTests   ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
+	add_tool     ( TestBed     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
+	add_tool     ( SceneViewer ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
+
+	if ( WIN32 )
+	    add_tool ( UWPRunner )
+	endif ()
+
+elseif(TARGETS STREQUAL "tools")	
+
+	project      ( Tools )
+
+	init_project ()
+
+	add_tool     ( ResourceEditor   )
+	add_tool     ( QuickEd          )
+	add_tool     ( ResourcePacker   )
+	add_tool     ( ResourcePatcher  )
+	add_tool     ( ImageUnpacker    )
+	add_tool     ( AssetCacheClient )
+	add_tool     ( AssetCacheServer )
+
+else()
+
+	message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
+
+endif()
+
+
+
+
+
