@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Scene3D/Scene.h"
 
 #include "Scene/System/HoodSystem.h"
@@ -333,35 +305,26 @@ void HoodSystem::Input(DAVA::UIEvent* event)
 
 void HoodSystem::Draw()
 {
-    if (NULL != curHood && IsVisible())
+    if ((curHood == nullptr) || !IsVisible())
+        return;
+
+    TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
+
+    // modification isn't locked and whole system isn't locked
+    if (!IsLocked() && !lockedModif)
     {
-        TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
-
-        // modification isn't locked and whole system isn't locked
-        if (!IsLocked() && !lockedModif)
+        ST_Axis showAsSelected = curAxis;
+        if ((GetTransformType() != Selectable::TransformType::Disabled) && (ST_AXIS_NONE != moseOverAxis))
         {
-            ST_Axis showAsSelected = curAxis;
-
-            if (GetTransformType() != Selectable::TransformType::Disabled)
-            {
-                if (ST_AXIS_NONE != moseOverAxis)
-                {
-                    showAsSelected = moseOverAxis;
-                }
-            }
-
-            curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-
-            // zero pos point
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(DAVA::AABBox3(GetPosition(), curHood->objScale * .04f), DAVA::Color::White, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-
-            // debug draw axis collision word
-            //collWorld->debugDrawWorld();
+            showAsSelected = moseOverAxis;
         }
-        else
-        {
-            normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-        }
+
+        curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+    }
+    else
+    {
+        normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
     }
 }
 
