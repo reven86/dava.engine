@@ -1388,12 +1388,15 @@ doCommandBySelector:(SEL)commandSelector
        originalSelectedRange:(NSRange)origSelRange
             errorDescription:(NSString**)error
 {
-    BOOL applyChanges = YES;
-    DAVA::UITextField* cppTextField = text->ctrl->davaText;
-    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    DAVA::UITextField* cppTextField = nullptr;
+    DAVA::int32 maxLength = -1;
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
-        return applyChanges;
+        cppTextField = text->ctrl->davaText;
+        maxLength = cppTextField->GetMaxLength();
     }
+
+    BOOL applyChanges = YES;
     NSString* replString = @"";
     NSRange replRange = NSMakeRange(proposedSelRangePtr->location, 0);
     // only if paste or replace text, which need check
@@ -1410,28 +1413,29 @@ doCommandBySelector:(SEL)commandSelector
 
     if ([replString length] > 0)
     {
-        applyChanges = !DAVA::NSStringModified(correctRange, inOrigString, cppTextField->GetMaxLength(), &replString);
+        applyChanges = !DAVA::NSStringModified(correctRange, inOrigString, maxLength, &replString);
     }
 
-    DAVA::WideString clientString = L"";
     BOOL clientApply = NO;
-    if (correctRange.length > 0 || [replString length] > 0)
+    if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
-        clientString = DAVA::WideStringFromNSString(replString);
-        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
-    }
-    if (!clientApply)
-    {
-        partialStringPtr = &inOrigString;
-        proposedSelRangePtr = &origSelRange;
-        return NO;
+        if (correctRange.length > 0 || [replString length] > 0)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(replString);
+            clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
+        }
+        if (!clientApply)
+        {
+            partialStringPtr = &inOrigString;
+            proposedSelRangePtr = &origSelRange;
+            return NO;
+        }
     }
     // when youself set changes in native control
     if (!applyChanges)
     {
         NSString* newString = [inOrigString stringByReplacingCharactersInRange:correctRange withString:replString];
-        DAVA::WideString newDAVAString = L"";
-        newDAVAString = DAVA::WideStringFromNSString(newString);
+        DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
         (*text).ctrl->SetText(newDAVAString);
         (*text).ctrl->SetCursorPos(correctRange.location + [replString length]);
     }
@@ -1488,13 +1492,15 @@ doCommandBySelector:(SEL)commandSelector
 
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
 {
-    BOOL applyChanges = YES;
-    DAVA::UITextField* cppTextField = text->ctrl->davaText;
-    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    DAVA::UITextField* cppTextField = nullptr;
+    DAVA::int32 maxLength = -1;
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
-        return applyChanges;
+        cppTextField = text->ctrl->davaText;
+        maxLength = cppTextField->GetMaxLength();
     }
 
+    BOOL applyChanges = YES;
     // if user paste text with gesture in native control
     // we need make dava control in sync with focus
     if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
@@ -1509,24 +1515,25 @@ doCommandBySelector:(SEL)commandSelector
     cppTextField->StartEdit();
     if ([replStr length] > 0)
     {
-        applyChanges = !DAVA::NSStringModified(affectedCharRange, origString, cppTextField->GetMaxLength(), &replStr);
+        applyChanges = !DAVA::NSStringModified(affectedCharRange, origString, maxLength, &replStr);
     }
 
-    DAVA::WideString clientString = L"";
-    if (affectedCharRange.length > 0 || [replStr length] > 0)
+    if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
-        clientString = DAVA::WideStringFromNSString(replStr);
-        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
-    }
-    if (!clientApply)
-    {
-        return NO;
+        if (affectedCharRange.length > 0 || [replStr length] > 0)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
+            clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
+        }
+        if (!clientApply)
+        {
+            return NO;
+        }
     }
     if (!applyChanges)
     {
         NSString* newString = [origString stringByReplacingCharactersInRange:affectedCharRange withString:replStr];
-        DAVA::WideString newDAVAString = L"";
-        newDAVAString = DAVA::WideStringFromNSString(newString);
+        DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
         (*text).ctrl->SetText(newDAVAString);
         (*text).ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
     }

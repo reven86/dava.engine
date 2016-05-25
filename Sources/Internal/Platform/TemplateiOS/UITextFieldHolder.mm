@@ -140,16 +140,16 @@
 
 - (BOOL)textField:(UITextField*)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string
 {
-    BOOL applyChanges = YES;
-    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    DAVA::int32 maxLength = -1;
+    if (nullptr != cppTextField)
     {
-        return applyChanges;
+        maxLength = cppTextField->GetMaxLength();
     }
 
+    BOOL applyChanges = YES;
     // Get string after changing
     NSString* origString = [textCtrl valueForKey:@"text"];
     NSString* replStr = string;
-    DAVA::int32 maxLength = cppTextField->GetMaxLength();
 
     if ([replStr length] > 0)
     {
@@ -169,15 +169,17 @@
     }
 
     BOOL clientApply = NO;
-    DAVA::WideString clientString = L"";
-    if (range.length > 0 || [replStr length] > 0)
+    if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
-        clientString = DAVA::WideStringFromNSString(replStr);
-        clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
-    }
-    if (!clientApply)
-    {
-        return NO;
+        if (range.length > 0 || [replStr length] > 0)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
+            clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+        }
+        if (!clientApply)
+        {
+            return NO;
+        }
     }
     if (!applyChanges)
     {
