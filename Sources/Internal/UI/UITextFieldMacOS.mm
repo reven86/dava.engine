@@ -46,7 +46,7 @@
 @interface MultilineDelegate : NSObject<NSTextViewDelegate>
 {
 @public
-    WideString lastString;
+    DAVA::WideString lastString;
     DAVA::ObjCWrapper* text;
     int maxLength;
 }
@@ -73,7 +73,7 @@
 @interface CustomDelegate : NSObject<NSTextFieldDelegate>
 {
 @public
-    WideString lastString;
+    DAVA::WideString lastString;
     DAVA::ObjCWrapper* text;
     CustomTextFieldFormatter* formatter;
 }
