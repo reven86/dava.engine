@@ -31,6 +31,8 @@ public:
 
     void RepackImmediately(const DAVA::FilePath& projectPath, DAVA::eGPUFamily gpu);
 
+    bool IsRunning() const;
+
 signals:
     void SpritesReloaded();
 

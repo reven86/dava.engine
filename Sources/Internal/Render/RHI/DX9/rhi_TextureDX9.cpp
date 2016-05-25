@@ -67,6 +67,8 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.levelCount);
     bool success = false;
+    UpdateCreationDesc(desc);
+
     D3DFORMAT fmt = DX9_TextureFormat(desc.format);
     DWORD usage = (desc.isRenderTarget) ? D3DUSAGE_RENDERTARGET : 0;
     D3DPOOL pool = (desc.isRenderTarget) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED;
@@ -318,13 +320,7 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureDX9Pool::Alloc();
     TextureDX9_t* tex = TextureDX9Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (tex->Create(desc) == false)
     {
         TextureDX9Pool::Free(handle);
         handle = InvalidHandle;

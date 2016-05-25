@@ -73,8 +73,8 @@ int main(int argc, char* argv[])
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
 
-    DAVA::QtLayer qtLayer;
     DAVA::Core::Run(argc, argv);
+    DAVA::QtLayer qtLayer;
     DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
     DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
@@ -100,7 +100,11 @@ int main(int argc, char* argv[])
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else if (argc == 1)
+        else if (argc == 1
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 )
         {
             RunGui(argc, argv, cmdLine);
         }
