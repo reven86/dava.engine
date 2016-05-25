@@ -23,7 +23,6 @@ public:
     ~ColorControl() override = default;
 
 private:
-    void Draw(const UIGeometricData& geometricData) override;
     DAVA::uint32 GetBackgroundColorIndex() const;
     void SetBackgroundColorIndex(DAVA::uint32 index);
 
@@ -64,18 +63,28 @@ class GridControl : public UIControl
 public:
     GridControl();
     ~GridControl() override = default;
+    void SetSize(const Vector2& size) override;
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
+    ColorControl* colorControl = nullptr; //weak pointer
 };
 
 GridControl::GridControl()
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetSprite("~res:/Gfx/GrayGrid", 0);
-    ScopedPtr<UIControl> colorControl(new ColorControl());
-    colorControl->SetName("Color control");
-    UIControl::AddControl(colorControl);
+    colorControl = new ColorControl();
+    ScopedPtr<UIControl> control(colorControl);
+    control->SetName("Color control");
+
+    UIControl::AddControl(control);
+}
+
+void GridControl::SetSize(const Vector2& size)
+{
+    colorControl->SetSize(size);
+    UIControl::SetSize(size);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -163,12 +172,6 @@ void ColorControl::SetBackgroundColorIndex(DAVA::uint32 index)
         return;
     }
     background->SetColor(color);
-}
-
-void ColorControl::Draw(const UIGeometricData& geometricData)
-{
-    SetSize(parent->GetSize());
-    UIControl::Draw(geometricData);
 }
 
 } //unnamed namespe
