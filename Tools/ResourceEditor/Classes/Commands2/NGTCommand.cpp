@@ -23,6 +23,11 @@ CommandThreadAffinity NGTCommand::threadAffinity() const
     return CommandThreadAffinity::UI_THREAD;
 }
 
+bool NGTCommand::customUndo() const
+{
+    return true;
+}
+
 bool NGTCommand::canUndo(const ObjectHandle& arguments) const
 {
     Command2* command = arguments.getBase<Command2>();
