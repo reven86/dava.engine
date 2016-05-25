@@ -57,7 +57,7 @@ QString GetTempDownloadFilePath()
 
 QString GetLauncherDirectory()
 {
-    QString path =
+    QString path =  
 #if defined(Q_OS_WIN)
     qApp->applicationDirPath();
 #elif defined(Q_OS_MAC)

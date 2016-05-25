@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QApplication>
 #include <QMessageBox>
+#include <QDir>
 
 namespace SelfUpdater_local
 {
@@ -97,7 +98,8 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
         return MOVE_FILES_ERROR;
     }
     QStringList info(files.keys());
-    QByteArray data = info.join('\n').toUtf8().data();
+    QString infoStr = info.join('\n');
+    QByteArray data = QDir::toNativeSeparators(infoStr).toUtf8().data();
     if (!FileManager::CreateFileAndWriteData(FileManager::GetPackageInfoFilePath(), data))
     {
         return INFO_FILE_ERROR;

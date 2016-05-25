@@ -59,3 +59,11 @@ ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
 )    
 endif ()
 
+
+if (DEPLOY)
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/createPackageInfo.py"
+            "${DEPLOY_DIR}"
+        )
+endif()
+
