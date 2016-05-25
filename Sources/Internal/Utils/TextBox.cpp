@@ -467,16 +467,31 @@ void TextBox::SmartCleanUp()
             break;
         }
 
-        // Store all visual indices for erasing
         removeLiterals.clear();
         for (int32 li = line.start; li < limit; ++li)
         {
             Character& ch = GetCharacter(li);
+            char16 c = processedText.at(li);
+
+            // Skip non-printable characters
+            switch (c)
+            {
+            case L'\n':
+            case L'\r':
+            case 0x200B: // Zero-width space
+            case 0x200E: // Zero-width Left-to-right zero-width character
+            case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+            case 0x061C: // Right-to-left zero-width Arabic character
+                // Skip this characters (remove it)
+                ch.skip = true;
+                break;
+            }
+
+            int32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
             if (ch.skip || ch.hiden)
             {
-                int32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
+                // Store visual index for erasing
                 removeLiterals.insert(vi);
-                //line.visualString.erase(vi, 1);
             }
         }
 
