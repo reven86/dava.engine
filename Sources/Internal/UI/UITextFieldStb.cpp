@@ -402,6 +402,8 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
         {
             delegate->TextFieldOnTextChanged(control, text, prevText);
         }
+
+        DropLastCursorAndSelection();
         return length;
     }
     return 0;
@@ -424,6 +426,8 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
         {
             delegate->TextFieldOnTextChanged(control, text, prevText);
         }
+
+        DropLastCursorAndSelection();
         return length;
     }
     return 0;
@@ -450,6 +454,10 @@ void TextFieldStbImpl::CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRi
     const uint32 charsCount = tb->GetCharactersCount();
     if (pos < charsCount)
     {
+        while (pos > 0 && tb->GetCharacter(pos).skip)
+        {
+            pos--;
+        }
         cursorRight = tb->GetCharacter(pos).rtl;
     }
     else

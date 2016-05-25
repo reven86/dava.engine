@@ -127,7 +127,6 @@ void TextBoxImpl::Shape()
     if (length > outputLength)
     {
         // Fix indeces mapping if length of result string reduced
-        int32 skipCount = 0;
         for (int32 i = 0; i < length; ++i)
         {
             TextBox::Character& c = tb->GetCharacter(i);
@@ -137,10 +136,8 @@ void TextBoxImpl::Shape()
             {
                 // Merging!
                 c.skip = true;
-                skipCount++;
             }
         }
-        DVASSERT_MSG(skipCount == length - outputLength, "[TextBox::Shape] Detect skip chars error");
     }
     else if (length < outputLength)
     {
@@ -256,14 +253,19 @@ DAVA::TextBox::Direction TextBoxImpl::BiDiDirectionToDirection(const UBiDiDirect
     return TextBox::Direction::LTR;
 }
 
-DAVA::WideString TextBoxImpl::ConvertU2W(const UChar* src, const int32 length)
+WideString TextBoxImpl::ConvertU2W(const UChar* src, const int32 length)
 {
+    if (length == 0)
+    {
+        return WideString();
+    }
+
     int32 dstLen = 0;
     UErrorCode errorCode = U_ZERO_ERROR;
     u_strToWCS(nullptr, 0, &dstLen, src, length, &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
     {
-        Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
+        Logger::Error("[TextBox::ConvertU2W] detect length errorCode = %d", errorCode);
         return WideString();
     }
 
@@ -272,21 +274,26 @@ DAVA::WideString TextBoxImpl::ConvertU2W(const UChar* src, const int32 length)
     u_strToWCS(const_cast<WideString::value_type*>(dst.data()), dst.capacity(), 0, src, length, &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
-        Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
+        Logger::Error("[TextBox::ConvertU2W] convert errorCode = %d", errorCode);
         return WideString();
     }
 
     return dst;
 }
 
-DAVA::UCharString TextBoxImpl::ConvertW2U(const WideString& src)
+UCharString TextBoxImpl::ConvertW2U(const WideString& src)
 {
+    if (src.empty())
+    {
+        return UCharString();
+    }
+
     int32 dstLen = 0;
     UErrorCode errorCode = U_ZERO_ERROR;
     u_strFromWCS(nullptr, 0, &dstLen, src.data(), src.length(), &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
     {
-        Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
+        Logger::Error("[TextBox::ConvertW2U] detect length errorCode = %d", errorCode);
         return UCharString();
     }
 
@@ -295,7 +302,7 @@ DAVA::UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     u_strFromWCS(const_cast<UCharString::value_type*>(dst.data()), dst.capacity(), 0, src.data(), src.length(), &errorCode);
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
-        Logger::Error("[BiDiImpl::Reorder] errorCode = %d", errorCode);
+        Logger::Error("[TextBox::ConvertW2U] convert errorCode = %d", errorCode);
         return UCharString();
     }
 
