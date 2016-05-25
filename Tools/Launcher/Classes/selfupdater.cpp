@@ -97,6 +97,7 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
     {
         return MOVE_FILES_ERROR;
     }
+#ifdef Q_OS_WIN
     QStringList info(files.keys());
     QString infoStr = info.join('\n');
     QByteArray data = QDir::toNativeSeparators(infoStr).toUtf8().data();
@@ -104,6 +105,7 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
     {
         return INFO_FILE_ERROR;
     }
+#endif //Q_OS_WIN
     if (FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
     {
         return NO_ERRORS;

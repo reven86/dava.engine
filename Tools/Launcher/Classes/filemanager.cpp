@@ -137,6 +137,7 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
     }
 
     bool success = true;
+#ifdef Q_OS_WIN
     QString infoFilePath = GetPackageInfoFilePath();
     bool moveFilesFromInfoList = QFile::exists(infoFilePath);
     QStringList archiveFiles;
@@ -153,7 +154,7 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
             return false;
         }
     }
-
+#endif //Q_OS_WIN
     QDirIterator di(outDir.path(), QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
     while (di.hasNext())
     {
@@ -161,21 +162,22 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         const QFileInfo& fi = di.fileInfo();
         QString absPath = fi.absoluteFilePath();
         QString relPath = absPath.right(absPath.length() - pathOut.length());
+#ifdef Q_OS_WIN
         if (moveFilesFromInfoList && !archiveFiles.contains(relPath))
         {
             continue;
         }
         //this code need for compability with previous launcher versions
-        else if (!moveFilesFromInfoList &&
-#if defined(Q_OS_WIN)
-                 (fi.suffix() != "dll" && fi.suffix() != "exe")
-#elif defined(Q_OS_MAC)
-                 fi.fileName() != "Launcher.app"
-#endif //platform
-                 )
+        else if (!moveFilesFromInfoList && (fi.suffix() != "dll" && fi.suffix() != "exe"))
         {
             continue;
         }
+#elif defined(Q_OS_MAC)
+        if (fi.fileName() != "Launcher.app")
+        {
+            continue;
+        }
+#endif //platform
         QString newFilePath = pathIn + relPath;
         if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
         {
