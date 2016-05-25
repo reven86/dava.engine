@@ -100,4 +100,64 @@ private:
     Vector<Character> characters;
     std::unique_ptr<TextBoxImpl> pImpl;
 };
+
+inline const DAVA::WideString& TextBox::GetText() const
+{
+    return logicalText;
+}
+
+inline const WideString TextBox::GetProcessedText() const
+{
+    return processedText;
+}
+
+inline const Vector<TextBox::Line>& TextBox::GetLines() const
+{
+    return lines;
+}
+
+inline Vector<TextBox::Line>& TextBox::GetLines()
+{
+    return lines;
+}
+
+inline const TextBox::Line& TextBox::GetLine(const int32 index) const
+{
+    return lines.at(index);
+}
+
+inline TextBox::Line& TextBox::GetLine(const int32 index)
+{
+    return lines.at(index);
+}
+
+inline const uint32 TextBox::GetLinesCount() const
+{
+    return uint32(lines.size());
+}
+
+inline const Vector<TextBox::Character>& TextBox::GetCharacters() const
+{
+    return characters;
+}
+
+inline Vector<TextBox::Character>& TextBox::GetCharacters()
+{
+    return characters;
+}
+
+inline const TextBox::Character& TextBox::GetCharacter(int32 index) const
+{
+    return characters.at(index);
+}
+
+inline TextBox::Character& TextBox::GetCharacter(const int32 index)
+{
+    return characters.at(index);
+}
+
+inline const uint32 TextBox::GetCharactersCount() const
+{
+    return uint32(characters.size());
+}
 }

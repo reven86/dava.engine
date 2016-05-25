@@ -555,68 +555,9 @@ const DAVA::TextBox::Direction TextBox::GetDirection() const
     return pImpl->GetDirection();
 }
 
-const DAVA::WideString& TextBox::GetText() const
-{
-    return logicalText;
-}
-
-const WideString TextBox::GetProcessedText() const
-{
-    return processedText;
-}
-
 const TextBox::Direction TextBox::GetBaseDirection() const
 {
     return pImpl->GetBaseDirection();
 }
 
-const Vector<TextBox::Line>& TextBox::GetLines() const
-{
-    return lines;
-}
-
-Vector<TextBox::Line>& TextBox::GetLines()
-{
-    return lines;
-}
-
-const TextBox::Line& TextBox::GetLine(const int32 index) const
-{
-    return lines.at(index);
-}
-
-TextBox::Line& TextBox::GetLine(const int32 index)
-{
-    return lines.at(index);
-}
-
-const uint32 TextBox::GetLinesCount() const
-{
-    return uint32(lines.size());
-}
-
-const Vector<TextBox::Character>& TextBox::GetCharacters() const
-{
-    return characters;
-}
-
-Vector<TextBox::Character>& TextBox::GetCharacters()
-{
-    return characters;
-}
-
-const TextBox::Character& TextBox::GetCharacter(int32 index) const
-{
-    return characters.at(index);
-}
-
-TextBox::Character& TextBox::GetCharacter(const int32 index)
-{
-    return characters.at(index);
-}
-
-const uint32 TextBox::GetCharactersCount() const
-{
-    return uint32(characters.size());
-}
 }

@@ -217,7 +217,7 @@ const WideString TextLayout::BuildVisualString(const WideString& _input, const b
     {
         bidiHelper.ReorderString(output, output, isRtl);
     }
-    //output = StringUtils::RemoveNonPrintable(output, 1);
+    output = StringUtils::RemoveNonPrintable(output, 1);
     if (trimEnd)
     {
         output = !isRtl ? StringUtils::TrimRight(output) : StringUtils::TrimLeft(output);

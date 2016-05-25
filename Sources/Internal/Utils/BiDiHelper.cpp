@@ -212,9 +212,6 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
         return false;
     }
 
-    Vector<int32_t> visMap(logicalLength, -1);
-    ubidi_getVisualMap(para, visMap.data(), &errorCode);
-
     ubidi_close(para);
 
     visualBuffer.resize(visualLength);

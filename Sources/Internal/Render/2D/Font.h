@@ -44,16 +44,6 @@ public:
         int32 baseline = 0;
     };
 
-    struct CharMetrics
-    {
-        uint32 index = 0;
-        uint32 codepoint = 0;
-        float32 xoffset = 0.f;
-        float32 yoffset = 0.f;
-        float32 xadvance = 0.f;
-        float32 yadvance = 0.f;
-    };
-
 protected:
     virtual ~Font();
 
