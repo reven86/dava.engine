@@ -167,10 +167,26 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         {
             continue;
         }
-        //this code need for compability with previous launcher versions
-        else if (!moveFilesFromInfoList && (fi.suffix() != "dll" && fi.suffix() != "exe"))
+        else if (!moveFilesFromInfoList)
         {
-            continue;
+            //this code need for compability with previous launcher versions
+            //we create folder "platforms" manually, so must move it with dlls
+            QString suffix = fi.suffix();
+            if (fi.isDir())
+            {
+                if (fi.fileName() != "platforms")
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                //all entries, which are not directories and their suffix are not dll or exe
+                if (suffix != "dll" && suffix != "exe")
+                {
+                    continue;
+                }
+            }
         }
 #elif defined(Q_OS_MAC)
         if (fi.fileName() != "Launcher.app")
