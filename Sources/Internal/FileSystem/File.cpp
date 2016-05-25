@@ -140,6 +140,10 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         if (attributes & File::WRITE)
         {
             file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+#ifdef __DAVAENGINE_DEBUG__
+            String p = filePath.GetAbsolutePathname();
+            Logger::FrameworkDebug("can't open file %s: %s", p.c_str(), std::strerror(errno));
+#endif
         }
         else
         {

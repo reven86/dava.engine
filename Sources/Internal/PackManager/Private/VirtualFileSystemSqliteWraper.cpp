@@ -196,7 +196,9 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     }
     if (flags & SQLITE_OPEN_READWRITE)
     {
-        oflags |= (DAVA::File::READ | DAVA::File::WRITE | DAVA::File::OPEN);
+        // currently open DB only in READONLY mode
+        // becouse iOS, and Android where we can't modify file in APK
+        oflags |= (DAVA::File::READ | /*DAVA::File::WRITE |*/ DAVA::File::OPEN);
     }
 
     memset(p, 0, sizeof(WrapFile));

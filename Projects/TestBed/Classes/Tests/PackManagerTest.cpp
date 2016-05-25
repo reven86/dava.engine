@@ -212,6 +212,9 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAV
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+    // on MacOS slowly connect and then fast downloading
+
     PackManager& packManager = Core::Instance()->GetPackManager();
 
     const Vector<PackManager::Pack>& packs = packManager.GetPacks();
