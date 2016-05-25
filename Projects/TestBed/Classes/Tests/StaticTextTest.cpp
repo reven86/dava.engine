@@ -1,4 +1,4 @@
-﻿#include "Tests/StaticTextTest.h"
+#include "Tests/StaticTextTest.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "Render/2D/TextLayout.h"
 
