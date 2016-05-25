@@ -67,18 +67,18 @@ private:
         int32 forceLodLayer;
         float32 forceLodDistance;
         LodComponent* lod;
+        ParticleEffectComponent* effect;
     };
     Vector<SlowStruct> slowVector;
 
     struct FastStruct
     {
-        ParticleEffectComponent* effect;
         Vector3 position;
         int32 currentLod;
         float32 nearSquare;
         float32 farSquare;
-        int32 slowIndex;
         bool effectStopped;
+        bool isEffect;
     };
     UnorderedMap<Entity*, int32> fastMap;
     Vector<FastStruct> fastVector;

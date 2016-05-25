@@ -76,9 +76,10 @@ void LodSystem::Process(float32 timeElapsed)
     Vector3 cameraPos = camera->GetPosition();
     float32 cameraZoomFactorSq = camera->GetZoomFactor() * camera->GetZoomFactor();
 
-    for (FastStruct& fast : fastVector)
+    int32 size = static_cast<int32>(fastVector.size());
+    for (int32 index = 0; index < size; ++index)
     {
-        ParticleEffectComponent* effect = fast.effect;
+        FastStruct& fast = fastVector[index];
         if (fast.effectStopped)
         {
             //do not update inactive effects
@@ -88,7 +89,7 @@ void LodSystem::Process(float32 timeElapsed)
             int32 newLod = 0;
             if (forceLodUsed)
             {
-                SlowStruct& slow = slowVector[fast.slowIndex];
+                SlowStruct& slow = slowVector[index];
                 if (slow.forceLodLayer != LodComponent::INVALID_LOD_LAYER)
                 {
                     newLod = slow.forceLodLayer;
@@ -99,7 +100,7 @@ void LodSystem::Process(float32 timeElapsed)
                 float32 dst;
                 if (forceLodUsed)
                 {
-                    SlowStruct& slow = slowVector[fast.slowIndex];
+                    SlowStruct& slow = slowVector[index];
                     if (slow.forceLodDistance != LodComponent::INVALID_DISTANCE)
                     {
                         dst = slow.forceLodDistance * slow.forceLodDistance;
@@ -111,9 +112,9 @@ void LodSystem::Process(float32 timeElapsed)
                     dst *= cameraZoomFactorSq;
                 }
 
-                if (effect)
+                if (fast.isEffect)
                 {
-                    SlowStruct* slow = &slowVector[fast.slowIndex];
+                    SlowStruct* slow = &slowVector[index];
                     if (dst > slow->farSquares[0]) //preserve lod 0 from degrade
                         dst = dst * lodMult + lodOffset;
                 }
@@ -127,7 +128,7 @@ void LodSystem::Process(float32 timeElapsed)
                 else
                 {
                     newLod = LodComponent::INVALID_LOD_LAYER;
-                    SlowStruct* slow = &slowVector[fast.slowIndex];
+                    SlowStruct* slow = &slowVector[index];
                     for (int32 i = LodComponent::MAX_LOD_LAYERS - 1; i >= 0; --i)
                     {
                         if (dst < slow->farSquares[i])
@@ -142,11 +143,12 @@ void LodSystem::Process(float32 timeElapsed)
             if (fast.currentLod != newLod)
             {
                 fast.currentLod = newLod;
-                SlowStruct& slow = slowVector[fast.slowIndex];
+                SlowStruct& slow = slowVector[index];
                 fast.nearSquare = slow.nearSquares[fast.currentLod];
                 fast.farSquare = slow.farSquares[fast.currentLod];
                 slow.lod->SetCurrentLod(fast.currentLod);
 
+                ParticleEffectComponent* effect = slow.effect;
                 if (effect)
                 {
                     effect->SetDesiredLodLevel(fast.currentLod);
@@ -197,17 +199,19 @@ void LodSystem::AddEntity(Entity* entity)
     SlowStruct slow;
     slow.entity = entity;
     slow.lod = lod;
+    slow.effect = effect;
     slowVector.push_back(slow);
     UpdateDistances(lod, &slow);
 
+    int32 index = static_cast<int32>(slowVector.size() - 1);
+
     FastStruct fast{
-        effect,
         position,
         lod->currentLod,
         lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.nearSquares[lod->currentLod],
         lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.farSquares[lod->currentLod],
-        static_cast<int32>(slowVector.size() - 1),
-        effectStopped
+        effectStopped,
+        effect != nullptr
     };
 
     fastVector.push_back(fast);
@@ -216,11 +220,10 @@ void LodSystem::AddEntity(Entity* entity)
 
 void LodSystem::RemoveEntity(Entity* entity)
 {
-    //delete from fastMap
+    //find in fastMap
     auto iter = fastMap.find(entity);
     DVASSERT(iter != fastMap.end());
     int32 index = iter->second;
-    fastMap.erase(entity);
 
     //delete from slow
     SlowStruct& slowLast = slowVector.back();
@@ -230,7 +233,15 @@ void LodSystem::RemoveEntity(Entity* entity)
     //delete from fast
     FastStruct& fastLast = fastVector.back();
     fastVector[index] = fastLast;
-    fastLast.slowIndex = index;
+    fastVector.pop_back();
+
+    //delete in fastMap
+    fastMap.erase(entity);
+    Entity* movedEntity = slowLast.entity;
+    if (entity != movedEntity)
+    {
+        fastMap[movedEntity] = index;
+    }
 }
 
 void LodSystem::RegisterComponent(Entity* entity, Component* component)
@@ -241,9 +252,11 @@ void LodSystem::RegisterComponent(Entity* entity, Component* component)
         if (iter != fastMap.end())
         {
             int32 index = iter->second;
+            SlowStruct* slow = &slowVector[index];
+            DVASSERT(slow->effect == nullptr);
+            slow->effect = static_cast<ParticleEffectComponent*>(component);
             FastStruct* fast = &fastVector[index];
-            DVASSERT(fast->effect == nullptr);
-            fast->effect = static_cast<ParticleEffectComponent*>(component);
+            fast->isEffect = slow->effect != nullptr;
         }
     }
 }
@@ -256,9 +269,11 @@ void LodSystem::UnregisterComponent(Entity* entity, Component* component)
         if (iter != fastMap.end())
         {
             int32 index = iter->second;
+            SlowStruct* slow = &slowVector[index];
+            DVASSERT(slow->effect == nullptr);
+            slow->effect = nullptr;
             FastStruct* fast = &fastVector[index];
-            DVASSERT(fast->effect != nullptr);
-            fast->effect = nullptr;
+            fast->isEffect = false;
         }
     }
 }

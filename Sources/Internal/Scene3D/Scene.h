@@ -11,6 +11,7 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Base/Observer.h"
+#include "Scene3D/Lod/LodSystem.h"
 
 namespace DAVA
 {
@@ -30,7 +31,6 @@ class SceneSystem;
 class RenderSystem;
 class RenderUpdateSystem;
 class TransformSystem;
-class LodSystem;
 class DebugRenderSystem;
 class EventSystem;
 class ParticleEffectSystem;
