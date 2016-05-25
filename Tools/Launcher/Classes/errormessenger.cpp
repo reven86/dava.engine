@@ -60,6 +60,7 @@ void LogMessage(QtMsgType type, const QString& msg)
     switch (type)
     {
     case QtDebugMsg:
+    case QtInfoMsg:
         typeStr = "DEBUG";
         break;
     case QtWarningMsg:
