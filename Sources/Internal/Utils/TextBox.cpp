@@ -8,11 +8,18 @@
 #pragma clang diagnostic ignored "-Wheader-hygiene"
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
-#include <unicode/ustring.h>
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
 #if __clang__
 #pragma clang diagnostic pop
+#endif
+
+#if defined(__DAVAENGINE_WIN32__)
+static_assert(sizeof(DAVA::WideString::value_type) == sizeof(UChar), "Check size of wchar_t and UChar");
+#else
+static_assert(sizeof(DAVA::WideString::value_type) == 4, "Check size of wchar_t equal 4");
+static_assert(sizeof(UChar) == 2, "Check size of UChar equal 2");
+#include <utf8.h>
 #endif
 
 namespace DAVA
@@ -39,7 +46,7 @@ public:
 private:
     static UBiDiLevel DirectionModeToBiDiLevel(const TextBox::DirectionMode mode);
     static TextBox::Direction BiDiDirectionToDirection(const UBiDiDirection dir);
-    static WideString ConvertU2W(const UChar* src, const int32 length);
+    static WideString ConvertU2W(const UCharString& src);
     static UCharString ConvertW2U(const WideString& src);
 
     UCharString paraText;
@@ -151,7 +158,7 @@ void TextBoxImpl::Shape()
 
 const DAVA::WideString TextBoxImpl::AsWString() const
 {
-    return ConvertU2W(ubidi_getText(para), ubidi_getLength(para));
+    return ConvertU2W(paraText);
 }
 
 void TextBoxImpl::ReorderLines()
@@ -184,7 +191,7 @@ void TextBoxImpl::ReorderLines()
             DVASSERT_MSG(false, "[TextBox::ReorderLines] writeReordered errorCode");
         }
 
-        line.visualString = ConvertU2W(visString.data(), line.length);
+        line.visualString = ConvertU2W(visString);
 
         // Get local reordered characters map
         int32 length = ubidi_getLength(lpara);
@@ -253,32 +260,23 @@ DAVA::TextBox::Direction TextBoxImpl::BiDiDirectionToDirection(const UBiDiDirect
     return TextBox::Direction::LTR;
 }
 
-WideString TextBoxImpl::ConvertU2W(const UChar* src, const int32 length)
+WideString TextBoxImpl::ConvertU2W(const UCharString& src)
 {
-    if (length == 0)
+    if (src.empty())
     {
         return WideString();
     }
-
-    int32 dstLen = 0;
-    UErrorCode errorCode = U_ZERO_ERROR;
-    u_strToWCS(nullptr, 0, &dstLen, src, length, &errorCode);
-    if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
-    {
-        Logger::Error("[TextBox::ConvertU2W] detect length errorCode = %d", errorCode);
-        return WideString();
-    }
-
-    WideString dst(dstLen, 0);
-    errorCode = U_ZERO_ERROR;
-    u_strToWCS(const_cast<WideString::value_type*>(dst.data()), dst.capacity(), 0, src, length, &errorCode);
-    if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
-    {
-        Logger::Error("[TextBox::ConvertU2W] convert errorCode = %d", errorCode);
-        return WideString();
-    }
-
-    return dst;
+#if defined(__DAVAENGINE_WIN32__)
+    return WideString(src);
+#else
+    String tmp;
+    tmp.reserve(src.length());
+    utf8::utf16to8(src.begin(), src.end(), std::back_inserter(tmp));
+    WideString result;
+    return.reserve(tmp.length());
+    utf8::utf8to32(tmp.begin(), tmp.end(), std::back_inserter(result));
+    return result;
+#endif
 }
 
 UCharString TextBoxImpl::ConvertW2U(const WideString& src)
@@ -287,26 +285,17 @@ UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     {
         return UCharString();
     }
-
-    int32 dstLen = 0;
-    UErrorCode errorCode = U_ZERO_ERROR;
-    u_strFromWCS(nullptr, 0, &dstLen, src.data(), src.length(), &errorCode);
-    if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
-    {
-        Logger::Error("[TextBox::ConvertW2U] detect length errorCode = %d", errorCode);
-        return UCharString();
-    }
-
-    UCharString dst(dstLen, 0);
-    errorCode = U_ZERO_ERROR;
-    u_strFromWCS(const_cast<UCharString::value_type*>(dst.data()), dst.capacity(), 0, src.data(), src.length(), &errorCode);
-    if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
-    {
-        Logger::Error("[TextBox::ConvertW2U] convert errorCode = %d", errorCode);
-        return UCharString();
-    }
-
-    return dst;
+#if defined(__DAVAENGINE_WIN32__)
+    return UCharString(src);
+#else
+    String tmp;
+    tmp.reserve(src.length());
+    utf8::utf32to8(src.begin(), src.end(), std::back_inserter(tmp));
+    UCharString result;
+    return.reserve(tmp.length());
+    utf8::utf8to16(tmp.begin(), tmp.end(), std::back_inserter(result));
+    return result;
+#endif
 }
 
 /******************************************************************************/
@@ -566,5 +555,4 @@ const TextBox::Direction TextBox::GetBaseDirection() const
 {
     return pImpl->GetBaseDirection();
 }
-
 }
