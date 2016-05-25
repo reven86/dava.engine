@@ -2,9 +2,11 @@
 #define DAVAENGINE_ANY__H
 
 #include <typeindex>
-#include <unordered_map>
+#include <string>
+
 #include "Type.h"
 #include "AutoStorage.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
@@ -37,7 +39,8 @@ public:
             BadSize
         };
 
-        Exception(ErrorCode code);
+        Exception(ErrorCode code, const std::string& message);
+        Exception(ErrorCode code, const char* message);
 
         ErrorCode errorCode;
     };
@@ -95,7 +98,7 @@ private:
     const Type* type = nullptr;
     Storage storage;
 
-    static std::unordered_map<const Type*, AnyOP> operations;
+    static UnorderedMap<const Type*, AnyOP> operations;
 };
 
 } // namespace DAVA

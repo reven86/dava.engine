@@ -1,14 +1,15 @@
 #pragma once
 #define DAVAENGINE_AUTO_STORAGE__H
 
-#include <array>
 #include <memory>
 #include <cassert>
 #include <type_traits>
 
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
-struct CountTraits
+struct AutoStorageCountTraits
 {
     enum : size_t
     {
@@ -18,20 +19,22 @@ struct CountTraits
     };
 };
 
-template <size_t Count = CountTraits::Count>
+template <size_t Count = AutoStorageCountTraits::Count>
 class AutoStorage final
 {
-    using StorageT = std::array<void*, Count>;
+    using StorageT = Array<void*, Count>;
     using SharedT = std::shared_ptr<void>;
 
     static_assert(Count > 0, "Size should be > 0");
-    static_assert(sizeof(StorageT) >= sizeof(void*) && sizeof(StorageT) >= sizeof(SharedT), "Wrong Autostorage size");
+    static_assert(std::tuple_size<StorageT>::value >= AutoStorageCountTraits::Count &&
+                  std::tuple_size<StorageT>::value * sizeof(void*) >= sizeof(SharedT),
+                  "Wrong Autostorage size");
 
 public:
     template <typename T>
     using StorableType = typename std::decay<T>::type;
 
-    AutoStorage() = default;
+    AutoStorage();
     ~AutoStorage();
 
     AutoStorage(AutoStorage&&);

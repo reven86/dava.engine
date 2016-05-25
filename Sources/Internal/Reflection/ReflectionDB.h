@@ -3,11 +3,10 @@
 
 #include <memory>
 #include <cassert>
-#include <vector>
-#include <unordered_map>
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
+#include "Base/BaseTypes.h"
 #include "Reflection/ReflectionVirt.h"
 #include "Reflection/ReflectionWrappers.h"
 
@@ -21,13 +20,13 @@ class ReflectionDB final
 public:
     std::unique_ptr<StructureWrapper> structureWrapper;
     std::unique_ptr<DtorWrapper> dtorWrapper;
-    DAVA::Vector<std::unique_ptr<CtorWrapper>> ctorWrappers;
-    DAVA::UnorderedMultiMap<DAVA::String, std::unique_ptr<MethodWrapper>> methodWrappers;
+    Vector<std::unique_ptr<CtorWrapper>> ctorWrappers;
+    UnorderedMultiMap<String, std::unique_ptr<MethodWrapper>> methodWrappers;
 
     const DtorWrapper* GetDtor() const;
     const CtorWrapper* GetCtor() const;
     const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
-    DAVA::Vector<const CtorWrapper*> GetCtors() const;
+    Vector<const CtorWrapper*> GetCtors() const;
 
     template <typename T>
     static const ReflectionDB* GetGlobalDB();

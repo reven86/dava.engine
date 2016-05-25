@@ -1,8 +1,7 @@
 #pragma once
+#include "Base/BaseTypes.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionWrappers.h"
-
-#include <vector>
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -103,7 +102,7 @@ protected:
         {
         }
 
-        DAVA::String name;
+        String name;
         std::unique_ptr<ValueWrapper> vw;
         const ReflectionDB* db;
     };
@@ -135,8 +134,8 @@ protected:
         }
     };
 
-    DAVA::Vector<BaseClass> bases;
-    DAVA::Vector<ClassField> fields;
+    Vector<BaseClass> bases;
+    Vector<ClassField> fields;
 };
 
 } // namespace DAVA

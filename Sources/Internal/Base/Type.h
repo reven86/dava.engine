@@ -1,23 +1,22 @@
 #pragma once
 #define DAVAENGINE_TYPE__H
 
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <memory>
 #include <typeindex>
 
-#define DAVA_DECLARE_TYPE_INITIALIZER                       \
-protected:                                                  \
+#include "Base/BaseTypes.h"
+
+#define DAVA_DECLARE_TYPE_INITIALIZER \
+protected: \
     template <typename T> \
     friend struct DAVA::TypeDetails::TypeInitializerRunner; \
-    friend class DAVA::Type;                                \
+    friend class DAVA::Type; \
     static void __TypeInitializer();
 
-#define DAVA_TYPE_INITIALIZER(T)                            \
+#define DAVA_TYPE_INITIALIZER(T) \
     void T::__TypeInitializer()
 
-#define DAVA_TYPE_REGISTER(T)                               \
+#define DAVA_TYPE_REGISTER(T) \
     DAVA::Type::Instance<T>()->RegisterPermanentName(#T)
 
 namespace DAVA
@@ -32,7 +31,7 @@ public:
     Type(const Type&) = delete;
     Type& operator=(const Type&) = delete;
 
-    void RegisterPermanentName(const std::string& permanentName) const;
+    void RegisterPermanentName(const String& permanentName) const;
 
     size_t GetSize() const;
     const char* GetName() const;
@@ -50,7 +49,7 @@ public:
     template <typename T>
     static const Type* Instance();
 
-    static const Type* Instance(const std::string& permanentName);
+    static const Type* Instance(const String& permanentName);
 
 protected:
     Type() = default;
@@ -59,7 +58,7 @@ protected:
     void Init();
 
     const char* name = nullptr;
-    std::string permanentName;
+    mutable String permanentName;
     size_t size = 0;
 
     bool isConst = false;
@@ -69,9 +68,9 @@ protected:
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;
     mutable ReflectionDB* reflectionDb = nullptr;
-    mutable std::unordered_set<const Type*> baseTypes;
+    mutable UnorderedSet<const Type*> baseTypes;
 
-    static std::unordered_map<std::string, const Type*> nameToTypeMap;
+    static UnorderedMap<String, const Type*> nameToTypeMap;
 };
 
 inline size_t Type::GetSize() const

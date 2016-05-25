@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
 #include "Base/Any.h"
+#include "Base/BaseTypes.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedObject.h"
 
@@ -17,7 +17,7 @@ struct Field
     Reflection valueRef;
 };
 
-using FieldsList = DAVA::Vector<Field>;
+using FieldsList = Vector<Field>;
 
 } // namespace Ref
 

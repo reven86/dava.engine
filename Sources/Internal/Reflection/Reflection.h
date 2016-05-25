@@ -2,25 +2,25 @@
 #define DAVA_REFLECTION__H
 
 #include <cassert>
-#include <vector>
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
 #include "Base/Any.h"
+#include "Base/BaseTypes.h"
 #include "Reflection/ReflectedObject.h"
 #include "Reflection/ReflectionVirt.h"
 
-#define DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION                                        \
-    const DAVA::ReflectionDB* GetVirtualReflectionDB() const override               \
-    {                                                                               \
-        return DAVA::Ref::AutoGetReflectionDB(this);                                \
+#define DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION \
+    const DAVA::ReflectionDB* GetVirtualReflectionDB() const override \
+    { \
+        return DAVA::Ref::AutoGetReflectionDB(this); \
     }
 
 namespace DAVA
 {
 namespace Ref
 {
-using ParamsList = DAVA::Vector<const Type*>;
+using ParamsList = Vector<const Type*>;
 }
 
 class ValueWrapper;
@@ -53,13 +53,13 @@ public:
 
     const CtorWrapper* GetCtor() const;
     const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
-    DAVA::Vector<const CtorWrapper*> GetCtors() const;
+    Vector<const CtorWrapper*> GetCtors() const;
 
     const DtorWrapper* GetDtor() const;
 
     const MethodWrapper* GetMethod(const char* name);
     const MethodWrapper* GetMethod(const char* name, const Ref::ParamsList& params);
-    DAVA::Vector<const MethodWrapper*> GetMethods() const;
+    Vector<const MethodWrapper*> GetMethods() const;
 
     const StructureWrapper* GetStructure() const;
 

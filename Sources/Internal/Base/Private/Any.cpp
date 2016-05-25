@@ -1,9 +1,10 @@
 #include "Base/Any.h"
-#include <string>
+
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
-std::unordered_map<const Type*, Any::AnyOP> Any::operations = {
+UnorderedMap<const Type*, Any::AnyOP> Any::operations = {
     AnyDetails::DefaultOP<void*>(),
     AnyDetails::DefaultOP<bool>(),
     AnyDetails::DefaultOP<DAVA::int8>(),
@@ -47,7 +48,9 @@ void Any::LoadValue(const Type* type_, void* data)
     auto op = operations.find(type_);
 
     if (op == operations.end() || nullptr == op->second.load)
-        throw Exception(Exception::BadOperation);
+    {
+        throw Exception(Exception::BadOperation, Format("Couldn't load value of type \"%s\" into Any. Load operation wasn't registered", type_->GetName()));
+    }
 
     type = type_;
     op->second.load(storage, data);
@@ -55,13 +58,16 @@ void Any::LoadValue(const Type* type_, void* data)
 
 void Any::SaveValue(void* data, size_t size) const
 {
+    assert(type != nullptr);
     if (type->GetSize() < size)
-        throw Exception(Exception::BadSize);
+    {
+        throw Exception(Exception::BadSize, Format("Couldn't set value with size %d into Any with type \"%s\"", size, type->GetName()));
+    }
 
     auto op = operations.find(type);
 
     if (op == operations.end() || nullptr == op->second.save)
-        throw Exception(Exception::BadOperation);
+        throw Exception(Exception::BadOperation, Format("Couldn't set value into Any with type \"%s\". Store operation wasn't registered", type->GetName()));
 
     op->second.save(storage, data);
 }
@@ -92,7 +98,7 @@ bool Any::operator==(const Any& any) const
     auto op = operations.find(type);
 
     if (op == operations.end() || nullptr == op->second.compare)
-        throw Exception(Exception::BadOperation);
+        throw Exception(Exception::BadOperation, Format("Couldn't compare values of type \"%s\". Compare operation wasn't registered", type->GetName()));
 
     return op->second.compare(storage.GetData(), any.storage.GetData());
 }
@@ -102,8 +108,14 @@ bool Any::operator!=(const Any& any) const
     return !operator==(any);
 }
 
-Any::Exception::Exception(ErrorCode code)
-    : runtime_error("")
+Any::Exception::Exception(ErrorCode code, const std::string& message)
+    : runtime_error(message)
+    , errorCode(code)
+{
+}
+
+Any::Exception::Exception(ErrorCode code, const char* message)
+    : runtime_error(message)
     , errorCode(code)
 {
 }

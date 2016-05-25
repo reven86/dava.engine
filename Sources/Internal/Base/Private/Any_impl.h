@@ -3,6 +3,8 @@
 #include "Base/Any.h"
 #endif
 
+#include "Utils/StringFormat.h"
+
 namespace DAVA
 {
 namespace AnyDetails
@@ -75,7 +77,7 @@ inline T Any::Cast() const
     // TODO: implement
     // ...
 
-    throw Exception(Exception::BadCast);
+    throw Exception(Exception::BadCast, Format("Can't cast value of type \"%s\" to type \"%s\"", type->GetName(), Type::Instance<T>()->GetName()));
 }
 
 template <typename T>
@@ -91,7 +93,7 @@ template <typename T>
 const T& Any::Get() const
 {
     if (!CanGet<T>())
-        throw Exception(Exception::BadGet);
+        throw Exception(Exception::BadGet, Format("Can't get value of %s type. Any type is \"%s\"", Type::Instance<T>()->GetName(), type->GetName()));
     return storage.GetAuto<T>();
 }
 

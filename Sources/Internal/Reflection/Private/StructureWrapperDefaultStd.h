@@ -6,7 +6,7 @@
 namespace DAVA
 {
 template <typename T>
-class StructureWrapperDefault<DAVA::Vector<T>> : public StructureWrapper
+class StructureWrapperDefault<Vector<T>> : public StructureWrapper
 {
 public:
     bool IsDynamic() const override
@@ -44,10 +44,10 @@ public:
     {
         Ref::Field child;
 
-        if (key.CanCast<DAVA::size_type>())
+        if (key.CanCast<size_type>())
         {
-            size_t i = key.Cast<DAVA::size_type>();
-            DAVA::Vector<T>* vector = object.GetPtr<DAVA::Vector<T>>();
+            size_t i = key.Cast<size_type>();
+            Vector<T>* vector = object.GetPtr<Vector<T>>();
 
             if (i < vector->size())
             {
@@ -63,9 +63,9 @@ public:
     Ref::FieldsList GetFields(const ReflectedObject& object) const override
     {
         Ref::FieldsList ret;
-        DAVA::Vector<T>* vector = object.GetPtr<DAVA::Vector<T>>();
+        Vector<T>* vector = object.GetPtr<Vector<T>>();
 
-        for (DAVA::size_type i = 0; i < static_cast<DAVA::size_type>(vector->size()); ++i)
+        for (size_type i = 0; i < static_cast<size_type>(vector->size()); ++i)
         {
             T* valuePtr = &vector->at(i);
 

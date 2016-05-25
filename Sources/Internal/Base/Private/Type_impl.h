@@ -70,7 +70,7 @@ void Type::Init()
     using DerefT = typename std::remove_pointer<T1>::type;
 #else
     // standard c++14 way
-    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_const_t<T>>>;
+    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
 #endif
 
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);

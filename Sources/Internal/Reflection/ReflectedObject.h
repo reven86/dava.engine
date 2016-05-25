@@ -1,7 +1,6 @@
 #pragma once
 #include <type_traits>
 #include <cassert>
-#include <map>
 
 #if !defined(__DAVAENGINE_ANDROID__)
 

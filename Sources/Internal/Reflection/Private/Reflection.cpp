@@ -4,6 +4,8 @@
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
+namespace ReflectionPrinterDetails
+{
 struct TypePrinter
 {
     const DAVA::Type* type;
@@ -160,12 +162,13 @@ void Dump(std::ostream& out, const char* name, const DAVA::Reflection& ref, int 
         }
     }
 }
+}
 
 namespace DAVA
 {
 void Reflection::Dump(std::ostream& out)
 {
-    ::Dump(out, "Reflection", *this, 0);
+    ReflectionPrinterDetails::Dump(out, "Reflection", *this, 0);
 }
 
 } // namespace DAVA

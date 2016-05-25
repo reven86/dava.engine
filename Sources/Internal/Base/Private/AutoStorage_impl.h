@@ -1,10 +1,17 @@
 #pragma once
 #ifndef DAVAENGINE_AUTO_STORAGE__H
+// include AutoStorage.h for help IDE parse types here.
 #include "../AutoStorage.h"
 #endif
 
 namespace DAVA
 {
+template <size_t Count>
+AutoStorage<Count>::AutoStorage()
+{
+    storage.fill(nullptr);
+}
+
 template <size_t Count>
 AutoStorage<Count>::~AutoStorage()
 {
