@@ -48,23 +48,22 @@ CEFControllerImpl::CEFControllerImpl()
     SetUpdateRate(30);
     bool result = false;
 
-    try
-    {
-        CefSettings settings;
-        settings.no_sandbox = 1;
-        settings.windowless_rendering_enabled = 1;
-        // TODO: disable cef logs before merge
-        //settings.log_severity = LOGSEVERITY_DISABLE;
-        settings.log_severity = LOGSEVERITY_VERBOSE;
-        CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
+    CefSettings settings;
+    settings.no_sandbox = 1;
+    settings.windowless_rendering_enabled = 1;
+    // TODO: disable cef logs before merge
+    //settings.log_severity = LOGSEVERITY_DISABLE;
+    settings.log_severity = LOGSEVERITY_VERBOSE;
+    CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
-        // CefInitialize replaces thread name, so we need to save it and restore
-        //String threadName = Thread::GetCurrentThreadName();
-        result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
-        //Thread::SetCurrentThreadName(threadName);
-    }
-    catch (...)
+    result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
+
+    // CefInitialize replaces thread name, so we need to save it and restore
+    // Restore name only on Main Thread
+    if (result && Thread::IsMainThread())
     {
+        // Restore name through InitMainThread
+        Thread::InitMainThread();
     }
 
     // Register custom url scheme for dava-based applications
