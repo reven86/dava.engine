@@ -1,37 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 extern void FrameworkMain(int argc, char* argv[]);
+
+using namespace DAVA;
 
 @implementation OpenGLView
 
@@ -74,8 +47,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", static_cast<unsigned>(rendererID));
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-    trackingArea = nil;
-    [self enableTrackingArea];
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -103,19 +74,6 @@ extern void FrameworkMain(int argc, char* argv[]);
     return depth;
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-
-- (void)enableTrackingArea
-{
-    [trackingArea release];
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:(NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveInKeyWindow) owner:self userInfo:nil];
-    [self addTrackingArea:trackingArea];
-}
-
-- (void)disableTrackingArea
-{
-    if (trackingArea)
-        [self removeTrackingArea:trackingArea];
-}
 
 - (void)dealloc
 {

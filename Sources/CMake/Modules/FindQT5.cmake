@@ -1,15 +1,22 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if (NOT QT_VERSION)
+    set(QT_VERSION "QT56")
+endif()
+
 if( WIN32 )
 	if( X64_MODE )
-		set (QT_ACTUAL_PATH ${QT5_PATH_WIN64})
+		set (PLATFORM_SPEC "WIN64")
 	else ()
-		set (QT_ACTUAL_PATH ${QT5_PATH_WIN})
+		set (PLATFORM_SPEC "WIN")
 	endif ()	
 elseif ( MACOS )
-	set (QT_ACTUAL_PATH ${QT5_PATH_MAC})
+	set (PLATFORM_SPEC "MAC")
 endif ()
+
+set(VARIABLE_NAME "${QT_VERSION}_PATH_${PLATFORM_SPEC}")
+set(QT_ACTUAL_PATH ${${VARIABLE_NAME}})
 
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
@@ -50,20 +57,7 @@ macro ( qt_deploy )
 
     endif()
 
-    is_deploy_qt_delayed(IS_DELAYED_DEPLOY)
-    if (${IS_DELAYED_DEPLOY})
-        set(DEPLOY_PROJECT "QT_DEPLOY_${PROJECT_NAME}")
-        ADD_CUSTOM_TARGET ( ${DEPLOY_PROJECT} ALL)
-
-        get_deploy_dependencies(DEPENDENCIES_LIST)
-        foreach(DEPENDENCY ${DEPENDENCIES_LIST})
-            add_dependencies( ${DEPLOY_PROJECT} ${DEPENDENCY} )
-        endforeach()
-    else()
-        set(DEPLOY_PROJECT ${PROJECT_NAME})
-    endif()
-
-    ADD_CUSTOM_COMMAND( TARGET ${DEPLOY_PROJECT}  POST_BUILD
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
                     "-p" "${DEPLOY_PLATFORM}"
@@ -72,24 +66,6 @@ macro ( qt_deploy )
                     "-a" "${DEPLOY_ARGUMENTS}"
         )
 
-endmacro ()
-
-macro(resolve_qt_pathes)
-    if ( NOT QT5_LIB_PATH)
-
-        if( WIN32 )
-            set ( QT_CORE_LIB Qt5Core.lib )
-        elseif( MACOS )
-            set ( QT_CORE_LIB QtCore.la )
-        endif()
-
-        find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT_ACTUAL_PATH}
-                          PATH_SUFFIXES lib)
-
-        ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
-    endif()
-    set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT5_LIB_PATH}/cmake")
 endmacro()
 
 #################################################################
@@ -102,7 +78,14 @@ set ( CMAKE_AUTOMOC ON )
 list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick Network)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
-resolve_qt_pathes()
+set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
+
+if (NOT EXISTS ${QT_CMAKE_RULES})
+   message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
+endif()
+
+set ( QT5_LIB_PATH "${QT_ACTUAL_PATH}/lib")
+set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_ACTUAL_PATH}/lib/cmake")
 
 foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     if (NOT Qt5${COMPONENT}_FOUND)
