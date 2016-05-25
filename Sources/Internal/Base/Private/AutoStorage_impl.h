@@ -1,7 +1,7 @@
 #pragma once
 #ifndef DAVAENGINE_AUTO_STORAGE__H
 // include AutoStorage.h for help IDE parse types here.
-#include "../AutoStorage.h"
+#include "Base/AutoStorage.h"
 #endif
 
 namespace DAVA

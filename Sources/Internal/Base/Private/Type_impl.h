@@ -1,6 +1,7 @@
 #pragma once
 #ifndef DAVAENGINE_TYPE__H
-#include "../Type.h"
+// include Type.h for help IDE parse types here.
+#include "Base/Type.h"
 #endif
 #include <atomic>
 
