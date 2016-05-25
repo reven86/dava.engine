@@ -14,7 +14,7 @@
 #pragma clang diagnostic pop
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 static_assert(sizeof(DAVA::WideString::value_type) == sizeof(UChar), "Check size of wchar_t and UChar");
 #else
 static_assert(sizeof(DAVA::WideString::value_type) == 4, "Check size of wchar_t equal 4");
@@ -96,7 +96,7 @@ void TextBoxImpl::ChangeDirectionMode(const TextBox::DirectionMode mode)
 void TextBoxImpl::UpdatePara()
 {
     UErrorCode errorCode = U_ZERO_ERROR;
-    ubidi_setPara(para, paraText.data(), paraText.length(), baseLevel, nullptr, &errorCode);
+    ubidi_setPara(para, paraText.data(), int32(paraText.length()), baseLevel, nullptr, &errorCode);
     if (errorCode != U_ZERO_ERROR)
     {
         Logger::Error("[TextBox::SetText] errorCode = %d", errorCode);
@@ -266,14 +266,14 @@ WideString TextBoxImpl::ConvertU2W(const UCharString& src)
     {
         return WideString();
     }
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     return WideString(src);
 #else
     String tmp;
     tmp.reserve(src.length());
     utf8::utf16to8(src.begin(), src.end(), std::back_inserter(tmp));
     WideString result;
-    return.reserve(tmp.length());
+    result.reserve(tmp.length());
     utf8::utf8to32(tmp.begin(), tmp.end(), std::back_inserter(result));
     return result;
 #endif
@@ -285,14 +285,14 @@ UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     {
         return UCharString();
     }
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     return UCharString(src);
 #else
     String tmp;
     tmp.reserve(src.length());
     utf8::utf32to8(src.begin(), src.end(), std::back_inserter(tmp));
     UCharString result;
-    return.reserve(tmp.length());
+    result.reserve(tmp.length());
     utf8::utf8to16(tmp.begin(), tmp.end(), std::back_inserter(result));
     return result;
 #endif
@@ -330,7 +330,7 @@ void TextBox::ClearLines()
 void TextBox::AddLineRange(int32 start, int32 length)
 {
     TextBox::Line l;
-    l.index = lines.size();
+    l.index = int32(lines.size());
     l.start = start;
     l.length = length;
     l.visualString = processedText.substr(start, length);
@@ -381,7 +381,7 @@ void TextBox::Split(const WrapMode mode, const Vector<uint8>* breaks, const Vect
     ClearLines();
     if (mode == WrapMode::NO_WRAP)
     {
-        AddLineRange(0, processedText.length());
+        AddLineRange(0, int32(processedText.length()));
     }
     else
     {
