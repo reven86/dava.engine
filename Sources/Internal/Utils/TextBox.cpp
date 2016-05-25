@@ -177,7 +177,7 @@ void TextBoxImpl::ReorderLines()
         // Write reordered string
         errorCode = U_ZERO_ERROR;
         UCharString visString(line.length, 0);
-        ubidi_writeReordered(lpara, const_cast<UChar*>(visString.data()), line.length, UBIDI_DO_MIRRORING, &errorCode);
+        ubidi_writeReordered(lpara, const_cast<UChar*>(visString.data()), line.length, UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS, &errorCode);
         if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
         {
             Logger::Error("[TextBox::ReorderLines] writeReordered errorCode = %d", errorCode);
