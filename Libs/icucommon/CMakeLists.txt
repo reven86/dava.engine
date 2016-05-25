@@ -177,6 +177,14 @@ target_include_directories(icucommon PUBLIC
 if(WIN32)
   set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd" ) 
   set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT" ) 
+elseif(APPLE)
+  if(IOS)
+    set( CMAKE_XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY iPhone/iPad )
+    set( CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 7.0)
+  else()
+    set( CMAKE_OSX_DEPLOYMENT_TARGET 10.8 )
+    set( CMAKE_OSX_ARCHITECTURES x86_64;i386 )
+  endif()
 endif()
 
 target_compile_definitions(icucommon PUBLIC 
