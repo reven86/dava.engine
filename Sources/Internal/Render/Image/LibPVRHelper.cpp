@@ -88,14 +88,19 @@ PVRFile::~PVRFile()
 const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_PVR, // image format type
+      "PVR", // image format name
+      { ".pvr" }, // image format extension
+      {}) // supported pixel formats
 {
-    name.assign("PVR");
-    supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
+bool LibPVRHelper::CanProcessFile(const ScopedPtr<File>& file) const
 {
     bool isPvrFile = false;
+
+    DVASSERT(file);
 
     file->Seek(0, File::SEEK_FROM_START);
     PVRFile* pvrFile = ReadFile(file, false, false);
@@ -108,7 +113,7 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     if (LoadImages(infile, imageSet, loadingParams))
     {
@@ -132,7 +137,7 @@ eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     ImageInfo info;
 
@@ -144,6 +149,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
         info.format = GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
+        info.faceCount = pvrFile->header.u32NumFaces;
 
         delete pvrFile;
     }
@@ -2553,5 +2559,23 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     }
 
     return true;
+}
+
+bool LibPVRHelper::CanCompressAndDecompress(PixelFormat format)
+{
+    // todo: implement direct compress/decompress for pvr formats
+    return false;
+}
+
+bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Decompressing from PVR is not implemented yet");
+    return false;
+}
+
+bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
+    return false;
 }
 };

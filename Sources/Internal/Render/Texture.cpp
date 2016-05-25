@@ -20,6 +20,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif //PLATFORMS
 
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -43,7 +44,7 @@ namespace DAVA
 {
 namespace Validator
 {
-bool IsFormatSupported(PixelFormat format)
+bool IsFormatHardwareSupported(PixelFormat format)
 {
     const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     return formatDescriptor.isHardwareSupported;
@@ -91,31 +92,37 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
     Vector<Image*>& imageSet = *images;
 
     PixelFormat format = imageSet[0]->format;
-    if (IsFormatSupported(format))
+    if (IsFormatHardwareSupported(format))
     {
         return true;
     }
-
-    if (format == FORMAT_RGB888)
+    else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
     {
-        const uint32 count = static_cast<uint32>(imageSet.size());
-        for (uint32 i = 0; i < count; ++i)
+        for (Image*& image : imageSet)
         {
-            Image* image = imageSet[i];
             Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-            ImageConvert::ConvertImageDirect(image, newImage);
+            bool converted = ImageConvert::ConvertImage(image, newImage);
+            if (converted)
+            {
+                newImage->mipmapLevel = image->mipmapLevel;
+                newImage->cubeFaceID = image->cubeFaceID;
 
-            newImage->mipmapLevel = image->mipmapLevel;
-            newImage->cubeFaceID = image->cubeFaceID;
-
-            imageSet[i] = newImage;
-            image->Release();
+                image->Release();
+                image = newImage;
+            }
+            else
+            {
+                SafeRelease(newImage);
+                return false;
+            }
         }
 
         return true;
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 }
 
@@ -445,7 +452,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, params);
+            ImageSystem::Load(currentfacePath, faceImage, params);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -489,8 +496,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     {
         FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images, params);
-        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
+        ImageSystem::Load(imagePathname, *images, params);
+        ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
             Image* img = *images->begin();
@@ -914,12 +921,21 @@ void Texture::RestoreRenderResource()
     Vector<Image*> images;
 
     const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-    if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-        relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-        relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
+    FilePath::ePathType pathType = relativePathname.GetType();
+    if (pathType == FilePath::PATH_IN_FILESYSTEM ||
+        pathType == FilePath::PATH_IN_RESOURCES ||
+        pathType == FilePath::PATH_IN_DOCUMENTS)
     {
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
+    }
+    else if (pathType == FilePath::PATH_EMPTY) // textures, created from data in memory
+    {
+        Image* img = Image::Create(width, height, FORMAT_RGBA8888);
+        img->cubeFaceID = 0;
+        img->mipmapLevel = 0;
+        std::fill(img->data, img->data + img->dataSize, 0);
+        images.push_back(img);
     }
     else if (isPink)
     {
@@ -1102,7 +1118,7 @@ void Texture::SetPixelization(bool value)
     //RHI_COMPLETE
 }
 
-int32 Texture::GetBaseMipMap() const
+uint32 Texture::GetBaseMipMap() const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1111,7 +1127,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality* curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if (nullptr != curTxQuality)
         {
-            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
+            return static_cast<uint32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

@@ -42,7 +42,7 @@ bool PngImageExt::Read(const FilePath& filename)
 void PngImageExt::Write(const FilePath& filename, ImageQuality quality)
 {
     DVASSERT(internalData);
-    ImageSystem::Instance()->Save(filename, internalData, internalData->format, quality);
+    ImageSystem::Save(filename, internalData, internalData->format, quality);
 }
 
 bool PngImageExt::Create(uint32 width, uint32 height)

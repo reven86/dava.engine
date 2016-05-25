@@ -353,7 +353,7 @@ uint32 File::GetSize() const
     return size;
 }
 
-bool File::Seek(int32 position, uint32 seekType)
+bool File::Seek(int32 position, eFileSeek seekType)
 {
     int realSeekType = 0;
     switch (seekType)

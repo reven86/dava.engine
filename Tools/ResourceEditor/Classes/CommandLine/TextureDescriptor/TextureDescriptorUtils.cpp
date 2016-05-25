@@ -48,7 +48,7 @@ void RecursiveWalk(FileActionFunctor fileAction, const FilePath& folderPath, Arg
 bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* preset)
 {
     const String sourceExtension = texturePath.GetExtension();
-    const ImageFormat sourceFormat = ImageSystem::Instance()->GetImageFormatForExtension(sourceExtension);
+    const ImageFormat sourceFormat = ImageSystem::GetImageFormatForExtension(sourceExtension);
 
     if (sourceFormat == IMAGE_FORMAT_UNKNOWN || false == TextureDescriptor::IsSupportedSourceFormat(sourceFormat))
     {
@@ -198,7 +198,7 @@ void SetCompressionParams(const FilePath& descriptorPath, const DAVA::Map<DAVA::
             if (dstFormat == FORMAT_PVR2 || dstFormat == FORMAT_PVR4)
             {
                 DAVA::FilePath path = descriptor->GetSourceTexturePathname();
-                ImageInfo imgInfo = ImageSystem::Instance()->GetImageInfo(descriptor->GetSourceTexturePathname());
+                ImageInfo imgInfo = ImageSystem::GetImageInfo(descriptor->GetSourceTexturePathname());
                 if (imgInfo.width != imgInfo.height)
                 {
                     DAVA::Logger::Error("Can't set %s compression for non-squared texture %s",
