@@ -171,26 +171,29 @@ void SetupDarkTheme()
     qApp->setPalette(darkPalette);
 
     QString styleSheet = "QToolTip { color: #e0e0e0; background-color: #373737;}"
-        "QTabBar::close-button { image: url(:/QtTools/Icons/close.png); }"
-        "QDockWidget::title { background: #454545; }"
-        "QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }"
-        // workaround for expanded combobox interval
-        // "combobox-popup : 0" - force for QComboBox draw drop-down list below control
-        // and not centrate it by selected value
-        "QComboBox{ font: 11px; combobox-popup: 0}"
-        "QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }"
-        "QAbstractItemView::indicator::unchecked { image: url(:/QtTools/Icons/unchecked-checkbox.png); }";
+                         "QTabBar::close-button { image: url(:/QtTools/Icons/close.png); }"
+                         "QDockWidget::title { background: #454545; }"
+                         "QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }"
+                         // workaround for expanded combobox interval
+                         // "combobox-popup : 0" - force for QComboBox draw drop-down list below control
+                         // and not centrate it by selected value
+                         "QComboBox{ font: 11px; combobox-popup: 0}"
+                         "QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }"
+                         "QAbstractItemView::indicator::unchecked { image: url(:/QtTools/Icons/unchecked-checkbox.png); }";
 
     auto colorToString = [](const QColor& color)
     {
         return QString("rgba(%1, %2, %3, %4)").arg(color.red()).arg(color.green())
-                                              .arg(color.blue()).arg(color.alpha());
+        .arg(color.blue())
+        .arg(color.alpha());
     };
 
     QString tabBarStyle = QString("QTabBar::tab:selected { color: %1 }"
-                                  "QTabBar::tab:!selected { color: %2 }").
-                                   arg(colorToString(darkTextColor)).
-                                   arg(colorToString(darkDisabledTextColor));
+                                  "QTabBar::tab:!selected { color: %2 }")
+                          .
+                          arg(colorToString(darkTextColor))
+                          .
+                          arg(colorToString(darkDisabledTextColor));
 
     styleSheet.append(tabBarStyle);
 

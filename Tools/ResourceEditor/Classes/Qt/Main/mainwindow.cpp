@@ -541,13 +541,13 @@ void QtMainWindow::SetupThemeActions()
         themesMenu->addAction(action);
     }
     connect(actionGroup, &QActionGroup::triggered, [](QAction* action)
-    {
-        if (action->isChecked())
-        {
-            Themes::SetCurrentTheme(action->text());
-            SceneSignals::Instance()->ThemeChanged();
-        }
-    });
+            {
+                if (action->isChecked())
+                {
+                    Themes::SetCurrentTheme(action->text());
+                    SceneSignals::Instance()->ThemeChanged();
+                }
+            });
 }
 
 void QtMainWindow::SetupToolBars()

@@ -285,7 +285,7 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         previewRect.setWidth(previewRect.height());
         painter->setBrush(QBrush(QColor(100, 100, 100)));
         painter->drawRect(previewRect);
-        
+
         // draw formats info
         int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
