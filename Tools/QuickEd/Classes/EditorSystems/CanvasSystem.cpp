@@ -23,30 +23,29 @@ public:
     ~ColorControl() override = default;
 
 private:
-    void Draw(const UIGeometricData& geometricData) override;
-    DAVA::uint32 GetBackgroundColorIndex() const;
-    void SetBackgroundColorIndex(DAVA::uint32 index);
+    uint32 GetBackgroundColorIndex() const;
+    void SetBackgroundColorIndex(uint32 index);
 
-    DAVA::Color GetBackgroundColor0() const;
-    void SetBackgroundColor0(const DAVA::Color& color);
+    Color GetBackgroundColor0() const;
+    void SetBackgroundColor0(const Color& color);
 
-    DAVA::Color GetBackgroundColor1() const;
-    void SetBackgroundColor1(const DAVA::Color& color);
+    Color GetBackgroundColor1() const;
+    void SetBackgroundColor1(const Color& color);
 
-    DAVA::Color GetBackgroundColor2() const;
-    void SetBackgroundColor2(const DAVA::Color& color);
+    Color GetBackgroundColor2() const;
+    void SetBackgroundColor2(const Color& color);
 
     Color backgroundColor0;
     Color backgroundColor1;
     Color backgroundColor2;
-    DAVA::uint32 backgroundColorIndex = 0;
+    uint32 backgroundColorIndex = 0;
 
 public:
     INTROSPECTION_EXTEND(ColorControl, UIControl,
-                         PROPERTY("backgroundColor0", "Preview Widget/Background color 0", GetBackgroundColor0, SetBackgroundColor0, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                         PROPERTY("backgroundColor1", "Preview Widget/Background color 1", GetBackgroundColor1, SetBackgroundColor1, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                         PROPERTY("backgroundColor2", "Preview Widget/Background color 2", GetBackgroundColor2, SetBackgroundColor2, DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                         PROPERTY("backgroundColorIndex", "Preview Widget/Background color index", GetBackgroundColorIndex, SetBackgroundColorIndex, DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                         PROPERTY("backgroundColor0", "Preview Widget/Background color 0", GetBackgroundColor0, SetBackgroundColor0, I_VIEW | I_EDIT | I_SAVE | I_PREFERENCE)
+                         PROPERTY("backgroundColor1", "Preview Widget/Background color 1", GetBackgroundColor1, SetBackgroundColor1, I_VIEW | I_EDIT | I_SAVE | I_PREFERENCE)
+                         PROPERTY("backgroundColor2", "Preview Widget/Background color 2", GetBackgroundColor2, SetBackgroundColor2, I_VIEW | I_EDIT | I_SAVE | I_PREFERENCE)
+                         PROPERTY("backgroundColorIndex", "Preview Widget/Background color index", GetBackgroundColorIndex, SetBackgroundColorIndex, I_SAVE | I_PREFERENCE)
                          )
 
     REGISTER_PREFERENCES(ColorControl)
@@ -56,7 +55,7 @@ REGISTER_PREFERENCES_ON_START(ColorControl,
                               PREF_ARG("backgroundColor0", Color::Transparent),
                               PREF_ARG("backgroundColor1", Color(1.0f, 1.0f, 1.0f, 1.0f)),
                               PREF_ARG("backgroundColor2", Color(0.0f, 0.0f, 0.0f, 1.0f)),
-                              PREF_ARG("backgroundColorIndex", static_cast<DAVA::uint32>(0))
+                              PREF_ARG("backgroundColorIndex", static_cast<uint32>(0))
                               )
 
 class GridControl : public UIControl
@@ -64,18 +63,28 @@ class GridControl : public UIControl
 public:
     GridControl();
     ~GridControl() override = default;
+    void SetSize(const Vector2& size) override;
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
+    ColorControl* colorControl = nullptr; //weak pointer
 };
 
 GridControl::GridControl()
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetSprite("~res:/Gfx/GrayGrid", 0);
-    ScopedPtr<UIControl> colorControl(new ColorControl());
-    colorControl->SetName("Color control");
-    UIControl::AddControl(colorControl);
+    colorControl = new ColorControl();
+    ScopedPtr<UIControl> control(colorControl);
+    control->SetName("Color control");
+
+    UIControl::AddControl(control);
+}
+
+void GridControl::SetSize(const Vector2& size)
+{
+    colorControl->SetSize(size);
+    UIControl::SetSize(size);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -96,12 +105,12 @@ ColorControl::ColorControl()
     background->SetDrawType(UIControlBackground::DRAW_FILL);
 }
 
-DAVA::Color ColorControl::GetBackgroundColor0() const
+Color ColorControl::GetBackgroundColor0() const
 {
     return backgroundColor0;
 }
 
-void ColorControl::SetBackgroundColor0(const DAVA::Color& color)
+void ColorControl::SetBackgroundColor0(const Color& color)
 {
     backgroundColor0 = color;
     if (backgroundColorIndex == 0)
@@ -110,12 +119,12 @@ void ColorControl::SetBackgroundColor0(const DAVA::Color& color)
     }
 }
 
-DAVA::Color ColorControl::GetBackgroundColor1() const
+Color ColorControl::GetBackgroundColor1() const
 {
     return backgroundColor1;
 }
 
-void ColorControl::SetBackgroundColor1(const DAVA::Color& color)
+void ColorControl::SetBackgroundColor1(const Color& color)
 {
     backgroundColor1 = color;
     if (backgroundColorIndex == 1)
@@ -124,12 +133,12 @@ void ColorControl::SetBackgroundColor1(const DAVA::Color& color)
     }
 }
 
-DAVA::Color ColorControl::GetBackgroundColor2() const
+Color ColorControl::GetBackgroundColor2() const
 {
     return backgroundColor2;
 }
 
-void ColorControl::SetBackgroundColor2(const DAVA::Color& color)
+void ColorControl::SetBackgroundColor2(const Color& color)
 {
     backgroundColor2 = color;
     if (backgroundColorIndex == 2)
@@ -138,12 +147,12 @@ void ColorControl::SetBackgroundColor2(const DAVA::Color& color)
     }
 }
 
-DAVA::uint32 ColorControl::GetBackgroundColorIndex() const
+uint32 ColorControl::GetBackgroundColorIndex() const
 {
     return backgroundColorIndex;
 }
 
-void ColorControl::SetBackgroundColorIndex(DAVA::uint32 index)
+void ColorControl::SetBackgroundColorIndex(uint32 index)
 {
     Color color;
     backgroundColorIndex = index;
@@ -165,12 +174,6 @@ void ColorControl::SetBackgroundColorIndex(DAVA::uint32 index)
     background->SetColor(color);
 }
 
-void ColorControl::Draw(const UIGeometricData& geometricData)
-{
-    SetSize(parent->GetSize());
-    UIControl::Draw(geometricData);
-}
-
 } //unnamed namespe
 
 class BackgroundController final
@@ -187,8 +190,8 @@ public:
     void AdjustToNestedControl();
     static bool IsPropertyAffectBackground(AbstractProperty* property);
 
-    DAVA::Signal<> ContentSizeChanged;
-    DAVA::Signal<const DAVA::Vector2&> RootControlPosChanged;
+    Signal<> ContentSizeChanged;
+    Signal<const Vector2&> RootControlPosChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
@@ -221,7 +224,7 @@ UIControl* BackgroundController::GetGridControl() const
     return gridControl.Get();
 }
 
-bool BackgroundController::IsNestedControl(const DAVA::UIControl* control) const
+bool BackgroundController::IsNestedControl(const UIControl* control) const
 {
     return control == nestedControl;
 }
@@ -467,7 +470,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemsManager->RootControlPositionChanged, &DAVA::Signal<const DAVA::Vector2&>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemsManager->RootControlPositionChanged, &Signal<const Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
@@ -489,7 +492,7 @@ void CanvasSystem::AddBackgroundControllerToCanvas(BackgroundController* backgro
     backgroundController->AdjustToNestedControl();
 }
 
-uint32 CanvasSystem::GetIndexByPos(const DAVA::Vector2& pos) const
+uint32 CanvasSystem::GetIndexByPos(const Vector2& pos) const
 {
     uint32 index = 0;
     for (auto& iter : gridControls)
@@ -539,9 +542,9 @@ void CanvasSystem::LayoutCanvas()
 
 void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
 {
-    DAVA::Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
-    DAVA::Set<PackageBaseNode*> newNodes;
-    DAVA::Set<PackageBaseNode*> deletedNodes;
+    Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
+    Set<PackageBaseNode*> newNodes;
+    Set<PackageBaseNode*> deletedNodes;
     if (!rootControls.empty())
     {
         std::set_difference(rootControls.begin(), rootControls.end(), sortedRootControls.begin(), sortedRootControls.end(), std::inserter(deletedNodes, deletedNodes.end()));
