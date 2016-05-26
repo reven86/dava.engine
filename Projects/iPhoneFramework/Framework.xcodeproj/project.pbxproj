@@ -2121,6 +2121,13 @@
 		E8B3CAED16B9326E002BD35F /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */; };
 		EA7DEDDA144854E900D9E652 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		FED4C08D1B31AD54006D0379 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
+		FEE0ADA01CD8AD6300EE3886 /* DDSHandlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0AD9A1CD8AD6300EE3886 /* DDSHandlers.cpp */; };
+		FEE0ADA11CD8AD6300EE3886 /* DDSHandlers.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0AD9B1CD8AD6300EE3886 /* DDSHandlers.h */; };
+		FEE0ADA21CD8AD6300EE3886 /* NvttHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0AD9C1CD8AD6300EE3886 /* NvttHelper.cpp */; };
+		FEE0ADA31CD8AD6300EE3886 /* NvttHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0AD9D1CD8AD6300EE3886 /* NvttHelper.h */; };
+		FEE0ADA41CD8AD6300EE3886 /* QualcommHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0AD9E1CD8AD6300EE3886 /* QualcommHelper.cpp */; };
+		FEE0ADA51CD8AD6300EE3886 /* QualcommHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0AD9F1CD8AD6300EE3886 /* QualcommHelper.h */; };
+		FEE0ADAA1CD8ADFC00EE3886 /* ImageConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADA91CD8ADFC00EE3886 /* ImageConvert.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -3213,6 +3220,13 @@
 		E8B3C80316B9326D002BD35F /* DAVAEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAEngine.h; sourceTree = "<group>"; };
 		E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoxygenDocumenation.h; sourceTree = "<group>"; };
 		EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
+		FEE0AD9A1CD8AD6300EE3886 /* DDSHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DDSHandlers.cpp; path = DDS/DDSHandlers.cpp; sourceTree = "<group>"; };
+		FEE0AD9B1CD8AD6300EE3886 /* DDSHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DDSHandlers.h; path = DDS/DDSHandlers.h; sourceTree = "<group>"; };
+		FEE0AD9C1CD8AD6300EE3886 /* NvttHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NvttHelper.cpp; path = DDS/NvttHelper.cpp; sourceTree = "<group>"; };
+		FEE0AD9D1CD8AD6300EE3886 /* NvttHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NvttHelper.h; path = DDS/NvttHelper.h; sourceTree = "<group>"; };
+		FEE0AD9E1CD8AD6300EE3886 /* QualcommHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = QualcommHelper.cpp; path = DDS/QualcommHelper.cpp; sourceTree = "<group>"; };
+		FEE0AD9F1CD8AD6300EE3886 /* QualcommHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QualcommHelper.h; path = DDS/QualcommHelper.h; sourceTree = "<group>"; };
+		FEE0ADA91CD8ADFC00EE3886 /* ImageConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageConvert.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4090,6 +4104,8 @@
 		02E7C3E51BD624A5002F026D /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				FEE0ADA91CD8ADFC00EE3886 /* ImageConvert.cpp */,
+				FEE0AD991CD8AD4F00EE3886 /* DDS */,
 				02E7C3E61BD624A5002F026D /* CRCAdditionInterface.h */,
 				02E7C3E71BD624A5002F026D /* Image.cpp */,
 				02E7C3E81BD624A5002F026D /* Image.h */,
@@ -5002,6 +5018,19 @@
 			path = ../../Sources/Internal;
 			sourceTree = SOURCE_ROOT;
 		};
+		FEE0AD991CD8AD4F00EE3886 /* DDS */ = {
+			isa = PBXGroup;
+			children = (
+				FEE0AD9A1CD8AD6300EE3886 /* DDSHandlers.cpp */,
+				FEE0AD9B1CD8AD6300EE3886 /* DDSHandlers.h */,
+				FEE0AD9C1CD8AD6300EE3886 /* NvttHelper.cpp */,
+				FEE0AD9D1CD8AD6300EE3886 /* NvttHelper.h */,
+				FEE0AD9E1CD8AD6300EE3886 /* QualcommHelper.cpp */,
+				FEE0AD9F1CD8AD6300EE3886 /* QualcommHelper.h */,
+			);
+			name = DDS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -5593,6 +5622,7 @@
 				02E7C8331BD624A7002F026D /* MemoryProfiler.h in Headers */,
 				02E7CADD1BD624A7002F026D /* RenderObject.h in Headers */,
 				02E7C8171BD624A7002F026D /* Sphere.h in Headers */,
+				FEE0ADA11CD8AD6300EE3886 /* DDSHandlers.h in Headers */,
 				02E7CB651BD624A7002F026D /* OcclusionQuery.h in Headers */,
 				02E7CD4F1BD624A7002F026D /* BaseProcessSystem.h in Headers */,
 				02E7CD5F1BD624A7002F026D /* DebugRenderSystem.h in Headers */,
@@ -5832,6 +5862,7 @@
 				02E7CDD51BD624A7002F026D /* DefaultUIPackageBuilder.h in Headers */,
 				02E7C6A11BD624A6002F026D /* Message.h in Headers */,
 				02E7C10A1BD6248E002F026D /* StringUtils.h in Headers */,
+				FEE0ADA51CD8AD6300EE3886 /* QualcommHelper.h in Headers */,
 				02E7C7C91BD624A7002F026D /* KeyboardDevice.h in Headers */,
 				02E7CA6F1BD624A7002F026D /* VirtualCoordinatesSystem.h in Headers */,
 				02E7CEC31BD624A7002F026D /* UIScrollView.h in Headers */,
@@ -5871,6 +5902,7 @@
 				02E7C8AD1BD624A7002F026D /* MMBigDataTransferService.h in Headers */,
 				02E7C62F1BD624A6002F026D /* GameAPI.h in Headers */,
 				02E7CC431BD624A7002F026D /* rhi_Type.h in Headers */,
+				FEE0ADA31CD8AD6300EE3886 /* NvttHelper.h in Headers */,
 				02E7CC1B1BD624A7002F026D /* rhi_ProgGLES2.h in Headers */,
 				02E7C8071BD624A7002F026D /* Polygon2.h in Headers */,
 				02E7C10E1BD6248E002F026D /* UTF8Utils.h in Headers */,
@@ -6681,6 +6713,7 @@
 				02E7CC451BD624A7002F026D /* RuntimeTextures.cpp in Sources */,
 				02E7C71F1BD624A7002F026D /* MongodbObject.cpp in Sources */,
 				02E7C7651BD624A7002F026D /* KeyedArchiver.cpp in Sources */,
+				FEE0ADA41CD8AD6300EE3886 /* QualcommHelper.cpp in Sources */,
 				02E7CADF1BD624A7002F026D /* RenderPass.cpp in Sources */,
 				02E7CCA31BD624A7002F026D /* LodComponent.cpp in Sources */,
 				02E7CA6D1BD624A7002F026D /* VirtualCoordinatesSystem.cpp in Sources */,
@@ -6887,6 +6920,7 @@
 				D7660D221C4D071E00E81868 /* DataStorageApple.cpp in Sources */,
 				02E7CE9F1BD624A7002F026D /* UIScreen.cpp in Sources */,
 				02E7CE7F1BD624A7002F026D /* UILoadingScreen.cpp in Sources */,
+				FEE0ADAA1CD8ADFC00EE3886 /* ImageConvert.cpp in Sources */,
 				02E7CAC71BD624A7002F026D /* Mesh.cpp in Sources */,
 				02E7CED91BD624A7002F026D /* UITextField.cpp in Sources */,
 				02E7CAAD1BD624A7002F026D /* Camera.cpp in Sources */,
@@ -6974,6 +7008,7 @@
 				02E7CADB1BD624A7002F026D /* RenderObject.cpp in Sources */,
 				02E7CBC51BD624A7002F026D /* rhi_ShaderSource.cpp in Sources */,
 				03730F851CBD010800DDDBC7 /* lz4hc.c in Sources */,
+				FEE0ADA21CD8AD6300EE3886 /* NvttHelper.cpp in Sources */,
 				02E7CB851BD624A7002F026D /* dbg_Draw.cpp in Sources */,
 				02E7C9011BD624A7002F026D /* DateTimeApple.mm in Sources */,
 				02E7C8091BD624A7002F026D /* Polygon3.cpp in Sources */,
@@ -7046,6 +7081,7 @@
 				02E7C8CF1BD624A7002F026D /* LocalNotificationDelayed.cpp in Sources */,
 				02E7CB2F1BD624A7002F026D /* LibDdsHelper.cpp in Sources */,
 				02E7C74D1BD624A7002F026D /* File.cpp in Sources */,
+				FEE0ADA01CD8AD6300EE3886 /* DDSHandlers.cpp in Sources */,
 				02E7CA531BD624A7002F026D /* Font.cpp in Sources */,
 				02E7CC8B1BD624A7002F026D /* RotationControllerComponent.cpp in Sources */,
 				02E7C8B51BD624A7002F026D /* MMNetServer.cpp in Sources */,

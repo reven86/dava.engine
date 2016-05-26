@@ -1,54 +1,34 @@
-set( ADDED_CPP_PATTERNS *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp Input/*.cpp)
-set( ADDED_H_PATTERNS   *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Private/*.h   Input/*.h)
+set( HPP_FILES *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Private/*.h   Input/*.cpp)
+set( CPP_FILES *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp Input/*.h)
+set( CPP_FILES_APPLE *.mm )
 
-if(ANDROID)
-    list( APPEND ADDED_CPP_PATTERNS Private/android/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/android/*.h)
-endif()
+set( HPP_FILES_ANDROID Private/android/*.cpp )
+set( CPP_FILES_ANDROID Private/android/*.h   )
 
-if(IOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/ios/*.cpp Private/ios/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/ios/*.h)
-endif()
+set( HPP_FILES_IOS Private/ios/*.h )
+set( CPP_FILES_IOS Private/ios/*.cpp Private/ios/*.mm  )
 
-if(MACOS)
-    list( APPEND ADDED_CPP_PATTERNS Private/osx/*.cpp Private/osx/*.mm)
-    list( APPEND ADDED_H_PATTERNS Private/osx/*.h)
-endif()
+set( HPP_FILES_MACOS Private/osx/*.h )
+set( CPP_FILES_MACOS Private/osx/*.cpp Private/osx/*.mm )
 
-if((WIN32) AND (NOT WINDOWS_UAP))
-    list( APPEND ADDED_CPP_PATTERNS Private/win32/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/win32/*.h)
-endif()
+set( HPP_FILES_WIN Private/win32/*.h )
+set( CPP_FILES_WIN Private/win32/*.cpp )
 
-if(WINDOWS_UAP)
-    list( APPEND ADDED_CPP_PATTERNS Private/uwp/*.cpp)
-    list( APPEND ADDED_H_PATTERNS Private/uwp/*.h)
-endif()
+set( HPP_FILES_WINUAP Private/uwp/*.h )
+set( CPP_FILES_WINUAP Private/uwp/*.cpp )
 
-if( NOT ANDROID )
-    list( APPEND ERASE_FILES UITextFieldAndroid.cpp 
-                             UITextFieldAndroid.h
-                             UIScreenManagerAndroid.h 
-                             UIScreenManagerAndroid.cpp )
-endif ()
+set( ERASE_FILES_NOT_ANDROID     UITextFieldAndroid.cpp 
+                                 UITextFieldAndroid.h 
+                                 UIScreenManagerAndroid.h 
+                                 UIScreenManagerAndroid.cpp )
 
-if ( ( NOT MACOS ) AND ( NOT WIN32 ) ) 
-    list( APPEND ERASE_FILES UIScreenManagerDefault.h 
-                             UIScreenManagerDefault.cpp )
-endif ()
+set( ERASE_FILES_NOT_IOS         UIScreenManageriPhone.h 
+                                 UIScreenManageriPhoneImpl.h )
 
-if( NOT IOS )
-    list( APPEND ERASE_FILES UIScreenManageriPhone.h 
-                             UIScreenManageriPhoneImpl.h )    
-endif()
+set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h  
+                                 UIScreenManagerDefault.cpp  )
 
-if( APPLE )
-    list( APPEND ADDED_CPP_PATTERNS *.mm )    
-endif()
+set( ERASE_FILES_NOT_WIN         ${ERASE_FILES_NOT_MACOS} )
+set( ERASE_FILES_NOT_WINUAP      ${ERASE_FILES_NOT_MACOS} )
 
-define_source_files( PARENT_SCOPE 
-  GLOB_CPP_PATTERNS    ${ADDED_CPP_PATTERNS}
-  GLOB_H_PATTERNS      ${ADDED_H_PATTERNS}
-  GLOB_ERASE_FILES     ${ERASE_FILES} 
-)
+setup_main_module()

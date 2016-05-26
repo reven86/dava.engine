@@ -39,6 +39,19 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
+load_property( PROPERTY_LIST 
+        TARGET_MODULES_LIST  
+        BINARY_WIN32_DIR_RELEASE
+        BINARY_WIN32_DIR_DEBUG
+        BINARY_WIN32_DIR_RELWITHDEB
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+    )
+
+add_definitions( -DDAVA_ENGINE_EXPORTS ) 
+
 if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
@@ -47,7 +60,17 @@ if( DAVA_DISABLE_AUTOTESTS )
     add_definitions ( -DDISABLE_AUTOTESTS )
 endif()
 
-if ( STEAM_SDK_FOUND )
+if( WIN32 )
+    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN)
+    list ( APPEND ADDITIONAL_DLL_FILES ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN} )
+    list ( APPEND ADDITIONAL_DLL_FILES ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
+elseif( MACOS )
+    GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC)
+    list ( APPEND MACOS_DYLIB  ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC} )
+    list ( APPEND MACOS_DYLIB  ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
+endif()
+
+if( STEAM_SDK_FOUND )
     add_definitions ( -D__DAVAENGINE_STEAM__ )
     include_directories( ${STEAM_SDK_HEADERS} )
     list ( APPEND LIBRARIES ${STEAM_SDK_STATIC_LIBRARIES} )
@@ -86,6 +109,7 @@ endif()
 
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} )
+    include_directories   ( ${DAVA_ENGINE_DIR} )
     include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
@@ -101,7 +125,7 @@ if( IOS )
 
 elseif( MACOS )
     if( DAVA_FOUND )
-        file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+        set( DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter.dylib )
     endif()
 
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
@@ -438,7 +462,7 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )
     endif()
 
-    file ( GLOB SO_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.so )
+    file ( GLOB SO_FILES ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
     foreach ( FILE ${SO_FILES} )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${FILE}  ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
@@ -492,11 +516,11 @@ elseif( MACOS )
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
 
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
-    if (QT5_FOUND AND NOT DEPLOY AND NOT TEAMCITY_DEPLOY)
+    if (QT5_FOUND)
         set(LD_RUNPATHES "${LD_RUNPATHES} ${QT5_LIB_PATH}")
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
@@ -519,6 +543,10 @@ elseif ( WIN32 )
     else ()
         set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
     endif ()
+
+    set( DAVA_BINARY_WIN32_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN32_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_DEBUG}   ) 
+    set( DAVA_BINARY_WIN32_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELWITHDEB}   ) 
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
@@ -573,10 +601,6 @@ if( TARGET_FILE_TREE_FOUND )
 
 endif()
 
-if( DAVA_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
-
-endif()
 
 if( ANDROID )
     set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
@@ -591,17 +615,30 @@ if( ANDROID )
         endforeach()
     endforeach()
 
-endif()
+endif() 
 
-target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
+set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
+
+target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${TARGET_MODULES_LIST} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG})
 endforeach ()
 
 foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE}  )
 endforeach ()
+
+
+if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
+    get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
+
+    foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS}  )
+        add_dependencies( ${PROJECT_NAME} ${ITEM} )
+    endforeach()
+
+endif()
 
 
 ###
@@ -609,6 +646,8 @@ endforeach ()
 if( DEPLOY )
    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+
+   append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
 
     if( WIN32 )
         if( APP_DATA )
@@ -629,12 +668,13 @@ if( DEPLOY )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
-
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
-        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
-        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+        foreach( TARGET ${PROJECT_NAME} ${TARGET_MODULES_LIST} )
+            foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+                string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                set_target_properties ( ${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+            endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+        endforeach()
 
     elseif( APPLE )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
@@ -657,7 +697,6 @@ if( DEPLOY )
 
             add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND ${IOS_DEPLOY_CUSTOM_COMAND}
                                                                COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} VERBATIM )
-
 
             add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
 

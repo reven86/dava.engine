@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __RHI_POOL_H__
 #define __RHI_POOL_H__
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
+#include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
@@ -147,13 +119,10 @@ template <class T, ResourceType RT, class DT, bool nr>
 inline void
 ResourcePool<T, RT, DT, nr>::Reserve(unsigned maxCount)
 {
-    ObjectSync.Lock();
-
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
     DVASSERT(Object == nullptr);
     DVASSERT(maxCount < HANDLE_INDEX_MASK);
     ObjectCount = maxCount;
-
-    ObjectSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -162,10 +131,9 @@ template <class T, ResourceType RT, class DT, bool nr>
 inline Handle
 ResourcePool<T, RT, DT, nr>::Alloc()
 {
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+
     uint32 handle = InvalidHandle;
-
-    ObjectSync.Lock();
-
     if (!Object)
     {
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL);
@@ -197,8 +165,6 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
     ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
 
-    ObjectSync.Unlock();
-
     DVASSERT(handle != InvalidHandle);
 
     return handle;
@@ -219,11 +185,9 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     DVASSERT(e->allocated);
 
     ObjectSync.Lock();
-
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
     e->allocated = false;
-
     ObjectSync.Unlock();
 }
 
@@ -281,8 +245,9 @@ template <class T, ResourceType RT, typename DT, bool nr>
 inline unsigned
 ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
-    unsigned count = 0;
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
+    unsigned count = 0;
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
@@ -292,7 +257,6 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
         i->MarkNeedRestore();
         ++count;
     }
-
     return count;
 }
 
@@ -320,7 +284,9 @@ public:
     void UpdateCreationDesc(const DT& desc)
     {
         creationDesc = desc;
+        Memset(&creationDesc.initialData, 0, sizeof(creationDesc.initialData));
     }
+
     void MarkNeedRestore()
     {
         if (!needRestore && creationDesc.needRestore)
