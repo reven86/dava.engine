@@ -15,7 +15,7 @@ namespace DAVA
 // Int: high int of frame ID
 // Int: navigation type
 // Bool: is redirect
-const char* urlLoadingRequestMessageName = "DAVA_Engine_URL_Loading_Request";
+const char urlLoadingRequestMessageName[] = "DAVA_Engine_URL_Loading_Request";
 struct URLLoadingRequest
 {
     std::string url;
@@ -35,7 +35,7 @@ inline bool ParseUrlLoadingRequest(CefRefPtr<CefProcessMessage> msg, URLLoadingR
 // String: url
 // Int: low int of frame ID
 // Int: high int of frame ID
-const char* urlLoadingPermitMessageName = "DAVA_Engine_URL_Loading_Permit";
+const char urlLoadingPermitMessageName[] = "DAVA_Engine_URL_Loading_Permit";
 struct URLLoadingPermit
 {
     std::string url;
