@@ -26,8 +26,6 @@ public:
     unsigned size;
     IDirect3DVertexBuffer9* buffer;
     unsigned isMapped : 1;
-
-    IDirect3DVertexBuffer9* prevBuffer;
 };
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor);
 
@@ -39,7 +37,6 @@ VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , prevBuffer(nullptr)
 {
 }
 
@@ -74,6 +71,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
             break;
         }
 
+        DVASSERT(buffer == nullptr);
         uint32 cmd_cnt = 2;
         DX9Command cmd[2] =
         {
@@ -111,9 +109,7 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
-
-        prevBuffer = buffer;
+        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
@@ -128,6 +124,8 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     Handle handle = VertexBufferDX9Pool::Alloc();
     VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
 
@@ -145,6 +143,8 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->MarkRestored();
     self->Destroy();

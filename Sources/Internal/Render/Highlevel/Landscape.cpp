@@ -97,6 +97,7 @@ Landscape::~Landscape()
 
 void Landscape::RestoreGeometry()
 {
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (auto& restoreData : bufferRestoreData)
     {
         switch (restoreData.bufferType)
@@ -134,9 +135,12 @@ void Landscape::ReleaseGeometryData()
     renderBatchArray.clear();
     activeRenderBatchArray.clear();
 
-    for (auto& restoreData : bufferRestoreData)
-        SafeDeleteArray(restoreData.data);
-    bufferRestoreData.clear();
+    {
+        LockGuard<Mutex> lock(restoreDataMutex);
+        for (auto& restoreData : bufferRestoreData)
+            SafeDeleteArray(restoreData.data);
+        bufferRestoreData.clear();
+    }
 
     ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
@@ -314,6 +318,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
     uint32 level = 0;
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (Image* img : textureData)
     {
         bufferRestoreData.emplace_back();
@@ -417,6 +422,7 @@ Texture* Landscape::CreateTangentTexture()
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
     uint32 level = 0;
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (Image* img : textureData)
     {
         auto& restore = bufferRestoreData.back();
@@ -735,6 +741,7 @@ int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 q
 #if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(landscapeVertices);
 #else
+    LockGuard<Mutex> lock(restoreDataMutex);
     bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
 #endif
 
@@ -1003,6 +1010,7 @@ void Landscape::AllocateGeometryDataInstancing()
     SafeDeleteArray(patchVertices);
     SafeDeleteArray(patchIndices);
 #else
+    LockGuard<Mutex> lock(restoreDataMutex);
     bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
     bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, 0, RestoreBufferData::RESTORE_BUFFER_INDEX });
 #endif

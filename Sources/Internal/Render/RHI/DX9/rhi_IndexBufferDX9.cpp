@@ -26,8 +26,6 @@ public:
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
     unsigned isMapped : 1;
-
-    IDirect3DIndexBuffer9* prevBuffer;
 };
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor);
 
@@ -40,7 +38,6 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , prevBuffer(nullptr)
 {
 }
 
@@ -75,6 +72,8 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
             break;
         }
+
+        DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
@@ -113,9 +112,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
-
-        prevBuffer = buffer;
+        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
@@ -128,6 +125,8 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
@@ -145,6 +144,8 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->MarkRestored();
     self->Destroy();

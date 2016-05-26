@@ -19,7 +19,6 @@ IDirect3DSurface9* _D3D9_DepthBuf = nullptr;
 
 InitParam _DX9_InitParam;
 D3DPRESENT_PARAMETERS _DX9_PresentParam;
-DAVA::Atomic<bool> _DX9_ResetPending = false;
 
 void (*_End_Frame)() = nullptr;
 }

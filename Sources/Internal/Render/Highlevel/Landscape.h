@@ -167,6 +167,7 @@ protected:
         eBufferType bufferType;
     };
 
+    Mutex restoreDataMutex;
     Vector<RestoreBufferData> bufferRestoreData;
 
     FilePath heightmapPath;

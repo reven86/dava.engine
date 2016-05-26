@@ -1,24 +1,23 @@
 #include "../Common/rhi_Pool.h"
-    #include "rhi_DX9.h"
+#include "rhi_DX9.h"
+#include "../rhi_Type.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include "../rhi_Type.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-    #include "Core/Core.h"
-    #include "Debug/Profiler.h"
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
+#include "_dx9.h"
+#include <vector>
 
-    #include "_dx9.h"
 namespace rhi
 {
 extern void _InitDX9();
 }
-    #include <vector>
 
 namespace rhi
 {
@@ -51,8 +50,9 @@ static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
 
 static bool _D3D9_DeviceLost = false;
-static DAVA::Thread::Id _DX9_ThreadId = 0;
+static bool _DX9_ResetPending = false;
 
+static DAVA::Thread::Id _DX9_ThreadId = 0;
 //------------------------------------------------------------------------------
 
 static inline D3DPRIMITIVETYPE
@@ -676,6 +676,8 @@ CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, u
 
 void CommandBufferDX9_t::Execute()
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     SCOPED_FUNCTION_TIMING();
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
@@ -1264,9 +1266,6 @@ _DX9_ExecuteQueuedCommands()
     unsigned frame_n = 0;
     bool do_render = true;
 
-    if (_DX9_ResetPending || NeedRestoreResources())
-        _RejectAllFrames();
-
     _DX9_FrameSync.Lock();
     if (_DX9_Frame.size())
     {
@@ -1351,32 +1350,32 @@ _DX9_ExecuteQueuedCommands()
 
     HRESULT hr;
 
-    if (_DX9_ResetPending)
+    if (_DX9_ResetPending && (_DX9_PendingImmediateCmdCount == 0))
     {
         hr = _D3D9_Device->TestCooperativeLevel();
-
-        if ((_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET)
-            || (!_D3D9_DeviceLost && SUCCEEDED(hr))
-            )
+        if ((_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
             param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
 
+            Logger::Info("DX9 device reset: releasing resources...");
             TextureDX9::ReleaseAll();
             VertexBufferDX9::ReleaseAll();
             IndexBufferDX9::ReleaseAll();
 
+            Logger::Info("DX9 device reset: reseting device...");
             hr = _D3D9_Device->Reset(&param);
 
-            Logger::Info("trying device reset\n");
             if (SUCCEEDED(hr))
             {
-                Logger::Info("device reset\n");
+                Logger::Info("Device reset, restoring resources...");
 
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
+
+                Logger::Info("Device reset completed");
 
                 _DX9_ResetPending = false;
                 _D3D9_DeviceLost = false;
@@ -1396,15 +1395,22 @@ _DX9_ExecuteQueuedCommands()
     else
     {
         hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
-
         if (FAILED(hr))
-            Logger::Error("present() failed:\n%s\n", D3D9ErrorText(hr));
-
-        if (hr == D3DERR_DEVICELOST)
         {
-            _D3D9_DeviceLost = true;
-            _DX9_ResetPending = true;
-            _RejectAllFrames();
+            if (hr == D3DERR_DEVICELOST)
+            {
+                _D3D9_DeviceLost = true;
+                _DX9_ResetPending = true;
+            }
+            else if (hr == 0x88760872)
+            {
+                // ignore undocumented error
+            }
+            else
+            {
+                DAVA::String info = DAVA::Format("Present failed (%08X) : %s", hr, D3D9ErrorText(hr));
+                DVASSERT_MSG(0, info.c_str());
+            }
         }
     }
 
@@ -1429,6 +1435,8 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 #else
     CHECK_HR(hr)
 #endif
+
+    CommandBufferDX9::BlockNonRenderThreads();
 
     for (DX9Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1716,6 +1724,8 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
 void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     if (force_immediate || !_DX9_RenderThreadFrameCount)
     {
         _ExecDX9(command, cmdCount);
@@ -1834,8 +1844,22 @@ void UninitializeRenderThreadDX9()
     }
 }
 
+void ScheduleDeviceReset()
+{
+    _DX9_ResetPending = true;
+    DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
+}
+
 namespace CommandBufferDX9
 {
+void BlockNonRenderThreads()
+{
+    while (_DX9_ResetPending && (DAVA::Thread::GetCurrentId() != _DX9_ThreadId))
+    {
+        DAVA::Thread::Sleep(100);
+    }
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &dx9_CommandBuffer_Begin;
