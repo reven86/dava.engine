@@ -12,7 +12,7 @@ import platform;
 import re;
 import codecs;
   
-excludeDirs = [ "cmake", "CMake.app", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
+excludeDirs = [ "ngt", "cmake", "CMake.app", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
 excludeFiles = ["Classes/Tests/TextSizeTest.cpp"]
 includePaths = {}
 
