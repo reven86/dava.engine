@@ -66,7 +66,7 @@ void Type::Init()
 {
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
     // android old-style way
-    using T0 = typename std::remove_const<T>::type;
+    using T0 = typename std::remove_cv<T>::type;
     using T1 = typename std::remove_reference<T0>::type;
     using DerefT = typename std::remove_pointer<T1>::type;
 #else
