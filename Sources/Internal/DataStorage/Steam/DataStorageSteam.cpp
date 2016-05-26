@@ -4,11 +4,11 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+
 #include "steam/steam_api.h"
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_STEAM__)
 
 IDataStorage* DataStorage::Create()
 {
@@ -155,6 +155,5 @@ void DataStorageSteam::Push()
     WriteArchiveToStorage(values);
     isValuesChanged = false;
 }
-
-#endif
 }
+#endif
