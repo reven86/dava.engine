@@ -1,33 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-    #include "MCPP/mcpp_lib.h"
+#include "MCPP/mcpp_lib.h"
 
     #include "../rhi_ShaderCache.h"
 
@@ -483,6 +454,8 @@ static const char* _ShaderHeader_GLES2 =
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 #endif
 
+"#define fmod(x, y) mod( (x), (y) )\n"
+
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
 
@@ -572,7 +545,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2DLod( VertexTexture##unit, uv, 0.0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   texture2DLod( VertexTexture##unit, uv, lod)\n"
 
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         varying vec##size var_##name;\n"
@@ -732,7 +705,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,lod) )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input {\n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
@@ -897,8 +870,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-//"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
-"#define VP_TEXTURE2D(unit,uv)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, 0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, lod )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"

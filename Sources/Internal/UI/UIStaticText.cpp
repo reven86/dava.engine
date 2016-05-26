@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Utils/Utils.h"
 #include "UI/UIStaticText.h"
 #include "Base/ObjectFactory.h"
@@ -43,6 +14,11 @@
 
 namespace DAVA
 {
+const Vector2 UIStaticText::NO_REQUIRED_SIZE = Vector2(-1.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_SIZE = Vector2::Zero;
+const Vector2 UIStaticText::REQUIRED_CONTROL_WIDTH = Vector2(0.f, -1.f);
+const Vector2 UIStaticText::REQUIRED_CONTROL_HEIGHT = Vector2(-1.f, 0.f);
+
 #if defined(LOCALIZATION_DEBUG)
 const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
 const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f),
@@ -177,16 +153,6 @@ bool UIStaticText::GetMultiline() const
 bool UIStaticText::GetMultilineBySymbol() const
 {
     return textBlock->GetMultilineBySymbol();
-}
-
-void UIStaticText::SetAlign(int32 _align)
-{
-    UIControl::SetSpriteAlign(_align);
-}
-
-int32 UIStaticText::GetAlign() const
-{
-    return UIControl::GetSpriteAlign();
 }
 
 void UIStaticText::SetTextAlign(int32 _align)
@@ -568,10 +534,10 @@ void UIStaticText::DrawLocalizationDebug(const UIGeometricData& textGeomData) co
         textGeomData.GetPolygon(polygon);
         RenderSystem2D::Instance()->FillPolygon(polygon, HIGHLIGHT_COLORS[lineBreakError]);
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
+    if (textBlock->GetFittingOption() != 0 && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         Color color = HIGHLIGHT_COLORS[WHITE];
-        if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
+        if (textBlock->GetFittingOptionUsed() != 0)
         {
             if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
                 color = HIGHLIGHT_COLORS[RED];
@@ -622,5 +588,21 @@ void UIStaticText::RecalculateDebugColoring()
         }
     }
 }
+
 #endif
+
+DAVA::Font* UIStaticText::GetFont() const
+{
+    return textBlock->GetFont();
+}
+
+DAVA::float32 UIStaticText::GetFontSize() const
+{
+    return textBlock->GetFontSize();
+}
+
+void UIStaticText::SetFontSize(float32 newSize)
+{
+    textBlock->SetFontSize(newSize);
+}
 };

@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -268,7 +240,6 @@ void Core::CreateSingletons()
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new ImageSystem();
     new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
@@ -380,7 +351,6 @@ void Core::ReleaseSingletons()
     VersionInfo::Instance()->Release();
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
-    ImageSystem::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();
@@ -527,9 +497,9 @@ DisplayMode Core::FindBestMode(const DisplayMode& requestedMode)
     return bestMatchMode;
 }
 
-DisplayMode Core::GetCurrentDisplayMode()
+Vector2 Core::GetWindowSize()
 {
-    return DisplayMode(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+    return Vector2(screenMetrics.width, screenMetrics.height);
 }
 
 void Core::Quit()
@@ -676,7 +646,7 @@ void Core::SystemProcessFrame()
 
 //#endif
 // delete after change resize in Android and IOS (Core::WindowSizeChanged)
-#if !defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
+#if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
         if (vsc->WasScreenSizeChanged())
@@ -747,12 +717,12 @@ void Core::SystemProcessFrame()
     profiler::DumpAverage();
     #endif
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
     if (screenMetrics.initialized && screenMetrics.screenMetricsModified)
     {
         ApplyWindowSize();
     }
-#endif // defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
 }
 
 void Core::GoBackground(bool isLock)
@@ -786,6 +756,8 @@ void Core::FocusLost()
     {
         core->OnFocusLost();
     }
+    isFocused = false;
+    focusChanged.Emit(isFocused);
 }
 
 void Core::FocusReceived()
@@ -794,6 +766,8 @@ void Core::FocusReceived()
     {
         core->OnFocusReceived();
     }
+    isFocused = true;
+    focusChanged.Emit(isFocused);
 }
 
 uint32 Core::GetGlobalFrameIndex()
@@ -920,6 +894,7 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
+    screenMetrics.screenMetricsModified = false;
     DVASSERT(Renderer::IsInitialized());
     screenMetrics.screenMetricsModified = false;
     int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
@@ -944,6 +919,11 @@ void Core::SetIsActive(bool _isActive)
 {
     isActive = _isActive;
     Logger::Info("Core::SetIsActive %s", (_isActive) ? "TRUE" : "FALSE");
+}
+
+bool Core::IsFocused()
+{
+    return isFocused;
 }
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -139,9 +110,9 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial* material)
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 {
-    for (auto& emitter : component->emitterDatas)
+    for (auto& emitter : component->emitterInstances)
     {
-        for (auto layer : emitter.emitter->layers)
+        for (auto layer : emitter->GetEmitter()->layers)
         {
             if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             {
@@ -153,27 +124,23 @@ void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent* effect, ParticleEmitter* emitter, const Vector3& spawnPosition, int32 positionSource)
 {
-    for (size_t layerId = 0, layersCount = emitter->layers.size(); layerId < layersCount; ++layerId)
+    for (auto layer : emitter->layers)
     {
-        ParticleLayer* layer = emitter->layers[layerId];
         bool isLodActive = layer->IsLodActive(effect->activeLodLevel);
-        if ((!isLodActive) && emitter->shortEffect) //layer could never become active
+        if (!isLodActive && emitter->shortEffect) //layer could never become active
             continue;
+
         ParticleGroup group;
         group.emitter = SafeRetain(emitter);
         group.layer = SafeRetain(layer);
         group.spawnPosition = spawnPosition;
         group.visibleLod = isLodActive;
         group.positionSource = positionSource;
-        //prepare 1st loop info - so even not looped layers will follow common logic
-        group.loopStartTime = 0;
         group.loopLyaerStartTime = group.layer->startTime;
         group.loopDuration = group.layer->endTime;
 
         if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
             group.material = GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
-        else
-            group.material = NULL;
 
         effect->effectData.groups.push_back(group);
     }
@@ -187,18 +154,24 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
     }
 
     Scene* scene = GetScene();
-
-    if (scene)
-        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f / 60.0f);
-    if (effect->activeLodLevel != effect->desiredLodLevel)
-        UpdateActiveLod(effect);
-
-    if (effect->effectData.groups.empty()) //clean position sources
-        effect->effectData.infoSources.resize(1);
-    //create particle groups
-    for (size_t emitterId = 0, emittersCount = effect->emitterDatas.size(); emitterId < emittersCount; ++emitterId)
+    if (scene != nullptr)
     {
-        RunEmitter(effect, effect->emitterDatas[emitterId].emitter.Get(), effect->emitterDatas[emitterId].spawnPosition);
+        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f / 60.0f);
+    }
+
+    if (effect->activeLodLevel != effect->desiredLodLevel)
+    {
+        UpdateActiveLod(effect);
+    }
+
+    if (effect->effectData.groups.empty()) // clean position sources
+    {
+        effect->effectData.infoSources.resize(1);
+    }
+
+    for (const auto& instance : effect->emitterInstances)
+    {
+        RunEmitter(effect, instance->GetEmitter(), instance->GetSpawnPosition());
     }
 
     effect->state = ParticleEffectComponent::STATE_PLAYING;
@@ -418,7 +391,8 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent* effect, float32
     effect->effectData.infoSources[0].position = worldTransformPtr->GetTranslationVector();
 
     AABBox3 bbox;
-    for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e = effect->effectData.groups.end(); it != e;)
+    List<ParticleGroup>::iterator it = effect->effectData.groups.begin();
+    while (it != effect->effectData.groups.end())
     {
         ParticleGroup& group = *it;
         group.activeParticleCount = 0;
@@ -571,15 +545,16 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent* effect, float32
             }
         }
 
-        /*finally*/
-        if (group.finishingGroup && (!group.head))
+        if (group.finishingGroup && (group.head == nullptr))
         {
-            group.emitter->Release();
-            group.layer->Release();
+            DAVA::SafeRelease(group.emitter);
+            DAVA::SafeRelease(group.layer);
             it = effect->effectData.groups.erase(it);
         }
         else
+        {
             ++it;
+        }
     }
     if (bbox.IsEmpty())
     {

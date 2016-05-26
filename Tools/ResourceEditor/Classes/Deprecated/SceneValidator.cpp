@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "SceneValidator.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
@@ -53,15 +24,6 @@ void PushLogMessage(DAVA::Set<DAVA::String>& messages, DAVA::Entity* object, con
     if (nullptr != object)
         infoText += PointerSerializer::FromPointer(object);
     messages.insert(infoText);
-}
-
-SceneValidator::SceneValidator()
-{
-    pathForChecking = DAVA::String("");
-}
-
-SceneValidator::~SceneValidator()
-{
 }
 
 bool SceneValidator::ValidateSceneAndShowErrors(DAVA::Scene* scene, const DAVA::FilePath& scenePath)
@@ -256,34 +218,31 @@ void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity* ownerNode, DA
         DAVA::uint32 count = effect->GetEmittersCount();
         for (DAVA::uint32 i = 0; i < count; ++i)
         {
-            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog, effect->GetEntity());
+            ValidateParticleEmitter(effect->GetEmitterInstance(i), errorsLog, effect->GetEntity());
         }
     }
 }
 
-void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitter* emitter, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const
+void SceneValidator::ValidateParticleEmitter(DAVA::ParticleEmitterInstance* instance, DAVA::Set<DAVA::String>& errorsLog, DAVA::Entity* owner) const
 {
-    DVASSERT(emitter);
+    DVASSERT(instance);
 
-    if (nullptr == emitter)
-    {
+    if (nullptr == instance)
         return;
-    }
+
+    auto emitter = instance->GetEmitter();
 
     if (emitter->configPath.IsEmpty())
     {
-        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s",
-                       emitter->name.c_str(), sceneName.c_str());
+        PushLogMessage(errorsLog, owner, "Empty config path for emitter %s. Scene: %s", emitter->name.c_str(), sceneName.c_str());
     }
 
-    const DAVA::Vector<DAVA::ParticleLayer*>& layers = emitter->layers;
-
-    DAVA::uint32 count = static_cast<DAVA::uint32>(layers.size());
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (auto layer : emitter->layers)
     {
-        if (layers[i]->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+        if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
         {
-            ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog, owner);
+            DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> instance(new DAVA::ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
+            ValidateParticleEmitter(instance, errorsLog, owner);
         }
     }
 }
@@ -614,7 +573,7 @@ bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForVali
             return false;
         }
 
-        pathIsCorrect = DAVA::IsPowerOf2(heightmap->Size() - 1);
+        pathIsCorrect = DAVA::IsPowerOf2(heightmap->Size());
         if (!pathIsCorrect)
         {
             PushLogMessage(errorsLog, nullptr, "Heightmap %s has wrong size. Scene: %s",

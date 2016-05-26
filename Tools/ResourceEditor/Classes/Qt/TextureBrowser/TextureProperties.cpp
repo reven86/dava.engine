@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/GlobalEnum.h"
 #include "Render/TextureDescriptor.h"
 
@@ -122,30 +93,41 @@ void TextureProperties::Save()
 
 void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 {
-    int level = 0;
-
-    MipMapSizesReset();
-    while (baseWidth > 1 && baseHeight > 1)
+    auto RegisterMipLevelSize = [&](int mipLevel, int mipWidth, int mipHeight)
     {
-        QSize size(baseWidth, baseHeight);
+        QSize size(mipWidth, mipHeight);
         QString shownKey;
 
-        if (0 == level)
+        if (0 == mipLevel)
         {
             size = QSize(0, 0);
             shownKey = "Original";
         }
         else
         {
-            shownKey.sprintf("%dx%d", baseWidth, baseHeight);
+            shownKey.sprintf("%dx%d", mipWidth, mipHeight);
         }
 
-        enumSizes.Register(level, shownKey.toLatin1());
-        availableSizes[level] = size;
+        enumSizes.Register(mipLevel, shownKey.toLatin1());
+        availableSizes[mipLevel] = size;
+    };
+
+    int level = 0;
+    MipMapSizesReset();
+    while (static_cast<DAVA::uint32>(baseWidth) >= DAVA::Texture::MINIMAL_WIDTH && static_cast<DAVA::uint32>(baseHeight) >= DAVA::Texture::MINIMAL_HEIGHT)
+    {
+        RegisterMipLevelSize(level, baseWidth, baseHeight);
 
         level++;
         baseWidth = baseWidth >> 1;
         baseHeight = baseHeight >> 1;
+    }
+
+    const DAVA::uint32& width = curTextureDescriptor->compression[curGPU].compressToWidth;
+    const DAVA::uint32& height = curTextureDescriptor->compression[curGPU].compressToHeight;
+    if ((width != 0 && height != 0) && (width < DAVA::Texture::MINIMAL_WIDTH || height < DAVA::Texture::MINIMAL_HEIGHT))
+    {
+        RegisterMipLevelSize(level, width, height);
     }
 
     if (enumSizes.GetCount() > 0)
@@ -390,6 +372,9 @@ void TextureProperties::OnItemEdited(const QModelIndex& index)
         {
             emit PropertyChanged(PROP_SIZE);
         }
+
+        // re-Init mipmap sizes based on original image size
+        MipMapSizesInit(origImageSize.width(), origImageSize.height());
     }
 
     Save();

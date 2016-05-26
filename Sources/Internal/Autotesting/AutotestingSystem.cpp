@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Autotesting/AutotestingSystem.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -49,11 +20,6 @@ AutotestingSystem::AutotestingSystem()
     : startTimeMS(0)
     , isInit(false)
     , isRunning(false)
-    , isDB(true)
-    , isMaster(true)
-    , isRegistered(false)
-    , isWaiting(false)
-    , isInitMultiplayer(false)
     , needExitApp(false)
     , timeBeforeExit(0.0f)
     , projectName("")
@@ -73,11 +39,16 @@ AutotestingSystem::AutotestingSystem()
     , framework("framework")
     , branchRev("0")
     , frameworkRev("0")
+    , isDB(true)
     , needClearGroupInDB(false)
+    , isMaster(true)
     , requestedHelpers(0)
     , masterId("")
     , masterTask("")
     , masterRunId(0)
+    , isRegistered(false)
+    , isWaiting(false)
+    , isInitMultiplayer(false)
     , multiplayerName("")
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
@@ -103,19 +74,35 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
 
 String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
 {
-    String automationResolvedStrPath = "~res:" + automationPath;
-    if (FileSystem::Instance()->Exists(FilePath(automationResolvedStrPath)))
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
+    String automationResolvedStrPath;
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
     {
+        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
+        automationResolvedStrPath = "d:" + automationPath;
+    }
+    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    {
+        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+    }
+    else
+    {
+        automationResolvedStrPath = "~doc:" + automationPath;
+    }
+
+    if (FilePath(automationResolvedStrPath).Exists())
+    {
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
         return automationResolvedStrPath;
     }
-#if defined(__DAVAENGINE_ANDROID__)
-    FilePath automationResolvedPath = FileSystem::Instance()->GetPublicDocumentsPath() + automationPath;
-#else
-    FilePath automationResolvedPath = "~doc:" + automationPath;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-    if (FileSystem::Instance()->Exists(automationResolvedPath))
+
+    // If there are no automation data in documents, try to find it in Data
+    if (FilePath("~res:" + automationPath).Exists())
     {
-        return automationResolvedPath.GetStringValue();
+        automationResolvedStrPath = "~res:" + automationPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
+        return automationResolvedStrPath;
     }
     return "";
 }

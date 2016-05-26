@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
 
@@ -94,7 +65,7 @@ SceneEditor2::SceneEditor2()
     modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
     AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
+    selectionSystem = new SceneSelectionSystem(this);
     AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
@@ -152,7 +123,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(DAVA::Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorStatisticsSystem = new EditorStatisticsSystem(this);
-    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+    AddSystem(editorStatisticsSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
@@ -203,6 +174,9 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
+    bool cameraLightState = editorLightSystem->GetCameraLightEnabled();
+    editorLightSystem->SetCameraLightEnabled(false);
+
     ExtractEditorEntities();
 
     DAVA::ScopedPtr<DAVA::Texture> tilemaskTexture(nullptr);
@@ -233,6 +207,8 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
     InjectEditorEntities();
 
+    editorLightSystem->SetCameraLightEnabled(cameraLightState);
+
     SceneSignals::Instance()->EmitSaved(this);
 
     return err;
@@ -245,8 +221,8 @@ void SceneEditor2::ExtractEditorEntities()
     DAVA::Vector<DAVA::Entity*> allEntities;
     GetChildNodes(allEntities);
 
-    DAVA::uint32 count = allEntities.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    DAVA::size_type count = allEntities.size();
+    for (DAVA::size_type i = 0; i < count; ++i)
     {
         if (allEntities[i]->GetName().find("editor.") != DAVA::String::npos)
         {
@@ -263,7 +239,7 @@ void SceneEditor2::InjectEditorEntities()
     bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
     selectionSystem->EnableSystem(false);
 
-    for (DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+    for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
         AddEditorEntity(editorEntities[i]);
         editorEntities[i]->Release();
@@ -791,32 +767,23 @@ void LookAtSelection(SceneEditor2* scene)
 
 void RemoveSelection(SceneEditor2* scene)
 {
-    if (scene != nullptr)
+    if (scene == nullptr)
+        return;
+
+    const auto& selection = scene->selectionSystem->GetSelection();
+
+    SelectableGroup objectsToRemove;
+    for (const auto& item : selection.GetContent())
     {
-        const EntityGroup& selection = scene->selectionSystem->GetSelection();
-
-        EntityGroup objectToRemove;
-        for (const auto& item : selection.GetContent())
+        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
         {
-            if (item.first->GetLocked())
-            {
-                DAVA::StringStream ss;
-                ss << "Can not remove entity "
-                   << item.first->GetName().c_str()
-                   << ": entity is locked!"
-                   << PointerSerializer::FromPointer(item.first);
-                DAVA::Logger::Warning("%s", ss.str().c_str());
-            }
-            else
-            {
-                objectToRemove.Add(item.first, item.second);
-            }
+            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
         }
+    }
 
-        if (!objectToRemove.IsEmpty())
-        {
-            scene->structureSystem->Remove(objectToRemove);
-        }
+    if (objectsToRemove.IsEmpty() == false)
+    {
+        scene->structureSystem->Remove(objectsToRemove);
     }
 }
 

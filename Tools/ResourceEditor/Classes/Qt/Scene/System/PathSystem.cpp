@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PathSystem.h"
 
 #include "Scene3D/Components/Waypoint/PathComponent.h"
@@ -89,7 +60,7 @@ PathSystem::~PathSystem()
 
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
-    sceneEditor->BeginBatch("Add path at scene");
+    sceneEditor->BeginBatch("Add path at scene", 1);
     sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)
@@ -217,13 +188,12 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-    for (const auto& item : selection.GetContent())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::Entity* path = item.first;
-        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(path);
-        if (path->GetVisible() == false || !pathComponent)
+        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(entity);
+        if (entity->GetVisible() == false || !pathComponent)
         {
             continue;
         }
@@ -233,10 +203,11 @@ void PathSystem::DrawInViewOnlyMode()
         {
             DAVA::Vector3 startPosition = waypoint->position;
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
+            const auto& transform = entity->GetWorldTransform();
             bool isStarting = waypoint->IsStarting();
 
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
 
             //draw edges
             if (!waypoint->edges.empty())
@@ -246,7 +217,7 @@ void PathSystem::DrawInViewOnlyMode()
                 {
                     DAVA::Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
-                    DrawArrow(startPosition * path->GetWorldTransform(), finishPosition * path->GetWorldTransform(), pathComponent->GetColor());
+                    DrawArrow(startPosition * transform, finishPosition * transform, pathComponent->GetColor());
                 }
             }
         }
@@ -260,16 +231,15 @@ void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& fini
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection.Clear();
         currentSelection.Join(selection);
 
-        for (const auto& item : currentSelection.GetContent())
+        for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
         {
-            DAVA::Entity* entity = item.first;
-            if (entity->GetComponent(DAVA::Component::PATH_COMPONENT))
+            if (entity->GetComponent(DAVA::Component::PATH_COMPONENT) != nullptr)
             {
                 currentPath = entity;
                 break;

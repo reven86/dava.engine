@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_FormatConversion.h"
     #include "rhi_GLES2.h"
@@ -107,6 +79,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     DVASSERT(desc.levelCount);
 
     bool success = false;
+    UpdateCreationDesc(desc);
+
     GLuint uid[2] = { 0, 0 };
     bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
 
@@ -403,13 +377,7 @@ gles2_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureGLES2Pool::Alloc();
     TextureGLES2_t* tex = TextureGLES2Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (tex->Create(desc) == false)
     {
         TextureGLES2Pool::Free(handle);
         handle = InvalidHandle;
@@ -672,14 +640,6 @@ gles2_SamplerState_Create(const SamplerState::Descriptor& desc)
         state->vertexSampler[i] = desc.vertexSampler[i];
     }
 
-    // force no-filtering on vertex-textures
-    for (uint32 s = 0; s != MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s)
-    {
-        state->vertexSampler[s].minFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].magFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
-    }
-
     return handle;
 }
 
@@ -741,20 +701,20 @@ _TextureFilterGLES2(TextureFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_TextureMipFilterGLES2(TextureMipFilter filter)
+_TextureMinMipFilterGLES2(TextureFilter minfilter, TextureMipFilter mipfilter)
 {
     GLenum f = GL_LINEAR_MIPMAP_LINEAR;
 
-    switch (filter)
+    switch (mipfilter)
     {
     case TEXMIPFILTER_NONE:
-        f = GL_NEAREST_MIPMAP_NEAREST;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
         break;
     case TEXMIPFILTER_NEAREST:
-        f = GL_LINEAR_MIPMAP_NEAREST;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_NEAREST;
         break;
     case TEXMIPFILTER_LINEAR:
-        f = GL_LINEAR_MIPMAP_LINEAR;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR;
         break;
     }
 
@@ -817,7 +777,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 
     const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
 
-    if (_GLES2_LastActiveTexture != GL_TEXTURE0 + sampler_i)
+    if (uint32(_GLES2_LastActiveTexture) != GL_TEXTURE0 + sampler_i)
     {
         GL_CALL(glActiveTexture(GL_TEXTURE0 + sampler_i));
         _GLES2_LastActiveTexture = GL_TEXTURE0 + sampler_i;
@@ -834,15 +794,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 
     if (_CurSamplerState && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
     {
-        if (sampler->mipFilter != TEXMIPFILTER_NONE)
-        {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilterGLES2(TextureMipFilter(sampler->mipFilter))));
-        }
-        else
-        {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilterGLES2(TextureFilter(sampler->minFilter))));
-        }
-
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMinMipFilterGLES2(TextureFilter(sampler->minFilter), TextureMipFilter(sampler->mipFilter))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));
 
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));

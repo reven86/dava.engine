@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 // WARN first include win32 headers'ATL::CCRTAllocator::free' :
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error
@@ -51,6 +23,7 @@
 #include "WebViewControlWin32.h"
 #include "CorePlatformWin32.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIWebView.h"
 
@@ -518,27 +491,17 @@ UIWebView& control)
         uint8* rawData = reinterpret_cast<uint8*>(
         image.GetPixelAddress(0, imageHeight - 1));
         {
-            Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
-                                                    FORMAT_BGR888, rawData);
-            DVASSERT(imageBGR);
+            ScopedPtr<Image> rgb888(Image::CreateFromData(imageWidth, imageHeight, FORMAT_RGB888, rawData));
+            DVASSERT(rgb888);
             {
-                Image* imageRGB = Image::Create(imageWidth, imageHeight,
-                                                FORMAT_RGB888);
-                DVASSERT(imageRGB);
-
-                ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+                ImageConvert::SwapRedBlueChannels(rgb888);
                 {
-                    Sprite* spr = Sprite::CreateFromImage(imageRGB);
-
+                    ScopedPtr<Sprite> spr(Sprite::CreateFromImage(rgb888));
                     control.SetSprite(spr, 0);
-                    SafeRelease(spr);
                 }
                 // CImage in BMP format so we need to flip image
                 control.GetBackground()->SetModification(ESM_VFLIP);
-
-                SafeRelease(imageRGB);
             }
-            SafeRelease(imageBGR);
         }
 
         image.Destroy();
@@ -1093,7 +1056,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-    CoreWin32PlatformBase* core = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+    CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     DVASSERT(core);
 
     int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;

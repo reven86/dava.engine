@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
 #include "Utils/Utils.h"
@@ -48,6 +20,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif //PLATFORMS
 
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -71,7 +44,7 @@ namespace DAVA
 {
 namespace Validator
 {
-bool IsFormatSupported(PixelFormat format)
+bool IsFormatHardwareSupported(PixelFormat format)
 {
     const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     return formatDescriptor.isHardwareSupported;
@@ -98,6 +71,12 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
         return false;
     }
 
+    if (imageSet[0]->width < Texture::MINIMAL_WIDTH || imageSet[0]->height < Texture::MINIMAL_HEIGHT)
+    {
+        Logger::Error("[TextureValidator] Loaded images size is too small. Minimal size for texture is 8x8");
+        return false;
+    }
+
     bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
     if (!isSizeCorrect)
     {
@@ -113,31 +92,37 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
     Vector<Image*>& imageSet = *images;
 
     PixelFormat format = imageSet[0]->format;
-    if (IsFormatSupported(format))
+    if (IsFormatHardwareSupported(format))
     {
         return true;
     }
-
-    if (format == FORMAT_RGB888)
+    else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
     {
-        const uint32 count = static_cast<uint32>(imageSet.size());
-        for (uint32 i = 0; i < count; ++i)
+        for (Image*& image : imageSet)
         {
-            Image* image = imageSet[i];
             Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-            ImageConvert::ConvertImageDirect(image, newImage);
+            bool converted = ImageConvert::ConvertImage(image, newImage);
+            if (converted)
+            {
+                newImage->mipmapLevel = image->mipmapLevel;
+                newImage->cubeFaceID = image->cubeFaceID;
 
-            newImage->mipmapLevel = image->mipmapLevel;
-            newImage->cubeFaceID = image->cubeFaceID;
-
-            imageSet[i] = newImage;
-            image->Release();
+                image->Release();
+                image = newImage;
+            }
+            else
+            {
+                SafeRelease(newImage);
+                return false;
+            }
         }
 
         return true;
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 }
 
@@ -320,6 +305,11 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if ((_width < Texture::MINIMAL_WIDTH || _height < Texture::MINIMAL_HEIGHT) && (_format == FORMAT_PVR2 || _format == FORMAT_PVR4))
+    {
+        return nullptr;
+    }
+
     Image* image = Image::CreateFromData(_width, _height, _format, _data);
     if (nullptr == image)
         return nullptr;
@@ -342,12 +332,36 @@ Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if ((image->width < Texture::MINIMAL_WIDTH || image->height < Texture::MINIMAL_HEIGHT) && (image->format == FORMAT_PVR2 || image->format == FORMAT_PVR4))
+    {
+        return nullptr;
+    }
+
     Texture* texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
 
     Vector<Image*>* images = new Vector<Image*>();
     image->Retain();
     images->push_back(image);
+
+    Validator::CheckAndFixImageFormat(images);
+
+    texture->SetParamsFromImages(images);
+    texture->FlushDataToRenderer(images);
+
+    return texture;
+}
+
+Texture* Texture::CreateFromData(const Vector<Image*>& imgs)
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    Texture* texture = new Texture();
+    texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, false);
+
+    Vector<Image*>* images = new Vector<Image*>(imgs);
+    for (Image* image : (*images))
+        image->Retain();
 
     Validator::CheckAndFixImageFormat(images);
 
@@ -420,7 +434,11 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         return false;
     }
 
-    const int32 baseMipMap = GetBaseMipMap();
+    ImageSystem::LoadingParams params;
+    params.baseMipmap = GetBaseMipMap();
+    params.minimalWidth = Texture::MINIMAL_WIDTH;
+    params.minimalHeight = Texture::MINIMAL_HEIGHT;
+
     if (texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
     {
         Vector<FilePath> facePathes;
@@ -434,7 +452,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 continue;
 
             Vector<Image*> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
+            ImageSystem::Load(currentfacePath, faceImage, params);
             if (faceImage.size() == 0)
             {
                 Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
@@ -478,8 +496,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     {
         FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
-        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
+        ImageSystem::Load(imagePathname, *images, params);
+        ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
         {
             Image* img = *images->begin();
@@ -903,12 +921,21 @@ void Texture::RestoreRenderResource()
     Vector<Image*> images;
 
     const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-    if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-        relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-        relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
+    FilePath::ePathType pathType = relativePathname.GetType();
+    if (pathType == FilePath::PATH_IN_FILESYSTEM ||
+        pathType == FilePath::PATH_IN_RESOURCES ||
+        pathType == FilePath::PATH_IN_DOCUMENTS)
     {
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
+    }
+    else if (pathType == FilePath::PATH_EMPTY) // textures, created from data in memory
+    {
+        Image* img = Image::Create(width, height, FORMAT_RGBA8888);
+        img->cubeFaceID = 0;
+        img->mipmapLevel = 0;
+        std::fill(img->data, img->data + img->dataSize, 0);
+        images.push_back(img);
     }
     else if (isPink)
     {
@@ -1091,7 +1118,7 @@ void Texture::SetPixelization(bool value)
     //RHI_COMPLETE
 }
 
-int32 Texture::GetBaseMipMap() const
+uint32 Texture::GetBaseMipMap() const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -1100,7 +1127,7 @@ int32 Texture::GetBaseMipMap() const
         const TextureQuality* curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
         if (nullptr != curTxQuality)
         {
-            return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
+            return static_cast<uint32>(curTxQuality->albedoBaseMipMapLevel);
         }
     }
 

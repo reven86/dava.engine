@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "TexturePacker/TexturePacker.h"
 #include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/Spritesheet.h"
@@ -36,6 +7,7 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/ImageConvert.h"
 #include "FileSystem/FileSystem.h"
 #include "TextureCompression/TextureConverter.h"
@@ -427,7 +399,7 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
 
     if (gpuParamPosition < gpuParams.size())
     {
-        ImageFormat format = ImageSystem::Instance()->GetImageFormatByName(gpuParams[gpuParamPosition]);
+        ImageFormat format = ImageSystem::GetImageFormatByName(gpuParams[gpuParamPosition]);
         if (format != IMAGE_FORMAT_UNKNOWN)
         {
             imageFormat = format;
@@ -512,7 +484,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
             bool compressedImageFormatRead = false;
             if (imageParamsRead)
             {
-                auto wrapper = ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat);
+                auto wrapper = ImageSystem::GetImageFormatInterface(keys.imageFormat);
                 if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
                 {
                     if (GPUFamilyDescriptor::GetCompressedFileFormat(forGPU, keys.pixelFormat) == keys.imageFormat)
@@ -523,7 +495,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     {
                         AddError(Format("Compression format '%s' can't be saved to %s image for GPU '%s'",
                                         GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                        wrapper->Name(),
+                                        wrapper->GetFormatName().c_str(),
                                         GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
 
                         keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
@@ -553,7 +525,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                     {
                         AddError(Format("Format '%s' is not supported for %s images.",
                                         GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat),
-                                        wrapper->Name()));
+                                        wrapper->GetFormatName().c_str()));
                     }
                 }
             }
@@ -577,7 +549,7 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
             if (keys.imageFormat == IMAGE_FORMAT_PVR || keys.imageFormat == IMAGE_FORMAT_DDS)
             {
                 AddError(Format("Compression format is not specified for '%s' token",
-                                ImageSystem::Instance()->GetImageFormatInterface(keys.imageFormat)->Name()));
+                                ImageSystem::GetImageFormatInterface(keys.imageFormat)->GetFormatName().c_str()));
                 keys.imageFormat = IMAGE_FORMAT_UNKNOWN;
             }
         }
@@ -619,7 +591,7 @@ void TexturePacker::ExportImage(PngImageExt& image, const ImageExportKeys& keys,
         image.ConvertToFormat(keys.pixelFormat);
     }
 
-    const String extension = ImageSystem::Instance()->GetExtensionsFor(keys.imageFormat)[0];
+    const String extension = ImageSystem::GetExtensionsFor(keys.imageFormat)[0];
     exportedPathname.ReplaceExtension(extension);
 
     descriptor->dataSettings.sourceFileFormat = keys.imageFormat;

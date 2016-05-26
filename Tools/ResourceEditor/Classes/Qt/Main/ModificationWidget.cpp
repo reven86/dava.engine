@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ModificationWidget.h"
 #include "Commands2/TransformCommand.h"
 #include "Math/MathHelpers.h"
@@ -49,7 +20,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(xLabel);
 
     xAxisModify = new DAVAFloat32SpinBox(this);
-    xAxisModify->setMinimumSize(QSize(70, 0));
+    xAxisModify->setMinimumSize(QSize(80, 0));
+    xAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(xAxisModify);
 
     yLabel = new QLabel("Y:", this);
@@ -57,7 +29,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(yLabel);
 
     yAxisModify = new DAVAFloat32SpinBox(this);
-    yAxisModify->setMinimumSize(QSize(70, 0));
+    yAxisModify->setMinimumSize(QSize(80, 0));
+    yAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(yAxisModify);
 
     zLabel = new QLabel("Z:", this);
@@ -65,7 +38,8 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     horizontalLayout->addWidget(zLabel);
 
     zAxisModify = new DAVAFloat32SpinBox(this);
-    zAxisModify->setMinimumSize(QSize(70, 0));
+    zAxisModify->setMinimumSize(QSize(80, 0));
+    zAxisModify->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     horizontalLayout->addWidget(zAxisModify);
 
     connect(xAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnXChanged);
@@ -78,17 +52,13 @@ ModificationWidget::ModificationWidget(QWidget* parent)
     connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand);
 }
 
-ModificationWidget::~ModificationWidget()
-{
-}
-
 void ModificationWidget::SetPivotMode(PivotMode mode)
 {
     pivotMode = mode;
     ReloadValues();
 }
 
-void ModificationWidget::SetModifMode(ST_ModifMode mode)
+void ModificationWidget::SetTransformType(Selectable::TransformType mode)
 {
     modifMode = mode;
     ReloadValues();
@@ -100,7 +70,7 @@ void ModificationWidget::ReloadValues()
     yAxisModify->clear();
     zAxisModify->clear();
 
-    if (modifMode == ST_MODIF_SCALE)
+    if (modifMode == Selectable::TransformType::Scale)
     {
         xLabel->setText("Scale:");
 
@@ -119,118 +89,114 @@ void ModificationWidget::ReloadValues()
         zAxisModify->setVisible(true);
     }
 
-    if (nullptr != curScene)
+    if (curScene == nullptr)
     {
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
-        if (!selection.IsEmpty() && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
+        setEnabled(false);
+        OnSnapToLandscapeChanged();
+        return;
+    }
+
+    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
+    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode);
+    if (canModify)
+    {
+        xAxisModify->showButtons(true);
+        yAxisModify->showButtons(true);
+        zAxisModify->showButtons(true);
+
+        if (selection.GetSize() > 1)
         {
-            xAxisModify->setEnabled(true);
-            yAxisModify->setEnabled(true);
-            zAxisModify->setEnabled(true);
+            groupMode = true;
 
-            xAxisModify->showButtons(true);
-            yAxisModify->showButtons(true);
-            zAxisModify->showButtons(true);
-
-            if (selection.Size() > 1)
+            if (pivotMode == PivotRelative)
             {
-                groupMode = true;
-
-                if (pivotMode == PivotRelative)
-                {
-                    xAxisModify->setValue(0);
-                    yAxisModify->setValue(0);
-                    zAxisModify->setValue(0);
-                }
-                else
-                {
-                    xAxisModify->showButtons(false);
-                    yAxisModify->showButtons(false);
-                    zAxisModify->showButtons(false);
-
-                    xAxisModify->clear();
-                    yAxisModify->clear();
-                    zAxisModify->clear();
-                }
+                xAxisModify->setValue(0);
+                yAxisModify->setValue(0);
+                zAxisModify->setValue(0);
             }
             else
             {
-                groupMode = false;
-
-                if (pivotMode == PivotRelative)
-                {
-                    xAxisModify->setValue(0);
-                    yAxisModify->setValue(0);
-                    zAxisModify->setValue(0);
-                }
-                else
-                {
-                    DAVA::Entity* singleEntity = selection.GetFirstEntity();
-                    if (NULL != singleEntity)
-                    {
-                        DAVA::float32 x = 0;
-                        DAVA::float32 y = 0;
-                        DAVA::float32 z = 0;
-
-                        DAVA::Matrix4 localMatrix = singleEntity->GetLocalTransform();
-                        switch (modifMode)
-                        {
-                        case ST_MODIF_MOVE:
-                        {
-                            DAVA::Vector3 translation = localMatrix.GetTranslationVector();
-                            x = translation.x;
-                            y = translation.y;
-                            z = translation.z;
-                        }
-                        break;
-                        case ST_MODIF_ROTATE:
-                        {
-                            DAVA::Vector3 pos, scale, rotate;
-                            if (localMatrix.Decomposition(pos, scale, rotate))
-                            {
-                                x = DAVA::RadToDeg(rotate.x);
-                                y = DAVA::RadToDeg(rotate.y);
-                                z = DAVA::RadToDeg(rotate.z);
-                            }
-                        }
-                        break;
-                        case ST_MODIF_SCALE:
-                        {
-                            DAVA::Vector3 pos, scale, rotate;
-                            if (localMatrix.Decomposition(pos, scale, rotate))
-                            {
-                                x = scale.x;
-                                y = scale.y;
-                                z = scale.z;
-                            }
-                        }
-                        break;
-                        default:
-                            break;
-                        }
-
-                        xAxisModify->setValue(x);
-                        yAxisModify->setValue(y);
-                        zAxisModify->setValue(z);
-                    }
-                }
+                xAxisModify->showButtons(false);
+                yAxisModify->showButtons(false);
+                zAxisModify->showButtons(false);
+                xAxisModify->clear();
+                yAxisModify->clear();
+                zAxisModify->clear();
             }
         }
         else
         {
-            xAxisModify->showButtons(true);
-            yAxisModify->showButtons(true);
-            zAxisModify->showButtons(true);
+            groupMode = false;
 
-            xAxisModify->setEnabled(false);
-            yAxisModify->setEnabled(false);
-            zAxisModify->setEnabled(false);
+            if (pivotMode == PivotRelative)
+            {
+                xAxisModify->setValue(0);
+                yAxisModify->setValue(0);
+                zAxisModify->setValue(0);
+            }
+            else
+            {
+                const auto& firstObject = selection.GetFirst();
+                DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
+                DAVA::float32 x = 0;
+                DAVA::float32 y = 0;
+                DAVA::float32 z = 0;
+                switch (modifMode)
+                {
+                case Selectable::TransformType::Translation:
+                {
+                    DAVA::Vector3 translation = localMatrix.GetTranslationVector();
+                    x = translation.x;
+                    y = translation.y;
+                    z = translation.z;
+                }
+                break;
+                case Selectable::TransformType::Rotation:
+                {
+                    DAVA::Vector3 pos, scale, rotate;
+                    if (localMatrix.Decomposition(pos, scale, rotate))
+                    {
+                        x = DAVA::RadToDeg(rotate.x);
+                        y = DAVA::RadToDeg(rotate.y);
+                        z = DAVA::RadToDeg(rotate.z);
+                    }
+                }
+                break;
+                case Selectable::TransformType::Scale:
+                {
+                    DAVA::Vector3 pos, scale, rotate;
+                    if (localMatrix.Decomposition(pos, scale, rotate))
+                    {
+                        x = scale.x;
+                        y = scale.y;
+                        z = scale.z;
+                    }
+                }
+                break;
+                default:
+                    break;
+                }
 
-            xAxisModify->clear();
-            yAxisModify->clear();
-            zAxisModify->clear();
+                xAxisModify->setValue(x);
+                yAxisModify->setValue(y);
+                zAxisModify->setValue(z);
+            }
         }
     }
+    else
+    {
+        xAxisModify->showButtons(true);
+        yAxisModify->showButtons(true);
+        zAxisModify->showButtons(true);
+        xAxisModify->clear();
+        yAxisModify->clear();
+        zAxisModify->clear();
+    }
+
+    xAxisModify->setEnabled(canModify);
+    yAxisModify->setEnabled(canModify);
+    zAxisModify->setEnabled(canModify);
+    setEnabled(canModify);
 
     OnSnapToLandscapeChanged();
 }
@@ -241,24 +207,24 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         return;
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
-    EntityGroup selection = curScene->selectionSystem->GetSelection();
-    selection.FilterChildrenComponents();
+    SelectableGroup selection = curScene->selectionSystem->GetSelection();
+    selection.RemoveObjectsWithDependantTransform();
 
     switch (modifMode)
     {
-    case ST_MODIF_MOVE:
+    case Selectable::TransformType::Translation:
     {
         curScene->modifSystem->ApplyMoveValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
     }
 
-    case ST_MODIF_ROTATE:
+    case Selectable::TransformType::Rotation:
     {
         curScene->modifSystem->ApplyRotateValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
     }
 
-    case ST_MODIF_SCALE:
+    case Selectable::TransformType::Scale:
     {
         curScene->modifSystem->ApplyScaleValues(axis, selection, values, pivotMode == PivotMode::PivotAbsolute);
         break;
@@ -298,12 +264,12 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if (curScene == nullptr)
         return;
 
-    const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
     if (selection.IsEmpty())
         return;
 
     const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
-    const auto isMoveMode = (modifMode == ST_MODIF_MOVE);
+    const auto isMoveMode = (modifMode == Selectable::TransformType::Translation);
     zAxisModify->setReadOnly(isSnappedToLandscape && isMoveMode);
 }
 
@@ -319,7 +285,7 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2* scene)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (curScene == scene)
     {

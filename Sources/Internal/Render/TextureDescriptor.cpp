@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -128,7 +99,7 @@ void TextureDescriptor::TextureDataSettings::SetDefaultValues()
     static ImageFormat defaultImageFormat = IMAGE_FORMAT_PNG;
 
     sourceFileFormat = defaultImageFormat;
-    sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(defaultImageFormat)[0];
+    sourceFileExtension = ImageSystem::GetExtensionsFor(defaultImageFormat)[0];
 }
 
 void TextureDescriptor::TextureDataSettings::SetGenerateMipmaps(const bool& generateMipmaps)
@@ -254,7 +225,7 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
         //this code need until using of convertation params in crc
         const ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
         const FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
-        ImageInfo imageInfo = ImageSystem::Instance()->GetImageInfo(filePath);
+        ImageInfo imageInfo = ImageSystem::GetImageInfo(filePath);
 
         const bool imageIsActual = (imageInfo.format == compressionForGPU->format) &&
         ((compressionForGPU->compressToWidth == 0) || (imageInfo.width == compressionForGPU->compressToWidth)) && ((compressionForGPU->compressToHeight == 0) || (imageInfo.height == compressionForGPU->compressToHeight));
@@ -792,7 +763,7 @@ const String& TextureDescriptor::GetDefaultFaceExtension()
 
 const String& TextureDescriptor::GetLightmapTextureExtension()
 {
-    return ImageSystem::Instance()->GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
+    return ImageSystem::GetExtensionsFor(IMAGE_FORMAT_PNG)[0];
 }
 
 const TextureDescriptor::Compression* TextureDescriptor::GetCompressionParams(eGPUFamily gpuFamily) const
@@ -806,7 +777,7 @@ Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORM
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)
 {
-    auto& extensions = ImageSystem::Instance()->GetExtensionsFor(format);
+    auto& extensions = ImageSystem::GetExtensionsFor(format);
     for (auto& ext : extensions)
     {
         if (CompareCaseInsensitive(ext, extension) == 0)
@@ -971,7 +942,7 @@ FilePath TextureDescriptor::CreatePathnameForGPU(const eGPUFamily gpuFamily) con
 
 FilePath TextureDescriptor::CreateCompressedTexturePathname(const eGPUFamily gpuFamily, ImageFormat imageFormat) const
 {
-    String ext = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::Instance()->GetExtensionsFor(imageFormat)[0];
+    String ext = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::GetExtensionsFor(imageFormat)[0];
     return FilePath::CreateWithNewExtension(pathname, ext);
 }
 
@@ -990,7 +961,7 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(const eGPUFamily gpuFamily) 
     }
     else
     {
-        requestedFormat = static_cast<PixelFormat>(compression[gpuFamily].format);
+        requestedFormat = static_cast<PixelFormat>(compression[requestedGPU].format);
     }
 
     if (requestedGPU == GPU_ORIGIN)

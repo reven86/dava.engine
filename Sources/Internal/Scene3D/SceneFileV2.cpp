@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Entity.h"
 #include "Render/Texture.h"
@@ -284,7 +255,12 @@ bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File* file)
 {
     DVASSERT(file);
 
-    file->Read(&_header, sizeof(Header));
+    uint32 result = file->Read(&_header, sizeof(Header));
+    if (result != sizeof(Header))
+    {
+        Logger::Error("SceneFileV2::ReadHeader failed. Read file return %d.", result);
+        return false;
+    }
 
     if ((_header.signature[0] != 'S')
         || (_header.signature[1] != 'F')
@@ -397,7 +373,13 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     if (header.version >= 10)
     {
-        ReadDescriptor(file, descriptor);
+        const bool resultRead = ReadDescriptor(file, descriptor);
+        if (!resultRead)
+        {
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_READ_ERROR);
+            return GetError();
+        }
     }
 
     VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(scene->version);
@@ -432,11 +414,23 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
-        file->Read(&dataNodeCount, sizeof(int32));
+        uint32 result = file->Read(&dataNodeCount, sizeof(int32));
+        if (result != sizeof(int32))
+        {
+            Logger::Error("SceneFileV2::LoadScene read(%d) dataNodeCount failed in file: %s", result, filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_READ_ERROR);
+            return GetError();
+        }
 
         for (int k = 0; k < dataNodeCount; ++k)
         {
-            LoadDataNode(scene, nullptr, file);
+            const bool nodeLoaded = LoadDataNode(scene, nullptr, file);
+            if (!nodeLoaded)
+            {
+                Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
         }
 
         if (header.nodeCount > 0)
@@ -444,7 +438,14 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             // try to load global material
             uint32 filePos = file->GetPos();
             KeyedArchive* archive = new KeyedArchive();
-            archive->Load(file);
+            const bool loaded = archive->Load(file);
+            if (!loaded)
+            {
+                Logger::Error("SceneFileV2::LoadScene load KeyedArchive with global material failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                SafeRelease(archive);
+                return GetError();
+            }
 
             String name = archive->GetString("##name");
             if (name == "GlobalMaterial")
@@ -459,7 +460,14 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
             else
             {
-                file->Seek(filePos, File::SEEK_FROM_START);
+                const bool res = file->Seek(filePos, File::SEEK_FROM_START);
+                if (!res)
+                {
+                    Logger::Error("SceneFileV2::LoadScene seek failed in file: ", filename.GetAbsolutePathname().c_str());
+                    SetError(ERROR_FILE_READ_ERROR);
+                    SafeRelease(archive);
+                    return GetError();
+                }
             }
 
             SafeRelease(archive);
@@ -476,15 +484,26 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     scene->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        LoadHierarchy(0, scene, file, 1);
+        const bool loaded = LoadHierarchy(0, scene, file, 1);
+        if (!loaded)
+        {
+            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: ", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_READ_ERROR);
+            return GetError();
+        }
     }
 
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
     JobManager::Instance()->WaitMainJobs();
 
     UpdatePolygonGroupRequestedFormatRecursively(scene);
-    serializationContext.LoadPolygonGroupData(file);
-
+    const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
+    if (!contextLoaded)
+    {
+        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: ", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_READ_ERROR);
+        return GetError();
+    }
     OptimizeScene(scene);
 
     if (GetError() == ERROR_NO_ERROR)
@@ -570,7 +589,12 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
 
     if (header.version >= 10)
     {
-        ReadDescriptor(file, descriptor);
+        const bool resultRead = ReadDescriptor(file, descriptor);
+        if (!resultRead)
+        {
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            return res;
+        }
     }
 
     VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(version);
@@ -597,23 +621,64 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
-        file->Read(&dataNodeCount, sizeof(int32));
+        uint32 result = file->Read(&dataNodeCount, sizeof(int32));
+        if (result != sizeof(int32))
+        {
+            Logger::Error("SceneFileV2::LoadScene read file failed, file: %s", file->GetFilename().GetAbsolutePathname().c_str());
+            SafeRelease(res);
+            return nullptr;
+        }
+        bool loadedNodes = true;
         for (int k = 0; k < dataNodeCount; ++k)
         {
             KeyedArchive* archive = new KeyedArchive();
-            archive->Load(file);
+            loadedNodes &= archive->Load(file);
+            if (!loadedNodes)
+            {
+                SafeRelease(archive);
+                Logger::Error("SceneFileV2::LoadScene load KeyedArchive in node:%d failed, in file %s", k, file->GetFilename().GetAbsolutePathname().c_str());
+                break;
+            }
             res->dataNodes.push_back(archive);
+        }
+        if (!loadedNodes)
+        {
+            for (KeyedArchive* iter : res->dataNodes)
+            {
+                SafeRelease(iter);
+            }
+            SafeRelease(res);
+            return nullptr;
         }
     }
 
+    bool loadNodes = true;
     res->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
         SceneArchive::SceneArchiveHierarchyNode* child = new SceneArchive::SceneArchiveHierarchyNode();
-        child->LoadHierarchy(file);
+        loadNodes &= child->LoadHierarchy(file);
+        if (!loadNodes)
+        {
+            SafeRelease(child);
+            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in node:%d, in file %s", ci, file->GetFilename().GetAbsolutePathname().c_str());
+            break;
+        }
         res->children.push_back(child);
     }
-
+    if (!loadNodes)
+    {
+        for (SceneArchive::SceneArchiveHierarchyNode* iter : res->children)
+        {
+            SafeRelease(iter);
+        }
+        for (KeyedArchive* iter : res->dataNodes)
+        {
+            SafeRelease(iter);
+        }
+        SafeRelease(res);
+        return nullptr;
+    }
     return res;
 }
 
@@ -623,18 +688,31 @@ void SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor) cons
     file->Write(&descriptor.fileType, sizeof(descriptor.fileType));
 }
 
-void SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
+bool SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
 {
-    file->Read(&descriptor.size, sizeof(descriptor.size));
+    uint32 result = file->Read(&descriptor.size, sizeof(descriptor.size));
+    if (result != sizeof(descriptor.size))
+    {
+        return false;
+    }
     DVASSERT(descriptor.size >= sizeof(descriptor.fileType));
 
-    file->Read(&descriptor.fileType, sizeof(descriptor.fileType));
+    result = file->Read(&descriptor.fileType, sizeof(descriptor.fileType));
+    if (result != sizeof(descriptor.size))
+    {
+        return false;
+    }
 
     if (descriptor.size > sizeof(descriptor.fileType))
     {
         //skip extra data probably added by future versions
-        file->Seek(descriptor.size - sizeof(descriptor.fileType), File::SEEK_FROM_CURRENT);
+        const bool seekResult = file->Seek(descriptor.size - sizeof(descriptor.fileType), File::SEEK_FROM_CURRENT);
+        if (!seekResult)
+        {
+            return false;
+        }
     }
+    return true;
 }
 
 bool SceneFileV2::SaveDataNode(DataNode* node, File* file)
@@ -648,11 +726,12 @@ bool SceneFileV2::SaveDataNode(DataNode* node, File* file)
     return true;
 }
 
-void SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
+bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
 {
+    bool loaded = true;
     uint32 currFilePos = file->GetPos();
     KeyedArchive* archive = new KeyedArchive();
-    archive->Load(file);
+    loaded &= archive->Load(file);
 
     String name = archive->GetString("##name");
     DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
@@ -663,7 +742,7 @@ void SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
         {
             SafeRelease(node);
             SafeRelease(archive);
-            return;
+            return false;
         }
         node->SetScene(scene);
 
@@ -686,6 +765,7 @@ void SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
         SafeRelease(node);
     }
     SafeRelease(archive);
+    return loaded;
 }
 
 bool SceneFileV2::SaveDataHierarchy(DataNode* node, File* file, int32 level)
@@ -762,11 +842,12 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
     return true;
 }
 
-void SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 level)
+bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 level)
 {
+    bool resultLoad = true;
     bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive* archive = new KeyedArchive();
-    archive->Load(file);
+    resultLoad &= archive->Load(file);
 
     String name = archive->GetString("##name");
 
@@ -825,7 +906,7 @@ void SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
         node->children.reserve(childrenCount);
         for (int ci = 0; ci < childrenCount; ++ci)
         {
-            LoadHierarchy(scene, node, file, level + 1);
+            resultLoad &= LoadHierarchy(scene, node, file, level + 1);
         }
 
         if (removeChildren && childrenCount)
@@ -839,8 +920,8 @@ void SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
 
         SafeRelease(node);
     }
-
     SafeRelease(archive);
+    return resultLoad;
 }
 
 Entity* SceneFileV2::LoadEntity(Scene* scene, KeyedArchive* archive)
@@ -1281,18 +1362,20 @@ SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode()
 {
 }
 
-void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File* file)
+bool SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File* file)
 {
+    bool resultLoad = true;
     archive = new KeyedArchive();
-    archive->Load(file);
+    resultLoad &= archive->Load(file);
     int32 childrenCount = archive->GetInt32("#childrenCount", 0);
     children.reserve(childrenCount);
     for (int ci = 0; ci < childrenCount; ++ci)
     {
         SceneArchiveHierarchyNode* child = new SceneArchiveHierarchyNode();
-        child->LoadHierarchy(file);
+        resultLoad &= child->LoadHierarchy(file);
         children.push_back(child);
     }
+    return resultLoad;
 }
 
 SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()

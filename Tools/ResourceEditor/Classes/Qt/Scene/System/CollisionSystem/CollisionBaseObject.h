@@ -1,42 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __SCENE_COLLISION_BASE_OBJECT_H__
 #define __SCENE_COLLISION_BASE_OBJECT_H__
 
 #include "bullet/btBulletCollisionCommon.h"
-#include "Scene3D/Entity.h"
-
-namespace DAVA
-{
-class Entity;
-}
+#include "Scene/Selectable.h"
 
 class CollisionBaseObject
 {
@@ -61,29 +27,26 @@ public:
     };
 
 public:
-    CollisionBaseObject(DAVA::Entity* ent, btCollisionWorld* word)
-        : entity(ent)
+    CollisionBaseObject(Selectable::Object* object_, btCollisionWorld* word)
+        : object(object_)
         , btWord(word)
     {
     }
 
-    virtual ~CollisionBaseObject()
-    {
-    }
+    virtual ~CollisionBaseObject() = default;
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
     virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
 
-    inline CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
-    inline DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
+    CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
+    DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;
 
-    DAVA::Entity* entity;
-    DAVA::AABBox3 boundingBox;
     btCollisionObject* btObject = nullptr;
-    btCollisionWorld* btWord;
+    btCollisionWorld* btWord = nullptr;
+    Selectable object;
 };
 
-CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const
+inline CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const
 {
     char cornersData[8 * sizeof(DAVA::Vector3)];
     DAVA::Vector3* corners = reinterpret_cast<DAVA::Vector3*>(cornersData);
@@ -109,7 +72,7 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBaseObject::ClassifyBoundingBo
 
 inline DAVA::Plane CollisionBaseObject::TransformPlaneToLocalSpace(const DAVA::Plane& plane) const
 {
-    DAVA::Matrix4 transform = entity->GetWorldTransform();
+    DAVA::Matrix4 transform = object.GetWorldTransform();
     transform.Transpose();
     return DAVA::Plane(DAVA::Vector4(plane.n.x, plane.n.y, plane.n.z, plane.d) * transform);
 }

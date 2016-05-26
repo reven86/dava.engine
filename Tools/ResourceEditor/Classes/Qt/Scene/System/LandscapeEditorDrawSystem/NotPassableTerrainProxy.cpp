@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "NotPassableTerrainProxy.h"
 
 static const DAVA::int32 GRID_QUAD_SIZE = 65;
@@ -137,14 +108,14 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
 {
     const DAVA::Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 
-    const DAVA::float32 angleCellDistance = landSize.x / static_cast<DAVA::float32>(heightmap->Size() - 1);
+    const DAVA::float32 angleCellDistance = landSize.x / static_cast<DAVA::float32>(heightmap->Size());
     const DAVA::float32 angleHeightDelta = landSize.z / static_cast<DAVA::float32>(DAVA::Heightmap::MAX_VALUE - 1);
     const DAVA::float32 tanCoef = angleHeightDelta / angleCellDistance;
 
     const DAVA::int32 heightmapSize = heightmap->Size();
 
     const DAVA::float32 targetWidth = static_cast<DAVA::float32>(notPassableTexture->GetWidth());
-    const DAVA::float32 dx = targetWidth / static_cast<DAVA::float32>(heightmapSize - 1);
+    const DAVA::float32 dx = targetWidth / static_cast<DAVA::float32>(heightmapSize);
 
     ///////////////////////////////
 
@@ -197,14 +168,13 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
 
                 for (DAVA::int32 y = yRect; (y < yRect + GRID_QUAD_SIZE) && y < heightmapSize; ++y)
                 {
-                    const DAVA::int32 yOffset = y * heightmapSize;
-                    const DAVA::float32 ydx = (heightmapSize - y - 1) * dx;
+                    const DAVA::float32 ydx = (heightmapSize - y) * dx;
 
                     for (DAVA::int32 x = xRect; (x < xRect + GRID_QUAD_SIZE) && x < heightmapSize; ++x)
                     {
-                        const DAVA::uint16 currentPoint = heightmap->Data()[yOffset + x];
-                        const DAVA::uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
-                        const DAVA::uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmapSize];
+                        const DAVA::uint16 currentPoint = heightmap->GetHeightClamp(x, y);
+                        const DAVA::uint16 rightPoint = heightmap->GetHeightClamp(x + 1, y);
+                        const DAVA::uint16 bottomPoint = heightmap->GetHeightClamp(x, y + 1);
 
                         const DAVA::uint16 deltaRight = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(rightPoint)));
                         const DAVA::uint16 deltaBottom = static_cast<DAVA::uint16>(abs(static_cast<DAVA::int32>(currentPoint) - static_cast<DAVA::int32>(bottomPoint)));

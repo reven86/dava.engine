@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
@@ -75,6 +46,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
             textureQualities.clear();
             materialGroups.clear();
             soundQualities.clear();
+            landscapeQualities.clear();
 
             // materials
             const YamlNode* materialGroupsNode = rootNode->Get("materials");
@@ -213,6 +185,71 @@ void QualitySettingsSystem::Load(const FilePath& path)
                     }
                 }
             }
+
+            // landscape
+            const YamlNode* landscapeNode = rootNode->Get("landscape");
+            if (nullptr != landscapeNode)
+            {
+                const YamlNode* defaultNode = landscapeNode->Get("default");
+                const YamlNode* qualitiesNode = landscapeNode->Get("qualities");
+
+                if (nullptr != qualitiesNode)
+                {
+                    FastName defQualityName;
+                    if (nullptr != defaultNode && defaultNode->GetType() == YamlNode::TYPE_STRING)
+                    {
+                        defQualityName = FastName(defaultNode->AsString().c_str());
+                    }
+
+                    landscapeQualities.reserve(qualitiesNode->GetCount());
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    {
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* nameNode = qualityNode->Get("quality");
+                        const YamlNode* morphingNode = qualityNode->Get("morphing");
+                        const YamlNode* metricsNodes[] = {
+                            qualityNode->Get("normalMaxHeightError"),
+                            qualityNode->Get("normalMaxPatchRadiusError"),
+                            qualityNode->Get("normalMaxAbsoluteHeightError"),
+                            qualityNode->Get("zoomMaxHeightError"),
+                            qualityNode->Get("zoomMaxPatchRadiusError"),
+                            qualityNode->Get("zoomMaxAbsoluteHeightError")
+                        };
+
+                        if (nameNode && nameNode->GetType() == YamlNode::TYPE_STRING &&
+                            morphingNode && morphingNode->GetType() == YamlNode::TYPE_STRING)
+                        {
+                            bool metrcisValid = true;
+                            LCQ lcq;
+                            lcq.name = FastName(nameNode->AsString().c_str());
+                            lcq.quality.morphing = morphingNode->AsBool();
+
+                            for (size_t j = 0; j < 6; j++)
+                            {
+                                if (metricsNodes[j] && metricsNodes[j]->GetType() == YamlNode::TYPE_STRING)
+                                {
+                                    lcq.quality.metricsArray[j] = metricsNodes[j]->AsFloat();
+                                }
+                                else
+                                {
+                                    metrcisValid = false;
+                                    break;
+                                }
+                            }
+
+                            if (metrcisValid)
+                            {
+                                landscapeQualities.push_back(lcq);
+                                if (lcq.name == defQualityName)
+                                {
+                                    curLandscapeQuality = i;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // particles
             const YamlNode* particlesNode = rootNode->Get("particles");
             if (nullptr != particlesNode)
@@ -336,6 +373,58 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
     if (index < soundQualities.size())
     {
         ret = soundQualities[index].configPath;
+    }
+
+    return ret;
+}
+
+size_t QualitySettingsSystem::GetLandscapeQualityCount() const
+{
+    return landscapeQualities.size();
+}
+
+FastName QualitySettingsSystem::GetLandscapeQualityName(size_t index) const
+{
+    FastName ret;
+
+    if (index < landscapeQualities.size())
+    {
+        ret = landscapeQualities[index].name;
+    }
+
+    return ret;
+}
+
+FastName QualitySettingsSystem::GetCurLandscapeQuality() const
+{
+    return GetLandscapeQualityName(curLandscapeQuality);
+}
+
+void QualitySettingsSystem::SetCurLandscapeQuality(const FastName& name)
+{
+    for (size_t i = 0; i < landscapeQualities.size(); ++i)
+    {
+        if (landscapeQualities[i].name == name)
+        {
+            curLandscapeQuality = static_cast<int32>(i);
+            return;
+        }
+    }
+
+    DVASSERT(0 && "No such quality");
+}
+
+const LandscapeQuality* QualitySettingsSystem::GetLandscapeQuality(const FastName& name) const
+{
+    const LandscapeQuality* ret = nullptr;
+
+    for (size_t i = 0; i < landscapeQualities.size(); ++i)
+    {
+        if (landscapeQualities[i].name == name)
+        {
+            ret = &landscapeQualities[i].quality;
+            break;
+        }
     }
 
     return ret;

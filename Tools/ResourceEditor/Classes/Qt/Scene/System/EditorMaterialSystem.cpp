@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "EditorMaterialSystem.h"
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -39,6 +10,8 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "Commands2/InspMemberModifyCommand.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
     : entity(entity_)
@@ -265,7 +238,7 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
     if (commandID == CMDID_BATCH)
     {
         const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD }))
+        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))
         {
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
@@ -299,7 +272,6 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
 
             break;
         }
-
         case CMDID_LOD_CREATE_PLANE:
         {
             const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
@@ -361,6 +333,21 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
                 }
             }
             break;
+        }
+        case CMDID_INSP_MEMBER_MODIFY:
+        {
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+
+            const DAVA::Vector<DAVA::Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
+            for (DAVA::Entity* landEntity : landscapes)
+            {
+                DAVA::Landscape* landObject = GetLandscape(landEntity);
+                if (landObject == cmd->object)
+                {
+                    RemoveMaterial(landObject->GetMaterial());
+                    AddMaterials(landEntity);
+                }
+            }
         }
 
         default:

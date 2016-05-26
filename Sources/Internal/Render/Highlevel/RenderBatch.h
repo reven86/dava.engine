@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVAENGINE_SCENE3D_RENDER_BATCH_H__
 #define __DAVAENGINE_SCENE3D_RENDER_BATCH_H__
 
@@ -118,29 +90,31 @@ public:
     pointer_size layerSortingKey;
 
     rhi::HVertexBuffer vertexBuffer;
-    uint32 vertexCount;
-    uint32 vertexBase;
+    rhi::HVertexBuffer instanceBuffer;
+    uint32 vertexCount = 0;
+    uint32 vertexBase = 0;
     rhi::HIndexBuffer indexBuffer;
-    uint32 startIndex;
-    uint32 indexCount;
+    uint32 startIndex = 0;
+    uint32 indexCount = 0;
+    uint32 instanceCount = 0;
 
-    rhi::PrimitiveType primitiveType;
-    uint32 vertexLayoutId;
+    rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    uint32 vertexLayoutId = rhi::VertexLayout::InvalidUID;
 
 private:
-    PolygonGroup* dataSource;
+    PolygonGroup* dataSource = nullptr;
 
-    NMaterial* material; // Should be replaced to NMaterial
-    RenderObject* renderObject;
-
-    uint32 sortingKey; //oooookkkk -where o is offset, k is key
+    NMaterial* material = nullptr;
+    RenderObject* renderObject = nullptr;
 
     const static uint32 SORTING_KEY_MASK = 0x0f;
     const static uint32 SORTING_OFFSET_MASK = 0x1f0;
     const static uint32 SORTING_OFFSET_SHIFT = 4;
     const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
 
-    AABBox3 aabbox;
+    uint32 sortingKey = SORTING_KEY_DEF_VALUE; //oooookkkk - where 'o' is offset, 'k' is key
+
+    AABBox3 aabbox = AABBox3(Vector3(), Vector3());
 
     void InsertDataNode(DataNode* node, Set<DataNode*>& dataNodes);
 
@@ -199,6 +173,8 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
     {
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = dataSource->vertexBuffer;
+        packet.vertexStream[1] = rhi::HVertexBuffer();
+        packet.instanceCount = 0;
         packet.baseVertex = 0;
         packet.vertexCount = dataSource->vertexCount;
         packet.indexBuffer = dataSource->indexBuffer;
@@ -209,8 +185,10 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
     }
     else
     {
-        packet.vertexStreamCount = 1;
+        packet.vertexStreamCount = instanceCount ? 2 : 1;
         packet.vertexStream[0] = vertexBuffer;
+        packet.vertexStream[1] = instanceCount ? instanceBuffer : rhi::HVertexBuffer();
+        packet.instanceCount = instanceCount;
         packet.baseVertex = vertexBase;
         packet.vertexCount = vertexCount;
         packet.indexBuffer = indexBuffer;

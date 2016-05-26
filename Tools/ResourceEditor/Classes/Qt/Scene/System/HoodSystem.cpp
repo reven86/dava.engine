@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Scene3D/Scene.h"
 
 #include "Scene/System/HoodSystem.h"
@@ -52,7 +24,7 @@ HoodSystem::HoodSystem(DAVA::Scene* scene, SceneCameraSystem* camSys)
     collWorld->setDebugDrawer(collDebugDraw);
 
     SetModifAxis(ST_AXIS_X);
-    SetModifMode(ST_MODIF_MOVE);
+    SetTransformType(Selectable::TransformType::Translation);
 
     moveHood.colorX = DAVA::Color(1, 0, 0, 1);
     moveHood.colorY = DAVA::Color(0, 1, 0, 1);
@@ -172,7 +144,7 @@ DAVA::float32 HoodSystem::GetScale() const
     return curScale;
 }
 
-void HoodSystem::SetModifMode(ST_ModifMode mode)
+void HoodSystem::SetTransformType(Selectable::TransformType mode)
 {
     if (!IsLocked())
     {
@@ -186,13 +158,13 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
             curMode = mode;
             switch (mode)
             {
-            case ST_MODIF_MOVE:
+            case Selectable::TransformType::Translation:
                 curHood = &moveHood;
                 break;
-            case ST_MODIF_SCALE:
+            case Selectable::TransformType::Scale:
                 curHood = &scaleHood;
                 break;
-            case ST_MODIF_ROTATE:
+            case Selectable::TransformType::Rotation:
                 curHood = &rotateHood;
                 break;
             default:
@@ -213,11 +185,11 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
     }
 }
 
-ST_ModifMode HoodSystem::GetModifMode() const
+Selectable::TransformType HoodSystem::GetTransformType() const
 {
     if (lockedModif)
     {
-        return ST_MODIF_OFF;
+        return Selectable::TransformType::Disabled;
     }
 
     return curMode;
@@ -333,35 +305,26 @@ void HoodSystem::Input(DAVA::UIEvent* event)
 
 void HoodSystem::Draw()
 {
-    if (NULL != curHood && IsVisible())
+    if ((curHood == nullptr) || !IsVisible())
+        return;
+
+    TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
+
+    // modification isn't locked and whole system isn't locked
+    if (!IsLocked() && !lockedModif)
     {
-        TextDrawSystem* textDrawSys = ((SceneEditor2*)GetScene())->textDrawSystem;
-
-        // modification isn't locked and whole system isn't locked
-        if (!IsLocked() && !lockedModif)
+        ST_Axis showAsSelected = curAxis;
+        if ((GetTransformType() != Selectable::TransformType::Disabled) && (ST_AXIS_NONE != moseOverAxis))
         {
-            ST_Axis showAsSelected = curAxis;
-
-            if (curMode != ST_MODIF_OFF)
-            {
-                if (ST_AXIS_NONE != moseOverAxis)
-                {
-                    showAsSelected = moseOverAxis;
-                }
-            }
-
-            curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-
-            // zero pos point
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(DAVA::AABBox3(GetPosition(), curHood->objScale * .04f), DAVA::Color::White, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
-
-            // debug draw axis collision word
-            //collWorld->debugDrawWorld();
+            showAsSelected = moseOverAxis;
         }
-        else
-        {
-            normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-        }
+
+        curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+    }
+    else
+    {
+        normalHood.Draw(curAxis, ST_AXIS_NONE, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
     }
 }
 
@@ -398,12 +361,12 @@ void HoodSystem::LockAxis(bool lock)
     lockedAxis = lock;
 }
 
-bool HoodSystem::AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection)
+bool HoodSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
 {
-    return !IsVisible() || (ST_MODIF_OFF == GetModifMode()) || (ST_AXIS_NONE == GetPassingAxis());
+    return !IsVisible() || (GetTransformType() == Selectable::TransformType::Disabled) || (ST_AXIS_NONE == GetPassingAxis());
 }
 
-bool HoodSystem::AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection)
+bool HoodSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
     return true;
 }

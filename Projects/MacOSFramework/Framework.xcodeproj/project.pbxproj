@@ -14,6 +14,10 @@
 		0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0214140C181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0224B70015989F7400CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B6FF15989F7400CDEF9E /* libtheora_macos.a */; };
+		0249EF1D1CB563660018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
+		0249EF1E1CB563660018A5FC /* LandscapeSubdivision.h in Headers */ = {isa = PBXBuildFile; fileRef = 0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */; };
+		0249EF2A1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
+		0249EF2B1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */; };
 		028C0D331BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
 		028C0D341BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
 		028C0D351BD66A6000B2266F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C08191BD66A5D00B2266F /* AnimatedObject.cpp */; };
@@ -1349,12 +1353,6 @@
 		028C149E1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C149F1BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
 		028C14A01BD66A6000B2266F /* StaticMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0AC91BD66A5E00B2266F /* StaticMesh.h */; };
-		028C14A11BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A21BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A31BD66A6000B2266F /* Cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C0ACA1BD66A5E00B2266F /* Cursor.h */; };
-		028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
-		028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */; };
 		028C14AD1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AE1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
 		028C14AF1BD66A6000B2266F /* DynamicBindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */; };
@@ -2798,6 +2796,12 @@
 		028C1B731BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B741BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
 		028C1B751BD66A6100B2266F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 028C0D311BD66A6000B2266F /* UtilsMacOS.mm */; };
+		02DC4BC61CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC71CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC81CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */; };
+		02DC4BC91CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
+		02DC4BCA1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
+		02DC4BCB1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */; };
 		0347B7E01C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
 		0347B7E11C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
 		0347B7E21C64C211004DB76C /* UITextFieldMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */; };
@@ -2882,6 +2886,19 @@
 		176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
+		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
+		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
+		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
+		1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */; };
+		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
+		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
+		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
+		1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */; };
+		1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */; };
+		1DAA2B311CA595FB00E9E3EE /* MouseDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */; };
+		1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */; };
+		1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */; };
+		1DAA2B361CA5964D00E9E3EE /* MouseDeviceMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */; };
 		320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */; };
 		320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */; };
 		321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
@@ -2894,13 +2911,6 @@
 		321CCA591C6E04490048FAC9 /* UIFocusSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */; };
 		321CCA5A1C6E04490048FAC9 /* UIKeyInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */; };
 		321CCA5B1C6E04490048FAC9 /* UIKeyInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */; };
-		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
-		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
-		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
-		1CE823521C91C93B00D4087C /* SetCollectionItemValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */; };
-		1CE823531C91C93B00D4087C /* SetCollectionItemValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */; };
-		1CE823541C91C93B00D4087C /* SetPropertyValueCommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */; };
-		1CE823551C91C93B00D4087C /* SetPropertyValueCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C16DDD1A52D8C4003C307A /* libuv_macos.a */; };
@@ -3005,6 +3015,13 @@
 		FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
 		FE578C611327927C0081BDE9 /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		FE578C621327927C0081BDE9 /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
+		FEE0ADA81CD8ADB600EE3886 /* ImageConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */; };
+		FEE0ADB21CD8AE8100EE3886 /* DDSHandlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */; };
+		FEE0ADB31CD8AE8100EE3886 /* DDSHandlers.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */; };
+		FEE0ADB41CD8AE8100EE3886 /* NvttHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */; };
+		FEE0ADB51CD8AE8100EE3886 /* NvttHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */; };
+		FEE0ADB61CD8AE8100EE3886 /* QualcommHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */; };
+		FEE0ADB71CD8AE8100EE3886 /* QualcommHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -3032,6 +3049,8 @@
 		02141405181984D600925E51 /* DAVAClassRegistrator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DAVAClassRegistrator.cpp; sourceTree = "<group>"; };
 		02141406181984D600925E51 /* DAVAClassRegistrator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAClassRegistrator.h; sourceTree = "<group>"; };
 		0224B6FF15989F7400CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
+		0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSubdivision.cpp; sourceTree = "<group>"; };
+		0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSubdivision.h; sourceTree = "<group>"; };
 		028C08191BD66A5D00B2266F /* AnimatedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimatedObject.cpp; sourceTree = "<group>"; };
 		028C081A1BD66A5D00B2266F /* AnimatedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimatedObject.h; sourceTree = "<group>"; };
 		028C081B1BD66A5D00B2266F /* Animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Animation.cpp; sourceTree = "<group>"; };
@@ -3478,8 +3497,6 @@
 		028C0AC71BD66A5E00B2266F /* PolygonGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolygonGroup.h; sourceTree = "<group>"; };
 		028C0AC81BD66A5E00B2266F /* StaticMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMesh.cpp; sourceTree = "<group>"; };
 		028C0AC91BD66A5E00B2266F /* StaticMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMesh.h; sourceTree = "<group>"; };
-		028C0ACA1BD66A5E00B2266F /* Cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cursor.h; sourceTree = "<group>"; };
-		028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CursorMacOS.mm; sourceTree = "<group>"; };
 		028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBindings.cpp; sourceTree = "<group>"; };
 		028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DynamicBindings.h; sourceTree = "<group>"; };
 		028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicBufferAllocator.cpp; sourceTree = "<group>"; };
@@ -3963,6 +3980,8 @@
 		028C0D2D1BD66A6000B2266F /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		028C0D2E1BD66A6000B2266F /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		028C0D311BD66A6000B2266F /* UtilsMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UtilsMacOS.mm; sourceTree = "<group>"; };
+		02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSystem.cpp; sourceTree = "<group>"; };
+		02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSystem.h; sourceTree = "<group>"; };
 		0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldMacOS.h; sourceTree = "<group>"; };
 		0347B7DF1C64C211004DB76C /* UITextFieldMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldMacOS.mm; sourceTree = "<group>"; };
 		03B249801CBCE81700015637 /* PackArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackArchive.cpp; sourceTree = "<group>"; };
@@ -3989,6 +4008,19 @@
 		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
+		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
+		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
+		1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetCollectionItemValueCommand.cpp; path = Command/SetCollectionItemValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
+		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
+		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
+		1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWin32.h; path = TemplateWin32/MouseDeviceWin32.h; sourceTree = "<group>"; };
+		1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MouseDeviceWinUAP.h; path = TemplateWin32/MouseDeviceWinUAP.h; sourceTree = "<group>"; };
+		1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MouseDevice.cpp; sourceTree = "<group>"; };
+		1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
+		1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDeviceMacOS.h; sourceTree = "<group>"; };
+		1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MouseDeviceMacOS.mm; sourceTree = "<group>"; };
 		3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
 		320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
 		321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
@@ -4001,13 +4033,6 @@
 		321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
 		321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyInputSystem.cpp; sourceTree = "<group>"; };
 		321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyInputSystem.h; sourceTree = "<group>"; };
-		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
-		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
-		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
-		1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetCollectionItemValueCommand.cpp; path = Command/SetCollectionItemValueCommand.cpp; sourceTree = "<group>"; };
-		1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetCollectionItemValueCommand.h; path = Command/SetCollectionItemValueCommand.h; sourceTree = "<group>"; };
-		1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SetPropertyValueCommand.cpp; path = Command/SetPropertyValueCommand.cpp; sourceTree = "<group>"; };
-		1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SetPropertyValueCommand.h; path = Command/SetPropertyValueCommand.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4063,6 +4088,13 @@
 		FE578C5D1327927C0081BDE9 /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/oggvorbis/lib/libogg_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbis_macos.a; path = ../../Libs/oggvorbis/lib/libvorbis_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbisfile_macos.a; path = ../../Libs/oggvorbis/lib/libvorbisfile_macos.a; sourceTree = SOURCE_ROOT; };
+		FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageConvert.cpp; sourceTree = "<group>"; };
+		FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DDSHandlers.cpp; path = DDS/DDSHandlers.cpp; sourceTree = "<group>"; };
+		FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DDSHandlers.h; path = DDS/DDSHandlers.h; sourceTree = "<group>"; };
+		FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NvttHelper.cpp; path = DDS/NvttHelper.cpp; sourceTree = "<group>"; };
+		FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NvttHelper.h; path = DDS/NvttHelper.h; sourceTree = "<group>"; };
+		FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = QualcommHelper.cpp; path = DDS/QualcommHelper.cpp; sourceTree = "<group>"; };
+		FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QualcommHelper.h; path = DDS/QualcommHelper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4501,6 +4533,8 @@
 		028C09391BD66A5E00B2266F /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */,
+				1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */,
 				028C093A1BD66A5E00B2266F /* Accelerometer.cpp */,
 				028C093B1BD66A5E00B2266F /* Accelerometer.h */,
 				028C093F1BD66A5E00B2266F /* GamepadDevice.cpp */,
@@ -4749,6 +4783,7 @@
 		028C09EB1BD66A5E00B2266F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				1D1022831CC1116D00AD68BD /* TemplateWin32 */,
 				03C12A921C4FD827002D4636 /* Reachability.h */,
 				03C12A931C4FD827002D4636 /* Reachability.mm */,
 				028C09ED1BD66A5E00B2266F /* DateTime.cpp */,
@@ -4774,6 +4809,8 @@
 		028C0A681BD66A5E00B2266F /* TemplateMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */,
+				1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */,
 				D729A39D1C5B7B6F000AE64F /* HelperAppDelegate.h */,
 				D729A39E1C5B7B6F000AE64F /* HelperAppDelegate.mm */,
 				028C0A691BD66A5E00B2266F /* AppDelegate.h */,
@@ -4803,8 +4840,6 @@
 			children = (
 				028C0AA41BD66A5E00B2266F /* 2D */,
 				028C0ABF1BD66A5E00B2266F /* 3D */,
-				028C0ACA1BD66A5E00B2266F /* Cursor.h */,
-				028C0ACB1BD66A5E00B2266F /* CursorMacOS.mm */,
 				028C0ACE1BD66A5E00B2266F /* DynamicBindings.cpp */,
 				028C0ACF1BD66A5E00B2266F /* DynamicBindings.h */,
 				028C0AD01BD66A5E00B2266F /* DynamicBufferAllocator.cpp */,
@@ -4906,6 +4941,8 @@
 		028C0AD41BD66A5E00B2266F /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				0249EF1B1CB563660018A5FC /* LandscapeSubdivision.cpp */,
+				0249EF1C1CB563660018A5FC /* LandscapeSubdivision.h */,
 				028C0AD51BD66A5E00B2266F /* Camera.cpp */,
 				028C0AD61BD66A5E00B2266F /* Camera.h */,
 				028C0AD71BD66A5E00B2266F /* CullingSystem.cpp */,
@@ -4978,6 +5015,8 @@
 		028C0B0F1BD66A5E00B2266F /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				FEE0ADAB1CD8AE7100EE3886 /* DDS */,
+				FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */,
 				028C0B101BD66A5E00B2266F /* CRCAdditionInterface.h */,
 				028C0B111BD66A5E00B2266F /* Image.cpp */,
 				028C0B121BD66A5E00B2266F /* Image.h */,
@@ -5261,6 +5300,8 @@
 		028C0C341BD66A5F00B2266F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				02DC4BC41CA3DCDE00F6822D /* LandscapeSystem.cpp */,
+				02DC4BC51CA3DCDE00F6822D /* LandscapeSystem.h */,
 				15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */,
 				15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */,
 				028C0C351BD66A5F00B2266F /* ActionUpdateSystem.cpp */,
@@ -5642,6 +5683,29 @@
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
 		};
+		1CE823471C91C93000D4087C /* Command */ = {
+			isa = PBXGroup;
+			children = (
+				1CE823481C91C93B00D4087C /* ICommand.h */,
+				1CE823491C91C93B00D4087C /* ObjectHandle.cpp */,
+				1CE8234A1C91C93B00D4087C /* ObjectHandle.h */,
+				1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */,
+				1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */,
+				1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */,
+				1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */,
+			);
+			name = Command;
+			sourceTree = "<group>";
+		};
+		1D1022831CC1116D00AD68BD /* TemplateWin32 */ = {
+			isa = PBXGroup;
+			children = (
+				1D1022841CC1119F00AD68BD /* MouseDeviceWin32.h */,
+				1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */,
+			);
+			name = TemplateWin32;
+			sourceTree = "<group>";
+		};
 		321CCA471C6E04490048FAC9 /* Focus */ = {
 			isa = PBXGroup;
 			children = (
@@ -5659,20 +5723,6 @@
 				321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */,
 			);
 			path = Focus;
-			sourceTree = "<group>";
-        };
-		1CE823471C91C93000D4087C /* Command */ = {
-			isa = PBXGroup;
-			children = (
-				1CE823481C91C93B00D4087C /* ICommand.h */,
-				1CE823491C91C93B00D4087C /* ObjectHandle.cpp */,
-				1CE8234A1C91C93B00D4087C /* ObjectHandle.h */,
-				1CE8234B1C91C93B00D4087C /* SetCollectionItemValueCommand.cpp */,
-				1CE8234C1C91C93B00D4087C /* SetCollectionItemValueCommand.h */,
-				1CE8234D1C91C93B00D4087C /* SetPropertyValueCommand.cpp */,
-				1CE8234E1C91C93B00D4087C /* SetPropertyValueCommand.h */,
-			);
-			name = Command;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -5765,6 +5815,19 @@
 			name = Internal;
 			path = ../../Sources/Internal;
 			sourceTree = SOURCE_ROOT;
+		};
+		FEE0ADAB1CD8AE7100EE3886 /* DDS */ = {
+			isa = PBXGroup;
+			children = (
+				FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */,
+				FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */,
+				FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */,
+				FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */,
+				FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */,
+				FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */,
+			);
+			name = DDS;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -5932,7 +5995,6 @@
 				028C15421BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156C1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139B1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A31BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16231BD66A6000B2266F /* internal.h in Headers */,
 				028C158D1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB41BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -6073,6 +6135,7 @@
 				028C12361BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
 				03B2498B1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C10441BD66A6000B2266F /* Function.h in Headers */,
+				02DC4BCB1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C10651BD66A6000B2266F /* InputCallback.h in Headers */,
 				028C15A51BD66A6000B2266F /* LibWebPHelper.h in Headers */,
 				028C10C21BD66A6000B2266F /* NeonMath.h in Headers */,
@@ -6319,6 +6382,7 @@
 				028C17261BD66A6000B2266F /* RuntimeTextures.h in Headers */,
 				03B249891CBCE81700015637 /* PackArchive.h in Headers */,
 				028C14E91BD66A6000B2266F /* Mesh.h in Headers */,
+				1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */,
 				028C117A1BD66A6000B2266F /* NetworkCommon.h in Headers */,
 				028C197E1BD66A6000B2266F /* IMovieViewControl.h in Headers */,
 				028C18011BD66A6000B2266F /* EdgeComponent.h in Headers */,
@@ -6329,6 +6393,7 @@
 				028C157F1BD66A6000B2266F /* ImageSystem.h in Headers */,
 				028C0DF01BD66A6000B2266F /* EnumMap.h in Headers */,
 				028C1A2F1BD66A6100B2266F /* UIControlHelpers.h in Headers */,
+				FEE0ADB31CD8AE8100EE3886 /* DDSHandlers.h in Headers */,
 				028C0E111BD66A6000B2266F /* Hash.h in Headers */,
 				028C14CE1BD66A6000B2266F /* Frustum.h in Headers */,
 				028C17D71BD66A6000B2266F /* SpeedTreeComponent.h in Headers */,
@@ -6392,6 +6457,7 @@
 				028C15791BD66A6000B2266F /* ImageFormatInterface.h in Headers */,
 				028C0F761BD66A6000B2266F /* DownloadManager.h in Headers */,
 				028C17FB1BD66A6000B2266F /* WaveComponent.h in Headers */,
+				1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */,
 				028C11771BD66A6000B2266F /* NetService.h in Headers */,
 				028C0FC41BD66A6000B2266F /* FilePath.h in Headers */,
 				028C18C41BD66A6000B2266F /* WASDControllerSystem.h in Headers */,
@@ -6464,6 +6530,7 @@
 				028C14B01BD66A6000B2266F /* DynamicBindings.h in Headers */,
 				320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */,
 				028C10B41BD66A6000B2266F /* Matrix3.h in Headers */,
+				FEE0ADB51CD8AE8100EE3886 /* NvttHelper.h in Headers */,
 				028C17EF1BD66A6000B2266F /* UpdatableComponent.h in Headers */,
 				028C0F041BD66A6000B2266F /* DataStorage.h in Headers */,
 				028C11DD1BD66A6000B2266F /* SimpleEchoServer.h in Headers */,
@@ -6661,7 +6728,9 @@
 				028C12191BD66A6000B2266F /* Particle.h in Headers */,
 				028C0D361BD66A6000B2266F /* AnimatedObject.h in Headers */,
 				028C1B2B1BD66A6100B2266F /* TestClass.h in Headers */,
+				1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */,
 				028C11B91BD66A6000B2266F /* ServiceRegistrar.h in Headers */,
+				FEE0ADB71CD8AE8100EE3886 /* QualcommHelper.h in Headers */,
 				028C0F401BD66A6000B2266F /* Profiler.h in Headers */,
 				028C15851BD66A6000B2266F /* LibDdsHelper.h in Headers */,
 				028C1ADA1BD66A6100B2266F /* UIScrollBar.h in Headers */,
@@ -6688,6 +6757,7 @@
 				028C15BB1BD66A6000B2266F /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				028C10E41BD66A6000B2266F /* Sphere.h in Headers */,
 				028C19811BD66A6000B2266F /* IWebViewControl.h in Headers */,
+				0249EF1E1CB563660018A5FC /* LandscapeSubdivision.h in Headers */,
 				028C0EA41BD66A6000B2266F /* LockGuard.h in Headers */,
 				028C15C11BD66A6000B2266F /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				028C10631BD66A6000B2266F /* InputCallback.h in Headers */,
@@ -6698,6 +6768,7 @@
 				028C1AEC1BD66A6100B2266F /* UISlider.h in Headers */,
 				028C0E8F1BD66A6000B2266F /* Atomic.h in Headers */,
 				028C0E1A1BD66A6000B2266F /* IndexBitVector.h in Headers */,
+				02DC4BC91CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C12551BD66A6000B2266F /* MovieViewControlStub.h in Headers */,
 				028C15A91BD66A6000B2266F /* FXCache.h in Headers */,
 				028C0FA01BD66A6000B2266F /* Component.h in Headers */,
@@ -6729,7 +6800,6 @@
 				321CCA571C6E04490048FAC9 /* UIFocusComponent.h in Headers */,
 				028C13AB1BD66A6000B2266F /* MovieViewControlMacOS.h in Headers */,
 				028C18251BD66A6000B2266F /* TreeToAnimatedTreeConverter.h in Headers */,
-				028C14A11BD66A6000B2266F /* Cursor.h in Headers */,
 				028C15071BD66A6000B2266F /* RenderObject.h in Headers */,
 				028C10751BD66A6000B2266F /* JobManager.h in Headers */,
 				028C17951BD66A6000B2266F /* SnapToLandscapeControllerComponent.h in Headers */,
@@ -6782,6 +6852,7 @@
 				028C0DCF1BD66A6000B2266F /* BaseMath.h in Headers */,
 				028C10691BD66A6000B2266F /* InputSystem.h in Headers */,
 				028C15EE1BD66A6000B2266F /* Renderer.h in Headers */,
+				1D1022871CC1119F00AD68BD /* MouseDeviceWinUAP.h in Headers */,
 				028C16691BD66A6000B2266F /* dbg_Draw.h in Headers */,
 				028C0FB81BD66A6000B2266F /* File.h in Headers */,
 				028C0E501BD66A6000B2266F /* Observable.h in Headers */,
@@ -7002,7 +7073,6 @@
 				028C15411BD66A6000B2266F /* StaticOcclusion.h in Headers */,
 				028C156B1BD66A6000B2266F /* CRCAdditionInterface.h in Headers */,
 				028C139A1BD66A6000B2266F /* CorePlatformMacOS.h in Headers */,
-				028C14A21BD66A6000B2266F /* Cursor.h in Headers */,
 				028C16221BD66A6000B2266F /* internal.h in Headers */,
 				028C158C1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C0FB31BD66A6000B2266F /* DynamicMemoryFile.h in Headers */,
@@ -7143,6 +7213,7 @@
 				028C18081BD66A6000B2266F /* PathComponent.h in Headers */,
 				03B2498A1CBCE81700015637 /* PackArchive.h in Headers */,
 				028C12351BD66A6000B2266F /* ParticlePropertyLine.h in Headers */,
+				02DC4BCA1CA3DCDE00F6822D /* LandscapeSystem.h in Headers */,
 				028C10431BD66A6000B2266F /* Function.h in Headers */,
 				028C10641BD66A6000B2266F /* InputCallback.h in Headers */,
 				028C15A41BD66A6000B2266F /* LibWebPHelper.h in Headers */,
@@ -7676,7 +7747,6 @@
 				028C19621BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D91BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15211BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A61BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5D1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7F1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8B1BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -7755,6 +7825,7 @@
 				028C0F751BD66A6000B2266F /* DownloadManager.cpp in Sources */,
 				028C16EF1BD66A6000B2266F /* rhi_VertexBufferGLES2.cpp in Sources */,
 				028C143A1BD66A6000B2266F /* Font.cpp in Sources */,
+				02DC4BC81CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C179A1BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F931BD66A6000B2266F /* ZLibStream.cpp in Sources */,
 				028C0DCE1BD66A6000B2266F /* BaseMath.cpp in Sources */,
@@ -7836,6 +7907,7 @@
 				028C16621BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
 				028C18C91BD66A6000B2266F /* DebugRenderSystem.cpp in Sources */,
 				028C1A4C1BD66A6100B2266F /* UIFileSystemDialog.cpp in Sources */,
+				0249EF2B1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C1B631BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				15373F241C4FA5E50054A940 /* ParticlesQualitySettings.cpp in Sources */,
 				028C18241BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,
@@ -7988,6 +8060,7 @@
 				028C15251BD66A6000B2266F /* SkinnedMesh.cpp in Sources */,
 				028C1A0E1BD66A6000B2266F /* UI3DView.cpp in Sources */,
 				028C0D331BD66A6000B2266F /* AnimatedObject.cpp in Sources */,
+				1DAA2B361CA5964D00E9E3EE /* MouseDeviceMacOS.mm in Sources */,
 				028C117D1BD66A6000B2266F /* PeerDesription.cpp in Sources */,
 				028C0FBB1BD66A6000B2266F /* FileList.cpp in Sources */,
 				028C124C1BD66A6000B2266F /* DeviceInfoPrivateBase.cpp in Sources */,
@@ -8046,6 +8119,7 @@
 				028C18FD1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
 				028C10721BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19031BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
+				FEE0ADB61CD8AE8100EE3886 /* QualcommHelper.cpp in Sources */,
 				028C14951BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
 				028C0E831BD66A6000B2266F /* CollisionPolygons.cpp in Sources */,
 				028C19AE1BD66A6000B2266F /* UIFlowLayoutComponent.cpp in Sources */,
@@ -8088,6 +8162,7 @@
 				028C0F671BD66A6000B2266F /* Downloader.cpp in Sources */,
 				028C1A8C1BD66A6100B2266F /* UIPackage.cpp in Sources */,
 				028C1AD71BD66A6100B2266F /* UIScrollBar.cpp in Sources */,
+				0249EF1D1CB563660018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C18851BD66A6000B2266F /* SceneNodeAnimationKey.cpp in Sources */,
 				028C0EC21BD66A6000B2266F /* ThreadPosix.cpp in Sources */,
 				028C17561BD66A6000B2266F /* TextGameObject.cpp in Sources */,
@@ -8137,7 +8212,6 @@
 				028C19601BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D71BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C151F1BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A41BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5B1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7D1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E891BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -8179,6 +8253,7 @@
 				028C1AFB1BD66A6100B2266F /* UISwitch.cpp in Sources */,
 				028C11741BD66A6000B2266F /* NetService.cpp in Sources */,
 				028C1A921BD66A6100B2266F /* UIPackageLoader.cpp in Sources */,
+				FEE0ADA81CD8ADB600EE3886 /* ImageConvert.cpp in Sources */,
 				028C18281BD66A6000B2266F /* DataNode.cpp in Sources */,
 				028C19D81BD66A6000B2266F /* UIPriorityStyleSheet.cpp in Sources */,
 				028C11F81BD66A6000B2266F /* LocalNotificationDelayed.cpp in Sources */,
@@ -8209,6 +8284,7 @@
 				028C0F1C1BD66A6000B2266F /* Backtrace.cpp in Sources */,
 				028C18CD1BD66A6000B2266F /* EventSystem.cpp in Sources */,
 				028C0DE11BD66A6000B2266F /* Data.cpp in Sources */,
+				02DC4BC61CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C17DA1BD66A6000B2266F /* StaticOcclusionComponent.cpp in Sources */,
 				321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */,
 				028C14E01BD66A6000B2266F /* Light.cpp in Sources */,
@@ -8224,6 +8300,7 @@
 				028C14381BD66A6000B2266F /* Font.cpp in Sources */,
 				028C17981BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F911BD66A6000B2266F /* ZLibStream.cpp in Sources */,
+				FEE0ADB41CD8AE8100EE3886 /* NvttHelper.cpp in Sources */,
 				028C0DCC1BD66A6000B2266F /* BaseMath.cpp in Sources */,
 				028C0D751BD66A6000B2266F /* AutotestingSystem_wrap.cxx in Sources */,
 				028C14771BD66A6000B2266F /* TextBlockSoftwareRender.cpp in Sources */,
@@ -8332,6 +8409,7 @@
 				028C11861BD66A6000B2266F /* Announcer.cpp in Sources */,
 				320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */,
 				028C1A801BD66A6100B2266F /* UIMoveInTransition.cpp in Sources */,
+				1DAA2B311CA595FB00E9E3EE /* MouseDevice.cpp in Sources */,
 				028C157C1BD66A6000B2266F /* ImageSystem.cpp in Sources */,
 				028C15B21BD66A6000B2266F /* NMaterialNames.cpp in Sources */,
 				028C17B61BD66A6000B2266F /* ParticleEffectComponent.cpp in Sources */,
@@ -8360,6 +8438,7 @@
 				028C15311BD66A6000B2266F /* SpeedTreeObject.cpp in Sources */,
 				028C165A1BD66A6000B2266F /* rhi_Render.cpp in Sources */,
 				028C17A41BD66A6000B2266F /* DebugRenderComponent.cpp in Sources */,
+				FEE0ADB21CD8AE8100EE3886 /* DDSHandlers.cpp in Sources */,
 				028C16EA1BD66A6000B2266F /* rhi_TextureGLES2.cpp in Sources */,
 				028C0FD01BD66A6000B2266F /* FileSystemObjective.mm in Sources */,
 				028C14DA1BD66A6000B2266F /* Landscape.cpp in Sources */,
@@ -8602,7 +8681,6 @@
 				028C19611BD66A6000B2266F /* RawTimer.cpp in Sources */,
 				028C11D81BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C15201BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
-				028C14A51BD66A6000B2266F /* CursorMacOS.mm in Sources */,
 				028C1B5C1BD66A6100B2266F /* StringUtils.cpp in Sources */,
 				028C0E7E1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E8A1BD66A6000B2266F /* Collisions.cpp in Sources */,
@@ -8682,6 +8760,7 @@
 				028C0F741BD66A6000B2266F /* DownloadManager.cpp in Sources */,
 				028C16EE1BD66A6000B2266F /* rhi_VertexBufferGLES2.cpp in Sources */,
 				028C14391BD66A6000B2266F /* Font.cpp in Sources */,
+				02DC4BC71CA3DCDE00F6822D /* LandscapeSystem.cpp in Sources */,
 				028C17991BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F921BD66A6000B2266F /* ZLibStream.cpp in Sources */,
 				028C0DCD1BD66A6000B2266F /* BaseMath.cpp in Sources */,
@@ -8763,6 +8842,7 @@
 				028C17ED1BD66A6000B2266F /* UpdatableComponent.cpp in Sources */,
 				028C16611BD66A6000B2266F /* rhi_ShaderCache.cpp in Sources */,
 				028C18C81BD66A6000B2266F /* DebugRenderSystem.cpp in Sources */,
+				0249EF2A1CB563E00018A5FC /* LandscapeSubdivision.cpp in Sources */,
 				028C1A4B1BD66A6100B2266F /* UIFileSystemDialog.cpp in Sources */,
 				028C1B621BD66A6100B2266F /* UTF8Utils.cpp in Sources */,
 				028C18231BD66A6000B2266F /* TreeToAnimatedTreeConverter.cpp in Sources */,

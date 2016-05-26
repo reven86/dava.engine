@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Autotesting/AutotestingDB.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -168,11 +139,19 @@ KeyedArchive* AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject* dbUpd
 
 void AutotestingDB::WriteLogHeader()
 {
-#if defined(__DAVAENGINE_ANDROID__)
-    logsFolder = FileSystem::Instance()->GetPublicDocumentsPath() + "/autoLogs";
-#else
-    logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+    {
+        logsFolder = "D:/autoLogs";
+    }
+    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    {
+        logsFolder = FileSystem::Instance()->GetPublicDocumentsPath() + "/autoLogs";
+    }
+    else
+    {
+        logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
+    }
+
     Logger::Info("AutotestingSystem::AutotestingDB path to log file: %s", logsFolder.GetStringValue().c_str());
     if (!FileSystem::Instance()->IsDirectory(logsFolder))
     {
@@ -184,19 +163,19 @@ void AutotestingDB::WriteLogHeader()
     {
         FileSystem::Instance()->DeleteFile(logFilePath);
     }
-    String message = Format("Platform:%s\nName:%s\nModel:%s\nOSVersion:%s\n", AutotestingSystemLua::Instance()->GetPlatform().c_str(),
-                            autoSys->deviceName.c_str(), DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str());
-    WriteLog(message.c_str());
+
     DateTime time = DateTime::Now();
     //Get time.GetMonth() return month number - 1. Ex for 01(Jan) it return 00(Jan).
     String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth() + 1, time.GetDay());
-    message = Format("BuildDate:%s\nLaunchDate:%s\nRunId:%s\nBuildId:%s\n", autoSys->buildDate.c_str(), currentDay.c_str(), autoSys->runId.c_str(), autoSys->buildId.c_str());
+    String message = Format("Platform:%s\nName:%s\n", AutotestingSystemLua::Instance()->GetPlatform().c_str(), autoSys->deviceName.c_str()) +
+    Format("Model:%s\nOSVersion:%s\n", DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str()) +
+    Format("BuildDate:%s\nLaunchDate:%s\n", autoSys->buildDate.c_str(), currentDay.c_str()) +
+    Format("RunId:%s\nBuildId:%s\n", autoSys->runId.c_str(), autoSys->buildId.c_str()) +
+    Format("Client:%s\nClientRevision:%s\n", autoSys->branch.c_str(), autoSys->branchRev.c_str()) +
+    Format("Framework:%s\nFrameworkRevision:%s\n", autoSys->framework.c_str(), autoSys->frameworkRev.c_str()) +
+    Format("TestGroup:%s\nFileName:%s\n", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
     WriteLog(message.c_str());
-    message = Format("Client:%s\nClientRevision:%s\nFramework:%s\nFrameworkRevision:%s\n", autoSys->branch.c_str(), autoSys->branchRev.c_str(),
-                     autoSys->framework.c_str(), autoSys->frameworkRev.c_str());
-    WriteLog(message.c_str());
-    message = Format("TestGroup:%s\nFileName:%s\n", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
-    WriteLog(message.c_str());
+    Logger::Debug("AutotestingDB::Log: [%s:%s] INFO", autoSys->GetCurrentTimeString().c_str(), message.c_str());
 }
 
 void AutotestingDB::WriteLog(const char8* text, ...)
@@ -229,7 +208,55 @@ bool AutotestingDB::SaveKeyedArchiveToDevice(const String& archiveName, KeyedArc
 {
     String fileName = Format("/%s_%s_%s_%d_%s.yaml", autoSys->groupName.c_str(), autoSys->testFileName.c_str(), autoSys->runId.c_str(), autoSys->testIndex, archiveName.c_str());
     Logger::Info("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
+    Log("DEBUG", Format("%s=%s", archiveName.c_str(), YamlToString(archive).c_str()));
     return archive->SaveToYamlFile(logsFolder + fileName);
+}
+
+String AutotestingDB::YamlToString(const KeyedArchive* archive)
+{
+    String result = "keyedArchive: \\n";
+    for (const auto& obj : archive->GetArchieveData())
+    {
+        switch (obj.second->GetType())
+        {
+        case VariantType::TYPE_BOOLEAN:
+        {
+            if (obj.second->boolValue)
+            {
+                result += Format("  t%s: {string: \"true\"}\\n", obj.first.c_str());
+            }
+            else
+            {
+                result += Format("  t%s: {string: \"flase\"}\\n", obj.first.c_str());
+            }
+        }
+        break;
+        case VariantType::TYPE_INT32:
+        {
+            result += Format("  %s: {string: \"%d\"}\\n", obj.first.c_str(), obj.second->int32Value);
+        }
+        break;
+        case VariantType::TYPE_FLOAT:
+        {
+            result += Format("  %s: {string: \"%f\"}\\n", obj.first.c_str(), obj.second->floatValue);
+        }
+        break;
+        case VariantType::TYPE_STRING:
+        {
+            result += Format("  %s: {string: \"%s\"}\\n", obj.first.c_str(), obj.second->stringValue->c_str());
+        }
+        break;
+        case VariantType::TYPE_WIDE_STRING:
+        {
+            result += Format("  %s: {string: \"%s\"}\\n", obj.first.c_str(), obj.second->wideStringValue->c_str());
+        }
+        break;
+
+        default:
+            break;
+        }
+    }
+    return result;
 }
 
 bool AutotestingDB::SaveToDB(MongodbUpdateObject* dbUpdateObject)

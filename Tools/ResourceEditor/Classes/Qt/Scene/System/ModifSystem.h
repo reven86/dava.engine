@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
@@ -38,11 +9,11 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
+#include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderObject.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;
-class EntityGroup;
 class HoodSystem;
 
 class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelectionSystemDelegate
@@ -51,31 +22,30 @@ class EntityModificationSystem : public DAVA::SceneSystem, public SceneSelection
 
 public:
     EntityModificationSystem(DAVA::Scene* scene, SceneCollisionSystem* colSys, SceneCameraSystem* camSys, HoodSystem* hoodSys);
-    ~EntityModificationSystem();
 
     ST_Axis GetModifAxis() const;
     void SetModifAxis(ST_Axis axis);
 
-    ST_ModifMode GetModifMode() const;
-    void SetModifMode(ST_ModifMode mode);
+    Selectable::TransformType GetTransformType() const;
+    void SetTransformType(Selectable::TransformType mode);
 
     bool GetLandscapeSnap() const;
     void SetLandscapeSnap(bool snap);
 
-    void PlaceOnLandscape(const EntityGroup& entities);
-    void ResetTransform(const EntityGroup& entities);
+    void PlaceOnLandscape(const SelectableGroup& entities);
+    void ResetTransform(const SelectableGroup& entities);
 
-    void MovePivotZero(const EntityGroup& entities);
-    void MovePivotCenter(const EntityGroup& entities);
+    void MovePivotZero(const SelectableGroup& entities);
+    void MovePivotCenter(const SelectableGroup& entities);
 
-    void LockTransform(const EntityGroup& entities, bool lock);
+    void LockTransform(const SelectableGroup& entities, bool lock);
 
     bool InModifState() const;
     bool InCloneState() const;
     bool InCloneDoneState() const;
 
-    bool ModifCanStart(const EntityGroup& selectedEntities) const;
-    bool ModifCanStartByMouse(const EntityGroup& selectedEntities) const;
+    bool ModifCanStart(const SelectableGroup& objects) const;
+    bool ModifCanStartByMouse(const SelectableGroup& objects) const;
 
     void RemoveEntity(DAVA::Entity* entity) override;
     void Process(DAVA::float32 timeElapsed) override;
@@ -84,20 +54,23 @@ public:
     void AddDelegate(EntityModificationSystemDelegate* delegate);
     void RemoveDelegate(EntityModificationSystemDelegate* delegate);
 
-    void ApplyMoveValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-    void ApplyRotateValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
-    void ApplyScaleValues(ST_Axis axis, const EntityGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyMoveValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyRotateValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
+    void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
 protected:
     struct EntityToModify
     {
-        DAVA::Entity* entity;
+        Selectable object;
+
         DAVA::Matrix4 inversedParentWorldTransform;
         DAVA::Matrix4 originalParentWorldTransform;
         DAVA::Matrix4 originalTransform;
-        DAVA::Vector3 originalCenter;
-        DAVA::Matrix4 moveToZeroPos;
-        DAVA::Matrix4 moveFromZeroPos;
+
+        DAVA::Matrix4 toLocalZero;
+        DAVA::Matrix4 fromLocalZero;
+        DAVA::Matrix4 toWorldZero;
+        DAVA::Matrix4 fromWorldZero;
     };
 
     enum CloneState : DAVA::uint32
@@ -113,7 +86,7 @@ protected:
         BAKE_CENTER_PIVOT
     };
 
-    EntityGroup BeginModification(const EntityGroup& entities);
+    SelectableGroup BeginModification(const SelectableGroup& entities);
     void EndModification();
 
     void CloneBegin();
@@ -127,14 +100,14 @@ protected:
     DAVA::Vector3 Move(const DAVA::Vector3& newPos3d);
     DAVA::float32 Rotate(const DAVA::Vector2& newPos2d);
     DAVA::float32 Scale(const DAVA::Vector2& newPos2d);
-    void BakeGeometry(const EntityGroup& entities, BakeMode mode);
+    void BakeGeometry(const SelectableGroup& entities, BakeMode mode);
     void SearchEntitiesWithRenderObject(DAVA::RenderObject* ro, DAVA::Entity* root, DAVA::Set<DAVA::Entity*>& result);
 
     DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3& point, const DAVA::Matrix4& originalParentTransform) const;
     bool IsEntityContainRecursive(const DAVA::Entity* entity, const DAVA::Entity* child) const;
 
-    bool AllowPerformSelectionHavingCurrent(const EntityGroup& currentSelection) override;
-    bool AllowChangeSelectionReplacingCurrent(const EntityGroup& currentSelection, const EntityGroup& newSelection) override;
+    bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
+    bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
@@ -147,12 +120,9 @@ private:
     DAVA::List<EntityModificationSystemDelegate*> delegates;
 
     // values calculated, when starting modification
-    ST_PivotPoint modifPivotPoint;
     DAVA::Vector3 modifEntitiesCenter;
     DAVA::Vector3 modifStartPos3d;
     DAVA::Vector2 modifStartPos2d;
-    DAVA::Matrix4 moveToZeroPosRelativeCenter;
-    DAVA::Matrix4 moveFromZeroPosRelativeCenter;
     DAVA::Vector2 rotateNormal;
     DAVA::Vector3 rotateAround;
     DAVA::float32 crossXY = 0.0f;
@@ -160,7 +130,7 @@ private:
     DAVA::float32 crossYZ = 0.0f;
 
     CloneState cloneState = CloneState::CLONE_DONT;
-    ST_ModifMode curMode = ST_ModifMode::ST_MODIF_OFF;
+    Selectable::TransformType transformType = Selectable::TransformType::Disabled;
     ST_Axis curAxis = ST_Axis::ST_AXIS_NONE;
 
     bool inModifState = false;

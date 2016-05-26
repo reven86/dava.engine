@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "CustomColorsSystem.h"
 #include "CollisionSystem.h"
 #include "SelectionSystem.h"
@@ -44,9 +15,7 @@
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-    , drawColor(DAVA::Color(0.f, 0.f, 0.f, 0.f))
 {
-    curToolSize = 120;
     SetColor(colorIndex);
 }
 
@@ -307,7 +276,8 @@ void CustomColorsSystem::CreateUndoPoint()
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
 
-        scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, DAVA::ScopedPtr<DAVA::Image>(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory()), drawSystem->GetCustomColorsProxy(), updatedRect));
+        DAVA::ScopedPtr<DAVA::Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
+        scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false));
     }
 
     SafeRelease(originalImage);
@@ -321,20 +291,20 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
     DAVA::Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
     DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
-    DAVA::ImageSystem::Instance()->Save(filePath, image);
+    DAVA::ImageSystem::Save(filePath, image);
     DAVA::SafeRelease(image);
 
     StoreSaveFileName(filePath);
     drawSystem->GetCustomColorsProxy()->ResetChanges();
 }
 
-bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool createUndo /* = true */)
+bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool createUndo)
 {
     if (filePath.IsEmpty())
         return false;
 
     DAVA::Vector<DAVA::Image*> images;
-    DAVA::ImageSystem::Instance()->Load(filePath, images);
+    DAVA::ImageSystem::Load(filePath, images);
     if (images.empty())
         return false;
 
@@ -352,7 +322,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             scene->BeginBatch("Load custom colors texture", 2);
             StoreSaveFileName(filePath);
-            scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect()));
+            scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect(), true));
             scene->EndBatch();
 
             SafeRelease(originalImage);
@@ -374,7 +344,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
             desc.clearTarget = false;
             desc.transformVirtualToPhysical = false;
             DAVA::RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            DAVA::RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, DAVA::Color::White);
+            DAVA::RenderSystem2D::Instance()->DrawTexture(loadedTexture, DAVA::RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, DAVA::Color::White);
             DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
         }
     }

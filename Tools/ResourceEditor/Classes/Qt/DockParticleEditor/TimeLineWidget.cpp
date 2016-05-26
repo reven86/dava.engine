@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "TimeLineWidget.h"
 
 #include <QPaintEvent>
@@ -261,8 +232,8 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
 
             //draw drawed colors
             QRect rect = GetLineDrawRect();
-            rect.translate(rect.width() * lineCount / lines.size(), 0);
-            rect.setWidth(rect.width() / lines.size());
+            rect.translate(static_cast<int>(rect.width() * lineCount / lines.size()), 0);
+            rect.setWidth(static_cast<int>(rect.width() / lines.size()));
             if (drawLine == -1)
                 painter.fillRect(rect, iter->second.color);
             else
@@ -482,7 +453,9 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector2>>
 
     for (DAVA::int32 i = 0; i < 2; i++)
     {
-        DAVA::int32 id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -516,7 +489,9 @@ void TimeLineWidget::AddLines(const DAVA::Vector<DAVA::PropValue<DAVA::Vector3>>
 
     for (DAVA::int32 i = 0; i < 3; i++)
     {
-        DAVA::int32 id = this->lines.size();
+        DAVA::size_type id = this->lines.size();
+        // no panic, this->lines - is map<uint32, struct>
+        // so, looks like we are just adding another element here
         this->lines[id].line = desLine[i];
         this->lines[id].color = colors[i];
         this->lines[id].legend = legends[i];
@@ -1060,9 +1035,7 @@ void TimeLineWidget::SetPointValue(DAVA::uint32 lineId, DAVA::uint32 pointId, DA
                         }
                     }
 
-                    //remove first point
-                    //lines[lineId].line.erase(lines[lineId].line.begin() + lines[lineId].line.size() - 2);
-                    DeletePoint(lineId, lines[lineId].line.size() - 2);
+                    DeletePoint(lineId, static_cast<DAVA::uint32>(lines[lineId].line.size() - 2));
                 }
                 i = 0;
             }

@@ -1,33 +1,5 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Tests/StaticTextTest.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
 
@@ -65,16 +37,19 @@ static const ButtonInfo alignButtonsInfo[] = {
     { L"Top left", ALIGN_TOP | ALIGN_LEFT, Rect(450, 30, 100, 20) },
     { L"Top center", ALIGN_TOP | ALIGN_HCENTER, Rect(560, 30, 100, 20) },
     { L"Top right", ALIGN_TOP | ALIGN_RIGHT, Rect(670, 30, 100, 20) },
+    { L"Top justify", ALIGN_TOP | ALIGN_HJUSTIFY, Rect(780, 30, 100, 20) },
     { L"Middle left", ALIGN_VCENTER | ALIGN_LEFT, Rect(450, 55, 100, 20) },
     { L"Middle center", ALIGN_VCENTER | ALIGN_HCENTER, Rect(560, 55, 100, 20) },
     { L"Middle right", ALIGN_VCENTER | ALIGN_RIGHT, Rect(670, 55, 100, 20) },
+    { L"Middle justify", ALIGN_VCENTER | ALIGN_HJUSTIFY, Rect(780, 55, 100, 20) },
     { L"Bottom left", ALIGN_BOTTOM | ALIGN_LEFT, Rect(450, 80, 100, 20) },
     { L"Bottom center", ALIGN_BOTTOM | ALIGN_HCENTER, Rect(560, 80, 100, 20) },
     { L"Bottom right", ALIGN_BOTTOM | ALIGN_RIGHT, Rect(670, 80, 100, 20) },
+    { L"Bottom justify", ALIGN_BOTTOM | ALIGN_HJUSTIFY, Rect(780, 80, 100, 20) },
 };
 
 static const ButtonInfo fittingButtonsInfo[] = {
-    { L"Disable", TextBlock::FITTING_DISABLED, Rect(450, 130, 100, 20) },
+    { L"Disable", 0, Rect(450, 130, 100, 20) },
     { L"Points", TextBlock::FITTING_POINTS, Rect(560, 130, 100, 20) },
     { L"Enlarge", TextBlock::FITTING_ENLARGE, Rect(450, 155, 100, 20) },
     { L"Reduce", TextBlock::FITTING_REDUCE, Rect(560, 155, 100, 20) },
@@ -131,6 +106,7 @@ void StaticTextTest::LoadResources()
     inputDelegate = new InputDelegate(this);
     inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
+    inputText->GetOrCreateComponent<UIFocusComponent>();
     AddControl(inputText);
 
     label = new UIStaticText(Rect(450, 5, 200, 20));
@@ -196,7 +172,8 @@ void StaticTextTest::LoadResources()
 
 void StaticTextTest::UnloadResources()
 {
-    inputText->SetDelegate(nullptr);
+    if (inputText)
+        inputText->SetDelegate(nullptr);
     SafeDelete(inputDelegate);
     SafeRelease(previewText);
     SafeRelease(inputText);

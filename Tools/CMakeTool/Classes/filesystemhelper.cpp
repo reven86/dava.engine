@@ -1,34 +1,6 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
-
 #include "filesystemhelper.h"
 #include <QDir>
+#include <QDirIterator>
 #include <QRegularExpression>
 
 FileSystemHelper::FileSystemHelper(QObject* parent)
@@ -49,18 +21,19 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
     return resolvedUrl;
 }
 
-QString FileSystemHelper::NormalizePath(const QString& path) const
+QString FileSystemHelper::NormalizePath(const QString& path)
 {
     if (path.isEmpty())
     {
         return path;
     }
-    QDir dir(path);
-    if (dir.exists())
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
     {
-        return QDir::toNativeSeparators(dir.canonicalPath());
+        return fileInfo.absoluteFilePath();
     }
-    return QDir::toNativeSeparators(path);
+
+    return fileInfo.canonicalFilePath();
 }
 
 bool FileSystemHelper::MkPath(const QString& path)
@@ -96,7 +69,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    QString davaPath = path.left(path.indexOf(index + frameworkDirName.length()));
+    QString davaPath = path.left(index + frameworkDirName.length());
     QString cmakePath = davaPath + "/Tools/Bin" +
 #ifdef Q_OS_MAC
     "/CMake.app" + GetAdditionalCMakePath();
@@ -107,7 +80,7 @@ QString FileSystemHelper::FindCMakeBin(const QString& path, const QString& frame
     {
         return "";
     }
-    return QDir::toNativeSeparators(cmakePath);
+    return QDir::fromNativeSeparators(cmakePath);
 }
 
 FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const QString& folderPath, const QString& keyFile)
@@ -121,6 +94,11 @@ FileSystemHelper::eErrorCode FileSystemHelper::ClearFolderIfKeyFileExists(const 
     {
         return FOLDER_NOT_EXISTS;
     }
+    if (dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries).count() == 0)
+    {
+        return NO_ERRORS;
+    }
+
     if (!dir.exists(keyFile))
     {
         return FOLDER_NOT_CONTAIN_KEY_FILE;

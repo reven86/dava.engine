@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
@@ -145,27 +116,28 @@ class LibPVRHelper : public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibPVRHelper();
 
-    ImageFormat GetImageFormat() const override;
+    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
 
-    bool CanProcessFile(File* file) const override;
-
-    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap = 0) const override;
+    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(File* infile) const override;
+    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 
     bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
     uint32 GetCRCFromFile(const FilePath& filePathname) const override;
 
     static bool WriteFileFromMipMapFiles(const FilePath& outputFile, const Vector<FilePath>& imgPaths);
 
+    static bool CanCompressAndDecompress(PixelFormat format);
+    static bool DecompressToRGBA(const Image* image, Image* dstImage);
+    static bool CompressFromRGBA(const Image* image, Image* dstImage);
+
 protected:
     static PVRFile* ReadFile(const FilePath& filePathname, bool readMetaData = false, bool readData = false);
     static PVRFile* ReadFile(File* file, bool readMetaData = false, bool readData = false);
-    static bool LoadImages(File* infile, Vector<Image*>& imageSet, int32 fromMipMap);
+    static bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 
     static bool WriteFile(const PVRFile* pvrFile, File* outFile);
 
@@ -201,11 +173,6 @@ protected:
     static bool CopyToImage(Image* image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3& header, const uint8* pvrData);
     static bool AllocateImageData(Image* image, uint32 mipMapLevel, const PVRHeaderV3& header);
 };
-
-inline ImageFormat LibPVRHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_PVR;
-}
 };
 
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__

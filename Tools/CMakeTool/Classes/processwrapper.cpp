@@ -1,38 +1,12 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
-
 #include "processwrapper.h"
 #include "filesystemhelper.h"
 #include <QProgressDialog>
 #include <QTimer>
 #include <QRegularExpression>
 #include <QDir>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QDirIterator>
 
 ProcessWrapper::ProcessWrapper(QObject* parent)
     : QObject(parent)
@@ -41,10 +15,6 @@ ProcessWrapper::ProcessWrapper(QObject* parent)
     connect(&process, &QProcess::readyReadStandardError, this, &ProcessWrapper::OnReadyReadStandardError);
     connect(&process, &QProcess::stateChanged, this, &ProcessWrapper::OnProcessStateChanged);
     connect(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error), this, &ProcessWrapper::OnProcessError);
-}
-
-ProcessWrapper::~ProcessWrapper()
-{
 }
 
 void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const QString& buildFolder)
@@ -56,36 +26,105 @@ void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const Q
     }
 }
 
+void ProcessWrapper::FindAndOpenProjectFile(const QString& buildFolder)
+{
+    QString suffix =
+#if defined(Q_OS_WIN)
+    "sln";
+#elif defined(Q_OS_MAC)
+    "xcodeproj";
+#else 
+#error "unsupported platform"
+#endif //platform
+    QDir sourceFolderDir(buildFolder);
+    QDirIterator it(buildFolder);
+    while (it.hasNext())
+    {
+        it.next();
+        QFileInfo fileInfo(it.fileInfo());
+#if defined(Q_OS_WIN)
+        if (fileInfo.isFile())
+#elif defined(Q_OS_MAC)
+        if (fileInfo.isDir()) //xcodeproj is a directory
+#else
+#error "unsupported platform"
+#endif //platform
+        {
+            if (fileInfo.suffix() == suffix)
+            {
+                if (!QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absoluteFilePath())))
+                {
+                    emit processStandardError(tr("Can not open project file!"));
+                }
+                return;
+            }
+        }
+    }
+    emit processStandardError(tr("Can not find project file!"));
+}
+
+void ProcessWrapper::OpenFolderInExplorer(const QString& folder)
+{
+    QFileInfo fileInfo(folder);
+    if (!fileInfo.exists())
+    {
+        emit processStandardError(tr("build folder are not exists!"));
+        return;
+    }
+    QString path = fileInfo.canonicalFilePath();
+#ifdef Q_OS_MAC
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \"" + path + "\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached("osascript", args);
+#endif
+#ifdef Q_OS_WIN
+    QString param;
+    param = QLatin1String("/select,");
+    param += QDir::toNativeSeparators(path);
+    QString command = QString("explorer") + " " + param;
+    QProcess::startDetached(command);
+#endif
+}
+
 void ProcessWrapper::BlockingStopAllTasks()
 {
-    int startTasksSize = taskQueue.size();
+    taskQueue.clear();
+    KillProcess();
     QTimer performTimer;
     performTimer.setInterval(100);
     performTimer.setSingleShot(false);
-    QProgressDialog progressDialog(tr("Finishing tasks: %1").arg(startTasksSize + 1), tr("Cancel"), 0, startTasksSize);
-    connect(this, &ProcessWrapper::processStandardOutput, &progressDialog, &QProgressDialog::setLabelText);
-    connect(this, &ProcessWrapper::processStandardError, &progressDialog, &QProgressDialog::setLabelText);
-    connect(&performTimer, &QTimer::timeout, [&progressDialog, this, startTasksSize]() {
-        if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+    QProgressDialog progressDialog(tr("Finishing tasks"), tr("Exit"), 0, 0);
+    connect(&performTimer, &QTimer::timeout, [&progressDialog, this]() {
+        if (process.state() == QProcess::NotRunning)
         {
             progressDialog.accept();
         }
         else
         {
-            progressDialog.setValue(startTasksSize - taskQueue.size());
             if (progressDialog.wasCanceled())
             {
-                taskQueue.clear();
-                process.kill();
+                exit(0);
             }
         }
     });
-    if (taskQueue.isEmpty() && process.state() == QProcess::NotRunning)
+    if (process.state() == QProcess::NotRunning)
     {
         return;
     }
     performTimer.start();
     progressDialog.exec();
+}
+
+void ProcessWrapper::KillProcess()
+{
+    process.kill();
 }
 
 bool ProcessWrapper::IsRunning() const
@@ -163,23 +202,26 @@ void ProcessWrapper::StartNextCommand()
         return;
     }
     const Task& task = taskQueue.dequeue();
-    const auto& buildFolder = task.buildFolder;
-    if (!FileSystemHelper::IsDirExists(buildFolder))
+    const QString& buildFolder = task.buildFolder;
+    if (!buildFolder.isEmpty())
     {
-        if (FileSystemHelper::MkPath(buildFolder))
+        if (!FileSystemHelper::IsDirExists(buildFolder))
         {
-            emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
+            if (FileSystemHelper::MkPath(buildFolder))
+            {
+                emit processStandardOutput(tr("created build folder %1").arg(buildFolder));
+            }
+            else
+            {
+                emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
+                QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
+                return;
+            }
         }
-        else
+        if (task.needClean)
         {
-            emit processStandardError(tr("can not create build folder %1").arg(buildFolder));
-            QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
-            return;
+            CleanBuildFolder(task.buildFolder);
         }
-    }
-    if (task.needClean)
-    {
-        CleanBuildFolder(task.buildFolder);
     }
     Q_ASSERT(process.state() == QProcess::NotRunning);
     process.start(task.command);

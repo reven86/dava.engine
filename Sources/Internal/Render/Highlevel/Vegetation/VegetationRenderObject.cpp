@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <cfloat>
 
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
@@ -687,43 +658,19 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
 
     if (IsDataLoadNeeded())
     {
-        ScopedPtr<Image> originalImage(Image::CreateFromData(heightMap->Size(), heightMap->Size(), FORMAT_A16, reinterpret_cast<uint8*>(heightMap->Data())));
-
-        int32 pow2Size = heightmap->Size();
-        if (!IsPowerOf2(heightmap->Size()))
-        {
-            EnsurePowerOf2(pow2Size);
-
-            if (pow2Size > heightmap->Size())
-            {
-                pow2Size = pow2Size >> 1;
-            }
-        }
-
-        Texture* tx = NULL;
-        if (pow2Size != heightmap->Size())
-        {
-            ScopedPtr<Image> croppedImage(Image::CopyImageRegion(originalImage, pow2Size, pow2Size));
-            tx = Texture::CreateFromData(FORMAT_RGBA4444, croppedImage->GetData(), pow2Size, pow2Size, false);
-        }
-        else
-        {
-            tx = Texture::CreateFromData(FORMAT_RGBA4444, originalImage->GetData(), pow2Size, pow2Size, false);
-        }
-
-        heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
-                                 (1.0f * heightmap->Size()) / pow2Size);
+        uint32 hmSize = uint32(heightmap->Size());
+        DVASSERT(IsPowerOf2(hmSize));
+        Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
 
         tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-        tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
+        tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
 
         heightmapTexture = SafeRetain(tx);
 
         if (vegetationGeometry != NULL)
         {
             ScopedPtr<KeyedArchive> props(new KeyedArchive());
-            props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), reinterpret_cast<uint64>(heightmapTexture));
-            props->SetVector2(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str(), heightmapScale);
+            props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), uint64(heightmapTexture));
 
             vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         }
@@ -737,13 +684,13 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
     uint32 hX = uint32(heightmapToVegetationMapScale.x * x);
     uint32 hY = uint32(heightmapToVegetationMapScale.y * y);
 
-    uint16 left = (hX > 0) ? *(heightmap->Data() + ((hY * heightmap->Size()) + hX - 1)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
-    uint16 right = (hX < halfWidth) ? *(heightmap->Data() + ((hY * heightmap->Size()) + hX + 1)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
-    uint16 top = (hY > 0) ? *(heightmap->Data() + (((hY - 1) * heightmap->Size()) + hX)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
-    uint16 down = (hY < halfHeight) ? *(heightmap->Data() + (((hY + 1) * heightmap->Size()) + hX)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
-    uint16 center = *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
+    uint16 left = heightmap->GetHeightClamp(Min(hX, hX - 1), hY);
+    uint16 right = heightmap->GetHeightClamp(hX + 1, hY);
+    uint16 top = heightmap->GetHeightClamp(hX, Min(hY, hY - 1));
+    uint16 bottom = heightmap->GetHeightClamp(hX, hY + 1);
+    uint32 center = heightmap->GetHeightClamp(hX, hY);
 
-    uint16 heightmapValue = (left + right + top + down + center) / 5;
+    uint16 heightmapValue = (left + right + top + bottom + center) / 5;
 
     float32 height = (float32(heightmapValue) / float32(Heightmap::MAX_VALUE)) * worldSize.z;
 
@@ -903,8 +850,7 @@ void VegetationRenderObject::CreateRenderData()
 #endif
 
     ScopedPtr<KeyedArchive> props(new KeyedArchive());
-    props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), reinterpret_cast<uint64>(heightmapTexture));
-    props->SetVector2(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str(), heightmapScale);
+    props->SetUInt64(NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str(), uint64(heightmapTexture));
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE.c_str(), perturbationForce);
     props->SetFloat(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str(), maxPerturbationDistance);
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
@@ -944,28 +890,10 @@ void VegetationRenderObject::RestoreRenderData()
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
     }
     if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
-
     {
-        ScopedPtr<Image> originalImage(Image::CreateFromData(heightmap->Size(), heightmap->Size(), FORMAT_A16, reinterpret_cast<uint8*>(heightmap->Data())));
-        int32 pow2Size = heightmap->Size();
-        if (!IsPowerOf2(heightmap->Size()))
-        {
-            EnsurePowerOf2(pow2Size);
-
-            if (pow2Size > heightmap->Size())
-            {
-                pow2Size = pow2Size >> 1;
-            }
-        }
-        if (pow2Size != heightmap->Size())
-        {
-            ScopedPtr<Image> croppedImage(Image::CopyImageRegion(originalImage, pow2Size, pow2Size));
-            heightmapTexture->TexImage(0, pow2Size, pow2Size, croppedImage->GetData(), croppedImage->dataSize, 0);
-        }
-        else
-        {
-            heightmapTexture->TexImage(0, pow2Size, pow2Size, originalImage->GetData(), originalImage->dataSize, 0);
-        }
+        uint32 hmSize = uint32(heightmap->Size());
+        DVASSERT(IsPowerOf2(hmSize));
+        heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
     }
 }
 
@@ -1372,7 +1300,7 @@ Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
 {
     Vector<Image*> images;
 
-    ImageSystem::Instance()->Load(path, images);
+    ImageSystem::Load(path, images);
 
     Image* image = nullptr;
     if (images.size() > 0)
@@ -1441,5 +1369,15 @@ uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
     }
 
     return index;
+}
+
+void VegetationRenderObject::BindDynamicParameters(Camera* camera)
+{
+    RenderObject::BindDynamicParameters(camera);
+
+    if (heightmap != nullptr)
+    {
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSize, pointer_size(&heightmapSize));
+    }
 }
 };

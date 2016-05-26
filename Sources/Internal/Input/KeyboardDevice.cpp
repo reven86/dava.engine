@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "KeyboardDevice.h"
 
 #include "UI/UIEvent.h"
@@ -228,28 +199,34 @@ void KeyboardDevice::PrepareKeyTranslator()
 #if defined(__DAVAENGINE_WINDOWS__)
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 
+    keyTranslator[VK_LEFT] = Key::LEFT;
+    keyTranslator[VK_RIGHT] = Key::RIGHT;
+    keyTranslator[VK_UP] = Key::UP;
+    keyTranslator[VK_DOWN] = Key::DOWN;
+    keyTranslator[VK_DELETE] = Key::DELETE;
+    keyTranslator[VK_ESCAPE] = Key::ESCAPE;
+    keyTranslator[VK_BACK] = Key::BACKSPACE;
+    keyTranslator[VK_RETURN] = Key::ENTER;
+
     keyTranslator[256 + VK_LEFT] = Key::LEFT; // extended key
     keyTranslator[256 + VK_RIGHT] = Key::RIGHT; // extended key
     keyTranslator[256 + VK_UP] = Key::UP; // extended key
     keyTranslator[256 + VK_DOWN] = Key::DOWN; // extended key
-    keyTranslator[VK_ESCAPE] = Key::ESCAPE;
     keyTranslator[256 + VK_DELETE] = Key::DELETE; // extended key
-    keyTranslator[VK_BACK] = Key::BACKSPACE;
-    keyTranslator[VK_RETURN] = Key::ENTER;
-    keyTranslator[256 + VK_RETURN] = Key::NUMPADENTER;
+    keyTranslator[256 + VK_RETURN] = Key::NUMPADENTER; // extended key
 
     keyTranslator[VK_CONTROL] = Key::LCTRL;
     keyTranslator[VK_MENU] = Key::LALT;
     keyTranslator[VK_SHIFT] = Key::LSHIFT;
     keyTranslator[VK_APPS] = Key::APPS;
 
-    keyTranslator[256 + VK_LWIN] = Key::LWIN; // extended key
-    keyTranslator[256 + VK_RWIN] = Key::RWIN; // extended key
-
     keyTranslator[256 + VK_CONTROL] = Key::RCTRL;
     keyTranslator[256 + VK_MENU] = Key::RALT;
     keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;
     keyTranslator[256 + VK_APPS] = Key::APPS; // win api mark this key as extended
+
+    keyTranslator[256 + VK_LWIN] = Key::LWIN; // extended key
+    keyTranslator[256 + VK_RWIN] = Key::RWIN; // extended key
 
     keyTranslator[256 + VK_NUMLOCK] = Key::NUMLOCK;
     keyTranslator[VK_CAPITAL] = Key::CAPSLOCK;
@@ -260,6 +237,12 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_TAB] = Key::TAB;
     keyTranslator[VK_ADD] = Key::ADD;
     keyTranslator[VK_SUBTRACT] = Key::SUBTRACT;
+
+    keyTranslator[VK_HOME] = Key::HOME;
+    keyTranslator[VK_END] = Key::END;
+    keyTranslator[VK_PRIOR] = Key::PGUP;
+    keyTranslator[VK_NEXT] = Key::PGDN;
+    keyTranslator[VK_INSERT] = Key::INSERT;
     keyTranslator[256 + VK_HOME] = Key::HOME; // extended key
     keyTranslator[256 + VK_END] = Key::END; // extended key
     keyTranslator[256 + VK_PRIOR] = Key::PGUP; // extended key

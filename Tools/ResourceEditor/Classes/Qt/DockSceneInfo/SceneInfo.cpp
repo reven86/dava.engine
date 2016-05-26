@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
@@ -382,7 +353,7 @@ void SceneInfo::CollectParticlesData()
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
             ++emittersCount;
-            Vector<ParticleLayer*>& layers = effect->GetEmitter(i)->layers;
+            Vector<ParticleLayer*>& layers = effect->GetEmitterInstance(i)->GetEmitter()->layers;
             for (uint32 lay = 0; lay < layers.size(); ++lay)
             {
                 Sprite* spr = layers[lay]->sprite;
@@ -605,7 +576,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     ClearSelectionData();
 
@@ -633,31 +604,37 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command,
     }
 }
 
-void SceneInfo::CollectSelectedRenderObjects(const EntityGroup* selected)
+void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)
 {
-    for (const auto& item : selected->GetContent())
+    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
     {
-        CollectSelectedRenderObjectsRecursivly(item.first);
+        CollectSelectedRenderObjectsRecursivly(entity);
     }
 }
 
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
 {
+    DVASSERT(entity != nullptr);
+
     RenderObject* renderObject = GetRenderObject(entity);
     if (renderObject)
+    {
         selectedRenderObjects.insert(renderObject);
+    }
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
+    {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
+    }
 }
 
-void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup)
+void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
 {
     speedTreeLeafInfo.clear();
 
-    for (const auto& item : forGroup->GetContent())
+    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
     {
-        RenderObject* ro = GetRenderObject(item.first);
+        RenderObject* ro = GetRenderObject(entity);
         if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }

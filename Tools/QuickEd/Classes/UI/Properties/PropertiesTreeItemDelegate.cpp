@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PropertiesTreeItemDelegate.h"
 #include <QWidget>
 #include <QHBoxLayout>
@@ -42,10 +13,8 @@
 #include <QToolButton>
 #include <QEvent>
 #include <QMouseEvent>
-#include "QtControls/lineeditext.h"
 
 #include "DAVAEngine.h"
-#include "QtControls/Vector2DEdit.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
@@ -82,15 +51,19 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
-    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
-    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
-
     propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate(".sc2", "/3d/", this);
+    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates["bg-sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-gradient"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["bg-contour"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["text-font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -205,24 +178,13 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
         auto propName_iter = propertyNameTypeItemDelegates.find(StringToQString(property->GetName()));
         if (propName_iter != propertyNameTypeItemDelegates.end())
             return propName_iter.value();
-    }
 
-    QVariant editValue = index.data(Qt::EditRole);
-    if (editValue.userType() == QMetaTypeId<DAVA::VariantType>::qt_metatype_id())
-    {
-        DAVA::VariantType variantType = editValue.value<DAVA::VariantType>();
-        QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*>::const_iterator var_iter = variantTypeItemDelegates.find(variantType.GetType());
+        auto var_iter = variantTypeItemDelegates.find(property->GetValueType());
         if (var_iter != variantTypeItemDelegates.end())
             return var_iter.value();
     }
-    else
-    {
-        QMap<QVariant::Type, AbstractPropertyDelegate*>::const_iterator iter = qvariantItemDelegates.find(editValue.type());
-        if (iter != qvariantItemDelegates.end())
-            return iter.value();
-    }
 
-    return NULL;
+    return nullptr;
 }
 
 void PropertiesTreeItemDelegate::emitCommitData(QWidget* editor)

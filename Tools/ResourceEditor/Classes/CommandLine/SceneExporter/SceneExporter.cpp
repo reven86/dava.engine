@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 #include "AssetCache/AssetCacheClient.h"
@@ -382,18 +354,25 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
             return;
         }
 
-        FilePath sourceFilePath = descriptor->GetSourceTexturePathname();
-        DAVA::ImageInfo imgInfo = DAVA::ImageSystem::Instance()->GetImageInfo(sourceFilePath);
-        if (imgInfo.width != imgInfo.height && (descriptor->format == FORMAT_PVR2 || descriptor->format == FORMAT_PVR4))
+        Vector<FilePath> imagePathnames;
+        if (descriptor->IsCubeMap())
         {
-            Logger::Error("Can't export non-square texture %s into compression format %s",
-                          descriptorPathname.GetAbsolutePathname().c_str(),
-                          GlobalEnumMap<PixelFormat>::Instance()->ToString(descriptor->format));
-            return;
+            descriptor->GetFacePathnames(imagePathnames);
+        }
+        else
+        {
+            imagePathnames.push_back(descriptor->GetSourceTexturePathname());
+        }
+
+        for (FilePath& path : imagePathnames)
+        {
         }
 
         FilePath compressedTexturePathname = CompressTexture(*descriptor);
-        CopyFile(compressedTexturePathname);
+        if (compressedTexturePathname.IsEmpty() == false)
+        {
+            CopyFile(compressedTexturePathname);
+        }
     }
     else
     {
@@ -412,6 +391,16 @@ void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const
 FilePath SceneExporter::CompressTexture(TextureDescriptor& descriptor) const
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(exportForGPU));
+
+    DAVA::int32 width = descriptor.compression[exportForGPU].compressToWidth;
+    DAVA::int32 height = descriptor.compression[exportForGPU].compressToHeight;
+
+    if ((width != 0 && width < DAVA::Texture::MINIMAL_WIDTH) || (height != 0 && height < DAVA::Texture::MINIMAL_HEIGHT))
+    {
+        Logger::Error("%s has too small size(%dx%d) for comptression %s", descriptor.pathname.GetAbsolutePathname().c_str(), width, height,
+                      GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(exportForGPU));
+        return FilePath();
+    }
 
     FilePath compressedTexureName = descriptor.CreatePathnameForGPU(exportForGPU);
 

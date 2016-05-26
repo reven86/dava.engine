@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
@@ -48,6 +19,7 @@ namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
 {
+    version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
         legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
@@ -112,7 +84,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     }
 
     int32 packageVersion = versionNode->AsInt();
-    if (packageVersion < MIN_SUPPORTED_VERSION || CURRENT_VERSION < packageVersion)
+    if (packageVersion < MIN_SUPPORTED_VERSION || UIPackage::CURRENT_VERSION < packageVersion)
     {
         return false;
     }
@@ -511,7 +483,24 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
                 const InspMember* member = insp->Member(j);
                 VariantType res;
                 if (componentNode)
-                    res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                {
+                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                    {
+                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            if (member->Name() == FastName("spriteModification"))
+                            {
+                                res.SetInt32(valueNode->AsInt32());
+                            }
+                        }
+                    }
+
+                    if (res.GetType() == VariantType::TYPE_NONE)
+                    {
+                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                    }
+                }
                 builder->ProcessProperty(member, res);
             }
         }
