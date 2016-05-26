@@ -410,7 +410,7 @@ void MainWindow::RefreshBranchesList()
         listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
     }
 
-    QVector<QString> favs;
+    QStringList favs;
     QSet<QString> branchIDs;
     if (localConfig)
     {

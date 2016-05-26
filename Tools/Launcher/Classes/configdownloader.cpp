@@ -6,6 +6,16 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
+namespace ConfigDownloader_local
+{
+QString platformString =
+#ifdef Q_OS_WIN
+"windows";
+#elif defined Q_OS_MAC
+"macos";
+#endif //platform
+}
+
 ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::ConfigDownloader)
@@ -14,10 +24,6 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
 {
     ui->setupUi(this);
     connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
-    requests << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds"
-    // << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches"
-    // << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher"
-    ;
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -27,28 +33,40 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
-    for (const QString& str : requests)
+    appManager->GetRemoteConfig()->Clear();
+    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher" //version, url, news
+                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=seo_list" //stirngs
+                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches&filter=os:" + ConfigDownloader_local::platformString // favorites
+                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds&filter=os:" + ConfigDownloader_local::platformString //all builds
+    ;
+    for (const QString& str : urls)
     {
-        networkManager->get(QNetworkRequest(QUrl(str)));
+        requests << networkManager->get(QNetworkRequest(QUrl(str)));
     }
     return QDialog::exec();
 }
 
 void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 {
+    reply->deleteLater();
     QNetworkReply::NetworkError error = reply->error();
 
     if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
     {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, errorCode, errorDescr);
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
         reject();
     }
     else
     {
-        qDebug() << reply->readAll();
-        //appManager->ParseRemoteConfigData(reply->readAll());
+        appManager->ParseRemoteConfigData(reply->readAll());
     }
-    requests.pop_back();
+    if (!requests.contains(reply))
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, tr("internal error while downloading config"));
+        reject();
+        return;
+    }
+    requests.removeOne(reply);
     if (requests.isEmpty())
     {
         accept();

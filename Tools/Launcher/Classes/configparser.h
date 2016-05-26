@@ -9,7 +9,7 @@
 #include <QSet>
 
 QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue = "");
-QVector<QString> GetArrayValueFromYamlNode(const YAML::Node* node);
+QStringList GetArrayValueFromYamlNode(const YAML::Node* node);
 
 class ConfigParser;
 
@@ -91,6 +91,8 @@ class ConfigParser
 {
 public:
     ConfigParser();
+    void Clear();
+    bool ParseJSON(const QByteArray& configData);
     bool Parse(const QByteArray& data);
     void SaveToYamlFile(const QString& filePath);
 
@@ -120,7 +122,7 @@ public:
     const QString& GetRemoteConfigURL();
     const QString& GetNewsID();
 
-    const QVector<QString>& GetFavorites();
+    const QStringList& GetFavorites();
 
     void MergeBranchesIDs(QSet<QString>& branches);
 
@@ -133,7 +135,7 @@ private:
     QString remoteConfigURL;
     QString newsID;
 
-    QVector<QString> favorites;
+    QStringList favorites;
 
     QVector<Branch> branches;
     QMap<QString, QString> strings;

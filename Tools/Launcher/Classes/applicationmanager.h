@@ -19,8 +19,8 @@ public:
 
     QString GetString(const QString& stringID) const;
 
-    ConfigParser* GetLocalConfig();
-    ConfigParser* GetRemoteConfig();
+    ConfigParser* GetLocalConfig() const;
+    ConfigParser* GetRemoteConfig() const;
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 

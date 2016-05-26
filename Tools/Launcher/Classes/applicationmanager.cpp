@@ -28,12 +28,13 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
     {
         QByteArray data = configFile.readAll();
         configFile.close();
-        localConfig = new ConfigParser(data);
+        localConfig = new ConfigParser();
+        localConfig->Parse(data);
     }
     else
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_DOC_ACCESS);
-        localConfig = new ConfigParser(QByteArray());
+        localConfig = new ConfigParser();
     }
 }
 
@@ -43,7 +44,7 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     {
         return;
     }
-
+    remoteConfig->Parse(data);
     QString webPageUrl = remoteConfig->GetWebpageURL();
     if (!webPageUrl.isEmpty())
     {
@@ -131,12 +132,12 @@ QString ApplicationManager::GetString(const QString& stringID) const
     return string;
 }
 
-ConfigParser* ApplicationManager::GetRemoteConfig()
+ConfigParser* ApplicationManager::GetRemoteConfig() const
 {
     return remoteConfig;
 }
 
-ConfigParser* ApplicationManager::GetLocalConfig()
+ConfigParser* ApplicationManager::GetLocalConfig() const
 {
     return localConfig;
 }

@@ -1,6 +1,86 @@
 #include "configparser.h"
 #include "errormessenger.h"
 #include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonParseError>
+
+namespace ConfigParser_local
+{
+QString platformString =
+#ifdef Q_OS_WIN
+"windows";
+#elif defined Q_OS_MAC
+"macos";
+#endif //platform
+
+bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
+{
+    QJsonObject platformObject = value.toObject()[platformString].toObject();
+    version = platformObject["version"].toString();
+    url = platformObject["url"].toString();
+    news = platformObject["news"].toString();
+    return version.isEmpty() && url.isEmpty() && news.isEmpty();
+}
+
+bool GetLauncherStrings(const QJsonValue& value, QMap<QString, QString>& strings)
+{
+    QJsonArray array = value.toArray();
+    bool isValid = !array.isEmpty();
+    for (const QJsonValueRef& ref : array)
+    {
+        QJsonObject entry = ref.toObject();
+        if (entry["os"].toString() != platformString)
+        {
+            continue;
+        }
+        QString key = entry["build_tag"].toString();
+        QString value = entry["build_name"].toString();
+        isValid &= !key.isEmpty() && !value.isEmpty();
+        strings[key] = value;
+    }
+    return isValid;
+}
+
+bool GetFavorites(const QJsonValue& value, QStringList& favorites)
+{
+    QJsonArray array = value.toArray();
+    bool isValid = !array.isEmpty();
+    for (const QJsonValueRef& ref : array)
+    {
+        QJsonObject entry = ref.toObject();
+        if (entry["favourite"].toString() != "1")
+        {
+            continue;
+        }
+        QString fave = entry["branch_name"].toString();
+        isValid &= !fave.isEmpty();
+        favorites.append(fave);
+    }
+    return isValid;
+}
+
+bool GetBranches(const QJsonValue& value, const QMap<QString, Branch>& branches)
+{
+    QJsonArray array = value.toArray();
+    bool isValid = !array.isEmpty();
+    for (const QJsonValueRef& ref : array)
+    {
+        QJsonObject entry = ref.toObject();
+        QString branchName = entry["branchName"].toString();
+        if (branchName.isEmpty())
+        {
+            isValid = false;
+            continue;
+        }
+        auto& br = branches[branchName];
+        //Branch &branch = branches[branchName];
+        //branch.applications
+    }
+}
+}
 
 AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
 {
@@ -102,71 +182,136 @@ ConfigParser::ConfigParser()
 {
 }
 
+void ConfigParser::Clear()
+{
+    launcherVersion.clear();
+    launcherURL.clear();
+    webPageURL.clear();
+    remoteConfigURL.clear();
+    newsID.clear();
+
+    favorites.clear();
+
+    branches.clear();
+    strings.clear();
+}
+
+bool ConfigParser::ParseJSON(const QByteArray& configData)
+{
+    QJsonParseError parseError;
+    QJsonDocument document = QJsonDocument::fromJson(configData, &parseError);
+    if (parseError.error != QJsonParseError::NoError)
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, parseError.errorString());
+        return false;
+    }
+    QJsonObject rootObj = document.object();
+    for (const QString& key : rootObj.keys())
+    {
+        QJsonValue value = rootObj.value(key);
+        if (key == "launcher")
+        {
+            if (!ConfigParser_local::GetLauncherVersionAndURL(value, launcherVersion, launcherURL, webPageURL))
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong launcher version object"));
+                continue;
+            }
+        }
+        if (key == "seo_list")
+        {
+            if (!ConfigParser_local::GetLauncherStrings(value, strings))
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong seo strings object"));
+                continue;
+            }
+        }
+        if (key == "branches")
+        {
+            if (!ConfigParser_local::GetFavorites(value, favorites))
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading favorites list"));
+            }
+        }
+        if (key == "builds")
+        {
+            if (!ConfigParser_local::GetBranches(value, branches))
+            {
+                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading branches list"));
+            }
+        }
+    }
+}
+
 bool ConfigParser::Parse(const QByteArray& configData)
 {
-    if (configData.size())
+    if (configData.isEmpty())
     {
-        YAML::Parser parser;
+        return false;
+    }
+    if (ParseJSON(configData))
+    {
+        return true;
+    }
+    YAML::Parser parser;
 
-        YAML::Node configRoot;
-        YAML::Iterator it;
-        const YAML::Node* launcherNode;
-        const YAML::Node* stringsNode;
-        const YAML::Node* branchesNode;
+    YAML::Node configRoot;
+    YAML::Iterator it;
+    const YAML::Node* launcherNode;
+    const YAML::Node* stringsNode;
+    const YAML::Node* branchesNode;
 
-        std::istringstream fileStream(configData.data());
-        parser.Load(fileStream);
+    std::istringstream fileStream(configData.data());
+    parser.Load(fileStream);
 
-        try
+    try
+    {
+        if (parser.GetNextDocument(configRoot))
         {
-            if (parser.GetNextDocument(configRoot))
+            launcherNode = configRoot.FindValue(CONFIG_LAUNCHER_KEY);
+            stringsNode = configRoot.FindValue(CONFIG_STRINGS_KEY);
+            branchesNode = configRoot.FindValue(CONFIG_BRANCHES_KEY);
+
+            launcherVersion = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_VERSION_KEY), LAUNCHER_VER);
+            launcherURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_URL_KEY));
+            webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
+            remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY));
+            newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
+            favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
+
+            if (stringsNode)
             {
-                launcherNode = configRoot.FindValue(CONFIG_LAUNCHER_KEY);
-                stringsNode = configRoot.FindValue(CONFIG_STRINGS_KEY);
-                branchesNode = configRoot.FindValue(CONFIG_BRANCHES_KEY);
-
-                launcherVersion = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_VERSION_KEY), LAUNCHER_VER);
-                launcherURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_URL_KEY));
-                webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
-                remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY));
-                newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
-                favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
-
-                if (stringsNode)
+                it = stringsNode->begin();
+                while (it != stringsNode->end())
                 {
-                    it = stringsNode->begin();
-                    while (it != stringsNode->end())
-                    {
-                        QString key = GetStringValueFromYamlNode(&it.first());
-                        QString value = GetStringValueFromYamlNode(&it.second());
-                        strings[key] = value;
-                        ++it;
-                    }
-                }
-
-                if (branchesNode)
-                {
-                    it = branchesNode->begin();
-                    while (it != branchesNode->end())
-                    {
-                        Branch branch = Branch::LoadFromYamlNode(&it.second());
-                        branch.id = GetStringValueFromYamlNode(&it.first());
-                        branches.push_back(branch);
-                        ++it;
-                    }
+                    QString key = GetStringValueFromYamlNode(&it.first());
+                    QString value = GetStringValueFromYamlNode(&it.second());
+                    strings[key] = value;
+                    ++it;
                 }
             }
-            else
+
+            if (branchesNode)
             {
-                ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG);
-                return false;
+                it = branchesNode->begin();
+                while (it != branchesNode->end())
+                {
+                    Branch branch = Branch::LoadFromYamlNode(&it.second());
+                    branch.id = GetStringValueFromYamlNode(&it.first());
+                    branches.push_back(branch);
+                    ++it;
+                }
             }
         }
-        catch (YAML::ParserException& e)
+        else
         {
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG);
             return false;
         }
+    }
+    catch (YAML::ParserException& e)
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, -1, QString(e.msg.c_str()));
+        return false;
     }
     return true;
 }
@@ -423,7 +568,7 @@ void ConfigParser::SetLastNewsID(const QString& id)
     newsID = id;
 }
 
-const QVector<QString>& ConfigParser::GetFavorites()
+const QStringList& ConfigParser::GetFavorites()
 {
     return favorites;
 }
@@ -438,9 +583,9 @@ QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue 
     return QString(stdStr.c_str());
 }
 
-QVector<QString> GetArrayValueFromYamlNode(const YAML::Node* node)
+QStringList GetArrayValueFromYamlNode(const YAML::Node* node)
 {
-    QVector<QString> array;
+    QStringList array;
 
     if (!node)
         return array;

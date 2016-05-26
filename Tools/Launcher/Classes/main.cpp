@@ -9,6 +9,7 @@ void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString&
 
 int main(int argc, char* argv[])
 {
+#ifdef Q_OS_WIN
     QFileInfo fi(argv[0]);
     QDir currentDir(fi.absoluteDir());
     QString platformsPath = "platforms";
@@ -28,7 +29,6 @@ int main(int argc, char* argv[])
     }
 #endif //windows
     QApplication a(argc, argv);
-
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
