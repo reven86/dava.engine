@@ -4,8 +4,7 @@
 
 #include "Logger/Logger.h"
 
-using namespace STEAM_SDK;
-
+#include "steam/steam_api.h"
 namespace DAVA
 {
 bool Steam::isInited = false;
@@ -57,7 +56,7 @@ bool Steam::IsInited()
     return isInited;
 }
 
-Steam::Storage* Steam::CreateStorage()
+ISteamRemoteStorage* Steam::CreateStorage()
 {
     return SteamRemoteStorage();
 }

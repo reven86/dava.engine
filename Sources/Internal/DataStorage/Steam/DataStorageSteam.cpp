@@ -4,6 +4,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
+#include "steam/steam_api.h"
 namespace DAVA
 {
 
@@ -17,10 +18,7 @@ IDataStorage* DataStorage::Create()
 DataStorageSteam::DataStorageSteam()
     : values(new KeyedArchive)
 {
-    if (Steam::IsInited())
-    {
-        remoteStorage = Steam::CreateStorage();
-    }
+    remoteStorage = Steam::CreateStorage();
 }
 
 ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
