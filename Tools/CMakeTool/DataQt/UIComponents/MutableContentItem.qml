@@ -119,7 +119,6 @@ Item {
                             onCheckedChanged: {
                                 if(checked && localConfiguration) {
                                     localConfiguration["currentPlatform"] = index;
-                                    localConfiguration["currentOptions"] = [];
                                     listModel_localOptions.clear();
                                     var localObject = localConfiguration["platforms"][index];
                                     var options = JSON.parse(JSON.stringify(localObject["options"])); //make a copy
@@ -127,6 +126,7 @@ Item {
                                         for(var i = 0, length = options.length; i < length; ++i) {
                                             options[i]["parentIndex"] = index
                                             listModel_localOptions.append(options[i]);
+                                            impl.configUpdated();
                                         }
                                     }
                                     dataUpdated();

@@ -18,7 +18,7 @@ MACRO ( FILE_TREE_CHECK arg_folders )
         string(REPLACE "\n" "" FILE_TREE_HASH ${FILE_TREE_HASH})
 
         add_custom_target ( FILE_TREE_${PROJECT_NAME} ALL 
-            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/versions_check.py ${CMAKE_CURRENT_BINARY_DIR} ${FILE_TREE_HASH} ${folders}
+            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/versions_check.py ${CMAKE_BINARY_DIR} ${FILE_TREE_HASH} ${folders}
         )
 
         set_target_properties( FILE_TREE_${PROJECT_NAME} PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )       
