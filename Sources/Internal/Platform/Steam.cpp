@@ -3,15 +3,19 @@
 #if defined(__DAVAENGINE_STEAM__)
 
 #include "Logger/Logger.h"
+#include "Core/Core.h"
 
 #include "steam/steam_api.h"
 namespace DAVA
 {
+const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
 
 void Steam::Init()
 {
-    if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))
+    uint32 useAppId = Core::Instance()->GetOptions()->GetUInt32(appIdPropertyKey, k_uAppIdInvalid);
+
+    if (SteamAPI_RestartAppIfNecessary(useAppId))
     {
         // if Steam is not running or the game wasn't started through Steam, SteamAPI_RestartAppIfNecessary starts the
         // local Steam client and also launches this game again.

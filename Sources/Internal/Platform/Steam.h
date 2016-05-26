@@ -2,14 +2,16 @@
 #define STEAM_H
 
 #if defined(__DAVAENGINE_STEAM__)
+#include "Base/BaseTypes.h"
 
 class ISteamRemoteStorage;
-
 namespace DAVA
 {
 class Steam final
 {
 public:
+    static const String appIdPropertyKey;
+
     Steam() = default;
 
     static void Init();
