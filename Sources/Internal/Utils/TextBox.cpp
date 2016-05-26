@@ -58,7 +58,7 @@ private:
     static UCharString ConvertW2U(const WideString& src);
 
     UCharString uString;
-    UBiDi* pararagraph = nullptr;
+    UBiDi* paragraph = nullptr;
     TextBox* tb = nullptr;
     UBiDiLevel baseLevel = UBIDI_DEFAULT_LTR;
 };
@@ -66,15 +66,15 @@ private:
 TextBoxImpl::TextBoxImpl(TextBox* tb_)
     : tb(tb_)
 {
-    pararagraph = ubidi_open();
-    DVASSERT_MSG(pararagraph != nullptr, "Can't alocate new paragraph");
+    paragraph = ubidi_open();
+    DVASSERT_MSG(paragraph != nullptr, "Can't alocate new paragraph");
 }
 
 TextBoxImpl::TextBoxImpl(TextBox* tb_, const TextBoxImpl& src)
     : tb(tb_)
 {
-    pararagraph = ubidi_open();
-    DVASSERT_MSG(pararagraph != nullptr, "Can't alocate new paragraph");
+    paragraph = ubidi_open();
+    DVASSERT_MSG(paragraph != nullptr, "Can't alocate new paragraph");
     uString = src.uString;
     baseLevel = src.baseLevel;
     UpdatePara();
@@ -82,9 +82,9 @@ TextBoxImpl::TextBoxImpl(TextBox* tb_, const TextBoxImpl& src)
 
 TextBoxImpl::~TextBoxImpl()
 {
-    if (pararagraph != nullptr)
+    if (paragraph != nullptr)
     {
-        ubidi_close(pararagraph);
+        ubidi_close(paragraph);
     }
 }
 
@@ -103,7 +103,7 @@ void TextBoxImpl::ChangeDirectionMode(const TextBox::DirectionMode mode)
 
 void TextBoxImpl::UpdatePara()
 {
-    if (pararagraph == nullptr)
+    if (paragraph == nullptr)
     {
         Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
         DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
@@ -111,7 +111,7 @@ void TextBoxImpl::UpdatePara()
     }
 
     UErrorCode errorCode = U_ZERO_ERROR;
-    ubidi_setPara(pararagraph, uString.data(), int32(uString.length()), baseLevel, nullptr, &errorCode);
+    ubidi_setPara(paragraph, uString.data(), int32(uString.length()), baseLevel, nullptr, &errorCode);
     if (errorCode != U_ZERO_ERROR)
     {
         Logger::Error("[TextBox::UpdatePara] errorCode = %d", errorCode);
@@ -121,7 +121,7 @@ void TextBoxImpl::UpdatePara()
 
 void TextBoxImpl::Shape()
 {
-    if (pararagraph == nullptr)
+    if (paragraph == nullptr)
     {
         Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
         DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
@@ -134,8 +134,8 @@ void TextBoxImpl::Shape()
     static const int32 detectLengthOptions = commonOptions | U_SHAPE_LAMALEF_RESIZE;
     static const int32 shapeOptions = commonOptions | U_SHAPE_LAMALEF_NEAR /*| U_SHAPE_SEEN_TWOCELL_NEAR | U_SHAPE_YEHHAMZA_TWOCELL_NEAR | U_SHAPE_TASHKEEL_REPLACE_BY_TATWEEL*/;
 
-    const UChar* text = ubidi_getText(pararagraph);
-    const int32 length = ubidi_getLength(pararagraph);
+    const UChar* text = ubidi_getText(paragraph);
+    const int32 length = ubidi_getLength(paragraph);
 
     UErrorCode errorCode = U_ZERO_ERROR;
     UCharString output(length, 0);
@@ -256,12 +256,12 @@ void TextBoxImpl::ReorderLines()
 
 TextBox::Direction TextBoxImpl::GetDirection() const
 {
-    return BiDiDirectionToDirection(ubidi_getDirection(pararagraph));
+    return BiDiDirectionToDirection(ubidi_getDirection(paragraph));
 }
 
 TextBox::Direction TextBoxImpl::GetBaseDirection() const
 {
-    return BiDiDirectionToDirection(ubidi_getBaseDirection(ubidi_getText(pararagraph), ubidi_getLength(pararagraph)));
+    return BiDiDirectionToDirection(ubidi_getBaseDirection(ubidi_getText(paragraph), ubidi_getLength(paragraph)));
 }
 
 UBiDiLevel TextBoxImpl::DirectionModeToBiDiLevel(const TextBox::DirectionMode mode)
