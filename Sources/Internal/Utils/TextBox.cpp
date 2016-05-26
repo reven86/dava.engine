@@ -44,7 +44,6 @@ public:
 
     void SetString(const WideString& str, const TextBox::DirectionMode mode);
     void ChangeDirectionMode(const TextBox::DirectionMode mode);
-    void UpdatePara();
     void Shape();
     void ReorderLines();
     WideString AsString() const;
@@ -56,6 +55,8 @@ private:
     static TextBox::Direction BiDiDirectionToDirection(const UBiDiDirection dir);
     static WideString ConvertU2W(const UCharString& src);
     static UCharString ConvertW2U(const WideString& src);
+
+    void UpdateParagraph();
 
     UCharString uString;
     UBiDi* paragraph = nullptr;
@@ -77,7 +78,7 @@ TextBoxImpl::TextBoxImpl(TextBox* tb_, const TextBoxImpl& src)
     DVASSERT_MSG(paragraph != nullptr, "Can't alocate new paragraph");
     uString = src.uString;
     baseLevel = src.baseLevel;
-    UpdatePara();
+    UpdateParagraph();
 }
 
 TextBoxImpl::~TextBoxImpl()
@@ -92,16 +93,16 @@ void TextBoxImpl::SetString(const WideString& str, const TextBox::DirectionMode 
 {
     uString = ConvertW2U(str);
     baseLevel = DirectionModeToBiDiLevel(mode);
-    UpdatePara();
+    UpdateParagraph();
 }
 
 void TextBoxImpl::ChangeDirectionMode(const TextBox::DirectionMode mode)
 {
     baseLevel = DirectionModeToBiDiLevel(mode);
-    UpdatePara();
+    UpdateParagraph();
 }
 
-void TextBoxImpl::UpdatePara()
+void TextBoxImpl::UpdateParagraph()
 {
     if (paragraph == nullptr)
     {
@@ -176,7 +177,7 @@ void TextBoxImpl::Shape()
 
     // Store shaped text
     uString = output;
-    UpdatePara();
+    UpdateParagraph();
 }
 
 DAVA::WideString TextBoxImpl::AsString() const
