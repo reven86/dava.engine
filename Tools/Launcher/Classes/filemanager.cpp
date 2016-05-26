@@ -14,6 +14,8 @@ const QString tempSelfUpdateDir = "selfupdate/";
 const QString baseAppDir = "DAVATools/";
 const QString tempDir = "temp/";
 
+using EntireList = QList<QPair<QFileInfo, QString>>;
+
 QStringList OwnDirectories()
 {
     QString path = GetLauncherDirectory();
@@ -128,15 +130,14 @@ bool MoveEntry(const QFileInfo& fileInfo, const QString& newFilePath)
 }
 }
 
-bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
+EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
 {
+    EntireList entryList;
     QDir outDir(pathOut);
     if (!outDir.exists())
     {
-        return false;
+        return entryList;
     }
-
-    bool success = true;
 #ifdef Q_OS_WIN
     QString infoFilePath = GetPackageInfoFilePath();
     bool moveFilesFromInfoList = QFile::exists(infoFilePath);
@@ -151,7 +152,7 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         }
         else
         {
-            return false;
+            return entryList;
         }
     }
 #endif //Q_OS_WIN
@@ -162,6 +163,10 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         const QFileInfo& fi = di.fileInfo();
         QString absPath = fi.absoluteFilePath();
         QString relPath = absPath.right(absPath.length() - pathOut.length());
+        if (fi.isDir() && OwnDirectories().contains(absPath + '/'))
+        {
+            continue;
+        }
 #ifdef Q_OS_WIN
         if (moveFilesFromInfoList && !archiveFiles.contains(relPath))
         {
@@ -195,10 +200,22 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
         }
 #endif //platform
         QString newFilePath = pathIn + relPath;
-        if (!fi.isDir() || !OwnDirectories().contains(absPath + '/'))
-        {
-            success &= FileManager_local::MoveEntry(fi, newFilePath);
-        }
+        entryList.append(qMakePair(fi, newFilePath));
+    }
+    return entryList;
+}
+
+bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
+{
+    EntireList entryList = CraeteEntireList(pathOut, pathIn);
+    if (entryList.isEmpty())
+    {
+        return false;
+    }
+    bool success = true;
+    for (const QPair<QFileInfo, QString>& entry : entryList)
+    {
+        success &= FileManager_local::MoveEntry(entry.first, entry.second);
     }
     return success;
 }
