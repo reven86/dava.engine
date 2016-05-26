@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_TEXTURE_DESCRIPTOR_H__
-#define __DAVAENGINE_TEXTURE_DESCRIPTOR_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -22,7 +21,7 @@ class TextureDescriptor final
     };
 
 public:
-    static const int8 CURRENT_VERSION = 13;
+    static const int8 CURRENT_VERSION = 12;
 
     struct TextureDrawSettings : public InspBase
     {
@@ -167,8 +166,9 @@ public:
 
     static FilePath GetDescriptorPathname(const FilePath& texturePathname);
 
-    FilePath CreateSavePathnameForGPU(const eGPUFamily forGPU) const;
-    Vector<FilePath> CreateLoadPathnamesForGPU(const eGPUFamily forGPU) const;
+    FilePath CreateMultiMipPathnameForGPU(const eGPUFamily forGPU) const;
+    bool CreateSingleMipPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath> &pathes) const;
+    void CreateLoadPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath> &pathes) const;
 
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
 
@@ -187,7 +187,6 @@ private:
 
     void LoadVersion11(File* file);
     void LoadVersion12(File* file);
-    void LoadVersion13(File* file);
 
     uint32 ReadSourceCRC() const;
     uint32 GetConvertedCRC(eGPUFamily forGPU) const;
@@ -216,4 +215,4 @@ public:
     bool isCompressedFile = false;
 };
 };
-#endif // __DAVAENGINE_TEXTURE_DESCRIPTOR_H__
+

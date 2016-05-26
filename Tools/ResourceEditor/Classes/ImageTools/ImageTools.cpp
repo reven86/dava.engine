@@ -51,7 +51,7 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
     }
     else
     {
-        files = descriptor->CreateLoadPathnamesForGPU(forGPU);
+        descriptor->CreateLoadPathnamesForGPU(forGPU, files);
     }
 
     for (size_t i = 0; i < files.size(); ++i)
@@ -62,13 +62,13 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
         {
             const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
 
-            auto m = Min(baseMipMaps, info.mipmapsCount - 1);
+            uint32 m = Min(baseMipMaps, info.mipmapsCount - 1);
             for (; m < info.mipmapsCount; ++m)
             {
-                const auto w = (info.width >> m);
-                const auto h = (info.height >> m);
+                uint32 w = (info.width >> m);
+                uint32 h = (info.height >> m);
 
-                size += (w * h * formatSizeBits / 8);
+                size += Image::GetSizeInBytes(w, h, info.format);
             }
         }
         else
@@ -145,11 +145,10 @@ bool MergeImages(const FilePath& folder)
         return false;
     }
 
-    Image* mergedImage = CreateMergedImage(channels);
+    ScopedPtr<Image> mergedImage(CreateMergedImage(channels));
 
     ImageSystem::Save(folder + "merged.png", mergedImage);
     channels.ReleaseImages();
-    SafeRelease(mergedImage);
     return true;
 }
 

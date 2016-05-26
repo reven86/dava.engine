@@ -368,9 +368,6 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     case 12:
         LoadVersion12(file);
         break;
-    case 13:
-        LoadVersion13(file);
-        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
@@ -444,24 +441,7 @@ void ReadCompression12(File* file, TextureDescriptor::Compression& compression)
     file->Read(&compression.convertedFileCrc);
 }
 
-void ReadCompression13(File* file, TextureDescriptor::Compression& compression)
-{
-    file->Read(&compression.imageFormat);
-    file->Read(&compression.format);
-    file->Read(&compression.compressToWidth);
-    file->Read(&compression.compressToHeight);
-    file->Read(&compression.sourceFileCrc);
-    file->Read(&compression.convertedFileCrc);
-}
-
-void WriteString(const String& string, File* file)
-{
-    uint32 length = static_cast<uint32>(string.length());
-    file->Write(&length);
-    file->Write(string.c_str(), length);
-}
-
-String ReadString(File* file)
+String ReadStringDeprecated(File* file)
 {
     uint32 length = 0;
     Array<char8, 20> extStr;
@@ -491,12 +471,12 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     file->Write(&dataSettings.cubefaceFlags);
     file->Write(&dataSettings.sourceFileFormat);
 
-    DescriptorFileOperation::WriteString(dataSettings.sourceFileExtension, file);
+    file->WriteString(dataSettings.sourceFileExtension);
     for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
-            DescriptorFileOperation::WriteString(GetFaceExtension(i), file);
+            file->WriteString(GetFaceExtension(i));
         }
     }
 
@@ -545,21 +525,21 @@ void TextureDescriptor::LoadVersion9(File* file)
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
-    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadString(file);
+    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadStringDeprecated(file);
     for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
-            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadString(file);
+            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadStringDeprecated(file);
         }
     }
 
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    for (auto i = 0; i < compressionsCount; ++i)
+    for (uint8 i = 0; i < compressionsCount; ++i)
     {
-        auto& nextCompression = compression[i];
+        Compression& nextCompression = compression[i];
 
         uint8 formatLocal = PixelFormat::FORMAT_INVALID;
         file->Read(&formatLocal);
@@ -603,22 +583,22 @@ void TextureDescriptor::LoadVersion11(File* file)
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
-    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadString(file);
+    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadStringDeprecated(file);
 
     for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
-            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadString(file);
+            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadStringDeprecated(file);
         }
     }
 
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    for (auto i = 0; i < compressionsCount; ++i)
+    for (uint8 i = 0; i < compressionsCount; ++i)
     {
-        auto& nextCompression = compression[i];
+        Compression& nextCompression = compression[i];
 
         int8 formatLocal = PixelFormat::FORMAT_INVALID;
         file->Read(&formatLocal);
@@ -640,6 +620,7 @@ void TextureDescriptor::LoadVersion11(File* file)
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }
 
+
 void TextureDescriptor::LoadVersion12(File* file)
 {
     //draw settings
@@ -656,13 +637,12 @@ void TextureDescriptor::LoadVersion12(File* file)
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
-    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadString(file);
-
+    file->ReadString(dataSettings.sourceFileExtension);
     for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
-            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadString(file);
+            file->ReadString(dataSettings.cubefaceExtensions[i]);
         }
     }
 
@@ -671,61 +651,9 @@ void TextureDescriptor::LoadVersion12(File* file)
     file->Read(&compressionsCount);
     if (compressionsCount == eGPUFamily::GPU_FAMILY_COUNT)
     {
-        for (auto i = 0; i < compressionsCount; ++i)
+        for (uint8 i = 0; i < compressionsCount; ++i)
         {
             DescriptorFileOperation::ReadCompression12(file, compression[i]);
-        }
-    }
-    else
-    {
-        //export data
-        uint8 exportedAsGpu = eGPUFamily::GPU_INVALID;
-        uint8 exportedAsContainer = ImageFormat::IMAGE_FORMAT_UNKNOWN;
-        uint8 exportedAsFormat = PixelFormat::FORMAT_INVALID;
-        file->Read(&exportedAsGpu);
-        file->Read(&exportedAsContainer);
-        file->Read(&exportedAsFormat);
-
-        gpu = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpu);
-        imageFormat = static_cast<ImageFormat>(exportedAsContainer);
-        format = static_cast<PixelFormat>(exportedAsFormat);
-    }
-}
-
-void TextureDescriptor::LoadVersion13(File* file)
-{
-    //draw settings
-    file->Read(&drawSettings.wrapModeS);
-    file->Read(&drawSettings.wrapModeT);
-    file->Read(&drawSettings.minFilter);
-    file->Read(&drawSettings.magFilter);
-    file->Read(&drawSettings.mipFilter);
-
-    //data settings
-    file->Read(&dataSettings.textureFlags);
-    file->Read(&dataSettings.cubefaceFlags);
-
-    int8 sourceFileFormat = 0;
-    file->Read(&sourceFileFormat);
-    dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
-    dataSettings.sourceFileExtension = DescriptorFileOperation::ReadString(file);
-
-    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
-    {
-        if (dataSettings.cubefaceFlags & (1 << i))
-        {
-            dataSettings.cubefaceExtensions[i] = DescriptorFileOperation::ReadString(file);
-        }
-    }
-
-    //compression
-    uint8 compressionsCount = 0;
-    file->Read(&compressionsCount);
-    if (compressionsCount == eGPUFamily::GPU_FAMILY_COUNT)
-    {
-        for (auto i = 0; i < compressionsCount; ++i)
-        {
-            DescriptorFileOperation::ReadCompression13(file, compression[i]);
         }
     }
     else
@@ -777,7 +705,7 @@ void TextureDescriptor::GenerateFacePathnames(const FilePath& filePath, const Ar
     faceNames.resize(Texture::CUBE_FACE_COUNT, FilePath());
 
     String baseName = filePath.GetBasename();
-    for (auto face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
+    for (uint32 face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
     {
         if (dataSettings.cubefaceFlags & (1 << face))
         {
@@ -825,16 +753,16 @@ const TextureDescriptor::Compression* TextureDescriptor::GetCompressionParams(eG
 Array<ImageFormat, 5> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_DDS, IMAGE_FORMAT_WEBP } };
 Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
 
-auto IsSupportedFor = [](ImageFormat format, const String& extension)
+bool IsFormatSupported(ImageFormat format, const String& extension)
 {
-    auto& extensions = ImageSystem::GetExtensionsFor(format);
-    for (auto& ext : extensions)
+    const Vector<String>& extensions = ImageSystem::GetExtensionsFor(format);
+    for (const String& ext : extensions)
     {
         if (CompareCaseInsensitive(ext, extension) == 0)
             return true;
     }
     return false;
-};
+}
 
 bool TextureDescriptor::IsSupportedSourceFormat(ImageFormat imageFormat)
 {
@@ -850,9 +778,9 @@ bool TextureDescriptor::IsSupportedCompressedFormat(ImageFormat imageFormat)
 
 bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
 {
-    for (auto& textureType : sourceTextureTypes)
+    for (ImageFormat textureType : sourceTextureTypes)
     {
-        if (IsSupportedFor(textureType, extension))
+        if (IsFormatSupported(textureType, extension))
             return true;
     }
 
@@ -861,9 +789,9 @@ bool TextureDescriptor::IsSourceTextureExtension(const String& extension)
 
 bool TextureDescriptor::IsCompressedTextureExtension(const String& extension)
 {
-    for (auto& textureType : compressedTextureTypes)
+    for (ImageFormat textureType : compressedTextureTypes)
     {
-        if (IsSupportedFor(textureType, extension))
+        if (IsFormatSupported(textureType, extension))
             return true;
     }
 
@@ -940,7 +868,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     }
 }
 
-FilePath TextureDescriptor::CreateSavePathnameForGPU(const eGPUFamily gpuFamily) const
+FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFamily) const
 {
     ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
     if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
@@ -952,26 +880,27 @@ FilePath TextureDescriptor::CreateSavePathnameForGPU(const eGPUFamily gpuFamily)
     return GetSourceTexturePathname();
 }
 
-Vector<FilePath> TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily) const
+bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath> &pathes) const
 {
-    Vector<FilePath> pathes;
-
-    ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
-    if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
+    if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE)
     {
-        String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
-        if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE)
+        ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
+        if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
         {
+            String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
             pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
+
+            return true;
         }
-        pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, postfix));
-    }
-    else
-    {
-        pathes.push_back(GetSourceTexturePathname());
     }
 
-    return pathes;
+    return true;
+}
+
+void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath> &pathes) const
+{
+    CreateSingleMipPathnamesForGPU(gpuFamily, pathes);
+    pathes.emplace_back(CreateMultiMipPathnameForGPU(gpuFamily));
 }
 
 PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
@@ -1140,8 +1069,8 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
         TextureDescriptor::Compression& compressionGPU = compression[forGPU];
         if (compressionArchive != nullptr)
         {
-            auto formatAsInt = compressionArchive->GetInt32("format", FORMAT_INVALID);
-            auto imageFormatAsInt = compressionArchive->GetInt32("imageFormat", IMAGE_FORMAT_UNKNOWN);
+            int32 formatAsInt = compressionArchive->GetInt32("format", FORMAT_INVALID);
+            int32 imageFormatAsInt = compressionArchive->GetInt32("imageFormat", IMAGE_FORMAT_UNKNOWN);
             int32 compressToWidth = compressionArchive->GetInt32("width");
             int32 compressToHeight = compressionArchive->GetInt32("height");
 
@@ -1181,8 +1110,8 @@ bool TextureDescriptor::SerializeToPreset(KeyedArchive* presetArchive) const
 
     for (uint8 forGPU = 0; forGPU < GPU_FAMILY_COUNT; ++forGPU)
     {
-        auto& width = compression[forGPU].compressToWidth;
-        auto& height = compression[forGPU].compressToHeight;
+        int32 width = compression[forGPU].compressToWidth;
+        int32 height = compression[forGPU].compressToHeight;
 
         if (compression[forGPU].format == FORMAT_INVALID && width > 0 && height > 0)
         {

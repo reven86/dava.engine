@@ -80,7 +80,7 @@ eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
     image->height = bitstream->height;
     image->data = newData;
     image->customDeleter = ::free;
-    image->dataSize = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
+    image->dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, image->format);
     image->mipmapLevel = loadingParams.firstMipmapIndex;
 
     imageSet.push_back(image);
@@ -193,8 +193,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     {
         info.format = FORMAT_RGB888;
     }
-    auto size = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
-    info.dataSize = size;
+    info.dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, info.format);
     info.mipmapsCount = 1;
     info.faceCount = 1;
 

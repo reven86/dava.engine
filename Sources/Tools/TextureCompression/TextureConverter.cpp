@@ -80,6 +80,6 @@ FilePath TextureConverter::ConvertTexture(const TextureDescriptor& descriptor, e
 
 FilePath TextureConverter::GetOutputPath(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreateSavePathnameForGPU(gpuFamily);
+    return descriptor.CreateMultiMipPathnameForGPU(gpuFamily);
 }
 };

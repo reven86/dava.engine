@@ -126,7 +126,7 @@ void TextureCache::tryToPreloadConverted(const DAVA::TextureDescriptor* descript
         TextureInfo convertedImageInfo;
         DAVA::Vector<DAVA::Image*> convertedImages;
 
-        DAVA::FilePath compressedTexturePath = descriptor->CreateSavePathnameForGPU(gpu);
+        DAVA::FilePath compressedTexturePath = descriptor->CreateMultiMipPathnameForGPU(gpu);
         DAVA::eErrorCode ret = DAVA::ImageSystem::Load(compressedTexturePath, convertedImages);
         if (ret != DAVA::eErrorCode::SUCCESS || convertedImages.empty())
         { // we have no compressed file

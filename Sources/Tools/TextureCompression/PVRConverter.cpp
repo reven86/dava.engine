@@ -294,7 +294,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreateSavePathnameForGPU(gpuFamily);
+    return descriptor.CreateMultiMipPathnameForGPU(gpuFamily);
 }
 
 void PVRConverter::SetPVRTexTool(const FilePath& textToolPathname)

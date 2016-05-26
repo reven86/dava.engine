@@ -153,7 +153,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         {
             if (descriptor->IsCompressedFile())
             {
-                Vector<FilePath> compressedTexureNames = descriptor->CreateLoadPathnamesForGPU(descriptor->gpu);
+                Vector<FilePath> compressedTexureNames;
+                descriptor->CreateLoadPathnamesForGPU(descriptor->gpu, compressedTexureNames);
                 links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
             }
             else
@@ -176,7 +177,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
                     const auto& compression = descriptor->compression[gpu];
                     if (compression.format != FORMAT_INVALID)
                     {
-                        Vector<FilePath> compressedTexureNames = descriptor->CreateLoadPathnamesForGPU(static_cast<eGPUFamily>(gpu));
+                        Vector<FilePath> compressedTexureNames;
+                        descriptor->CreateLoadPathnamesForGPU(static_cast<eGPUFamily>(gpu), compressedTexureNames);
                         links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
                     }
                 }

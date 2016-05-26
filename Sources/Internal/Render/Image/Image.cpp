@@ -37,34 +37,18 @@ const uint32 BLOCK_SIZE = 4;
 
 uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
 {
-    int32 pixelSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    DVASSERT(width != 0 && height != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
 
-    if (pixelSizeBits > 0)
-    {
-        if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
-            (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
-        {
-            if (width < BLOCK_SIZE || height < BLOCK_SIZE)
-            {
-                uint32 w = Max(width, BLOCK_SIZE);
-                uint32 h = Max(height, BLOCK_SIZE);
-                return (w * h * pixelSizeBits / 8);
-            }
-            else
-            {
-                int32 pix = (pixelSizeBits < 8) ? BLOCK_SIZE : pixelSizeBits;
-                return (width * height * pix / 8);
-            }
-        }
-        else
-        {
-            return (width * height * pixelSizeBits / 8);
-        }
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1 || blockSize.dy != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+        height = height + ((-1 * height) % blockSize.dy);
     }
-    else
-    {
-        return 0;
-    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width * height / 8);
 }
 
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)

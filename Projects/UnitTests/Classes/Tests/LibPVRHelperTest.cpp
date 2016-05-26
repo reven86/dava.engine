@@ -260,12 +260,12 @@ DAVA_TESTCLASS (LibPVRHelperTest)
         TEST_VERIFY(FileSystem::Instance()->CopyFile(sourceImagePath, savePath));
 
         LibPVRHelper helper;
-        uint32 crc = helper.GetCRCFromFile(savePath);
+        uint32 crc = helper.GetCRCFromMetaData(savePath);
         TEST_VERIFY(crc == 0);
 
         crc = CRC32::ForFile(savePath);
         helper.AddCRCIntoMetaData(savePath);
 
-        TEST_VERIFY(crc == helper.GetCRCFromFile(savePath));
+        TEST_VERIFY(crc == helper.GetCRCFromMetaData(savePath));
     }
 };

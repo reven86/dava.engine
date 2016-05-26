@@ -80,28 +80,13 @@ bool DetectIfNeedSwapBytes(const PVRHeaderV3* header)
     return (PVRTEX_CURR_IDENT_REV == header->u32Version);
 }
 
-uint32 GetMipmapDataSize(PixelFormat format, uint32 width, uint32 height)
-{
-    DVASSERT(width != 0 && height != 0);
-
-    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
-    if (blockSize.dx != 1 || blockSize.dy != 1)
-    {
-        width = width + ((-1 * width) % blockSize.dx);
-        height = height + ((-1 * height) % blockSize.dy);
-    }
-
-    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    return (bitsPerPixel * width * height / 8);
-}
-
 uint32 GetDataSize(const Vector<Image*>& imageSet)
 {
     uint32 dataSize = 0;
 
     for (const Image* image : imageSet)
     {
-        dataSize += GetMipmapDataSize(image->format, image->width, image->height);
+        dataSize += Image::GetSizeInBytes(image->width, image->height, image->format);
     }
 
     return dataSize;
@@ -113,10 +98,7 @@ uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
 
     for (const Vector<Image*>& faceImages : imageSet)
     {
-        for (const Image* image : faceImages)
-        {
-            dataSize += GetMipmapDataSize(image->format, image->width, image->height);
-        }
+        dataSize += GetDataSize(faceImages);
     }
 
     return dataSize;
@@ -488,7 +470,7 @@ std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
     for (const Image* image : imageSet)
     {
         Memcpy(compressedDataPtr, image->data, image->dataSize);
-        compressedDataPtr += GetMipmapDataSize(image->format, image->width, image->height);
+        compressedDataPtr += image->dataSize;
     }
 
     return pvrFile;
@@ -519,7 +501,7 @@ std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageS
         {
             Image* image = faceImageSet[mip];
             Memcpy(compressedDataPtr, image->data, image->dataSize);
-            compressedDataPtr += GetMipmapDataSize(image->format, image->width, image->height);
+            compressedDataPtr += image->dataSize;
         }
     }
 
@@ -572,7 +554,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
             {
                 uint32 mipWidth = pvrFile->header.u32Width >> mip;
                 uint32 mipHeight = pvrFile->header.u32Height >> mip;
-                uint32 mipDataSize = GetMipmapDataSize(pxFormat, mipWidth, mipHeight);
+                uint32 mipDataSize = Image::GetSizeInBytes(mipWidth, mipHeight, pxFormat);
 
                 if (mip < fromMipMap)
                 {

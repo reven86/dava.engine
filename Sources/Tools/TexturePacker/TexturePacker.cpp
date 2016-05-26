@@ -472,7 +472,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector
         compressionTargets[i].forGPU = forGPUs[i];
     }
 
-    for (auto& keys : compressionTargets)
+    for (ImageExportKeys& keys : compressionTargets)
     {
         if (keys.forGPU == eGPUFamily::GPU_ORIGIN)
         {
@@ -577,7 +577,7 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
         descriptor->pathname = pathnameWithoutExtension + TextureDescriptor::GetDescriptorExtension();
     }
 
-    for (const auto& key : keys)
+    for (const ImageExportKeys& key : keys)
     {
         if (key.imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN || key.pixelFormat == PixelFormat::FORMAT_INVALID)
         {
@@ -694,7 +694,7 @@ TexturePacker::FilterItem TexturePacker::GetDescriptorFilter(bool generateMipMap
 
 bool TexturePacker::NeedSquareTextureForCompression(const Vector<ImageExportKeys>& keys)
 {
-    for (const auto& key : keys)
+    for (const ImageExportKeys& key : keys)
     {
         bool needSquare = (key.toComressForGPU && PIXEL_FORMATS_WITH_COMPRESSION.find(key.pixelFormat) != PIXEL_FORMATS_WITH_COMPRESSION.end());
         if (needSquare)

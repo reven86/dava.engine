@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_PVRDEFINES_H__
-#define __DAVAENGINE_PVRDEFINES_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -8,7 +7,16 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     
-    
+//this code is from PowerVR SDK from PVRTTexture.h
+/*!****************************************************************************
+
+@file         PVRTTexture.h
+@copyright    Copyright (c) Imagination Technologies Limited.
+@brief        Texture loading.
+
+******************************************************************************/
+
+
 #define PVRT_MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define PVRT_MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define PVRT_CLAMP(x, l, h) (PVRT_MIN((h), PVRT_MAX((x), (l))))
@@ -595,6 +603,6 @@ struct MetaDataBlock
     
 
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-};
 
-#endif //__DAVAENGINE_PVRDEFINES_H__
+}
+

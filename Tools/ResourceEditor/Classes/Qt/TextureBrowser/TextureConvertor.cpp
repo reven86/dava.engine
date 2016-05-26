@@ -483,7 +483,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
 
             result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
 
-            result.fileSize = QFileInfo(descriptor->CreateSavePathnameForGPU(gpu).GetAbsolutePathname().c_str()).size();
+            result.fileSize = QFileInfo(descriptor->CreateMultiMipPathnameForGPU(gpu).GetAbsolutePathname().c_str()).size();
 
             if (convertedImages.size() && convertedImages[0])
             {

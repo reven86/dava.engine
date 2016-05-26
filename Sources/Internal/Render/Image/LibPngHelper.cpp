@@ -383,7 +383,7 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) 
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    info.dataSize = Image::GetSizeInBytes(width, height, info.format);
     info.mipmapsCount = 1;
     info.faceCount = 1;
     return info;

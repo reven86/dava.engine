@@ -447,9 +447,9 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         texDescriptor->GetFacePathnames(facePathes);
 
         PixelFormat imagesFormat = FORMAT_INVALID;
-        for (auto i = 0; i < CUBE_FACE_COUNT; ++i)
+        for (uint32 i = 0; i < CUBE_FACE_COUNT; ++i)
         {
-            auto& currentfacePath = facePathes[i];
+            const FilePath& currentfacePath = facePathes[i];
             if (currentfacePath.IsEmpty())
                 continue;
 
@@ -496,21 +496,25 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     }
     else
     {
+        Vector<FilePath> singleMipFiles;
+        bool hasSimgleMipFiles = texDescriptor->CreateSingleMipPathnamesForGPU(gpu, singleMipFiles);
+        if (hasSimgleMipFiles)
         {
-            Vector<FilePath> imagePathnames = texDescriptor->CreateLoadPathnamesForGPU(gpu);
-            uint32 singleMipCount = static_cast<uint32>(imagePathnames.size() - 1);
-            for (uint32 i = baseMipMap; i < singleMipCount; ++i)
+            for (const FilePath& path : singleMipFiles)
             {
                 params.baseMipmap = 0;
                 params.firstMipmapIndex = static_cast<uint32>(images->size());
-
-                ImageSystem::Load(imagePathnames[i], *images, params);
+                ImageSystem::Load(path, *images, params);
             }
 
-            params.baseMipmap = Max((int32)baseMipMap - (int32)singleMipCount, 0);
+            DVASSERT(images->size() == singleMipFiles.size());
+
             params.firstMipmapIndex = static_cast<uint32>(images->size());
-            ImageSystem::Load(imagePathnames[singleMipCount], *images, params);
+            params.baseMipmap = Max((int32)baseMipMap - (int32)params.firstMipmapIndex, 0);
         }
+
+        FilePath multipleMipPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
+        ImageSystem::Load(multipleMipPathname, *images, params);
 
         ImageSystem::EnsurePowerOf2Images(*images);
         if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())

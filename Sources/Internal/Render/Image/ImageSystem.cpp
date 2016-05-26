@@ -121,6 +121,8 @@ ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file)
 
 eErrorCode TryToDecompressImages(Vector<Image*>& imageSet)
 {
+    DVASSERT(false);
+
     size_type count = imageSet.size();
     for (size_type i = 0; i < count; ++i)
     {
@@ -223,7 +225,7 @@ eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const Loadin
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
     {
-        loaded = TryToDecompressImages(imageSet);
+//        loaded = TryToDecompressImages(imageSet);
     }
 
 #endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
@@ -238,7 +240,7 @@ eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const Loa
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
     if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
     {
-        loaded = TryToDecompressImages(imageSet);
+//        loaded = TryToDecompressImages(imageSet);
     }
 #endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
