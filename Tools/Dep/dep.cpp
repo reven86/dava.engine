@@ -100,9 +100,10 @@ int main(int argc, const char* argv[])
             cout << "        -o <output>            - print into output file" << '\n';
             cout << '\n';
             cout << "    sql [options] <packname> [dependencies...]" << '\n';
-            cout << "        -list <file>           - read file for pack content" << '\n';
-            cout << "        -hash <file>           - read file for pack hash" << '\n';
-            cout << "        -o <output>            - print into output file" << '\n';
+            cout << "        -l <file>           - read file for pack content" << '\n';
+            cout << "        -h <file>           - read file for pack hash" << '\n';
+            cout << "        -o <output>         - print into output file" << '\n';
+            cout << "        -g {true|false}     - is gpu pack(default false)" << '\n';
         }
         else if (cmd == "echo")
         {
