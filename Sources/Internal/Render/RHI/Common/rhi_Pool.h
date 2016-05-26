@@ -40,6 +40,14 @@ public:
     static void Reserve(unsigned maxCount);
     static unsigned ReCreateAll();
 
+    static void Lock()
+    {
+        ObjectSync.Lock();
+    }
+    static void Unlock()
+    {
+        ObjectSync.Unlock();
+    }
     class
     Iterator
     {

@@ -309,7 +309,7 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
     Vector<Image*> textureData = CreateHeightTextureData(heightmap, renderMode);
 
     Texture* tx = Texture::CreateFromData(textureData);
-    tx->texDescriptor->pathname = "Landscape - height";
+    tx->texDescriptor->pathname = "memoryfile_landscape_height";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
@@ -412,7 +412,7 @@ Texture* Landscape::CreateTangentTexture()
     Vector<Image*> textureData = CreateTangentBasisTextureData();
 
     Texture* tx = Texture::CreateFromData(textureData);
-    tx->texDescriptor->pathname = "Landscape - tangents";
+    tx->texDescriptor->pathname = "memoryfile_landscape_tangents";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 

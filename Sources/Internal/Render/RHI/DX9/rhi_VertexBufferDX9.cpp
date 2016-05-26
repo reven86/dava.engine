@@ -265,11 +265,13 @@ void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 
 void ReleaseAll()
 {
+    VertexBufferDX9Pool::Unlock();
     for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
         b->MarkNeedRestore();
     }
+    VertexBufferDX9Pool::Unlock();
 }
 
 void ReCreateAll()

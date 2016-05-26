@@ -135,10 +135,6 @@ dx9_Reset(const ResetParam& param)
         _DX9_PresentParam.PresentationInterval = interval;
 
         _DX9_ResetPending = true;
-        while (_DX9_ResetPending)
-        {
-            DAVA::Thread::Sleep(10);
-        }
     }
 }
 

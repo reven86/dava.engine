@@ -36,7 +36,6 @@ FrameDX9
 static std::vector<FrameDX9> _DX9_Frame;
 static bool _DX9_FrameStarted = false;
 static unsigned _DX9_FrameNumber = 1;
-//static DAVA::Spinlock       _DX9_FrameSync;
 static DAVA::Mutex _DX9_FrameSync;
 
 static void _DX9_ExecuteQueuedCommands();
@@ -52,6 +51,7 @@ static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
 
 static bool _D3D9_DeviceLost = false;
+static DAVA::Thread::Id _DX9_ThreadId = 0;
 
 //------------------------------------------------------------------------------
 
@@ -1756,6 +1756,7 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 static void
 _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
 {
+    _DX9_ThreadId = DAVA::Thread::GetCurrentId();
     _InitDX9();
 
     _DX9_RenderThreadStartedSync.Post();

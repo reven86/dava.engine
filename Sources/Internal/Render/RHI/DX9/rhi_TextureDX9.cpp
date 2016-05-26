@@ -609,11 +609,13 @@ void SetAsDepthStencil(Handle tex)
 
 void ReleaseAll()
 {
+    TextureDX9Pool::Lock();
     for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
     {
         t->Destroy(true);
         t->MarkNeedRestore();
     }
+    TextureDX9Pool::Unlock();
 }
 
 void ReCreateAll()

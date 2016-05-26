@@ -263,11 +263,13 @@ void SetToRHI(Handle ib)
 
 void ReleaseAll()
 {
+    IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
         b->MarkNeedRestore();
     }
+    IndexBufferDX9Pool::Unlock();
 }
 
 void ReCreateAll()
