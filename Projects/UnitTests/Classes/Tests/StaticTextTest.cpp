@@ -184,7 +184,7 @@ DAVA_TESTCLASS (StaticTextTest)
     {
         staticText->SetText(L"  THIS SOFTWARE IS   \u00A0   PROVIDED BY   \u00A0   \n  THE DAVA CONSULTING\n LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
         Vector<WideString> resultStrings;
-        resultStrings.push_back(L"  THIS SOFTWARE IS   \u00A0   PROVIDED BY");
+        resultStrings.push_back(L"  THIS SOFTWARE IS       PROVIDED BY");
         resultStrings.push_back(L"  THE DAVA CONSULTING");
         resultStrings.push_back(L" LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR");
         resultStrings.push_back(L"IMPLIED WARRANTIES");

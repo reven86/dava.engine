@@ -2,6 +2,7 @@
 #define __DAVA_UITEXTFIELDSTBBRIDGE_H__
 
 #include "Base/BaseTypes.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {

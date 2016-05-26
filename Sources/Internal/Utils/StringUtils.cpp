@@ -49,16 +49,13 @@ WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 
     WideString::const_iterator end = string.end();
     for (; it != end; ++it)
     {
+        if (!IsPrintable(*it))
+        {
+            continue;
+        }
+
         switch (*it)
         {
-        case L'\n':
-        case L'\r':
-        case 0x200B: // Zero-width space
-        case 0x200E: // Zero-width Left-to-right zero-width character
-        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            // Skip this characters (remove it)
-            break;
         case L'\t':
             if (tabRule < 0)
             {

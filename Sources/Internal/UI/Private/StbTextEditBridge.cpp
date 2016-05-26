@@ -1,4 +1,5 @@
 #include "StbTextEditBridge.h"
+#include "Debug/DVAssert.h"
 #include "Utils/TextBox.h"
 
 #if __clang__

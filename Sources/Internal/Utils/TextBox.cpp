@@ -1,5 +1,8 @@
 #include "TextBox.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 #include "Utils/StringUtils.h"
+#include "Utils/StringFormat.h"
 
 #define U_COMMON_IMPLEMENTATION
 #define U_STATIC_IMPLEMENTATION
@@ -386,8 +389,12 @@ void TextBox::AddLineRange(uint32 start, uint32 length)
 void TextBox::SetText(const WideString& str, const DirectionMode mode)
 {
     logicalText = str;
-    processedText = str;
 
+    // Replace some characters for better processing
+    // Replace tabs at space character until the renderer will not be able to draw a text columns
+    logicalText.replace(logicalText.begin(), logicalText.end(), L'\t', L' ');
+
+    processedText = str;
     uint32 length = uint32(str.length());
     characters.resize(length);
     for (uint32 i = 0; i < length; ++i)
@@ -507,10 +514,10 @@ void TextBox::CleanUpVisualLines()
         for (uint32 li = line.start; li < limit; ++li)
         {
             Character& ch = GetCharacter(li);
-            char16 c = processedText.at(li);
+            char16& c = processedText.at(li);
 
             // Skip non-printable characters
-            if (!iswprint(c))
+            if (!StringUtils::IsPrintable(c))
             {
                 ch.skip = true;
             }
@@ -520,6 +527,14 @@ void TextBox::CleanUpVisualLines()
                 // Store visual index for erasing
                 uint32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
                 removeLiterals.insert(vi);
+                continue;
+            }
+
+            // Replace some visual representation of characters
+            if (c == 0x00A0) // Non-break space
+            {
+                uint32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
+                line.visualString.at(vi) = L' ';
             }
         }
 

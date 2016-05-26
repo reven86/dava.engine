@@ -133,7 +133,7 @@ inline TextBox::Line& TextBox::GetLine(const uint32 index)
 
 inline uint32 TextBox::GetLinesCount() const
 {
-    return lines.size();
+    return uint32(lines.size());
 }
 
 inline const Vector<TextBox::Character>& TextBox::GetCharacters() const
@@ -158,6 +158,6 @@ inline TextBox::Character& TextBox::GetCharacter(const uint32 index)
 
 inline uint32 TextBox::GetCharactersCount() const
 {
-    return characters.size();
+    return uint32(characters.size());
 }
 }
