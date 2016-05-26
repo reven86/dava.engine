@@ -80,7 +80,7 @@ WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 
 bool IsEmoji(int32 sym)
 {
     // ranges of symbol codes with unicode emojies.
-    static Vector<std::pair<DAVA::int32, DAVA::int32>> ranges = { { 0x2190, 0x21FF }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, { 0xF300, 0x1F64F }, { 0x1F680, 0x1F6FF } };
+    static Vector<std::pair<DAVA::int32, DAVA::int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
     for (auto range : ranges)
     {
         if (sym >= range.first && sym <= range.second)
@@ -109,6 +109,16 @@ bool StringUtils::RemoveEmoji(WideString& string)
         }
         else
         {
+            while (i + 1 < length)
+            {
+                i++;
+                Memcpy(&sym, data + i, sizeof(int32));
+                if (sym != 0x200D && sym != 0xFE0F)
+                {
+                    i--;
+                    break;
+                }
+            }
             isChanged = true;
         }
     }

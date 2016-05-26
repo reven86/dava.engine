@@ -82,6 +82,8 @@ inline bool IsPrintable(char16 t)
     case L'\n': // Line feed
     case L'\r': // Carriage return
     case 0x200B: // Zero-width space
+    case 0x200C: // Zero-width non-joiner
+    case 0x200D: // Zero-width joiner
     case 0x200E: // Zero-width Left-to-right zero-width character
     case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
     case 0x061C: // Arabic letter mark
