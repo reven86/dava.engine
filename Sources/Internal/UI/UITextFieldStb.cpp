@@ -503,16 +503,16 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             {
                 continue;
             }
+            const TextBox::Line& line = tb->GetLine(c.lineIndex);
+            if (line.skip)
+            {
+                continue;
+            }
 
             Rect r;
-            r.x = staticTextOffset.x;
-            r.y = staticTextOffset.y;
-            r.x += c.xoffset;
+            r.x = staticTextOffset.x + c.xoffset + line.xoffset;
+            r.y = staticTextOffset.y + line.yoffset;
             r.dx = c.xadvance;
-
-            const TextBox::Line& line = tb->GetLine(c.lineIndex);
-            r.x += line.xoffset;
-            r.y += line.yoffset;
             r.dy = line.yadvance;
 
             selectionRects.push_back(r);
@@ -528,7 +528,6 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     Rect r;
     r.x = staticTextOffset.x;
     r.y = staticTextOffset.y;
-    r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
     r.dx = DEFAULT_CURSOR_WIDTH;
 
     int32 charsCount = tb->GetCharactersCount();
@@ -538,44 +537,37 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
         CorrectPos(tb, cursorPos, atEnd);
 
         const TextBox::Character& c = tb->GetCharacter(cursorPos);
-        r.x += c.xoffset;
+        const TextBox::Line& line = tb->GetLine(c.lineIndex);
+
+        r.x += c.xoffset + line.xoffset;
         if (atEnd)
         {
             r.x += c.xadvance;
         }
-
-        const TextBox::Line& line = tb->GetLine(c.lineIndex);
-        r.x += line.xoffset;
         r.y += line.yoffset;
         r.dy = line.yadvance;
     }
     else
     {
+        r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
+
         int32 ctrlAlign = control->GetTextAlign();
-        if (ctrlAlign & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
+        if (ctrlAlign & ALIGN_RIGHT)
         {
-            r.x = 0;
+            r.x += control->GetSize().x - r.dx;
         }
-        else if (ctrlAlign & ALIGN_RIGHT)
+        else if (ctrlAlign & ALIGN_HCENTER)
         {
-            r.x = control->GetSize().x - r.dx;
-        }
-        else //if (ctrlAlign & ALIGN_HCENTER)
-        {
-            r.x = (control->GetSize().x - r.dx) * 0.5f;
+            r.x += (control->GetSize().x - r.dx) * 0.5f;
         }
 
-        if (ctrlAlign & ALIGN_TOP)
+        if (ctrlAlign & ALIGN_BOTTOM)
         {
-            r.y = 0;
+            r.y += control->GetSize().y - r.dy;
         }
-        else if (ctrlAlign & ALIGN_BOTTOM)
+        else if (ctrlAlign & ALIGN_VCENTER)
         {
-            r.y = control->GetSize().y - r.dy;
-        }
-        else //if (ctrlAlign & ALIGN_VCENTER)
-        {
-            r.y = (control->GetSize().y - r.dy) * 0.5f;
+            r.y += (control->GetSize().y - r.dy) * 0.5f;
         }
     }
 
@@ -875,8 +867,8 @@ bool TextFieldStbImpl::PasteFromClipboard()
 
 void TextFieldStbImpl::DropLastCursorAndSelection()
 {
-    lastCursorPos = uint32(-1);
-    lastSelStart = uint32(-1);
-    lastSelEnd = uint32(-1);
+    lastCursorPos = INVALID_POS;
+    lastSelStart = INVALID_POS;
+    lastSelEnd = INVALID_POS;
 }
 }

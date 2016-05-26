@@ -494,7 +494,7 @@ void TextBlock::CalculateCacheParams()
     if (isMultilineEnabled)
     {
         // Split text into lines with line breaking algorithm and width limit
-        textBox->Split(multilineWrapMode, &breaks, &charactersSizes, drawSize.dx);
+        textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
         treatMultilineAsSingleLine = textBox->GetLinesCount() == 1;
     }
 
@@ -505,7 +505,7 @@ void TextBlock::CalculateCacheParams()
         {
             textBox->Reorder();
         }
-        textBox->SmartCleanUp();
+        textBox->CleanUpVisualLines();
         visualText = textBox->GetLine(0).visualString;
         textMetrics = font->GetStringMetrics(visualText);
 
@@ -739,7 +739,7 @@ void TextBlock::CalculateCacheParams()
                             renderSize = lastSize;
                             font->SetSize(renderSize);
                             font->GetStringMetrics(visualText, &charactersSizes);
-                            textBox->Split(multilineWrapMode, &breaks, &charactersSizes, drawSize.dx);
+                            textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
                             fontHeight = font->GetFontHeight() + yOffset;
                             textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
@@ -799,7 +799,7 @@ void TextBlock::CalculateCacheParams()
                 renderSize = finalSize;
                 font->SetSize(renderSize);
                 font->GetStringMetrics(visualText, &charactersSizes);
-                textBox->Split(multilineWrapMode, &breaks, &charactersSizes, drawSize.dx);
+                textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
                 fontHeight = font->GetFontHeight() + yOffset;
                 textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
@@ -810,7 +810,7 @@ void TextBlock::CalculateCacheParams()
         {
             textBox->Reorder();
         }
-        textBox->SmartCleanUp();
+        textBox->CleanUpVisualLines();
         const Vector<TextBox::Line>& lines = textBox->GetLines();
 
         // Detect visible lines

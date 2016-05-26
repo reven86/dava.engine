@@ -24,6 +24,8 @@ struct Rect;
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
+    static const uint32 INVALID_POS = uint32(-1);
+
     friend class UITextField;
     TextFieldStbImpl(UITextField* control);
     ~TextFieldStbImpl();
@@ -102,9 +104,9 @@ private:
     Vector<Rect> selectionRects;
     Rect cursorRect;
     Vector2 staticTextOffset;
-    uint32 lastCursorPos = uint32(-1);
-    uint32 lastSelStart = uint32(-1);
-    uint32 lastSelEnd = uint32(-1);
+    uint32 lastCursorPos = INVALID_POS;
+    uint32 lastSelStart = INVALID_POS;
+    uint32 lastSelEnd = INVALID_POS;
 };
 
 } // end namespace DAVA

@@ -1,4 +1,4 @@
-﻿#include "TextBox.h"
+#include "TextBox.h"
 #include "Utils/StringUtils.h"
 
 #define U_COMMON_IMPLEMENTATION
@@ -14,34 +14,39 @@
 #pragma clang diagnostic pop
 #endif
 
+// Disable UTF16<->UTF8<->UTF32 for fast conversion
+#define USE_UTF8_CONVERSION 0
+
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 static_assert(sizeof(DAVA::WideString::value_type) == sizeof(UChar), "Check size of wchar_t and UChar");
 #else
 static_assert(sizeof(DAVA::WideString::value_type) == 4, "Check size of wchar_t equal 4");
 static_assert(sizeof(UChar) == 2, "Check size of UChar equal 2");
+#if USE_UTF8_CONVERSION
 #include <utf8.h>
+#endif
 #endif
 
 namespace DAVA
 {
 using UCharString = BasicString<UChar>;
 
-class TextBoxImpl
+class TextBoxImpl final
 {
 public:
-    TextBoxImpl(TextBox* _tb);
-    TextBoxImpl(TextBox* _tb, const TextBoxImpl& src);
+    TextBoxImpl(TextBox* tb);
+    TextBoxImpl(TextBox* tb, const TextBoxImpl& src);
     TextBoxImpl(const TextBoxImpl& src) = delete;
-    virtual ~TextBoxImpl();
+    ~TextBoxImpl();
 
-    void SetWString(const WideString& str, const TextBox::DirectionMode mode);
+    void SetString(const WideString& str, const TextBox::DirectionMode mode);
     void ChangeDirectionMode(const TextBox::DirectionMode mode);
     void UpdatePara();
     void Shape();
     void ReorderLines();
-    const WideString AsWString() const;
-    const TextBox::Direction GetDirection() const;
-    const TextBox::Direction GetBaseDirection() const;
+    WideString AsString() const;
+    TextBox::Direction GetDirection() const;
+    TextBox::Direction GetBaseDirection() const;
 
 private:
     static UBiDiLevel DirectionModeToBiDiLevel(const TextBox::DirectionMode mode);
@@ -49,40 +54,40 @@ private:
     static WideString ConvertU2W(const UCharString& src);
     static UCharString ConvertW2U(const WideString& src);
 
-    UCharString paraText;
-    UBiDi* para = nullptr;
+    UCharString uString;
+    UBiDi* pararagraph = nullptr;
     TextBox* tb = nullptr;
     UBiDiLevel baseLevel = UBIDI_DEFAULT_LTR;
 };
 
-TextBoxImpl::TextBoxImpl(TextBox* _tb)
-    : tb(_tb)
+TextBoxImpl::TextBoxImpl(TextBox* tb_)
+    : tb(tb_)
 {
-    para = ubidi_open();
-    DVASSERT_MSG(para != nullptr, "Can't alocate new paragraph");
+    pararagraph = ubidi_open();
+    DVASSERT_MSG(pararagraph != nullptr, "Can't alocate new paragraph");
 }
 
-TextBoxImpl::TextBoxImpl(TextBox* _tb, const TextBoxImpl& src)
-    : tb(_tb)
+TextBoxImpl::TextBoxImpl(TextBox* tb_, const TextBoxImpl& src)
+    : tb(tb_)
 {
-    para = ubidi_open();
-    DVASSERT_MSG(para != nullptr, "Can't alocate new paragraph");
-    paraText = src.paraText;
+    pararagraph = ubidi_open();
+    DVASSERT_MSG(pararagraph != nullptr, "Can't alocate new paragraph");
+    uString = src.uString;
     baseLevel = src.baseLevel;
     UpdatePara();
 }
 
 TextBoxImpl::~TextBoxImpl()
 {
-    if (para != nullptr)
+    if (pararagraph != nullptr)
     {
-        ubidi_close(para);
+        ubidi_close(pararagraph);
     }
 }
 
-void TextBoxImpl::SetWString(const WideString& str, const TextBox::DirectionMode mode)
+void TextBoxImpl::SetString(const WideString& str, const TextBox::DirectionMode mode)
 {
-    paraText = ConvertW2U(str);
+    uString = ConvertW2U(str);
     baseLevel = DirectionModeToBiDiLevel(mode);
     UpdatePara();
 }
@@ -95,24 +100,39 @@ void TextBoxImpl::ChangeDirectionMode(const TextBox::DirectionMode mode)
 
 void TextBoxImpl::UpdatePara()
 {
+    if (pararagraph == nullptr)
+    {
+        Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        return;
+    }
+
     UErrorCode errorCode = U_ZERO_ERROR;
-    ubidi_setPara(para, paraText.data(), int32(paraText.length()), baseLevel, nullptr, &errorCode);
+    ubidi_setPara(pararagraph, uString.data(), int32(uString.length()), baseLevel, nullptr, &errorCode);
     if (errorCode != U_ZERO_ERROR)
     {
-        Logger::Error("[TextBox::SetText] errorCode = %d", errorCode);
+        Logger::Error("[TextBox::UpdatePara] errorCode = %d", errorCode);
+        DVASSERT_MSG(false, Format("[TextBox::UpdatePara] errorCode", errorCode).c_str())
     }
 }
 
 void TextBoxImpl::Shape()
 {
+    if (pararagraph == nullptr)
+    {
+        Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        return;
+    }
+
     // Commented options are extended options from ICU 3.6 and 4.2
     // TODO: uncomment for more complex shaping
-    uint32 commonOptions = U_SHAPE_LETTERS_SHAPE /*| U_SHAPE_AGGREGATE_TASHKEEL | U_SHAPE_PRESERVE_PRESENTATION*/;
-    uint32 detectLengthOptions = commonOptions | U_SHAPE_LAMALEF_RESIZE;
-    uint32 shapeOptions = commonOptions | U_SHAPE_LAMALEF_NEAR /*| U_SHAPE_SEEN_TWOCELL_NEAR | U_SHAPE_YEHHAMZA_TWOCELL_NEAR | U_SHAPE_TASHKEEL_REPLACE_BY_TATWEEL*/;
+    static const int32 commonOptions = U_SHAPE_LETTERS_SHAPE /*| U_SHAPE_AGGREGATE_TASHKEEL | U_SHAPE_PRESERVE_PRESENTATION*/;
+    static const int32 detectLengthOptions = commonOptions | U_SHAPE_LAMALEF_RESIZE;
+    static const int32 shapeOptions = commonOptions | U_SHAPE_LAMALEF_NEAR /*| U_SHAPE_SEEN_TWOCELL_NEAR | U_SHAPE_YEHHAMZA_TWOCELL_NEAR | U_SHAPE_TASHKEEL_REPLACE_BY_TATWEEL*/;
 
-    const UChar* text = ubidi_getText(para);
-    const int32 length = ubidi_getLength(para);
+    const UChar* text = ubidi_getText(pararagraph);
+    const int32 length = ubidi_getLength(pararagraph);
 
     UErrorCode errorCode = U_ZERO_ERROR;
     UCharString output(length, 0);
@@ -120,7 +140,7 @@ void TextBoxImpl::Shape()
     if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
     {
         Logger::Error("[TextBox::Shape] shapeArabic2 errorCode = %d", errorCode);
-        DVASSERT_MSG(false, "[TextBox::Shape] shapeArabic2 errorCode");
+        DVASSERT_MSG(false, Format("[TextBox::Shape] shapeArabic errorCode", errorCode).c_str());
     }
 
     // Check new shaped length
@@ -129,11 +149,11 @@ void TextBoxImpl::Shape()
     if (errorCode != U_ZERO_ERROR && errorCode != U_BUFFER_OVERFLOW_ERROR)
     {
         Logger::Error("[TextBox::Shape] shapeArabic1 errorCode = %d", errorCode);
-        DVASSERT_MSG(false, "[TextBox::Shape] shapeArabic1 errorCode");
+        DVASSERT_MSG(false, Format("[TextBox::Shape] detect length errorCode %d", errorCode).c_str());
     }
     if (length > outputLength)
     {
-        // Fix indeces mapping if length of result string reduced
+        // Fix indices mapping if length of result string reduced
         for (int32 i = 0; i < length; ++i)
         {
             TextBox::Character& c = tb->GetCharacter(i);
@@ -148,17 +168,17 @@ void TextBoxImpl::Shape()
     }
     else if (length < outputLength)
     {
-        DVASSERT_MSG(false, "[TextBox::Shape] Unexpected behaviour");
+        DVASSERT_MSG(false, Format("[TextBox::Shape] Unexpected behaviour (%d, %d)", length, outputLength).c_str());
     }
 
     // Store shaped text
-    paraText = output;
+    uString = output;
     UpdatePara();
 }
 
-const DAVA::WideString TextBoxImpl::AsWString() const
+DAVA::WideString TextBoxImpl::AsString() const
 {
-    return ConvertU2W(paraText);
+    return ConvertU2W(uString);
 }
 
 void TextBoxImpl::ReorderLines()
@@ -166,6 +186,13 @@ void TextBoxImpl::ReorderLines()
     Vector<int32> l2v;
     UErrorCode errorCode = U_ZERO_ERROR;
     UBiDi* lpara = ubidi_open();
+    if (lpara == nullptr)
+    {
+        Logger::Error("[TextBox::UpdatePara] pararagraph == nullptr");
+        DVASSERT_MSG(false, "[TextBox::UpdatePara] pararagraph == nullptr");
+        return;
+    }
+
     for (TextBox::Line& line : tb->GetLines())
     {
         if (line.length == 0)
@@ -174,11 +201,11 @@ void TextBoxImpl::ReorderLines()
         }
 
         errorCode = U_ZERO_ERROR;
-        ubidi_setPara(lpara, paraText.data() + line.start, line.length, baseLevel, nullptr, &errorCode);
+        ubidi_setPara(lpara, uString.data() + line.start, line.length, baseLevel, nullptr, &errorCode);
         if (errorCode != U_ZERO_ERROR)
         {
             Logger::Error("[TextBox::ReorderLines] setPara errorCode = %d", errorCode);
-            DVASSERT_MSG(false, "[TextBox::Shape] setPara errorCode");
+            DVASSERT_MSG(false, Format("[TextBox::Shape] setPara errorCode", errorCode).c_str());
         }
 
         // Write reordered string
@@ -188,7 +215,7 @@ void TextBoxImpl::ReorderLines()
         if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
         {
             Logger::Error("[TextBox::ReorderLines] writeReordered errorCode = %d", errorCode);
-            DVASSERT_MSG(false, "[TextBox::ReorderLines] writeReordered errorCode");
+            DVASSERT_MSG(false, Format("[TextBox::ReorderLines] writeReordered errorCode", errorCode).c_str());
         }
 
         line.visualString = ConvertU2W(visString);
@@ -201,7 +228,7 @@ void TextBoxImpl::ReorderLines()
         if (errorCode != U_ZERO_ERROR)
         {
             Logger::Error("[TextBox::ReorderLines] getLogicalMap errorCode = %d", errorCode);
-            DVASSERT_MSG(false, "[TextBox::ReorderLines] getLogicalMap errorCode");
+            DVASSERT_MSG(false, Format("[TextBox::ReorderLines] getLogicalMap errorCode", errorCode).c_str());
         }
 
         // Correct global reordered characters map according local map
@@ -209,21 +236,29 @@ void TextBoxImpl::ReorderLines()
         for (int32 i = 0; i < length; ++i)
         {
             TextBox::Character& c = tb->GetCharacter(li++);
-            c.visualIndex = l2v[i] + line.start; // Make local index global (text)
+            if (l2v[i] >= 0)
+            {
+                c.visualIndex = uint32(l2v[i]) + line.start; // Make local index global (text)
+            }
+            else
+            {
+                c.visualIndex = 0;
+                c.skip = true;
+            }
             c.rtl = (ubidi_getLevelAt(lpara, i) & UBIDI_RTL) == UBIDI_RTL;
         }
     }
     ubidi_close(lpara);
 }
 
-const DAVA::TextBox::Direction TextBoxImpl::GetDirection() const
+TextBox::Direction TextBoxImpl::GetDirection() const
 {
-    return BiDiDirectionToDirection(ubidi_getDirection(para));
+    return BiDiDirectionToDirection(ubidi_getDirection(pararagraph));
 }
 
-const DAVA::TextBox::Direction TextBoxImpl::GetBaseDirection() const
+TextBox::Direction TextBoxImpl::GetBaseDirection() const
 {
-    return BiDiDirectionToDirection(ubidi_getBaseDirection(ubidi_getText(para), ubidi_getLength(para)));
+    return BiDiDirectionToDirection(ubidi_getBaseDirection(ubidi_getText(pararagraph), ubidi_getLength(pararagraph)));
 }
 
 UBiDiLevel TextBoxImpl::DirectionModeToBiDiLevel(const TextBox::DirectionMode mode)
@@ -268,7 +303,7 @@ WideString TextBoxImpl::ConvertU2W(const UCharString& src)
     }
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     return WideString(src);
-#else
+#elif USE_UTF8_CONVERSION
     String tmp;
     tmp.reserve(src.length());
     utf8::utf16to8(src.begin(), src.end(), std::back_inserter(tmp));
@@ -276,6 +311,8 @@ WideString TextBoxImpl::ConvertU2W(const UCharString& src)
     result.reserve(tmp.length());
     utf8::utf8to32(tmp.begin(), tmp.end(), std::back_inserter(result));
     return result;
+#else
+    return WideString(src.begin(), src.end());
 #endif
 }
 
@@ -287,7 +324,7 @@ UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     }
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     return UCharString(src);
-#else
+#elif USE_UTF8_CONVERSION
     String tmp;
     tmp.reserve(src.length());
     utf8::utf32to8(src.begin(), src.end(), std::back_inserter(tmp));
@@ -295,6 +332,8 @@ UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     result.reserve(tmp.length());
     utf8::utf8to16(tmp.begin(), tmp.end(), std::back_inserter(result));
     return result;
+#else
+    return UCharString(src.begin(), src.end());
 #endif
 }
 
@@ -305,17 +344,17 @@ TextBox::Line TextBox::Line::EMPTY = TextBox::Line();
 TextBox::Character TextBox::Character::EMPTY = TextBox::Character();
 
 TextBox::TextBox()
+    : pImpl(new TextBoxImpl(this))
 {
-    pImpl.reset(new TextBoxImpl(this));
 }
 
 TextBox::TextBox(const TextBox& box)
+    : logicalText(box.logicalText)
+    , processedText(box.processedText)
+    , lines(box.lines)
+    , characters(box.characters)
+    , pImpl(new TextBoxImpl(this, *box.pImpl))
 {
-    logicalText = box.logicalText;
-    processedText = box.processedText;
-    lines = box.lines;
-    characters = box.characters;
-    pImpl.reset(new TextBoxImpl(this, *box.pImpl));
 }
 
 TextBox::~TextBox()
@@ -327,18 +366,18 @@ void TextBox::ClearLines()
     lines.clear();
 }
 
-void TextBox::AddLineRange(int32 start, int32 length)
+void TextBox::AddLineRange(uint32 start, uint32 length)
 {
     TextBox::Line l;
-    l.index = int32(lines.size());
+    l.index = uint32(lines.size());
     l.start = start;
     l.length = length;
     l.visualString = processedText.substr(start, length);
     lines.push_back(l);
 
     // Store line index in character
-    int32 limit = start + length;
-    for (int32 i = start; i < limit; ++i)
+    uint32 limit = start + length;
+    for (uint32 i = start; i < limit; ++i)
     {
         characters[i].lineIndex = l.index;
     }
@@ -353,7 +392,7 @@ void TextBox::SetText(const WideString& str, const DirectionMode mode)
     characters.resize(length);
     for (uint32 i = 0; i < length; ++i)
     {
-        Character& c = characters[i];
+        Character& c = characters.at(i);
         c = Character::EMPTY;
         c.logicIndex = i;
         c.visualIndex = i;
@@ -362,7 +401,7 @@ void TextBox::SetText(const WideString& str, const DirectionMode mode)
     ClearLines();
     AddLineRange(0, length);
 
-    pImpl->SetWString(logicalText, mode);
+    pImpl->SetString(logicalText, mode);
 }
 
 void TextBox::ChangeDirectionMode(const DirectionMode mode)
@@ -373,22 +412,20 @@ void TextBox::ChangeDirectionMode(const DirectionMode mode)
 void TextBox::Shape()
 {
     pImpl->Shape();
-    processedText = pImpl->AsWString();
+    processedText = pImpl->AsString();
 }
 
-void TextBox::Split(const WrapMode mode, const Vector<uint8>* breaks, const Vector<float32>* widths, const float32 maxWidth)
+void TextBox::Split(const WrapMode mode, const Vector<uint8>& breaks, const Vector<float32>& widths, const float32 maxWidth)
 {
     ClearLines();
     if (mode == WrapMode::NO_WRAP)
     {
-        AddLineRange(0, int32(processedText.length()));
+        AddLineRange(0, uint32(processedText.length()));
     }
     else
     {
-        DVASSERT_MSG(breaks != nullptr, "Breaks information is nullptr");
-        DVASSERT_MSG(widths != nullptr, "Characters widths information is nullptr");
-        DVASSERT_MSG(breaks->size() == processedText.length(), "Incorrect breaks information");
-        DVASSERT_MSG(widths->size() == processedText.length(), "Incorrect character sizes information");
+        DVASSERT_MSG(breaks.size() == processedText.length(), Format("Incorrect breaks information (%d != %d)", breaks.size(), processedText.length()).c_str());
+        DVASSERT_MSG(widths.size() == processedText.length(), Format("Incorrect character sizes information (%d != %d)", widths.size(), processedText.length()).c_str());
 
         float32 currentWidth = 0;
         uint32 lastPossibleBreak = 0;
@@ -406,8 +443,8 @@ void TextBox::Split(const WrapMode mode, const Vector<uint8>* breaks, const Vect
 
         for (uint32 pos = lineStart; pos < textLength; ++pos)
         {
-            uint8 canBreak = breaks->at(pos);
-            currentWidth += widths->at(pos);
+            uint8 canBreak = breaks.at(pos);
+            currentWidth += widths.at(pos);
 
             // Check that targetWidth defined and currentWidth less than targetWidth.
             // If symbol is whitespace skip it and go to next (add all whitespace to current line)
@@ -444,19 +481,18 @@ void TextBox::Reorder()
     {
         return;
     }
-
     pImpl->ReorderLines();
 }
 
-void TextBox::SmartCleanUp()
+void TextBox::CleanUpVisualLines()
 {
     Set<int32> removeLiterals;
     for (TextBox::Line& line : lines)
     {
-        int32 limit = line.start + line.length;
+        uint32 limit = line.start + line.length;
 
-        // Detect trimmed whitespace and hide it
-        for (int32 li = limit - 1; li >= line.start; --li)
+        // Detect trailing whitespace characters and hide them
+        for (uint32 li = limit - 1; li >= line.start; --li)
         {
             Character& ch = GetCharacter(li);
             if (StringUtils::IsWhitespace(processedText.at(li)))
@@ -468,29 +504,21 @@ void TextBox::SmartCleanUp()
         }
 
         removeLiterals.clear();
-        for (int32 li = line.start; li < limit; ++li)
+        for (uint32 li = line.start; li < limit; ++li)
         {
             Character& ch = GetCharacter(li);
             char16 c = processedText.at(li);
 
             // Skip non-printable characters
-            switch (c)
+            if (!iswprint(c))
             {
-            case L'\n':
-            case L'\r':
-            case 0x200B: // Zero-width space
-            case 0x200E: // Zero-width Left-to-right zero-width character
-            case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-            case 0x061C: // Right-to-left zero-width Arabic character
-                // Skip this characters (remove it)
                 ch.skip = true;
-                break;
             }
 
-            int32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
             if (ch.skip || ch.hiden)
             {
                 // Store visual index for erasing
+                uint32 vi = characters[li].visualIndex - line.start; // Make global index local (line)
                 removeLiterals.insert(vi);
             }
         }
@@ -504,15 +532,17 @@ void TextBox::SmartCleanUp()
     }
 }
 
-void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight, int32 fromLine, int32 linesCount)
+void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight, uint32 fromLine, uint32 linesCount)
 {
-    DVASSERT_MSG(characterSizes.size() == processedText.size(), "Incorrect character sizes information");
+    DVASSERT_MSG(characterSizes.size() == processedText.size(), Format("Incorrect character sizes information (%d != %d)", characterSizes.size(), processedText.size()).c_str());
 
-    int32 lineLimit = fromLine + linesCount;
-    int32 linesSize = int32(lines.size());
-    for (int32 lineIndex = 0; lineIndex < linesSize; ++lineIndex)
+    uint32 lineLimit = fromLine + linesCount;
+    uint32 linesSize = uint32(lines.size());
+    for (uint32 lineIndex = 0; lineIndex < linesSize; ++lineIndex)
     {
         Line& line = lines.at(lineIndex);
+
+        // Do not measure skipped lines
         if (lineIndex < fromLine || lineIndex >= lineLimit)
         {
             line.skip = true;
@@ -527,9 +557,9 @@ void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight,
         line.visiblexadvance = 0.f;
 
         // Generate visual order
-        Vector<int32> vo(line.length, -1);
-        int32 limit = line.start + line.length;
-        for (int32 li = line.start; li < limit; ++li)
+        Vector<uint32> vo(line.length, -1);
+        uint32 limit = line.start + line.length;
+        for (uint32 li = line.start; li < limit; ++li)
         {
             const Character& c = characters.at(li);
             int32 vi = c.visualIndex - line.start; // Make global index local (line)
@@ -537,7 +567,7 @@ void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight,
         }
 
         // Layout
-        for (int32 logInd : vo)
+        for (uint32 logInd : vo)
         {
             Character& c = characters.at(logInd);
             if (c.skip)
@@ -561,12 +591,12 @@ void TextBox::Measure(const Vector<float32>& characterSizes, float32 lineHeight,
     }
 }
 
-const DAVA::TextBox::Direction TextBox::GetDirection() const
+DAVA::TextBox::Direction TextBox::GetDirection() const
 {
     return pImpl->GetDirection();
 }
 
-const TextBox::Direction TextBox::GetBaseDirection() const
+TextBox::Direction TextBox::GetBaseDirection() const
 {
     return pImpl->GetBaseDirection();
 }
