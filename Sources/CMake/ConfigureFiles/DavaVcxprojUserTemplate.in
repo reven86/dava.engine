@@ -3,31 +3,31 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR_DEBUG@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR_RELEASE@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebinfo|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=$(PATH);@DAVA_BINARY_WIN32_DIR_RELWITHDEB@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR_DEBUG@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR_RELEASE@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebinfo|x64'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR_RELWITHDEB@</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>
