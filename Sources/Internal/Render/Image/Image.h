@@ -47,6 +47,7 @@ struct ImageInfo
     PixelFormat format = FORMAT_INVALID;
     uint32 dataSize = 0;
     uint32 mipmapsCount = 0;
+    uint32 faceCount = 0;
 };
 
 class Image : public BaseObject
@@ -61,6 +62,7 @@ public:
 
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
     static Image* CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data);
+    static uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format);
 
     static Image* CreatePinkPlaceholder(bool checkers = true);
     void MakePink(bool checkers = true);

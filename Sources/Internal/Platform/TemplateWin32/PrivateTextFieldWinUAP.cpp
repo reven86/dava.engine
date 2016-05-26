@@ -1136,10 +1136,9 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 
 Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
 {
-    const uint32 pitch = 4 * width;
-    ImageConvert::ConvertImageDirect(FORMAT_BGRA8888, FORMAT_RGBA8888, imageData, width, height, pitch, imageData, width, height, pitch);
-    RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
-    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
+    ScopedPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
+    ImageConvert::SwapRedBlueChannels(imgSrc);
+    return Sprite::CreateFromImage(imgSrc, true, false);
 }
 
 } // namespace DAVA

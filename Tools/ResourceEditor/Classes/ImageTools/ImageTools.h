@@ -51,37 +51,31 @@ struct Channels
     void ReleaseImages();
 };
 
-class ImageTools
+namespace ImageTools
 {
-public:
-    enum eComponentsRGBA
-    {
-        COLOR_RED = 0,
-        COLOR_GREEN,
-        COLOR_BLUE,
-        COLOR_ALPHA,
-    };
-
-    static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
-    static void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality);
-
-    static bool SplitImage(const DAVA::FilePath& pathname);
-
-    static bool MergeImages(const DAVA::FilePath& folder);
-
-    static Channels CreateSplittedImages(DAVA::Image* originalImage);
-
-    static DAVA::Image* CreateMergedImage(const Channels& channes);
-
-    static void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value);
-
-    static QImage FromDavaImage(const DAVA::FilePath& pathname);
-    static QImage FromDavaImage(DAVA::Image* image);
-
-private:
-    static void SaveImage(DAVA::Image* image, const DAVA::FilePath& pathname);
-
-    static DAVA::Image* LoadImage(const DAVA::FilePath& pathname);
+enum eComponentsRGBA
+{
+    COLOR_RED = 0,
+    COLOR_GREEN,
+    COLOR_BLUE,
+    COLOR_ALPHA,
 };
+
+DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
+void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality);
+
+bool SplitImage(const DAVA::FilePath& pathname);
+
+bool MergeImages(const DAVA::FilePath& folder);
+
+Channels CreateSplittedImages(DAVA::Image* originalImage);
+
+DAVA::Image* CreateMergedImage(const Channels& channes);
+
+void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value);
+
+QImage FromDavaImage(const DAVA::FilePath& pathname);
+QImage FromDavaImage(const DAVA::Image* image);
+}
 
 #endif // __IMAGE_TOOLS_H__

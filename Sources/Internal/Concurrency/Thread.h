@@ -191,6 +191,8 @@ private:
     */
     static void ThreadFunction(void* param);
 
+    static void SetCurrentThreadName(const String& str);
+
     Procedure threadFunc;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;

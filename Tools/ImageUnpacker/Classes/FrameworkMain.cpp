@@ -23,7 +23,7 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
 {
     if ((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format))
     {
-        ImageSystem::Instance()->Save(newImagePath, image, image->format);
+        ImageSystem::Save(newImagePath, image, image->format);
     }
     else
     {
@@ -32,7 +32,7 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
         ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format),
                                          savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
 
-        ImageSystem::Instance()->Save(newImagePath, savedImage);
+        ImageSystem::Save(newImagePath, savedImage);
         savedImage->Release();
     }
 }
@@ -54,7 +54,7 @@ void SaveCubemap(const FilePath& newImagePath, const Vector<Image*>& images)
 void UnpackFile(const FilePath& sourceImagePath)
 {
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(sourceImagePath, images);
+    ImageSystem::Load(sourceImagePath, images);
 
     if (images.size() != 0)
     {
@@ -115,10 +115,10 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
             if (pathname.IsEqualToExtension(".png"))
             {
                 Vector<Image*> images;
-                ImageSystem::Instance()->Load(pathname, images);
+                ImageSystem::Load(pathname, images);
 
                 FilePath tgaPathname = FilePath::CreateWithNewExtension(pathname, extension);
-                ImageSystem::Instance()->Save(tgaPathname, images);
+                ImageSystem::Save(tgaPathname, images);
 
                 for_each(images.begin(), images.end(), SafeRelease<Image>);
             }

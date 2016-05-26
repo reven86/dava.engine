@@ -46,6 +46,7 @@ RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::De
 bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
 {
     bool success = false;
+    UpdateCreationDesc(desc);
 
     DVASSERT(desc.size);
     if (desc.size)
@@ -125,13 +126,7 @@ gles2_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     Handle handle = VertexBufferGLES2Pool::Alloc();
     VertexBufferGLES2_t* vb = VertexBufferGLES2Pool::Get(handle);
 
-    if (vb->Create(desc))
-    {
-        VertexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        vb->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (vb->Create(desc) == false)
     {
         VertexBufferGLES2Pool::Free(handle);
         handle = InvalidHandle;

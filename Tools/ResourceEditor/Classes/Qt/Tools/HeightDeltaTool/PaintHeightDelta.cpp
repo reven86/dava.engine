@@ -127,7 +127,7 @@ void Execute(const DAVA::FilePath& targetImagePath, DAVA::float32 refDelta, DAVA
 
     DAVA::Image* imageDelta = CreateHeightDeltaImage(targetImageWidth, targetImageHeight);
     PrepareDeltaImage(croppedHeightmap, imageDelta, targetTerrainHeight, refDelta, pixelColors);
-    DAVA::ImageSystem::Instance()->Save(targetImagePath, imageDelta);
+    DAVA::ImageSystem::Save(targetImagePath, imageDelta);
 
     SafeRelease(croppedHeightmap);
     SafeRelease(imageDelta);

@@ -51,7 +51,6 @@ protected:
     void LoadImageFromUserFile(float rotation, int face);
     bool VerifyFirstImage(DAVA::ImageInfo imgInfo, QString& errorString);
     bool VerifyNextImage(DAVA::ImageInfo imgInfo, QString& errorString);
-    bool IsFormatValid(const DAVA::ImageInfo& info);
     void UpdateFaceInfo();
     void UpdateButtonState();
     bool AnyFaceLoaded();

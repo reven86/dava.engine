@@ -20,6 +20,7 @@ ConcurrentObject<Set<Thread*>>& GetThreadList()
 void Thread::InitMainThread()
 {
     mainThreadId = GetCurrentId();
+    Thread::SetCurrentThreadName("DAVA Engine Main Thread");
 }
 
 bool Thread::IsMainThread()

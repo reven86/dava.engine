@@ -216,7 +216,7 @@ bool Landscape::BuildHeightmap()
     if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image*> imageSet;
-        ImageSystem::Instance()->Load(heightmapPath, imageSet);
+        ImageSystem::Load(heightmapPath, imageSet);
         if (0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))
@@ -940,6 +940,7 @@ void Landscape::AllocateGeometryDataInstancing()
         rhi::VertexBuffer::Descriptor instanceBufferDesc;
         instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
         instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+        instanceBufferDesc.needRestore = false;
 
         InstanceDataBuffer* instanceDataBuffer = new InstanceDataBuffer();
         instanceDataBuffer->bufferSize = instanceBufferDesc.size;

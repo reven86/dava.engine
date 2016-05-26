@@ -588,7 +588,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
         }
 
         DAVA::Vector<DAVA::Image*> davaImages;
-        DAVA::ImageSystem::Instance()->Load(outputPath, davaImages);
+        DAVA::ImageSystem::Load(outputPath, davaImages);
 
         if (davaImages.size() > 0)
         {

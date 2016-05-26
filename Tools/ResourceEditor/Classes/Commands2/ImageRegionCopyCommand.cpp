@@ -44,7 +44,7 @@ void ImageRegionCopyCommand::Undo()
         dst->InsertImage(orig, pos, DAVA::Rect(0, 0, (DAVA::float32)orig->width, (DAVA::float32)orig->height));
         if (!savePath.IsEmpty())
         {
-            DAVA::ImageSystem::Instance()->Save(savePath, dst);
+            DAVA::ImageSystem::Save(savePath, dst);
         }
     }
 }
@@ -56,7 +56,7 @@ void ImageRegionCopyCommand::Redo()
         dst->InsertImage(copy, pos, DAVA::Rect(0, 0, (DAVA::float32)copy->width, (DAVA::float32)copy->height));
         if (!savePath.IsEmpty())
         {
-            DAVA::ImageSystem::Instance()->Save(savePath, dst);
+            DAVA::ImageSystem::Save(savePath, dst);
         }
     }
 }

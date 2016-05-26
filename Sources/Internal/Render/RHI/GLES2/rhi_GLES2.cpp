@@ -70,10 +70,8 @@ static bool EAC_Supported = false;
 static bool DXT_Supported = false;
 static bool Float_Supported = false;
 static bool Half_Supported = false;
-static bool RG16F_Supported = false;
-static bool RGBA16F_Supported = false;
-static bool RG32F_Supported = false;
-static bool RGBA32F_Supported = false;
+static bool RG_Supported = false;
+static bool Short_Int_Supported = false;
 
 static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
@@ -118,12 +116,25 @@ gles2_TextureFormatSupported(TextureFormat format)
         break;
 
     case TEXTURE_FORMAT_A16R16G16B16:
+    case TEXTURE_FORMAT_A32R32G32B32:
+        supported = Short_Int_Supported;
+        break;
+
+    case TEXTURE_FORMAT_RGBA16F:
         supported = Half_Supported;
         break;
 
-    case TEXTURE_FORMAT_A32R32G32B32:
+    case TEXTURE_FORMAT_RGBA32F:
         supported = Float_Supported;
         break;
+
+    case TEXTURE_FORMAT_R16F:
+    case TEXTURE_FORMAT_RG16F:
+        supported = Half_Supported && RG_Supported;
+
+    case TEXTURE_FORMAT_R32F:
+    case TEXTURE_FORMAT_RG32F:
+        supported = Float_Supported && RG_Supported;
 
     case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
@@ -181,16 +192,10 @@ gles_check_GL_extensions()
         ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
         EAC_Supported = ETC2_Supported;
         DXT_Supported = (strstr(ext, "GL_EXT_texture_compression_s3tc") != nullptr) || (strstr(ext, "GL_NV_texture_compression_s3tc") != nullptr);
-        Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
-        Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
 
-        RGBA16F_Supported = strstr(ext, "OES_texture_half_float") != nullptr;
-        RGBA32F_Supported = (strstr(ext, "OES_texture_float") != nullptr) || (strstr(ext, "ARB_texture_float") != nullptr);
-
-        bool hasARBTextureRG = (strstr(ext, "GL_ARB_texture_rg") != nullptr);
-        bool hasEXTTextureRG = (strstr(ext, "EXT_texture_rg") != nullptr);
-        RG16F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA16F_Supported;
-        RG32F_Supported = (hasARBTextureRG || hasEXTTextureRG) && RGBA32F_Supported;
+        Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr || strstr(ext, "ARB_texture_float") != nullptr;
+        Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr || strstr(ext, "ARB_texture_float") != nullptr;
+        RG_Supported = strstr(ext, "EXT_texture_rg") != nullptr || strstr(ext, "ARB_texture_rg") != nullptr;
 
         _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
         _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
@@ -229,6 +234,7 @@ gles_check_GL_extensions()
                 _GLES2_DeviceCaps.is32BitIndicesSupported = true;
                 _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
                 _GLES2_DeviceCaps.isInstancingSupported = true;
+                Short_Int_Supported = true;
             }
 #ifdef __DAVAENGINE_ANDROID__
             if (majorVersion >= 3)
@@ -258,19 +264,10 @@ gles_check_GL_extensions()
                     _GLES2_IsSeamlessCubmapSupported = true;
             }
 
-
-#if defined(GL_R16F) && defined(GL_RG16F)
-            RG16F_Supported = majorVersion >= 3;
-#endif
-#if defined(GL_RGBA16F)
-            RGBA16F_Supported = majorVersion >= 3;
-#endif
-#if defined(GL_R32F) && defined(GL_RG32F)
-            RG32F_Supported = majorVersion >= 3;
-#endif
-#if defined(GL_RGBA32F)
-            RGBA32F_Supported = majorVersion >= 3;
-#endif
+            Float_Supported |= majorVersion >= 3;
+            Half_Supported |= majorVersion >= 3;
+            RG_Supported |= majorVersion >= 3;
+            Short_Int_Supported = true;
         }
     }
 
@@ -585,12 +582,9 @@ void gles2_Initialize(const InitParam& param)
         Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 #if 1
-        if (glDebugMessageControl && glDebugMessageCallback)
-        {
-            glEnable(GL_DEBUG_OUTPUT);
-            glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-            glDebugMessageCallback(&_OGLErrorCallback, 0);
-        }
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+        glDebugMessageCallback(&_OGLErrorCallback, 0);
 
 #endif
         if (_GLES2_IsSeamlessCubmapSupported)
@@ -984,7 +978,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
     case TEXTURE_FORMAT_A16R16G16B16:
         *internalFormat = GL_RGBA;
         *format = GL_RGBA;
-        *type = GL_HALF_FLOAT;
+        *type = GL_UNSIGNED_SHORT;
         *compressed = false;
         success = true;
         break;
@@ -992,7 +986,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
     case TEXTURE_FORMAT_A32R32G32B32:
         *internalFormat = GL_RGBA;
         *format = GL_RGBA;
-        *type = GL_FLOAT;
+        *type = GL_UNSIGNED_INT;
         *compressed = false;
         success = true;
         break;
@@ -1141,7 +1135,6 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         success = true;
         break;
 
-#if defined(GL_R16F)
     case TEXTURE_FORMAT_R16F:
         *internalFormat = GL_R16F;
         *format = GL_RED;
@@ -1149,9 +1142,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
-#if defined(GL_RG16F)
     case TEXTURE_FORMAT_RG16F:
         *internalFormat = GL_RG16F;
         *format = GL_RG;
@@ -1159,9 +1150,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
-#if defined(GL_RGBA16F)
     case TEXTURE_FORMAT_RGBA16F:
         *internalFormat = GL_RGBA16F;
         *format = GL_RGBA;
@@ -1169,9 +1158,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
-#if defined(GL_R32F)
     case TEXTURE_FORMAT_R32F:
         *internalFormat = GL_R32F;
         *format = GL_RED;
@@ -1179,9 +1166,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
-#if defined(GL_RG32F)
     case TEXTURE_FORMAT_RG32F:
         *internalFormat = GL_RG32F;
         *format = GL_RG;
@@ -1189,9 +1174,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
-#if defined(GL_RGBA32F)
     case TEXTURE_FORMAT_RGBA32F:
         *internalFormat = GL_RGBA32F;
         *format = GL_RGBA;
@@ -1199,7 +1182,6 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
         *compressed = false;
         success = true;
         break;
-#endif
 
     default:
         success = false;

@@ -33,48 +33,61 @@ Image::~Image()
     height = 0;
 }
 
+const uint32 BLOCK_SIZE = 4;
+
+uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
+{
+    int32 pixelSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+
+    if (pixelSizeBits > 0)
+    {
+        if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
+            (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
+        {
+            if (width < BLOCK_SIZE || height < BLOCK_SIZE)
+            {
+                uint32 w = Max(width, BLOCK_SIZE);
+                uint32 h = Max(height, BLOCK_SIZE);
+                return (w * h * pixelSizeBits / 8);
+            }
+            else
+            {
+                int32 pix = (pixelSizeBits < 8) ? BLOCK_SIZE : pixelSizeBits;
+                return (width * height * pix / 8);
+            }
+        }
+        else
+        {
+            return (width * height * pixelSizeBits / 8);
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    Image* image = new Image();
-    image->width = width;
-    image->height = height;
-    image->format = format;
+    uint32 size = GetSizeInBytes(width, height, format);
 
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    if (formatSize ||
-        (format >= FORMAT_DXT1 && format <= FORMAT_DXT1A) ||
-        (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
+    if (size > 0)
     {
-        //workaround, because formatSize is not designed for formats with 4 bits per pixel
-        image->dataSize = width * height * formatSize / 8;
-
-        if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
-            (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
-        {
-            uint32 dSize = (formatSize / 8) == 0 ? (width * height) / 2 : width * height;
-            if (width < 4 || height < 4) // size lower than  block's size
-            {
-                uint32 minvalue = width < height ? width : height;
-                uint32 maxvalue = width > height ? width : height;
-                minvalue = minvalue < 4 ? 4 : minvalue;
-                maxvalue = maxvalue < 4 ? 4 : maxvalue;
-                dSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) * minvalue * maxvalue;
-                dSize /= 8;
-            }
-            image->dataSize = dSize;
-        }
-
+        Image* image = new Image();
+        image->width = width;
+        image->height = height;
+        image->format = format;
+        image->dataSize = size;
         image->data = new uint8[image->dataSize];
+        return image;
     }
     else
     {
         Logger::Error("[Image::Create] trying to create image with wrong format");
-        SafeRelease(image);
+        return nullptr;
     }
-
-    return image;
 }
 
 Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data)
@@ -82,10 +95,7 @@ Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, co
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Image* image = Image::Create(width, height, format);
-    if (!image)
-        return NULL;
-
-    if (data)
+    if (image != nullptr && data != nullptr)
     {
         Memcpy(image->data, data, image->dataSize);
     }
@@ -402,7 +412,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 bool Image::Save(const FilePath& path) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
+    return ImageSystem::Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
 
 void Image::FlipHorizontal()
