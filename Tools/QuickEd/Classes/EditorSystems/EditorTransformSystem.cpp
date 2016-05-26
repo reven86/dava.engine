@@ -338,8 +338,11 @@ Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPai
     magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
 
     const float32 border = borderInParentToMagnet[axis];
-    float32 requiredSizeToMagnetToBorders = 5 * border;
-    if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+    //we will not magnet if control is less than 5 more than magnet distance
+    float32 requiredSizeToMagnetToBorders = 5.0f * border;
+    float32 parentSize = parentGD->GetUnrotatedRect().GetSize()[axis];
+    parentSize = parentSize / parentGD->scale[axis];
+    if (parentSize > requiredSizeToMagnetToBorders)
     {
         const float32 borderShare = border / parentBox.GetSize()[axis];
         magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
