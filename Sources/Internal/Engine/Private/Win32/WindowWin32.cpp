@@ -17,48 +17,6 @@ namespace DAVA
 {
 namespace Private
 {
-namespace
-{
-Vector<std::pair<HWND, WindowWin32*>>* hwndToThisMapping = nullptr;
-
-WindowWin32* ThisFromHWND(HWND hwnd)
-{
-    if (hwndToThisMapping != nullptr)
-    {
-        auto it = std::find_if(hwndToThisMapping->cbegin(), hwndToThisMapping->cend(), [hwnd](const std::pair<HWND, WindowWin32*>& o) -> bool {
-            return hwnd == o.first;
-        });
-        return it->second;
-    }
-    return nullptr;
-}
-
-void CreateMappingHWNDtoThis(WindowWin32* pthis, HWND hwnd)
-{
-    if (hwndToThisMapping == nullptr)
-    {
-        hwndToThisMapping = new Vector<std::pair<HWND, WindowWin32*>>;
-    }
-
-    hwndToThisMapping->emplace_back(hwnd, pthis);
-}
-
-void DeleteMappingHWNDtoThis(WindowWin32* w, HWND hwnd)
-{
-    auto it = std::find_if(hwndToThisMapping->cbegin(), hwndToThisMapping->cend(), [hwnd](const std::pair<HWND, WindowWin32*>& o) -> bool {
-        return hwnd == o.first;
-    });
-    //DVASSERT(it != hwndToThisMapping->cend());
-    hwndToThisMapping->erase(it);
-
-    if (hwndToThisMapping->empty())
-    {
-        delete hwndToThisMapping;
-        hwndToThisMapping = nullptr;
-    }
-}
-
-} // anonimous namespace
 
 bool WindowWin32::windowClassRegistered = false;
 const wchar_t WindowWin32::windowClassName[] = L"DAVA_WND_CLASS";
@@ -403,20 +361,19 @@ LRESULT CALLBACK WindowWin32::WndProcStart(HWND hwnd, UINT message, WPARAM wpara
     {
         CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
         WindowWin32* pthis = static_cast<WindowWin32*>(cs->lpCreateParams);
-        CreateMappingHWNDtoThis(pthis, hwnd);
+        SetWindowLongPtrW(hwnd, 0, reinterpret_cast<LONG_PTR>(pthis));
         pthis->hwnd = hwnd;
     }
 
     // NOTE: first message coming to wndproc is not always WM_NCCREATE
     // It can be e.g. WM_GETMINMAXINFO, so do not handle all messages before WM_NCCREATE
     LRESULT lresult = 0;
-    WindowWin32* pthis = ThisFromHWND(hwnd);
+    WindowWin32* pthis = reinterpret_cast<WindowWin32*>(GetWindowLongPtrW(hwnd, 0));
     if (pthis != nullptr)
     {
         lresult = pthis->WindowProc(message, wparam, lparam, isHandled);
         if (message == WM_NCDESTROY)
         {
-            DeleteMappingHWNDtoThis(pthis, hwnd);
             isHandled = false;
         }
     }
@@ -442,11 +399,11 @@ bool WindowWin32::RegisterWindowClass()
         wcex.style = CS_HREDRAW | CS_VREDRAW;
         wcex.lpfnWndProc = &WndProcStart;
         wcex.cbClsExtra = 0;
-        wcex.cbWndExtra = 0;
+        wcex.cbWndExtra = sizeof(void*); // Reserve room to store 'this' pointer
         wcex.hInstance = CoreWin32::Win32AppInstance();
         wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
         wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wcex.hbrBackground = reinterpret_cast<HBRUSH>(::GetStockObject(HOLLOW_BRUSH));
+        wcex.hbrBackground = nullptr;
         wcex.lpszMenuName = nullptr;
         wcex.lpszClassName = windowClassName;
         wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
