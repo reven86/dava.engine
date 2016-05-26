@@ -67,18 +67,17 @@ public:
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
-    ColorControl* colorControl = nullptr; //weak pointer
+    ScopedPtr<UIControl> colorControl;
 };
 
 GridControl::GridControl()
+    : colorControl(new ColorControl)
 {
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetSprite("~res:/Gfx/GrayGrid", 0);
-    colorControl = new ColorControl();
-    ScopedPtr<UIControl> control(colorControl);
-    control->SetName("Color control");
+    colorControl->SetName("Color control");
 
-    UIControl::AddControl(control);
+    UIControl::AddControl(colorControl);
 }
 
 void GridControl::SetSize(const Vector2& size)
