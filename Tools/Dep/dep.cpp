@@ -5,6 +5,12 @@
 #include <vector>
 #include <cstdint>
 
+#ifdef _MSC_VER
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 static const uint32_t crc32_tab[256] =
 {
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
@@ -275,7 +281,7 @@ int main(int argc, const char* argv[])
                 {
                     string pack = packs[0];
 
-                    cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL);" << '\n';
+                    cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL);" << '\n';
                     cout << "CREATE TABLE IF NOT EXISTS dependency (key INTEGER PRIMARY KEY, pack TEXT NOT NULL, depends TEXT NOT NULL, FOREIGN KEY(depends) REFERENCES packs(name));" << '\n';
                     cout << "CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
 
@@ -297,7 +303,25 @@ int main(int argc, const char* argv[])
                         hashfile.close();
                     }
 
-                    cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "');" << '\n';
+                    string packfile = hashpath;
+                    packfile.replace(packfile.find(".hash"), 5, ".pack");
+
+                    streamsize size = ifstream(packfile, ios_base::ate | ios_base::binary).tellg();
+                    if (size == -1)
+                    {
+                        cerr << "can't open file: " << packfile << '\n';
+                        char cwd[512] = { 0 };
+                        getcwd(cwd, sizeof(cwd));
+                        cerr << "cwd: " << cwd << '\n';
+                        cerr << "params: " << '\n';
+                        for (int i = 0; i < argc; ++i)
+                        {
+                            cerr << argv[i] << ' ';
+                        }
+                        exit(EXIT_FAILURE);
+                    }
+
+                    cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "', '" << size << "');" << '\n';
 
                     for (size_t i = 1; i < packs.size(); ++i)
                     {
