@@ -117,22 +117,29 @@ void UIInputSystem::OnControlInvisible(UIControl* control)
 
 void UIInputSystem::HandleEvent(UIEvent* event)
 {
+    bool processed = false;
+
     if (currentScreen)
     {
         UIEvent::Phase phase = event->phase;
 
         if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT)
         {
-            HandleKeyEvent(event);
+            processed = HandleKeyEvent(event);
         }
         else if (phase == UIEvent::Phase::BEGAN || phase == UIEvent::Phase::DRAG || phase == UIEvent::Phase::ENDED || phase == UIEvent::Phase::CANCELLED)
         {
-            HandleTouchEvent(event);
+            processed = HandleTouchEvent(event);
         }
         else
         {
-            HandleOtherEvent(event); // joypad, geasture, mouse wheel
+            processed = HandleOtherEvent(event); // joypad, geasture, mouse wheel
         }
+    }
+
+    if (!processed)
+    {
+        notProcessedEventSignal.Emit(event);
     }
 
     auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), [this](UIEvent& ev) {
@@ -348,7 +355,7 @@ void UIInputSystem::PerformActionOnFocusedControl()
     PerformActionOnControl(focusSystem->GetFocusedControl());
 }
 
-void UIInputSystem::HandleTouchEvent(UIEvent* event)
+bool UIInputSystem::HandleTouchEvent(UIEvent* event)
 {
     DVASSERT(event->phase == UIEvent::Phase::BEGAN || event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::ENDED || event->phase == UIEvent::Phase::CANCELLED);
 
@@ -380,14 +387,19 @@ void UIInputSystem::HandleTouchEvent(UIEvent* event)
         positionOfTouchWhenTouchBegan = eventToHandle->point;
     }
 
+    bool processed = false;
     if (modalControl.Valid())
     {
         RefPtr<UIControl> control = modalControl;
-        control->SystemInput(eventToHandle);
+        processed = control->SystemInput(eventToHandle);
     }
-    else if (!popupContainer->SystemInput(eventToHandle))
+    else
     {
-        currentScreen->SystemInput(eventToHandle);
+        processed = popupContainer->SystemInput(eventToHandle);
+        if (!processed)
+        {
+            processed = currentScreen->SystemInput(eventToHandle);
+        }
     }
 
     if (phase == UIEvent::Phase::ENDED)
@@ -407,9 +419,11 @@ void UIInputSystem::HandleTouchEvent(UIEvent* event)
         }
         focusedControlWhenTouchBegan = nullptr;
     }
+
+    return processed;
 }
 
-void UIInputSystem::HandleKeyEvent(UIEvent* event)
+bool UIInputSystem::HandleKeyEvent(UIEvent* event)
 {
     UIEvent::Phase phase = event->phase;
     DVASSERT(phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT);
@@ -427,6 +441,7 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = modalControl.Valid() ? modalControl.Get() : currentScreen;
 
+    bool processed = false;
     if (focusedControl != nullptr || rootControl != nullptr)
     {
         UIControl* c = focusedControl != nullptr ? focusedControl : rootControl;
@@ -436,6 +451,7 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
             current = c;
             if (current->SystemProcessInput(event))
             {
+                processed = true;
                 break;
             }
 
@@ -469,19 +485,24 @@ void UIInputSystem::HandleKeyEvent(UIEvent* event)
             globalActions.Perform(action);
         }
     }
+
+    return processed;
 }
 
-void UIInputSystem::HandleOtherEvent(UIEvent* event)
+bool UIInputSystem::HandleOtherEvent(UIEvent* event)
 {
     if (modalControl.Valid())
     {
         RefPtr<UIControl> control = modalControl;
-        control->SystemInput(event);
+        return control->SystemInput(event);
     }
-    else if (!popupContainer->SystemInput(event))
+
+    if (popupContainer->SystemInput(event))
     {
-        currentScreen->SystemInput(event);
+        return true;
     }
+
+    return currentScreen->SystemInput(event);
 }
 
 void UIInputSystem::UpdateModalControl()

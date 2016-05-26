@@ -94,10 +94,12 @@ public:
     static const FastName ACTION_PERFORM;
     static const FastName ACTION_ESCAPE;
 
+    DAVA::Signal<UIEvent*> notProcessedEventSignal;
+
 private:
-    void HandleTouchEvent(UIEvent* event);
-    void HandleKeyEvent(UIEvent* event);
-    void HandleOtherEvent(UIEvent* event);
+    bool HandleTouchEvent(UIEvent* event);
+    bool HandleKeyEvent(UIEvent* event);
+    bool HandleOtherEvent(UIEvent* event);
 
     void UpdateModalControl();
     void CancelInputForAllOutsideChildren(UIControl* root);
