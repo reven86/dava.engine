@@ -36,7 +36,6 @@ VertexBufferGLES2_t
     uint32 isMapped : 1;
     uint32 updatePending : 1;
 };
-RHI_IMPL_RESOURCE(VertexBufferGLES2_t, VertexBuffer::Descriptor);
 
 typedef ResourcePool<VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true, 3072);
@@ -277,7 +276,15 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return VertexBufferGLES2_t::NeedRestoreCount();
+    return 0;
+    unsigned result = 0;
+    VertexBufferGLES2Pool::Lock();
+    for (auto i = VertexBufferGLES2Pool::Begin(), e = VertexBufferGLES2Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    VertexBufferGLES2Pool::Unlock();
+    return result;
 }
 }
 

@@ -27,7 +27,6 @@ public:
     IDirect3DIndexBuffer9* buffer;
     unsigned isMapped : 1;
 };
-RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor);
 
 typedef ResourcePool<IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true);
@@ -281,7 +280,14 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferDX9_t::NeedRestoreCount();
+    unsigned result = 0;
+    IndexBufferDX9Pool::Lock();
+    for (auto i = IndexBufferDX9Pool::Begin(), e = IndexBufferDX9Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    IndexBufferDX9Pool::Unlock();
+    return result;
 }
 }
 

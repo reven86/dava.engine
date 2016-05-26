@@ -43,7 +43,6 @@ public:
     unsigned isDepthStencil : 1;
     unsigned isMapped : 1;
 };
-RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor);
 
 TextureDX9_t::TextureDX9_t()
     : width(0)
@@ -635,7 +634,14 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureDX9_t::NeedRestoreCount();
+    unsigned result = 0;
+    TextureDX9Pool::Lock();
+    for (auto i = TextureDX9Pool::Begin(), e = TextureDX9Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    TextureDX9Pool::Unlock();
+    return result;
 }
 }
 

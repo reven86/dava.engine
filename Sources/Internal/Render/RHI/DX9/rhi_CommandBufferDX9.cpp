@@ -1266,6 +1266,11 @@ _DX9_ExecuteQueuedCommands()
     unsigned frame_n = 0;
     bool do_render = true;
 
+    if (rhi::NeedRestoreResources())
+    {
+        _RejectAllFrames();
+    }
+
     _DX9_FrameSync.Lock();
     if (_DX9_Frame.size())
     {

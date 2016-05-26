@@ -39,7 +39,6 @@ public:
     uint32 updatePending : 1;
     uint32 isUPBuffer : 1;
 };
-RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor);
 
 typedef ResourcePool<IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true, 3072);
@@ -343,7 +342,14 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferGLES2_t::NeedRestoreCount();
+    unsigned result = 0;
+    IndexBufferGLES2Pool::Lock();
+    for (auto i = IndexBufferGLES2Pool::Begin(), e = IndexBufferGLES2Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    IndexBufferGLES2Pool::Unlock();
+    return result;
 }
 
 } // namespace IndexBufferGLES

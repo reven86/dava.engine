@@ -55,7 +55,6 @@ public:
     SamplerState::Descriptor::Sampler samplerState;
     uint32 forceSetSamplerState : 1;
 };
-RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor);
 
 TextureGLES2_t::TextureGLES2_t()
     : uid(0)
@@ -915,7 +914,14 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureGLES2_t::NeedRestoreCount();
+    unsigned result = 0;
+    TextureGLES2Pool::Lock();
+    for (auto i = TextureGLES2Pool::Begin(), e = TextureGLES2Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    TextureGLES2Pool::Unlock();
+    return result;
 }
 
 } // namespace TextureGLES2

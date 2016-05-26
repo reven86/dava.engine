@@ -1,12 +1,9 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX9.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_dx9.h"
+#include "../Common/rhi_Pool.h"
+#include "rhi_DX9.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "_dx9.h"
 
 namespace rhi
 {
@@ -27,7 +24,6 @@ public:
     IDirect3DVertexBuffer9* buffer;
     unsigned isMapped : 1;
 };
-RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor);
 
 typedef ResourcePool<VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferDX9Pool;
 
@@ -282,7 +278,14 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return VertexBufferDX9_t::NeedRestoreCount();
+    unsigned result = 0;
+    VertexBufferDX9Pool::Lock();
+    for (auto i = VertexBufferDX9Pool::Begin(), e = VertexBufferDX9Pool::End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    VertexBufferDX9Pool::Unlock();
+    return result;
 }
 }
 

@@ -1,5 +1,4 @@
-#ifndef __RHI_POOL_H__
-#define __RHI_POOL_H__
+#pragma once
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
@@ -297,35 +296,16 @@ public:
 
     void MarkNeedRestore()
     {
-        if (!needRestore && creationDesc.needRestore)
-        {
-            needRestore = true;
-            ++needRestoreCount;
-        }
-    }
-    void MarkRestored()
-    {
-        if (needRestore)
-        {
-            needRestore = false;
-            DVASSERT(needRestoreCount);
-            --needRestoreCount;
-        }
+        needRestore = creationDesc.needRestore;
     }
 
-    static unsigned NeedRestoreCount()
+    void MarkRestored()
     {
-        return needRestoreCount;
+        needRestore = false;
     }
 
 private:
     DT creationDesc;
     bool needRestore;
-    static unsigned needRestoreCount;
 };
-
-#define RHI_IMPL_RESOURCE(T, DT) \
-template <> unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
-
-} // namespace rhi
-#endif // __RHI_POOL_H__
+}
