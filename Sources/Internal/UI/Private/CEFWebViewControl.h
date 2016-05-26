@@ -74,6 +74,7 @@ private:
     void AllowURLLoading(const String& url, int64 frameID);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
+    void OnMouseWheel(UIEvent* input);
     void OnKey(UIEvent* input);
 
     IMPLEMENT_REFCOUNTING(WebViewControl);
