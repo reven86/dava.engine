@@ -291,7 +291,7 @@ FPROG_BEGIN
             #endif
 
             #if VIEW_SPECULAR
-                color += (FP_IN(varSpecularColor) * textureColor0.a) * lightColor0;
+                color += min10float3( (FP_IN(varSpecularColor) * textureColor0.a) * lightColor0 );
             #endif
     
         #elif NORMALIZED_BLINN_PHONG
