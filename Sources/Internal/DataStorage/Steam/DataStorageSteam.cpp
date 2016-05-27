@@ -9,7 +9,6 @@
 #include "steam/steam_api.h"
 namespace DAVA
 {
-
 IDataStorage* DataStorage::Create()
 {
     return new DataStorageSteam();
