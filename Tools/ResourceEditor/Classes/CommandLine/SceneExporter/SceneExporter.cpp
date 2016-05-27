@@ -539,7 +539,7 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
 
     DAVA::FilePath compressedTexturePath = descriptor.CreateMultiMipPathnameForGPU(gpu);
 
-    DAVA::eErrorCode loadError = DAVA::ImageSystem::LoadWithoutDecompession(compressedTexturePath, loadedImages);
+    DAVA::eErrorCode loadError = DAVA::ImageSystem::Load(compressedTexturePath, loadedImages);
     if (loadError != DAVA::eErrorCode::SUCCESS || loadedImages.empty())
     {
         Logger::Error("Can't load %s", compressedTexturePath.GetStringValue().c_str());
