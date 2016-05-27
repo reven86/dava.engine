@@ -1,3 +1,3 @@
 Chromium Embedded Framework
 https://bitbucket.org/chromiumembedded/cef/wiki/BranchesAndBuilding.md
-Version: 2623
+Version: 2526

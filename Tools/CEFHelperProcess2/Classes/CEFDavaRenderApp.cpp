@@ -55,11 +55,3 @@ bool CEFDavaRenderApp::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
     }
     return false;
 }
-
-void CEFDavaRenderApp::OnBeforeCommandLineProcessing(const CefString& process_type,
-                                                     CefRefPtr<CefCommandLine> command_line)
-{
-    // Disable GPU because
-    command_line->AppendSwitch("disable-gpu");
-    command_line->AppendSwitch("disable-gpu-compositing");
-}

@@ -17,9 +17,6 @@ class CEFDavaRenderApp : public CefApp, public CefRenderProcessHandler
                                   CefProcessId source_process,
                                   CefRefPtr<CefProcessMessage> message) override;
 
-    void OnBeforeCommandLineProcessing(const CefString& process_type,
-                                       CefRefPtr<CefCommandLine> command_line) override;
-
     IMPLEMENT_REFCOUNTING(CEFDavaRenderApp)
     std::string allowedUrl;
 };
