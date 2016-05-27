@@ -68,7 +68,7 @@ Image* CreateTopLevelImage(const FilePath& imagePathname)
 {
     Image* image = NULL;
     Vector<Image*> imageSet;
-    ImageSystem::Instance()->Load(imagePathname, imageSet);
+    ImageSystem::Load(imagePathname, imageSet);
     if (0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
@@ -224,5 +224,5 @@ void SaveTextureToFile(Texture* texture, const FilePath& path)
 
 void SaveImageToFile(Image* image, const FilePath& path)
 {
-    ImageSystem::Instance()->Save(path, image);
+    ImageSystem::Save(path, image);
 }

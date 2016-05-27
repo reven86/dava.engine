@@ -62,27 +62,31 @@ void abort_(const char* s, ...)
 }
 
 LibPngHelper::LibPngHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_PNG, // image format type
+      "PNG", // image format name
+      { ".png" }, // image format extension
+      { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 }) // supported pixel formats
 {
-    name.assign("PNG");
-    supportedExtensions.push_back(".png");
-    supportedFormats = { { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 } };
 }
 
-bool LibPngHelper::CanProcessFile(File* infile) const
+bool LibPngHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
-    if (nullptr == infile)
+    if (infile)
+    {
+        unsigned char sig[8];
+        infile->Read(sig, 8);
+        bool retValue = (0 != png_check_sig(sig, 8));
+        infile->Seek(0, File::SEEK_FROM_START);
+        return retValue;
+    }
+    else
     {
         return false;
     }
-
-    unsigned char sig[8];
-    infile->Read(sig, 8);
-    bool retValue = (0 != png_check_sig(sig, 8));
-    infile->Seek(0, File::SEEK_FROM_START);
-    return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
@@ -254,9 +258,9 @@ eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-ImageInfo LibPngHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
-    if (nullptr == infile)
+    if (!infile)
     {
         return ImageInfo();
     }
@@ -392,6 +396,7 @@ ImageInfo LibPngHelper::GetImageInfo(File* infile) const
 
     info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
     return info;
 }
 

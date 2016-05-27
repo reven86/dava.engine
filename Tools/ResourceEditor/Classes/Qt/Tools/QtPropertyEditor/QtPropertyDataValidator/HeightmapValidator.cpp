@@ -31,11 +31,11 @@ bool HeightMapValidator::ValidateInternal(const QVariant& v)
     else
     {
         auto extension = path.GetExtension();
-        auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+        auto imageFormat = DAVA::ImageSystem::GetImageFormatForExtension(extension);
 
         if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
         {
-            auto imgSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imageFormat);
+            auto imgSystem = DAVA::ImageSystem::GetImageFormatInterface(imageFormat);
             DAVA::Size2i size = imgSystem->GetImageInfo(path).GetImageSize();
             if (size.dx != size.dy)
             {
@@ -52,7 +52,7 @@ bool HeightMapValidator::ValidateInternal(const QVariant& v)
             }
 
             DAVA::Vector<DAVA::Image*> imageVector;
-            DAVA::ImageSystem::Instance()->Load(path, imageVector);
+            DAVA::ImageSystem::Load(path, imageVector);
             DVASSERT(imageVector.size());
 
             DAVA::PixelFormat format = imageVector[0]->GetPixelFormat();
