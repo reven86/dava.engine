@@ -473,7 +473,6 @@ std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
         Memcpy(pvrFile->compressedData.data() + offset, image->data, image->dataSize);
         offset += image->dataSize;
 
-        DVASSERT(image->mipmapLevel == mip++);
         DVASSERT(image->format == zeroMip->format);
     }
 
