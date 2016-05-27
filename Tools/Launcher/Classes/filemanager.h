@@ -10,7 +10,6 @@ QString GetTempDirectory();
 QString GetLauncherDirectory();
 QString GetSelfUpdateTempDirectory();
 QString GetTempDownloadFilePath();
-QString GetPackageInfoFilePath();
 
 bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data);
 bool DeleteDirectory(const QString& path);

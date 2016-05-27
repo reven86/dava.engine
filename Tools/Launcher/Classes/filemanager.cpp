@@ -69,11 +69,6 @@ QString GetLauncherDirectory()
     return path + "/";
 }
 
-QString GetPackageInfoFilePath()
-{
-    return GetLauncherDirectory() + "Launcher.packageInfo";
-}
-
 bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
 {
     QFile file(filePath);
@@ -139,7 +134,7 @@ EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
         return entryList;
     }
 #ifdef Q_OS_WIN
-    QString infoFilePath = GetPackageInfoFilePath();
+    QString infoFilePath = outDir.absoluteFilePath("Launcher.packageInfo");
     bool moveFilesFromInfoList = QFile::exists(infoFilePath);
     QStringList archiveFiles;
     if (moveFilesFromInfoList)
