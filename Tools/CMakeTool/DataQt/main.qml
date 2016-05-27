@@ -39,10 +39,9 @@ ApplicationWindow {
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
         property string historyStr;
-        property var sourceFolderCurrentIndex;
+        property var lastUsedSourceFolder;
         Component.onDestruction: {
             historyStr = JSON.stringify(historyToSave)
-            sourceFolderCurrentIndex = rowLayout_sourceFolder.item.currentIndex;
             historyVersion = applicationWindow.historyVersion;
         }
         property int historyVersion: -1
@@ -59,29 +58,18 @@ ApplicationWindow {
     }
 
     function loadHistory() {
+        history = [];
+        historyToSave = [];
+
         if(settings.historyVersion === historyVersion) {
-            try {
-                history = JSON.parse(settings.historyStr);
-            } catch(e) {
-                history = [];
-            }
-        } else {
-            history = [];
+            history = JSON.parse(settings.historyStr);
         }
 
-        historyToSave = [];
-        if(history && Array.isArray(history) && history.length > 0) {
-            for(var i = 0, length = history.length; i < length; ++i) {
-                if(history[i].source) {
-                    rowLayout_sourceFolder.item.addString(history[i].source)
-                } else {
-                    history = [];
-                    return;
-                }
-            }
-            //make a deep copy
-            historyToSave = JSON.parse(JSON.stringify(history));
+        for(var i = 0, length = history.length; i < length; ++i) {
+            rowLayout_sourceFolder.item.addString(history[i].source)
         }
+        //make a deep copy
+        historyToSave = JSON.parse(JSON.stringify(history));
     }
 
     function onCurrentProjectChaged(index) {
@@ -96,6 +84,7 @@ ApplicationWindow {
     function addProjectToHistory() {
         var found = false;
         var source = rowLayout_sourceFolder.path;
+        settings.lastUsedSourceFolder = source;
         source = fileSystemHelper.NormalizePath(source);
         var i = 0;
         for(var length = historyToSave.length; i < length && !found; ++i) {
@@ -190,11 +179,13 @@ ApplicationWindow {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
             loadHistory();
-            var currentIndex = settings.sourceFolderCurrentIndex;
-            if(currentIndex !== undefined)
-            {
-                rowLayout_sourceFolder.item.currentIndex = currentIndex;
-                onCurrentProjectChaged(currentIndex)
+            var lastSource = settings.lastUsedSourceFolder;
+            for(var i = 0, length = history.length; i < length; ++i) {
+                if(history[i].source === lastSource) {
+                    rowLayout_sourceFolder.item.currentIndex = i;
+                    onCurrentProjectChaged(i)
+                    break;
+                }
             }
         }
         catch(error) {

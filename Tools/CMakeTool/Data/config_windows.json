@@ -87,7 +87,7 @@
                     "name": "Unity build",
                     "type": "checkbox",
                     "substring number": 2,
-                    "value": "Unibuild"
+                    "value": "UnityBuild"
                 }
             ]
         }
