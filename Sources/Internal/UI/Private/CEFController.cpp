@@ -55,8 +55,7 @@ CEFControllerImpl::CEFControllerImpl()
     // Restore name only on Main Thread
     if (result && Thread::IsMainThread())
     {
-        // Restore name through InitMainThread
-        Thread::InitMainThread();
+        Thread::SetCurrentThreadName(Thread::GetMainThreadName());
     }
 
     // Register custom url scheme for dava-based applications

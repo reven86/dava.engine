@@ -168,6 +168,16 @@ public:
     static void InitMainThread();
 
     /**
+    \brief gets main thread name
+    */
+    static const char* GetMainThreadName();
+
+    /**
+    \brief sets name of current thread
+    */
+    static void SetCurrentThreadName(const String& str);
+
+    /**
     \brief bind current thread to specified processor. Thread cannot be run on other processors.
     */
     bool BindToProcessor(unsigned proc_n);
@@ -190,8 +200,6 @@ private:
     \brief Function which processes in separate thread. Used to launch user defined code and handle state.
     */
     static void ThreadFunction(void* param);
-
-    static void SetCurrentThreadName(const String& str);
 
     Procedure threadFunc;
     Atomic<eThreadState> state;
