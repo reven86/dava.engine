@@ -9,6 +9,7 @@
 #include "Input/InputSystem.h"
 #include "UI/Private/CEFWebViewControl.h"
 #include "UI/UIWebView.h"
+#include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
@@ -338,6 +339,7 @@ void WebViewControl::Input(UIEvent* currentInput)
         }
         break;
     case DAVA::UIEvent::Device::KEYBOARD:
+        OnKey(currentInput);
         break;
     case DAVA::UIEvent::Device::TOUCH_SURFACE:
         break;
@@ -350,6 +352,11 @@ void WebViewControl::Input(UIEvent* currentInput)
 
 void WebViewControl::OnMouseClick(UIEvent* input)
 {
+    if (UIControlSystem::Instance()->GetFocusedControl() != &webView)
+    {
+        UIControlSystem::Instance()->SetFocusedControl(&webView);
+    }
+
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
     clickEvent.x = static_cast<int>(input->physPoint.dx);
@@ -391,7 +398,8 @@ int32 GetCefKeyType(UIEvent* input)
     switch (input->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
-        keyType = cef_key_event_type_t::KEYEVENT_KEYDOWN;
+        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
+        // 		keyType = cef_key_event_type_t::KEYEVENT_KEYDOWN;
         break;
     case UIEvent::Phase::KEY_DOWN_REPEAT:
         break;
@@ -422,16 +430,21 @@ int32 GetCefNativeKeyCode(UIEvent* input)
 
 void WebViewControl::OnKey(UIEvent* input)
 {
+    KeyboardDevice& keyDevice = InputSystem::Instance()->GetKeyboard();
+    DAVA::String str = keyDevice.GetKeyName(input->key);
+
     CefKeyEvent keyEvent;
     keyEvent.type = static_cast<cef_key_event_type_t>(GetCefKeyType(input));
     keyEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
-    keyEvent.windows_key_code = static_cast<int>(GetCefWinKeyCode(input));
-    keyEvent.native_key_code = static_cast<int>(input->keyChar);
+    //     keyEvent.windows_key_code = static_cast<int>(input->keyChar)/*static_cast<int>(GetCefWinKeyCode(input))*/;
+    keyEvent.native_key_code = static_cast<int>(str.at(0));
     keyEvent.is_system_key = 0;
-    keyEvent.character = input->keyChar;
-    keyEvent.unmodified_character;
-    keyEvent.focus_on_editable_field;
+    keyEvent.character = str.at(0);
+    keyEvent.unmodified_character = static_cast<wchar_t>(input->keyChar);
+    keyEvent.focus_on_editable_field = true;
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
+
+    Logger::Info("!!!!! OnKey code %d , char %c", keyEvent.native_key_code, char(keyEvent.character));
     host->SendKeyEvent(keyEvent);
 }
 

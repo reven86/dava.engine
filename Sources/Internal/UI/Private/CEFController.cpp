@@ -45,7 +45,7 @@ private:
 
 CEFControllerImpl::CEFControllerImpl()
 {
-    SetUpdateRate(30);
+    SetUpdateRate(300);
     bool result = false;
 
     CefSettings settings;

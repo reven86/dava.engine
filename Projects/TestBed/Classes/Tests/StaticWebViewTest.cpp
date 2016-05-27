@@ -2,6 +2,7 @@
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/Utils.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 namespace
 {
@@ -77,12 +78,14 @@ void StaticWebViewTest::LoadResources()
     webView1->SetDebugDraw(true);
     webView1->SetDelegate(webviewDelegate);
     webView1->OpenURL("http://en.cppreference.com/");
+    webView1->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView1);
 
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
     webView2->SetVisibilityFlag(true);
     webView2->SetDebugDraw(true);
     webView2->OpenFromBuffer(htmlCuteCats, "~res:/TestData/TransparentWebViewTest/");
+    webView2->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView2);
 
     webView3 = new UIWebView(Rect(820, 70, 400, 300));
@@ -90,6 +93,8 @@ void StaticWebViewTest::LoadResources()
     webView3->SetRenderToTexture(true);
     webView3->SetDebugDraw(true);
     webView3->LoadHtmlString(htmlString);
+    webView3->GetOrCreateComponent<UIFocusComponent>();
+
     AddControl(webView3);
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
