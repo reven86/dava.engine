@@ -152,7 +152,7 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
-    friend class WebViewControl;
+    friend class CEFWebViewControl;
     friend class CorePlatformAndroid;
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;

@@ -35,17 +35,10 @@ public:
     ~CEFControllerImpl();
 
     void Update();
-    void ForceUpdate();
-    void SetUpdateRate(uint32 n);
-
-private:
-    uint64 updateDelta;
-    uint64 lastUpdateTime = 0;
 };
 
 CEFControllerImpl::CEFControllerImpl()
 {
-    SetUpdateRate(300);
     bool result = false;
 
     CefSettings settings;
@@ -54,47 +47,36 @@ CEFControllerImpl::CEFControllerImpl()
     // TODO: disable cef logs before merge
     //settings.log_severity = LOGSEVERITY_DISABLE;
     settings.log_severity = LOGSEVERITY_VERBOSE;
+
+    FilePath cachePath("~doc:/cef_data/cache/");
+    FilePath logFile("~doc:/cef_data/log.txt");
+    CefString(&settings.cache_path).FromString(cachePath.GetAbsolutePathname());
+    CefString(&settings.log_file).FromString(logFile.GetAbsolutePathname());
     CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
     result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
 
-    // CefInitialize replaces thread name, so we need to save it and restore
+    // CefInitialize replaces thread name, so we need to restore it
     // Restore name only on Main Thread
     if (result && Thread::IsMainThread())
     {
-        // Restore name through InitMainThread
-        Thread::InitMainThread();
+        Thread::SetCurrentThreadName(Thread::GetMainThreadName());
     }
 
     // Register custom url scheme for dava-based applications
-    result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory());
+    result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory);
     DVASSERT_MSG(result == true, "CEF cannot be initialized");
 }
 
 CEFControllerImpl::~CEFControllerImpl()
 {
-    ForceUpdate();
+    Update();
     CefShutdown();
 }
 
 void CEFControllerImpl::Update()
 {
-    uint64 now = SystemTimer::Instance()->AbsoluteMS();
-    if (now - lastUpdateTime >= updateDelta)
-    {
-        ForceUpdate();
-        lastUpdateTime = now;
-    }
-}
-
-void CEFControllerImpl::ForceUpdate()
-{
     CefDoMessageLoopWork();
-}
-
-void CEFControllerImpl::SetUpdateRate(uint32 n)
-{
-    updateDelta = 1000 / n;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -109,19 +91,11 @@ CEFController::CEFController()
     cefControllerImpl = cefControllerGlobal;
 }
 
-CEFController::~CEFController()
-{
-    cefControllerImpl->ForceUpdate();
-}
+CEFController::~CEFController() = default;
 
 void CEFController::Update()
 {
     cefControllerImpl->Update();
-}
-
-void CEFController::SetUpdateRate(uint32 n)
-{
-    cefControllerImpl->SetUpdateRate(n);
 }
 
 } // namespace DAVA

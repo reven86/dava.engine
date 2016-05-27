@@ -85,9 +85,9 @@ set( UNITY_IGNORE_LIST              "Internal/Autotesting"
                                     "Compression/ZipCompressor.cpp"
                                     "UI/Private/CEFController.cpp"
                                     "UI/Private/CEFWebViewControl.cpp"
+                                    "UI/Private/CEFWebViewControlProxy.cpp"
                                     "UI/Private/CEFWebPageRender.cpp"
-                                    "UI/Private/CEFDavaResourceHandler.cpp"
-                                    "UI/UIWebView.cpp" )
+                                    "UI/Private/CEFDavaResourceHandler.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"

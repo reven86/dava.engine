@@ -14,24 +14,12 @@
 
 namespace DAVA
 {
-WebViewControl::WebViewControl(UIWebView& uiWebView)
+CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
-    // this object will be deleted manually, but ref counting is needed for work
-    // new object in CEF system has 0 references,
-    // so it will be destroyed when all owning CefRefPtr will be destroyed
-    // to avoid premature destruction, increase reference count manually
-    AddRef();
 }
 
-WebViewControl::~WebViewControl()
-{
-    cefBrowser->GetHost()->CloseBrowser(true);
-    cefBrowser = nullptr;
-    webPageRender = nullptr;
-}
-
-void WebViewControl::Initialize(const Rect& rect)
+void CEFWebViewControl::Initialize(const Rect& rect)
 {
     webPageRender = new CEFWebPageRender(webView);
 
@@ -43,29 +31,53 @@ void WebViewControl::Initialize(const Rect& rect)
     cefBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings, nullptr);
 }
 
-void WebViewControl::OpenURL(const String& url)
+void CEFWebViewControl::Deinitialize()
 {
+    // Close browser and release object
+    // If we don't release cefBrowser, dtor of CEFWebViewControl will never be invoked
+    cefBrowser->GetHost()->CloseBrowser(true);
+    webPageRender = nullptr;
+    cefBrowser = nullptr;
+
+    // Wait until CEF release this object
+    while (!this->HasOneRef())
+    {
+        cefController.Update();
+    }
+}
+
+void CEFWebViewControl::OpenURL(const String& url)
+{
+    StopLoading();
+    webPageRender->ClearRenderSurface();
+
     requestedUrl = url;
     cefBrowser->GetMainFrame()->LoadURL(url);
 }
 
-void WebViewControl::LoadHtmlString(const WideString& htmlString)
+void CEFWebViewControl::LoadHtmlString(const WideString& htmlString)
 {
+    StopLoading();
+    webPageRender->ClearRenderSurface();
+
     LoadHtml(htmlString, "dava:/~res:/");
 }
 
-void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
+void CEFWebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
+    StopLoading();
+    webPageRender->ClearRenderSurface();
+
     String fileUrl = "dava:/" + basePath.GetStringValue();
     LoadHtml(htmlString, fileUrl);
 }
 
-void WebViewControl::ExecuteJScript(const String& scriptString)
+void CEFWebViewControl::ExecuteJScript(const String& scriptString)
 {
     cefBrowser->GetMainFrame()->ExecuteJavaScript(scriptString, "", 0);
 }
 
-void WebViewControl::SetRect(const Rect& rect)
+void CEFWebViewControl::SetRect(const Rect& rect)
 {
     if (rect.GetSize() != webView.GetSize())
     {
@@ -73,44 +85,44 @@ void WebViewControl::SetRect(const Rect& rect)
     }
 }
 
-void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
+void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
     cefBrowser->GetHost()->WasHidden(!isVisible);
 }
 
-void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
+void CEFWebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
 {
     delegate = webViewDelegate;
 }
 
-void WebViewControl::SetRenderToTexture(bool value)
+void CEFWebViewControl::SetRenderToTexture(bool value)
 {
     // Empty realization, always render to texture
 }
 
-bool WebViewControl::IsRenderToTexture() const
+bool CEFWebViewControl::IsRenderToTexture() const
 {
     return true;
 }
 
-void WebViewControl::Update()
+void CEFWebViewControl::Update()
 {
     cefController.Update();
 }
 
-CefRefPtr<CefRenderHandler> WebViewControl::GetRenderHandler()
+CefRefPtr<CefRenderHandler> CEFWebViewControl::GetRenderHandler()
 {
     return webPageRender;
 }
 
-CefRefPtr<CefLoadHandler> WebViewControl::GetLoadHandler()
+CefRefPtr<CefLoadHandler> CEFWebViewControl::GetLoadHandler()
 {
     return this;
 }
 
-bool WebViewControl::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-                                              CefProcessId source_process,
-                                              CefRefPtr<CefProcessMessage> message)
+bool CEFWebViewControl::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                                 CefProcessId source_process,
+                                                 CefRefPtr<CefProcessMessage> message)
 {
     // WebViewControl can process only URL loading request messages from render process
     if (source_process == PID_RENDERER &&
@@ -130,8 +142,8 @@ bool WebViewControl::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
     return false;
 }
 
-void WebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
-                               CefRefPtr<CefFrame> frame, int httpStatusCode)
+void CEFWebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                                  CefRefPtr<CefFrame> frame, int httpStatusCode)
 {
     if (delegate && cefBrowser->IsSame(browser))
     {
@@ -139,7 +151,7 @@ void WebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
     }
 }
 
-void WebViewControl::LoadHtml(const CefString& html, const CefString& url)
+void CEFWebViewControl::LoadHtml(const CefString& html, const CefString& url)
 {
     requestedUrl = "";
     CefRefPtr<CefFrame> frame = cefBrowser->GetMainFrame();
@@ -149,7 +161,15 @@ void WebViewControl::LoadHtml(const CefString& html, const CefString& url)
     frame->LoadString(html, url);
 }
 
-void WebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
+void CEFWebViewControl::StopLoading()
+{
+    if (cefBrowser->IsLoading())
+    {
+        cefBrowser->StopLoad();
+    }
+}
+
+void CEFWebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
 {
     // Always allow loading of URL from OpenURL method or if delegate is not set
     if (request.url == requestedUrl || delegate == nullptr)
@@ -172,7 +192,7 @@ void WebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
     }
 }
 
-void WebViewControl::AllowURLLoading(const String& url, int64 frameID)
+void CEFWebViewControl::AllowURLLoading(const String& url, int64 frameID)
 {
     URLLoadingPermit permit = { url, frameID };
     CefRefPtr<CefProcessMessage> msg = CreateUrlLoadingPermitMessage(permit);
@@ -293,7 +313,7 @@ int32 ConvertMouseTypeDavaToCef(UIEvent* input)
     return mouseType;
 }
 
-void WebViewControl::Input(UIEvent* currentInput)
+void CEFWebViewControl::Input(UIEvent* currentInput)
 {
     switch (currentInput->device)
     {
@@ -327,7 +347,7 @@ void WebViewControl::Input(UIEvent* currentInput)
     }
 }
 
-void WebViewControl::OnMouseClick(UIEvent* input)
+void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
@@ -341,7 +361,7 @@ void WebViewControl::OnMouseClick(UIEvent* input)
     host->SendMouseClickEvent(clickEvent, type, mouseUp, clickCount);
 }
 
-void WebViewControl::OnMouseMove(UIEvent* input)
+void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
@@ -352,7 +372,7 @@ void WebViewControl::OnMouseMove(UIEvent* input)
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
 }
 
-void WebViewControl::OnMouseWheel(UIEvent* input)
+void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
@@ -390,7 +410,7 @@ int32 GetCefKeyType(UIEvent* input)
     return keyType;
 }
 
-void WebViewControl::OnKey(UIEvent* input)
+void CEFWebViewControl::OnKey(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefKeyEvent keyEvent;
