@@ -145,7 +145,7 @@ bool MoveEntry(const QFileInfo& fileInfo, const QString& newFilePath)
 }
 }
 
-EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
+EntireList CreateEntireList(const QString& pathOut, const QString& pathIn)
 {
     EntireList entryList;
     QDir outDir(pathOut);
@@ -228,7 +228,7 @@ EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
 
 bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
 {
-    EntireList entryList = CraeteEntireList(pathOut, pathIn);
+    EntireList entryList = CreateEntireList(pathOut, pathIn);
     if (entryList.isEmpty())
     {
         return false;
