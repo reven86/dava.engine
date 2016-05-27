@@ -134,9 +134,8 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
         return false;
     }
     fileList.clear();
-    QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
-    ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray& line) {
+    ReadyReadCallback callback = [&foundOutputData, &fileList, &functor](const QByteArray& line) {
         if (line.startsWith("----------")) //this string occurrs two times: before file list and at the and of file list
         {
             foundOutputData = !foundOutputData;
@@ -147,22 +146,26 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
             return;
         }
         QString str(line);
-        QStringList infoStringList = str.split(regExp, QString::SkipEmptyParts);
-        const int SIZE_INDEX = 3;
-        const int NAME_INDEX = 5;
-        if (infoStringList.size() < NAME_INDEX + 1)
-        {
-            functor.OnError(ZipError::PARSE_ERROR);
-            return;
-        }
+
+        const int SIZE_INDEX = 26; //fixed index for size
+        const int SIZE_STR_LEN = 12; //fixed index for len
         bool ok = true;
-        qint64 size = infoStringList.at(SIZE_INDEX).toLongLong(&ok);
+        QString sizeStr = str.mid(SIZE_INDEX, SIZE_STR_LEN);
+        sizeStr.remove(QRegularExpression("\\s*"));
+        qint64 size = sizeStr.toULongLong(&ok);
         if (!ok)
         {
             functor.OnError(ZipError::PARSE_ERROR);
             return;
         }
-        const QString& file = infoStringList.at(NAME_INDEX);
+
+        const int NAME_INDEX = 53; //fixed index for name
+        if (str.length() <= NAME_INDEX)
+        {
+            functor.OnError(ZipError::PARSE_ERROR);
+            return;
+        }
+        QString file = str.right(str.size() - NAME_INDEX);
         Q_ASSERT(!fileList.contains(file));
         fileList[file] = size;
     };
@@ -174,56 +177,6 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
     if (fileList.empty())
     {
         functor.OnError(ZipError::ARCHIVE_IS_EMPTY);
-        return false;
-    }
-    functor.OnSuccess();
-    return true;
-}
-
-bool ZipUtils::TestZipArchive(const QString& archivePath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor)
-{
-    ZipError err;
-    if (!IsArchiveValid(archivePath, &err))
-    {
-        functor.OnError(err);
-        return false;
-    }
-
-    bool success = false;
-    qint64 matchedSize = 0;
-    const auto values = files.values();
-    qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray& line) {
-        QString str(line);
-        QRegularExpression stringRegEx("\\s+");
-        QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
-        if (infoStringList.size() > 1)
-        {
-            const auto& file = infoStringList.at(1);
-            if (files.contains(file))
-            {
-                matchedSize += files[file];
-            }
-        }
-
-        functor.OnProgress((matchedSize * 100.0f) / totalSize);
-        if (str.contains("Everything is Ok"))
-        {
-            success = true;
-        }
-    };
-    QStringList arguments;
-    arguments << "t"
-              << "-bb1" << archivePath;
-    functor.OnStart();
-    if (!LaunchArchiver(arguments, callback, &err))
-    {
-        functor.OnError(err);
-        return false;
-    }
-    if (success != true)
-    {
-        functor.OnError(ZipError::ARHIVE_DAMAGED);
         return false;
     }
     functor.OnSuccess();
@@ -248,32 +201,39 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
     bool success = false;
     qint64 matchedSize = 0;
     const auto values = files.values();
+    QFile file("test2.txt");
+    file.open(QFile::WriteOnly | QFile::Truncate);
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray& line) {
+    ReadyReadCallback callback = [&success, &functor, &file, &files, &matchedSize, totalSize](const QByteArray& line) {
         QString str(line);
-        QRegularExpression stringRegEx("\\s+");
-        QStringList infoStringList = str.split(stringRegEx, QString::SkipEmptyParts);
-        if (infoStringList.size() > 1)
-        {
-            const auto& file = infoStringList.at(1);
-            if (files.contains(file))
-            {
-                matchedSize += files[file];
-            }
-        }
-
-        functor.OnProgress((matchedSize * 100.0f) / totalSize);
-        if (str.contains("Everything is Ok"))
+        file.write(line + "\n");
+        QString okStr = "Everything is Ok";
+        if (str.contains(okStr))
         {
             success = true;
         }
+        QString startStr("- ");
+        if (!str.startsWith(startStr))
+        {
+            return;
+        }
+        str.remove(0, startStr.length());
+        if (files.contains(str))
+        {
+            matchedSize += files[str];
+        }
+
+        functor.OnProgress((matchedSize * 100.0f) / totalSize);
     };
     QStringList arguments;
+    QString nativeOutPath = QDir::toNativeSeparators(outDirPath);
     arguments << "x"
               << "-y"
               << "-bb1"
               << archivePath
-              << "-o" + outDirPath;
+              << "-o" + nativeOutPath;
+
+    QString testStr = arguments.join(' ');
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

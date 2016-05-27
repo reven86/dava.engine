@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QJsonObject>
+#include <QDebug>
 #include <QJsonParseError>
 
 namespace ConfigParser_local
@@ -70,12 +71,15 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
     for (const QJsonValueRef& ref : array)
     {
         QJsonObject entry = ref.toObject();
-        QString branchName = entry["branchName"].toString();
-        if (branchName.isEmpty())
+        QString branchNameID = "branchName";
+        //now ASK builds without branch name
+        if (!entry[branchNameID].isString())
         {
             isValid = false;
             continue;
         }
+        QString branchName = entry[branchNameID].toString();
+
         Branch* branch = nullptr;
         //foreach will cause deeo copy in this case
         int branchCount = branches.size();
@@ -116,9 +120,11 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
             app->versions.append(AppVersion());
             appVer = &app->versions.last();
         }
+        appVer->id = verID;
         appVer->url = entry["artifacts"].toString();
-        appVer->runPath = "ResourceEditor/dava.framework/Tools/ResourceEditor/ResourceEditor.exe";
+        appVer->runPath = entry["exe_location"].toString();
         isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
+        isValid = isValid;
     }
     return isValid;
 }
@@ -259,7 +265,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
                 continue;
             }
         }
-        if (key == "seo_list")
+        else if (key == "seo_list")
         {
             if (!ConfigParser_local::GetLauncherStrings(value, strings))
             {
@@ -267,14 +273,14 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
                 continue;
             }
         }
-        if (key == "branches")
+        else if (key == "branches")
         {
             if (!ConfigParser_local::GetFavorites(value, favorites))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading favorites list"));
             }
         }
-        if (key == "builds")
+        else if (key == "builds")
         {
             if (!ConfigParser_local::GetBranches(value, branches))
             {
