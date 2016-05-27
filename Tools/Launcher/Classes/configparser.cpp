@@ -18,11 +18,12 @@ QString platformString =
 
 bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
 {
-    QJsonObject platformObject = value.toObject()[platformString].toObject();
+    QJsonObject launcherObject = value.toObject();
+    QJsonObject platformObject = launcherObject[platformString].toObject();
     version = platformObject["version"].toString();
     url = platformObject["url"].toString();
-    news = platformObject["news"].toString();
-    return version.isEmpty() && url.isEmpty() && news.isEmpty();
+    news = launcherObject["news"].toString();
+    return !version.isEmpty() && !url.isEmpty() && !news.isEmpty();
 }
 
 bool GetLauncherStrings(const QJsonValue& value, QMap<QString, QString>& strings)
@@ -37,9 +38,9 @@ bool GetLauncherStrings(const QJsonValue& value, QMap<QString, QString>& strings
             continue;
         }
         QString key = entry["build_tag"].toString();
-        QString value = entry["build_name"].toString();
-        isValid &= !key.isEmpty() && !value.isEmpty();
-        strings[key] = value;
+        QString stringValue = entry["build_name"].toString();
+        isValid &= !key.isEmpty() && !stringValue.isEmpty();
+        strings[key] = stringValue;
     }
     return isValid;
 }
@@ -62,7 +63,7 @@ bool GetFavorites(const QJsonValue& value, QStringList& favorites)
     return isValid;
 }
 
-bool GetBranches(const QJsonValue& value, const QMap<QString, Branch>& branches)
+bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
     bool isValid = !array.isEmpty();
@@ -75,10 +76,51 @@ bool GetBranches(const QJsonValue& value, const QMap<QString, Branch>& branches)
             isValid = false;
             continue;
         }
-        auto& br = branches[branchName];
-        //Branch &branch = branches[branchName];
-        //branch.applications
+        Branch* branch = nullptr;
+        //foreach will cause deeo copy in this case
+        int branchCount = branches.size();
+        for (int i = 0; i < branchCount; ++i)
+        {
+            if (branches[i].id == branchName)
+            {
+                branch = &branches[i];
+            }
+        }
+        if (branch == nullptr)
+        {
+            branches.append(Branch(branchName));
+            branch = &branches.last();
+        }
+
+        QString appName = entry["build_name"].toString();
+        if (appName.isEmpty())
+        {
+            isValid = false;
+            continue;
+        }
+        Application* app = branch->GetApplication(appName);
+        if (app == nullptr)
+        {
+            branch->applications.append(Application(appName));
+            app = &branch->applications.last();
+        }
+        QString verID = entry["build_type"].toString();
+        if (verID.isEmpty())
+        {
+            isValid = false;
+            continue;
+        }
+        AppVersion* appVer = app->GetVersion(verID);
+        if (appVer == nullptr)
+        {
+            app->versions.append(AppVersion());
+            appVer = &app->versions.last();
+        }
+        appVer->url = entry["artifacts"].toString();
+        appVer->runPath = "ResourceEditor/dava.framework/Tools/ResourceEditor/ResourceEditor.exe";
+        isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
     }
+    return isValid;
 }
 }
 
@@ -202,7 +244,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
     QJsonDocument document = QJsonDocument::fromJson(configData, &parseError);
     if (parseError.error != QJsonParseError::NoError)
     {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, parseError.errorString());
+        //this is not JSON
         return false;
     }
     QJsonObject rootObj = document.object();
@@ -240,6 +282,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
             }
         }
     }
+    return true;
 }
 
 bool ConfigParser::Parse(const QByteArray& configData)

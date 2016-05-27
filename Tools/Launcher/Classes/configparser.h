@@ -49,10 +49,8 @@ struct Application
 
     static Application LoadFromYamlNode(const YAML::Node* node);
 
-private:
     QVector<AppVersion> versions;
 
-    friend class ConfigParser;
 };
 
 struct Branch
@@ -81,10 +79,8 @@ struct Branch
 
     static Branch LoadFromYamlNode(const YAML::Node* node);
 
-private:
     QVector<Application> applications;
 
-    friend class ConfigParser;
 };
 
 class ConfigParser
