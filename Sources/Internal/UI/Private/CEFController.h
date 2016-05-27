@@ -12,7 +12,6 @@ public:
     ~CEFController();
 
     void Update();
-    void SetUpdateRate(uint32 n);
 
 private:
     RefPtr<class CEFControllerImpl> cefControllerImpl;
