@@ -24,6 +24,26 @@ QStringList OwnDirectories()
                          << path + tempDir;
 }
 
+QStringList DeployDirectories()
+{
+    return QStringList() << "platforms"
+                         << "bearer"
+                         << "iconengines"
+                         << "imageformats"
+                         << "qmltooling"
+                         << "translations"
+                         << "QtGraphicalEffects"
+                         << "QtQuick"
+                         << "QtQuick.2";
+}
+
+QStringList DeployFiles()
+{
+    return QStringList() << "Launcher.ilk"
+                         << "Launcher.pdb"
+                         << "qt.conf";
+}
+
 QString GetDocumentsDirectory()
 {
     QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
@@ -151,6 +171,9 @@ EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
         }
     }
 #endif //Q_OS_WIN
+    QStringList ownDirs = OwnDirectories();
+    QStringList deployDirs = DeployDirectories();
+    QStringList deployFiles = DeployFiles();
     QDirIterator di(outDir.path(), QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
     while (di.hasNext())
     {
@@ -158,7 +181,7 @@ EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
         const QFileInfo& fi = di.fileInfo();
         QString absPath = fi.absoluteFilePath();
         QString relPath = absPath.right(absPath.length() - pathOut.length());
-        if (fi.isDir() && OwnDirectories().contains(absPath + '/'))
+        if (fi.isDir() && ownDirs.contains(absPath + '/'))
         {
             continue;
         }
@@ -171,18 +194,21 @@ EntireList CraeteEntireList(const QString& pathOut, const QString& pathIn)
         {
             //this code need for compability with previous launcher versions
             //we create folder "platforms" manually, so must move it with dlls
-            QString suffix = fi.suffix();
+            QString fileName = fi.fileName();
             if (fi.isDir())
             {
-                if (fi.fileName() != "platforms")
+                if (!deployDirs.contains(fileName))
                 {
                     continue;
                 }
             }
             else
             {
+                QString suffix = fi.suffix();
                 //all entries, which are not directories and their suffix are not dll or exe
-                if (suffix != "dll" && suffix != "exe")
+                if (suffix != "dll"
+                    && suffix != "exe"
+                    && !deployFiles.contains(fileName))
                 {
                     continue;
                 }
