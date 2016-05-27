@@ -92,8 +92,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
     if (eErrorCode::SUCCESS == retCode)
     {
-        LibDdsHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
+        LibDdsHelper::AddCRCIntoMetaData(outputName);
         return outputName;
     }
     else
@@ -226,8 +225,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
         auto saveResult = ImageSystem::SaveAsCubeMap(outputName, imageSets, static_cast<PixelFormat>(compression->format));
         if (saveResult == eErrorCode::SUCCESS)
         {
-            LibDdsHelper helper;
-            helper.AddCRCIntoMetaData(outputName);
+            LibDdsHelper::AddCRCIntoMetaData(outputName);
         }
         else
         {

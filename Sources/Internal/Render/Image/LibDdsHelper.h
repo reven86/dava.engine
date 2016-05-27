@@ -4,20 +4,19 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
-#include "Render/Image/Private/CRCAdditionInterface.h"
 
 namespace DAVA
 {
 class File;
 class Image;
 
-class LibDdsHelper : public ImageFormatInterface, public CRCAdditionInterface
+class LibDdsHelper : public ImageFormatInterface
 {
 public:
     LibDdsHelper();
 
-    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
-    uint32 GetCRCFromMetaData(const FilePath& filePathname) const override;
+    static bool AddCRCIntoMetaData(const FilePath& filePathname);
+    static uint32 GetCRCFromMetaData(const FilePath& filePathname);
 
     eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
@@ -28,9 +27,11 @@ public:
 
     static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
 
-    static bool CanCompressAndDecompress(PixelFormat format);
-    static bool DecompressToRGBA(const Image* image, Image* dstImage);
+    static bool CanCompressTo(PixelFormat format);
     static bool CompressFromRGBA(const Image* image, Image* dstImage);
+
+    static bool CanDecompressFrom(PixelFormat format);
+    static bool DecompressToRGBA(const Image* image, Image* dstImage);
 
 protected:
     bool CanProcessFileInternal(const ScopedPtr<File>& infile) const override;

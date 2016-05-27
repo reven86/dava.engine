@@ -104,8 +104,4 @@ bool ImageFormatInterface::CanProcessFileInternal(const ScopedPtr<File>& infile)
     return GetImageInfo(infile).dataSize != 0;
 }
 
-Image* ImageFormatInterface::DecodeToRGBA8888(Image* encodedImage) const
-{
-    return nullptr;
-}
 }

@@ -168,7 +168,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     return info;
 }
 
-bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
+bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname)
 {
     //read file
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(filePathname, true, true);
@@ -191,7 +191,7 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     return PVRFormatHelper::WriteFile(filePathname, *pvrFile);
 }
 
-uint32 LibPVRHelper::GetCRCFromMetaData(const FilePath& filePathname) const
+uint32 LibPVRHelper::GetCRCFromMetaData(const FilePath& filePathname)
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(filePathname, true, false);
     if (pvrFile)
@@ -207,21 +207,30 @@ uint32 LibPVRHelper::GetCRCFromMetaData(const FilePath& filePathname) const
     return 0;
 }
 
-Image* LibPVRHelper::DecodeToRGBA8888(Image* encodedImage) const
-{
-    return PVRFormatHelper::DecodeToRGBA8888(encodedImage);
-}
-
-bool LibPVRHelper::CanCompressAndDecompress(PixelFormat format)
+bool LibPVRHelper::CanCompressTo(PixelFormat format)
 {
     // todo: implement direct compress/decompress for pvr formats
     return false;
 }
 
-bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
+bool LibPVRHelper::CanDecompressFrom(PixelFormat format)
 {
-    DVASSERT_MSG(false, "Decompressing from PVR is not implemented yet");
+    switch (format)
+    {
+        case FORMAT_PVR2: 
+        case FORMAT_PVR4:
+        case FORMAT_ETC1:
+            return true;
+
+        default: return false;
+    }
+
     return false;
+}
+
+bool LibPVRHelper::DecompressToRGBA(const Image* encodedImage, Image* decodedImage)
+{
+    return PVRFormatHelper::DecodeToRGBA8888(encodedImage, decodedImage);
 }
 
 bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)

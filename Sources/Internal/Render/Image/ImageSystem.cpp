@@ -119,44 +119,6 @@ ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file)
     return nullptr;
 }
 
-eErrorCode TryToDecompressImages(Vector<Image*>& imageSet)
-{
-    DVASSERT(false);
-
-    size_type count = imageSet.size();
-    for (size_type i = 0; i < count; ++i)
-    {
-        Image* encodedImage = imageSet[i];
-
-        const PixelFormatDescriptor& pixelDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(encodedImage->format);
-        if (!pixelDescriptor.isHardwareSupported)
-        {
-            Image* decodedImage = nullptr;
-            if (PixelFormatDescriptor::IsCompressedFormat(encodedImage->format))
-            {
-                ImageFormatInterface* properWrapper = GetDecoder(encodedImage->format);
-                DVASSERT(properWrapper != nullptr);
-
-                decodedImage = properWrapper->DecodeToRGBA8888(encodedImage);
-                if (decodedImage == nullptr)
-                {
-                    return eErrorCode::ERROR_DECODE_FAIL;
-                }
-            }
-            else
-            {
-                decodedImage = Image::Create(encodedImage->width, encodedImage->height, PixelFormat::FORMAT_RGBA8888);
-                ImageConvert::ConvertImageDirect(encodedImage, encodedImage);
-            }
-
-            imageSet[i] = decodedImage;
-            encodedImage->Release();
-        }
-    }
-
-    return eErrorCode::SUCCESS;
-}
-
 Image* EnsurePowerOf2Image(Image* image)
 {
     if (IsPowerOf2(image->GetWidth()) && IsPowerOf2(image->GetHeight()))
@@ -188,8 +150,7 @@ void EnsurePowerOf2Images(Vector<Image*>& images)
     }
 }
 
-
-eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
 {
     ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
     if (!fileRead)
@@ -197,11 +158,11 @@ eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& ima
         return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
-    eErrorCode result = LoadWithoutDecompession(fileRead, imageSet, loadingParams);
+    eErrorCode result = Load(fileRead, imageSet, loadingParams);
     return result;
 }
 
-eErrorCode LoadWithoutDecompession(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -217,37 +178,6 @@ eErrorCode LoadWithoutDecompession(const ScopedPtr<File>& file, Vector<Image*>& 
 
     return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
-
-eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
-{
-    eErrorCode loaded = LoadWithoutDecompession(pathname, imageSet, loadingParams);
-
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
-    {
-//        loaded = TryToDecompressImages(imageSet);
-    }
-
-#endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-    return loaded;
-}
-
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
-{
-    eErrorCode loaded = LoadWithoutDecompession(file, imageSet, loadingParams);
-
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    if (loaded == eErrorCode::SUCCESS && imageSet.empty() == false)
-    {
-//        loaded = TryToDecompressImages(imageSet);
-    }
-#endif //defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-    return loaded;
-}
-
-
 
 eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality)
 {

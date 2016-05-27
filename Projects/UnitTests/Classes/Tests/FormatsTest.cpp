@@ -70,29 +70,21 @@ DAVA_TESTCLASS (FormatsTest)
             if (descriptor.isHardwareSupported)
                 continue;
 
-            DAVA::Vector<DAVA::Image*> pngImages;
-            DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Load(pngPathname, pngImages);
-            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
+            ScopedPtr<Image> pngImage(ImageSystem::LoadSingleMip(pngPathname, 0));
+            TEST_VERIFY(pngImage);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Load(compressedPathname, compressedImages);
-            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
+            ScopedPtr<Image> compressedImage(ImageSystem::LoadSingleMip(compressedPathname, 0));
+            TEST_VERIFY(compressedImage);
 
-            if (pngImages.empty() || compressedImages.empty())
+            if (pngImage && compressedImage)
             {
-                TEST_VERIFY(false);
-            }
-            else
-            {
-                const DAVA::PixelFormat comparedFormat = ((DAVA::FORMAT_A8 == requestedFormat) || (DAVA::FORMAT_A16 == requestedFormat))
-                ?
-                static_cast<DAVA::PixelFormat>(requestedFormat)
-                :
-                DAVA::FORMAT_RGBA8888;
+                ScopedPtr<Image> decompressedImage(Image::Create(compressedImage->width, compressedImage->height, FORMAT_RGBA8888));
+                TEST_VERIFY(ImageConvert::CanConvertFromTo(compressedImage->format, FORMAT_RGBA8888) == true);
+                TEST_VERIFY(ImageConvert::ConvertImage(compressedImage, decompressedImage) == true);
+                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImage, decompressedImage, FORMAT_RGBA8888);
 
-                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], compressedImages[0], comparedFormat);
-                float32 differencePercentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
-                TEST_VERIFY_WITH_MESSAGE(differencePercentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePercentage, 100.f - differencePercentage));
+                float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
+                TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
         }
     }
@@ -132,24 +124,18 @@ DAVA_TESTCLASS (FormatsTest)
             if (descriptor.isHardwareSupported)
                 continue;
 
-            DAVA::Vector<DAVA::Image*> pngImages;
-            DAVA::Vector<DAVA::Image*> compressedImages;
-            const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Load(pngPathname, pngImages);
-            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
+            ScopedPtr<Image> pngImage(ImageSystem::LoadSingleMip(pngPathname, 0));
+            TEST_VERIFY(pngImage);
 
-            const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Load(compressedPathname, compressedImages);
-            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
+            ScopedPtr<Image> compressedImage(ImageSystem::LoadSingleMip(compressedPathname, 0));
+            TEST_VERIFY(compressedImage);
 
-            if (pngImages.empty() || compressedImages.empty())
+            if (pngImage && compressedImage)
             {
-                TEST_VERIFY(false);
-            }
-            else
-            {
-                ScopedPtr<Image> convertedImage(Image::Create(compressedImages[0]->width, compressedImages[0]->height, FORMAT_RGBA8888));
-                TEST_VERIFY(ImageConvert::CanConvertFromTo(compressedImages[0]->format, FORMAT_RGBA8888) == true);
-                TEST_VERIFY(ImageConvert::ConvertImage(compressedImages[0], convertedImage) == true);
-                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImages[0], convertedImage, FORMAT_RGBA8888);
+                ScopedPtr<Image> decompressedImage(Image::Create(compressedImage->width, compressedImage->height, FORMAT_RGBA8888));
+                TEST_VERIFY(ImageConvert::CanConvertFromTo(compressedImage->format, FORMAT_RGBA8888) == true);
+                TEST_VERIFY(ImageConvert::ConvertImage(compressedImage, decompressedImage) == true);
+                const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(pngImage, decompressedImage, FORMAT_RGBA8888);
 
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));

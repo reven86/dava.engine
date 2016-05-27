@@ -30,8 +30,6 @@ struct LoadingParams
 
 Image* LoadSingleMip(const FilePath& pathname, uint32 mip = 0);
 
-eErrorCode LoadWithoutDecompession(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
-eErrorCode LoadWithoutDecompession(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 
@@ -43,7 +41,6 @@ eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>&
 eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
 ImageInfo GetImageInfo(const FilePath& pathName);
-
 
 
 const Vector<String>& GetExtensionsFor(ImageFormat format);

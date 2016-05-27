@@ -112,8 +112,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 
     if (addCRC)
     {
-        LibPVRHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
+        LibPVRHelper::AddCRCIntoMetaData(outputName);
     }
     return outputName;
 #endif
@@ -184,8 +183,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     bool ret = false;
     if (ret)
     {
-        LibPVRHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
+        LibPVRHelper::AddCRCIntoMetaData(outputName);
         return outputName;
     }
     else

@@ -841,8 +841,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         DVASSERT(false);
         return 0;
 #else
-        LibPVRHelper helper;
-        uint32 convertedCRC = helper.GetCRCFromMetaData(filePath);
+        uint32 convertedCRC = LibPVRHelper::GetCRCFromMetaData(filePath);
         if (convertedCRC != 0)
         {
             convertedCRC += GenerateDescriptorCRC(forGPU);
@@ -852,8 +851,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     }
     else if (imageFormat == IMAGE_FORMAT_DDS)
     {
-        LibDdsHelper helper;
-        uint32 convertedCRC = helper.GetCRCFromMetaData(filePath);
+        uint32 convertedCRC = LibDdsHelper::GetCRCFromMetaData(filePath);
         if (convertedCRC != 0)
         {
             convertedCRC += GenerateDescriptorCRC(forGPU);

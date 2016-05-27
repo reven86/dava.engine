@@ -466,11 +466,15 @@ std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
     uint32 compressedDataSize = GetDataSize(imageSet);
     pvrFile->compressedData.resize(compressedDataSize);
 
-    uint8* compressedDataPtr = pvrFile->compressedData.data();
+    uint32 offset = 0;
+    uint32 mip = 0;
     for (const Image* image : imageSet)
     {
-        Memcpy(compressedDataPtr, image->data, image->dataSize);
-        compressedDataPtr += image->dataSize;
+        Memcpy(pvrFile->compressedData.data() + offset, image->data, image->dataSize);
+        offset += image->dataSize;
+
+        DVASSERT(image->mipmapLevel == mip++);
+        DVASSERT(image->format == zeroMip->format);
     }
 
     return pvrFile;
@@ -591,37 +595,34 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
     return true;
 }
 
-Image* DecodeToRGBA8888(Image* encodedImage)
+bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage)
 {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    Image* decodedImage = Image::Create(encodedImage->width, encodedImage->height, PixelFormat::FORMAT_RGBA8888);
     decodedImage->mipmapLevel = encodedImage->mipmapLevel;
     decodedImage->cubeFaceID = encodedImage->cubeFaceID;
 
+    uint32 retCode = 0;
     if (encodedImage->format == PixelFormat::FORMAT_PVR2)
     {
-        int retCode = PVRTDecompressPVRTC(encodedImage->data, 1, encodedImage->width, encodedImage->height, decodedImage->data);
-        DVVERIFY(retCode == encodedImage->dataSize);
+        retCode = PVRTDecompressPVRTC(encodedImage->data, 1, encodedImage->width, encodedImage->height, decodedImage->data);
     }
     else if (encodedImage->format == PixelFormat::FORMAT_PVR4)
     {
-        int retCode = PVRTDecompressPVRTC(encodedImage->data, 0, encodedImage->width, encodedImage->height, decodedImage->data);
-        DVVERIFY(retCode == encodedImage->dataSize);
+        retCode = PVRTDecompressPVRTC(encodedImage->data, 0, encodedImage->width, encodedImage->height, decodedImage->data);
     }
     else if (encodedImage->format == PixelFormat::FORMAT_ETC1)
     {
-        int retCode = PVRTDecompressETC(encodedImage->data, encodedImage->width, encodedImage->height, decodedImage->data, 0);
-        DVVERIFY(retCode == encodedImage->dataSize);
+        retCode = PVRTDecompressETC(encodedImage->data, encodedImage->width, encodedImage->height, decodedImage->data, 0);
     }
     else
     {
         Logger::Error("Can't decode PVR: source Image has unknown format %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(encodedImage->format));
-        SafeRelease(decodedImage);
+        return false;
     }
 
-    return decodedImage;
+    return (retCode == encodedImage->dataSize);
 #else //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    return nullptr;
+    return false;
 #endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 }
 
@@ -630,7 +631,9 @@ bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
     ScopedPtr<File> file(File::Create(pathname, File::CREATE | File::WRITE));
     if (file)
     {
-        file->Write(&pvrFile.header);
+        uint32 written = file->Write(&pvrFile.header);
+        DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE);
+        DVASSERT(written == PVRFile::HEADER_SIZE);
 
         for (MetaDataBlock *block : pvrFile.metaDatablocks)
         {
@@ -643,9 +646,13 @@ bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
             }
         }
         
+        DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize);
+
         if (!pvrFile.compressedData.empty())
         {
-            file->Write(pvrFile.compressedData.data(), static_cast<uint32>(pvrFile.compressedData.size()));
+            written = file->Write(pvrFile.compressedData.data(), static_cast<uint32>(pvrFile.compressedData.size()));
+            DVASSERT(written == pvrFile.compressedData.size());
+            DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize + pvrFile.compressedData.size());
         }
         return true;
     }

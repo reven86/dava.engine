@@ -31,8 +31,6 @@ public:
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
 
-    virtual Image* DecodeToRGBA8888(Image* encodedImage) const;
-
     bool IsFormatSupported(PixelFormat format) const;
     bool IsFileExtensionSupported(const String& extension) const;
 

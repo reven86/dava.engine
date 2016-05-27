@@ -4,18 +4,16 @@
 #include "Base/BaseTypes.h"
 
 #include "Render/Image/ImageFormatInterface.h"
-#include "Render/Image/Private/CRCAdditionInterface.h"
 
 namespace DAVA
 {
-class LibPVRHelper : public ImageFormatInterface, public CRCAdditionInterface
+class LibPVRHelper : public ImageFormatInterface
 {
 public:
     LibPVRHelper();
 
-    // CRCAdditionInterface
-    bool AddCRCIntoMetaData(const FilePath& filePathname) const override;
-    uint32 GetCRCFromMetaData(const FilePath& filePathname) const override;
+    static bool AddCRCIntoMetaData(const FilePath& filePathname);
+    static uint32 GetCRCFromMetaData(const FilePath& filePathname);
 
     //ImageFormatInterface
     eErrorCode Load(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const;
@@ -26,12 +24,13 @@ public:
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    Image* DecodeToRGBA8888(Image* encodedImage) const override;
     ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 
-    static bool CanCompressAndDecompress(PixelFormat format);
-    static bool DecompressToRGBA(const Image* image, Image* dstImage);
+    static bool CanCompressTo(PixelFormat format);
     static bool CompressFromRGBA(const Image* image, Image* dstImage);
+
+    static bool CanDecompressFrom(PixelFormat format);
+    static bool DecompressToRGBA(const Image* encodedImage, Image* decodedImage);
 
 protected:
     bool CanProcessFileInternal(const ScopedPtr<File>& infile) const override;

@@ -52,6 +52,9 @@
 
 namespace DAVA
 {
+
+#pragma pack(push,4)
+
 struct PVRHeaderV3
 {
     uint32 u32Version = PVRTEX3_IDENT; //Version of the file header, used to identify it.
@@ -67,6 +70,7 @@ struct PVRHeaderV3
     uint32 u32MIPMapCount = 1; //Number of MIP Maps in the texture - NB: Includes top level.
     uint32 u32MetaDataSize = 0; //Size of the accompanying meta data.
 };
+#pragma pack(pop)
 
 class PVRFile final
 {
@@ -97,7 +101,7 @@ void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc);
 
 bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 
-Image* DecodeToRGBA8888(Image* encodedImage);
+bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage);
 
 PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader);
 }

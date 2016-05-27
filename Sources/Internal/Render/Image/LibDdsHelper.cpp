@@ -117,7 +117,7 @@ ImageInfo LibDdsHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     return (reader ? reader->GetImageInfo() : ImageInfo());
 }
 
-bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
+bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname)
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::OPEN | File::READ | File::WRITE));
     if (!ddsFile)
@@ -138,7 +138,7 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     }
 }
 
-uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname) const
+uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname)
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
     if (!ddsFile)
@@ -164,7 +164,12 @@ uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname) const
     return 0;
 }
 
-bool LibDdsHelper::CanCompressAndDecompress(PixelFormat format)
+bool LibDdsHelper::CanCompressTo(PixelFormat format)
+{
+    return (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format));
+}
+
+bool LibDdsHelper::CanDecompressFrom(PixelFormat format)
 {
     return (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format));
 }
@@ -183,10 +188,8 @@ bool LibDdsHelper::DecompressToRGBA(const Image* srcImage, Image* dstImage)
     {
         return QualcommHelper::DecompressAtcToRgba(srcImage, dstImage);
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
@@ -203,9 +206,7 @@ bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
     {
         return QualcommHelper::CompressRgbaToAtc(srcImage, dstImage);
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 }
