@@ -2693,9 +2693,6 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
 
 bool QtMainWindow::ShouldClose(QCloseEvent* e)
 {
-    if (spritesPacker->IsRunning())
-        return false;
-
     if (IsAnySceneChanged() == false)
         return true;
 

@@ -22,10 +22,15 @@ SpritesPackerModule::SpritesPackerModule()
 
 SpritesPackerModule::~SpritesPackerModule()
 {
+    spritesPacker->Cancel();
+    spritesPacker->ClearTasks();
+
     if (cacheClient != nullptr)
     {
         DisconnectCacheClient();
     }
+
+    DAVA::JobManager::Instance()->WaitWorkerJobs();
 }
 
 QAction* SpritesPackerModule::GetReloadAction() const
