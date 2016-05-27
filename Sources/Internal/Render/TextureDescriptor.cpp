@@ -256,8 +256,10 @@ void TextureDescriptor::SetDefaultValues()
         compression[i].Clear();
     }
 
+    compression[eGPUFamily::GPU_ORIGIN].imageFormat = dataSettings.sourceFileFormat;
+    imageFormat = dataSettings.sourceFileFormat;
+
     gpu = eGPUFamily::GPU_INVALID;
-    imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
     format = PixelFormat::FORMAT_INVALID;
 
     isCompressedFile = false;
@@ -637,11 +639,13 @@ void TextureDescriptor::LoadVersion12(File* file)
     int8 sourceFileFormat = 0;
     file->Read(&sourceFileFormat);
     dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
+    dataSettings.sourceFileExtension.clear();
     file->ReadString(dataSettings.sourceFileExtension);
     for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
     {
         if (dataSettings.cubefaceFlags & (1 << i))
         {
+            dataSettings.cubefaceExtensions[i].clear();
             file->ReadString(dataSettings.cubefaceExtensions[i]);
         }
     }

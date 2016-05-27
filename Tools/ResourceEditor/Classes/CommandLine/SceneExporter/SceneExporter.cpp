@@ -568,8 +568,8 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
 
     DAVA::Vector<DAVA::FilePath> imagePathnames;
     descriptor.CreateLoadPathnamesForGPU(gpu, imagePathnames);
-    DAVA::size_type mipmapsCount = loadedImages.size();
-    DAVA::size_type imagesCount = imagePathnames.size();
+    DAVA::uint32 mipmapsCount = static_cast<uint32>(loadedImages.size());
+    DAVA::uint32 imagesCount = static_cast<uint32>(imagePathnames.size());
 
     if (mipmapsCount < imagesCount)
     {
@@ -577,8 +577,8 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
         return false;
     }
 
-    DAVA::size_type multipleImageIndex = imagesCount - 1;
-    for (DAVA::size_type mip = 0; mip < multipleImageIndex; ++mip)
+    DAVA::uint32 multipleImageIndex = imagesCount - 1;
+    for (DAVA::uint32 mip = 0; mip < multipleImageIndex; ++mip)
     {
         bool saved = saveImages(createOutPathname(imagePathnames[mip]), { loadedImages[mip] });
         if (!saved)
