@@ -186,15 +186,23 @@ Key KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
 {
     if (systemKeyCode < MAX_KEYS)
     {
-        return keyTranslator[systemKeyCode];
+        Key key = keyTranslator[systemKeyCode];
+        backCodeTranslator[static_cast<int32>(key)] = systemKeyCode;
+        return key;
     }
     DVASSERT(false && "bad system key code");
     return Key::UNKNOWN;
 }
 
+uint32 KeyboardDevice::GetSystemKeyForDavaKey(Key key) const
+{
+    return backCodeTranslator[static_cast<int32>(key)];
+}
+
 void KeyboardDevice::PrepareKeyTranslator()
 {
     std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), Key::UNKNOWN);
+    std::uninitialized_fill(begin(backCodeTranslator), end(backCodeTranslator), -1);
 
 #if defined(__DAVAENGINE_WINDOWS__)
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
