@@ -465,9 +465,9 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector
 {
     Vector<ImageExportKeys> compressionTargets;
 
-    size_type count = forGPUs.size();
+    uint32 count = static_cast<uint32>(forGPUs.size());
     compressionTargets.resize(count);
-    for (size_type i = 0; i < count; ++i)
+    for (uint32 i = 0; i < count; ++i)
     {
         compressionTargets[i].forGPU = forGPUs[i];
     }
@@ -484,7 +484,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector
             { // read GPU parameters
                 const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(keys.forGPU);
                 bool gpuParametersRead = false;
-                if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag) || (count > 1))
+                if (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
                 {
                     gpuParametersRead = GetGpuParameters(keys.forGPU, keys.pixelFormat, keys.imageFormat, keys.imageQuality);
                 }
