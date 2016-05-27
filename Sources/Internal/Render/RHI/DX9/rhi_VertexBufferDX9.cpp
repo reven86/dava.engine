@@ -25,8 +25,9 @@ public:
     unsigned isMapped : 1;
 };
 
-typedef ResourcePool<VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferDX9Pool;
+RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
 
+typedef ResourcePool<VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferDX9Pool;
 RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true);
 
 VertexBufferDX9_t::VertexBufferDX9_t()
@@ -139,8 +140,6 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->MarkRestored();
     self->Destroy();
@@ -265,7 +264,6 @@ void ReleaseAll()
     for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
-        b->MarkNeedRestore();
     }
     VertexBufferDX9Pool::Unlock();
 }
@@ -278,14 +276,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    unsigned result = 0;
-    VertexBufferDX9Pool::Lock();
-    for (auto i = VertexBufferDX9Pool::Begin(), e = VertexBufferDX9Pool::End(); i != e; ++i)
-    {
-        result += i->NeedRestore() ? 1 : 0;
-    }
-    VertexBufferDX9Pool::Unlock();
-    return result;
+    return VertexBufferDX9Pool::ObjectsPendingRestore();
 }
 }
 

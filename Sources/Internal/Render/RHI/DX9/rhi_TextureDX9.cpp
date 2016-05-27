@@ -44,6 +44,11 @@ public:
     unsigned isMapped : 1;
 };
 
+RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor)
+
+typedef ResourcePool<TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX9Pool;
+RHI_IMPL_POOL(TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
+
 TextureDX9_t::TextureDX9_t()
     : width(0)
     , height(0)
@@ -311,9 +316,6 @@ void TextureDX9_t::Destroy(bool force_immediate)
     height = 0;
 }
 
-typedef ResourcePool<TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX9Pool;
-RHI_IMPL_POOL(TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
-
 //------------------------------------------------------------------------------
 
 static Handle
@@ -338,10 +340,7 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
 static void
 dx9_Texture_Delete(Handle tex)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
-
     self->MarkRestored();
     self->Destroy();
     TextureDX9Pool::Free(tex);
@@ -620,7 +619,6 @@ void ReleaseAll()
     for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
     {
         t->Destroy(true);
-        t->MarkNeedRestore();
     }
     TextureDX9Pool::Unlock();
 }
@@ -634,14 +632,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    unsigned result = 0;
-    TextureDX9Pool::Lock();
-    for (auto i = TextureDX9Pool::Begin(), e = TextureDX9Pool::End(); i != e; ++i)
-    {
-        result += i->NeedRestore() ? 1 : 0;
-    }
-    TextureDX9Pool::Unlock();
-    return result;
+    return TextureDX9Pool::ObjectsPendingRestore();
 }
 }
 

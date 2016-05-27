@@ -1082,6 +1082,7 @@ void Landscape::DrawLandscapeInstancing()
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
             instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
             instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+            instanceBufferDesc.needRestore = false;
 
             instanceDataBuffer = new InstanceDataBuffer();
             instanceDataBuffer->bufferSize = instanceBufferDesc.size;

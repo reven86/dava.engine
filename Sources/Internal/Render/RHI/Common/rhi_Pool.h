@@ -39,6 +39,8 @@ public:
     static void Reserve(unsigned maxCount);
     static unsigned ReCreateAll();
 
+    static uint32 ObjectsPendingRestore();
+
     static void Lock()
     {
         ObjectSync.Lock();
@@ -269,6 +271,15 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
 
 //------------------------------------------------------------------------------
 
+template <class T, ResourceType RT, typename DT, bool nr>
+inline uint32
+ResourcePool<T, RT, DT, nr>::ObjectsPendingRestore()
+{
+    return ResourceImpl<T, DT>::ObjectsPendingRestore();
+}
+
+//------------------------------------------------------------------------------
+
 template <class T, class DT>
 class
 ResourceImpl
@@ -281,8 +292,9 @@ public:
 
     bool NeedRestore() const
     {
-        return needRestore;
+        return needRestore.Get();
     }
+
     const DT& CreationDesc() const
     {
         return creationDesc;
@@ -296,16 +308,34 @@ public:
 
     void MarkNeedRestore()
     {
-        needRestore = creationDesc.needRestore;
+        if (needRestore || (creationDesc.needRestore == false))
+            return;
+
+        needRestore = true;
+        ++ObjectsToRestore;
     }
 
     void MarkRestored()
     {
-        needRestore = false;
+        if (needRestore)
+        {
+            needRestore = false;
+            DVASSERT(ObjectsPendingRestore() > 0);
+            --ObjectsToRestore;
+        }
+    }
+
+    static uint32 ObjectsPendingRestore()
+    {
+        return ObjectsToRestore.Get();
     }
 
 private:
     DT creationDesc;
-    bool needRestore;
+    DAVA::Atomic<bool> needRestore;
+    static DAVA::Atomic<uint32> ObjectsToRestore;
 };
+
+#define RHI_IMPL_RESOURCE(T, DT) \
+template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore = 0;
 }

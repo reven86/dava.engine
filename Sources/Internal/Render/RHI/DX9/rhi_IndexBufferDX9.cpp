@@ -28,6 +28,8 @@ public:
     unsigned isMapped : 1;
 };
 
+RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
+
 typedef ResourcePool<IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true);
 
@@ -143,8 +145,6 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->MarkRestored();
     self->Destroy();
@@ -267,7 +267,6 @@ void ReleaseAll()
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
-        b->MarkNeedRestore();
     }
     IndexBufferDX9Pool::Unlock();
 }
@@ -280,14 +279,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    unsigned result = 0;
-    IndexBufferDX9Pool::Lock();
-    for (auto i = IndexBufferDX9Pool::Begin(), e = IndexBufferDX9Pool::End(); i != e; ++i)
-    {
-        result += i->NeedRestore() ? 1 : 0;
-    }
-    IndexBufferDX9Pool::Unlock();
-    return result;
+    return IndexBufferDX9Pool::ObjectsPendingRestore();
 }
 }
 

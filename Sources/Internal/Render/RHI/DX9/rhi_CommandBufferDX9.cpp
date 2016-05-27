@@ -1853,6 +1853,7 @@ void ScheduleDeviceReset()
 {
     _DX9_ResetPending = true;
     DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
+    CommandBufferDX9::BlockNonRenderThreads();
 }
 
 namespace CommandBufferDX9

@@ -6,106 +6,41 @@ namespace DAVA
 {
 namespace
 {
-enum class CallbackOperation : uint32
-{
-    Add,
-    Execute,
-    Remove
-};
-
-using Callback = Function<void()>;
-
-struct StorageComparator
-{
-    bool operator()(const Fn11::Closure::Storage& l, const Fn11::Closure::Storage& r)
-    {
-        uint64 l0 = reinterpret_cast<uintptr_t>(l[0]);
-        uint64 l1 = reinterpret_cast<uintptr_t>(l[1]);
-        uint64 r0 = reinterpret_cast<uintptr_t>(r[0]);
-        uint64 r1 = reinterpret_cast<uintptr_t>(r[1]);
-        return (l0 ^ l1) < (r0 ^ r1);
-    }
-};
-
 struct CallbackStruct
 {
-    using OpPair = std::pair<CallbackOperation, Function<void()>>;
-    using CbMap = Map<Fn11::Closure::Storage, OpPair, StorageComparator>;
+    Mutex mutex;
+    Vector<Function<void()>> callbacks;
 
-    Mutex pendingMutex;
-    Mutex activeMutex;
-    CbMap pending;
-    CbMap active;
-
-    void Add(Callback cb)
+    void Add(Function<void()> cb)
     {
-        if (locked)
-        {
-            LockGuard<Mutex> guard(pendingMutex);
-            pending[cb.Target()] = std::make_pair(CallbackOperation::Add, cb);
-        }
-        else
-        {
-            LockGuard<Mutex> guard(activeMutex);
-            active[cb.Target()] = std::make_pair(CallbackOperation::Execute, cb);
-        }
+        LockGuard<Mutex> lock(mutex);
+        callbacks.push_back(cb);
     }
 
-    void Remove(Callback cb)
+    void Remove(Function<void()> cb)
     {
-        LockGuard<Mutex> guard(activeMutex);
-        auto i = active.find(cb.Target());
-        if (i != active.end())
-        {
-            i->second.first = CallbackOperation::Remove;
-        }
-
-        LockGuard<Mutex> pendingGuard(pendingMutex);
-        pending[cb.Target()] = std::make_pair(CallbackOperation::Remove, cb);
-    }
-
-    void Merge()
-    {
-        LockGuard<Mutex> guard(activeMutex);
-        LockGuard<Mutex> pendingGuard(pendingMutex);
-        for (auto& e : pending)
-        {
-            if (e.second.first == CallbackOperation::Add)
-            {
-                active[e.first] = std::make_pair(CallbackOperation::Execute, e.second.second);
-            }
-            else if (e.second.first == CallbackOperation::Remove)
-            {
-                active.erase(e.first);
-            }
-        }
-        pending.clear();
+        LockGuard<Mutex> lock(mutex);
+        callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(), [&cb](const Function<void()>& f)
+                                       {
+                                           return f.Target() == cb.Target();
+                                       }),
+                        callbacks.end());
     }
 
     void Execute()
     {
-        Merge();
-
         locked = true;
-
-        LockGuard<Mutex> guard(activeMutex);
-        for (auto& cb : active)
+        LockGuard<Mutex> lock(mutex);
+        for (auto& cb : callbacks)
         {
-            if (cb.second.first == CallbackOperation::Execute)
-            {
-                cb.second.second();
-            }
+            cb();
         }
-
         locked = false;
     }
 
 private:
     bool locked = false;
 };
-
-CallbackStruct restoreCallbacks;
-CallbackStruct postRestoreCallbacks;
 
 struct SyncCallback
 {
@@ -119,6 +54,9 @@ Atomic<bool> restoreInProgress = false;
 
 namespace RenderCallbacks
 {
+CallbackStruct restoreCallbacks;
+CallbackStruct postRestoreCallbacks;
+
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
@@ -143,7 +81,7 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
     postRestoreCallbacks.Remove(callback);
 }
 
-void ProcessFrame()
+void ExecuteResourcesCallbacks()
 {
     if (rhi::NeedRestoreResources())
     {
@@ -155,6 +93,11 @@ void ProcessFrame()
         postRestoreCallbacks.Execute();
         restoreInProgress = false;
     }
+}
+
+void ProcessFrame()
+{
+    ExecuteResourcesCallbacks();
 
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {
