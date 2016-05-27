@@ -77,7 +77,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl
         if (!controlInDirection.empty())
         {
             UIControl* next = UIControlHelpers::FindControlByPath(controlInDirection, focusedControl);
-            if (next != nullptr && FocusHelpers::CanFocusControl(next) && next != focusedControl)
+            if (next != nullptr && FocusHelpers::CanFocusControl(next))
             {
                 return next;
             }
