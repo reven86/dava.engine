@@ -326,7 +326,7 @@ private:
     DAVA::Atomic<bool> needRestore;
     static DAVA::Atomic<uint32> ObjectsToRestore;
 };
-    
+
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
