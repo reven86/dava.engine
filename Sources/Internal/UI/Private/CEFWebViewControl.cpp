@@ -179,23 +179,6 @@ void WebViewControl::AllowURLLoading(const String& url, int64 frameID)
     cefBrowser->SendProcessMessage(PID_RENDERER, msg);
 }
 
-typedef enum {
-    EVENTFLAG_NONE = 0,
-    EVENTFLAG_CAPS_LOCK_ON = 1 << 0,
-    EVENTFLAG_SHIFT_DOWN = 1 << 1,
-    EVENTFLAG_CONTROL_DOWN = 1 << 2,
-    EVENTFLAG_ALT_DOWN = 1 << 3,
-    EVENTFLAG_LEFT_MOUSE_BUTTON = 1 << 4,
-    EVENTFLAG_MIDDLE_MOUSE_BUTTON = 1 << 5,
-    EVENTFLAG_RIGHT_MOUSE_BUTTON = 1 << 6,
-    // Mac OS-X command key.
-    EVENTFLAG_COMMAND_DOWN = 1 << 7,
-    EVENTFLAG_NUM_LOCK_ON = 1 << 8,
-    EVENTFLAG_IS_KEY_PAD = 1 << 9,
-    EVENTFLAG_IS_LEFT = 1 << 10,
-    EVENTFLAG_IS_RIGHT = 1 << 11,
-} cef_event_flags_t;
-
 enum class eKeyModifiers : int32
 {
     NONE = 0,
@@ -211,16 +194,16 @@ enum class eKeyModifiers : int32
 };
 
 const Vector<int32> ModifiersDAVAToCef = {
-    EVENTFLAG_NONE,
-    EVENTFLAG_SHIFT_DOWN,
-    EVENTFLAG_CONTROL_DOWN,
-    EVENTFLAG_ALT_DOWN,
-    EVENTFLAG_LEFT_MOUSE_BUTTON,
-    EVENTFLAG_MIDDLE_MOUSE_BUTTON,
-    EVENTFLAG_RIGHT_MOUSE_BUTTON,
+    cef_event_flags_t::EVENTFLAG_NONE,
+    cef_event_flags_t::EVENTFLAG_SHIFT_DOWN,
+    cef_event_flags_t::EVENTFLAG_CONTROL_DOWN,
+    cef_event_flags_t::EVENTFLAG_ALT_DOWN,
+    cef_event_flags_t::EVENTFLAG_LEFT_MOUSE_BUTTON,
+    cef_event_flags_t::EVENTFLAG_MIDDLE_MOUSE_BUTTON,
+    cef_event_flags_t::EVENTFLAG_RIGHT_MOUSE_BUTTON,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    EVENTFLAG_IS_LEFT,
-    EVENTFLAG_IS_RIGHT,
+    cef_event_flags_t::EVENTFLAG_IS_LEFT,
+    cef_event_flags_t::EVENTFLAG_IS_RIGHT,
     0, 0, 0, 0, 0, 0
 };
 
@@ -235,27 +218,27 @@ eKeyModifiers GetKeyModifier()
             switch (keyIter)
             {
             case DAVA::Key::LSHIFT:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::SHIFT_DOWN);
                 break;
             case DAVA::Key::RSHIFT:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::SHIFT_DOWN);
                 break;
             case DAVA::Key::LCTRL:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::CONTROL_DOWN);
                 break;
             case DAVA::Key::RCTRL:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::CONTROL_DOWN);
                 break;
             case DAVA::Key::LALT:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::ALT_DOWN);
                 break;
             case DAVA::Key::RALT:
-                // 				modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
+                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::ALT_DOWN);
                 break;
             case DAVA::Key::CAPSLOCK:
@@ -294,24 +277,18 @@ int32 ConvertDAVAModifiersToCef(eKeyModifiers modifier)
 
 int32 ConvertMouseTypeDavaToCef(UIEvent* input)
 {
-    typedef enum {
-        MBT_LEFT = 0,
-        MBT_MIDDLE,
-        MBT_RIGHT,
-    } cef_mouse_button_type_t;
-
     int32 mouseType = 0;
     if (input->mouseButton == UIEvent::MouseButton::LEFT)
     {
-        mouseType = 0;
+        mouseType = cef_mouse_button_type_t::MBT_LEFT;
     }
     else if (input->mouseButton == UIEvent::MouseButton::MIDDLE)
     {
-        mouseType = 1;
+        mouseType = cef_mouse_button_type_t::MBT_MIDDLE;
     }
     else if (input->mouseButton == UIEvent::MouseButton::RIGHT)
     {
-        mouseType = 2;
+        mouseType = cef_mouse_button_type_t::MBT_RIGHT;
     }
     return mouseType;
 }
@@ -352,11 +329,6 @@ void WebViewControl::Input(UIEvent* currentInput)
 
 void WebViewControl::OnMouseClick(UIEvent* input)
 {
-    if (UIControlSystem::Instance()->GetFocusedControl() != &webView)
-    {
-        UIControlSystem::Instance()->SetFocusedControl(&webView);
-    }
-
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
     clickEvent.x = static_cast<int>(input->physPoint.dx);
@@ -365,6 +337,7 @@ void WebViewControl::OnMouseClick(UIEvent* input)
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(ConvertMouseTypeDavaToCef(input));
     bool mouseUp = (input->phase == UIEvent::Phase::ENDED);
     int clickCount = input->tapCount;
+    host->SendFocusEvent(true);
     host->SendMouseClickEvent(clickEvent, type, mouseUp, clickCount);
 }
 
@@ -375,7 +348,7 @@ void WebViewControl::OnMouseMove(UIEvent* input)
     clickEvent.x = static_cast<int>(input->physPoint.dx);
     clickEvent.y = static_cast<int>(input->physPoint.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
-    bool mouseLeave = true;
+    bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
 }
 
@@ -393,13 +366,12 @@ void WebViewControl::OnMouseWheel(UIEvent* input)
 
 int32 GetCefKeyType(UIEvent* input)
 {
-    // TODO: cef_key_event_type_t::KEYEVENT_RAWKEYDOWN
     int32 keyType = 0;
     switch (input->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
-        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
-        // 		keyType = cef_key_event_type_t::KEYEVENT_KEYDOWN;
+        keyType = cef_key_event_type_t::KEYEVENT_RAWKEYDOWN;
+        //         keyType = cef_key_event_type_t::KEYEVENT_KEYDOWN;
         break;
     case UIEvent::Phase::KEY_DOWN_REPEAT:
         break;
@@ -418,33 +390,27 @@ int32 GetCefKeyType(UIEvent* input)
     return keyType;
 }
 
-int32 GetCefWinKeyCode(UIEvent* input)
-{
-    return 0;
-}
-
-int32 GetCefNativeKeyCode(UIEvent* input)
-{
-    return 0;
-}
-
 void WebViewControl::OnKey(UIEvent* input)
 {
-    KeyboardDevice& keyDevice = InputSystem::Instance()->GetKeyboard();
-    DAVA::String str = keyDevice.GetKeyName(input->key);
-
+    CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefKeyEvent keyEvent;
     keyEvent.type = static_cast<cef_key_event_type_t>(GetCefKeyType(input));
     keyEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
-    //     keyEvent.windows_key_code = static_cast<int>(input->keyChar)/*static_cast<int>(GetCefWinKeyCode(input))*/;
-    keyEvent.native_key_code = static_cast<int>(str.at(0));
-    keyEvent.is_system_key = 0;
-    keyEvent.character = str.at(0);
-    keyEvent.unmodified_character = static_cast<wchar_t>(input->keyChar);
-    keyEvent.focus_on_editable_field = true;
-    CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
-
-    Logger::Info("!!!!! OnKey code %d , char %c", keyEvent.native_key_code, char(keyEvent.character));
+    if (UIEvent::Phase::CHAR == input->phase || UIEvent::Phase::CHAR == input->phase)
+    {
+        keyEvent.windows_key_code = input->keyChar;
+    }
+    else if (UIEvent::Phase::KEY_DOWN == input->phase || UIEvent::Phase::KEY_UP == input->phase)
+    {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+        keyEvent.windows_key_code = keyboard.GetSystemKeyForDavaKey(input->key);
+        keyEvent.windows_key_code ^= 0x100;
+        DVASSERT(keyEvent.windows_key_code != -1 && "Fail");
+    }
+    else
+    {
+        return;
+    }
     host->SendKeyEvent(keyEvent);
 }
 

@@ -854,8 +854,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-        UIControlSystem::Instance()->OnInput(&ev);
         Logger::Info("!!!!! WM_KEYUP code %d , char %c", systemKeyCode, char(systemKeyCode));
+        UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnKeyUnpressed(ev.key);
     }
     break;
@@ -909,6 +909,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
         }
+        ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         Logger::Info("!!!!! WM_CHAR code %d , char %c", wParam, char(ev.keyChar));

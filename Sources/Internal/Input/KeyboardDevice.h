@@ -4,7 +4,7 @@
 #include "Base/BaseObject.h"
 
 /**
-	\defgroup inputsystem	Input System
+    \defgroup inputsystem    Input System
 */
 namespace DAVA
 {
@@ -152,6 +152,7 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
+    friend class WebViewControl;
     friend class CorePlatformAndroid;
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
@@ -166,6 +167,7 @@ private:
 public:
 #endif
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+    uint32 GetSystemKeyForDavaKey(Key key) const;
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
 #ifdef __DAVAENGINE_MACOS__
@@ -179,6 +181,7 @@ private:
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
+    mutable Array<uint32, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> backCodeTranslator;
     Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
 
