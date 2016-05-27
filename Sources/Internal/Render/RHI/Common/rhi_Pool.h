@@ -271,15 +271,6 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT, typename DT, bool nr>
-inline uint32
-ResourcePool<T, RT, DT, nr>::ObjectsPendingRestore()
-{
-    return ResourceImpl<T, DT>::ObjectsPendingRestore();
-}
-
-//------------------------------------------------------------------------------
-
 template <class T, class DT>
 class
 ResourceImpl
@@ -335,7 +326,16 @@ private:
     DAVA::Atomic<bool> needRestore;
     static DAVA::Atomic<uint32> ObjectsToRestore;
 };
+    
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline uint32
+ResourcePool<T, RT, DT, nr>::ObjectsPendingRestore()
+{
+    return ResourceImpl<T, DT>::ObjectsPendingRestore();
+}
 
 #define RHI_IMPL_RESOURCE(T, DT) \
-template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore = 0;
+template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
 }

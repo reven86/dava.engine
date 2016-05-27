@@ -49,7 +49,7 @@ struct SyncCallback
 };
 Vector<SyncCallback> syncCallbacks;
 
-Atomic<bool> restoreInProgress = false;
+Atomic<bool> restoreInProgress(false);
 }
 
 namespace RenderCallbacks
