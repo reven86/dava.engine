@@ -47,6 +47,7 @@ LodSystem::LodSystem(Scene* scene)
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOD_DISTANCE_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOD_RECURSIVE_UPDATE_ENABLED);
 }
 
 void LodSystem::Process(float32 timeElapsed)
@@ -160,7 +161,14 @@ void LodSystem::Process(float32 timeElapsed)
                         DVASSERT(0 <= fast.currentLod && fast.currentLod < LodComponent::MAX_LOD_LAYERS);
                     }
 
-                    SetEntityLod(slow.entity, fast.currentLod);
+                    if (slow.recursiveUpdate)
+                    {
+                        SetEntityLodRecursive(slow.entity, fast.currentLod);
+                    }
+                    else
+                    {
+                        SetEntityLod(slow.entity, fast.currentLod);
+                    }
                 }
             }
         }
@@ -325,6 +333,18 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
     }
     break;
 
+    case EventSystem::LOD_RECURSIVE_UPDATE_ENABLED:
+    {
+        DVASSERT(component->GetType() == Component::LOD_COMPONENT);
+        LodComponent* lod = static_cast<LodComponent*>(component);
+        auto iter = fastMap.find(component->GetEntity());
+        DVASSERT(iter != fastMap.end());
+        int32 index = iter->second;
+        SlowStruct* slow = &slowVector[index];
+        slow->recursiveUpdate = true;
+    }
+    break;
+
     default:
         break;
     }
@@ -392,4 +412,14 @@ void LodSystem::SetEntityLod(Entity* entity, int32 currentLod)
     }
 }
 
+void LodSystem::SetEntityLodRecursive(Entity* entity, int32 currentLod)
+{
+    SetEntityLod(entity, currentLod);
+
+    int32 count = entity->GetChildrenCount();
+    for (int32 i = 0; i < count; ++i)
+    {
+        SetEntityLodRecursive(entity->GetChild(i), currentLod);
+    }
+}
 }

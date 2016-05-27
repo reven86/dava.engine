@@ -41,6 +41,8 @@ Component* Component::CreateByType(uint32 componentType)
         return new TransformComponent();
     case RENDER_COMPONENT:
         return new RenderComponent();
+    case LOD_COMPONENT:
+        return new LodComponent();
     case DEBUG_RENDER_COMPONENT:
         return new DebugRenderComponent();
     case PARTICLE_EFFECT_COMPONENT:

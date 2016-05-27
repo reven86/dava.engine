@@ -133,4 +133,8 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
     GlobalEventSystem::Instance()->Event(this, EventSystem::LOD_DISTANCE_CHANGED);
 }
 
+void LodComponent::EnableRecursiveUpdate()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::LOD_RECURSIVE_UPDATE_ENABLED);
+}
 };

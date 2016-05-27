@@ -31,6 +31,8 @@ public:
 
     int32 GetCurrentLod() const;
 
+    void EnableRecursiveUpdate();
+
 private:
     static float32 GetDefaultDistance(int32 layer);
     int32 currentLod;

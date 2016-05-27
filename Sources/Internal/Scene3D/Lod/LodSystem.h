@@ -63,11 +63,12 @@ private:
     {
         Array<float32, LodComponent::MAX_LOD_LAYERS> farSquares;
         Array<float32, LodComponent::MAX_LOD_LAYERS> nearSquares;
-        Entity* entity;
-        int32 forceLodLayer;
-        float32 forceLodDistance;
-        LodComponent* lod;
-        ParticleEffectComponent* effect;
+        Entity* entity = nullptr;
+        int32 forceLodLayer = LodComponent::INVALID_LOD_LAYER;
+        float32 forceLodDistance = LodComponent::INVALID_DISTANCE;
+        LodComponent* lod = nullptr;
+        ParticleEffectComponent* effect = nullptr;
+        bool recursiveUpdate = false;
     };
     Vector<SlowStruct> slowVector;
 
@@ -85,7 +86,8 @@ private:
 
     void UpdateDistances(LodComponent* from, LodSystem::SlowStruct* to);
 
-    static void SetEntityLod(Entity* entity, int32 currentLod);
+    void SetEntityLod(Entity* entity, int32 currentLod);
+    void SetEntityLodRecursive(Entity* entity, int32 currentLod);
 
     bool forceLodUsed = false;
 };
