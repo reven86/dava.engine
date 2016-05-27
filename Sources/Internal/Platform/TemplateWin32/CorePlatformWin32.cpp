@@ -856,7 +856,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-        Logger::Info("!!!!! WM_KEYUP code %d , char %c", systemKeyCode, char(systemKeyCode));
         UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnKeyUnpressed(ev.key);
         // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
@@ -891,8 +890,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-        Logger::Info("!!!!! WM_KEYDOWN code %d , char %c", systemKeyCode, char(systemKeyCode));
-
         UIControlSystem::Instance()->OnInput(&ev);
 
         keyboard.OnKeyPressed(ev.key);
@@ -914,7 +911,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
-        Logger::Info("!!!!! WM_CHAR code %d , char %c", wParam, char(ev.keyChar));
         UIControlSystem::Instance()->OnInput(&ev);
     }
     break;

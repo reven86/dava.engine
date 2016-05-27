@@ -213,18 +213,19 @@ enum class eKeyModifiers : int32
     IS_RIGHT = 1 << 25,
 };
 
-const Vector<int32> ModifiersDAVAToCef = {
-    cef_event_flags_t::EVENTFLAG_NONE,
-    cef_event_flags_t::EVENTFLAG_SHIFT_DOWN,
-    cef_event_flags_t::EVENTFLAG_CONTROL_DOWN,
-    cef_event_flags_t::EVENTFLAG_ALT_DOWN,
-    cef_event_flags_t::EVENTFLAG_LEFT_MOUSE_BUTTON,
-    cef_event_flags_t::EVENTFLAG_MIDDLE_MOUSE_BUTTON,
-    cef_event_flags_t::EVENTFLAG_RIGHT_MOUSE_BUTTON,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    cef_event_flags_t::EVENTFLAG_IS_LEFT,
-    cef_event_flags_t::EVENTFLAG_IS_RIGHT,
-    0, 0, 0, 0, 0, 0
+const Vector<int32> ModifiersDAVAToCef
+{
+  cef_event_flags_t::EVENTFLAG_NONE,
+  cef_event_flags_t::EVENTFLAG_SHIFT_DOWN,
+  cef_event_flags_t::EVENTFLAG_CONTROL_DOWN,
+  cef_event_flags_t::EVENTFLAG_ALT_DOWN,
+  cef_event_flags_t::EVENTFLAG_LEFT_MOUSE_BUTTON,
+  cef_event_flags_t::EVENTFLAG_MIDDLE_MOUSE_BUTTON,
+  cef_event_flags_t::EVENTFLAG_RIGHT_MOUSE_BUTTON,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  cef_event_flags_t::EVENTFLAG_IS_LEFT,
+  cef_event_flags_t::EVENTFLAG_IS_RIGHT,
+  0, 0, 0, 0, 0, 0
 };
 
 eKeyModifiers GetKeyModifier()
@@ -424,7 +425,12 @@ void CEFWebViewControl::OnKey(UIEvent* input)
     {
         KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
         keyEvent.windows_key_code = keyboard.GetSystemKeyForDavaKey(input->key);
+
+// TODO: remove this conversion from CorePlatformWin32
+#ifdef __DAVAENGINE_WIN32__
         keyEvent.windows_key_code ^= 0x100;
+#endif
+
         DVASSERT(keyEvent.windows_key_code != -1 && "Fail");
     }
     else
