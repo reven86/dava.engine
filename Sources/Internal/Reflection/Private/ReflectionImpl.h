@@ -60,7 +60,7 @@ inline const CtorWrapper* Reflection::GetCtor() const
     return db->GetCtor();
 }
 
-inline const CtorWrapper* Reflection::GetCtor(const Ref::ParamsList& params) const
+inline const CtorWrapper* Reflection::GetCtor(const Vector<const Type*>& params) const
 {
     return db->GetCtor(params);
 }

@@ -21,7 +21,7 @@ const CtorWrapper* ReflectionDB::GetCtor() const
     return ret;
 }
 
-const CtorWrapper* ReflectionDB::GetCtor(const Ref::ParamsList& params) const
+const CtorWrapper* ReflectionDB::GetCtor(const Vector<const Type*>& params) const
 {
     const CtorWrapper* ret = nullptr;
 

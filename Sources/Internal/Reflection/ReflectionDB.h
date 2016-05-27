@@ -25,7 +25,7 @@ public:
 
     const DtorWrapper* GetDtor() const;
     const CtorWrapper* GetCtor() const;
-    const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
+    const CtorWrapper* GetCtor(const Vector<const Type*>& params) const;
     Vector<const CtorWrapper*> GetCtors() const;
 
     template <typename T>

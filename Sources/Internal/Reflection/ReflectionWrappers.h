@@ -59,7 +59,7 @@ class CtorWrapper
 public:
     virtual ~CtorWrapper() = default;
 
-    virtual const Ref::ParamsList& GetParamsList() const = 0;
+    virtual const Vector<const Type*>& GetParamsList() const = 0;
 
     virtual Any Create() const = 0;
     virtual Any Create(const Any&) const = 0;

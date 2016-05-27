@@ -15,7 +15,7 @@ public:
         Fill<Args...>(tp);
     }
 
-    const Ref::ParamsList& GetParamsList() const override
+    const Vector<const Type *>& GetParamsList() const override
     {
         return paramsList;
     };
@@ -45,7 +45,7 @@ public:
     }
 
 protected:
-    Ref::ParamsList paramsList;
+    Vector<const Type*> paramsList;
 
     template <typename... A>
     void Fill(std::false_type)

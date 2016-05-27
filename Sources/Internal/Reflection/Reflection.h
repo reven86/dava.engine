@@ -18,10 +18,6 @@
 
 namespace DAVA
 {
-namespace Ref
-{
-using ParamsList = Vector<const Type*>;
-}
 
 class ValueWrapper;
 class CtorWrapper;
@@ -52,13 +48,13 @@ public:
     ReflectedObject GetValueObject() const;
 
     const CtorWrapper* GetCtor() const;
-    const CtorWrapper* GetCtor(const Ref::ParamsList& params) const;
+    const CtorWrapper* GetCtor(const Vector<const Type*>& params) const;
     Vector<const CtorWrapper*> GetCtors() const;
 
     const DtorWrapper* GetDtor() const;
 
     const MethodWrapper* GetMethod(const char* name);
-    const MethodWrapper* GetMethod(const char* name, const Ref::ParamsList& params);
+    const MethodWrapper* GetMethod(const char* name, const Vector<const Type*>& params);
     Vector<const MethodWrapper*> GetMethods() const;
 
     const StructureWrapper* GetStructure() const;
