@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
+#include "Math/Rect.h"
 #include "UI/Focus/UINavigationComponent.h"
 
 namespace DAVA
@@ -29,6 +30,8 @@ private:
 
     bool CanNavigateToControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const;
     UIControl* FindFirstControlImpl(UIControl* control, UIControl* candidate) const;
+
+    Rect GetRect(UIControl* control) const;
 
     RefPtr<UIControl> root;
 };
