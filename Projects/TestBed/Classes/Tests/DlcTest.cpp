@@ -5,6 +5,7 @@
 #include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationProgress.h"
 #include "Utils/StringUtils.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -28,7 +29,7 @@ const DAVA::String cdnServerUrl = "http://dl-wotblitz.wargaming.net/dlc/";
 
 DlcTest::DlcTest()
     : BaseScreen("DlcTest")
-    , currentDownloadUrl(localServerUrl)
+    , options(new KeyedArchive)
     , dlc(nullptr)
 {
 }
@@ -36,6 +37,8 @@ DlcTest::DlcTest()
 void DlcTest::LoadResources()
 {
     BaseScreen::LoadResources();
+
+    options->LoadFromYamlFile(optionsPath);
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     Font* fontSmall = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -87,7 +90,10 @@ void DlcTest::LoadResources()
 
     gameVersionIn = new UITextField(Rect(255.0f, 100.f, 235.f, 40.f));
     gameVersionIn->SetDebugDraw(true);
-    gameVersionIn->SetText(L"dlcdevtest");
+    String gameVer = options->GetString(gameVersion, defaultGameVersion);
+    gameVersionIn->SetText(StringToWString(gameVer));
+    gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
+    gameVersionIn->SetDelegate(this);
     AddControl(gameVersionIn);
 
     UIButton* setDlInternalServerButton = new UIButton(Rect(10.0f, 150.f, 235.f, 40.f));
@@ -137,6 +143,12 @@ void DlcTest::LoadResources()
     progressControl->SetDebugDraw(true);
     AddControl(progressControl);
 
+    progressStatistics = new UIStaticText(Rect(10.0f, 320.0f, 400.0f, 10.0f));
+    progressStatistics->SetText(L"0 / 0");
+    progressStatistics->SetFont(fontSmall);
+    progressStatistics->SetTextColor(Color::White);
+    AddControl(progressStatistics);
+
     animControl = new UIControl(Rect(470.0f, 285.0f, 50.f, 50.f));
     animControl->SetDebugDraw(true);
     animControl->SetPivotPoint(Vector2(25.0f, 25.0f));
@@ -175,9 +187,11 @@ void DlcTest::LoadResources()
     crashTest.Init(workingDir, destinationDir);
 #endif
 
-    DAVA::FileSystem::Instance()->CreateDirectory(workingDir);
-    DAVA::FileSystem::Instance()->CreateDirectory(destinationDir);
-    dlc = new DLC(currentDownloadUrl, sourceDir, destinationDir, workingDir, gameVersion, destinationDir + "/version/resources.txt");
+    FileSystem::Instance()->CreateDirectory(workingDir);
+    FileSystem::Instance()->CreateDirectory(destinationDir);
+    String url = options->GetString(currentDownloadUrl, localServerUrl);
+    String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
+    dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
 
     lastDLCState = dlc->GetState();
 
@@ -192,9 +206,11 @@ void DlcTest::UpdateInfoStr()
     infoStr += L"\nResourcesDir: ";
     infoStr += StringToWString(destinationDir.GetAbsolutePathname());
     infoStr += L"\nURL: ";
-    infoStr += StringToWString(currentDownloadUrl);
+    DAVA::String url = options->GetString(currentDownloadUrl, localServerUrl);
+    infoStr += StringToWString(url);
     infoStr += L"\nDownloading threads count: ";
-    infoStr += StringToWString(Format("%d", downloadTreadsCount));
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
+    infoStr += StringToWString(Format("%d", currentThreadsCount));
     if (nullptr != infoText)
     {
         infoText->SetText(infoStr);
@@ -205,9 +221,11 @@ void DlcTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
 
+    options->SaveToYamlFile(optionsPath);
     SafeRelease(gameVersionIn);
     SafeRelease(infoText);
     SafeRelease(staticText);
+    SafeRelease(progressStatistics);
     SafeRelease(animControl);
     SafeDelete(dlc);
 }
@@ -224,10 +242,13 @@ void DlcTest::Update(float32 timeElapsed)
     if (lastUpdateTime > 0.05f)
     {
         UpdateInfoStr();
-        if (nullptr != gameVersionIn)
-        {
-            gameVersion = WStringToString(gameVersionIn->GetText());
-        }
+
+        uint64 cur = 0;
+        uint64 total = 0;
+        dlc->GetProgress(cur, total);
+        DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
+        String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
+        progressStatistics->SetText(StringToWString(statText));
 
         // update animation
         angle += 0.10f;
@@ -256,6 +277,7 @@ void DlcTest::Update(float32 timeElapsed)
                 uint64 total = 0;
 
                 dlc->GetProgress(cur, total);
+
                 if (total > 0)
                 {
                     w = cur * r.dx / total;
@@ -335,33 +357,48 @@ void DlcTest::Draw(const UIGeometricData& geometricData)
 {
 }
 
+void DlcTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText)
+{
+    if (gameVersionIn == textField)
+    {
+        options->SetString(gameVersion, WStringToString(newText));
+    }
+}
+
 void DlcTest::SetExternalDlServer(BaseObject* obj, void* data, void* callerData)
 {
-    currentDownloadUrl = cdnServerUrl;
+    options->SetString(currentDownloadUrl, cdnServerUrl);
 }
 
 void DlcTest::SetInternalDlServer(BaseObject* obj, void* data, void* callerData)
 {
-    currentDownloadUrl = localServerUrl;
+    options->SetString(currentDownloadUrl, localServerUrl);
 }
 
 void DlcTest::IncDlThreads(BaseObject* obj, void* data, void* callerData)
 {
-    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(++downloadTreadsCount);
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(++currentThreadsCount);
+    options->SetUInt32(downloadThreadsCount, currentThreadsCount);
 }
 
 void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
 {
-    --downloadTreadsCount;
-    if (0 == downloadTreadsCount)
-        downloadTreadsCount = 1;
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
 
-    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(downloadTreadsCount);
+    --currentThreadsCount;
+    if (0 == currentThreadsCount)
+        currentThreadsCount = 1;
+
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(currentThreadsCount);
+
+    options->SetUInt32(downloadThreadsCount, currentThreadsCount);
 }
 
 void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
 {
     staticText->SetText(L"Starting DLC...");
+    options->SaveToYamlFile(optionsPath);
 
     dlc->Start();
 }
@@ -389,13 +426,16 @@ void DlcTest::Restart(BaseObject* obj, void* data, void* callerData)
 
         SafeDelete(dlc);
 
-        DAVA::FileSystem::Instance()->CreateDirectory(workingDir);
-        DAVA::FileSystem::Instance()->CreateDirectory(destinationDir);
-        dlc = new DLC(currentDownloadUrl, sourceDir, destinationDir, workingDir, gameVersion, destinationDir + "/version/resources.txt");
+        FileSystem::Instance()->CreateDirectory(workingDir);
+        FileSystem::Instance()->CreateDirectory(destinationDir);
+
+        String url = options->GetString(currentDownloadUrl, localServerUrl);
+        String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
+        dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
 
         lastDLCState = dlc->GetState();
 
-        dlc->Start();
+        Start(obj, data, callerData);
         isRestarting = false;
     }
 }

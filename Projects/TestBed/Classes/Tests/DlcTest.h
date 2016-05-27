@@ -27,7 +27,7 @@ struct DLCCrashTest
     void ExitThread(BaseObject* caller, void* callerData, void* userData);
 };
 
-class DlcTest : public BaseScreen
+class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
     DlcTest();
@@ -45,6 +45,8 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override;
+
 private:
     void UpdateInfoStr();
     void SetInternalDlServer(BaseObject* obj, void* data, void* callerData);
@@ -56,8 +58,14 @@ private:
     void Restart(BaseObject* obj, void* data, void* callerData);
 
 protected:
-    String gameVersion = "dlcdevtest";
-    String currentDownloadUrl;
+    const FilePath optionsPath = "~doc:/dlc_options.yaml";
+    ScopedPtr<KeyedArchive> options;
+
+    const String gameVersion = "DlcGameVersion";
+    const String defaultGameVersion = "dlcdevtest";
+    const String currentDownloadUrl = "DlcServerUrl";
+    const String downloadThreadsCount = "DlcThreadsCount";
+    const uint32 defaultdownloadTreadsCount = 4;
 
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
@@ -67,11 +75,10 @@ protected:
     UIStaticText* infoText = nullptr;
     WideString infoStr;
 
-    uint32 downloadTreadsCount = 4;
-
     UIStaticText* staticText = nullptr;
     UIControl* animControl = nullptr;
     UIControl* progressControl = nullptr;
+    UIStaticText* progressStatistics = nullptr;
 
     float32 angle = 0;
     float32 lastUpdateTime = 0.f;
