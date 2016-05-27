@@ -44,7 +44,7 @@ TableEditorDialog::TableEditorDialog(const QString& values_, const QList<QString
     ui.setupUi(this);
 
     ui.addButton->setIcon(QIcon(":/Icons/add.png"));
-    ui.removeButton->setIcon(QIcon(":/Icons/101.png"));
+    ui.removeButton->setIcon(QIcon(":/Icons/editclear.png"));
 
     connect(ui.addButton, &QPushButton::clicked, this, &TableEditorDialog::OnAddRow);
     connect(ui.removeButton, &QPushButton::clicked, this, &TableEditorDialog::OnRemoveRow);

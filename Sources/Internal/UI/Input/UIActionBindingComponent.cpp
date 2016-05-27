@@ -94,7 +94,15 @@ String UIActionBindingComponent::GetActionsAsString() const
         {
             stream << "; ";
         }
-        stream << action.action.c_str() << ", " << action.shortcut1.ToString();
+
+        if (action.shortcut1.GetKey() != Key::UNKNOWN)
+        {
+            stream << action.action.c_str() << ", " << action.shortcut1.ToString();
+        }
+        else
+        {
+            stream << action.action.c_str();
+        }
     }
     return stream.str();
 }
@@ -109,10 +117,16 @@ void UIActionBindingComponent::SetActionsFromString(const String& value)
     {
         Vector<String> str;
         Split(actionStr, ",", str);
-        if (str.size() > 1 && !str[0].empty())
+        if (str.size() > 0 && !str[0].empty())
         {
             FastName actionName(StringUtils::Trim(str[0]));
-            KeyboardShortcut shortcut(StringUtils::Trim(str[1]));
+            KeyboardShortcut shortcut;
+
+            if (str.size() > 1)
+            {
+                shortcut = KeyboardShortcut(StringUtils::Trim(str[1]));
+            }
+
             actions.push_back(Action(actionName, shortcut));
             if (shortcut.GetKey() != Key::UNKNOWN)
                 inputMap.BindAction(shortcut, actionName);
