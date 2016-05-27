@@ -47,11 +47,16 @@ CEFControllerImpl::CEFControllerImpl()
     // TODO: disable cef logs before merge
     //settings.log_severity = LOGSEVERITY_DISABLE;
     settings.log_severity = LOGSEVERITY_VERBOSE;
+
+    FilePath cachePath("~doc:/cef_data/cache/");
+    FilePath logFile("~doc:/cef_data/log.txt");
+    CefString(&settings.cache_path).FromString(cachePath.GetAbsolutePathname());
+    CefString(&settings.log_file).FromString(logFile.GetAbsolutePathname());
     CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
     result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
 
-    // CefInitialize replaces thread name, so we need to save it and restore
+    // CefInitialize replaces thread name, so we need to restore it
     // Restore name only on Main Thread
     if (result && Thread::IsMainThread())
     {
