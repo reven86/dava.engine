@@ -2572,6 +2572,7 @@ void QtMainWindow::OnInavalidateStaticOcclusion()
     if (!scene)
         return;
     scene->staticOcclusionSystem->InvalidateOcclusion();
+    scene->MarkAsChanged();
 }
 
 bool QtMainWindow::IsSavingAllowed()
