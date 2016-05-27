@@ -4,6 +4,7 @@
 
 #include "UI/Private/CEFWebPageRender.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -41,6 +42,8 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
                                const RectList& dirtyRects,
                                const void* buffer, int width, int height)
 {
+    uint64 now = SystemTimer::Instance()->AbsoluteMS();
+
     if (type == CefRenderHandler::PaintElementType::PET_POPUP)
     {
         return;
@@ -63,7 +66,16 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
                                                     static_cast<float32>(texture->GetWidth()),
                                                     static_cast<float32>(texture->GetHeight())));
 
-    targetControl.GetBackground()->SetSprite(sprite.Get());
+    UIControlBackground* background = targetControl.GetBackground();
+    if (background->GetDrawType() != UIControlBackground::DRAW_SCALE_TO_RECT)
+    {
+        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+        background->SetColor(Color::White);
+    }
+    background->SetSprite(sprite.Get());
+
+    uint64 diff = SystemTimer::Instance()->AbsoluteMS() - now;
+    Logger::Info("%s: %u ms", __FUNCTION__, unsigned(diff));
 }
 
 } // namespace DAVA

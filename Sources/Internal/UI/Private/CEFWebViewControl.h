@@ -72,6 +72,8 @@ private:
                    CefRefPtr<CefFrame> frame, int httpStatusCode) override;
 
     void LoadHtml(const CefString& html, const CefString& url);
+    void StopLoading();
+
     void OnURLLoadingRequst(const struct URLLoadingRequest& request);
     void AllowURLLoading(const String& url, int64 frameID);
     void OnMouseMove(UIEvent* input);

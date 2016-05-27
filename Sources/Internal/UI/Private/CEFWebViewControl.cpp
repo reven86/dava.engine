@@ -46,17 +46,20 @@ void CEFWebViewControl::Deinitialize()
 
 void CEFWebViewControl::OpenURL(const String& url)
 {
+    StopLoading();
     requestedUrl = url;
     cefBrowser->GetMainFrame()->LoadURL(url);
 }
 
 void CEFWebViewControl::LoadHtmlString(const WideString& htmlString)
 {
+    StopLoading();
     LoadHtml(htmlString, "dava:/~res:/");
 }
 
 void CEFWebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
+    StopLoading();
     String fileUrl = "dava:/" + basePath.GetStringValue();
     LoadHtml(htmlString, fileUrl);
 }
@@ -156,6 +159,14 @@ void CEFWebViewControl::LoadHtml(const CefString& html, const CefString& url)
     // loading of "about:blank" is needed for loading string
     frame->LoadURL("about:blank");
     frame->LoadString(html, url);
+}
+
+void CEFWebViewControl::StopLoading()
+{
+    if (cefBrowser->IsLoading())
+    {
+        cefBrowser->StopLoad();
+    }
 }
 
 void CEFWebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
