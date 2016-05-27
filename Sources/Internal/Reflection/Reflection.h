@@ -18,7 +18,6 @@
 
 namespace DAVA
 {
-
 class ValueWrapper;
 class CtorWrapper;
 class DtorWrapper;

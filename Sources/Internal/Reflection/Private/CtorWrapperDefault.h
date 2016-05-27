@@ -15,7 +15,7 @@ public:
         Fill<Args...>(tp);
     }
 
-    const Vector<const Type *>& GetParamsList() const override
+    const Vector<const Type*>& GetParamsList() const override
     {
         return paramsList;
     };
