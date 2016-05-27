@@ -49,17 +49,23 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
         return;
     }
 
-    // BGRA -> RGBA
     size_t pixelCount = static_cast<size_t>(width * height);
-    std::unique_ptr<uint8[]> data(new uint8[pixelCount * 4]);
-    ::memcpy(data.get(), buffer, pixelCount * 4);
+    if (imageWidth != width || imageHeight != height)
+    {
+        imageWidth = width;
+        imageHeight = height;
+        imageData.reset(new uint8[pixelCount * 4]);
+    }
+
+    // BGRA -> RGBA
+    ::memcpy(imageData.get(), buffer, pixelCount * 4);
     for (size_t i = 0; i < pixelCount * 4; i += 4)
     {
-        std::swap(data[i], data[i + 2]);
+        std::swap(imageData[i], imageData[i + 2]);
     }
 
     // Create texture
-    RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, data.get(), width, height, true));
+    RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(), width, height, true));
     texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
 
     RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,

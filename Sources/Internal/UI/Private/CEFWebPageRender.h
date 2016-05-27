@@ -21,9 +21,12 @@ private:
 
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                  const void* buffer, int width, int height) override;
-private:
+
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
     UIControl& targetControl;
+    int imageWidth = 0;
+    int imageHeight = 0;
+    std::unique_ptr<uint8[]> imageData;
 };
 
 } // namespace DAVA
