@@ -14,6 +14,8 @@ class CEFWebPageRender : public CefRenderHandler
 public:
     CEFWebPageRender(UIControl& target);
 
+    void ClearRenderSurface();
+
 private:
     // CefRenderHandler interface implementation
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;

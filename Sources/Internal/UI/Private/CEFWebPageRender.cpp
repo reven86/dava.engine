@@ -13,6 +13,13 @@ CEFWebPageRender::CEFWebPageRender(UIControl& target)
 {
 }
 
+void CEFWebPageRender::ClearRenderSurface()
+{
+    UIControlBackground* background = targetControl.GetBackground();
+    background->SetSprite(nullptr);
+    background->ReleaseDrawData();
+}
+
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
     Vector2 size = targetControl.GetSize();
