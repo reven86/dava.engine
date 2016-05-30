@@ -17,6 +17,7 @@ namespace DAVA
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
+    uiWebView.SetDebugDraw(true);
 }
 
 void CEFWebViewControl::Initialize(const Rect& rect)
@@ -25,9 +26,9 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 
     CefWindowInfo windowInfo;
     windowInfo.windowless_rendering_enabled = 1;
-    windowInfo.transparent_painting_enabled = 1;
 
     CefBrowserSettings settings;
+    settings.background_color = CefColorSetARGB(255, 0, 0, 0);
     cefBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings, nullptr);
 }
 
@@ -79,10 +80,7 @@ void CEFWebViewControl::ExecuteJScript(const String& scriptString)
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
-    if (rect.GetSize() != webView.GetSize())
-    {
-        cefBrowser->GetHost()->WasResized();
-    }
+    cefBrowser->GetHost()->WasResized();
 }
 
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
@@ -320,6 +318,8 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     {
     case DAVA::UIEvent::Device::MOUSE:
         webViewOffSet = webView.GetAbsolutePosition();
+        webViewOffSet.dx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(webViewOffSet.dx);
+        webViewOffSet.dy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(webViewOffSet.dy);
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
