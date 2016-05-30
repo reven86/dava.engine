@@ -19,7 +19,7 @@ Mutex restoreMutex;
 Vector<Function<void()>> postRestoreCallbacks;
 Mutex postRestoreMutex;
 
-Atomic<bool> restoreInProgress(false);
+bool restoreInProgress = false;
 }
 
 namespace RenderCallbacks
@@ -39,11 +39,15 @@ void UnRegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
     LockGuard<Mutex> lock(restoreMutex);
-    restoreCallbacks.erase(std::remove_if(restoreCallbacks.begin(), restoreCallbacks.end(), [&callback](const Function<void()>& f)
-                                          {
-                                              return f.Target() == callback.Target();
-                                          }),
-                           restoreCallbacks.end());
+    for (size_type i = 0, e = restoreCallbacks.size(); i < e; ++i)
+    {
+        if (restoreCallbacks[i].Target() == callback.Target())
+        {
+            DAVA::RemoveExchangingWithLast(restoreCallbacks, i);
+            return;
+        }
+    }
+    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
 }
 
 void RegisterPostRestoreCallback(Function<void()> callback)
@@ -61,12 +65,15 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
     LockGuard<Mutex> lock(postRestoreMutex);
-    postRestoreCallbacks.erase(std::remove_if(postRestoreCallbacks.begin(), postRestoreCallbacks.end(),
-                                              [&callback](const Function<void()>& f)
-                                              {
-                                                  return f.Target() == callback.Target();
-                                              }),
-                               postRestoreCallbacks.end());
+    for (size_type i = 0, e = postRestoreCallbacks.size(); i < e; ++i)
+    {
+        if (postRestoreCallbacks[i].Target() == callback.Target())
+        {
+            DAVA::RemoveExchangingWithLast(postRestoreCallbacks, i);
+            return;
+        }
+    }
+    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
 }
 
 void ExecuteResourcesCallbacks()
