@@ -149,7 +149,7 @@ void SpritesPackerModule::ConnectCacheClient()
         DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
 
         DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? DAVA::AssetCache::LOCALHOST : ipStr);
+        params.ip = (ipStr.empty() ? DAVA::AssetCache::GetLocalHost() : ipStr);
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 

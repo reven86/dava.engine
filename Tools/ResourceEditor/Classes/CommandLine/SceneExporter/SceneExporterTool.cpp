@@ -126,7 +126,7 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::HDTextures, VariantType(false), "Use 0-mip level as texture.hd.ext");
 
     options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
-    options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::LOCALHOST), "ip of adress of Asset Cache Server");
+    options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::GetLocalHost()), "ip of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
 }
