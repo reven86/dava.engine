@@ -18,31 +18,31 @@ public:
                     const String& packUrlGpu,
                     Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
 
-    inline bool IsProcessingEnabled() const;
+    bool IsProcessingEnabled() const;
 
-    inline void EnableProcessing();
+    void EnableProcessing();
 
-    inline void DisableProcessing();
+    void DisableProcessing();
 
-    inline void Update();
+    void Update();
 
     const String& FindPack(const FilePath& relativePathInPack) const;
 
     const PackManager::Pack& RequestPack(const String& packName, float32 priority);
 
-    inline uint32 GetPackIndex(const String& packName);
+    uint32 GetPackIndex(const String& packName);
 
-    inline PackManager::Pack& GetPack(const String& packName);
+    PackManager::Pack& GetPack(const String& packName);
 
     void MountDownloadedPacks();
 
     void DeletePack(const String& packName);
 
-    inline const Vector<PackManager::Pack>& GetAllState() const;
+    const Vector<PackManager::Pack>& GetAllState() const;
 
-    inline const FilePath& GetLocalPacksDir() const;
+    const FilePath& GetLocalPacksDir() const;
 
-    inline const String& GetRemotePacksURL() const;
+    const String& GetRemotePacksURL() const;
 
     Signal<const PackManager::Pack&, PackManager::Pack::Change>* onPackChange;
 
@@ -66,12 +66,12 @@ struct PackPriorityComparator
     }
 };
 
-bool PackManagerImpl::IsProcessingEnabled() const
+inline bool PackManagerImpl::IsProcessingEnabled() const
 {
     return isProcessingEnabled;
 }
 
-void PackManagerImpl::EnableProcessing()
+inline void PackManagerImpl::EnableProcessing()
 {
     if (!isProcessingEnabled)
     {
@@ -80,7 +80,7 @@ void PackManagerImpl::EnableProcessing()
     }
 }
 
-void PackManagerImpl::DisableProcessing()
+inline void PackManagerImpl::DisableProcessing()
 {
     if (isProcessingEnabled)
     {
@@ -89,7 +89,7 @@ void PackManagerImpl::DisableProcessing()
     }
 }
 
-void PackManagerImpl::Update()
+inline void PackManagerImpl::Update()
 {
     if (isProcessingEnabled)
     {
@@ -97,12 +97,12 @@ void PackManagerImpl::Update()
     }
 }
 
-const String& PackManagerImpl::FindPack(const FilePath& relativePathInPack) const
+inline const String& PackManagerImpl::FindPack(const FilePath& relativePathInPack) const
 {
     return db->FindPack(relativePathInPack);
 }
 
-uint32 PackManagerImpl::GetPackIndex(const String& packName)
+inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
 {
     auto it = packsIndex.find(packName);
     if (it != end(packsIndex))
@@ -112,23 +112,23 @@ uint32 PackManagerImpl::GetPackIndex(const String& packName)
     throw std::runtime_error("can't find pack with name: " + packName);
 }
 
-PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
+inline PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
     uint32 index = GetPackIndex(packName);
     return packs[index];
 }
 
-const Vector<PackManager::Pack>& PackManagerImpl::GetAllState() const
+inline const Vector<PackManager::Pack>& PackManagerImpl::GetAllState() const
 {
     return packs;
 }
 
-const FilePath& PackManagerImpl::GetLocalPacksDir() const
+inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
 {
     return localPacksDir;
 }
 
-const String& PackManagerImpl::GetRemotePacksURL() const
+inline const String& PackManagerImpl::GetRemotePacksURL() const
 {
     return packsUrlCommon;
 }
