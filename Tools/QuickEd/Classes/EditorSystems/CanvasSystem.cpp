@@ -534,10 +534,6 @@ void CanvasSystem::LayoutCanvas()
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
-    systemManager->GetScalableControl()->SetSize(size);
-    systemManager->GetRootControl()->SetSize(size);
-    systemManager->GetInputLayerControl()->SetSize(size);
-    systemManager->CanvasSizeChanged.Emit();
     systemsManager->GetScalableControl()->SetSize(size);
     systemsManager->GetRootControl()->SetSize(size);
     systemsManager->GetInputLayerControl()->SetSize(size);
