@@ -1,9 +1,11 @@
 #include "GameCore.h"
 
+#include "FileSystem/FileSystem.h"
+#include "UI/UIControlSystem.h"
+
 #include "Grid/GridVisualizer.h"
 
 //#include "ScreenManager.h"
-#include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Version.h"
@@ -47,8 +49,6 @@ GameCore::GameCore()
 GameCore::~GameCore()
 {
     GridVisualizer::Instance()->Release();
-
-    EditorSettings::Instance()->Release();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -96,9 +96,8 @@ void GameCore::Draw()
 void GameCore::UnpackHelp()
 {
     //Unpack Help to Documents.
-    String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
     FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
+    if (!FileSystem::Instance()->Exists(docsPath))
     {
         try
         {
@@ -108,7 +107,6 @@ void GameCore::UnpackHelp()
             FileSystem::Instance()->CreateDirectory(docsPath, true);
 
             helpRA.UnpackToFolder(docsPath);
-            EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
         catch (std::exception& ex)
         {

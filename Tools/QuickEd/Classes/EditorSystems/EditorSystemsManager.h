@@ -17,8 +17,6 @@ class VariantType;
 class UIGeometricData;
 }
 
-extern const DAVA::Vector2 minimumSize;
-
 struct HUDAreaInfo
 {
     enum eArea
@@ -155,6 +153,9 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
+
+public:
+    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 };
 
 template <class OutIt, class Predicate>
