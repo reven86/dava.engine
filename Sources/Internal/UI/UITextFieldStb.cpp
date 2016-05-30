@@ -107,7 +107,11 @@ void TextFieldStbImpl::SetText(const WideString& newText)
         {
             stb->Paste(newText);
         }
+        stb->ClearUndoStack();
         ignoreKeyPressedDelegate = false;
+
+        staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
+
         needRedraw = true;
     }
 }
@@ -139,41 +143,43 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
         return;
     }
 
-    const WideString& txt = control->GetVisibleText();
-    staticText->SetText(txt, UIStaticText::NO_REQUIRED_SIZE);
+    staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
 
-    if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+    if (isEditing)
     {
-        lastSelStart = stb->GetSelectionStart();
-        lastSelEnd = stb->GetSelectionEnd();
-        UpdateSelection(lastSelStart, lastSelEnd);
-    }
-
-    if (lastCursorPos != stb->GetCursorPosition())
-    {
-        // Show cursor again
-        cursorTime = 0.f;
-        showCursor = true;
-
-        lastCursorPos = stb->GetCursorPosition();
-
-        UpdateCursor(lastCursorPos, stb->IsInsertMode());
-        UpdateOffset(cursorRect);
-        // Fix cursor position for multiline if end of some line contains many
-        // spaces over control size (same behavior in MS Word)
-        if (!stb->IsSingleLineMode())
+        if (lastCursorPos != stb->GetCursorPosition())
         {
-            const Vector2& controlSize = control->GetSize();
-            if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
+            lastCursorPos = stb->GetCursorPosition();
+
+            UpdateCursor(lastCursorPos, stb->IsInsertMode());
+            UpdateOffset(cursorRect);
+            // Fix cursor position for multiline if end of some line contains many
+            // spaces over control size (same behavior in MS Word)
+            if (!stb->IsSingleLineMode())
             {
-                cursorRect.dx = DEFAULT_CURSOR_WIDTH;
-                cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
+                const Vector2& controlSize = control->GetSize();
+                if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
+                {
+                    cursorRect.dx = DEFAULT_CURSOR_WIDTH;
+                    cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
+                }
+                else if (cursorRect.x + cursorRect.dx > controlSize.x)
+                {
+                    cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
+                }
             }
-            else if (cursorRect.x + cursorRect.dx > controlSize.x)
-            {
-                cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
-            }
+
+            // Show cursor again
+            cursorTime = 0.f;
+            showCursor = true;
+        }
+
+        if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+        {
+            lastSelStart = stb->GetSelectionStart();
+            lastSelEnd = stb->GetSelectionEnd();
+            UpdateSelection(lastSelStart, lastSelEnd);
         }
     }
 }
@@ -237,7 +243,6 @@ void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
 
 void TextFieldStbImpl::SetVisible(bool v)
 {
-    //staticText->SetVisibilityFlag(v);
 }
 
 void TextFieldStbImpl::SetFont(Font* f)
@@ -333,6 +338,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     for (const Rect& r : selectionRects)
     {
         Rect sr = r;
+        sr.x += staticTextOffset.x;
+        sr.y += staticTextOffset.y;
         sr.x *= scale.x;
         sr.y *= scale.y;
         sr.dx *= scale.x;
@@ -348,6 +355,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     if (showCursor)
     {
         Rect sr = cursorRect;
+        sr.x += staticTextOffset.x;
+        sr.y += staticTextOffset.y;
         sr.x *= scale.x;
         sr.y *= scale.y;
         sr.dx *= scale.x;
@@ -445,7 +454,7 @@ uint32 TextFieldStbImpl::GetTextLength()
 
 WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
 {
-    return text[i];
+    return text.at(i);
 }
 
 void TextFieldStbImpl::CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight)
@@ -510,8 +519,8 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
             }
 
             Rect r;
-            r.x = staticTextOffset.x + c.xoffset + line.xoffset;
-            r.y = staticTextOffset.y + line.yoffset;
+            r.x = c.xoffset + line.xoffset;
+            r.y = line.yoffset;
             r.dx = c.xadvance;
             r.dy = line.yadvance;
 
@@ -526,8 +535,6 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
-    r.x = staticTextOffset.x;
-    r.y = staticTextOffset.y;
     r.dx = DEFAULT_CURSOR_WIDTH;
 
     int32 charsCount = tb->GetCharactersCount();

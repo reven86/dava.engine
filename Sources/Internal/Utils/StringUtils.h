@@ -71,6 +71,14 @@ WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1)
 bool RemoveEmoji(WideString& string);
 
 /**
+ * \brief Replaces all occurrences of a search string in the replacement string
+ * \param string A string to be searched and replaced
+ * \param search Seeking value
+ * \param replacement Replacement value will be used to replace the target values
+ */
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement);
+
+/**
 * \brief Query if 't' is kind of printable character.
 * \param t The char16 to process.
 * \return false if not printable.

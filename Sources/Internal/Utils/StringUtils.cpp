@@ -128,4 +128,15 @@ bool StringUtils::RemoveEmoji(WideString& string)
     // true means "we removed some emojies".
     return isChanged;
 }
+
+void StringUtils::ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
+{
+    size_t pos = 0;
+    size_t oldSubStringLength = search.length();
+    while ((pos = string.find(search, pos)) != WideString::npos)
+    {
+        string.replace(pos, oldSubStringLength, replacement);
+        pos += 1;
+    }
+}
 }

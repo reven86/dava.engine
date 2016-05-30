@@ -187,6 +187,10 @@ DAVA::WideString TextBoxImpl::AsString() const
 
 void TextBoxImpl::ReorderLines()
 {
+    // Commented options are extended options for auto clean reordered string
+    // Don't use it for now
+    static const uint32 reorderOptions = UBIDI_DO_MIRRORING /*| UBIDI_REMOVE_BIDI_CONTROLS*/;
+
     Vector<int32> l2v;
     UErrorCode errorCode = U_ZERO_ERROR;
     UBiDi* lpara = ubidi_open();
@@ -215,7 +219,7 @@ void TextBoxImpl::ReorderLines()
         // Write reordered string
         errorCode = U_ZERO_ERROR;
         UCharString visString(line.length, 0);
-        ubidi_writeReordered(lpara, const_cast<UChar*>(visString.data()), line.length, UBIDI_DO_MIRRORING | UBIDI_REMOVE_BIDI_CONTROLS, &errorCode);
+        ubidi_writeReordered(lpara, const_cast<UChar*>(visString.data()), line.length, reorderOptions, &errorCode);
         if (errorCode != U_ZERO_ERROR && errorCode != U_STRING_NOT_TERMINATED_WARNING)
         {
             Logger::Error("[TextBox::ReorderLines] writeReordered errorCode = %d", errorCode);
@@ -393,7 +397,7 @@ void TextBox::SetText(const WideString& str, const DirectionMode mode)
 
     // Replace some characters for better processing
     // Replace tabs at space character until the renderer will not be able to draw a text columns
-    logicalText.replace(logicalText.begin(), logicalText.end(), L'\t', L' ');
+    StringUtils::ReplaceAll(logicalText, L"\t", L" ");
 
     processedText = str;
     uint32 length = uint32(str.length());
@@ -495,20 +499,25 @@ void TextBox::Reorder()
 void TextBox::CleanUpVisualLines()
 {
     Set<int32> removeLiterals;
+    uint32 linesCount = uint32(lines.size());
     for (TextBox::Line& line : lines)
     {
         uint32 limit = line.start + line.length;
 
-        // Detect trailing whitespace characters and hide them
-        for (uint32 li = limit - 1; li >= line.start; --li)
+        // For all but the last line trim trailing spaces
+        if (line.index < linesCount - 1)
         {
-            Character& ch = GetCharacter(li);
-            if (StringUtils::IsWhitespace(processedText.at(li)))
+            // Detect trailing whitespace characters and hide them
+            for (uint32 li = limit - 1; li >= line.start && li < limit; --li)
             {
-                ch.hiden = true;
-                continue;
+                Character& ch = GetCharacter(li);
+                if (StringUtils::IsWhitespace(processedText.at(li)))
+                {
+                    ch.hiden = true;
+                    continue;
+                }
+                break;
             }
-            break;
         }
 
         removeLiterals.clear();

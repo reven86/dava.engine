@@ -138,6 +138,11 @@ public:
     virtual void Drag(const Vector2& point);
 
     /**
+     * \brief Clear STB text edit undo stack
+     */
+    virtual void ClearUndoStack();
+
+    /**
      * \brief Returns character index of selection start
      * \return character index
      */

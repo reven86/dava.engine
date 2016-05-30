@@ -80,7 +80,7 @@ public:
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
-    virtual TextBox* GetTextBox() const;
+    virtual TextBox* GetTextBox();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();

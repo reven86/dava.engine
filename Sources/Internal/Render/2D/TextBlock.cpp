@@ -261,8 +261,9 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
     }
 }
 
-DAVA::TextBox* TextBlock::GetTextBox() const
+DAVA::TextBox* TextBlock::GetTextBox()
 {
+    CalculateCacheParamsIfNeed();
     return textBox;
 }
 

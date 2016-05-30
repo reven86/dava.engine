@@ -247,4 +247,12 @@ bool StbTextEditBridge::IsInsertMode() const
 {
     return stb_state->insert_mode != 0;
 }
+
+void StbTextEditBridge::ClearUndoStack()
+{
+    stb_state->undostate.undo_point = 0;
+    stb_state->undostate.undo_char_point = 0;
+    stb_state->undostate.redo_point = STB_TEXTEDIT_UNDOSTATECOUNT;
+    stb_state->undostate.redo_char_point = STB_TEXTEDIT_UNDOCHARCOUNT;
+}
 }
