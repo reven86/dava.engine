@@ -22,7 +22,7 @@ c.execute("INSERT INTO packs VALUES (?, '0')", ("virtual_test_pack.pak", ))  # e
 conn.commit()
 c.execute(
 	'''CREATE TABLE dependency (
-	key INTEGER PRIMARY KEY, // autoincrement if NULL inserted 
+	key INTEGER PRIMARY KEY, // autoincrement if NULL inserted
 	pack TEXT NOT NULL,
 	depends TEXT NOT NULL,
 	FOREIGN KEY(pack) REFERENCES packs(name),
@@ -116,7 +116,7 @@ public:
             &SqliteMemShutdown
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
-        DVASSERT(result == SQLITE_OK);
+        DVVERIFY(result == SQLITE_OK);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
 
         RegisterDavaVFSForSqlite3();

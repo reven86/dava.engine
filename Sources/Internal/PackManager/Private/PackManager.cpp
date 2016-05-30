@@ -64,7 +64,7 @@ const Vector<PackManager::Pack>& PackManager::GetPacks() const
     return impl->GetAllState();
 }
 
-void PackManager::Delete(const String& packID)
+void PackManager::DeletePack(const String& packID)
 {
     impl->DeletePack(packID);
 }

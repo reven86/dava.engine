@@ -45,7 +45,7 @@ public:
 using ReadyReadCallback = std::function<void(const QByteArray&)>;
 using CompressedFilesAndSizes = QMap<QString, qint64>;
 
-const QString& GetArchiverPath();
+QString GetArchiverPath();
 bool IsArchiveValid(const QString& archivePath, ZipError* err = nullptr);
 bool LaunchArchiver(const QStringList& arguments, ReadyReadCallback callback = ReadyReadCallback(), ZipError* err = nullptr);
 bool GetFileList(const QString& archivePath, CompressedFilesAndSizes& files, ZipOperationFunctor& functor);

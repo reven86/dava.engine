@@ -1,4 +1,4 @@
-﻿#include "PackManager/Private/RequestManager.h"
+#include "PackManager/Private/RequestManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "DLC/Downloader/DownloadManager.h"
