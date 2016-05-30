@@ -430,7 +430,8 @@ void CEFWebViewControl::OnKey(UIEvent* input)
 // TODO: remove this conversion from CorePlatformWin32
 #ifdef __DAVAENGINE_WIN32__
         keyEvent.windows_key_code ^= 0x100;
-#endif }
+#endif
+    }
     else
     {
         return;
