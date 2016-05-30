@@ -28,10 +28,9 @@ IWebViewControl::~IWebViewControl()
 
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
-    , webViewControl(0)
     , isNativeControlVisible(false)
 {
-    webViewControl = new WebViewControl(*this);
+    webViewControl = std::make_unique<WebViewControl>(*this);
     Rect newRect = GetAbsoluteRect();
     webViewControl->Initialize(newRect);
     UpdateControlRect();
@@ -40,10 +39,7 @@ UIWebView::UIWebView(const Rect& rect)
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
-UIWebView::~UIWebView()
-{
-    SafeDelete(webViewControl);
-};
+UIWebView::~UIWebView() = default;
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {

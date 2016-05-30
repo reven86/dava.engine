@@ -93,7 +93,7 @@ protected:
     void UpdateControlRect();
 
     // Platform-specific implementation of the Web View Control.
-    IWebViewControl* webViewControl;
+    std::unique_ptr<IWebViewControl> webViewControl;
 
 private:
     bool isNativeControlVisible;
