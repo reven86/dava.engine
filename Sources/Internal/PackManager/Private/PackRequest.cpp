@@ -120,6 +120,9 @@ static String DownloadErrorToString(DownloadError e)
     {
         break;
     }
+    default:
+        DVASSERT(false);
+        break;
     } // end switch downloadError
     return errorMsg;
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Functional/Signal.h"
 #include "DLC/Downloader/DownloaderCommon.h"
@@ -77,7 +77,7 @@ public:
     // all packs state, valid till next call Update()
     const Vector<Pack>& GetPacks() const;
 
-    void Delete(const String& packName);
+    void DeletePack(const String& packName);
 
     // signal user about every pack state change
     Signal<const Pack&, Pack::Change> onPackStateChanged;

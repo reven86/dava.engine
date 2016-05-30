@@ -380,7 +380,7 @@ bool IsMemoryAddressAccessible(void* blockStart)
     vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
     vm_size_t size = 0;
     mach_port_t obj;
-    
+
 #if defined(__aarch64__)
     kern_return_t status = vm_region_64(
 #else
@@ -448,7 +448,7 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
-size_type MemoryManager::MemorySize(void* ptr)
+uint32 MemoryManager::MemorySize(void* ptr)
 {
     if (ptr != nullptr)
     {
