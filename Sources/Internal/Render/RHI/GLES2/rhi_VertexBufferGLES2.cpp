@@ -278,7 +278,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return VertexBufferGLES2Pool::ObjectsPendingRestore();
+    return VertexBufferGLES2Pool::PendingRestoreCount();
 }
 }
 

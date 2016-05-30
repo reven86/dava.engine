@@ -6,42 +6,6 @@ namespace DAVA
 {
 namespace
 {
-struct CallbackStruct
-{
-    Mutex mutex;
-    Vector<Function<void()>> callbacks;
-
-    void Add(Function<void()> cb)
-    {
-        LockGuard<Mutex> lock(mutex);
-        callbacks.push_back(cb);
-    }
-
-    void Remove(Function<void()> cb)
-    {
-        LockGuard<Mutex> lock(mutex);
-        callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(), [&cb](const Function<void()>& f)
-                                       {
-                                           return f.Target() == cb.Target();
-                                       }),
-                        callbacks.end());
-    }
-
-    void Execute()
-    {
-        locked = true;
-        LockGuard<Mutex> lock(mutex);
-        for (auto& cb : callbacks)
-        {
-            cb();
-        }
-        locked = false;
-    }
-
-private:
-    bool locked = false;
-};
-
 struct SyncCallback
 {
     rhi::HSyncObject syncObject;
@@ -49,36 +13,60 @@ struct SyncCallback
 };
 Vector<SyncCallback> syncCallbacks;
 
+Vector<Function<void()>> restoreCallbacks;
+Mutex restoreMutex;
+
+Vector<Function<void()>> postRestoreCallbacks;
+Mutex postRestoreMutex;
+
 Atomic<bool> restoreInProgress(false);
 }
 
 namespace RenderCallbacks
 {
-CallbackStruct restoreCallbacks;
-CallbackStruct postRestoreCallbacks;
-
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    restoreCallbacks.Add(callback);
+    LockGuard<Mutex> lock(restoreMutex);
+    if (restoreCallbacks.empty())
+    {
+        restoreCallbacks.reserve(256);
+    }
+    restoreCallbacks.push_back(callback);
 }
 
 void UnRegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    restoreCallbacks.Remove(callback);
+    LockGuard<Mutex> lock(restoreMutex);
+    restoreCallbacks.erase(std::remove_if(restoreCallbacks.begin(), restoreCallbacks.end(), [&callback](const Function<void()>& f)
+                                          {
+                                              return f.Target() == callback.Target();
+                                          }),
+                           restoreCallbacks.end());
 }
 
 void RegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    postRestoreCallbacks.Add(callback);
+    LockGuard<Mutex> lock(postRestoreMutex);
+    if (postRestoreCallbacks.empty())
+    {
+        postRestoreCallbacks.reserve(256);
+    }
+    postRestoreCallbacks.push_back(callback);
 }
 
 void UnRegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    postRestoreCallbacks.Remove(callback);
+    LockGuard<Mutex> lock(postRestoreMutex);
+    postRestoreCallbacks.erase(std::remove_if(postRestoreCallbacks.begin(), postRestoreCallbacks.end(),
+                                              [&callback](const Function<void()>& f)
+                                              {
+                                                  return f.Target() == callback.Target();
+                                              }),
+                               postRestoreCallbacks.end());
 }
 
 void ExecuteResourcesCallbacks()
@@ -86,11 +74,19 @@ void ExecuteResourcesCallbacks()
     if (rhi::NeedRestoreResources())
     {
         restoreInProgress = true;
-        restoreCallbacks.Execute();
+        LockGuard<Mutex> lock(restoreMutex);
+        for (auto& cb : restoreCallbacks)
+        {
+            cb();
+        }
     }
     else if (restoreInProgress)
     {
-        postRestoreCallbacks.Execute();
+        LockGuard<Mutex> lock(postRestoreMutex);
+        for (auto& cb : postRestoreCallbacks)
+        {
+            cb();
+        }
         restoreInProgress = false;
     }
 }

@@ -279,7 +279,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferDX9Pool::ObjectsPendingRestore();
+    return IndexBufferDX9Pool::PendingRestoreCount();
 }
 }
 

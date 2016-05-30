@@ -39,16 +39,11 @@ public:
     static void Reserve(unsigned maxCount);
     static unsigned ReCreateAll();
 
-    static uint32 ObjectsPendingRestore();
+    static uint32 PendingRestoreCount();
 
-    static void Lock()
-    {
-        ObjectSync.Lock();
-    }
-    static void Unlock()
-    {
-        ObjectSync.Unlock();
-    }
+    static void Lock();
+    static void Unlock();
+
     class
     Iterator
     {
@@ -271,6 +266,24 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
 
 //------------------------------------------------------------------------------
 
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::Lock()
+{
+    ObjectSync.Lock();
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::Unlock()
+{
+    ObjectSync.Unlock();
+}
+
+//------------------------------------------------------------------------------
+
 template <class T, class DT>
 class
 ResourceImpl
@@ -311,12 +324,12 @@ public:
         if (needRestore)
         {
             needRestore = false;
-            DVASSERT(ObjectsPendingRestore() > 0);
+            DVASSERT(PendingRestoreCount() > 0);
             --ObjectsToRestore;
         }
     }
 
-    static uint32 ObjectsPendingRestore()
+    static uint32 PendingRestoreCount()
     {
         return ObjectsToRestore.Get();
     }
@@ -331,9 +344,9 @@ private:
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline uint32
-ResourcePool<T, RT, DT, nr>::ObjectsPendingRestore()
+ResourcePool<T, RT, DT, nr>::PendingRestoreCount()
 {
-    return ResourceImpl<T, DT>::ObjectsPendingRestore();
+    return ResourceImpl<T, DT>::PendingRestoreCount();
 }
 
 #define RHI_IMPL_RESOURCE(T, DT) \

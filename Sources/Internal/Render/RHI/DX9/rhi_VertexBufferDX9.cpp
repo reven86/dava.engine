@@ -276,7 +276,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return VertexBufferDX9Pool::ObjectsPendingRestore();
+    return VertexBufferDX9Pool::PendingRestoreCount();
 }
 }
 

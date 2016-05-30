@@ -916,7 +916,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureGLES2Pool::ObjectsPendingRestore();
+    return TextureGLES2Pool::PendingRestoreCount();
 }
 
 } // namespace TextureGLES2

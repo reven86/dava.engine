@@ -632,7 +632,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureDX9Pool::ObjectsPendingRestore();
+    return TextureDX9Pool::PendingRestoreCount();
 }
 }
 

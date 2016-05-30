@@ -344,7 +344,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferGLES2Pool::ObjectsPendingRestore();
+    return IndexBufferGLES2Pool::PendingRestoreCount();
 }
 
 } // namespace IndexBufferGLES
