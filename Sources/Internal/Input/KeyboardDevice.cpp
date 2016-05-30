@@ -194,15 +194,20 @@ Key KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
     return Key::UNKNOWN;
 }
 
+#if defined(ENABLE_CEF_WEBVIEW)
 uint32 KeyboardDevice::GetSystemKeyForDavaKey(Key key) const
 {
+    DVASSERT(backCodeTranslator[static_cast<int32>(key)] != -1 && "Fail, before GetSystemKeyForDavaKey need add native code inside backCodeTranslator");
     return backCodeTranslator[static_cast<int32>(key)];
 }
+#endif
 
 void KeyboardDevice::PrepareKeyTranslator()
 {
     std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), Key::UNKNOWN);
+#if defined(ENABLE_CEF_WEBVIEW)
     std::uninitialized_fill(begin(backCodeTranslator), end(backCodeTranslator), -1);
+#endif
 
 #if defined(__DAVAENGINE_WINDOWS__)
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
