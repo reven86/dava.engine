@@ -79,6 +79,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     DVASSERT(desc.levelCount);
 
     bool success = false;
+    UpdateCreationDesc(desc);
+
     GLuint uid[2] = { 0, 0 };
     bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
 
@@ -375,13 +377,7 @@ gles2_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureGLES2Pool::Alloc();
     TextureGLES2_t* tex = TextureGLES2Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (tex->Create(desc) == false)
     {
         TextureGLES2Pool::Free(handle);
         handle = InvalidHandle;

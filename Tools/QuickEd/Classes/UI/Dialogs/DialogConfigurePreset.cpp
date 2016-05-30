@@ -1,3 +1,5 @@
+#include "Render/2D/FTFont.h"
+
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/LocalizationSystem.h"

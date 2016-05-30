@@ -172,8 +172,12 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
-    bool cameraLightState = editorLightSystem->GetCameraLightEnabled();
-    editorLightSystem->SetCameraLightEnabled(false);
+    bool cameraLightState = false;
+    if (editorLightSystem != nullptr)
+    {
+        cameraLightState = editorLightSystem->GetCameraLightEnabled();
+        editorLightSystem->SetCameraLightEnabled(false);
+    }
 
     ExtractEditorEntities();
 
@@ -205,7 +209,10 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
     InjectEditorEntities();
 
-    editorLightSystem->SetCameraLightEnabled(cameraLightState);
+    if (editorLightSystem != nullptr)
+    {
+        editorLightSystem->SetCameraLightEnabled(cameraLightState);
+    }
 
     SceneSignals::Instance()->EmitSaved(this);
 

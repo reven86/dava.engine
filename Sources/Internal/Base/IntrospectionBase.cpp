@@ -78,6 +78,11 @@ const InspMemberDynamic* InspMember::Dynamic() const
     return nullptr;
 }
 
+const InspInfo* InspMember::GetParentInsp() const
+{
+    return parentInsp;
+}
+
 int InspMember::Flags() const
 {
     return flags;
