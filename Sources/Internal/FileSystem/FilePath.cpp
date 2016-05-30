@@ -106,7 +106,7 @@ String GetResourceDirName(const String& arch, const String& dirName, const Strin
 }
 #endif
     
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
 void FilePath::InitializeBundleName()
 {
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();

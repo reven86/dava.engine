@@ -86,6 +86,14 @@ else ()
 	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 endif ()
 
+set ( MAC_DISABLE_BUNDLE true )
+
 setup_main_executable()
+
+add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodevent.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodex.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libTextureConverter.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${TOOL_OUTPUT_DIR}/Data)
 
 execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )

@@ -84,11 +84,7 @@ DAVA::WideString BaseApplication::GetPluginsFolder() const
 {
     QFileInfo appFileInfo(commandLineParser.argv()[0]);
 
-#if defined(Q_OS_WIN)
     QString pluginsBasePath_ = appFileInfo.absolutePath() + "/plugins/";
-#elif defined(Q_OS_OSX)
-    QString pluginsBasePath_ = appFileInfo.absolutePath() + "/../PlugIns/plugins/";
-#endif
 
     return pluginsBasePath_.toStdWString();
 }

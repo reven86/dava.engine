@@ -57,7 +57,6 @@ include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
 
 include_directories   (.)
-include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/CubemapEditor" )
@@ -154,7 +153,15 @@ DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphi
                            COPY_WIN64  ${BEAST_DLL}
                            COPY_DIR    ${DEPLOY_DIR})
 
+set ( MAC_DISABLE_BUNDLE true )
+
 setup_main_executable()
+
+add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodevent.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodex.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libTextureConverter.dylib ${TOOL_OUTPUT_DIR}
+       COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${TOOL_OUTPUT_DIR}/Data)
 
 if (DEPLOY)
     if (NOT WIN32)
