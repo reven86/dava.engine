@@ -30,6 +30,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
 #include "Base/ObjectFactory.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
 
 namespace DAVA
 {
@@ -102,6 +103,11 @@ Component* Component::CreateByType(uint32 componentType)
         DVASSERT(0);
         return 0;
     }
+}
+
+Component::~Component()
+{
+    GlobalEventSystem::Instance()->RemoveAllEvents(this);
 }
 
 void Component::SetEntity(Entity* _entity)

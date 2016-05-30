@@ -1018,7 +1018,6 @@ inline void Entity::RemoveComponent(Vector<Component*>::iterator& it)
     if (it != components.end())
     {
         Component* c = *it;
-        GlobalEventSystem::Instance()->RemoveAllEvents(c);
         DetachComponent(it);
         SafeDelete(c);
     }
