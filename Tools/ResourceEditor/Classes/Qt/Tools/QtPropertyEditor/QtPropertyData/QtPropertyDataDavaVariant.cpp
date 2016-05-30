@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 #include "Debug/DVAssert.h"
 #include "Main/QtUtils.h"
@@ -37,6 +8,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QListWidget>
 #include <QDoubleSpinBox>
@@ -98,9 +70,13 @@ void QtPropertyDataDavaVariant::InitFlags()
         break;
 
     case DAVA::VariantType::TYPE_FLOAT:
+    case DAVA::VariantType::TYPE_INT8:
+    case DAVA::VariantType::TYPE_UINT8:
+    case DAVA::VariantType::TYPE_INT16:
+    case DAVA::VariantType::TYPE_UINT16:
     case DAVA::VariantType::TYPE_INT32:
-    case DAVA::VariantType::TYPE_INT64:
     case DAVA::VariantType::TYPE_UINT32:
+    case DAVA::VariantType::TYPE_INT64:
     case DAVA::VariantType::TYPE_UINT64:
     case DAVA::VariantType::TYPE_STRING:
     case DAVA::VariantType::TYPE_VECTOR2:
@@ -331,14 +307,26 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant& value)
     case DAVA::VariantType::TYPE_FLOAT:
         ToFloat(value);
         break;
+    case DAVA::VariantType::TYPE_INT8:
+        curVariantValue.SetInt8(value.toInt());
+        break;
+    case DAVA::VariantType::TYPE_UINT8:
+        curVariantValue.SetUInt8(value.toUInt());
+        break;
+    case DAVA::VariantType::TYPE_INT16:
+        curVariantValue.SetInt16(value.toInt());
+        break;
+    case DAVA::VariantType::TYPE_UINT16:
+        curVariantValue.SetUInt16(value.toUInt());
+        break;
     case DAVA::VariantType::TYPE_INT32:
         curVariantValue.SetInt32(value.toInt());
         break;
-    case DAVA::VariantType::TYPE_INT64:
-        curVariantValue.SetInt64(value.toLongLong());
-        break;
     case DAVA::VariantType::TYPE_UINT32:
         curVariantValue.SetUInt32(value.toUInt());
+        break;
+    case DAVA::VariantType::TYPE_INT64:
+        curVariantValue.SetInt64(value.toLongLong());
         break;
     case DAVA::VariantType::TYPE_UINT64:
         curVariantValue.SetUInt64(value.toULongLong());
@@ -684,14 +672,26 @@ QVariant QtPropertyDataDavaVariant::FromDavaVariant(const DAVA::VariantType& var
     case DAVA::VariantType::TYPE_FLOAT:
         v = FromFloat(variant.AsFloat());
         break;
+    case DAVA::VariantType::TYPE_INT8:
+        v = variant.AsInt8();
+        break;
+    case DAVA::VariantType::TYPE_UINT8:
+        v = variant.AsUInt8();
+        break;
+    case DAVA::VariantType::TYPE_INT16:
+        v = variant.AsInt16();
+        break;
+    case DAVA::VariantType::TYPE_UINT16:
+        v = variant.AsUInt16();
+        break;
     case DAVA::VariantType::TYPE_INT32:
         v = variant.AsInt32();
         break;
-    case DAVA::VariantType::TYPE_INT64:
-        v = variant.AsInt64();
-        break;
     case DAVA::VariantType::TYPE_UINT32:
         v = variant.AsUInt32();
+        break;
+    case DAVA::VariantType::TYPE_INT64:
+        v = variant.AsInt64();
         break;
     case DAVA::VariantType::TYPE_UINT64:
         v = variant.AsUInt64();
@@ -1223,6 +1223,18 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedFlagsEditor(QWidget* parent) co
             quint64 intVal = 0;
             switch (real.type)
             {
+            case DAVA::VariantType::TYPE_INT8:
+                intVal = real.AsInt8();
+                break;
+            case DAVA::VariantType::TYPE_UINT8:
+                intVal = real.AsUInt8();
+                break;
+            case DAVA::VariantType::TYPE_INT16:
+                intVal = real.AsInt16();
+                break;
+            case DAVA::VariantType::TYPE_UINT16:
+                intVal = real.AsUInt16();
+                break;
             case DAVA::VariantType::TYPE_INT32:
                 intVal = real.AsInt32();
                 break;

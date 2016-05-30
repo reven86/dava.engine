@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
@@ -35,9 +6,6 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "EditorSettings.h"
-
-#include "AssetCache/AssetCacheClient.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
@@ -46,6 +14,8 @@
 #include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
+
+REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
 
 EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
@@ -59,8 +29,10 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    qApp->installEventFilter(this);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
 
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
@@ -71,7 +43,6 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
-    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
     connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
@@ -113,7 +84,13 @@ EditorCore::EditorCore(QObject* parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 }
 
-EditorCore::~EditorCore() = default;
+EditorCore::~EditorCore()
+{
+    if (cacheClient && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+    }
+}
 
 MainWindow* EditorCore::GetMainWindow() const
 {
@@ -155,34 +132,23 @@ void EditorCore::OnReloadSpritesFinished()
 
 void EditorCore::OnGLWidgedInitialized()
 {
-    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    if (projectCount > 0)
+    QStringList projectsPathes = project->GetProjectsHistory();
+    if (!projectsPathes.isEmpty())
     {
-        OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
+        OpenProject(projectsPathes.last());
     }
 }
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
-    if (EditorSettings::Instance()->IsUsingAssetCache())
+    DisableCacheClient();
+    if (projectPath.isEmpty())
     {
-        String ipStr = EditorSettings::Instance()->GetAssetCacheIp();
-
-        DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
-        params.port = static_cast<DAVA::uint16>(EditorSettings::Instance()->GetAssetCachePort());
-        params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
-
-        cacheClient.reset(new AssetCacheClient(true));
-        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
-        if (connected != AssetCache::Error::NO_ERRORS)
-        {
-            cacheClient.reset();
-        }
+        return;
     }
-    else
+    if (assetCacheEnabled)
     {
-        cacheClient.reset();
+        EnableCacheClient();
     }
 
     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
@@ -346,4 +312,60 @@ void EditorCore::OnNewProject()
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
     }
+}
+
+bool EditorCore::IsUsingAssetCache() const
+{
+    return assetCacheEnabled;
+}
+
+void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        EnableCacheClient();
+    }
+    else
+    {
+        DisableCacheClient();
+        assetCacheEnabled = false;
+    }
+}
+
+void EditorCore::EnableCacheClient()
+{
+    DisableCacheClient();
+    cacheClient.reset(new AssetCacheClient(true));
+    DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
+    if (connected != AssetCache::Error::NO_ERRORS)
+    {
+        cacheClient.reset();
+        Logger::Warning("Asset cache client was not started! Error №%d", connected);
+    }
+    else
+    {
+        Logger::Info("Asset cache client started");
+    }
+}
+
+void EditorCore::DisableCacheClient()
+{
+    if (cacheClient != nullptr && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+        cacheClient.reset();
+    }
+}
+
+bool EditorCore::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == mainWindow.get() && event->type() == QEvent::Close)
+    {
+        if (!CloseProject())
+        {
+            event->ignore();
+        }
+    }
+
+    return QObject::eventFilter(obj, event);
 }
