@@ -205,25 +205,25 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
     ActiveStackGuard guard(this);
     int commandIndex = 0;
     commandManager->removeCommands([&commandId, &commandIndex, this](const CommandInstancePtr& instance)
-    {
-        Command2* cmd = instance->getArguments().getBase<Command2>();
-        if (cmd->GetId() == CMDID_BATCH)
-        {
-            CommandBatch* batch = static_cast<CommandBatch*>(cmd);
+                                   {
+                                       Command2* cmd = instance->getArguments().getBase<Command2>();
+                                       if (cmd->GetId() == CMDID_BATCH)
+                                       {
+                                           CommandBatch* batch = static_cast<CommandBatch*>(cmd);
 
-            batch->RemoveCommands(commandId);
-            return batch->Size() == 0;
-        }
+                                           batch->RemoveCommands(commandId);
+                                           return batch->Size() == 0;
+                                       }
 
-        bool needToRemove =  cmd->GetId() == commandId;
-        if (needToRemove == true && commandIndex <= nextAfterCleanCommandIndex)
-        {
-            --nextAfterCleanCommandIndex;
-        }
+                                       bool needToRemove = cmd->GetId() == commandId;
+                                       if (needToRemove == true && commandIndex <= nextAfterCleanCommandIndex)
+                                       {
+                                           --nextAfterCleanCommandIndex;
+                                       }
 
-        ++commandIndex;
-        return needToRemove;
-    });
+                                       ++commandIndex;
+                                       return needToRemove;
+                                   });
 
     CleanCheck();
 }
