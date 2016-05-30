@@ -137,6 +137,7 @@ void LodSystem::Process(float32 timeElapsed)
                             newLod = i;
                         }
                     }
+                    DVASSERT(newLod != LodComponent::INVALID_LOD_LAYER);
                 }
             }
 
@@ -208,8 +209,8 @@ void LodSystem::AddEntity(Entity* entity)
     slow.entity = entity;
     slow.lod = lod;
     slow.effect = effect;
-    slowVector.push_back(slow);
     UpdateDistances(lod, &slow);
+    slowVector.push_back(slow);
 
     int32 index = static_cast<int32>(slowVector.size() - 1);
 
