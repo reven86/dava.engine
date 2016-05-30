@@ -77,7 +77,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl
         if (!controlInDirection.empty())
         {
             UIControl* next = UIControlHelpers::FindControlByPath(controlInDirection, focusedControl);
-            if (next != nullptr && FocusHelpers::CanFocusControl(next) && next != focusedControl)
+            if (next != nullptr && FocusHelpers::CanFocusControl(next))
             {
                 return next;
             }
@@ -91,7 +91,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
     UIControl* bestControl = nullptr;
     float32 bestDistSq = 0;
 
-    Rect rect = focusedControl->GetAbsoluteRect();
+    Rect rect = GetRect(focusedControl);
     Vector2 pos = rect.GetCenter();
 
     switch (dir)
@@ -143,7 +143,7 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
 
 Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UIControl* testControl, UINavigationComponent::Direction dir) const
 {
-    Rect r = testControl->GetAbsoluteRect();
+    Rect r = GetRect(testControl);
     Vector2 res = r.GetCenter();
     if (dir == UINavigationComponent::Direction::UP || dir == UINavigationComponent::Direction::DOWN)
     {
@@ -202,7 +202,7 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
     {
         return false;
     }
-    Rect rect = focusedControl->GetAbsoluteRect();
+    Rect rect = GetRect(focusedControl);
     Vector2 pos = rect.GetCenter();
     Vector2 srcPos = rect.GetCenter();
 
@@ -230,5 +230,10 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
         break;
     }
     return false;
+}
+
+Rect DirectionBasedNavigationAlgorithm::GetRect(UIControl* control) const
+{
+    return control->GetGeometricData().GetUnrotatedRect();
 }
 }
