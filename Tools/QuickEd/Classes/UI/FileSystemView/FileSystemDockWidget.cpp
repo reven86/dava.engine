@@ -109,7 +109,7 @@ void FileSystemDockWidget::RefreshActions()
     bool canCreateDir = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
     bool canShow = false;
     bool canRename = false;
-    auto index = ui->treeView->indexAt(menuInvokePos);
+    const QModelIndex& index = ui->treeView->indexAt(menuInvokePos);
 
     if (index.isValid())
     {
@@ -118,7 +118,7 @@ void FileSystemDockWidget::RefreshActions()
         canShow = true;
         canRename = true;
     }
-
+    ProcessKeyboardActions(QModelIndexList() << index);
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
     showInSystemExplorerAction->setEnabled(canShow);
@@ -127,7 +127,7 @@ void FileSystemDockWidget::RefreshActions()
     renameAction->setVisible(canRename);
 }
 
-bool FileSystemDockWidget::CanRemove(const QModelIndex& index) const
+bool FileSystemDockWidget::CanDelete(const QModelIndex& index) const
 {
     if (!model->isDir(index))
     {
@@ -254,6 +254,7 @@ void FileSystemDockWidget::onDeleteFile()
         DVASSERT(indexes.size() == 1);
         index = indexes.first();
     }
+    DVASSERT(index.isValid());
     bool isDir = model->isDir(index);
     QString title = tr("Delete ") + (isDir ? "folder" : "file") + "?";
     QString text = tr("Delete ") + (isDir ? "folder" : "file") + " \"" + model->fileName(index) + "\"" + (isDir ? " and its content" : "") + "?";
@@ -319,15 +320,24 @@ void FileSystemDockWidget::OnCustomContextMenuRequested(const QPoint& pos)
 
 void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItemSelection&)
 {
-    const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
-    bool canRemove = !indexes.isEmpty();
+    const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    ProcessKeyboardActions(indexes);
+}
+
+void FileSystemDockWidget::ProcessKeyboardActions(const QModelIndexList& indexes)
+{
+    bool canDelete = false;
     bool canOpen = false;
     for (auto index : indexes)
     {
-        canRemove &= CanRemove(index);
+        if (!index.isValid())
+        {
+            continue;
+        }
+        canDelete |= CanDelete(index);
         canOpen |= !model->isDir(index);
     }
-    deleteAction->setEnabled(canRemove);
+    deleteAction->setEnabled(canDelete);
     openFileAction->setEnabled(canOpen);
     openFileAction->setVisible(canOpen);
 }

@@ -42,7 +42,8 @@ private slots:
 
 private:
     void RefreshActions();
-    bool CanRemove(const QModelIndex& index) const;
+    bool CanDelete(const QModelIndex& index) const;
+    void ProcessKeyboardActions(const QModelIndexList& modelIndexes);
     QString GetPathByCurrentPos();
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
