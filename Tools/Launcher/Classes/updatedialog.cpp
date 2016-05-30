@@ -2,7 +2,7 @@
 #include "ui_updatedialog.h"
 #include "filemanager.h"
 #include "applicationmanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
@@ -48,7 +48,7 @@ private:
     void OnError(const ZipError& zipError) override
     {
         Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
         dialog->UpdateLastLogValue(errorMessage);
         dialog->BreakLog();
     }
@@ -73,7 +73,6 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
 #ifdef Q_OS_MAC
     //https://bugreports.qt.io/browse/QTBUG-51120
     ui->progressBar_downloading->setTextVisible(true);
-    ui->progressBar_testing->setTextVisible(true);
     ui->progressBar_unpacking->setTextVisible(true);
 #endif //Q_OS_MAC
 
@@ -92,7 +91,7 @@ void UpdateDialog::OnCancelClicked()
         currentDownload->abort();
     outputFile.close();
 
-    FileManager::Instance()->ClearTempDirectory();
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     close();
 }
@@ -109,7 +108,6 @@ void UpdateDialog::StartNextTask()
     if (!tasks.isEmpty())
     {
         ui->progressBar_downloading->setValue(0);
-        ui->progressBar_testing->setValue(0);
         ui->progressBar_unpacking->setValue(0);
 
         setWindowTitle(QString("Updating in progress... (%1/%2)").arg(tasksCount - tasks.size() + 1).arg(tasksCount));
@@ -138,7 +136,7 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            const QString& archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
+            const QString& archiveFilepath = FileManager::GetTempDownloadFilePath();
 
             outputFile.setFileName(archiveFilepath);
             outputFile.open(QFile::WriteOnly);
@@ -195,22 +193,21 @@ void UpdateDialog::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = nullptr;
 
-        QString appDir = FileManager::Instance()->GetApplicationFolder(task.branchID, task.appID);
+        QString appDir = FileManager::GetApplicationDirectory(task.branchID, task.appID);
 
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
-            ErrorMessanger::Instance()->ShowRetryDlg(false);
+            ErrorMessenger::ShowRetryDlg(false);
 
-        FileManager::Instance()->DeleteDirectory(appDir);
+        FileManager::DeleteDirectory(appDir);
 
         UpdateLastLogValue(tr("Download Complete!"));
 
-        AddLogValue(tr("Checking archive..."));
+        AddLogValue(tr("Unpacking archive..."));
 
         ui->cancelButton->setEnabled(false);
         ZipUtils::CompressedFilesAndSizes files;
         if (ListArchive(filePath, files)
-            && TestArchive(filePath, files)
             && UnpackArchive(filePath, appDir, files))
         {
             emit AppInstalled(task.branchID, task.appID, task.version);
@@ -223,14 +220,14 @@ void UpdateDialog::DownloadFinished()
             BreakLog();
         }
         ui->cancelButton->setEnabled(true);
-        FileManager::Instance()->ClearTempDirectory();
+        FileManager::DeleteDirectory(FileManager::GetTempDirectory());
     }
     else if (lastErrorCode != QNetworkReply::OperationCanceledError)
     {
         UpdateLastLogValue("Download Fail!");
         BreakLog();
 
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
     }
     tasks.dequeue();
     StartNextTask();
@@ -242,16 +239,8 @@ bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedF
     return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
-bool UpdateDialog::TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files)
-{
-    UpdateLastLogValue(tr("Checking archive..."));
-    UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Checking archive..."), tr("Archive checked!"), tr("Archive not found or damaged!"), this, ui->progressBar_testing);
-    return ZipUtils::TestZipArchive(archivePath, files, functor);
-}
-
 bool UpdateDialog::UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files)
 {
-    AddLogValue(tr("Unpacking archive..."));
     UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
     return ZipUtils::UnpackZipArchive(archivePath, outDir, files, functor);
 }
