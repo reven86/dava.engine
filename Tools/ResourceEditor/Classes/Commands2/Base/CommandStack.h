@@ -46,6 +46,11 @@ private:
 
 private:
     const DAVA::int32 EMPTY_INDEX = -1;
+    /// SCENE_CHANGED_INDEX we need to store state of command stack when Scene was changed without Command,
+    /// that support Undo operation. EMPTY_INDEX is not enough for that, because when we open scene nextCommandIndex and
+    /// nextAfterCleanCommandIndex are equal EMPTY_INDEX. If immediately after that user made changes without Command,
+    /// nextAfterCleanCommandIndex will not change and scene will not be marked as changed
+    const DAVA::int32 SCENE_CHANGED_INDEX = -2;
 
     class ActiveCommandStack;
     class ActiveStackGuard;

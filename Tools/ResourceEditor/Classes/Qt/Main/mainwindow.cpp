@@ -961,6 +961,8 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
 
         SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
     }
+
+    SceneUndoRedoStateChanged(scene);
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2* scene)

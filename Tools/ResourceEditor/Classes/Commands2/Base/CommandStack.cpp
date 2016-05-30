@@ -218,6 +218,7 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
                                        bool needToRemove = cmd->GetId() == commandId;
                                        if (needToRemove == true && commandIndex <= nextAfterCleanCommandIndex)
                                        {
+                                           DVASSERT(nextAfterCleanCommandIndex >= 0);
                                            --nextAfterCleanCommandIndex;
                                        }
 
@@ -318,10 +319,18 @@ void CommandStack::EndBatch()
 
 bool CommandStack::IsClean() const
 {
+    if (nextAfterCleanCommandIndex == SCENE_CHANGED_INDEX)
+    {
+        return false;
+    }
+
     if (nextAfterCleanCommandIndex == nextCommandIndex)
     {
         return true;
     }
+
+    DVASSERT(nextCommandIndex >= EMPTY_INDEX);
+    DVASSERT(nextAfterCleanCommandIndex >= EMPTY_INDEX);
 
     ActiveStackGuard guard(this);
     DAVA::int32 startCommandIndex = 0;
@@ -358,7 +367,7 @@ void CommandStack::SetClean(bool clean)
     }
     else
     {
-        nextAfterCleanCommandIndex = EMPTY_INDEX;
+        nextAfterCleanCommandIndex = SCENE_CHANGED_INDEX;
     }
 
     ActiveStackGuard guard(this);
@@ -367,7 +376,7 @@ void CommandStack::SetClean(bool clean)
     CommandStackLocal::CommandIdsAccumulator functor(uncleanCommandIds);
     DAVA::int32 historySize = static_cast<DAVA::int32>(history.size());
     DVASSERT(nextAfterCleanCommandIndex < historySize);
-    for (DAVA::int32 i = nextAfterCleanCommandIndex + 1; i < historySize; ++i)
+    for (DAVA::int32 i = DAVA::Max(nextAfterCleanCommandIndex, 0); i < historySize; ++i)
     {
         functor(history[i].value<CommandInstancePtr>());
     }
