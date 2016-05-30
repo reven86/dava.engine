@@ -93,20 +93,8 @@ SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
     FileManager::DeleteDirectory(FileManager::GetTempDirectory());
     QString tempDir = FileManager::GetTempDirectory(); //create temp directory
     //remove old launcher files except download folder, temp folder and update folder
-    if (!FileManager::MoveLauncherRecursively(appDirPath, tempDir))
-    {
-        return MOVE_FILES_ERROR;
-    }
-#ifdef Q_OS_WIN
-    QStringList info(files.keys());
-    QString infoStr = info.join('\n');
-    QByteArray data = QDir::toNativeSeparators(infoStr).toUtf8().data();
-    if (!FileManager::CreateFileAndWriteData(FileManager::GetPackageInfoFilePath(), data))
-    {
-        return INFO_FILE_ERROR;
-    }
-#endif //Q_OS_WIN
-    if (FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
+    if (FileManager::MoveLauncherRecursively(appDirPath, tempDir)
+        && FileManager::MoveLauncherRecursively(selfUpdateDirPath, appDirPath))
     {
         return NO_ERRORS;
     }

@@ -80,6 +80,8 @@ public:
     AbstractProperty* GetRootProperty();
     const AbstractProperty* GetRootProperty() const;
 
+    AbstractProperty* FindPropertyByName(const DAVA::String& name);
+
 private:
     AbstractProperty* parent = nullptr;
 
