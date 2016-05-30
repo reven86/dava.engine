@@ -546,7 +546,7 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
         return false;
     }
 
-    uint32 fromMipMap = Min(loadingParams.baseMipmap, pvrFile->header.u32MIPMapCount - 1);
+    uint32 fromMipMap = ImageSystem::GetBaseMipmap({ pvrFile->header.u32Width, pvrFile->header.u32Height, Min(loadingParams.baseMipmap, pvrFile->header.u32MIPMapCount - 1) }, loadingParams);
 
     uint32 cubemapLayout = GetCubemapLayout(*pvrFile);
     for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)

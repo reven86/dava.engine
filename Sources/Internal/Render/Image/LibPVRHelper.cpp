@@ -163,6 +163,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
         info.format = PVRFormatHelper::GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize);
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
+        info.faceCount = pvrFile->header.u32NumFaces;
     }
 
     return info;

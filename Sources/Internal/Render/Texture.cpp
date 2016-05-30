@@ -90,13 +90,19 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
 bool CheckAndFixImageFormat(Vector<Image*>* images)
 {
     Vector<Image*>& imageSet = *images;
-
     PixelFormat format = imageSet[0]->format;
     if (IsFormatHardwareSupported(format))
     {
         return true;
     }
-    else if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+    //we should decode all images for RE/QE
+    if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
+#else
+    //We should decode only RGB888 into RGBA8888
+    if (format == PixelFormat::FORMAT_RGB888 && ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
+#endif
     {
         for (Image*& image : imageSet)
         {
@@ -119,10 +125,8 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 }
 

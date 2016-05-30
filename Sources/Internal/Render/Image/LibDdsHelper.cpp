@@ -42,10 +42,8 @@ eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>&
     {
         return eErrorCode::SUCCESS;
     }
-    else
-    {
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
+
+    return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
 }
 
 eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Vector<Vector<Image*>>& imageSet, PixelFormat dstFormat, ImageQuality quality) const
