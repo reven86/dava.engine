@@ -41,6 +41,10 @@ public:
         uint32 hashFromMeta = 0; // example: tanks.pak -> tanks.pak.hash
         uint32 hashFromDB = 0;
 
+        uint32 downloadedSize = 0;
+        uint32 totalSize = 0;
+        uint32 totalSizeFromDB = 0;
+
         DownloadError downloadError = DLE_NO_ERROR;
         Status state = Status::NotRequested;
 

@@ -238,6 +238,8 @@ bool PackRequest::IsLoadingPackFileFinished()
                 else
                 {
                     pack.downloadProgress = std::min(1.0f, static_cast<float32>(progress) / total);
+                    pack.downloadedSize = static_cast<uint32>(progress);
+                    pack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
                     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
                 }
