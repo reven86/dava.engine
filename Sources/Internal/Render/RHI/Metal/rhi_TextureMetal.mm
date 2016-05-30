@@ -49,6 +49,24 @@ public:
 typedef ResourcePool<TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, false> TextureMetalPool;
 RHI_IMPL_POOL(TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, false);
 
+static void
+_CheckAllTextures()
+{
+    bool first = true;
+    for (TextureMetalPool::Iterator t = TextureMetalPool::Begin(), t_end = TextureMetalPool::End(); t != t_end; ++t)
+    {
+        if ([t->uid setPurgeableState:MTLPurgeableStateKeepCurrent] == MTLPurgeableStateEmpty)
+        {
+            if (first)
+            {
+                DAVA::Logger::Info("--");
+                first = false;
+            }
+            DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", t->width, t->height, int([t->uid setPurgeableState:MTLPurgeableStateKeepCurrent]));
+        }
+    }
+}
+
 //------------------------------------------------------------------------------
 
 static MTLPixelFormat
@@ -210,6 +228,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
     desc.mipmapLevelCount = texDesc.levelCount;
     desc.sampleCount = 1;
+    desc.resourceOptions = MTLResourceCPUCacheModeDefaultCache;
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
     TextureMetal_t* tex = nullptr;
@@ -220,7 +239,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     {
         handle = TextureMetalPool::Alloc();
         tex = TextureMetalPool::Get(handle);
-        //-        Logger::Info("{%u} create-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(handle)), (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height);
+        //Logger::Info("{%u} create-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(handle)), (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height);
 
         tex->format = texDesc.format;
         tex->width = texDesc.width;
@@ -229,8 +248,6 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         tex->is_mapped = false;
         tex->is_renderable = texDesc.isRenderTarget;
         tex->is_cubemap = texDesc.type == TEXTURE_TYPE_CUBE;
-
-        [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 
         uint32 sliceCount = (texDesc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
 
@@ -273,6 +290,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                 }
             }
         }
+        [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 
         tex->mappedDataSize = TextureSize(texDesc.format, texDesc.width, texDesc.height, 0);
 
@@ -308,6 +326,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         DAVA::Logger::Debug("failed to create tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
     }
 
+    //_CheckAllTextures();
     return handle;
 }
 
@@ -320,7 +339,7 @@ metal_Texture_Delete(Handle tex)
 
     if (self)
     {
-        //-        Logger::Info("{%u} del-tex%s", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "");
+        //Logger::Info("{%u} del-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "",self->width,self->height);
         if (self->mappedData)
         {
             ::free(self->mappedData);
@@ -329,13 +348,13 @@ metal_Texture_Delete(Handle tex)
 
         if (self->uid)
         {
-            [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid setPurgeableState:MTLPurgeableStateVolatile];
             [self->uid release];
             self->uid = nil;
         }
         if (self->uid2)
         {
-            [self->uid2 setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid2 setPurgeableState:MTLPurgeableStateVolatile];
             [self->uid2 release];
             self->uid2 = nil;
         }
@@ -346,6 +365,7 @@ metal_Texture_Delete(Handle tex)
     {
         DVASSERT("kaboom!!!");
     }
+    //_CheckAllTextures();
 }
 
 //------------------------------------------------------------------------------
@@ -458,10 +478,12 @@ metal_Texture_Unmap(Handle tex)
     {
         [self->uid replaceRegion:rgn mipmapLevel:self->mappedLevel withBytes:self->mappedData bytesPerRow:stride];
     }
+    //-    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 
     self->is_mapped = false;
     ::free(self->mappedData);
     self->mappedData = nullptr;
+    //-    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 }
 
 //------------------------------------------------------------------------------
