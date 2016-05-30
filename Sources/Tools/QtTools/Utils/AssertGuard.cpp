@@ -101,14 +101,16 @@ bool ToolsAssetGuard::InnerShow(DAVA::DVAssertMessage::eModalType modalType, con
     EventFilter eventGuard;
     result = DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
 #elif defined(Q_OS_WIN)
-    if (!DAVA::Thread::IsMainThread())
-        result = DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
-    else
+    if (DAVA::Thread::IsMainThread())
     {
         QMessageBox msgBox(QMessageBox::Critical, "Assert", QString(message), QMessageBox::Ok | QMessageBox::Cancel);
         EventFilter eventGuard(msgBox.winId());
 
         result = msgBox.exec() == QMessageBox::Cancel;
+    }
+    else
+    {
+        result = DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
     }
 #endif
 
