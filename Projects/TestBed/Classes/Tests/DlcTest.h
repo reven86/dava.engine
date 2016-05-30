@@ -33,9 +33,7 @@ public:
     DlcTest();
 
 protected:
-    ~DlcTest()
-    {
-    }
+    ~DlcTest() = default;
 
 public:
     void LoadResources() override;
@@ -51,6 +49,7 @@ private:
     void UpdateInfoStr();
     void SetInternalDlServer(BaseObject* obj, void* data, void* callerData);
     void SetExternalDlServer(BaseObject* obj, void* data, void* callerData);
+    void SetSpeed(BaseObject* obj, void* data, void* callerData);
     void IncDlThreads(BaseObject* obj, void* data, void* callerData);
     void DecDlThreads(BaseObject* obj, void* data, void* callerData);
     void Start(BaseObject* obj, void* data, void* callerData);
@@ -66,12 +65,14 @@ protected:
     const String currentDownloadUrl = "DlcServerUrl";
     const String downloadThreadsCount = "DlcThreadsCount";
     const uint32 defaultdownloadTreadsCount = 4;
+    const String downloadSpeed = "DlcDownloadSpeed";
 
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
     DAVA::FilePath destinationDir;
 
     UITextField* gameVersionIn = nullptr;
+    UITextField* dlSpeedIn = nullptr;
     UIStaticText* infoText = nullptr;
     WideString infoStr;
 
