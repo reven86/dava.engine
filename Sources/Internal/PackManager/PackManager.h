@@ -60,6 +60,7 @@ public:
     // throw exception if can't initialize with deteils
     void Initialize(const FilePath& dbFile,
                     const FilePath& downloadPacksDir,
+                    const FilePath& readOnlyPacksDir,
                     const String& packsUrlCommon,
                     const String& packsUrlGpu);
 

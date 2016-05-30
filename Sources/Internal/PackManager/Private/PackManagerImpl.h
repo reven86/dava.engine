@@ -14,6 +14,7 @@ public:
 
     void Initialize(const FilePath& dbFile_,
                     const FilePath& localPacksDir_,
+                    const FilePath& readOnlyPacksDir_,
                     const String& packUrlCommon,
                     const String& packUrlGpu,
                     Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
@@ -34,7 +35,7 @@ public:
 
     PackManager::Pack& GetPack(const String& packName);
 
-    void MountDownloadedPacks();
+    void MountDownloadedPacks(const FilePath&);
 
     void DeletePack(const String& packName);
 
@@ -49,6 +50,7 @@ public:
 private:
     FilePath dbFile;
     FilePath localPacksDir;
+    FilePath readOnlyPacksDir;
     String packsUrlCommon;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
