@@ -8,10 +8,12 @@ class ReflectionDB;
 
 struct VirtualReflection
 {
+    virtual const ReflectionDB* GetVirtualReflectionDB() const = 0;
+
+protected:
     virtual ~VirtualReflection()
     {
     }
-    virtual const ReflectionDB* GetVirtualReflectionDB() const = 0;
 };
 
 struct VirtualReflectionDBGetter
