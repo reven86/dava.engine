@@ -315,7 +315,7 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
         {
             int32 index = iter->second;
             FastStruct* fast = &fastVector[index];
-            fast->effectStopped = effect->IsStopped();
+            fast->effectStopped = event == EventSystem::STOP_PARTICLE_EFFECT ? true : false;
         }
     }
     break;
