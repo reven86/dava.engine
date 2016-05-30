@@ -203,19 +203,28 @@ void CommandStack::Clear()
 void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
     ActiveStackGuard guard(this);
-    commandManager->removeCommands([&commandId](const CommandInstancePtr& instance)
-                                   {
-                                       Command2* cmd = instance->getArguments().getBase<Command2>();
-                                       if (cmd->GetId() == CMDID_BATCH)
-                                       {
-                                           CommandBatch* batch = static_cast<CommandBatch*>(cmd);
+    int commandIndex = 0;
+    commandManager->removeCommands([&commandId, &commandIndex, this](const CommandInstancePtr& instance)
+    {
+        Command2* cmd = instance->getArguments().getBase<Command2>();
+        if (cmd->GetId() == CMDID_BATCH)
+        {
+            CommandBatch* batch = static_cast<CommandBatch*>(cmd);
 
-                                           batch->RemoveCommands(commandId);
-                                           return batch->Size() == 0;
-                                       }
+            batch->RemoveCommands(commandId);
+            return batch->Size() == 0;
+        }
 
-                                       return cmd->GetId() == commandId;
-                                   });
+        bool needToRemove =  cmd->GetId() == commandId;
+        if (needToRemove == true && commandIndex <= nextAfterCleanCommandIndex)
+        {
+            --nextAfterCleanCommandIndex;
+        }
+
+        ++commandIndex;
+        return needToRemove;
+    });
+
     CleanCheck();
 }
 
@@ -314,19 +323,23 @@ bool CommandStack::IsClean() const
         return true;
     }
 
-    if (nextAfterCleanCommandIndex == EMPTY_INDEX)
-    {
-        return false;
-    }
-
     ActiveStackGuard guard(this);
-    DAVA::int32 nextCommand = DAVA::Max(nextCommandIndex, 0);
-    DAVA::int32 startCommandIndex = DAVA::Min(nextAfterCleanCommandIndex, nextCommand);
-    DAVA::int32 endCommandIndex = DAVA::Max(nextAfterCleanCommandIndex, nextCommand);
+    DAVA::int32 startCommandIndex = 0;
+    DAVA::int32 endCommandIndex = 0;
+    if (nextAfterCleanCommandIndex < nextCommandIndex)
+    {
+        startCommandIndex = nextAfterCleanCommandIndex + 1;
+        endCommandIndex = nextCommandIndex;
+    }
+    else
+    {
+        startCommandIndex = nextCommandIndex + 1;
+        endCommandIndex = nextAfterCleanCommandIndex;
+    }
 
     const VariantList& history = commandManager->getHistory();
     DVASSERT(endCommandIndex < static_cast<DAVA::int32>(history.size()));
-    for (DAVA::int32 i = startCommandIndex; i < endCommandIndex; ++i)
+    for (DAVA::int32 i = startCommandIndex; i <= endCommandIndex; ++i)
     {
         CommandInstancePtr instance = history[i].value<CommandInstancePtr>();
         Command2* cmd = instance->getArguments().getBase<Command2>();

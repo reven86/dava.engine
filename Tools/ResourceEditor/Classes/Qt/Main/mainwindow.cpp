@@ -988,6 +988,9 @@ void QtMainWindow::EnableProjectActions(bool enable)
 
 void QtMainWindow::EnableSceneActions(bool enable)
 {
+    ui->actionUndo->setEnabled(enable);
+    ui->actionRedo->setEnabled(enable);
+
     ui->dockLODEditor->setEnabled(enable);
     ui->dockProperties->setEnabled(enable);
     ui->dockSceneTree->setEnabled(enable);
