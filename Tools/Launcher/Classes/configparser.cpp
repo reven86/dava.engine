@@ -61,6 +61,7 @@ bool GetFavorites(const QJsonValue& value, QStringList& favorites)
         isValid &= !fave.isEmpty();
         favorites.append(fave);
     }
+
     return isValid;
 }
 
@@ -125,6 +126,12 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         appVer->runPath = entry["exe_location"].toString();
         isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
         isValid = isValid;
+    }
+    //hotfix to sort downloaded items without rewriting mainWindow
+    for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
+    {
+        QVector<Application>& apps = branchIter->applications;
+        qSort(apps.begin(), apps.end(), [](const Application& appLeft, const Application& appRight) { return appLeft.id < appRight.id; });
     }
     return isValid;
 }
