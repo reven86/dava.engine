@@ -169,7 +169,9 @@ private:
 public:
 #endif
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+#if defined(ENABLE_CEF_WEBVIEW)
     uint32 GetSystemKeyForDavaKey(Key key) const;
+#endif
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
 #ifdef __DAVAENGINE_MACOS__

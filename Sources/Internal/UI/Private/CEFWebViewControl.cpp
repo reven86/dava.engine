@@ -319,6 +319,7 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
+        webViewOffSet = webView.GetAbsolutePosition();
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -352,8 +353,8 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy);
+    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(ConvertMouseTypeDavaToCef(input));
     bool mouseUp = (input->phase == UIEvent::Phase::ENDED);
@@ -366,8 +367,8 @@ void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy);
+    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
@@ -377,11 +378,11 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy);
+    clickEvent.x = static_cast<int>(webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
-    int deltaX = static_cast<int>(input->wheelDelta.x);
-    int deltaY = static_cast<int>(input->wheelDelta.y);
+    int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
+    int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);
     host->SendMouseWheelEvent(clickEvent, deltaX, deltaY);
 }
 
@@ -430,8 +431,6 @@ void CEFWebViewControl::OnKey(UIEvent* input)
 #ifdef __DAVAENGINE_WIN32__
         keyEvent.windows_key_code ^= 0x100;
 #endif
-
-        DVASSERT(keyEvent.windows_key_code != -1 && "Fail");
     }
     else
     {

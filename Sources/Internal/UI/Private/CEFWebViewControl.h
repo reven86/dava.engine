@@ -84,6 +84,7 @@ private:
     IMPLEMENT_REFCOUNTING(CEFWebViewControl);
 
     UIWebView& webView;
+    Vector2 webViewOffSet;
     IUIWebViewDelegate* delegate = nullptr;
     CEFController cefController;
     CefRefPtr<CefBrowser> cefBrowser;
