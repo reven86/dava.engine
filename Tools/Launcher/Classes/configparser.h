@@ -50,7 +50,6 @@ struct Application
     static Application LoadFromYamlNode(const YAML::Node* node);
 
     QVector<AppVersion> versions;
-
 };
 
 struct Branch
@@ -80,7 +79,6 @@ struct Branch
     static Branch LoadFromYamlNode(const YAML::Node* node);
 
     QVector<Application> applications;
-
 };
 
 class ConfigParser
@@ -115,7 +113,6 @@ public:
     const QString& GetLauncherVersion();
     const QString& GetLauncherURL();
     const QString& GetWebpageURL();
-    const QString& GetRemoteConfigURL();
     const QString& GetNewsID();
 
     const QStringList& GetFavorites();

@@ -14,6 +14,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QLabel>
 #include <QVariant>
 #include <QComboBox>
 #include <QSortFilterProxyModel>
@@ -94,9 +95,8 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
-    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
+    connect(ui->action_updateConfiguration, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
     connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
-    connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
     appManager = new ApplicationManager(this);
@@ -112,8 +112,6 @@ MainWindow::MainWindow(QWidget* parent)
     filterModel->setSourceModel(listModel);
     ui->listView->setModel(filterModel);
 
-    UpdateURLValue();
-
     //if run this method directly qApp->exec() will be called twice
     QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
 }
@@ -123,25 +121,6 @@ MainWindow::~MainWindow()
     SafeDelete(ui);
 }
 
-void MainWindow::OnURLClicked()
-{
-    QInputDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-    dialog.setTextValue(appManager->GetLocalConfig()->GetRemoteConfigURL());
-    dialog.setWindowTitle("Config URL");
-    dialog.setLabelText("Input new config URL:");
-    dialog.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    dialog.resize(width() / 2, -1);
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-        appManager->GetLocalConfig()->SetRemoteConfigURL(dialog.textValue());
-        UpdateURLValue();
-
-        OnRefreshClicked();
-    }
-}
 void MainWindow::OnlinkClicked(QUrl url)
 {
     QDesktopServices::openUrl(url);
@@ -193,9 +172,6 @@ void MainWindow::OnInstall(int rowNumber)
 
 void MainWindow::OnRefreshClicked()
 {
-    if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
-        return;
-
     FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     ConfigDownloader downloader(appManager, this);
@@ -533,9 +509,4 @@ void MainWindow::UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState s
     ButtonsWidget* buttons = dynamic_cast<ButtonsWidget*>(ui->tableWidget->cellWidget(rowNumber, COLUMN_BUTTONS));
     if (buttons)
         buttons->SetButtonsState(state);
-}
-
-void MainWindow::UpdateURLValue()
-{
-    ui->labelRemoteURL->setText(appManager->GetLocalConfig()->GetRemoteConfigURL());
 }

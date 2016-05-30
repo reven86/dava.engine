@@ -330,7 +330,6 @@ bool ConfigParser::Parse(const QByteArray& configData)
             launcherVersion = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_VERSION_KEY), LAUNCHER_VER);
             launcherURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_URL_KEY));
             webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
-            remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY));
             newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
             favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
 
@@ -391,7 +390,6 @@ void ConfigParser::SaveToYamlFile(const QString& filePath)
     //Launcher info
     emitter << YAML::Key << CONFIG_LAUNCHER_KEY << YAML::Value << YAML::BeginMap;
     emitter << YAML::Key << CONFIG_LAUNCHER_WEBPAGE_KEY << YAML::Value << webPageURL.toStdString();
-    emitter << YAML::Key << CONFIG_LAUNCHER_REMOTE_URL_KEY << YAML::Value << remoteConfigURL.toStdString();
     emitter << YAML::Key << CONFIG_LAUNCHER_NEWSID_KEY << YAML::Value << newsID.toStdString();
 
     int favCount = favorites.size();
@@ -585,11 +583,6 @@ const QString& ConfigParser::GetLauncherURL()
 const QString& ConfigParser::GetWebpageURL()
 {
     return webPageURL;
-}
-
-const QString& ConfigParser::GetRemoteConfigURL()
-{
-    return remoteConfigURL;
 }
 
 const QString& ConfigParser::GetNewsID()
