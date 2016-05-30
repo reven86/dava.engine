@@ -39,8 +39,6 @@ public:
 
 CEFControllerImpl::CEFControllerImpl()
 {
-    bool result = false;
-
     CefSettings settings;
     settings.no_sandbox = 1;
     settings.windowless_rendering_enabled = 1;
@@ -54,7 +52,7 @@ CEFControllerImpl::CEFControllerImpl()
     CefString(&settings.log_file).FromString(logFile.GetAbsolutePathname());
     CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
-    result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
+    bool result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
 
     // CefInitialize replaces thread name, so we need to restore it
     // Restore name only on Main Thread

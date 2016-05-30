@@ -152,13 +152,15 @@ public:
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
-    friend class CEFWebViewControl;
     friend class CorePlatformAndroid;
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
     friend class QtLayer;
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
+#endif
+#if defined(ENABLE_CEF_WEBVIEW)
+    friend class CEFWebViewControl;
 #endif
     ~KeyboardDevice();
     KeyboardDevice();
