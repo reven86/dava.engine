@@ -76,7 +76,7 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
 
     // Create texture
     RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(), width, height, true));
-    texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
+    texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
     RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
                                                     static_cast<float32>(texture->GetWidth()),
