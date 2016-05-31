@@ -197,10 +197,10 @@ void CommandStack::Clear()
 {
     ActiveStackGuard guard(this);
     commandManager->removeCommands([this](const CommandInstancePtr&)
-    {
-        nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, EMPTY_INDEX);
-        return true;
-    });
+                                   {
+                                       nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, EMPTY_INDEX);
+                                       return true;
+                                   });
     CleanCheck();
 }
 
