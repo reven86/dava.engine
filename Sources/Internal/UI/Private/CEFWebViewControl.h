@@ -10,14 +10,10 @@
 
 namespace DAVA
 {
-class CEFWebViewControl
-: public CefClient
-  ,
-  public CefLoadHandler
-  ,
-  public CefRequestHandler
-  ,
-  public CefLifeSpanHandler
+class CEFWebViewControl : public CefClient,
+                          public CefLoadHandler,
+                          public CefRequestHandler,
+                          public CefLifeSpanHandler
 {
 public:
     CEFWebViewControl(UIWebView& uiWebView);

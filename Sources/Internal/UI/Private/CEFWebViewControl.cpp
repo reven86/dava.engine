@@ -13,7 +13,7 @@ namespace DAVA
 {
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
-    , cefController(this)
+//, cefController(this)
 {
 }
 
