@@ -13,7 +13,6 @@ namespace DAVA
 {
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
-//, cefController(this)
 {
 }
 
@@ -23,9 +22,9 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 
     CefWindowInfo windowInfo;
     windowInfo.windowless_rendering_enabled = 1;
+    windowInfo.transparent_painting_enabled = 1;
 
     CefBrowserSettings settings;
-    settings.background_color = CefColorSetARGB(255, 0, 0, 0);
     cefBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings, nullptr);
 }
 
@@ -77,10 +76,10 @@ void CEFWebViewControl::SetRect(const Rect& rect)
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
     cefBrowser->GetHost()->WasHidden(!isVisible);
-    if (!isVisible)
-    {
-        webPageRender->ClearRenderSurface();
-    }
+}
+
+void CEFWebViewControl::SetBackgroundTransparency(bool enabled)
+{
 }
 
 void CEFWebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
