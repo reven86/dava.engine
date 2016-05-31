@@ -6,6 +6,8 @@
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
+using DAVA::Logger;
+
 #include "Core/Core.h"
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
