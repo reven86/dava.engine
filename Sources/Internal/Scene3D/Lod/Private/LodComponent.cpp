@@ -92,6 +92,13 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
                     }
                 }
                 distances[MAX_LOD_LAYERS - 1] = std::numeric_limits<float32>::max();
+                for (uint32 i = 1; i < MAX_LOD_LAYERS; ++i)
+                {
+                    if (distances[i] < distances[i - 1])
+                    {
+                        distances[i] = std::numeric_limits<float32>::max();
+                    }
+                }
             }
             else
             {
