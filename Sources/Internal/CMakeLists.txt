@@ -82,7 +82,9 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
-                                    "Compression/ZipCompressor.cpp" )
+                                    "Compression/ZipCompressor.cpp"
+                                    "Platform/Steam.cpp"
+                                    "DataStorage/Steam/DataStorageSteam.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"

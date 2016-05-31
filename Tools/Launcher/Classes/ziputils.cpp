@@ -1,4 +1,5 @@
 #include "ziputils.h"
+#include "filemanager.h"
 #include <QString>
 #include <QProcess>
 #include <QFile>
@@ -7,8 +8,9 @@
 #include <QDir>
 #include <QApplication>
 #include <numeric>
+#include <QDebug>
 
-const QString& ZipUtils::GetArchiverPath()
+QString ZipUtils::GetArchiverPath()
 {
     static QString processAddr = qApp->applicationDirPath() +
 #if defined(Q_OS_WIN)
@@ -107,6 +109,7 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
     });
     QEventLoop loop;
     QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
+
     zipProcess.start(processAddr, arguments);
     if (!zipProcess.waitForStarted(5000))
     {
@@ -130,6 +133,7 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
         functor.OnError(err);
         return false;
     }
+    fileList.clear();
     QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
     ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray& line) {
@@ -267,7 +271,9 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
     QStringList arguments;
     arguments << "x"
               << "-y"
-              << "-bb1" << archivePath << "-o" + outDirPath;
+              << "-bb1"
+              << archivePath
+              << "-o" + outDirPath;
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

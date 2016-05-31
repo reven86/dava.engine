@@ -1,6 +1,6 @@
 #include "ResourcesManageHelper.h"
 #include "Core/Core.h"
-#include "EditorSettings.h"
+#include "QtTools/Utils/Utils.h"
 #include <QString>
 #include <QStringList>
 #include <QDir>
@@ -107,17 +107,6 @@ QString ResourcesManageHelper::GetProjectTitle()
 QString ResourcesManageHelper::GetProjectTitle(const QString& projectFilePath)
 {
     return QString("%1 | Project %2").arg(projectTitle).arg(projectFilePath);
-}
-
-QString ResourcesManageHelper::GetDefaultDirectory()
-{
-    QString defaultDir = QString::fromStdString(EditorSettings::Instance()->GetProjectPath());
-    //If default directory path is not available in project settings - use current working path
-    if (defaultDir.isNull() || defaultDir.isEmpty())
-    {
-        defaultDir = QDir::currentPath();
-    }
-    return defaultDir;
 }
 
 QString ResourcesManageHelper::GetResourceRootDirectory()

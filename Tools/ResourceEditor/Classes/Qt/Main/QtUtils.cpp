@@ -130,25 +130,6 @@ bool IsKeyModificatorsPressed()
     return (IsKeyModificatorPressed(Key::LSHIFT) || IsKeyModificatorPressed(Key::LCTRL) || IsKeyModificatorPressed(Key::LALT));
 }
 
-QColor ColorToQColor(const Color& color)
-{
-    float32 maxC = 1.0;
-
-    if (maxC < color.r)
-        maxC = color.r;
-    if (maxC < color.g)
-        maxC = color.g;
-    if (maxC < color.b)
-        maxC = color.b;
-
-    return QColor::fromRgbF(color.r / maxC, color.g / maxC, color.b / maxC, Clamp(color.a, 0.0f, 1.0f));
-}
-
-Color QColorToColor(const QColor& qcolor)
-{
-    return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
-}
-
 int ShowQuestion(const String& header, const String& question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),

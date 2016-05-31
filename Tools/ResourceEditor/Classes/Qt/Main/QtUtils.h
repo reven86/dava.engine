@@ -25,9 +25,6 @@ void ShowErrorDialog(const DAVA::String& errorMessage, const DAVA::String& title
 bool IsKeyModificatorPressed(DAVA::Key key);
 bool IsKeyModificatorsPressed();
 
-QColor ColorToQColor(const DAVA::Color& color);
-DAVA::Color QColorToColor(const QColor& qcolor);
-
 enum eMessageBoxFlags
 {
     MB_FLAG_YES = QMessageBox::Yes,

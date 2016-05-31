@@ -16,6 +16,9 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Debug/Profiler.h"
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -154,6 +157,10 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
     FrameworkDidLaunched();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Init();
+#endif
+
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
@@ -342,6 +349,9 @@ void CoreWin32Platform::Run()
     }
 
     Core::Instance()->SystemAppFinished();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Deinit();
+#endif
     FrameworkWillTerminate();
 }
 
@@ -804,6 +814,8 @@ bool CoreWin32Platform::ProcessMouseInputEvent(HWND hWnd, UINT message, WPARAM w
 
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    const UINT WM_ACTIVATE_POSTED = WM_USER + 12;
+
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     //TODO: Add system scale
@@ -857,9 +869,9 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         UIControlSystem::Instance()->OnInput(&ev);
 
         keyboard.OnKeyUnpressed(ev.key);
+        // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
+        return 0;
     }
-    break;
-
     case WM_SYSKEYDOWN:
     // no break;
     case WM_KEYDOWN:
@@ -960,6 +972,17 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_ACTIVATE:
+        // What dava.engine does when app is launched in fullscreen:
+        //  1. create window in 'window' mode
+        //  2. set window properties for fullscreen calling SetWindowPos API function
+        //  3. SetWindowPos directly calls window procedure with WM_ACTIVATE message
+        //  4. in WM_ACTIVATE handler dava.engine calls ApplicationCore::OnResume method before ApplicationCore::OnAppStarted
+        //  5. kaboom - game crashes as game objects are null because they are created in ApplicationCore::OnAppStarted
+        //
+        // To resolve this problem simply post WM_ACTIVATE through system message queue
+        PostMessage(hWnd, WM_ACTIVATE_POSTED, wParam, lParam);
+        return 0;
+    case WM_ACTIVATE_POSTED:
     {
         ApplicationCore* appCore = core->GetApplicationCore();
         WORD loWord = LOWORD(wParam);
@@ -1000,8 +1023,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
                 core->SetIsActive(true);
             }
         }
-    };
-    break;
+        return 0;
+    }
     case WM_SYSCOMMAND:
         // prevent screensaver or monitor powersave mode from starting
         if (wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER)

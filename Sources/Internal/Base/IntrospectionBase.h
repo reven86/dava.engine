@@ -36,21 +36,16 @@ struct InspDesc
         T_FLAGS,
     };
 
-    const char* text;
-    const EnumMap* enumMap;
-    int type;
+    const char* text = "";
+    const EnumMap* enumMap = nullptr;
+    Type type = T_UNDEFINED;
 
     InspDesc()
-        : text("")
-        , enumMap(nullptr)
-        , type(T_UNDEFINED)
     {
     }
 
     InspDesc(const char* _text)
         : text(_text)
-        , enumMap(nullptr)
-        , type(T_UNDEFINED)
     {
     }
 
@@ -131,6 +126,8 @@ public:
     virtual const InspColl* Collection() const;
 
     virtual const InspMemberDynamic* Dynamic() const;
+
+    const InspInfo* GetParentInsp() const;
 
     int Flags() const;
 
