@@ -1,5 +1,4 @@
-#ifndef __RHI_POOL_H__
-#define __RHI_POOL_H__
+#pragma once
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
@@ -39,6 +38,11 @@ public:
 
     static void Reserve(unsigned maxCount);
     static unsigned ReCreateAll();
+
+    static uint32 PendingRestoreCount();
+
+    static void Lock();
+    static void Unlock();
 
     class
     Iterator
@@ -262,6 +266,24 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
 
 //------------------------------------------------------------------------------
 
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::Lock()
+{
+    ObjectSync.Lock();
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::Unlock()
+{
+    ObjectSync.Unlock();
+}
+
+//------------------------------------------------------------------------------
+
 template <class T, class DT>
 class
 ResourceImpl
@@ -274,8 +296,9 @@ public:
 
     bool NeedRestore() const
     {
-        return needRestore;
+        return needRestore.Get();
     }
+
     const DT& CreationDesc() const
     {
         return creationDesc;
@@ -289,35 +312,43 @@ public:
 
     void MarkNeedRestore()
     {
-        if (!needRestore && creationDesc.needRestore)
-        {
-            needRestore = true;
-            ++needRestoreCount;
-        }
+        if (needRestore || (creationDesc.needRestore == false))
+            return;
+
+        needRestore = true;
+        ++ObjectsToRestore;
     }
+
     void MarkRestored()
     {
         if (needRestore)
         {
             needRestore = false;
-            DVASSERT(needRestoreCount);
-            --needRestoreCount;
+            DVASSERT(PendingRestoreCount() > 0);
+            --ObjectsToRestore;
         }
     }
 
-    static unsigned NeedRestoreCount()
+    static uint32 PendingRestoreCount()
     {
-        return needRestoreCount;
+        return ObjectsToRestore.Get();
     }
 
 private:
     DT creationDesc;
-    bool needRestore;
-    static unsigned needRestoreCount;
+    DAVA::Atomic<bool> needRestore;
+    static DAVA::Atomic<uint32> ObjectsToRestore;
 };
 
-#define RHI_IMPL_RESOURCE(T, DT) \
-template <> unsigned rhi::ResourceImpl<T, DT>::needRestoreCount = 0;
+//------------------------------------------------------------------------------
 
-} // namespace rhi
-#endif // __RHI_POOL_H__
+template <class T, ResourceType RT, typename DT, bool nr>
+inline uint32
+ResourcePool<T, RT, DT, nr>::PendingRestoreCount()
+{
+    return ResourceImpl<T, DT>::PendingRestoreCount();
+}
+
+#define RHI_IMPL_RESOURCE(T, DT) \
+template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
+}
