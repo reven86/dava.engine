@@ -48,49 +48,15 @@ eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>&
 
 eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Vector<Vector<Image*>>& imageSet, PixelFormat dstFormat, ImageQuality quality) const
 {
-    if (!IsFileExtensionSupported(outFileName.GetExtension()))
-    {
-        Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specified: %s", outFileName.GetStringValue().c_str());
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
-
-    FilePath tmpFileName = FilePath::CreateWithNewExtension(outFileName, "_dds");
-    ScopedPtr<File> file(File::Create(tmpFileName, File::CREATE | File::WRITE));
+    ScopedPtr<File> file(File::Create(outFileName, File::CREATE | File::WRITE));
     std::unique_ptr<DDSWriter> ddsWriter = DDSWriter::CreateWriter(file);
 
     if (ddsWriter && ddsWriter->Write(imageSet, dstFormat))
     {
-        ddsWriter.reset();
-        file.reset();
-
-        bool err = false;
-        if (FileSystem::Instance()->Exists(outFileName) && !FileSystem::Instance()->DeleteFile(outFileName))
-        {
-            Logger::Error("[LibDdsHelper::WriteFile] Can't delete previous dds file %s", outFileName.GetStringValue().c_str());
-            err = true;
-        }
-
-        if (err == false && !FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
-        {
-            Logger::Error("[LibDdsHelper::WriteFile] Temporary dds file %s renaming failed", tmpFileName.GetStringValue().c_str());
-            err = true;
-        }
-
-        if (err == true)
-        {
-            if (FileSystem::Instance()->Exists(tmpFileName) && !FileSystem::Instance()->DeleteFile(tmpFileName))
-            {
-                Logger::Error("[LibDdsHelper::WriteFile] Can't delete temporary dds file %s", tmpFileName.GetStringValue().c_str());
-            }
-            return DAVA::eErrorCode::ERROR_WRITE_FAIL;
-        }
-
         return DAVA::eErrorCode::SUCCESS;
     }
-    else
-    {
-        return DAVA::eErrorCode::ERROR_WRITE_FAIL;
-    }
+
+    return DAVA::eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibDdsHelper::WriteFile(const FilePath& outFileName, const Vector<Image*>& imageSet, PixelFormat dstFormat, ImageQuality quality) const
@@ -207,4 +173,5 @@ bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
 
     return false;
 }
+
 }

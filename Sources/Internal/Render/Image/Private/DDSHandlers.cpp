@@ -401,7 +401,8 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
         break;
     }
     default:
-        DVASSERT(false && "undefined format");
+        DVASSERT_MSG(false, Format("undefined format: %d", srcFormat).c_str());
+        break;
     }
 }
 
@@ -445,8 +446,38 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
     }
     default:
         DVASSERT_MSG(false, Format("undefined format: %d", dstFormat).c_str());
+        break;
     }
 }
+
+void UpdatePitch(dds::DDS_HEADER& mainHeader, PixelFormat format)
+{
+    switch (format)
+    {
+    case FORMAT_DXT1:
+    case FORMAT_DXT1A:
+    case FORMAT_DXT3:
+    case FORMAT_DXT5:
+    case FORMAT_DXT5NM:
+    case FORMAT_ATC_RGB:
+    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+    {
+        const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+        const Size2i& blockSize = formatDescriptor.blockSize;
+
+        uint32 blockSizeInBytes = blockSize.dx * blockSize.dy * formatDescriptor.pixelSize;
+        mainHeader.pitchOrLinearSize = (mainHeader.width + 3) / 4 * blockSizeInBytes;
+        mainHeader.flags |= dds::DDSD_LINEARSIZE;
+        break;
+    }
+
+    default:
+        DVASSERT_MSG(false, Format("undefined format: %d", format).c_str());
+        break;
+    }
+}
+
 } // namespace D3DUtils
 
 class DDSHandler
@@ -675,29 +706,25 @@ bool DDSHandler::SetFormatInfo()
     case FORMAT_DXT1A:
     {
         flags = dds::DDPF_FOURCC;
-        fourcc = dds::FOURCC_DX10;
-        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC1_UNORM;
+        fourcc = dds::FOURCC_DXT1;
         break;
     }
     case FORMAT_DXT3:
     {
         flags = dds::DDPF_FOURCC;
-        fourcc = dds::FOURCC_DX10;
-        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC2_UNORM;
+        fourcc = dds::FOURCC_DXT3;
         break;
     }
     case FORMAT_DXT5:
     {
         flags = dds::DDPF_FOURCC;
-        fourcc = dds::FOURCC_DX10;
-        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
+        fourcc = dds::FOURCC_DXT5;
         break;
     }
     case FORMAT_DXT5NM:
     {
         flags = dds::DDPF_FOURCC | dds::DDPF_NORMAL;
-        fourcc = dds::FOURCC_DX10;
-        extHeader.dxgiFormat = dds::DXGI_FORMAT_BC3_UNORM;
+        fourcc = dds::FOURCC_DXT5;
         break;
     }
     case FORMAT_ATC_RGB:
@@ -1161,7 +1188,7 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     DVASSERT(images[0].empty() == false);
     DVASSERT(images[0][0] != nullptr);
 
-    auto numImagesInFace = images[0].size();
+    uint32 numImagesInFace = static_cast<uint32>(images[0].size());
 
     mainHeader.size = sizeof(dds::DDS_HEADER);
     mainHeader.mipMapCount = 0;
@@ -1169,6 +1196,8 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     mainHeader.width = images[0][0]->width;
     mainHeader.height = images[0][0]->height;
     mainHeader.caps = dds::DDSCAPS_TEXTURE;
+
+    D3DUtils::UpdatePitch(mainHeader, dstFormat);
 
     if (numImagesInFace > 1)
     {
@@ -1180,12 +1209,12 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     PixelFormat srcFormat = images[0][0]->format;
 
     faceCount = 0;
-    for (const Vector<Image*>& mips : images)
+    for (const Vector<Image*>& faceImageSet : images)
     {
-        DVASSERT_MSG(mips.size() == numImagesInFace, "image faces have different mips count");
-        DVASSERT(mips[0] != nullptr);
-        faces[faceCount++] = static_cast<rhi::TextureFace>(mips[0]->cubeFaceID);
-        for (const Image* image : mips)
+        DVASSERT_MSG(static_cast<uint32>(faceImageSet.size()) == numImagesInFace, "image faces have different mips count");
+        DVASSERT(faceImageSet[0] != nullptr);
+        faces[faceCount++] = static_cast<rhi::TextureFace>(faceImageSet[0]->cubeFaceID);
+        for (const Image* image : faceImageSet)
         {
             DVASSERT_MSG(image != nullptr, "image is null in set");
             DVASSERT_MSG(image->format == srcFormat, "image mips have different formats")
@@ -1209,41 +1238,42 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
     }
 
     CRC32 crc;
-
-    for (const Vector<Image*>& mips : images)
+    for (const Vector<Image*>& faceImageSet : images)
     {
-        for (const Image* srcImage : mips)
+        for (Image* mipImage : faceImageSet)
         {
-            uint32 w = srcImage->width;
-            uint32 h = srcImage->height;
-
-            uint8* dataToCopy = srcImage->data;
-            uint32 dataToCopySize = srcImage->dataSize;
-
             ScopedPtr<Image> dstDavaImage(nullptr);
-
             if (srcFormat != dstFormat)
             {
-                dstDavaImage.reset(Image::Create(w, h, dstFormat)); // todo: use single image buffer for all mips
-                if (ImageConvert::ConvertImage(srcImage, dstDavaImage) == false)
+                dstDavaImage.reset(Image::Create(mipImage->width, mipImage->height, dstFormat)); // todo: use single image buffer for all mips
+                if (ImageConvert::ConvertImage(mipImage, dstDavaImage) == false)
                 {
                     Logger::Error("Can't convert from %s to %s",
-                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
-                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
+                        GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
+                        GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
                     return false;
                 }
-
-                dataToCopy = dstDavaImage->data;
-                dataToCopySize = dstDavaImage->dataSize;
+            }
+            else
+            {
+                mipImage->Retain();
+                dstDavaImage.reset(mipImage);
             }
 
+            uint32 dataToCopySize = 0;
+            uint8* dataToCopy = nullptr;
+            Vector<uint8> d3dData; // todo: use single buffer for all mips
             if (fileStoresTextureInD3DFormat)
             {
-                uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
-                Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
-                D3DUtils::DirectConvertToD3D(dataToCopy, w, h, d3dData.data(), davaPixelFormat, d3dPixelFormat);
+                dataToCopySize = mipImage->width * mipImage->height * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
+                d3dData.resize(dataToCopySize);
+                D3DUtils::DirectConvertToD3D(dataToCopy, mipImage->width, mipImage->height, d3dData.data(), davaPixelFormat, d3dPixelFormat);
                 dataToCopy = d3dData.data();
-                dataToCopySize = d3dSize;
+            }
+            else
+            {
+                dataToCopy = dstDavaImage->data;
+                dataToCopySize = dstDavaImage->dataSize;
             }
 
             if (WriteDataChunk(dataToCopy, dataToCopySize) == false)
@@ -1255,6 +1285,52 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
             crc.AddData(reinterpret_cast<const char*>(dataToCopy), dataToCopySize);
         }
     }
+
+//     for (const Vector<Image*>& mips : images)
+//     {
+//         for (const Image* srcImage : mips)
+//         {
+//             uint32 w = srcImage->width;
+//             uint32 h = srcImage->height;
+// 
+//             uint8* dataToCopy = srcImage->data;
+//             uint32 dataToCopySize = srcImage->dataSize;
+// 
+//             ScopedPtr<Image> dstDavaImage(nullptr);
+// 
+//             if (srcFormat != dstFormat)
+//             {
+//                 dstDavaImage.reset(Image::Create(w, h, dstFormat)); // todo: use single image buffer for all mips
+//                 if (ImageConvert::ConvertImage(srcImage, dstDavaImage) == false)
+//                 {
+//                     Logger::Error("Can't convert from %s to %s",
+//                                   GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
+//                                   GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
+//                     return false;
+//                 }
+// 
+//                 dataToCopy = dstDavaImage->data;
+//                 dataToCopySize = dstDavaImage->dataSize;
+//             }
+// 
+//             if (fileStoresTextureInD3DFormat)
+//             {
+//                 uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
+//                 Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
+//                 D3DUtils::DirectConvertToD3D(dataToCopy, w, h, d3dData.data(), davaPixelFormat, d3dPixelFormat);
+//                 dataToCopy = d3dData.data();
+//                 dataToCopySize = d3dSize;
+//             }
+// 
+//             if (WriteDataChunk(dataToCopy, dataToCopySize) == false)
+//             {
+//                 Logger::Error("Can't add data chunk to %s", file->GetFilename().GetStringValue().c_str());
+//                 return false;
+//             }
+// 
+//             crc.AddData(reinterpret_cast<const char*>(dataToCopy), dataToCopySize);
+//         }
+//     }
 
     if (WriteCRC(crc.Done()))
     {

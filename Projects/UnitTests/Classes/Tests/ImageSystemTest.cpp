@@ -153,19 +153,21 @@ DAVA_TESTCLASS (ImageSystemTest)
             { "~res:/TestData/ImageSystemTest/atcrgb.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGB },
             { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
             { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
+            
+            { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
+            { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
 
             { "~res:/TestData/ImageSystemTest/a8.pvr", 16, 16, 5, 1, 1, PixelFormat::FORMAT_A8 },
+            { "~res:/TestData/ImageSystemTest/dxt3.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_DXT3 },
+            { "~res:/TestData/ImageSystemTest/atcrgb.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_ATC_RGB },
+
             { "~res:/TestData/ImageSystemTest/etc1.pvr", 8, 8, 4, 2, 1, PixelFormat::FORMAT_ETC1 },
             { "~res:/TestData/ImageSystemTest/pvr2.pvr", 4, 4, 3, 3, 1, PixelFormat::FORMAT_PVR2 },
+            { "~res:/TestData/ImageSystemTest/dxt5.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_DXT5 },
+            { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
+
             { "~res:/TestData/ImageSystemTest/pvr4.pvr", 2, 2, 2, 4, 1, PixelFormat::FORMAT_PVR4 },
             { "~res:/TestData/ImageSystemTest/rgb565.pvr", 1, 1, 1, 5, 1, PixelFormat::FORMAT_RGB565 },
-            { "~res:/TestData/ImageSystemTest/pvr4_zeroMip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
-
-            { "~res:/TestData/ImageSystemTest/dxt3.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_DXT3 },
-            { "~res:/TestData/ImageSystemTest/dxt5.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_DXT5 },
-
-            { "~res:/TestData/ImageSystemTest/atcrgb.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_ATC_RGB },
-            { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA }
         };
 
         for (const ISTLocal::TestData& td : testData)
@@ -308,7 +310,8 @@ DAVA_TESTCLASS (ImageSystemTest)
             { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
             { "~res:/TestData/ImageSystemTest/pvr2_cube.pvr", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_PVR2 },
             { "~res:/TestData/ImageSystemTest/dxt5_cube.dds", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_DXT5 },
-
+            { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
+            { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
         };
 
         for (const ISTLocal::TestData& td : testData)
@@ -328,7 +331,7 @@ DAVA_TESTCLASS (ImageSystemTest)
                 }
             }
             TEST_VERIFY(dataSize == info.dataSize);
-            TEST_VERIFY(info.faceCount == 1);
+            TEST_VERIFY(info.faceCount == td.faceCount);
         }
     }
 
