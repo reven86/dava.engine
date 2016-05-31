@@ -108,6 +108,8 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
+        DVASPECT(!isMapped);
+
         DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;

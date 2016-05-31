@@ -52,7 +52,7 @@ static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
 
 static bool _D3D9_DeviceLost = false;
-static bool _DX9_ResetPending = false;
+static std::atomic<bool> _DX9_ResetPending = false;
 
 static DAVA::Thread::Id _DX9_ThreadId = 0;
 //------------------------------------------------------------------------------
@@ -1266,15 +1266,16 @@ _DX9_ExecuteQueuedCommands()
     std::vector<RenderPassDX9_t*> pass;
     std::vector<Handle> pass_h;
     unsigned frame_n = 0;
-    bool do_render = true;
 
-    if (rhi::NeedRestoreResources())
+    if (_DX9_ResetPending || rhi::NeedRestoreResources())
     {
         _RejectAllFrames();
     }
 
     _DX9_FrameSync.Lock();
-    if (_DX9_Frame.size())
+
+    bool do_render = !_DX9_Frame.empty();
+    if (do_render)
     {
         for (std::vector<Handle>::iterator p = _DX9_Frame.begin()->pass.begin(), p_end = _DX9_Frame.begin()->pass.end(); p != p_end; ++p)
         {
@@ -1295,22 +1296,19 @@ _DX9_ExecuteQueuedCommands()
                 pass.push_back(pp);
         }
 
-        pass_h = _DX9_Frame.begin()->pass;
-        frame_n = _DX9_Frame.begin()->number;
-    }
-    else
-    {
-        do_render = false;
+        pass_h = _DX9_Frame.front().pass;
+        frame_n = _DX9_Frame.front().number;
+
+        if (_DX9_Frame.front().sync != InvalidHandle)
+        {
+            SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
+
+            sync->frame = frame_n;
+            sync->is_signaled = false;
+            sync->is_used = true;
+        }
     }
 
-    if (_DX9_Frame.size() && _DX9_Frame.begin()->sync != InvalidHandle)
-    {
-        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
-
-        sync->frame = frame_n;
-        sync->is_signaled = false;
-        sync->is_used = true;
-    }
     _DX9_FrameSync.Unlock();
 
     if (do_render)
@@ -1338,8 +1336,6 @@ _DX9_ExecuteQueuedCommands()
 
                 CommandBufferPoolDX9::Free(cb_h);
             }
-
-            //        RenderPassPool::Free( *p );
         }
 
         _DX9_FrameSync.Lock();
@@ -1353,14 +1349,12 @@ _DX9_ExecuteQueuedCommands()
         _DX9_FrameSync.Unlock();
     }
 
-    // do flip, reset/restore device if necessary
-
     HRESULT hr;
 
-    if (_DX9_ResetPending && (_DX9_PendingImmediateCmdCount == 0))
+    if (_DX9_ResetPending)
     {
         hr = _D3D9_Device->TestCooperativeLevel();
-        if ((_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
+        if ((_DX9_PendingImmediateCmdCount == 0) && (_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
@@ -1384,8 +1378,8 @@ _DX9_ExecuteQueuedCommands()
 
                 Logger::Info("Device reset completed");
 
-                _DX9_ResetPending = false;
                 _D3D9_DeviceLost = false;
+                _DX9_ResetPending = false;
             }
             else
             {
@@ -1406,8 +1400,9 @@ _DX9_ExecuteQueuedCommands()
         {
             if (hr == D3DERR_DEVICELOST)
             {
-                _D3D9_DeviceLost = true;
                 _DX9_ResetPending = true;
+                _D3D9_DeviceLost = true;
+                _RejectAllFrames();
             }
             else if (hr == 0x88760872)
             {
@@ -1415,8 +1410,7 @@ _DX9_ExecuteQueuedCommands()
             }
             else
             {
-                DAVA::String info = DAVA::Format("Present failed (%08X) : %s", hr, D3D9ErrorText(hr));
-                DVASSERT_MSG(0, info.c_str());
+                DAVA::Logger::Error("Present failed (%08X) : %s", hr, D3D9ErrorText(hr));
             }
         }
     }
@@ -1442,8 +1436,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 #else
     CHECK_HR(hr)
 #endif
-
-    CommandBufferDX9::BlockNonRenderThreads();
 
     for (DX9Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1864,7 +1856,7 @@ void BlockNonRenderThreads()
 {
     while (_DX9_ResetPending && (DAVA::Thread::GetCurrentId() != _DX9_ThreadId))
     {
-        DAVA::Thread::Sleep(100);
+        DAVA::Thread::Sleep(1000);
     }
 }
 
