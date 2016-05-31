@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 {
     mainArgs.instance = GetModuleHandle(nullptr);
     CefMainArgs args(mainArgs);
-    returnValue = CefExecuteProcess(args, new CEFDavaRenderApp, nullptr);
+    returnValue = CefExecuteProcess(args, /*new CEFDavaRenderApp*/ nullptr, nullptr);
     return returnValue;
 }
 

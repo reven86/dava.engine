@@ -1,21 +1,19 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_browser.h>
-#include <cef/include/cef_scheme.h>
-#include "UI/Private/CEFInterprocessMessages.h"
-#include "UI/Private/CEFWebPageRender.h"
 
-#include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
-#include "UI/Private/CEFWebViewControl.h"
-#include "UI/UIWebView.h"
+#include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIWebView.h"
+#include "UI/Private/CEFWebViewControl.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
 {
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
+    , cefController(this)
 {
 }
 
@@ -48,25 +46,19 @@ void CEFWebViewControl::Deinitialize()
 
 void CEFWebViewControl::OpenURL(const String& url)
 {
-    StopLoading();
-    webPageRender->ClearRenderSurface();
-
     requestedUrl = url;
-    cefBrowser->GetMainFrame()->LoadURL(url);
+    LoadURL(url, true);
 }
 
 void CEFWebViewControl::LoadHtmlString(const WideString& htmlString)
 {
     StopLoading();
-    webPageRender->ClearRenderSurface();
-
     LoadHtml(htmlString, "dava:/~res:/");
 }
 
 void CEFWebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
     StopLoading();
-    webPageRender->ClearRenderSurface();
 
     String fileUrl = "dava:/" + basePath.GetStringValue();
     LoadHtml(htmlString, fileUrl);
@@ -85,6 +77,10 @@ void CEFWebViewControl::SetRect(const Rect& rect)
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
     cefBrowser->GetHost()->WasHidden(!isVisible);
+    if (!isVisible)
+    {
+        webPageRender->ClearRenderSurface();
+    }
 }
 
 void CEFWebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
@@ -105,6 +101,15 @@ bool CEFWebViewControl::IsRenderToTexture() const
 void CEFWebViewControl::Update()
 {
     cefController.Update();
+
+    if (pageLoaded)
+    {
+        if (delegate)
+        {
+            delegate->PageLoaded(&webView);
+        }
+        pageLoaded = false;
+    }
 }
 
 CefRefPtr<CefRenderHandler> CEFWebViewControl::GetRenderHandler()
@@ -117,35 +122,75 @@ CefRefPtr<CefLoadHandler> CEFWebViewControl::GetLoadHandler()
     return this;
 }
 
-bool CEFWebViewControl::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-                                                 CefProcessId source_process,
-                                                 CefRefPtr<CefProcessMessage> message)
+CefRefPtr<CefRequestHandler> CEFWebViewControl::GetRequestHandler()
 {
-    // WebViewControl can process only URL loading request messages from render process
-    if (source_process == PID_RENDERER &&
-        cefBrowser->IsSame(browser) &&
-        message->GetName() == urlLoadingRequestMessageName)
-    {
-        URLLoadingRequest request;
-        if (!ParseUrlLoadingRequest(message, request))
-        {
-            return false;
-        }
+    return this;
+}
 
-        OnURLLoadingRequst(request);
-        return true;
-    }
-
-    return false;
+CefRefPtr<CefLifeSpanHandler> CEFWebViewControl::GetLifeSpanHandler()
+{
+    return this;
 }
 
 void CEFWebViewControl::OnLoadEnd(CefRefPtr<CefBrowser> browser,
                                   CefRefPtr<CefFrame> frame, int httpStatusCode)
 {
-    if (delegate && cefBrowser->IsSame(browser))
+    pageLoaded = true;
+}
+
+bool CEFWebViewControl::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                                       CefRefPtr<CefFrame> frame,
+                                       CefRefPtr<CefRequest> request,
+                                       bool isRedirect)
+{
+    String url = request->GetURL();
+
+    // Always allow loading of URL from OpenURL method or if delegate is not set
+    if (url == requestedUrl || delegate == nullptr)
     {
-        delegate->PageLoaded(&webView);
+        return false;
     }
+
+    IUIWebViewDelegate::eAction action;
+    bool isRedirectedByMouseClick = !isRedirect && request->GetResourceType() == RT_MAIN_FRAME;
+    action = delegate->URLChanged(&webView, url, isRedirectedByMouseClick);
+
+    if (action == IUIWebViewDelegate::PROCESS_IN_WEBVIEW)
+    {
+        return false;
+    }
+    else if (action == IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER)
+    {
+        DAVA::OpenURL(url);
+    }
+    return true;
+}
+
+bool CEFWebViewControl::OnBeforePopup(CefRefPtr<CefBrowser> browser,
+                                      CefRefPtr<CefFrame> frame,
+                                      const CefString& targetUrl,
+                                      const CefString& targetFrameName,
+                                      WindowOpenDisposition targetDisposition,
+                                      bool userGesture,
+                                      const CefPopupFeatures& popupFeatures,
+                                      CefWindowInfo& windowInfo,
+                                      CefRefPtr<CefClient>& client,
+                                      CefBrowserSettings& settings,
+                                      bool* noJavascriptAccess)
+{
+    // Disallow popups
+    LoadURL(targetUrl, false);
+    return true;
+}
+
+void CEFWebViewControl::LoadURL(const String& url, bool clearSurface)
+{
+    StopLoading();
+    if (clearSurface)
+    {
+        webPageRender->ClearRenderSurface();
+    }
+    cefBrowser->GetMainFrame()->LoadURL(url);
 }
 
 void CEFWebViewControl::LoadHtml(const CefString& html, const CefString& url)
@@ -164,36 +209,6 @@ void CEFWebViewControl::StopLoading()
     {
         cefBrowser->StopLoad();
     }
-}
-
-void CEFWebViewControl::OnURLLoadingRequst(const URLLoadingRequest& request)
-{
-    // Always allow loading of URL from OpenURL method or if delegate is not set
-    if (request.url == requestedUrl || delegate == nullptr)
-    {
-        AllowURLLoading(request.url, request.frameID);
-        return;
-    }
-
-    bool isLinkActivation = request.navigation_type == NAVIGATION_LINK_CLICKED;
-    IUIWebViewDelegate::eAction action;
-    action = delegate->URLChanged(&webView, request.url, isLinkActivation);
-
-    if (action == IUIWebViewDelegate::PROCESS_IN_WEBVIEW)
-    {
-        AllowURLLoading(request.url, request.frameID);
-    }
-    else if (action == IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER)
-    {
-        DAVA::OpenURL(request.url);
-    }
-}
-
-void CEFWebViewControl::AllowURLLoading(const String& url, int64 frameID)
-{
-    URLLoadingPermit permit = { url, frameID };
-    CefRefPtr<CefProcessMessage> msg = CreateUrlLoadingPermitMessage(permit);
-    cefBrowser->SendProcessMessage(PID_RENDERER, msg);
 }
 
 enum class eKeyModifiers : int32

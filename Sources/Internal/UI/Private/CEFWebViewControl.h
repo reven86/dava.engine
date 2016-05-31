@@ -10,7 +10,14 @@
 
 namespace DAVA
 {
-class CEFWebViewControl : public CefClient, public CefLoadHandler
+class CEFWebViewControl
+: public CefClient
+  ,
+  public CefLoadHandler
+  ,
+  public CefRequestHandler
+  ,
+  public CefLifeSpanHandler
 {
 public:
     CEFWebViewControl(UIWebView& uiWebView);
@@ -63,19 +70,37 @@ private:
     // CefClient interface realization
     CefRefPtr<CefRenderHandler> GetRenderHandler() override;
     CefRefPtr<CefLoadHandler> GetLoadHandler() override;
-    bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-                                  CefProcessId source_process,
-                                  CefRefPtr<CefProcessMessage> message) override;
+    CefRefPtr<CefRequestHandler> GetRequestHandler() override;
+    CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
 
     // CefLoadHandler interface realization
     void OnLoadEnd(CefRefPtr<CefBrowser> browser,
                    CefRefPtr<CefFrame> frame, int httpStatusCode) override;
 
+    // CefRequestHandler interface realization
+    bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                        CefRefPtr<CefFrame> frame,
+                        CefRefPtr<CefRequest> request,
+                        bool isRedirect) override;
+
+    // CefLifeSpanHandler interface realization
+    using WindowOpenDisposition = CefLifeSpanHandler::WindowOpenDisposition;
+    bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
+                       CefRefPtr<CefFrame> frame,
+                       const CefString& targetUrl,
+                       const CefString& targetFrameName,
+                       WindowOpenDisposition targetDisposition,
+                       bool userGesture,
+                       const CefPopupFeatures& popupFeatures,
+                       CefWindowInfo& windowInfo,
+                       CefRefPtr<CefClient>& client,
+                       CefBrowserSettings& settings,
+                       bool* noJavascriptAccess) override;
+
+    void LoadURL(const String& url, bool clearSurface);
     void LoadHtml(const CefString& html, const CefString& url);
     void StopLoading();
 
-    void OnURLLoadingRequst(const struct URLLoadingRequest& request);
-    void AllowURLLoading(const String& url, int64 frameID);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnMouseWheel(UIEvent* input);
@@ -90,6 +115,7 @@ private:
     CefRefPtr<CefBrowser> cefBrowser;
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;
+    bool pageLoaded = false;
 };
 
 } // namespace DAVA
