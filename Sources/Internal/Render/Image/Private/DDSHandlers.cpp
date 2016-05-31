@@ -1237,7 +1237,6 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
         return false;
     }
 
-    CRC32 crc;
     for (const Vector<Image*>& faceImageSet : images)
     {
         for (Image* mipImage : faceImageSet)
@@ -1281,66 +1280,10 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 Logger::Error("Can't add data chunk to %s", file->GetFilename().GetStringValue().c_str());
                 return false;
             }
-
-            crc.AddData(reinterpret_cast<const char*>(dataToCopy), dataToCopySize);
         }
     }
 
-//     for (const Vector<Image*>& mips : images)
-//     {
-//         for (const Image* srcImage : mips)
-//         {
-//             uint32 w = srcImage->width;
-//             uint32 h = srcImage->height;
-// 
-//             uint8* dataToCopy = srcImage->data;
-//             uint32 dataToCopySize = srcImage->dataSize;
-// 
-//             ScopedPtr<Image> dstDavaImage(nullptr);
-// 
-//             if (srcFormat != dstFormat)
-//             {
-//                 dstDavaImage.reset(Image::Create(w, h, dstFormat)); // todo: use single image buffer for all mips
-//                 if (ImageConvert::ConvertImage(srcImage, dstDavaImage) == false)
-//                 {
-//                     Logger::Error("Can't convert from %s to %s",
-//                                   GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
-//                                   GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
-//                     return false;
-//                 }
-// 
-//                 dataToCopy = dstDavaImage->data;
-//                 dataToCopySize = dstDavaImage->dataSize;
-//             }
-// 
-//             if (fileStoresTextureInD3DFormat)
-//             {
-//                 uint32 d3dSize = w * h * D3DUtils::GetFormatSizeInBits(d3dPixelFormat) / 8;
-//                 Vector<uint8> d3dData(d3dSize); // todo: use single buffer for all mips
-//                 D3DUtils::DirectConvertToD3D(dataToCopy, w, h, d3dData.data(), davaPixelFormat, d3dPixelFormat);
-//                 dataToCopy = d3dData.data();
-//                 dataToCopySize = d3dSize;
-//             }
-// 
-//             if (WriteDataChunk(dataToCopy, dataToCopySize) == false)
-//             {
-//                 Logger::Error("Can't add data chunk to %s", file->GetFilename().GetStringValue().c_str());
-//                 return false;
-//             }
-// 
-//             crc.AddData(reinterpret_cast<const char*>(dataToCopy), dataToCopySize);
-//         }
-//     }
-
-    if (WriteCRC(crc.Done()))
-    {
-        return true;
-    }
-    else
-    {
-        Logger::Error("Can't write crc data");
-        return false;
-    }
+    return true;
 }
 
 } // namespace DAVA
