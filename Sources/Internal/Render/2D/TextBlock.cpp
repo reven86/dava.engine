@@ -927,10 +927,10 @@ void TextBlock::CalculateCacheParams()
     }
 
     //calculate texture size
-    int32 dx = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
-    int32 dy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
-    int32 ox = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
-    int32 oy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
+    int32 dx = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
+    int32 dy = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
+    int32 ox = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
+    int32 oy = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
 
     cacheUseJustify = useJustify;
     cacheDx = dx;

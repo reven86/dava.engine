@@ -464,12 +464,13 @@ void PackageNode::RestoreProperties(ControlNode* node)
         ControlPropertiesSection* controlSection = rootProperty->GetControlPropertiesSection(i);
         for (uint32 j = 0; j < controlSection->GetCount(); j++)
         {
-            IntrospectionProperty* prop = controlSection->GetProperty(j);
-            if (prop->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS)
+            AbstractProperty* property = controlSection->GetProperty(j);
+            IntrospectionProperty* inspProp = dynamic_cast<IntrospectionProperty*>(property);
+            if (nullptr != inspProp && inspProp->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS)
             {
-                prop->Refresh(AbstractProperty::REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES);
-                if (prop->GetStylePropertyIndex() != -1)
-                    node->GetControl()->SetPropertyLocalFlag(prop->GetStylePropertyIndex(), prop->IsOverridden());
+                inspProp->Refresh(AbstractProperty::REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES);
+                if (inspProp->GetStylePropertyIndex() != -1)
+                    node->GetControl()->SetPropertyLocalFlag(inspProp->GetStylePropertyIndex(), inspProp->IsOverridden());
             }
         }
     }
