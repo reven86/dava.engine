@@ -5,6 +5,7 @@
 #include "UI/Private/CEFWebPageRender.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
@@ -23,7 +24,9 @@ void CEFWebPageRender::ClearRenderSurface()
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
     Vector2 size = targetControl.GetSize();
-    rect = CefRect(0, 0, static_cast<int>(size.dx), static_cast<int>(size.dy));
+    float32 width = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.dx);
+    float32 height = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.dy);
+    rect = CefRect(0, 0, static_cast<int>(width), static_cast<int>(height));
     return true;
 }
 
@@ -80,9 +83,9 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
                                                     static_cast<float32>(texture->GetHeight())));
 
     UIControlBackground* background = targetControl.GetBackground();
-    if (background->GetDrawType() != UIControlBackground::DRAW_SCALE_TO_RECT)
+    if (background->GetDrawType() != UIControlBackground::DRAW_STRETCH_BOTH)
     {
-        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+        background->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
         background->SetColor(Color::White);
     }
     background->SetSprite(sprite.Get());
