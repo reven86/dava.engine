@@ -1,5 +1,9 @@
 #include "PackManager/Private/PackRequest.h"
 #include "PackManager/Private/RequestManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/CRC32.h"
 
 namespace DAVA
 {
