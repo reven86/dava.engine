@@ -282,7 +282,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                         sz = 0;
                     }
 
-                    [uid replaceRegion:rgn mipmapLevel:m slice:0 withBytes:data bytesPerRow:stride bytesPerImage:sz];
+                    [uid replaceRegion:rgn mipmapLevel:m slice:s withBytes:data bytesPerRow:stride bytesPerImage:sz];
                 }
                 else
                 {
