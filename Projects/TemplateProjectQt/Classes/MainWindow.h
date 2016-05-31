@@ -17,12 +17,6 @@ public:
     ~MainWindow();
 
 private:
-    void CreateGlWidget();
-
-private slots:
-    void OnGlWidgedResized(int width, int height, int dpr);
-
-private:
     Ui::MainWindow* ui;
 };
 

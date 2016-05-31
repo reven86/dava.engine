@@ -1,18 +1,43 @@
 cmake_minimum_required (VERSION 3.0)
-project               ( TemplateProjectQt ) # to change the project name
 
+set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
+
+project               ( TemplateProjectQt ) # to change the project name
+get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
 
-set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ) # path to framework
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
-include               ( CMake-common )
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
+include               ( CMake-common )
+include               ( NGTMacro )
+
+
+if (DEPLOY)
+    set (DEPLOY_ROOT ${DEPLOY_DIR})
+
+    if ( WIN32 )
+        set(DEPLOY_ROOT ${DEPLOY_ROOT})
+        set(DEPLOY_DIR ${DEPLOY_ROOT})
+    endif()
+    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+endif()
+
+configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
+
+add_definitions       ( 
+-DDISABLE_NATIVE_WEBVIEW 
+-DDISABLE_NATIVE_TEXTFIELD 
+-DQT_QML_DEBUG_NO_WARNING
+)
+
+find_package          ( NgtTools      REQUIRED )
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 
-include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
@@ -31,22 +56,34 @@ add_definitions       (
 -DDAVA_QT
 )
 
-file              ( GLOB UI_LIST "DataQt/*.ui" )
-qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
-file              ( GLOB RCC_LIST "DataQt/*.qrc" )
-qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+file                          ( GLOB UI_LIST "DataQt/*.ui" )
+qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 
-set               ( Generated ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set               ( UiList ${UI_LIST} )
+file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
+qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
-define_source_folders          ( SRC_ROOT "Classes" GLOBAL_ERASE_FOLDER )
-generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" Generated UiList)
+file                          ( GLOB QML_LIST "DataQt/*.qml")
+file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
+
+set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set                           ( UiList       ${UI_LIST} )
+
+define_source_folders         ( SRC_ROOT "Classes" ERASE_FOLDERS "_build"    )
+generate_source_groups_project( SRC_ROOT "Classes" FOLDERS Generated UiList )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
+
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+set( LIBRARIES                  NgtTools)
+
+if ( WIN32 AND X64_MODE )
+    set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
+else ()
+    set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+endif ()
 
 setup_main_executable()
