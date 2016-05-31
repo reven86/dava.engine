@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QDebug>
 #include <QJsonParseError>
+#include <QRegularExpression>
 
 namespace ConfigParser_local
 {
@@ -65,6 +66,31 @@ bool GetFavorites(const QJsonValue& value, QStringList& favorites)
     return isValid;
 }
 
+QString ProcessID(const QString& id)
+{
+    QRegularExpressionMatch match;
+    QRegularExpression regex("\\[\\d+\\_\\d+\\_\\d+\\]");
+    int index = id.indexOf(regex, 0, &match);
+    if (index == -1)
+    {
+        return id;
+    }
+    QString version = match.captured();
+    int versionLength = version.length();
+    QStringList digits = version.split(QRegularExpression("\\D+"), QString::SkipEmptyParts);
+    version = digits.join(".");
+    QString dateTime = id.right(id.length() - versionLength - index);
+    QRegularExpression timeRegex("\\_\\d+\\_\\d+\\_\\d+");
+    if (dateTime.indexOf(timeRegex, 0, &match) != -1)
+    {
+        QString time = match.captured();
+        time = time.split(QRegularExpression("\\D+"), QString::SkipEmptyParts).join(".");
+        dateTime.replace(timeRegex, "_" + time);
+    }
+    QString result = version + dateTime;
+    return result;
+}
+
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
@@ -121,7 +147,8 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
             app->versions.append(AppVersion());
             appVer = &app->versions.last();
         }
-        appVer->id = verID;
+
+        appVer->id = ProcessID(verID);
         appVer->url = entry["artifacts"].toString();
         appVer->runPath = entry["exe_location"].toString();
         isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());

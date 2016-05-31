@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
-    connect(ui->action_updateConfiguration, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
+    connect(ui->action_updateConfiguration, SIGNAL(triggered()), this, SLOT(OnRefreshClicked()));
     connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
