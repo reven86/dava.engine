@@ -17,7 +17,6 @@ namespace DAVA
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
-    uiWebView.SetDebugDraw(true);
 }
 
 void CEFWebViewControl::Initialize(const Rect& rect)
