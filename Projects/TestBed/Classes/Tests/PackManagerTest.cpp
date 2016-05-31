@@ -228,10 +228,12 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
 {
     if (sender == startServerButton)
     {
-        std::system("python scripts/start_local_http_server.py");
+        // TODO fix for uap
+        // std::system("python scripts/start_local_http_server.py");
     }
     else if (sender == stopServerButton)
     {
-        std::system("python scripts/stop_local_http_server.py");
+        // TODO fix for uap
+        // std::system("python scripts/stop_local_http_server.py");
     }
 }
