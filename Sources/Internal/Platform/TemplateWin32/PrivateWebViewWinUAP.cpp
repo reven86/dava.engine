@@ -11,10 +11,12 @@
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
 #include "Utils/UTF8Utils.h"
 #include "Utils/Random.h"
+#include "Utils/Utils.h"
 
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
