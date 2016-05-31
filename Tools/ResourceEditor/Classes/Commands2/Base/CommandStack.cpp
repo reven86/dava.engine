@@ -196,7 +196,11 @@ bool CommandStack::CanRedo() const
 void CommandStack::Clear()
 {
     ActiveStackGuard guard(this);
-    commandManager->removeCommands([](const CommandInstancePtr&) { return true; });
+    commandManager->removeCommands([this](const CommandInstancePtr&)
+    {
+        nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, EMPTY_INDEX);
+        return true;
+    });
     CleanCheck();
 }
 
