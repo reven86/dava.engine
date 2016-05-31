@@ -52,9 +52,7 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
                                const RectList& dirtyRects,
                                const void* buffer, int width, int height)
 {
-    uint64 now = SystemTimer::Instance()->AbsoluteMS();
-
-    if (type == CefRenderHandler::PaintElementType::PET_POPUP)
+    if (type != CefRenderHandler::PaintElementType::PET_VIEW)
     {
         return;
     }
@@ -74,24 +72,30 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
         std::swap(imageData[i], imageData[i + 2]);
     }
 
-    // Create texture
-    RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(), width, height, true));
-    texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
-
-    RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
-                                                    static_cast<float32>(texture->GetWidth()),
-                                                    static_cast<float32>(texture->GetHeight())));
-
+    // Create texture or update texture
     UIControlBackground* background = targetControl.GetBackground();
-    if (background->GetDrawType() != UIControlBackground::DRAW_STRETCH_BOTH)
-    {
-        background->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-        background->SetColor(Color::White);
-    }
-    background->SetSprite(sprite.Get());
 
-    uint64 diff = SystemTimer::Instance()->AbsoluteMS() - now;
-    Logger::Info("%s: %u ms", __FUNCTION__, unsigned(diff));
+    if (background->GetSprite() == nullptr)
+    {
+        RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(), width, height, true));
+        texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
+
+        RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
+                                                        static_cast<float32>(texture->GetWidth()),
+                                                        static_cast<float32>(texture->GetHeight())));
+
+        if (background->GetDrawType() != UIControlBackground::DRAW_STRETCH_BOTH)
+        {
+            background->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+            background->SetColor(Color::White);
+        }
+        background->SetSprite(sprite.Get());
+    }
+    else
+    {
+        Texture* texture = background->GetSprite()->GetTexture();
+        texture->ReloadFromData(FORMAT_RGBA8888, imageData.get(), width, height);
+    }
 }
 
 } // namespace DAVA
