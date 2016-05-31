@@ -128,7 +128,7 @@ elseif( MACOS )
         set( DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter.dylib )
     endif()
 
-    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
+    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
 
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )
 
