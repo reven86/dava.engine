@@ -28,9 +28,9 @@ IWebViewControl::~IWebViewControl()
 
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
+    , webViewControl(new WebViewControl(*this))
     , isNativeControlVisible(false)
 {
-    webViewControl = std::make_unique<WebViewControl>(*this);
     Rect newRect = GetAbsoluteRect();
     webViewControl->Initialize(newRect);
     UpdateControlRect();
