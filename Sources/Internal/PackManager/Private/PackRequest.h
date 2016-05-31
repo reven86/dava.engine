@@ -7,7 +7,7 @@ namespace DAVA
 {
 class PackManagerImpl;
 
-class PackRequest
+class PackRequest : public PackManager::IRequest
 {
 public:
     PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_);
@@ -41,7 +41,7 @@ public:
         Status status = Wait;
     };
 
-    const String& GetPackName() const
+    const String& GetPackName() const override
     {
         return pack->name;
     }
@@ -53,6 +53,10 @@ public:
     bool IsDone() const;
     bool IsError() const;
     const SubRequest& GetCurrentSubRequest() const;
+
+    uint64 GetFullSizeWithDependencies() const override;
+
+    uint64 GetDownloadedSize() const override;
 
 private:
     void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
@@ -68,6 +72,8 @@ private:
 
     PackManagerImpl* packManager = nullptr;
     PackManager::Pack* pack = nullptr;
+    Set<PackManager::Pack*> dependencySet;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
+    uint64 totalAllPacksSize = 0;
 };
 } // end namespace DAVA

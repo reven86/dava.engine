@@ -41,14 +41,27 @@ public:
         uint32 hashFromMeta = 0; // example: tanks.pak -> tanks.pak.hash
         uint32 hashFromDB = 0;
 
-        uint32 downloadedSize = 0;
-        uint32 totalSize = 0;
-        uint32 totalSizeFromDB = 0;
+        uint64 downloadedSize = 0;
+        uint64 totalSize = 0;
+        uint64 totalSizeFromDB = 0;
 
         DownloadError downloadError = DLE_NO_ERROR;
         Status state = Status::NotRequested;
 
         bool isGPU = false;
+    };
+
+    // proxy interface to easily check pack request progress
+    class IRequest
+    {
+    public:
+        virtual ~IRequest();
+
+        virtual const String& GetPackName() const = 0;
+
+        virtual uint64 GetFullSizeWithDependencies() const = 0;
+
+        virtual uint64 GetDownloadedSize() const = 0;
     };
 
     PackManager();
@@ -86,6 +99,7 @@ public:
 
     // signal user about every pack state change
     Signal<const Pack&, Pack::Change> onPackStateChanged;
+    Signal<const IRequest&> onRequestProgressChanged;
 
     const FilePath& GetLocalPacksDirectory() const;
     const String& GetRemotePacksUrl() const;

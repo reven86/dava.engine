@@ -15,7 +15,6 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
     DVASSERT(pack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
-    Set<PackManager::Pack*> dependencySet;
     CollectDownlodbleDependency(pack->name, dependencySet);
 
     if (pack->hashFromDB != 0) // not fully virtual pack
@@ -48,6 +47,11 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
         subRequest.taskId = 0;
         dependencies.push_back(subRequest);
     }
+
+    std::for_each(begin(dependencies), end(dependencies), [&](const SubRequest& request)
+                  {
+                      totalAllPacksSize += request.pack->totalSizeFromDB;
+                  });
 }
 
 void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency)
@@ -246,6 +250,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                     pack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
                     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
+                    packManager->onRequestChange->Emit(*this);
                 }
             }
         }
@@ -260,8 +265,12 @@ bool PackRequest::IsLoadingPackFileFinished()
             {
                 result = true;
 
+                dm->GetProgress(subRequest.taskId, progress);
+
                 pack.downloadProgress = 1.0f;
+                pack.downloadedSize = progress;
                 packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
+                packManager->onRequestChange->Emit(*this);
             }
             else
             {
@@ -482,4 +491,22 @@ const PackRequest::SubRequest& PackRequest::GetCurrentSubRequest() const
     DVASSERT(!dependencies.empty());
     return dependencies.at(0); // at check index
 }
+
+uint64 PackRequest::GetFullSizeWithDependencies() const
+{
+    return totalAllPacksSize;
+}
+
+uint64 PackRequest::GetDownloadedSize() const
+{
+    uint64 result = 0;
+    std::for_each(begin(dependencySet), end(dependencySet), [&](PackManager::Pack* p)
+                  {
+                      result += p->downloadedSize;
+                  });
+
+    result += pack->downloadedSize;
+    return result;
+}
+
 } // end namespace DAVA

@@ -161,10 +161,6 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAV
     if (change == PackManager::Pack::Change::DownloadProgress)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
-
-        auto rect = redControl->GetRect();
-        rect.dx = rect.dx * pack.downloadProgress;
-        greenControl->SetRect(rect);
     }
     else if (change == PackManager::Pack::Change::State)
     {
@@ -177,6 +173,18 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAV
             packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
         }
     }
+}
+
+void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request)
+{
+    // change total download progress
+    uint64 total = request.GetFullSizeWithDependencies();
+    uint64 current = request.GetDownloadedSize();
+    float32 progress = static_cast<float32>(current) / total;
+
+    auto rect = redControl->GetRect();
+    rect.dx = rect.dx * progress;
+    greenControl->SetRect(rect);
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -210,6 +218,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     packManager.onPackStateChanged.DisconnectAll();
 
     packManager.onPackStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    packManager.onRequestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
 
     String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
 

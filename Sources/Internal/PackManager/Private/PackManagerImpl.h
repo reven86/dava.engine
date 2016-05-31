@@ -17,7 +17,8 @@ public:
                     const FilePath& readOnlyPacksDir_,
                     const String& packUrlCommon,
                     const String& packUrlGpu,
-                    Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
+                    Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal,
+                    Signal<const PackManager::IRequest&>& signal2);
 
     bool IsProcessingEnabled() const;
 
@@ -46,6 +47,7 @@ public:
     const String& GetRemotePacksURL() const;
 
     Signal<const PackManager::Pack&, PackManager::Pack::Change>* onPackChange;
+    Signal<const PackManager::IRequest&>* onRequestChange;
 
 private:
     FilePath dbFile;

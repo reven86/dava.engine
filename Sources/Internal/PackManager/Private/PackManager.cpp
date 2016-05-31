@@ -11,6 +11,8 @@ PackManager::PackManager()
 
 PackManager::~PackManager() = default;
 
+PackManager::IRequest::~IRequest() = default;
+
 void PackManager::Initialize(const FilePath& filesDB_,
                              const FilePath& downloadPacksDir_,
                              const FilePath& readOnlyPacksDir_,
@@ -26,7 +28,7 @@ void PackManager::Initialize(const FilePath& filesDB_,
         throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
     }
 
-    impl->Initialize(filesDB_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, onPackStateChanged);
+    impl->Initialize(filesDB_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, onPackStateChanged, onRequestProgressChanged);
 }
 
 bool PackManager::IsProcessingEnabled() const
