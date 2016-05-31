@@ -6,6 +6,7 @@
 
 #include "TileTexturePreviewWidgetItemDelegate.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "QtTools/Utils/Utils.h"
 
 #include <QHeaderView>
 #include <QLabel>

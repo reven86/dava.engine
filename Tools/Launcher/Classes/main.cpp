@@ -1,33 +1,38 @@
 #include "mainwindow.h"
-#include "filemanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include <QApplication>
 
 void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
-    ErrorMessanger::Instance()->LogMessage(type, msg);
+    ErrorMessenger::LogMessage(type, msg);
 }
 
 int main(int argc, char* argv[])
 {
 #ifdef Q_OS_WIN
-    char** argv1 = new char*[argc + 2];
-    memcpy(argv1, argv, argc * sizeof(char*));
+    //this code is deprecated and fix update mechamism from old versions of launcher.
+    //remove this block in 2017
 
-    argv1[argc] = "-platformpluginpath";
-    argv1[argc + 1] = ".";
-
-    argc += 2;
-    argv = argv1;
-#endif // Q_OS_WIN
-
+    QFileInfo fi(argv[0]);
+    QDir currentDir(fi.absoluteDir());
+    QString platformsPath = "platforms";
+    QString windowsDllPath = "qwindows.dll";
+    //remove "platforms" with permission hack
+    if (currentDir.exists(platformsPath))
+    {
+        currentDir.cd(platformsPath);
+        currentDir.removeRecursively();
+        currentDir.cdUp();
+    }
+    //try copy even if folder already exists
+    //if (!currentDir.exists(platformsDir))
+    {
+        currentDir.mkpath(platformsPath);
+        QFile::copy(windowsDllPath, platformsPath + "/" + windowsDllPath);
+    }
+#endif //windows
     QApplication a(argc, argv);
 
-#ifdef Q_OS_WIN
-    delete[] argv1;
-#endif // Q_OS_WIN
-
-    ErrorMessanger::Instance();
     qInstallMessageHandler(LogMessageHandler);
 
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);

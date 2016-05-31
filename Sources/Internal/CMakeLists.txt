@@ -87,7 +87,9 @@ set( UNITY_IGNORE_LIST              "Internal/Autotesting"
                                     "UI/Private/CEFWebViewControl.cpp"
                                     "UI/Private/CEFWebViewControlProxy.cpp"
                                     "UI/Private/CEFWebPageRender.cpp"
-                                    "UI/Private/CEFDavaResourceHandler.cpp" )
+                                    "UI/Private/CEFDavaResourceHandler.cpp"
+                                    "Platform/Steam.cpp"
+                                    "DataStorage/Steam/DataStorageSteam.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"

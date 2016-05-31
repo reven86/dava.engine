@@ -82,9 +82,11 @@ ProtoDecoder::eDecodeStatus ProtoDecoder::ProcessDataFrame(ProtoHeader* header, 
             accum.resize(totalDataSize);
     }
     // TODO: maybe I should compare channel ID and packet ID with initial values
-
-    Memcpy(&*accum.begin() + accumulatedSize, curFrame + sizeof(ProtoHeader), curFrameSize - sizeof(ProtoHeader));
-    accumulatedSize += (curFrameSize - sizeof(ProtoHeader));
+    DVASSERT(curFrameSize >= sizeof(ProtoHeader));
+    size_type packetSize = curFrameSize - sizeof(ProtoHeader);
+    DVASSERT(accum.size() >= accumulatedSize + packetSize);
+    Memcpy(&*accum.begin() + accumulatedSize, curFrame + sizeof(ProtoHeader), packetSize);
+    accumulatedSize += packetSize;
     if (accumulatedSize == totalDataSize)
     {
         result->type = TYPE_DATA;

@@ -16,6 +16,9 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Debug/Profiler.h"
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -154,6 +157,10 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
     FrameworkDidLaunched();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Init();
+#endif
+
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
@@ -342,6 +349,9 @@ void CoreWin32Platform::Run()
     }
 
     Core::Instance()->SystemAppFinished();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Deinit();
+#endif
     FrameworkWillTerminate();
 }
 

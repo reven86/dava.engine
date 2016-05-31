@@ -41,12 +41,6 @@ public:
         return Detail<std::is_base_of<TrackedObject, T>::value>::Cast(t);
     }
 
-protected:
-    Set<SignalBase*> trackedSignals;
-
-    template <bool is_derived_from_tracked_obj>
-    struct Detail;
-
     virtual ~TrackedObject()
     {
         while (trackedSignals.size() > 0)
@@ -55,6 +49,12 @@ protected:
             (*it)->Disconnect(this);
         }
     }
+
+protected:
+    Set<SignalBase*> trackedSignals;
+
+    template <bool isDerivedFromTrackedObj>
+    struct Detail;
 };
 
 template <>

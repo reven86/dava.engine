@@ -16,13 +16,10 @@ BoolPropertyDelegate::~BoolPropertyDelegate()
 QWidget* BoolPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     QComboBox* comboBox = new QComboBox(parent);
+    comboBox->addItem(QVariant(false).toString(), false);
+    comboBox->addItem(QVariant(true).toString(), true);
     comboBox->setObjectName(QString::fromUtf8("comboBox"));
     connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged()));
-
-    comboBox->blockSignals(true);
-    comboBox->addItem(QVariant(false).toString(), QVariant(false));
-    comboBox->addItem(QVariant(true).toString(), QVariant(true));
-    comboBox->blockSignals(false);
 
     return comboBox;
 }
