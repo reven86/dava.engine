@@ -12,6 +12,7 @@
 
 #include "Platform/SystemTimer.h"
 
+#include "QtTools/DavaGLWidget/DavaRenderer.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include <QVBoxLayout>
@@ -177,6 +178,7 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 
     if (DAVA::FileSystem::Instance()->Exists(scenePathname))
     {
+        RenderContextGuard guard;
         DAVA::SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
         if (sceneWasLoaded != DAVA::SceneFileV2::ERROR_NO_ERROR)
         {
@@ -252,7 +254,10 @@ bool SceneTabWidget::CloseTab(int index)
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
-    SafeRelease(scene);
+    {
+        RenderContextGuard guard;
+        SafeRelease(scene);
+    }
     tabBar->removeTab(index);
     updateTabBarVisibility();
 
@@ -377,6 +382,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
                 QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
                 if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
                 {
+                    RenderContextGuard guard;
                     curScene->structureSystem->Add(path.toStdString(), pos);
                 }
                 QtMainWindow::Instance()->WaitStop();

@@ -33,39 +33,64 @@ class OGLContextBinder : public DAVA::Singleton<OGLContextBinder>
 {
 public:
     OGLContextBinder(QSurface* surface, QOpenGLContext* context)
-        : renderSurface(surface)
-        , renderContext(context)
+        : davaContext{surface, context}
     {
     }
 
     void AcquireContext()
     {
-        prevContext = QOpenGLContext::currentContext();
+        QSurface* prevSurface = nullptr;
+        QOpenGLContext* prevContext = QOpenGLContext::currentContext();
         if (prevContext != nullptr)
             prevSurface = prevContext->surface();
-        else
-            prevSurface = nullptr;
 
-        renderContext->makeCurrent(renderSurface);
+        contextStack.emplace(prevSurface, prevContext);
+
+        if (prevContext != davaContext.context)
+        {
+            davaContext.context->makeCurrent(davaContext.surface);
+        }
     }
 
     void ReleaseContext()
     {
-        renderContext->doneCurrent();
+        DVASSERT(!contextStack.empty());
+        QOpenGLContext* currentContext = QOpenGLContext::currentContext();
 
-        if (prevContext != nullptr && prevSurface != nullptr)
-            prevContext->makeCurrent(prevSurface);
+        ContextNode topNode = contextStack.top();
+        contextStack.pop();
 
-        prevContext = nullptr;
-        prevSurface = nullptr;
+        if (topNode.context == currentContext)
+        {
+            return;
+        }
+        else if (currentContext != nullptr)
+        {
+            currentContext->doneCurrent();
+        }
+
+        if (topNode.context != nullptr && topNode.surface != nullptr)
+        {
+            topNode.context->makeCurrent(topNode.surface);
+        }
     }
 
 private:
-    QSurface* renderSurface = nullptr;
-    QOpenGLContext* renderContext = nullptr;
+    struct ContextNode
+    {
+        ContextNode() = default;
+        ContextNode(QSurface* surface_, QOpenGLContext* context_)
+            : surface(surface_)
+            , context(context_)
+        {
+        }
 
-    QSurface* prevSurface = nullptr;
-    QOpenGLContext* prevContext = nullptr;
+        QSurface* surface = nullptr;
+        QOpenGLContext* context = nullptr;
+    };
+    
+    ContextNode davaContext;
+    DAVA::Stack<ContextNode> contextStack;
 };
 
 void AcqureContext()
@@ -114,4 +139,14 @@ void DavaRenderer::paint()
     {
         DAVA::QtLayer::Instance()->ProcessFrame();
     }
+}
+
+RenderContextGuard::RenderContextGuard()
+{
+    AcqureContext();
+}
+
+RenderContextGuard::~RenderContextGuard()
+{
+    ReleaseContext();
 }
