@@ -261,7 +261,7 @@ void CommandStack::Redo()
 
 void CommandStack::Exec(Command2::Pointer&& command)
 {
-    if (CanRedo())
+    if (CanRedo() && nextAfterCleanCommandIndex > nextCommandIndex)
     {
         SetClean(false);
     }
