@@ -2,16 +2,11 @@
 
 #include "Qt/Main/QtUtils.h"
 
-LightmapsPacker::LightmapsPacker()
-{
-}
-
 void LightmapsPacker::ParseSpriteDescriptors()
 {
     DAVA::FileList* fileList = new DAVA::FileList(outputDir);
 
-    DAVA::char8 buf[512];
-    DAVA::uint32 readSize;
+    DAVA::UnorderedMap<DAVA::String, DAVA::Vector2> texturesSize;
 
     DAVA::int32 itemsCount = fileList->GetCount();
     for (DAVA::int32 i = 0; i < itemsCount; ++i)
@@ -28,21 +23,27 @@ void LightmapsPacker::ParseSpriteDescriptors()
 
         DAVA::File* file = DAVA::File::Create(filePath, DAVA::File::OPEN | DAVA::File::READ);
 
+        DAVA::char8 buf[512] = {};
         file->ReadLine(buf, sizeof(buf)); //textures count
 
-        readSize = file->ReadLine(buf, sizeof(buf)); //texture name
+        DAVA::uint32 readSize = file->ReadLine(buf, sizeof(buf)); //texture name
         DAVA::FilePath originalTextureName = outputDir + DAVA::String(buf, readSize);
         data.textureName = originalTextureName;
 
         file->ReadLine(buf, sizeof(buf)); //image size
-
         file->ReadLine(buf, sizeof(buf)); //frames count
-
         file->ReadLine(buf, sizeof(buf)); //frame rect
+
         DAVA::int32 x, y, dx, dy, unused0, unused1, unused2;
         sscanf(buf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &unused0, &unused1, &unused2);
 
-        DAVA::Vector2 textureSize = GetTextureSize(originalTextureName);
+        DAVA::String absoluteFileName = originalTextureName.GetAbsolutePathname();
+        if (texturesSize.count(absoluteFileName) == 0)
+        {
+            texturesSize.emplace(absoluteFileName, GetTextureSize(originalTextureName));
+        }
+
+        DAVA::Vector2 textureSize = texturesSize[absoluteFileName];
         data.uvOffset = DAVA::Vector2(static_cast<DAVA::float32>(x) / textureSize.x, static_cast<DAVA::float32>(y) / textureSize.y);
         data.uvScale = DAVA::Vector2(static_cast<DAVA::float32>(dx) / textureSize.x, static_cast<DAVA::float32>(dy) / textureSize.y);
 

@@ -15,6 +15,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "QtTools/Utils/AssertGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -128,6 +129,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
+
+    ToolsAssetGuard::Instance()->Init();
 
     REApplication a(argc, argv);
     a.LoadPlugins();
