@@ -14,6 +14,7 @@
 
 #include <QMainWindow>
 #include <QFileInfo>
+#include <QApplication>
 
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
@@ -69,12 +70,14 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     DVASSERT(framework != nullptr);
 
     std::unique_ptr<QtWindow> window(new QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    window->onCloseEvent().add<BaseApplication, &BaseApplication::OnMainWindowClosed>(this);
 
     IUIApplication* app = pluginManager.queryInterface<IUIApplication>();
     DVASSERT(app != nullptr);
     window->show();
     app->addWindow(*window);
     int result = app->startApplication();
+
     window->releaseWindow();
 
     return result;
@@ -92,4 +95,10 @@ DAVA::WideString BaseApplication::GetPluginsFolder() const
 
     return pluginsBasePath_.toStdWString();
 }
+
+void BaseApplication::OnMainWindowClosed(const IWindow* sender, const IWindow::CloseEventArgs& args)
+{
+    qApp->quit();
+}
+
 } // namespace NGTLayer

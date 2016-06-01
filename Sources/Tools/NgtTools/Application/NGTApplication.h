@@ -5,8 +5,10 @@
 
 #include "Base/BaseTypes.h"
 
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
+#include <core_generic_plugin_manager/generic_plugin_manager.hpp>
+#include <core_generic_plugin/interfaces/i_component_context.hpp>
+
+#include <core_ui_framework/i_window.hpp>
 
 class QMainWindow;
 namespace NGTLayer
@@ -27,6 +29,7 @@ protected:
 
 private:
     DAVA::WideString GetPluginsFolder() const;
+    void OnMainWindowClosed(const IWindow* sender, const IWindow::CloseEventArgs& args);
 
 private:
     GenericPluginManager pluginManager;
