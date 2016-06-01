@@ -33,7 +33,7 @@ class OGLContextBinder : public DAVA::Singleton<OGLContextBinder>
 {
 public:
     OGLContextBinder(QSurface* surface, QOpenGLContext* context)
-        : davaContext{surface, context}
+        : davaContext{ surface, context }
     {
     }
 
@@ -88,7 +88,7 @@ private:
         QSurface* surface = nullptr;
         QOpenGLContext* context = nullptr;
     };
-    
+
     ContextNode davaContext;
     DAVA::Stack<ContextNode> contextStack;
 };
