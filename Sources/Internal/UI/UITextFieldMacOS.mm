@@ -397,6 +397,14 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
+        // notify after text changed
+        WideString oldText;
+        GetText(oldText);
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (nullptr != delegate)
+        {
+            delegate->TextFieldOnTextChanged(davaText, string, oldText);
+        }
     }
 
     void UpdateRect(const Rect& rectSrc) override
@@ -710,6 +718,12 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
+        // notify after text changed
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (nullptr != delegate)
+        {
+            //  delegate->TextFieldOnTextChanged(davaText, string, oldText);
+        }
 
         // HACK if user click cleartext button and current
         // native control not in focus - remove focus from dava control too
@@ -1389,11 +1403,9 @@ doCommandBySelector:(SEL)commandSelector
             errorDescription:(NSString**)error
 {
     DAVA::UITextField* cppTextField = nullptr;
-    DAVA::int32 maxLength = -1;
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
         cppTextField = text->ctrl->davaText;
-        maxLength = cppTextField->GetMaxLength();
     }
 
     BOOL applyChanges = YES;
@@ -1493,11 +1505,9 @@ doCommandBySelector:(SEL)commandSelector
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
 {
     DAVA::UITextField* cppTextField = nullptr;
-    DAVA::int32 maxLength = -1;
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
         cppTextField = text->ctrl->davaText;
-        maxLength = cppTextField->GetMaxLength();
     }
 
     BOOL applyChanges = YES;

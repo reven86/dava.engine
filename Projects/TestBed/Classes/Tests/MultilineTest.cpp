@@ -77,6 +77,7 @@ void MultilineTest::LoadResources()
     textField1->SetDelegate(textDelegate1);
     textField1->GetOrCreateComponent<UIFocusComponent>();
     textField1->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    textField1->SetMaxLength(10);
 
     textField2 = new UITextField(Rect(5, 80, 400, 60));
     textField2->SetIsPassword(true);
