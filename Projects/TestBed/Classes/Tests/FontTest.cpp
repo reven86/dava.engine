@@ -1,5 +1,7 @@
 #include "Tests/FontTest.h"
 
+#include "UI/Focus/UIFocusComponent.h"
+
 using namespace DAVA;
 
 class InputDelegate : public UITextFieldDelegate
