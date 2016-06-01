@@ -4,16 +4,19 @@
 #include "Concurrency/Atomic.h"
 #include "Engine/Public/Engine.h"
 
-using namespace DAVA;
-
+namespace DAVA
+{
+namespace DVAssertMessage
+{
 namespace
 {
 Atomic<uint32> messageDisplayed{ 0 };
+Function<bool(DVAssertMessage::eModalType, const char8*)> innerShowOverride;
 }
 
 #if defined(ENABLE_ASSERT_MESSAGE)
 
-bool DVAssertMessage::ShowMessage(eModalType modalType, const char8* text, ...)
+bool ShowMessage(eModalType modalType, const char8* text, ...)
 {
     bool userClickBreak = false;
     // we don't need to show assert window for console mode
@@ -32,17 +35,19 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8* text, ...)
     vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
     strcat(tmp, "\n");
     messageDisplayed.Increment();
-    userClickBreak = InnerShow(modalType, tmp);
+    if (innerShowOverride)
+        userClickBreak = innerShowOverride(modalType, tmp);
+    else
+        userClickBreak = InnerShow(modalType, tmp);
     messageDisplayed.Decrement();
     va_end(vl);
 
     return userClickBreak;
 }
 
-
 #else
 
-bool DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8* /*text*/, ...)
+bool ShowMessage(eModalType /*modalType*/, const char8* /*text*/, ...)
 {
     // Do nothing here.
     return false;
@@ -50,7 +55,15 @@ bool DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8* /*text*
 
 #endif // ENABLE_ASSERT_MESSAGE
 
-bool DVAssertMessage::IsHidden()
+bool IsHidden()
 {
     return messageDisplayed.Get() == 0;
 }
+
+void SetShowInnerOverride(const DAVA::Function<bool(eModalType, const char8*)>& fn)
+{
+    innerShowOverride = fn;
+}
+
+} // namespace DVAssertMessage
+} // namespace DAVA

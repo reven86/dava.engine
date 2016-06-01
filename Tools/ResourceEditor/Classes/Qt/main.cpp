@@ -15,6 +15,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "QtTools/Utils/AssertGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
 
 #include "Deprecated/EditorConfig.h"
@@ -100,7 +101,11 @@ int main(int argc, char* argv[])
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else if (argc == 1)
+        else if (argc == 1
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 )
         {
             RunGui(argc, argv, cmdLine);
         }
@@ -154,6 +159,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
+
+    ToolsAssetGuard::Instance()->Init();
 
     REApplication a(argc, argv);
     a.LoadPlugins();

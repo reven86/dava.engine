@@ -22,7 +22,7 @@ private:
     void UpdtateBufferData();
     void Restore();
 
-    NMaterial* shadowRectMaterial;
+    NMaterial* shadowRectMaterial = nullptr;
     rhi::Packet shadowRectPacket;
     rhi::HVertexBuffer quadBuffer;
 };
