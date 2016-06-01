@@ -223,6 +223,7 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
         functor.OnProgress((matchedSize * 100.0f) / totalSize);
     };
     QStringList arguments;
+    //this is needed for correct work with pathes contains whitespace
     QString nativeOutPath = QDir::toNativeSeparators(outDirPath);
     arguments << "x"
               << "-y"
@@ -230,7 +231,6 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
               << archivePath
               << "-o" + nativeOutPath;
 
-    QString testStr = arguments.join(' ');
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

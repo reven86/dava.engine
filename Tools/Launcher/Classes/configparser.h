@@ -105,17 +105,17 @@ public:
 
     void RemoveBranch(const QString& branchID);
 
-    const QString& GetString(const QString& stringID);
+    QString GetString(const QString& stringID) const;
 
     void SetLauncherURL(const QString& url);
     void SetWebpageURL(const QString& url);
     void SetRemoteConfigURL(const QString& url);
     void SetLastNewsID(const QString& id);
 
-    const QString& GetLauncherVersion();
-    const QString& GetLauncherURL();
-    const QString& GetWebpageURL();
-    const QString& GetNewsID();
+    const QString& GetLauncherVersion() const;
+    const QString& GetLauncherURL() const;
+    const QString& GetWebpageURL() const;
+    const QString& GetNewsID() const;
 
     const QStringList& GetFavorites();
 

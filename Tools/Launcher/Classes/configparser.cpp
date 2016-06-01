@@ -1,5 +1,6 @@
 #include "configparser.h"
 #include "errormessenger.h"
+#include "defines.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -11,12 +12,6 @@
 
 namespace ConfigParser_local
 {
-QString platformString =
-#ifdef Q_OS_WIN
-"windows";
-#elif defined Q_OS_MAC
-"macos";
-#endif //platform
 
 bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
 {
@@ -162,7 +157,6 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         appVer->runPath = entry["exe_location"].toString();
         appVer->buildNum = entry["build_num"].toString();
         isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
-        isValid = isValid;
     }
     //hotfix to sort downloaded items without rewriting mainWindow
     for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
@@ -392,6 +386,7 @@ bool ConfigParser::Parse(const QByteArray& configData)
                 {
                     Branch branch = Branch::LoadFromYamlNode(&it.second());
                     branch.id = GetStringValueFromYamlNode(&it.first());
+                    branches.push_back(branch);
                     ++it;
                 }
             }
@@ -416,8 +411,10 @@ void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser& parser)
     QMap<QString, QString>::ConstIterator itEnd = parser.strings.end();
     for (; it != itEnd; ++it)
         strings[it.key()] = it.value();
-
-    favorites = parser.favorites;
+    if (!parser.favorites.isEmpty())
+    {
+        favorites = parser.favorites;
+    }
 }
 
 void ConfigParser::UpdateApplicationsNames()
@@ -498,8 +495,11 @@ QByteArray ConfigParser::Serialize()
 void ConfigParser::SaveToFile(const QString& filePath)
 {
     QFile file(filePath);
-    file.open(QFile::WriteOnly);
-    file.write(Serialize());
+    if (file.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        QByteArray data = Serialize();
+        file.write(data);
+    }
     file.close();
 }
 
@@ -620,7 +620,7 @@ AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& 
     return 0;
 }
 
-const QString& ConfigParser::GetString(const QString& stringID)
+QString ConfigParser::GetString(const QString& stringID) const
 {
     if (strings.contains(stringID))
         return strings[stringID];
@@ -628,22 +628,22 @@ const QString& ConfigParser::GetString(const QString& stringID)
     return stringID;
 }
 
-const QString& ConfigParser::GetLauncherVersion()
+const QString& ConfigParser::GetLauncherVersion() const
 {
     return launcherVersion;
 }
 
-const QString& ConfigParser::GetLauncherURL()
+const QString& ConfigParser::GetLauncherURL() const
 {
     return launcherURL;
 }
 
-const QString& ConfigParser::GetWebpageURL()
+const QString& ConfigParser::GetWebpageURL() const
 {
     return webPageURL;
 }
 
-const QString& ConfigParser::GetNewsID()
+const QString& ConfigParser::GetNewsID() const
 {
     return newsID;
 }

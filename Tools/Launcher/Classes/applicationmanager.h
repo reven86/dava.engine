@@ -15,12 +15,11 @@ class ApplicationManager : public QObject
     Q_OBJECT
 public:
     explicit ApplicationManager(QObject* parent = 0);
-    ~ApplicationManager();
 
     QString GetString(const QString& stringID) const;
 
-    ConfigParser* GetLocalConfig() const;
-    ConfigParser* GetRemoteConfig() const;
+    ConfigParser* GetLocalConfig();
+    ConfigParser* GetRemoteConfig();
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
@@ -43,8 +42,8 @@ private:
 
     QString localConfigFilePath;
 
-    ConfigParser* localConfig;
-    ConfigParser* remoteConfig;
+    ConfigParser localConfig;
+    ConfigParser remoteConfig;
 
     friend class ConfigDownloader;
 };

@@ -6,16 +6,6 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
-namespace ConfigDownloader_local
-{
-QString platformString =
-#ifdef Q_OS_WIN
-"windows";
-#elif defined Q_OS_MAC
-"macos";
-#endif //platform
-}
-
 ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::ConfigDownloader)
@@ -36,8 +26,8 @@ int ConfigDownloader::exec()
     appManager->GetRemoteConfig()->Clear();
     QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher" //version, url, news
                                      << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=seo_list" //stirngs
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches&filter=os:" + ConfigDownloader_local::platformString // favorites
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds&filter=os:" + ConfigDownloader_local::platformString //all builds
+                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches&filter=os:" + platformString // favorites
+                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds&filter=os:" + platformString //all builds
     ;
     for (const QString& str : urls)
     {
@@ -70,6 +60,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();
+        appManager->localConfig.SaveToFile(appManager->localConfigFilePath);
         accept();
     }
 }

@@ -46,6 +46,12 @@
 #define LOG_COLOR_PROGRESS QColor(0, 0, 110)
 #define LOG_COLOR_FAIL QColor(240, 0, 0)
 
+#ifdef Q_OS_WIN
+#define platformString QString("windows")
+#elif defined Q_OS_MAC
+#define platformString QString("macos")
+#endif //platform
+
 /////////////////////
 
 template <class TYPE>
