@@ -26,6 +26,7 @@ public:
     IDirect3DVertexBuffer9* buffer = nullptr;
     DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
+    unsigned shouldUpdate : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
@@ -37,6 +38,7 @@ VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
+    , shouldUpdate(false)
 {
 }
 
@@ -89,8 +91,6 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
         if (SUCCEEDED(cmd[0].retval))
         {
             size = desc.size;
-            isMapped = false;
-
             success = true;
         }
         else
@@ -194,7 +194,9 @@ dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
         self->mappedData.resize(self->size);
     }
 
+    DVASSERT(!self->isMapped);
     self->isMapped = true;
+
     return self->mappedData.data() + offset;
 }
 
@@ -204,11 +206,9 @@ static void
 dx9_VertexBuffer_Unmap(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+    DVASSERT(self->isMapped);
 
-    DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
-    ExecDX9(&cmd, 1);
-    DVASSERT(SUCCEEDED(cmd.retval));
-
+    self->shouldUpdate = true;
     self->isMapped = false;
     self->MarkRestored();
 }
@@ -245,9 +245,23 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
-    HRESULT hr = _D3D9_Device->SetStreamSource(stream_i, self->buffer, offset, stride);
 
     DVASSERT(!self->isMapped);
+
+    if (self->shouldUpdate)
+    {
+        void* bufferData = nullptr;
+        HRESULT hr = self->buffer->Lock(0, self->mappedData.size(), &bufferData, 0);
+        DVASSERT(SUCCEEDED(hr));
+
+        memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
+
+        hr = self->buffer->Unlock();
+        DVASSERT(SUCCEEDED(hr));
+        self->shouldUpdate = false;
+    }
+
+    HRESULT hr = _D3D9_Device->SetStreamSource(stream_i, self->buffer, offset, stride);
 
     if (FAILED(hr))
         Logger::Error("SetStreamSource failed:\n%s\n", D3D9ErrorText(hr));

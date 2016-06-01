@@ -27,6 +27,7 @@ public:
     IDirect3DIndexBuffer9* buffer = nullptr;
     DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
+    unsigned shouldUpdate : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -40,6 +41,7 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
+    , shouldUpdate(false)
 {
 }
 
@@ -93,8 +95,6 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
         if (SUCCEEDED(cmd[0].retval))
         {
             size = desc.size;
-            isMapped = false;
-
             success = true;
         }
         else
@@ -188,7 +188,6 @@ static void*
 dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-
     DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
     if (self->mappedData.size() < self->size)
@@ -196,7 +195,9 @@ dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
         self->mappedData.resize(self->size);
     }
 
+    DVASSERT(!self->isMapped);
     self->isMapped = true;
+
     return self->mappedData.data() + offset;
 }
 
@@ -206,11 +207,9 @@ static void
 dx9_IndexBuffer_Unmap(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
+    DVASSERT(self->isMapped);
 
-    DX9Command cmd = { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
-    ExecDX9(&cmd, 1);
-    DVASSERT(SUCCEEDED(cmd.retval));
-
+    self->shouldUpdate = true;
     self->isMapped = false;
     self->MarkRestored();
 }
@@ -247,9 +246,22 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHI(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    HRESULT hr = _D3D9_Device->SetIndices(self->buffer);
 
     DVASSERT(!self->isMapped);
+    if (self->shouldUpdate)
+    {
+        void* bufferData = nullptr;
+        HRESULT hr = self->buffer->Lock(0, self->mappedData.size(), &bufferData, 0);
+        DVASSERT(SUCCEEDED(hr));
+
+        memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
+
+        hr = self->buffer->Unlock();
+        DVASSERT(SUCCEEDED(hr));
+        self->shouldUpdate = false;
+    }
+
+    HRESULT hr = _D3D9_Device->SetIndices(self->buffer);
 
     if (FAILED(hr))
         Logger::Error("SetIndices failed:\n%s\n", D3D9ErrorText(hr));
