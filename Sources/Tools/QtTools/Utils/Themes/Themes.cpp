@@ -6,6 +6,7 @@
 #include <QStyleFactory>
 #include <QSettings>
 #include <QFont>
+#include <QFile>
 
 namespace Themes_namespace
 {
@@ -130,11 +131,18 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
-    qApp->setPalette(lightPalette);
+    QFile scrollBarStyle(":/QtTools/QScrollBarStyleSheet.txt");
+    DVVERIFY(scrollBarStyle.open(QIODevice::ReadOnly));
+    QString styleSheetContent = scrollBarStyle.readAll();
 
-    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }"
-                        //workaround for expanded combobox interval
-                        "QComboBox { font: 11px; combobox-popup: 0}");
+    styleSheetContent.append("QTabBar::tab { height: 20px; }");
+    styleSheetContent.append("QDockWidget::title{ background: #d5d5d5; }");
+    //workaround for expanded combobox interval
+    styleSheetContent.append("QComboBox{ font: 11px; combobox - popup: 0 }");
+    styleSheetContent.append("QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }");
+
+    qApp->setPalette(lightPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
 void SetupDarkTheme()
@@ -171,13 +179,16 @@ void SetupDarkTheme()
     qApp->setPalette(darkPalette);
 
     QString styleSheet = "QToolTip { color: #e0e0e0; background-color: #373737;}"
-                         "QTabBar::close-button { image: url(:/QtTools/Icons/close.png); }"
+                         "QTabBar::tab { height: 20px; }"
+                         "QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }"
                          "QDockWidget::title { background: #454545; }"
                          "QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }"
                          // workaround for expanded combobox interval
                          // "combobox-popup : 0" - force for QComboBox draw drop-down list below control
                          // and not centrate it by selected value
                          "QComboBox{ font: 11px; combobox-popup: 0}"
+                         "QCheckBox::indicator:checked{ image: url(:/QtTools/Icons/checked-checkbox.png); }"
+                         "QCheckBox::indicator:unchecked{ image: url(:/QtTools/Icons/unchecked-checkbox.png); }"
                          "QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }"
                          "QAbstractItemView::indicator::unchecked { image: url(:/QtTools/Icons/unchecked-checkbox.png); }";
 

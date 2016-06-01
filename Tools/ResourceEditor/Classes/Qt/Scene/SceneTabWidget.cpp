@@ -35,6 +35,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     tabBar->setMovable(true);
     tabBar->setUsesScrollButtons(true);
     tabBar->setExpanding(false);
+    tabBar->setObjectName("scenesTabBar");
 
     // davawidget to display DAVAEngine content
     davaWidget = new DavaGLWidget();

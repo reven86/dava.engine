@@ -67,10 +67,10 @@
        </sizepolicy>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Box</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
+       <enum>QFrame::Plain</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
@@ -173,7 +173,7 @@
             </property>
             <property name="icon">
              <iconset resource="Resources.qrc">
-              <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
+              <normaloff>:/QtTools/Icons/close-10.png</normaloff>:/QtTools/Icons/close-10.png</iconset>
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -287,7 +287,7 @@
           </sizepolicy>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Box</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Sunken</enum>
@@ -337,7 +337,7 @@
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>

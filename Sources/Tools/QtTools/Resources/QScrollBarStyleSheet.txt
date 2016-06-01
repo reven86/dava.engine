@@ -1,0 +1,63 @@
+QScrollBar:vertical
+{
+    background:#B4B4B4;
+    width:15px;
+    margin:14px 0 14px 0;
+}
+QScrollBar::handle:vertical
+{
+    border: 1px solid #B4B4B4;
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop: 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    min-width: 20px;
+}
+QScrollBar::add-line:vertical
+{
+    image: url(:/QtTools/Icons/light-downarrow.png);
+    border: 1px solid #B4B4B4;
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop : 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    height:13px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical
+{
+    image: url(:/QtTools/Icons/light-uparrow.png);
+    background:qlineargradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0,
+        stop : 0 #FCFCFC, stop: 0.6 #F4F4F4 stop : 1 #E5E5E5);
+    border: 1px solid #B4B4B4;
+    height: 13px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar:horizontal
+{
+     background: #B4B4B4;
+     height: 15px;
+     margin: 0 13px 0 13px;
+}
+QScrollBar::handle:horizontal
+{
+     border: 1px solid #B4B4B4;
+     background:qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                  stop:0 #FCFCFC, stop: 0.6 #F4F4F4 stop:1 #E5E5E5) ;
+     min-width: 20px;
+}
+QScrollBar::add-line:horizontal
+{
+     image: url(:/QtTools/Icons/light-rightarrow.png);
+     border: 1px solid #B4B4B4;
+     width: 13px;
+     subcontrol-position: right;
+     subcontrol-origin: margin;
+}
+QScrollBar::sub-line:horizontal
+{
+     image: url(:/QtTools/Icons/light-leftarrow.png);
+     border: 1px solid #B4B4B4;
+     width: 13px;
+     subcontrol-position: left;
+     subcontrol-origin: margin;
+}

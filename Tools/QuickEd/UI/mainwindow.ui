@@ -306,7 +306,7 @@
   <action name="actionClose_project">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/close.png</normaloff>:/Icons/close.png</iconset>
+     <normaloff>:/QtTools/Icons/close-16.png</normaloff>:/QtTools/Icons/close-16.png</iconset>
    </property>
    <property name="text">
     <string>Close project</string>
