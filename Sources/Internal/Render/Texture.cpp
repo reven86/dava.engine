@@ -921,14 +921,15 @@ void Texture::RestoreRenderResource()
     Vector<Image*> images;
 
     const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-    if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-        relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-        relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
+    FilePath::ePathType pathType = relativePathname.GetType();
+    if (pathType == FilePath::PATH_IN_FILESYSTEM ||
+        pathType == FilePath::PATH_IN_RESOURCES ||
+        pathType == FilePath::PATH_IN_DOCUMENTS)
     {
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
     }
-    else if (isPink)
+    else if (isPink || (pathType == FilePath::PATH_EMPTY))
     {
         if (texDescriptor->IsCubeMap())
         {

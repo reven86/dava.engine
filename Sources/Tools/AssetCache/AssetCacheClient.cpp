@@ -5,9 +5,19 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 namespace DAVA
 {
+namespace AssetCacheClient_local
+{
+InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::TypeInfo(), {
+                                                                                        PREF_ARG("ip", DAVA::AssetCache::GetLocalHost()),
+                                                                                        PREF_ARG("port", DAVA::AssetCache::ASSET_SERVER_PORT),
+                                                                                        PREF_ARG("timeoutms", DAVA::uint64(10 * 1000))
+                                                                                        });
+};
+
 AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
     : isActive(false)
     , isJobStarted(false)
