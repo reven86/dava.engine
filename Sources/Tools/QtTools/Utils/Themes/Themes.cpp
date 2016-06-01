@@ -138,7 +138,8 @@ void SetupClassicTheme()
     styleSheetContent.append("QTabBar::tab { height: 20px; }");
     styleSheetContent.append("QDockWidget::title{ background: #d5d5d5; }");
     //workaround for expanded combobox interval
-    styleSheetContent.append("QComboBox{ font: 11px; combobox - popup: 0 }");
+    styleSheetContent.append("QComboBox{ combobox - popup: 0 }");
+    styleSheetContent.append("QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }");
     styleSheetContent.append("QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }");
 
     qApp->setPalette(lightPalette);
@@ -185,8 +186,9 @@ void SetupDarkTheme()
                          "QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }"
                          // workaround for expanded combobox interval
                          // "combobox-popup : 0" - force for QComboBox draw drop-down list below control
-                         // and not centrate it by selected value
-                         "QComboBox{ font: 11px; combobox-popup: 0}"
+                         // and not centre it by selected value
+                         "QComboBox{ combobox-popup: 0 }"
+                         "QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }"
                          "QCheckBox::indicator:checked{ image: url(:/QtTools/Icons/checked-checkbox.png); }"
                          "QCheckBox::indicator:unchecked{ image: url(:/QtTools/Icons/unchecked-checkbox.png); }"
                          "QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }"

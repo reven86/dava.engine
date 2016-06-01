@@ -1145,6 +1145,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget* parent) c
     if (allowedValues.size() > 0)
     {
         allowedWidget = new QComboBox(parent);
+        allowedWidget->setItemDelegate(new QStyledItemDelegate(allowedWidget));
 
         for (int i = 0; i < allowedValues.size(); ++i)
         {
