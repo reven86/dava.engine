@@ -53,6 +53,7 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
     if (mappedData)
     {
         ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 

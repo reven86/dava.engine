@@ -50,6 +50,7 @@ VertexBufferDX9_t::~VertexBufferDX9_t()
     if (mappedData)
     {
         ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 
