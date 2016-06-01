@@ -722,7 +722,7 @@ public:
         UITextFieldDelegate* delegate = davaText->GetDelegate();
         if (nullptr != delegate)
         {
-            //  delegate->TextFieldOnTextChanged(davaText, string, oldText);
+            delegate->TextFieldOnTextChanged(davaText, string, oldText);
         }
 
         // HACK if user click cleartext button and current
