@@ -502,21 +502,30 @@ void TextBox::CleanUpVisualLines()
     uint32 linesCount = uint32(lines.size());
     for (TextBox::Line& line : lines)
     {
-        uint32 limit = line.start + line.length;
+        if (line.length == 0)
+        {
+            continue;
+        }
 
+        uint32 limit = line.start + line.length;
         // For all but the last line trim trailing spaces
         if (line.index < linesCount - 1)
         {
             // Detect trailing whitespace characters and hide them
-            for (uint32 li = limit - 1; li >= line.start && li < limit; --li)
+            for (uint32 li = limit - 1;; --li)
             {
-                Character& ch = GetCharacter(li);
-                if (StringUtils::IsWhitespace(processedText.at(li)))
+                if (!StringUtils::IsWhitespace(processedText.at(li)))
                 {
-                    ch.hiden = true;
-                    continue;
+                    break;
                 }
-                break;
+
+                Character& ch = GetCharacter(li);
+                ch.hiden = true;
+
+                if (li == line.start)
+                {
+                    break;
+                }
             }
         }
 
