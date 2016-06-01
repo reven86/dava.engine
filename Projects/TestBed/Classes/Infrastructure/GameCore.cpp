@@ -33,10 +33,10 @@
 
 #include "Engine/Engine.h"
 
-int GameMain(DAVA::Vector<DAVA::String> args)
+int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString(String("title"), String("TestBed"));
+    appOptions->SetString("title", "TestBed");
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
@@ -44,18 +44,19 @@ int GameMain(DAVA::Vector<DAVA::String> args)
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);
 
+    bool console = false;
+    if (cmdline.size() > 1)
+    {
+        console = cmdline[1] == "--console";
+    }
+
+    Vector<String> modules;
     DAVA::Engine e;
     e.SetOptions(appOptions);
-    e.Init(false, Vector<String>());
+    e.Init(console, modules);
 
     GameCore game(&e);
-    e.signalGameLoopStarted.Connect(&game, &GameCore::OnGameLoopStarted);
-    e.signalGameLoopStopped.Connect(&game, &GameCore::OnGameLoopStopped);
-
-    e.PrimaryWindow()->signalSizeScaleChanged.Connect(&game, &GameCore::OnWindowSizeChanged);
-
-    e.Run();
-    return 0;
+    return e.Run();
 }
 
 GameCore* GameCore::pthis = nullptr;
@@ -66,6 +67,14 @@ GameCore::GameCore(Engine* eng)
     , testListScreen(nullptr)
 {
     pthis = this;
+
+    engine->signalGameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
+    engine->signalGameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
+
+    if (engine->IsConsoleMode())
+        engine->signalUpdate.Connect(this, &GameCore::OnUpdateConsole);
+    else
+        engine->PrimaryWindow()->signalSizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
 }
 
 void GameCore::RunOnlyThisTest()
@@ -77,18 +86,26 @@ void GameCore::OnGameLoopStarted()
 {
     Logger::Debug("****** GameCore::OnGameLoopStarted");
 
-    testListScreen = new TestListScreen();
-    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-    RegisterTests();
-    RunTests();
+    if (!engine->IsConsoleMode())
+    {
+        testListScreen = new TestListScreen();
+        UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
+        RegisterTests();
+        RunTests();
 
-    engine->PrimaryWindow()->Resize(1024, 768);
+        engine->PrimaryWindow()->Resize(1024, 768);
+    }
+
     engine->RunAsyncOnMainThread([]() {
         Logger::Error("******** KABOOM on main thread********");
     });
-    engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
-        Logger::Error("******** KABOOM on UI thread********");
-    });
+
+    if (!engine->IsConsoleMode())
+    {
+        engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
+            Logger::Error("******** KABOOM on UI thread********");
+        });
+    }
 }
 
 void GameCore::OnGameLoopStopped()
@@ -106,6 +123,18 @@ void GameCore::OnGameLoopStopped()
 void GameCore::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
     Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+}
+
+void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
+{
+    static int frameCount = 0;
+    frameCount += 1;
+    Logger::Debug("****** update: count=%d, delta=%f", frameCount, frameDelta);
+    if (frameCount >= 100)
+    {
+        Logger::Debug("****** quit");
+        engine->Quit();
+    }
 }
 
 void GameCore::RegisterScreen(BaseScreen* screen)

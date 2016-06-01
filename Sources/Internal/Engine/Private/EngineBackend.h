@@ -18,21 +18,25 @@ namespace Private
 class EngineBackend final
 {
 public:
-    EngineBackend();
+    EngineBackend(int argc, char* argv[]);
     ~EngineBackend();
 
     EngineBackend(const EngineBackend&) = delete;
     EngineBackend& operator=(const EngineBackend&) = delete;
 
-    void Init(bool consoleMode_);
+    const Vector<String>& GetCommandLine() const;
+
+    void Init(bool consoleMode_, const Vector<String>& modules);
     int Run();
-    void Quit();
+    void Quit(int exitCode_);
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
 
     void DoEvents();
     int32 OnFrame();
+
+    void OnFrameConsole();
 
     void OnBeginFrame();
     void OnDraw();
@@ -64,16 +68,24 @@ public:
     PlatformCore* platformCore = nullptr;
     AppContext* context = nullptr;
 
+    Vector<String> cmdargs;
     bool consoleMode = false;
     Engine* engine = nullptr;
     Window* primaryWindow = nullptr;
     KeyedArchive* options = nullptr;
     uint32 globalFrameIndex = 0;
 
+    int exitCode = 0;
+
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
     static EngineBackend* instance;
 };
+
+inline const Vector<String>& EngineBackend::GetCommandLine() const
+{
+    return cmdargs;
+}
 
 } // namespace Private
 } // namespace DAVA

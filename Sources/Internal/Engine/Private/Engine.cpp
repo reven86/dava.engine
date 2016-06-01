@@ -43,7 +43,7 @@ Window* Engine::PrimaryWindow() const
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)
 {
-    engineBackend->Init(consoleMode);
+    engineBackend->Init(consoleMode, modules);
 }
 
 int Engine::Run()
@@ -51,9 +51,9 @@ int Engine::Run()
     return engineBackend->Run();
 }
 
-void Engine::Quit()
+void Engine::Quit(int exitCode)
 {
-    engineBackend->Quit();
+    engineBackend->Quit(exitCode);
 }
 
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
@@ -68,8 +68,7 @@ uint32 Engine::GetGlobalFrameIndex() const
 
 const Vector<String>& Engine::GetCommandLine() const
 {
-    static Vector<String> x;
-    return x;
+    return engineBackend->GetCommandLine();
 }
 
 bool Engine::IsConsoleMode() const

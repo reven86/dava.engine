@@ -40,6 +40,8 @@ public:
     void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();
 
+    void OnUpdateConsole(DAVA::float32 frameDelta);
+
 protected:
     void RegisterTests();
     void RunTests();

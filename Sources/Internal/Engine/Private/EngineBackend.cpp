@@ -52,7 +52,7 @@ namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
 
-EngineBackend::EngineBackend()
+EngineBackend::EngineBackend(int argc, char* argv[])
     : dispatcher(new Dispatcher)
     , platformCore(new PlatformCore)
     , context(new AppContext)
@@ -61,6 +61,8 @@ EngineBackend::EngineBackend()
     instance = this;
 
     new Logger;
+
+    cmdargs = platformCore->GetCommandLine(argc, argv);
 }
 
 EngineBackend::~EngineBackend()
@@ -71,11 +73,13 @@ EngineBackend::~EngineBackend()
     instance = nullptr;
 }
 
-void EngineBackend::Init(bool consoleMode_)
+void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 {
     Logger::Debug("****** EngineBackend::Init enter");
 
     consoleMode = consoleMode_;
+
+    platformCore->Init(consoleMode);
     if (!consoleMode)
     {
 #if defined(__DAVAENGINE_WIN32__)
@@ -93,37 +97,43 @@ void EngineBackend::Init(bool consoleMode_)
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    Logger::Info("SoundSystem init start");
-    new SoundSystem();
-    Logger::Info("SoundSystem init finish");
+    if (!consoleMode)
+    {
+        Logger::Info("SoundSystem init start");
+        new SoundSystem();
+        Logger::Info("SoundSystem init finish");
 
-    DeviceInfo::InitializeScreenInfo();
+        DeviceInfo::InitializeScreenInfo();
+        new AnimationManager();
+        new FontManager();
+        new UIControlSystem();
+        new InputSystem();
+        new FrameOcclusionQueryManager();
+        new VirtualCoordinatesSystem();
+        new RenderSystem2D();
+        new UIScreenManager();
+
+        new LocalNotificationController();
+    }
 
     new LocalizationSystem();
     new SystemTimer();
     new Random();
-    new AnimationManager();
-    new FontManager();
-    new UIControlSystem();
-    new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new FrameOcclusionQueryManager();
-    new VirtualCoordinatesSystem();
-    new RenderSystem2D();
-    new UIScreenManager();
 
     Thread::InitMainThread();
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    new LocalNotificationController();
-
     RegisterDAVAClasses();
 
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    if (!consoleMode_)
+    {
+        VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    }
 
     Logger::Debug("****** EngineBackend::Init leave");
 }
@@ -134,11 +144,13 @@ int EngineBackend::Run()
     {
         platformCore->CreateNativeWindow(primaryWindow);
     }
-    return platformCore->Run(consoleMode);
+    platformCore->Run();
+    return exitCode;
 }
 
-void EngineBackend::Quit()
+void EngineBackend::Quit(int exitCode_)
 {
+    exitCode = exitCode_;
     platformCore->Quit();
 }
 
@@ -150,12 +162,29 @@ void EngineBackend::OnGameLoopStarted()
 void EngineBackend::OnGameLoopStopped()
 {
     engine->signalGameLoopStopped.Emit();
-    Renderer::Uninitialize();
+    if (!consoleMode)
+        Renderer::Uninitialize();
 }
 
 void EngineBackend::DoEvents()
 {
     dispatcher->ProcessEvents(MakeFunction(this, &EngineBackend::EventHandler));
+}
+
+void EngineBackend::OnFrameConsole()
+{
+    DoEvents();
+
+    SystemTimer::Instance()->Start();
+    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
+    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+
+    DownloadManager::Instance()->Update();
+
+    // JobManager::Update() is invoked through signalPreUpdate
+    engine->signalPreUpdate.Emit(frameDelta);
+    engine->signalUpdate.Emit(frameDelta);
+    engine->signalPostUpdate.Emit(frameDelta);
 }
 
 int32 EngineBackend::OnFrame()
@@ -170,10 +199,11 @@ int32 EngineBackend::OnFrame()
 
     InputSystem::Instance()->OnBeforeUpdate();
     LocalNotificationController::Instance()->Update();
-    DownloadManager::Instance()->Update();
     SoundSystem::Instance()->Update(frameDelta);
     AnimationManager::Instance()->Update(frameDelta);
     UIControlSystem::Instance()->Update();
+
+    DownloadManager::Instance()->Update();
 
     // JobManager::Update() is invoked through signalPreUpdate
     engine->signalPreUpdate.Emit(frameDelta);
@@ -186,7 +216,9 @@ int32 EngineBackend::OnFrame()
     OnDraw();
     OnEndFrame();
 
-    return Renderer::GetDesiredFPS();
+    if (!consoleMode)
+        return Renderer::GetDesiredFPS();
+    return 0;
 }
 
 void EngineBackend::OnBeginFrame()
@@ -202,8 +234,8 @@ void EngineBackend::OnDraw()
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
     UIControlSystem::Instance()->Draw();
     FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
-    engine->signalDraw.Emit();
 
+    engine->signalDraw.Emit();
     RenderSystem2D::Instance()->EndFrame();
 }
 

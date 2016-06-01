@@ -31,7 +31,7 @@ public:
 
     void Init(bool consoleMode, const Vector<String>& modules);
     int Run();
-    void Quit();
+    void Quit(int exitCode = 0);
 
     void RunAsyncOnMainThread(const Function<void()>& task);
 

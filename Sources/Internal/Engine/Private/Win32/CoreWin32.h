@@ -28,17 +28,21 @@ public:
 
     static HINSTANCE Win32AppInstance();
 
-    void Init();
-    int Run(bool consoleMode);
+    Vector<String> GetCommandLine(int argc, char* argv[]);
+
+    void Init(bool consoleMode_);
+    void Run();
     void Quit();
 
     WindowWin32* CreateNativeWindow(Window* w);
 
 private:
-    int RunGUI();
-    int RunConsole();
+    void RunGUI();
+    void RunConsole();
 
 private:
+    bool consoleMode = false;
+    bool quitConsole = false;
     static HINSTANCE hinstance;
 };
 
