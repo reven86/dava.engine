@@ -51,15 +51,18 @@ public:
         return pack->priority;
     }
     bool IsDone() const;
-    bool IsError() const;
+    bool IsError() const override;
     const SubRequest& GetCurrentSubRequest() const;
 
     uint64 GetFullSizeWithDependencies() const override;
 
     uint64 GetDownloadedSize() const override;
 
+    const String& GetErrorMessage() const override;
+
 private:
     void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
+    void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
 
     void StartLoadingHashFile();
     bool IsLoadingHashFileFinished();

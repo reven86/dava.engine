@@ -59,7 +59,8 @@ void PackManagerTest::LoadResources()
         throw std::runtime_error("unknown gpu famili");
     }
 
-    if (auto startPos = urlPacksGpu.find("{gpu}") != String::npos)
+    auto startPos = urlPacksGpu.find("{gpu}");
+    if (startPos != String::npos)
     {
         urlPacksGpu.replace(startPos, 5, gpuName);
     }
@@ -139,6 +140,25 @@ void PackManagerTest::LoadResources()
     url->SetDelegate(this);
     url->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(url);
+
+    filePathField = new UITextField(Rect(5, 380, 400, 20));
+    filePathField->SetFont(font);
+    filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/Data/3d/LandscapeTest/landscapetest.sc2"));
+    filePathField->SetDebugDraw(true);
+    filePathField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    filePathField->SetInputEnabled(true);
+    filePathField->GetOrCreateComponent<UIFocusComponent>();
+    filePathField->SetDelegate(this);
+    filePathField->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(filePathField);
+
+    checkFile = new UIButton(Rect(420, 380, 100, 20));
+    checkFile->SetDebugDraw(true);
+    checkFile->SetStateFont(0xFF, font);
+    checkFile->SetStateFontColor(0xFF, Color::White);
+    checkFile->SetStateText(0xFF, L"check file");
+    checkFile->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
+    AddControl(checkFile);
 }
 
 void PackManagerTest::UnloadResources()
@@ -152,6 +172,8 @@ void PackManagerTest::UnloadResources()
     SafeRelease(greenControl);
     SafeRelease(description);
     SafeRelease(url);
+    SafeRelease(filePathField);
+    SafeRelease(checkFile);
 
     BaseScreen::UnloadResources();
 }
@@ -244,5 +266,23 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
     {
         // TODO fix for uap
         // std::system("python scripts/stop_local_http_server.py");
+    }
+}
+
+void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    DAVA::WideString text = filePathField->GetText();
+    DAVA::String fileName = UTF8Utils::EncodeToUTF8(text);
+
+    FilePath path(fileName);
+
+    File* f = File::Create(path, File::OPEN | File::READ);
+    if (f == nullptr)
+    {
+        packNameLoading->SetText(L"can't load file");
+    }
+    else
+    {
+        packNameLoading->SetText(L"file loaded successfully");
     }
 }

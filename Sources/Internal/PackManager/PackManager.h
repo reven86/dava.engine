@@ -62,6 +62,10 @@ public:
         virtual uint64 GetFullSizeWithDependencies() const = 0;
 
         virtual uint64 GetDownloadedSize() const = 0;
+
+        virtual bool IsError() const = 0;
+
+        virtual const String& GetErrorMessage() const = 0;
     };
 
     PackManager();

@@ -47,6 +47,7 @@ private:
 
     void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
     void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change);
     void OnRequestChange(const DAVA::PackManager::IRequest& request);
@@ -70,4 +71,6 @@ private:
     DAVA::UIControl* greenControl = nullptr;
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
+    DAVA::UITextField* filePathField = nullptr;
+    DAVA::UIButton* checkFile = nullptr;
 };

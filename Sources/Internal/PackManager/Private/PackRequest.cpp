@@ -167,15 +167,17 @@ bool PackRequest::IsLoadingHashFileFinished()
 
                 // inform user about error
                 {
-                    PackManager::Pack& pack = *subRequest.pack;
+                    PackManager::Pack& currentPack = *subRequest.pack;
 
-                    pack.state = PackManager::Pack::Status::ErrorLoading;
-                    pack.downloadError = downloadError;
-                    pack.otherErrorMsg = "can't load CRC32 file for pack: " + pack.name + " dlc: " + errorMsg;
+                    currentPack.downloadError = downloadError;
+                    currentPack.otherErrorMsg = "can't load CRC32 file for pack: " + currentPack.name + " dlc: " + errorMsg;
+
+                    currentPack.state = PackManager::Pack::Status::ErrorLoading;
 
                     subRequest.status = SubRequest::Error;
 
-                    packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+                    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
+                    packManager->onRequestChange->Emit(*this);
                     break;
                 }
             }
@@ -225,7 +227,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& pack = *subRequest.pack;
+    PackManager::Pack& currentPack = *subRequest.pack;
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
@@ -245,11 +247,11 @@ bool PackRequest::IsLoadingPackFileFinished()
                 }
                 else
                 {
-                    pack.downloadProgress = std::min(1.0f, static_cast<float32>(progress) / total);
-                    pack.downloadedSize = static_cast<uint32>(progress);
-                    pack.totalSize = static_cast<uint32>(total);
+                    currentPack.downloadProgress = std::min(1.0f, static_cast<float32>(progress) / total);
+                    currentPack.downloadedSize = static_cast<uint32>(progress);
+                    currentPack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
-                    packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
+                    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::DownloadProgress);
                     packManager->onRequestChange->Emit(*this);
                 }
             }
@@ -267,22 +269,28 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 dm->GetProgress(subRequest.taskId, progress);
 
-                pack.downloadProgress = 1.0f;
-                pack.downloadedSize = progress;
-                packManager->onPackChange->Emit(pack, PackManager::Pack::Change::DownloadProgress);
-                packManager->onRequestChange->Emit(*this);
+                currentPack.downloadProgress = 1.0f;
+                currentPack.downloadedSize = progress;
+                packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::DownloadProgress);
             }
             else
             {
                 String errorMsg = DownloadErrorToString(downloadError);
-                pack.state = PackManager::Pack::Status::ErrorLoading;
-                pack.downloadError = downloadError;
-                pack.otherErrorMsg = "can't load pack: " + pack.name + " dlc: " + errorMsg;
+                currentPack.state = PackManager::Pack::Status::ErrorLoading;
+                currentPack.downloadError = downloadError;
+                currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
+
+                if (currentPack.name != pack->name)
+                {
+                    pack->state = PackManager::Pack::Status::OtherError;
+                    pack->otherErrorMsg = "can't load dependency: " + currentPack.name;
+                }
 
                 subRequest.status = SubRequest::Error;
 
-                packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+                packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
             }
+            packManager->onRequestChange->Emit(*this);
         }
         else
         {
@@ -296,13 +304,30 @@ bool PackRequest::IsLoadingPackFileFinished()
     return result;
 }
 
+void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, PackManager::Pack& currentPack)
+{
+    currentPack.state = PackManager::Pack::Status::OtherError;
+    subRequest.status = SubRequest::Error;
+
+    if (pack->name != currentPack.name)
+    {
+        pack->state = PackManager::Pack::Status::OtherError;
+        pack->otherErrorMsg = "error with dependency: " + currentPack.name;
+    }
+
+    // inform user about problem with pack
+    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
+
+    packManager->onRequestChange->Emit(*this);
+}
+
 void PackRequest::StartCheckHash()
 {
     DVASSERT(!dependencies.empty());
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& pack = *subRequest.pack;
+    PackManager::Pack& currentPack = *subRequest.pack;
 
     // build crcMetaFilePath
     FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
@@ -310,8 +335,8 @@ void PackRequest::StartCheckHash()
     ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
     if (!crcFile)
     {
-        pack.state = PackManager::Pack::Status::OtherError;
-        pack.otherErrorMsg = "can't read crc meta file";
+        currentPack.state = PackManager::Pack::Status::OtherError;
+        currentPack.otherErrorMsg = "can't read crc meta file";
         throw std::runtime_error("can't open just downloaded crc meta file: " + archiveCrc32Path.GetStringValue());
     }
     String fileContent;
@@ -319,7 +344,7 @@ void PackRequest::StartCheckHash()
     {
         StringStream ss;
         ss << std::hex << fileContent;
-        ss >> pack.hashFromMeta;
+        ss >> currentPack.hashFromMeta;
     }
     // calculate crc32 from PackFile
     FilePath packPath = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
@@ -332,20 +357,17 @@ void PackRequest::StartCheckHash()
     // TODO if it take lot of time move to job on other thread and wait
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
-    if (realCrc32FromPack != pack.hashFromMeta)
+    if (realCrc32FromPack != currentPack.hashFromMeta)
     {
-        pack.state = PackManager::Pack::Status::OtherError;
-        pack.otherErrorMsg = "calculated pack crc32 not match with crc32 from meta";
-        // inform user about problem with pack
-        packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
-    }
-    else if (pack.hashFromMeta != pack.hashFromDB)
-    {
-        pack.state = PackManager::Pack::Status::OtherError;
-        pack.otherErrorMsg = "pack crc32 from meta not match crc32 from local DB";
+        currentPack.otherErrorMsg = "calculated pack crc32 not match with crc32 from meta";
 
-        // inform user about problem with pack
-        packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+        SetErrorStatusAndFireSignal(subRequest, currentPack);
+    }
+    else if (currentPack.hashFromMeta != currentPack.hashFromDB)
+    {
+        currentPack.otherErrorMsg = "pack crc32 from meta not match crc32 from local DB";
+
+        SetErrorStatusAndFireSignal(subRequest, currentPack);
     }
     else
     {
@@ -507,6 +529,11 @@ uint64 PackRequest::GetDownloadedSize() const
 
     result += pack->downloadedSize;
     return result;
+}
+
+const String& PackRequest::GetErrorMessage() const
+{
+    return pack->otherErrorMsg;
 }
 
 } // end namespace DAVA
