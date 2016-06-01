@@ -6,12 +6,13 @@ namespace DAVA
 {
 namespace Private
 {
-void InitFramework()
+Vector<String> InitializeEngine(int argc, char* argv[])
 {
-    new EngineBackend;
+    EngineBackend* engineBackend = new EngineBackend(argc, argv);
+    return engineBackend->GetCommandLine();
 }
 
-void TermFramework()
+void TerminateEngine()
 {
     delete EngineBackend::instance;
 }

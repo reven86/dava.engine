@@ -1,9 +1,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
-#include "Engine/Private/InitFramework.h"
+#include "Engine/Private/InitEngine.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> args);
+extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -18,9 +18,10 @@ extern int GameMain(DAVA::Vector<DAVA::String> args);
 // https://support.microsoft.com/en-us/kb/125750
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
-    DAVA::Private::InitFramework();
-    int r = GameMain(DAVA::Vector<DAVA::String>());
-    DAVA::Private::TermFramework();
+    using namespace DAVA;
+    Vector<String> cmdline = Private::InitializeEngine(0, nullptr);
+    int r = GameMain(cmdline);
+    Private::TerminateEngine();
     return r;
 }
 

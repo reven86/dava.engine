@@ -6,8 +6,8 @@ namespace DAVA
 {
 namespace Private
 {
-void InitFramework();
-void TermFramework();
+Vector<String> InitializeEngine(int argc, char* argv[]);
+void TerminateEngine();
 
 } // namespace Private
 } // namespace DAVA
