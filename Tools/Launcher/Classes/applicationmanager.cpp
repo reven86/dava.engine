@@ -30,6 +30,7 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
         configFile.close();
         localConfig = new ConfigParser();
         localConfig->Parse(data);
+        localConfig->UpdateApplicationsNames();
     }
     else
     {
@@ -51,7 +52,7 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
         localConfig->SetWebpageURL(webPageUrl);
     }
     localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
-    localConfig->SaveToYamlFile(localConfigFilePath);
+    localConfig->SaveToFile(localConfigFilePath);
 }
 
 bool ApplicationManager::ShouldShowNews()
@@ -119,7 +120,7 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
 void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version)
 {
     localConfig->InsertApplication(branchID, appID, version);
-    localConfig->SaveToYamlFile(localConfigFilePath);
+    localConfig->SaveToFile(localConfigFilePath);
 }
 
 QString ApplicationManager::GetString(const QString& stringID) const
@@ -171,7 +172,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
         QString appPath = FileManager::GetApplicationDirectory(branchID, appID);
         FileManager::DeleteDirectory(appPath);
         localConfig->RemoveApplication(branchID, appID, versionID);
-        localConfig->SaveToYamlFile(localConfigFilePath);
+        localConfig->SaveToFile(localConfigFilePath);
 
         return true;
     }
@@ -205,7 +206,7 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
     QString branchPath = FileManager::GetBranchDirectory(branchID);
     FileManager::DeleteDirectory(branchPath);
     localConfig->RemoveBranch(branch->id);
-    localConfig->SaveToYamlFile(localConfigFilePath);
+    localConfig->SaveToFile(localConfigFilePath);
 
     return true;
 }

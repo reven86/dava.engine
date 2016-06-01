@@ -40,8 +40,14 @@ public:
 //expected format of input string: 0.8_2015-02-14_11.20.12_0000,
 //where 0.8 - DAVA version, 2015-02-14 - build date, 11.20.12 - build time and 0000 - build version
 //all blocks can be modified or empty
-bool VersionListComparator(const QString& left, const QString& right)
+bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer)
 {
+    const QString& left = leftVer.id;
+    const QString& right = rightVer.id;
+    if (left == right)
+    {
+        return leftVer.buildNum < rightVer.buildNum;
+    }
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
 
@@ -294,21 +300,23 @@ void MainWindow::ShowTable(const QString& branchID)
                 states.push_back(state);
             }
         }
-        else
+        Branch* localBranch = localConfig->GetBranch(branchID);
+        if (localBranch)
         {
-            Branch* localBranch = localConfig->GetBranch(branchID);
-            if (localBranch)
+            int appCount = localBranch->GetAppCount();
+            for (int i = 0; i < appCount; ++i)
             {
-                int appCount = localBranch->GetAppCount();
-                ui->tableWidget->setRowCount(appCount);
-                for (int i = 0; i < appCount; ++i)
+                Application* localApp = localBranch->GetApplication(i);
+                if (remoteBranch->GetApplication(localApp->id) != nullptr)
                 {
-                    Application* localApp = localBranch->GetApplication(i);
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
-
-                    states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
+                    continue;
                 }
+                int rowCount = ui->tableWidget->rowCount();
+                ui->tableWidget->setRowCount(rowCount + 1);
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+
+                states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
             }
         }
     }
@@ -429,7 +437,8 @@ void MainWindow::RefreshBranchesList()
 
 QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID)
 {
-    QLabel* item = new QLabel(appManager->GetString(stringID));
+    QString string = appManager->GetString(stringID);
+    QLabel* item = new QLabel(string);
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
     item->setFont(tableFont);
 
@@ -457,18 +466,12 @@ QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app)
     }
     else
     {
-        QList<QString> versions;
-        for (int j = 0; j < versCount; ++j)
-        {
-            versions.push_back(app->GetVersion(j)->id);
-        }
-
-        qSort(versions.begin(), versions.end(), VersionListComparator);
+        qSort(app->versions.begin(), app->versions.end(), VersionListComparator);
 
         QComboBox* comboBox = new QComboBox();
         for (int j = versCount - 1; j >= 0; --j)
         {
-            comboBox->addItem(versions[j]);
+            comboBox->addItem(app->versions[j].id);
         }
         comboBox->view()->setTextElideMode(Qt::ElideLeft);
         comboBox->setFont(tableFont);

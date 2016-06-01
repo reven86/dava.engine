@@ -69,6 +69,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     requests.removeOne(reply);
     if (requests.isEmpty())
     {
+        appManager->GetRemoteConfig()->UpdateApplicationsNames();
         accept();
     }
 }

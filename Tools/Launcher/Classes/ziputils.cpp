@@ -201,12 +201,9 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
     bool success = false;
     qint64 matchedSize = 0;
     const auto values = files.values();
-    QFile file("test2.txt");
-    file.open(QFile::WriteOnly | QFile::Truncate);
     qint64 totalSize = std::accumulate(values.begin(), values.end(), 0);
-    ReadyReadCallback callback = [&success, &functor, &file, &files, &matchedSize, totalSize](const QByteArray& line) {
+    ReadyReadCallback callback = [&success, &functor, &files, &matchedSize, totalSize](const QByteArray& line) {
         QString str(line);
-        file.write(line + "\n");
         QString okStr = "Everything is Ok";
         if (str.contains(okStr))
         {

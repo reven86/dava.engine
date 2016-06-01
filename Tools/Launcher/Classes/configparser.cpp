@@ -60,7 +60,11 @@ bool GetFavorites(const QJsonValue& value, QStringList& favorites)
         }
         QString fave = entry["branch_name"].toString();
         isValid &= !fave.isEmpty();
-        favorites.append(fave);
+        //favorites list can not be large
+        if (!favorites.contains(fave))
+        {
+            favorites.append(fave);
+        }
     }
 
     return isValid;
@@ -73,7 +77,12 @@ QString ProcessID(const QString& id)
     int index = id.indexOf(regex, 0, &match);
     if (index == -1)
     {
-        return id;
+        int digitIndex = id.indexOf(QRegularExpression("\\d+"));
+        if (digitIndex == -1)
+        {
+            return id;
+        }
+        return id.right(id.length() - digitIndex);
     }
     QString version = match.captured();
     int versionLength = version.length();
@@ -151,6 +160,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         appVer->id = ProcessID(verID);
         appVer->url = entry["artifacts"].toString();
         appVer->runPath = entry["exe_location"].toString();
+        appVer->buildNum = entry["build_num"].toString();
         isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
         isValid = isValid;
     }
@@ -160,6 +170,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         QVector<Application>& apps = branchIter->applications;
         qSort(apps.begin(), apps.end(), [](const Application& appLeft, const Application& appRight) { return appLeft.id < appRight.id; });
     }
+
     return isValid;
 }
 }
@@ -360,6 +371,8 @@ bool ConfigParser::Parse(const QByteArray& configData)
             newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
             favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
 
+            //hotfix to remove duplicates
+            favorites = favorites.toSet().toList();
             if (stringsNode)
             {
                 it = stringsNode->begin();
@@ -379,7 +392,6 @@ bool ConfigParser::Parse(const QByteArray& configData)
                 {
                     Branch branch = Branch::LoadFromYamlNode(&it.second());
                     branch.id = GetStringValueFromYamlNode(&it.first());
-                    branches.push_back(branch);
                     ++it;
                 }
             }
@@ -408,7 +420,22 @@ void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser& parser)
     favorites = parser.favorites;
 }
 
-void ConfigParser::SaveToYamlFile(const QString& filePath)
+void ConfigParser::UpdateApplicationsNames()
+{
+    for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
+    {
+        for (auto appIter = branchIter->applications.begin(); appIter != branchIter->applications.end(); ++appIter)
+        {
+            auto stringsIter = strings.find(appIter->id);
+            if (stringsIter != strings.end())
+            {
+                appIter->id = *stringsIter;
+            }
+        }
+    }
+}
+
+QByteArray ConfigParser::Serialize()
 {
     YAML::Emitter emitter;
     emitter.SetIndent(4);
@@ -465,10 +492,14 @@ void ConfigParser::SaveToYamlFile(const QString& filePath)
     emitter << YAML::EndMap;
 
     emitter << YAML::EndMap;
+    return emitter.c_str();
+}
 
+void ConfigParser::SaveToFile(const QString& filePath)
+{
     QFile file(filePath);
     file.open(QFile::WriteOnly);
-    file.write(emitter.c_str());
+    file.write(Serialize());
     file.close();
 }
 

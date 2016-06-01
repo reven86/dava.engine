@@ -19,6 +19,7 @@ struct AppVersion
     QString runPath;
     QString cmd;
     QString url;
+    QString buildNum;
 
     static AppVersion LoadFromYamlNode(const YAML::Node* node);
 };
@@ -88,7 +89,8 @@ public:
     void Clear();
     bool ParseJSON(const QByteArray& configData);
     bool Parse(const QByteArray& data);
-    void SaveToYamlFile(const QString& filePath);
+    QByteArray Serialize();
+    void SaveToFile(const QString& filePath);
 
     void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
     void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
@@ -120,6 +122,8 @@ public:
     void MergeBranchesIDs(QSet<QString>& branches);
 
     void CopyStringsAndFavsFromConfig(const ConfigParser& parser);
+
+    void UpdateApplicationsNames();
 
 private:
     QString launcherVersion;
