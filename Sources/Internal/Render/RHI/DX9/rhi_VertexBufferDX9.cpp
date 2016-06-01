@@ -23,8 +23,8 @@ public:
     void Destroy(bool force_immediate = false);
 
     unsigned size = 0;
-    IDirect3DVertexBuffer9* buffer = nullptr;
-    DAVA::Vector<uint8> mappedData;
+    IDirect3DVertexBuffer9* buffer;
+    uint8* mappedData;
     unsigned isMapped : 1;
     unsigned updatePending : 1;
 };
@@ -37,6 +37,7 @@ RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descripto
 VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
+    , mappedData(nullptr)
     , isMapped(false)
     , updatePending(false)
 {
@@ -46,6 +47,10 @@ VertexBufferDX9_t::VertexBufferDX9_t()
 
 VertexBufferDX9_t::~VertexBufferDX9_t()
 {
+    if (mappedData)
+    {
+        ::free(mappedData);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -189,15 +194,15 @@ dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
 
     DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
-    if (self->mappedData.size() < self->size)
-    {
-        self->mappedData.resize(self->size);
-    }
-
     DVASSERT(!self->isMapped);
+
+    if (self->mappedData == nullptr)
+    {
+        self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
+    }
     self->isMapped = true;
 
-    return self->mappedData.data() + offset;
+    return self->mappedData + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -219,12 +224,11 @@ dx9_VertexBuffer_Unmap(Handle vb)
     {
         self->updatePending = false;
 
-        DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
+        DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData), self->size } };
         ExecDX9(&cmd, 1, true);
 
-        DAVA::Vector<uint8> emptyVector;
-        self->mappedData.swap(emptyVector);
-        self->MarkRestored();
+        ::free(self->mappedData);
+        self->mappedData = nullptr;
     }
 }
 
@@ -266,10 +270,10 @@ void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
     if (self->updatePending)
     {
         void* bufferData = nullptr;
-        HRESULT hr = self->buffer->Lock(0, static_cast<UINT>(self->mappedData.size()), &bufferData, 0);
+        HRESULT hr = self->buffer->Lock(0, self->size, &bufferData, 0);
         DVASSERT(SUCCEEDED(hr));
 
-        memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
+        memcpy(bufferData, self->mappedData, self->size);
 
         hr = self->buffer->Unlock();
         DVASSERT(SUCCEEDED(hr));

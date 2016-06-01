@@ -25,7 +25,7 @@ public:
 
     unsigned size = 0;
     IDirect3DIndexBuffer9* buffer = nullptr;
-    DAVA::Vector<uint8> mappedData;
+    uint8* mappedData;
     unsigned isMapped : 1;
     unsigned updatePending : 1;
 };
@@ -40,6 +40,7 @@ RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, 
 IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
+    , mappedData(nullptr)
     , isMapped(false)
     , updatePending(false)
 {
@@ -49,6 +50,10 @@ IndexBufferDX9_t::IndexBufferDX9_t()
 
 IndexBufferDX9_t::~IndexBufferDX9_t()
 {
+    if (mappedData)
+    {
+        ::free(mappedData);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -190,15 +195,15 @@ dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     DVASSERT(self->CreationDesc().usage == Usage::USAGE_DYNAMICDRAW);
 
-    if (self->mappedData.size() < self->size)
+    if (self->mappedData == nullptr)
     {
-        self->mappedData.resize(self->size);
+        self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
     }
 
     DVASSERT(!self->isMapped);
     self->isMapped = true;
 
-    return self->mappedData.data() + offset;
+    return self->mappedData + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -220,12 +225,11 @@ dx9_IndexBuffer_Unmap(Handle ib)
     {
         self->updatePending = false;
 
-        DX9Command cmd = { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
+        DX9Command cmd = { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData), self->size } };
         ExecDX9(&cmd, 1, true);
 
-        DAVA::Vector<uint8> emptyVector;
-        self->mappedData.swap(emptyVector);
-        self->MarkRestored();
+        ::free(self->mappedData);
+        self->mappedData = nullptr;
     }
 }
 
@@ -266,10 +270,10 @@ void SetToRHI(Handle ib)
     if (self->updatePending)
     {
         void* bufferData = nullptr;
-        HRESULT hr = self->buffer->Lock(0, static_cast<UINT>(self->mappedData.size()), &bufferData, 0);
+        HRESULT hr = self->buffer->Lock(0, self->size, &bufferData, 0);
         DVASSERT(SUCCEEDED(hr));
 
-        memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
+        memcpy(bufferData, self->mappedData, self->size);
 
         hr = self->buffer->Unlock();
         DVASSERT(SUCCEEDED(hr));
