@@ -13,15 +13,16 @@
 
 using namespace DAVA;
 
+REGISTER_PREFERENCES_ON_START(Project,
+                              PREF_ARG("projectsHistory", DAVA::String()),
+                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
+                              )
+
 Project::Project(QObject* parent)
     : QObject(parent)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
-{
-}
-
-Project::~Project()
 {
 }
 
@@ -201,6 +202,15 @@ void Project::SetIsOpen(bool arg)
     if (arg)
     {
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
+        QString newProjectPath = GetProjectPath() + GetProjectName();
+        QStringList projectsPathes = GetProjectsHistory();
+        projectsPathes.removeAll(newProjectPath);
+        projectsPathes += newProjectPath;
+        while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
+        {
+            projectsPathes.removeFirst();
+        }
+        projectsHistory = projectsPathes.join('\n').toStdString();
     }
     emit IsOpenChanged(arg);
 }
@@ -213,6 +223,12 @@ QString Project::GetProjectPath() const
 QString Project::GetProjectName() const
 {
     return projectName;
+}
+
+QStringList Project::GetProjectsHistory() const
+{
+    QString history = QString::fromStdString(projectsHistory);
+    return history.split("\n", QString::SkipEmptyParts);
 }
 
 void Project::SetProjectPath(QString arg)

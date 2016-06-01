@@ -10,7 +10,7 @@ namespace AssetCache
 static const uint32 NET_SERVICE_ID = 0xACCA;
 static const uint16 ASSET_SERVER_PORT = 0xACCA;
 
-extern const String LOCALHOST;
+extern const String& GetLocalHost();
 
 enum ePacketID : uint8
 {
