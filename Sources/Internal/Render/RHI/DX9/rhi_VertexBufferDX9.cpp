@@ -26,7 +26,7 @@ public:
     IDirect3DVertexBuffer9* buffer = nullptr;
     DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
-    unsigned shouldUpdate : 1;
+    unsigned updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
@@ -38,7 +38,7 @@ VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , shouldUpdate(false)
+    , updatePending(false)
 {
 }
 
@@ -207,10 +207,25 @@ dx9_VertexBuffer_Unmap(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     DVASSERT(self->isMapped);
+    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
-    self->shouldUpdate = true;
     self->isMapped = false;
-    self->MarkRestored();
+
+    if (self->CreationDesc().usage == Usage::USAGE_DYNAMICDRAW)
+    {
+        self->updatePending = true;
+    }
+    else
+    {
+        self->updatePending = false;
+
+        DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
+        ExecDX9(&cmd, 1, true);
+
+        DAVA::Vector<uint8> emptyVector;
+        self->mappedData.swap(emptyVector);
+        self->MarkRestored();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -248,17 +263,19 @@ void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 
     DVASSERT(!self->isMapped);
 
-    if (self->shouldUpdate)
+    if (self->updatePending)
     {
         void* bufferData = nullptr;
-        HRESULT hr = self->buffer->Lock(0, self->mappedData.size(), &bufferData, 0);
+        HRESULT hr = self->buffer->Lock(0, static_cast<UINT>(self->mappedData.size()), &bufferData, 0);
         DVASSERT(SUCCEEDED(hr));
 
         memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
 
         hr = self->buffer->Unlock();
         DVASSERT(SUCCEEDED(hr));
-        self->shouldUpdate = false;
+
+        self->updatePending = false;
+        self->MarkRestored();
     }
 
     HRESULT hr = _D3D9_Device->SetStreamSource(stream_i, self->buffer, offset, stride);

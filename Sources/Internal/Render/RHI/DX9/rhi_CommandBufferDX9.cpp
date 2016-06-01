@@ -1162,31 +1162,24 @@ void CommandBufferDX9_t::Execute()
 }
 
 //------------------------------------------------------------------------------
-
-static void _PrepareLastFrameForExecution(Handle sync)
+static void
+dx9_Present(Handle sync)
 {
-    DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
-    if (!_DX9_Frame.empty())
+    _DX9_FrameSync.Lock();
+    size_t framesRemaining = _DX9_Frame.size();
+    if (framesRemaining)
     {
         _DX9_Frame.back().readyToExecute = true;
         _DX9_Frame.back().sync = sync;
     }
-}
-
-static void
-dx9_Present(Handle sync)
-{
-    _PrepareLastFrameForExecution(sync);
+    _DX9_FrameSync.Unlock();
 
     if (_DX9_RenderThreadFrameCount)
     {
-        for (;;)
+        while (framesRemaining >= _DX9_RenderThreadFrameCount)
         {
             DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
-            if (_DX9_Frame.size() < _DX9_RenderThreadFrameCount)
-            {
-                break;
-            }
+            framesRemaining = _DX9_Frame.size();
         }
     }
     else

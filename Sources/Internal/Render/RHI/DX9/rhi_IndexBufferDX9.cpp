@@ -27,7 +27,7 @@ public:
     IDirect3DIndexBuffer9* buffer = nullptr;
     DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
-    unsigned shouldUpdate : 1;
+    unsigned updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -41,7 +41,7 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , shouldUpdate(false)
+    , updatePending(false)
 {
 }
 
@@ -188,7 +188,7 @@ static void*
 dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
+    DVASSERT(self->CreationDesc().usage == Usage::USAGE_DYNAMICDRAW);
 
     if (self->mappedData.size() < self->size)
     {
@@ -208,10 +208,25 @@ dx9_IndexBuffer_Unmap(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     DVASSERT(self->isMapped);
+    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
-    self->shouldUpdate = true;
     self->isMapped = false;
-    self->MarkRestored();
+
+    if (self->CreationDesc().usage == Usage::USAGE_DYNAMICDRAW)
+    {
+        self->updatePending = true;
+    }
+    else
+    {
+        self->updatePending = false;
+
+        DX9Command cmd = { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
+        ExecDX9(&cmd, 1, true);
+
+        DAVA::Vector<uint8> emptyVector;
+        self->mappedData.swap(emptyVector);
+        self->MarkRestored();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -248,17 +263,18 @@ void SetToRHI(Handle ib)
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
 
     DVASSERT(!self->isMapped);
-    if (self->shouldUpdate)
+    if (self->updatePending)
     {
         void* bufferData = nullptr;
-        HRESULT hr = self->buffer->Lock(0, self->mappedData.size(), &bufferData, 0);
+        HRESULT hr = self->buffer->Lock(0, static_cast<UINT>(self->mappedData.size()), &bufferData, 0);
         DVASSERT(SUCCEEDED(hr));
 
         memcpy(bufferData, self->mappedData.data(), self->mappedData.size());
 
         hr = self->buffer->Unlock();
         DVASSERT(SUCCEEDED(hr));
-        self->shouldUpdate = false;
+
+        self->updatePending = false;
     }
 
     HRESULT hr = _D3D9_Device->SetIndices(self->buffer);
