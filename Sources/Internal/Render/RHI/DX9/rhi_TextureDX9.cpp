@@ -95,8 +95,6 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
     {
     case TEXTURE_TYPE_2D:
     {
-        DVASSERT(tex9 == nullptr);
-
         unsigned cmd1_cnt = 1;
         DX9Command cmd1[32] =
         {
@@ -173,8 +171,6 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
     case TEXTURE_TYPE_CUBE:
     {
-        DVASSERT(cubetex9 == nullptr);
-
         uint32 cmd1_cnt = 1;
         DX9Command cmd1[128] =
         {
@@ -406,7 +402,6 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
             if (!self->rt_tex9)
             {
-                DVASSERT(self->rt_tex9 == nullptr);
                 DX9Command cmd1 = { DX9Command::CREATE_TEXTURE, { self->width, self->height, 1, 0, DX9_TextureFormat(self->format), D3DPOOL_SYSTEMMEM, uint64_t(&self->rt_tex9), 0 } };
 
                 ExecDX9(&cmd1, 1);

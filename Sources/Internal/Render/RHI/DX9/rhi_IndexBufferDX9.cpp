@@ -23,8 +23,9 @@ public:
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned size;
-    IDirect3DIndexBuffer9* buffer;
+    unsigned size = 0;
+    IDirect3DIndexBuffer9* buffer = nullptr;
+    DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
 };
 
@@ -73,8 +74,6 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
             break;
         }
-
-        DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
@@ -188,19 +187,17 @@ dx9_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned si
 static void*
 dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
-    void* ptr = nullptr;
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    DX9Command cmd = { DX9Command::LOCK_INDEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
-    DVASSERT(!self->isMapped);
-    ExecDX9(&cmd, 1);
+    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
-    if (SUCCEEDED(cmd.retval))
+    if (self->mappedData.size() < self->size)
     {
-        self->isMapped = true;
+        self->mappedData.resize(self->size);
     }
 
-    return ptr;
+    self->isMapped = true;
+    return self->mappedData.data() + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -209,16 +206,13 @@ static void
 dx9_IndexBuffer_Unmap(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    DX9Command cmd = { DX9Command::UNLOCK_INDEX_BUFFER, { uint64_t(&(self->buffer)) } };
 
-    DVASSERT(self->isMapped);
+    DX9Command cmd = { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
     ExecDX9(&cmd, 1);
+    DVASSERT(SUCCEEDED(cmd.retval));
 
-    if (SUCCEEDED(cmd.retval))
-    {
-        self->isMapped = false;
-        self->MarkRestored();
-    }
+    self->isMapped = false;
+    self->MarkRestored();
 }
 
 //------------------------------------------------------------------------------

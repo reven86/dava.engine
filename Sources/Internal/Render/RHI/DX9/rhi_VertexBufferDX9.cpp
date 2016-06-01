@@ -22,8 +22,9 @@ public:
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned size;
-    IDirect3DVertexBuffer9* buffer;
+    unsigned size = 0;
+    IDirect3DVertexBuffer9* buffer = nullptr;
+    DAVA::Vector<uint8> mappedData;
     unsigned isMapped : 1;
 };
 
@@ -70,7 +71,6 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
             break;
         }
 
-        DVASSERT(buffer == nullptr);
         uint32 cmd_cnt = 2;
         DX9Command cmd[2] =
         {
@@ -108,8 +108,6 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DVASPECT(!isMapped);
-
         DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
@@ -187,21 +185,17 @@ dx9_VertexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned s
 static void*
 dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
 {
-    void* ptr = nullptr;
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
 
-    DVASSERT(self->buffer);
-    DX9Command cmd = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
+    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
 
-    DVASSERT(!self->isMapped);
-    ExecDX9(&cmd, 1);
-
-    if (SUCCEEDED(cmd.retval))
+    if (self->mappedData.size() < self->size)
     {
-        self->isMapped = true;
+        self->mappedData.resize(self->size);
     }
 
-    return ptr;
+    self->isMapped = true;
+    return self->mappedData.data() + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -210,16 +204,13 @@ static void
 dx9_VertexBuffer_Unmap(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
-    DX9Command cmd = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
 
-    DVASSERT(self->isMapped);
+    DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData.data()), self->mappedData.size() } };
     ExecDX9(&cmd, 1);
+    DVASSERT(SUCCEEDED(cmd.retval));
 
-    if (SUCCEEDED(cmd.retval))
-    {
-        self->isMapped = false;
-        self->MarkRestored();
-    }
+    self->isMapped = false;
+    self->MarkRestored();
 }
 
 //------------------------------------------------------------------------------

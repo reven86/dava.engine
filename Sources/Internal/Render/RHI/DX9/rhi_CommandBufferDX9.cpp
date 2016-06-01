@@ -35,7 +35,6 @@ FrameDX9
 };
 
 static std::vector<FrameDX9> _DX9_Frame;
-static bool _DX9_FrameStarted = false;
 static unsigned _DX9_FrameNumber = 1;
 static DAVA::Mutex _DX9_FrameSync;
 
@@ -239,23 +238,20 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
 static void
 dx9_RenderPass_Begin(Handle pass)
 {
-    _DX9_FrameSync.Lock();
+    DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
 
-    if (!_DX9_FrameStarted)
+    if (_DX9_Frame.empty() || _DX9_Frame.back().readyToExecute)
     {
-        _DX9_Frame.push_back(FrameDX9());
+        _DX9_Frame.emplace_back();
         _DX9_Frame.back().number = _DX9_FrameNumber;
         _DX9_Frame.back().sync = rhi::InvalidHandle;
         _DX9_Frame.back().readyToExecute = false;
-
-        Trace("\n\n-------------------------------\nframe %u started\n", _DX9_FrameNumber);
-        _DX9_FrameStarted = true;
         ++_DX9_FrameNumber;
     }
 
-    _DX9_Frame.back().pass.push_back(pass);
+    DVASSERT(!_DX9_Frame.empty());
 
-    _DX9_FrameSync.Unlock();
+    _DX9_Frame.back().pass.push_back(pass);
 }
 
 //------------------------------------------------------------------------------
@@ -1167,43 +1163,34 @@ void CommandBufferDX9_t::Execute()
 
 //------------------------------------------------------------------------------
 
+static void _PrepareLastFrameForExecution(Handle sync)
+{
+    DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
+    if (!_DX9_Frame.empty())
+    {
+        _DX9_Frame.back().readyToExecute = true;
+        _DX9_Frame.back().sync = sync;
+    }
+}
+
 static void
 dx9_Present(Handle sync)
 {
+    _PrepareLastFrameForExecution(sync);
+
     if (_DX9_RenderThreadFrameCount)
     {
-        Trace("rhi-dx9.present\n");
-        _DX9_FrameSync.Lock();
+        for (;;)
         {
-            if (_DX9_Frame.size())
+            DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
+            if (_DX9_Frame.size() < _DX9_RenderThreadFrameCount)
             {
-                _DX9_Frame.back().readyToExecute = true;
-                _DX9_Frame.back().sync = sync;
-                _DX9_FrameStarted = false;
-                Trace("\n\n-------------------------------\nframe %u generated\n", _DX9_Frame.back().number);
+                break;
             }
         }
-        _DX9_FrameSync.Unlock();
-
-        size_t frame_cnt = 0;
-
-        do
-        {
-            _DX9_FrameSync.Lock();
-            frame_cnt = _DX9_Frame.size();
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-            _DX9_FrameSync.Unlock();
-        } while (frame_cnt >= _DX9_RenderThreadFrameCount);
     }
     else
     {
-        if (_DX9_Frame.size())
-        {
-            _DX9_Frame.back().readyToExecute = true;
-            _DX9_Frame.back().sync = sync;
-            _DX9_FrameStarted = false;
-        }
-
         _DX9_ExecuteQueuedCommands();
     }
 
@@ -1252,19 +1239,46 @@ _RejectAllFrames()
             ++f;
         }
     }
-
     _DX9_FrameSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
+void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<Handle>& pass_h, unsigned& frame_n)
+{
+    for (Handle p : _DX9_Frame.front().pass)
+    {
+        RenderPassDX9_t* pp = RenderPassPoolDX9::Get(p);
+
+        bool do_add = true;
+        for (unsigned i = 0; i != pass.size(); ++i)
+        {
+            if (pp->priority > pass[i]->priority)
+            {
+                pass.insert(pass.begin() + i, 1, pp);
+                do_add = false;
+                break;
+            }
+        }
+
+        if (do_add)
+            pass.push_back(pp);
+    }
+
+    frame_n = _DX9_Frame.front().number;
+    pass_h.swap(_DX9_Frame.front().pass);
+
+    if (_DX9_Frame.front().sync != InvalidHandle)
+    {
+        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
+}
 
 static void
 _DX9_ExecuteQueuedCommands()
 {
-    Trace("rhi-dx9.exec-queued-cmd\n");
-
-    std::vector<RenderPassDX9_t*> pass;
-    std::vector<Handle> pass_h;
     unsigned frame_n = 0;
 
     if (_DX9_ResetPending || rhi::NeedRestoreResources())
@@ -1273,62 +1287,25 @@ _DX9_ExecuteQueuedCommands()
     }
 
     _DX9_FrameSync.Lock();
-
-    bool do_render = !_DX9_Frame.empty();
-    if (do_render)
+    if (!(_DX9_Frame.empty() || _DX9_ResetPending))
     {
-        for (std::vector<Handle>::iterator p = _DX9_Frame.begin()->pass.begin(), p_end = _DX9_Frame.begin()->pass.end(); p != p_end; ++p)
+        std::vector<Handle> pass_h;
+        std::vector<RenderPassDX9_t*> pass;
+        _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
+        _DX9_FrameSync.Unlock();
+
+        for (RenderPassDX9_t* pp : pass)
         {
-            RenderPassDX9_t* pp = RenderPassPoolDX9::Get(*p);
-            bool do_add = true;
-
-            for (unsigned i = 0; i != pass.size(); ++i)
-            {
-                if (pp->priority > pass[i]->priority)
-                {
-                    pass.insert(pass.begin() + i, 1, pp);
-                    do_add = false;
-                    break;
-                }
-            }
-
-            if (do_add)
-                pass.push_back(pp);
-        }
-
-        pass_h = _DX9_Frame.front().pass;
-        frame_n = _DX9_Frame.front().number;
-
-        if (_DX9_Frame.front().sync != InvalidHandle)
-        {
-            SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
-
-            sync->frame = frame_n;
-            sync->is_signaled = false;
-            sync->is_used = true;
-        }
-    }
-
-    _DX9_FrameSync.Unlock();
-
-    if (do_render)
-    {
-        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-        for (std::vector<RenderPassDX9_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
-        {
-            RenderPassDX9_t* pp = *p;
-
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
                 Handle cb_h = pp->cmdBuf[b];
-                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
 
+                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
                 cb->Execute();
 
                 if (cb->sync != InvalidHandle)
                 {
                     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
-
                     sync->frame = frame_n;
                     sync->is_signaled = false;
                     sync->is_used = true;
@@ -1339,21 +1316,16 @@ _DX9_ExecuteQueuedCommands()
         }
 
         _DX9_FrameSync.Lock();
-        {
-            Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-            _DX9_Frame.erase(_DX9_Frame.begin());
+        _DX9_Frame.erase(_DX9_Frame.begin());
 
-            for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-                RenderPassPoolDX9::Free(*p);
-        }
-        _DX9_FrameSync.Unlock();
+        for (Handle p : pass_h)
+            RenderPassPoolDX9::Free(p);
     }
-
-    HRESULT hr;
+    _DX9_FrameSync.Unlock();
 
     if (_DX9_ResetPending)
     {
-        hr = _D3D9_Device->TestCooperativeLevel();
+        HRESULT hr = _D3D9_Device->TestCooperativeLevel();
         if ((_DX9_PendingImmediateCmdCount == 0) && (_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
@@ -1395,14 +1367,15 @@ _DX9_ExecuteQueuedCommands()
     }
     else
     {
-        hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+        HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
         if (FAILED(hr))
         {
             if (hr == D3DERR_DEVICELOST)
             {
+                _RejectAllFrames();
+
                 _DX9_ResetPending = true;
                 _D3D9_DeviceLost = true;
-                _RejectAllFrames();
             }
             else if (hr == 0x88760872)
             {
