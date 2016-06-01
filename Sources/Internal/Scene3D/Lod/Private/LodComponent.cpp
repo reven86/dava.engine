@@ -30,6 +30,8 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
@@ -80,7 +82,6 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
         KeyedArchive* lodDistArch = archive->GetArchive("lc.loddist");
         if (NULL != lodDistArch)
         {
-            uint32 i = 0;
             if (serializationContext->GetVersion() < 19) //before lodsystem refactoring
             {
                 for (uint32 i = 1; i < MAX_LOD_LAYERS; ++i)

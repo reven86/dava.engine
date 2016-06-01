@@ -202,6 +202,8 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
+#include "Scene3D/Lod/LodSystem.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"

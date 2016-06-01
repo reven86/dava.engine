@@ -3,6 +3,7 @@
 #include "Debug/DVAssert.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"

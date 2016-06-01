@@ -1,42 +1,15 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Lod/LodSystem.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Platform/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
 #include "Debug/Stats.h"
 #include "Debug/Profiler.h"
+#include "Scene3D/Systems/EventSystem.h"
 
 namespace DAVA
 {
@@ -52,7 +25,6 @@ LodSystem::LodSystem(Scene* scene)
 
 void LodSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("LodSystem::Process");
     SCOPED_NAMED_TIMING("LodSystem::Process");
     if (timeElapsed == 0.f)
     {
@@ -81,6 +53,11 @@ void LodSystem::Process(float32 timeElapsed)
     for (int32 index = 0; index < size; ++index)
     {
         FastStruct& fast = fastVector[index];
+        __builtin_prefetch(&fastVector[index + 1]);
+        __builtin_prefetch(&fastVector[index + 2]);
+        __builtin_prefetch(&fastVector[index + 3]);
+        __builtin_prefetch(&fastVector[index + 4]);
+
         if (fast.effectStopped)
         {
             //do not update inactive effects
@@ -99,13 +76,10 @@ void LodSystem::Process(float32 timeElapsed)
             else
             {
                 float32 dst;
-                if (forceLodUsed)
+                if (forceLodUsed && slowVector[index].forceLodDistance != LodComponent::INVALID_DISTANCE)
                 {
                     SlowStruct& slow = slowVector[index];
-                    if (slow.forceLodDistance != LodComponent::INVALID_DISTANCE)
-                    {
-                        dst = slow.forceLodDistance * slow.forceLodDistance;
-                    }
+                    dst = slow.forceLodDistance * slow.forceLodDistance;
                 }
                 else
                 {
@@ -115,8 +89,7 @@ void LodSystem::Process(float32 timeElapsed)
 
                 if (fast.isEffect)
                 {
-                    SlowStruct* slow = &slowVector[index];
-                    if (dst > slow->farSquares[0]) //preserve lod 0 from degrade
+                    if (dst > fast.farSquare0) //preserve lod 0 from degrade
                         dst = dst * lodMult + lodOffset;
                 }
 
@@ -137,7 +110,7 @@ void LodSystem::Process(float32 timeElapsed)
                             newLod = i;
                         }
                     }
-                    DVASSERT(newLod != LodComponent::INVALID_LOD_LAYER);
+                    //DVASSERT(newLod != LodComponent::INVALID_LOD_LAYER);
                 }
             }
 
@@ -159,7 +132,7 @@ void LodSystem::Process(float32 timeElapsed)
                 {
                     if (fast.currentLod != LodComponent::LAST_LOD_LAYER)
                     {
-                        DVASSERT(0 <= fast.currentLod && fast.currentLod < LodComponent::MAX_LOD_LAYERS);
+                        //DVASSERT(0 <= fast.currentLod && fast.currentLod < LodComponent::MAX_LOD_LAYERS);
                     }
 
                     if (slow.recursiveUpdate)
@@ -212,9 +185,8 @@ void LodSystem::AddEntity(Entity* entity)
     UpdateDistances(lod, &slow);
     slowVector.push_back(slow);
 
-    int32 index = static_cast<int32>(slowVector.size() - 1);
-
     FastStruct fast{
+        slow.farSquares[0],
         position,
         lod->currentLod,
         lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.nearSquares[lod->currentLod],

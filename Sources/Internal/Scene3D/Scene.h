@@ -11,7 +11,6 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Base/Observer.h"
-#include "Scene3D/Lod/LodSystem.h"
 
 namespace DAVA
 {
@@ -48,6 +47,7 @@ class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
 class LandscapeSystem;
+class LodSystem;
 
 class UIEvent;
 
