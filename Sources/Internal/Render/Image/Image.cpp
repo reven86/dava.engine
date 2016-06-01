@@ -188,17 +188,17 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
     return imageSet;
 }
 
-void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
+bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    uint8* newData = NULL;
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-
-    if (formatSize > 0)
+    
+    const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    if (formatDescriptor.isCompressed == false)
     {
-        const uint32 newDataSize = newWidth * newHeight * formatSize;
-        newData = new uint8[newDataSize];
+        int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
+        const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
+
+        uint8* newData = new uint8[newDataSize];
         Memset(newData, 0, newDataSize);
 
         float32 kx = float32(width) / float32(newWidth);
@@ -220,11 +220,11 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
                 if (posY >= height)
                     posY = height - 1;
 
-                offsetOld = (posY * width + posX) * formatSize;
-                Memcpy(newData + offset, data + offsetOld, formatSize);
+                offsetOld = (posY * width + posX) * formatSizeInBytes;
+                Memcpy(newData + offset, data + offsetOld, formatSizeInBytes);
 
                 xx += kx;
-                offset += formatSize;
+                offset += formatSizeInBytes;
             }
             yy += ky;
             xx = 0;
@@ -237,7 +237,11 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
         SafeDeleteArray(data);
         data = newData;
         dataSize = newDataSize;
+
+        return true;
     }
+
+    return false;
 }
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)

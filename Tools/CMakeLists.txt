@@ -37,7 +37,7 @@ macro ( init_project )
 
 	set 	( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
 	set     ( DAVA_USE_QT_WIDGETS true )
-    set     ( DAVA_USE_RENDERSTATS true )
+        set     ( DAVA_USE_RENDERSTATS true )
 	set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
 	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 

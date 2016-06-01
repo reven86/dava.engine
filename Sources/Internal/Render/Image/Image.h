@@ -82,7 +82,7 @@ public:
     void ResizeCanvas(uint32 newWidth, uint32 newHeight);
 
     // changes size of image to required size (without any filtration)
-    void ResizeImage(uint32 newWidth, uint32 newHeight);
+    bool ResizeImage(uint32 newWidth, uint32 newHeight);
 
     static Image* CopyImageRegion(const Image* imageToCopy,
                                   uint32 newWidth, uint32 newHeight,
