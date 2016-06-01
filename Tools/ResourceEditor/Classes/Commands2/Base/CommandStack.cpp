@@ -225,8 +225,10 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
                                            DVASSERT(nextAfterCleanCommandIndex >= 0);
                                            --nextAfterCleanCommandIndex;
                                        }
-
-                                       ++commandIndex;
+                                       else
+                                       {
+                                           ++commandIndex;
+                                       }
                                        return needToRemove;
                                    });
 
