@@ -39,6 +39,9 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
+    <item>
+     <widget class="DavaGLWidget" name="davaGLWidget" native="true"/>
+    </item>
    </layout>
   </widget>
   <action name="action1">
@@ -53,6 +56,14 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>DavaGLWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QtTools/DavaGLWidget/davaglwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
