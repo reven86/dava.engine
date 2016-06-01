@@ -29,7 +29,7 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::Compression, VariantType(String("lz4hc")), "default compression method, lz4hc - default");
     options.AddOption(OptionNames::AddHidden, VariantType(false), "add hidden files to pack list");
     options.AddOption(OptionNames::UseCache, VariantType(false), "use asset cache");
-    options.AddOption(OptionNames::Ip, VariantType(AssetCache::LOCALHOST), "asset cache ip");
+    options.AddOption(OptionNames::Ip, VariantType(AssetCache::GetLocalHost()), "asset cache ip");
     options.AddOption(OptionNames::Port, VariantType(defaultPort), "asset cache port");
     options.AddOption(OptionNames::Timeout, VariantType(defaultTimeout), "asset cache timeout");
     options.AddOption(OptionNames::LogFile, VariantType(String("")), "package process log file");
