@@ -143,7 +143,7 @@ void PackManagerTest::LoadResources()
 
     filePathField = new UITextField(Rect(5, 380, 400, 20));
     filePathField->SetFont(font);
-    filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/Data/3d/LandscapeTest/landscapetest.sc2"));
+    filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/3d/LandscapeTest/landscapetest.sc2"));
     filePathField->SetDebugDraw(true);
     filePathField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     filePathField->SetInputEnabled(true);
@@ -157,7 +157,7 @@ void PackManagerTest::LoadResources()
     checkFile->SetStateFont(0xFF, font);
     checkFile->SetStateFontColor(0xFF, Color::White);
     checkFile->SetStateText(0xFF, L"check file");
-    checkFile->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
+    checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
 }
 

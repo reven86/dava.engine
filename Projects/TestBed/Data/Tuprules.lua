@@ -3,7 +3,8 @@ require("TupState")
 
 tupState = TupState.New({
     outputDir = "../.output",
-    outputDbName = "testbed"
+    outputDbName = "testbed",
+    intermediateDir = "../.tmp"
 })
 
 tupState:AddPacks {
