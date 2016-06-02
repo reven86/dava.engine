@@ -1294,12 +1294,14 @@ _DX9_ExecuteQueuedCommands()
     }
 
     _DX9_FrameSync.Lock();
-    if (!(_DX9_Frame.empty() || _DX9_ResetPending))
+    bool shouldExecute = !(_DX9_Frame.empty() || _DX9_ResetPending);
+    _DX9_FrameSync.Unlock();
+
+    if (shouldExecute)
     {
         std::vector<Handle> pass_h;
         std::vector<RenderPassDX9_t*> pass;
         _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
-        _DX9_FrameSync.Unlock();
 
         for (RenderPassDX9_t* pp : pass)
         {
@@ -1324,11 +1326,11 @@ _DX9_ExecuteQueuedCommands()
 
         _DX9_FrameSync.Lock();
         _DX9_Frame.erase(_DX9_Frame.begin());
+        _DX9_FrameSync.Unlock();
 
         for (Handle p : pass_h)
             RenderPassPoolDX9::Free(p);
     }
-    _DX9_FrameSync.Unlock();
 
     if (_DX9_ResetPending)
     {

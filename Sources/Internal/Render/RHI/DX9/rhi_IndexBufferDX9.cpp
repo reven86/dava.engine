@@ -194,7 +194,9 @@ static void*
 dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    DVASSERT(self->CreationDesc().usage == Usage::USAGE_DYNAMICDRAW);
+    DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
+    DVASSERT(offset + size <= self->size);
+    DVASSERT(!self->isMapped);
 
     if (self->mappedData == nullptr)
     {

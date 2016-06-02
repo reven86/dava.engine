@@ -194,7 +194,7 @@ dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
 
     DVASSERT(self->CreationDesc().usage != Usage::USAGE_STATICDRAW);
-
+    DVASSERT(offset + size <= self->size);
     DVASSERT(!self->isMapped);
 
     if (self->mappedData == nullptr)
