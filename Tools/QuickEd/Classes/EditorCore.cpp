@@ -6,9 +6,6 @@
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "EditorSettings.h"
-
-#include "AssetCache/AssetCacheClient.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
@@ -17,6 +14,8 @@
 #include "UI/Package/PackageModel.h"
 
 using namespace DAVA;
+
+REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
 
 EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
@@ -33,6 +32,7 @@ EditorCore::EditorCore(QObject* parent)
     qApp->installEventFilter(this);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
 
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
@@ -84,7 +84,13 @@ EditorCore::EditorCore(QObject* parent)
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 }
 
-EditorCore::~EditorCore() = default;
+EditorCore::~EditorCore()
+{
+    if (cacheClient && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+    }
+}
 
 MainWindow* EditorCore::GetMainWindow() const
 {
@@ -126,34 +132,23 @@ void EditorCore::OnReloadSpritesFinished()
 
 void EditorCore::OnGLWidgedInitialized()
 {
-    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    if (projectCount > 0)
+    QStringList projectsPathes = project->GetProjectsHistory();
+    if (!projectsPathes.isEmpty())
     {
-        OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
+        OpenProject(projectsPathes.last());
     }
 }
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)
 {
-    if (EditorSettings::Instance()->IsUsingAssetCache())
+    DisableCacheClient();
+    if (projectPath.isEmpty())
     {
-        String ipStr = EditorSettings::Instance()->GetAssetCacheIp();
-
-        DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
-        params.port = static_cast<DAVA::uint16>(EditorSettings::Instance()->GetAssetCachePort());
-        params.timeoutms = EditorSettings::Instance()->GetAssetCacheTimeoutSec() * 1000; //in ms
-
-        cacheClient.reset(new AssetCacheClient(true));
-        DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(params);
-        if (connected != AssetCache::Error::NO_ERRORS)
-        {
-            cacheClient.reset();
-        }
+        return;
     }
-    else
+    if (assetCacheEnabled)
     {
-        cacheClient.reset();
+        EnableCacheClient();
     }
 
     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
@@ -316,6 +311,49 @@ void EditorCore::OnNewProject()
     else if (result.type == Result::RESULT_ERROR)
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
+    }
+}
+
+bool EditorCore::IsUsingAssetCache() const
+{
+    return assetCacheEnabled;
+}
+
+void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        EnableCacheClient();
+    }
+    else
+    {
+        DisableCacheClient();
+        assetCacheEnabled = false;
+    }
+}
+
+void EditorCore::EnableCacheClient()
+{
+    DisableCacheClient();
+    cacheClient.reset(new AssetCacheClient(true));
+    DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
+    if (connected != AssetCache::Error::NO_ERRORS)
+    {
+        cacheClient.reset();
+        Logger::Warning("Asset cache client was not started! Error №%d", connected);
+    }
+    else
+    {
+        Logger::Info("Asset cache client started");
+    }
+}
+
+void EditorCore::DisableCacheClient()
+{
+    if (cacheClient != nullptr && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+        cacheClient.reset();
     }
 }
 

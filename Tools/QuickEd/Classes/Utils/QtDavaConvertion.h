@@ -17,9 +17,6 @@ QString StringToQString(const DAVA::String& str);
 DAVA::WideString QStringToWideString(const QString& str);
 QString WideStringToQString(const DAVA::WideString& str);
 
-DAVA::Color QColorToColor(const QColor& color);
-QColor ColorToQColor(const DAVA::Color& color);
-
 QColor HexToQColor(const QString& str);
 QString QColorToHex(const QColor& color);
 
