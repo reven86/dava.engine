@@ -31,9 +31,9 @@ struct CookieHarvester : public CefCookieVisitor
     bool Visit(const CefCookie& cookie, int count, int total, bool& deleteCookie) override
     {
         deleteCookie = false;
-        
+
         String name = CefString(&cookie.name).ToString();
-        if (specificName.empty() || (specificName == name))
+        if (specificName.empty() || specificName == name)
         {
             cookies[name] = CefString(&cookie.value).ToString();
         }
@@ -58,7 +58,7 @@ CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
 
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
-    webPageRender = new CEFWebPageRender(webView);
+    webPageRender = new CEFWebPageRender;
 
     CefWindowInfo windowInfo;
     windowInfo.windowless_rendering_enabled = 1;
@@ -73,8 +73,9 @@ void CEFWebViewControl::Deinitialize()
     // Close browser and release object
     // If we don't release cefBrowser, dtor of CEFWebViewControl will never be invoked
     cefBrowser->GetHost()->CloseBrowser(true);
-    webPageRender = nullptr;
     cefBrowser = nullptr;
+    webPageRender->ShutDown();
+    webPageRender = nullptr;
 
     // Wait until CEF release this object
     while (!this->HasOneRef())
@@ -136,17 +137,20 @@ Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
+    webPageRender->SetViewSize(rect.GetSize());
     cefBrowser->GetHost()->WasResized();
 }
 
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
+    webPageRender->SetVisible(isVisible);
     cefBrowser->GetHost()->WasHidden(!isVisible);
 }
 
 void CEFWebViewControl::SetBackgroundTransparency(bool enabled)
 {
     webPageRender->SetBackgroundTransparency(enabled);
+    cefBrowser->GetHost()->Invalidate(PET_VIEW);
 }
 
 UIControlBackground* CEFWebViewControl::GetContentBackground()

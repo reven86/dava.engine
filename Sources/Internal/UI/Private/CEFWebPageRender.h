@@ -12,12 +12,16 @@ namespace DAVA
 class CEFWebPageRender : public CefRenderHandler
 {
 public:
-    CEFWebPageRender(UIControl& target);
+    CEFWebPageRender();
+    ~CEFWebPageRender();
 
     void ClearRenderSurface();
     UIControlBackground* GetContentBackground();
 
+    void SetVisible(bool visibility);
     void SetBackgroundTransparency(bool value);
+    void SetViewSize(Vector2 size);
+    void ShutDown();
 
 private:
     // CefRenderHandler interface implementation
@@ -27,18 +31,28 @@ private:
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                  const void* buffer, int width, int height) override;
 
+    void OnCursorChange(CefRefPtr<CefBrowser> browser,
+                        CefCursorHandle cursor,
+                        CursorType type,
+                        const CefCursorInfo& custom_cursor_info);
+
+    void PostProcessImage();
     void AppyTexture();
 
-    void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info);
+    CefCursorHandle GetDefaultCursor();
+    void SetCursor(CefCursorHandle cursor);
+    void ResetCursor();
 
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
 
-    UIControl& targetControl;
     int imageWidth = 0;
     int imageHeight = 0;
     std::unique_ptr<uint8[]> imageData;
+    Vector2 logicalViewSize;
     RefPtr<UIControlBackground> contentBackground;
-    bool transparency = false;
+    bool transparency = true;
+    bool isActive = true;
+    bool isVisible = true;
     CursorType currentCursorType = CursorType::CT_POINTER;
 };
 
