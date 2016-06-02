@@ -42,8 +42,7 @@ static void _DX9_ExecuteQueuedCommands();
 
 static DAVA::Thread* _DX9_RenderThread = nullptr;
 static unsigned _DX9_RenderThreadFrameCount = 0;
-static bool _DX9_RenderThreadExitPending = false;
-static DAVA::Spinlock _DX9_RenderThreadExitSync;
+static bool _DX9_RenderThreadRunning = true;
 static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
@@ -1276,7 +1275,7 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
 
     if (_DX9_Frame.front().sync != InvalidHandle)
     {
-        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
+        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.front().sync);
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
@@ -1753,43 +1752,28 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
     _DX9_RenderThreadStartedSync.Post();
     Trace("RHI render-thread started\n");
 
-    while (true)
+    while (_DX9_RenderThreadRunning)
     {
-        bool do_wait = true;
-        bool do_exit = false;
-
-        // CRAP: busy-wait
-        do
+        _DX9_PendingImmediateCmdSync.Lock();
+        if (_DX9_PendingImmediateCmd)
         {
-            _DX9_RenderThreadExitSync.Lock();
-            do_exit = _DX9_RenderThreadExitPending;
-            _DX9_RenderThreadExitSync.Unlock();
+            Trace("exec imm cmd (%u)\n", _DX9_PendingImmediateCmdCount);
+            _ExecDX9(_DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount);
+            _DX9_PendingImmediateCmd = nullptr;
+            _DX9_PendingImmediateCmdCount = 0;
+            Trace("exec-imm-cmd done\n");
+        }
+        _DX9_PendingImmediateCmdSync.Unlock();
 
-            if (do_exit)
-                break;
+        _DX9_FrameSync.Lock();
+        bool shouldExecute = (!_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute) || _DX9_ResetPending;
+        _DX9_FrameSync.Unlock();
 
-            _DX9_PendingImmediateCmdSync.Lock();
-            if (_DX9_PendingImmediateCmd)
-            {
-                Trace("exec imm cmd (%u)\n", _DX9_PendingImmediateCmdCount);
-                _ExecDX9(_DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount);
-                _DX9_PendingImmediateCmd = nullptr;
-                _DX9_PendingImmediateCmdCount = 0;
-                Trace("exec-imm-cmd done\n");
-            }
-            _DX9_PendingImmediateCmdSync.Unlock();
-
-            _DX9_FrameSync.Lock();
-            do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute || _DX9_ResetPending);
-            _DX9_FrameSync.Unlock();
-        } while (do_wait);
-
-        if (do_exit)
-            break;
-
-        _DX9_ExecuteQueuedCommands();
+        if (shouldExecute)
+        {
+            _DX9_ExecuteQueuedCommands();
+        }
     }
-
     Trace("RHI render-thread stopped\n");
 }
 
@@ -1817,10 +1801,7 @@ void UninitializeRenderThreadDX9()
 {
     if (_DX9_RenderThreadFrameCount)
     {
-        _DX9_RenderThreadExitSync.Lock();
-        _DX9_RenderThreadExitPending = true;
-        _DX9_RenderThreadExitSync.Unlock();
-
+        _DX9_RenderThreadRunning = false;
         _DX9_RenderThread->Join();
     }
 }
