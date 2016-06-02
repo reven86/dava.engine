@@ -53,6 +53,10 @@ static bool _D3D9_DeviceLost = false;
 static std::atomic<bool> _DX9_ResetPending = false;
 
 static DAVA::Thread::Id _DX9_ThreadId = 0;
+
+static DAVA::AutoResetEvent _DX9_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _DX9_FrameDoneEvent(false, 400);
+
 //------------------------------------------------------------------------------
 
 static inline D3DPRIMITIVETYPE
@@ -1179,6 +1183,8 @@ dx9_Present(Handle sync)
         }
         _DX9_FrameSync.Unlock();
 
+        _DX9_FramePreparedEvent.Signal();
+
         size_t frame_cnt = 0;
 
         do
@@ -1187,6 +1193,12 @@ dx9_Present(Handle sync)
             frame_cnt = _DX9_Frame.size();
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _DX9_FrameSync.Unlock();
+
+            if (frame_cnt >= _DX9_RenderThreadFrameCount)
+            {
+                _DX9_FrameDoneEvent.Wait();
+            }
+
         } while (frame_cnt >= _DX9_RenderThreadFrameCount);
     }
     else
@@ -1737,6 +1749,12 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
                 executed = true;
             }
             _DX9_PendingImmediateCmdSync.Unlock();
+
+            if (!executed)
+            {
+                _DX9_FramePreparedEvent.Signal();
+            }
+
         } while (!executed);
     }
 }
@@ -1773,6 +1791,12 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         {
             _DX9_ExecuteQueuedCommands();
         }
+        else
+        {
+            _DX9_FramePreparedEvent.Wait();
+        }
+
+        _DX9_FrameDoneEvent.Signal();
     }
     Trace("RHI render-thread stopped\n");
 }
@@ -1802,6 +1826,7 @@ void UninitializeRenderThreadDX9()
     if (_DX9_RenderThreadFrameCount)
     {
         _DX9_RenderThreadRunning = false;
+        _DX9_FramePreparedEvent.Signal();
         _DX9_RenderThread->Join();
     }
 }
