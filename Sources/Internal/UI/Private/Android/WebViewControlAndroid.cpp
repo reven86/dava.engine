@@ -4,9 +4,9 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
-#include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
-#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "UI/Private/Android/WebViewControlAndroid.h"
 
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"

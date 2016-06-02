@@ -1,7 +1,7 @@
 #include "Base/Platform.h"
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
-#include "Platform/TemplateMacOS/WebViewControlMacOS.h"
+#include "UI/Private/OSX/WebViewControlMacOS.h"
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 

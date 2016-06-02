@@ -3,19 +3,19 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
-#include "WebViewControlStub.h"
+#include "UI/Private/WebViewControlStub.h"
 #elif defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/CEFWebViewControlProxy.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Platform/TemplateMacOS/WebViewControlMacOS.h"
+#include "UI/Private/OSX/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "Platform/TemplateiOS/WebViewControliOS.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
 #elif defined(__DAVAENGINE_WIN32__)
-#include "Platform/TemplateWin32/WebViewControlWin32.h"
+#include "UI/Private/Win32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Platform/TemplateWin32/WebViewControlWinUAP.h"
+#include "UI/Private/UWP/WebViewControlWinUAP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "UI/Private/Android/WebViewControlAndroid.h"
 #else
 #error UIWEbView control is not implemented for this platform yet!
 #endif

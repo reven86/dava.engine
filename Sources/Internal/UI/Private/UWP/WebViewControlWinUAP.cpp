@@ -4,8 +4,8 @@
 
 #include "Utils/Utils.h"
 
-#include "Platform/TemplateWin32/WebViewControlWinUAP.h"
-#include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
+#include "UI/Private/UWP/WebViewControlWinUAP.h"
+#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;

@@ -1,6 +1,6 @@
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
-#include "WebViewControlStub.h"
+#include "UI/Private/WebViewControlStub.h"
 
 using namespace DAVA;
 

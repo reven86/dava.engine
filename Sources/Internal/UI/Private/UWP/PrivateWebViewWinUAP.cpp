@@ -19,7 +19,7 @@
 #include "Utils/Utils.h"
 
 #include "UI/UIWebView.h"
-#include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
+#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"

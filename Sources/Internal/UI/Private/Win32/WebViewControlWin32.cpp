@@ -20,8 +20,8 @@
 #include <Shlwapi.h>
 #include <Shellapi.h>
 
-#include "WebViewControlWin32.h"
-#include "CorePlatformWin32.h"
+#include "UI/Private/Win32/WebViewControlWin32.h"
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
