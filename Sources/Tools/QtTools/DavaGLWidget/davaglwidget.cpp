@@ -174,7 +174,7 @@ DavaGLWidget::DavaGLWidget(QWidget* parent)
     container->setFocusPolicy(Qt::NoFocus);
 
     layout->addWidget(container);
-    
+
 #if defined(Q_OS_MAC)
     DAVA::Core::Instance()->SetNativeView(reinterpret_cast<void*>(davaGLView->winId()));
 #endif //Q_OS_MAC

@@ -15,6 +15,10 @@ public:
     CEFWebPageRender(UIControl& target);
 
     void ClearRenderSurface();
+    UIControlBackground* GetContentBackground();
+
+    void SetBackgroundTransparency(bool value);
+
 private:
     // CefRenderHandler interface implementation
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
@@ -23,13 +27,18 @@ private:
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                  const void* buffer, int width, int height) override;
 
+    void AppyTexture();
+
     void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info);
 
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
+
     UIControl& targetControl;
     int imageWidth = 0;
     int imageHeight = 0;
     std::unique_ptr<uint8[]> imageData;
+    RefPtr<UIControlBackground> contentBackground;
+    bool transparency = false;
     CursorType currentCursorType = CursorType::CT_POINTER;
 };
 
