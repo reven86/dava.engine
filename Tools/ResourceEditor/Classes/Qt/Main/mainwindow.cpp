@@ -1071,7 +1071,6 @@ void QtMainWindow::UpdateModificationActionsState()
     bool canModify = modificationWidget->isEnabled();
 
     ui->actionModifyReset->setEnabled(canModify);
-    ui->actionModifyPlaceOnLandscape->setEnabled(canModify);
     ui->actionCenterPivotPoint->setEnabled(canModify && !isMultiple);
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
 }
