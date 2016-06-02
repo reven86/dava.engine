@@ -147,6 +147,18 @@ void CEFWebPageRender::AppyTexture()
     }
 }
 
+void CEFWebPageRender::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info)
+{
+    if (currentCursorType != type)
+    {
+        currentCursorType = type;
+#if defined(__DAVAENGINE_WIN32__)
+        SetClassLongPtr(static_cast<HWND>(Core::Instance()->GetNativeView()), GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(cursor)));
+        SetCursor(cursor);
+#endif
+    }
+}
+
 } // namespace DAVA
 
 #endif // ENABLE_CEF_WEBVIEW

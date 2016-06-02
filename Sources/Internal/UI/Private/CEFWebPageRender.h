@@ -29,6 +29,8 @@ private:
 
     void AppyTexture();
 
+    void OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, CursorType type, const CefCursorInfo& custom_cursor_info);
+
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
 
     UIControl& targetControl;
@@ -37,6 +39,7 @@ private:
     std::unique_ptr<uint8[]> imageData;
     RefPtr<UIControlBackground> contentBackground;
     bool transparency = false;
+    CursorType currentCursorType = CursorType::CT_POINTER;
 };
 
 } // namespace DAVA
