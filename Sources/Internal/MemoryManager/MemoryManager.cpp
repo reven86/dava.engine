@@ -460,7 +460,7 @@ uint32 MemoryManager::MemorySize(void* ptr)
             return block->allocByApp;
         }
     }
-    return MallocHook::MallocSize(ptr);
+    return static_cast<uint32>(MallocHook::MallocSize(ptr));
 }
 
 void* MemoryManager::InternalAllocate(size_t size)
