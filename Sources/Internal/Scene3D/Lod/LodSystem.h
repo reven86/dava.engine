@@ -54,7 +54,7 @@ private:
         bool effectStopped : 1;
         bool isEffect : 1;
     };
-    UnorderedMap<Entity*, int32> fastMap;
+    UnorderedMap<Entity*, int32> fastMap = UnorderedMap<Entity*, int32>(1024);
     Vector<FastStruct> fastVector;
 
     void UpdateDistances(LodComponent* from, LodSystem::SlowStruct* to);

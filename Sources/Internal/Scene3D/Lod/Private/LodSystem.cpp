@@ -110,7 +110,6 @@ void LodSystem::Process(float32 timeElapsed)
                             newLod = i;
                         }
                     }
-                    //DVASSERT(newLod != LodComponent::INVALID_LOD_LAYER);
                 }
             }
 
@@ -130,11 +129,6 @@ void LodSystem::Process(float32 timeElapsed)
                 }
                 else
                 {
-                    if (fast.currentLod != LodComponent::LAST_LOD_LAYER)
-                    {
-                        //DVASSERT(0 <= fast.currentLod && fast.currentLod < LodComponent::MAX_LOD_LAYERS);
-                    }
-
                     if (slow.recursiveUpdate)
                     {
                         SetEntityLodRecursive(slow.entity, fast.currentLod);
@@ -267,7 +261,8 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
     {
         DVASSERT(component->GetType() == Component::TRANSFORM_COMPONENT);
         TransformComponent* transform = static_cast<TransformComponent*>(component);
-        auto iter = fastMap.find(component->GetEntity());
+        Entity* entity = component->GetEntity();
+        auto iter = fastMap.find(entity);
         if (iter != fastMap.end())
         {
             int32 index = iter->second;
@@ -281,7 +276,6 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
     case EventSystem::STOP_PARTICLE_EFFECT:
     {
         DVASSERT(component->GetType() == Component::PARTICLE_EFFECT_COMPONENT);
-        ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(component);
         auto iter = fastMap.find(component->GetEntity());
         if (iter != fastMap.end())
         {
@@ -309,7 +303,6 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
     case EventSystem::LOD_RECURSIVE_UPDATE_ENABLED:
     {
         DVASSERT(component->GetType() == Component::LOD_COMPONENT);
-        LodComponent* lod = static_cast<LodComponent*>(component);
         auto iter = fastMap.find(component->GetEntity());
         DVASSERT(iter != fastMap.end());
         int32 index = iter->second;
