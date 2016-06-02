@@ -149,7 +149,7 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
         return;
     }
 
-    size_t pixelCount = static_cast<size_t>(width * height);
+    uint32 pixelCount = static_cast<uint32>(width * height);
     if (imageWidth != width || imageHeight != height)
     {
         imageWidth = width;
@@ -168,7 +168,7 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
 
 void CEFWebPageRender::PostProcessImage()
 {
-    size_t pixelCount = static_cast<size_t>(imageWidth * imageHeight);
+    uint32 pixelCount = static_cast<uint32>(imageWidth * imageHeight);
     CEFColor* picture = reinterpret_cast<CEFColor*>(imageData.get());
     CEFColor defaultBackgroundColor(Color::White);
 
@@ -201,7 +201,7 @@ void CEFWebPageRender::AppyTexture()
     else
     {
         Texture* texture = contentBackground->GetSprite()->GetTexture();
-        size_t pixelCount = static_cast<size_t>(imageWidth * imageHeight);
+        uint32 pixelCount = static_cast<uint32>(imageWidth * imageHeight);
         texture->TexImage(0, imageWidth, imageHeight, imageData.get(), pixelCount * 4, 0);
     }
 }
