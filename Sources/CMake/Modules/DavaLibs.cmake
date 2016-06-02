@@ -254,7 +254,9 @@ if( WIN )
                                       "${DAVA_TOOLS_BIN_DIR}/avutil-55.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/postproc-54.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
-                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" )
+                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" 
+                                      "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
+                                      "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll" )
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
 

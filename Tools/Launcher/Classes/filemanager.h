@@ -1,43 +1,24 @@
-#ifndef FILEMANAGER_H
-#define FILEMANAGER_H
+#pragma once
 
 #include <QString>
 
-class FileManager
+namespace FileManager
 {
-public:
-    static FileManager* Instance();
+QString GetDocumentsDirectory();
+QString GetBaseAppsDirectory();
+QString GetTempDirectory();
+QString GetLauncherDirectory();
+QString GetSelfUpdateTempDirectory();
+QString GetTempDownloadFilePath();
 
-    const QString& GetDocumentsDirectory();
-    const QString& GetBaseAppsDirectory();
-    const QString& GetTempDirectory();
-    const QString& GetLauncherDirectory();
-    const QString& GetSelfUpdateTempDirectory();
+bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data);
+bool DeleteDirectory(const QString& path);
 
-    const QString& GetTempDownloadFilepath();
+//this function move all files and folder except folders, which created by Launcher
+bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn);
 
-    bool DeleteDirectory(const QString& path);
-    void ClearTempDirectory();
+void MakeDirectory(const QString& path);
 
-    void MakeDirectory(const QString& path);
-
-    void MoveFilesOnlyToDirectory(const QString& dirFrom, const QString& dirTo);
-    //directories path must be with '/' at the end
-
-    QString GetApplicationFolder(const QString& branchID, const QString& appID);
-    QString GetBranchFolder(const QString& branchID);
-
-private:
-    FileManager();
-
-    static FileManager* instance;
-
-    QString docDir;
-    QString launcherDir;
-    QString baseAppDir;
-    QString tempDir;
-    QString tempSelfUpdateDir;
-    QString tempFile;
+QString GetApplicationDirectory(const QString& branchID, const QString& appID);
+QString GetBranchDirectory(const QString& branchID);
 };
-
-#endif // FILEMANAGER_H

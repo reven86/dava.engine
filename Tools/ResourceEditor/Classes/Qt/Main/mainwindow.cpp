@@ -855,12 +855,6 @@ void QtMainWindow::SetupActions()
     });
 
     connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
-
-    auto actSpy = ui->menuDebug_Functions->addAction("Spy Qt Widgets");
-    actSpy->setShortcut(QKeySequence(Qt::ALT + Qt::Key_C, Qt::ALT + Qt::Key_C));
-    actSpy->setShortcutContext(Qt::ApplicationShortcut);
-    connect(actSpy, &QAction::triggered, developerTools, &DeveloperTools::OnSpyWidget);
-
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
