@@ -30,6 +30,7 @@ enum ePredefAllocPools
     ALLOC_POOL_RHI_RESOURCE_POOL,
 
     ALLOC_POOL_LUA,
+    ALLOC_POOL_SQLITE,
 
     PREDEF_POOL_COUNT,
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL

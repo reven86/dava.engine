@@ -50,6 +50,7 @@ Projects/UnitTests/android/assets
 
 Projects/UnitTests/android/.settings/*
 .vs
+.tup
 AppPackages
 
 !/Libs/lib_CMake/win10/arm/Debug
