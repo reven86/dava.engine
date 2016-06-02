@@ -117,24 +117,30 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
     DVASSERT(cmdBufCount);
 
+    bool need_drawable = passConf.colorBuffer[0].texture == InvalidHandle;
+
     if (_Metal_NewFramePending)
     {
         MTL_TRACE("--- next-frame");
         FrameMetal_t f;
 
-        @autoreleasepool
-        {
-            f.drawable = [_Metal_Layer nextDrawable];
-            [f.drawable retain];
-            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
-            _Metal_DefFrameBuf = f.drawable.texture;
+        f.drawable = nil;
+        _Metal_Frame.push_back(f);
+        _Metal_NewFramePending = false;
 
-            _Metal_Frame.push_back(f);
-            _Metal_NewFramePending = false;
+        if (need_drawable)
+        {
+            @autoreleasepool
+            {
+                _Metal_Frame.back().drawable = [_Metal_Layer nextDrawable];
+                [_Metal_Frame.back().drawable retain];
+                MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
+                _Metal_DefFrameBuf = _Metal_Frame.back().drawable.texture;
+            }
         }
     }
 
-    if (!_Metal_Frame.back().drawable)
+    if (need_drawable && !_Metal_Frame.back().drawable)
     {
         _Metal_Frame.clear();
 
@@ -175,7 +181,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     if (passConf.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
         pass->desc.depthAttachment.texture = _Metal_DefDepthBuf;
-        pass->desc.stencilAttachment.texture = _Metal_DefStencilBuf;
+        ///        pass->desc.stencilAttachment.texture = _Metal_DefStencilBuf;
         ds_used = true;
     }
     else if (passConf.depthStencilBuffer.texture != rhi::InvalidHandle)
@@ -190,9 +196,9 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         pass->desc.depthAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
         pass->desc.depthAttachment.clearDepth = passConf.depthStencilBuffer.clearDepth;
 
-        pass->desc.stencilAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        pass->desc.stencilAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        pass->desc.stencilAttachment.clearStencil = passConf.depthStencilBuffer.clearStencil;
+        ///        pass->desc.stencilAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        ///        pass->desc.stencilAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+        ///        pass->desc.stencilAttachment.clearStencil = passConf.depthStencilBuffer.clearStencil;
     }
 
     if (passConf.queryBuffer != InvalidHandle)
