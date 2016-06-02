@@ -95,12 +95,13 @@ DAVA_TESTCLASS (PackManagerTest)
 
         PackManager& packManager = Core::Instance()->GetPackManager();
 
-        FilePath fileInPack("~res:/Data/3d/Objects/monkey.sc2");
+        FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
 
         try
         {
             packManager.Initialize(sqliteDbFile,
                                    folderWithDownloadedPacks,
+                                   "",
                                    commonPacksUrl,
                                    gpuPacksUrl);
 

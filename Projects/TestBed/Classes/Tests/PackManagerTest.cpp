@@ -234,7 +234,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FilePath dbPath(dbFile);
 
     // clear and renew all packs state
-    packManager.Initialize(dbPath, folderWithDownloadedPacks, FilePath(""), urlPacksCommon, urlPacksGpu);
+    packManager.Initialize(dbPath, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
     packManager.EnableProcessing();
 
     packManager.onPackStateChanged.DisconnectAll();
