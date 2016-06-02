@@ -16,6 +16,9 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Debug/Profiler.h"
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -30,11 +33,13 @@ void ShowRunningApplication();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+#if defined(DENY_RUN_MULTIPLE_APP_INSTANCES)
     if (AlreadyRunning())
     {
         ShowRunningApplication();
         return 0;
     }
+#endif
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -154,6 +159,10 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
     FrameworkDidLaunched();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Init();
+#endif
+
     KeyedArchive* options = Core::GetOptions();
 
     bool shouldEnableFullscreen = false;
@@ -342,6 +351,9 @@ void CoreWin32Platform::Run()
     }
 
     Core::Instance()->SystemAppFinished();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Deinit();
+#endif
     FrameworkWillTerminate();
 }
 
@@ -1040,8 +1052,13 @@ void CoreWin32Platform::Quit()
 
 bool AlreadyRunning()
 {
-    static const wchar_t* UID_MYAPP_ALREADY_RUNNING = L"ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
-    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, UID_MYAPP_ALREADY_RUNNING);
+    TCHAR szFileNameWithPath[MAX_PATH];
+    TCHAR fileName[MAX_PATH];
+    GetModuleFileName(NULL, szFileNameWithPath, MAX_PATH);
+    _wsplitpath(szFileNameWithPath, nullptr, nullptr, fileName, nullptr);
+    static const wchar_t* UID_ALREADY_RUNNING = L"_ALREADY-RUNNING-E34A9C2B-1894-4213-A280-7589641664CD";
+    WideString mutexName = WideString(fileName) + WideString(UID_ALREADY_RUNNING);
+    HANDLE hMutexOneInstance = ::CreateMutex(nullptr, FALSE, mutexName.c_str());
     // return ERROR_ACCESS_DENIED, if mutex created
     // in other session, as SECURITY_ATTRIBUTES == NULL
     return (::GetLastError() == ERROR_ALREADY_EXISTS || ::GetLastError() == ERROR_ACCESS_DENIED);

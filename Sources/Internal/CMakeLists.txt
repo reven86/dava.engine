@@ -81,7 +81,9 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
-                                    "Compression/ZipCompressor.cpp" )
+                                    "Compression/ZipCompressor.cpp"
+                                    "Platform/Steam.cpp"
+                                    "DataStorage/Steam/DataStorageSteam.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
@@ -128,6 +130,10 @@ endif()
 
 if( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
 	list( APPEND DEFINITIONS -DDAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+endif()
+
+if( DENY_RUN_MULTIPLE_APP_INSTANCES )
+    list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
 endif()
 
 setup_main_module()

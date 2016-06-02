@@ -30,7 +30,7 @@ std::array<Vector3, VERTEX_COUNT> quad =
 
 void ShadowVolumeRenderLayer::Restore()
 {
-    if (rhi::NeedRestoreVertexBuffer(quadBuffer))
+    if ((quadBuffer != rhi::InvalidHandle) && rhi::NeedRestoreVertexBuffer(quadBuffer))
     {
         rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(Vector3) * VERTEX_COUNT);
     }

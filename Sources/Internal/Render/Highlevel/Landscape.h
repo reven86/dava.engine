@@ -156,15 +156,18 @@ protected:
         enum eBufferType
         {
             RESTORE_BUFFER_VERTEX,
-            RESTORE_BUFFER_INDEX
+            RESTORE_BUFFER_INDEX,
+            RESTORE_TEXTURE
         };
 
         rhi::Handle buffer;
         uint8* data;
         uint32 dataSize;
+        uint32 level;
         eBufferType bufferType;
     };
 
+    Mutex restoreDataMutex;
     Vector<RestoreBufferData> bufferRestoreData;
 
     FilePath heightmapPath;
@@ -261,8 +264,8 @@ protected:
 
     void AllocateGeometryDataInstancing();
 
-    static Texture* CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode);
-    static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode);
+    Texture* CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode);
+    Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode);
 
     Texture* CreateTangentTexture();
     Vector<Image*> CreateTangentBasisTextureData();
