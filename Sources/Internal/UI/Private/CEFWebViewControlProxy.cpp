@@ -70,6 +70,11 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
     impl->SetBackgroundTransparency(enabled);
 }
 
+UIControlBackground* WebViewControl::GetContentBackground()
+{
+    return impl->GetContentBackground();
+}
+
 void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView)
 {
     impl->SetDelegate(webViewDelegate, webView);

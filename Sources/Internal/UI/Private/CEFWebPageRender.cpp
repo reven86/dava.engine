@@ -9,23 +9,63 @@
 
 namespace DAVA
 {
+struct CEFColor
+{
+    CEFColor() = default;
+    CEFColor(const Color& davaColor)
+        : red(static_cast<uint8>(davaColor.r * 255.0f))
+        , green(static_cast<uint8>(davaColor.g * 255.0f))
+        , blue(static_cast<uint8>(davaColor.b * 255.0f))
+        , alpha(static_cast<uint8>(davaColor.a * 255.0f))
+    {
+    }
+
+    bool IsTransparent()
+    {
+        return (red | green | blue | alpha) == 0;
+    }
+
+    uint8 red = 0;
+    uint8 green = 0;
+    uint8 blue = 0;
+    uint8 alpha = 0;
+};
+
 CEFWebPageRender::CEFWebPageRender(UIControl& target)
     : targetControl(target)
+    , contentBackground(new UIControlBackground)
 {
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    contentBackground->SetColor(Color::White);
 }
 
 void CEFWebPageRender::ClearRenderSurface()
 {
-    UIControlBackground* background = targetControl.GetBackground();
-    background->SetSprite(nullptr);
-    background->ReleaseDrawData();
+    if (imageData)
+    {
+        ::memset(imageData.get(), 0, imageWidth * imageHeight * 4);
+        AppyTexture();
+    }
+}
+
+UIControlBackground* CEFWebPageRender::GetContentBackground()
+{
+    return contentBackground.Get();
+}
+
+void CEFWebPageRender::SetBackgroundTransparency(bool value)
+{
+    transparency = value;
 }
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
+    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+
     Vector2 size = targetControl.GetSize();
-    float32 width = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.dx);
-    float32 height = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.dy);
+    float32 width = vcs->ConvertVirtualToPhysicalX(size.dx);
+    float32 height = vcs->ConvertVirtualToPhysicalX(size.dy);
+
     rect = CefRect(0, 0, static_cast<int>(width), static_cast<int>(height));
     return true;
 }
@@ -63,38 +103,47 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
         imageWidth = width;
         imageHeight = height;
         imageData.reset(new uint8[pixelCount * 4]);
+        contentBackground->SetSprite(nullptr);
     }
+
+    // Update texture
+    ::memcpy(imageData.get(), buffer, pixelCount * 4);
+    CEFColor* picture = reinterpret_cast<CEFColor*>(imageData.get());
+    CEFColor backgroundColor(targetControl.GetBackground()->GetColor());
 
     // BGRA -> RGBA
-    ::memcpy(imageData.get(), buffer, pixelCount * 4);
-    for (size_t i = 0; i < pixelCount * 4; i += 4)
+    for (size_t i = 0; i < pixelCount; ++i)
     {
-        std::swap(imageData[i], imageData[i + 2]);
+        std::swap(picture[i].blue, picture[i].red);
+        if (!transparency && picture[i].IsTransparent())
+        {
+            picture[i] = backgroundColor;
+        }
     }
 
-    // Create texture or update texture
-    UIControlBackground* background = targetControl.GetBackground();
+    AppyTexture();
+}
 
-    if (background->GetSprite() == nullptr)
+void CEFWebPageRender::AppyTexture()
+{
+    // Create texture or update texture
+    if (contentBackground->GetSprite() == nullptr)
     {
-        RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(), width, height, true));
+        RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(),
+                                                        imageWidth, imageHeight, true));
         texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
         RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
                                                         static_cast<float32>(texture->GetWidth()),
                                                         static_cast<float32>(texture->GetHeight())));
 
-        if (background->GetDrawType() != UIControlBackground::DRAW_STRETCH_BOTH)
-        {
-            background->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-            background->SetColor(Color::White);
-        }
-        background->SetSprite(sprite.Get());
+        contentBackground->SetSprite(sprite.Get());
     }
     else
     {
-        Texture* texture = background->GetSprite()->GetTexture();
-        texture->ReloadFromData(FORMAT_RGBA8888, imageData.get(), width, height);
+        Texture* texture = contentBackground->GetSprite()->GetTexture();
+        size_t pixelCount = static_cast<size_t>(imageWidth * imageHeight);
+        texture->TexImage(0, imageWidth, imageHeight, imageData.get(), pixelCount * 4, 0);
     }
 }
 

@@ -80,6 +80,12 @@ void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 
 void CEFWebViewControl::SetBackgroundTransparency(bool enabled)
 {
+    webPageRender->SetBackgroundTransparency(enabled);
+}
+
+UIControlBackground* CEFWebViewControl::GetContentBackground()
+{
+    return webPageRender->GetContentBackground();
 }
 
 void CEFWebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)

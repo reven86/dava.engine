@@ -53,6 +53,7 @@ public:
     void SetRect(const Rect& rect);
     void SetVisible(bool isVisible, bool hierarchic);
     void SetBackgroundTransparency(bool enabled);
+    UIControlBackground* GetContentBackground();
 
     void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView);
     void SetRenderToTexture(bool value);

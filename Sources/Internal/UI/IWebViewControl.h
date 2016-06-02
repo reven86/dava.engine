@@ -11,6 +11,7 @@
 namespace DAVA
 {
 class UIWebView;
+class UIControlBackground;
 class IUIWebViewDelegate
 {
 public:
@@ -83,6 +84,10 @@ public:
 
     virtual void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView) = 0;
     virtual void SetBackgroundTransparency(bool enabled);
+    virtual UIControlBackground* GetContentBackground()
+    {
+        return nullptr;
+    }
 
     // Bounces settings.
     virtual bool GetBounces() const

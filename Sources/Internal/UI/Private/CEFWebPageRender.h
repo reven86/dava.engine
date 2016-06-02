@@ -15,6 +15,9 @@ public:
     CEFWebPageRender(UIControl& target);
 
     void ClearRenderSurface();
+    UIControlBackground* GetContentBackground();
+
+    void SetBackgroundTransparency(bool value);
 
 private:
     // CefRenderHandler interface implementation
@@ -24,11 +27,16 @@ private:
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects,
                  const void* buffer, int width, int height) override;
 
+    void AppyTexture();
+
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
+
     UIControl& targetControl;
     int imageWidth = 0;
     int imageHeight = 0;
     std::unique_ptr<uint8[]> imageData;
+    RefPtr<UIControlBackground> contentBackground;
+    bool transparency = false;
 };
 
 } // namespace DAVA
