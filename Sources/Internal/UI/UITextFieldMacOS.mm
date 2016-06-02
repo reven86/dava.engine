@@ -398,11 +398,11 @@ public:
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
         // notify after text changed
-        WideString oldText;
-        GetText(oldText);
         UITextFieldDelegate* delegate = davaText->GetDelegate();
         if (nullptr != delegate)
         {
+            WideString oldText;
+            GetText(oldText);
             delegate->TextFieldOnTextChanged(davaText, string, oldText);
         }
     }
