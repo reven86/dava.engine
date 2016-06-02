@@ -23,8 +23,8 @@ public:
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned size = 0;
-    IDirect3DIndexBuffer9* buffer = nullptr;
+    unsigned size;
+    IDirect3DIndexBuffer9* buffer;
     uint8* mappedData;
     unsigned isMapped : 1;
     unsigned updatePending : 1;

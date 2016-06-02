@@ -1162,28 +1162,42 @@ void CommandBufferDX9_t::Execute()
 }
 
 //------------------------------------------------------------------------------
+
 static void
 dx9_Present(Handle sync)
 {
-    _DX9_FrameSync.Lock();
-    size_t framesRemaining = _DX9_Frame.size();
-    if (framesRemaining)
-    {
-        _DX9_Frame.back().readyToExecute = true;
-        _DX9_Frame.back().sync = sync;
-    }
-    _DX9_FrameSync.Unlock();
-
     if (_DX9_RenderThreadFrameCount)
     {
-        while (framesRemaining >= _DX9_RenderThreadFrameCount)
+        Trace("rhi-dx9.present\n");
+        _DX9_FrameSync.Lock();
         {
-            DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
-            framesRemaining = _DX9_Frame.size();
+            if (_DX9_Frame.size())
+            {
+                _DX9_Frame.back().readyToExecute = true;
+                _DX9_Frame.back().sync = sync;
+                Trace("\n\n-------------------------------\nframe %u generated\n", _DX9_Frame.back().number);
+            }
         }
+        _DX9_FrameSync.Unlock();
+
+        size_t frame_cnt = 0;
+
+        do
+        {
+            _DX9_FrameSync.Lock();
+            frame_cnt = _DX9_Frame.size();
+            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+            _DX9_FrameSync.Unlock();
+        } while (frame_cnt >= _DX9_RenderThreadFrameCount);
     }
     else
     {
+        if (_DX9_Frame.size())
+        {
+            _DX9_Frame.back().readyToExecute = true;
+            _DX9_Frame.back().sync = sync;
+        }
+
         _DX9_ExecuteQueuedCommands();
     }
 
