@@ -1,10 +1,11 @@
 cmake_minimum_required (VERSION 3.0)
 project ( CEFHelperProcess )
 
-if ( X64_MODE )
-    set ( ARCH "x64" )
-else ()
+string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
+if( ${X64_PROJECT} EQUAL -1 )
     set ( ARCH "x86" )
+else ()
+    set ( ARCH "x64" )
 endif ()
 
 set ( DAVA_ENGINE_LIBS "${CMAKE_CURRENT_LIST_DIR}/../../Libs" )
@@ -17,10 +18,11 @@ include_directories ( "${DAVA_ENGINE_INCLUDES}"
                       "${DAVA_ENGINE_LIBS}/include" 
                       "${DAVA_ENGINE_LIBS}/include/cef" )
 
-add_executable( ${PROJECT_NAME} main.cpp CEFDavaRenderApp.cpp )
-target_link_libraries( ${PROJECT_NAME} "${CEF_LIBS}/libcef.lib" "${CEF_LIBS}/libcef_dll_wrapper.lib" )
+add_executable(${PROJECT_NAME}
+    main.cpp
+)
 
-if ( WIN32 )
-    #set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:WINDOWS" )
-    #set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
-endif ()
+target_link_libraries(${PROJECT_NAME}
+    "${CEF_LIBS}/libcef.lib"
+    "${CEF_LIBS}/libcef_dll_wrapper.lib"
+)
