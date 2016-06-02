@@ -34,20 +34,11 @@ public:
     void ExecuteJScript(const String& scriptString);
 
     // Delete all cookies associated with target URL
-    void DeleteCookies(const String& url)
-    {
-        //CefCookieManager::GetGlobalManager()
-    }
+    void DeleteCookies(const String& url);
     // Get cookie for specific domain and name
-    String GetCookie(const String& url, const String& name) const
-    {
-        return "";
-    }
+    String GetCookie(const String& url, const String& name) const;
     // Get the list of cookies for specific domain
-    Map<String, String> GetCookies(const String& url) const
-    {
-        return Map<String, String>();
-    }
+    Map<String, String> GetCookies(const String& url) const;
 
     // Size/pos/visibility changes.
     void SetRect(const Rect& rect);

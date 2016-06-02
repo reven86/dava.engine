@@ -11,6 +11,46 @@
 
 namespace DAVA
 {
+struct CookieTerminator : public CefCookieVisitor
+{
+    bool Visit(const CefCookie& cookie, int count, int total, bool& deleteCookie) override
+    {
+        deleteCookie = true;
+        return true;
+    }
+    IMPLEMENT_REFCOUNTING(CookieTerminator);
+};
+
+struct CookieHarvester : public CefCookieVisitor
+{
+    CookieHarvester(const String& name = "")
+        : specificName(name)
+    {
+    }
+
+    bool Visit(const CefCookie& cookie, int count, int total, bool& deleteCookie) override
+    {
+        deleteCookie = false;
+        
+        String name = CefString(&cookie.name).ToString();
+        if (specificName.empty() || (specificName == name))
+        {
+            cookies[name] = CefString(&cookie.value).ToString();
+        }
+
+        return true;
+    }
+
+    const Map<String, String>& GetCookies() const
+    {
+        return cookies;
+    }
+
+    IMPLEMENT_REFCOUNTING(CookieHarvester);
+    String specificName;
+    Map<String, String> cookies;
+};
+
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
@@ -66,6 +106,32 @@ void CEFWebViewControl::OpenFromBuffer(const String& htmlString, const FilePath&
 void CEFWebViewControl::ExecuteJScript(const String& scriptString)
 {
     cefBrowser->GetMainFrame()->ExecuteJavaScript(scriptString, "", 0);
+}
+
+void CEFWebViewControl::DeleteCookies(const String& url)
+{
+    CefRefPtr<CefCookieManager> cookieMan = CefCookieManager::GetGlobalManager(nullptr);
+    cookieMan->VisitUrlCookies(url, false, new CookieTerminator);
+}
+
+String CEFWebViewControl::GetCookie(const String& url, const String& name) const
+{
+    CefRefPtr<CefCookieManager> cookieMan = CefCookieManager::GetGlobalManager(nullptr);
+    CefRefPtr<CookieHarvester> harvester = new CookieHarvester(name);
+    cookieMan->VisitUrlCookies(url, false, harvester);
+
+    const Map<String, String>& cookies = harvester->GetCookies();
+    auto iter = cookies.find(name);
+    return iter != cookies.end() ? iter->second : "";
+}
+
+Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
+{
+    CefRefPtr<CefCookieManager> cookieMan = CefCookieManager::GetGlobalManager(nullptr);
+    CefRefPtr<CookieHarvester> harvester = new CookieHarvester;
+    cookieMan->VisitUrlCookies(url, false, harvester);
+
+    return harvester->GetCookies();
 }
 
 void CEFWebViewControl::SetRect(const Rect& rect)
