@@ -1,5 +1,8 @@
--- debugger = require("debugger")
-debugger = function() end
+debugger = require("debugger")
+
+if debugger == nil then
+    debugger = function() end
+end
 
 function UtilDumpTable(table, indent)
     indent = indent or 0 

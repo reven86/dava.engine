@@ -334,12 +334,6 @@ int main(int argc, const char* argv[])
                         string fileName;
                         while (getline(listfile, fileName))
                         {
-                            // HACK replace Data/ from path in DB
-                            size_t dataIndex = fileName.find("Data/");
-                            if (std::string::npos != dataIndex)
-                            {
-                                fileName.replace(dataIndex, 5, "");
-                            }
                             cout << "INSERT INTO files VALUES('" << fileName << "', '" << pack << "');" << '\n';
                         }
 
