@@ -47,10 +47,10 @@ VertexBufferDX9_t::VertexBufferDX9_t()
 
 VertexBufferDX9_t::~VertexBufferDX9_t()
 {
+    DVASSERT(!isMapped)
     if (mappedData)
     {
         ::free(mappedData);
-        mappedData = nullptr;
     }
 }
 
@@ -118,8 +118,6 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
-
-    size = 0;
 }
 
 //==============================================================================

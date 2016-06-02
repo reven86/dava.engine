@@ -50,10 +50,10 @@ IndexBufferDX9_t::IndexBufferDX9_t()
 
 IndexBufferDX9_t::~IndexBufferDX9_t()
 {
+    DVASSERT(!isMapped)
     if (mappedData)
     {
         ::free(mappedData);
-        mappedData = nullptr;
     }
 }
 
@@ -122,8 +122,6 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
-
-    size = 0;
 }
 
 //------------------------------------------------------------------------------

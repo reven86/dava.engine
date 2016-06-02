@@ -17,15 +17,8 @@ IndexBufferGLES2_t
 : public ResourceImpl<IndexBufferGLES2_t, IndexBuffer::Descriptor>
 {
 public:
-    IndexBufferGLES2_t()
-        : size(0)
-        , mappedData(nullptr)
-        , uid(0)
-        , is_32bit(false)
-        , isMapped(false)
-        , isUPBuffer(false)
-    {
-    }
+    IndexBufferGLES2_t();
+    ~IndexBufferGLES2_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
@@ -44,6 +37,28 @@ RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor)
 
 typedef ResourcePool<IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true, 3072);
+
+//------------------------------------------------------------------------------
+
+IndexBufferGLES2_t::IndexBufferGLES2_t()
+    : size(0)
+    , mappedData(nullptr)
+    , uid(0)
+    , is_32bit(false)
+    , isMapped(false)
+    , isUPBuffer(false)
+{
+}
+
+//------------------------------------------------------------------------------
+
+IndexBufferGLES2_t::~IndexBufferGLES2_t()
+{
+    if (mappedData)
+    {
+        ::free(mappedData);
+    }
+}
 
 //------------------------------------------------------------------------------
 
@@ -132,17 +147,8 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
-
         uid = 0;
     }
-
-    if (mappedData)
-    {
-        ::free(mappedData);
-        mappedData = nullptr;
-    }
-
-    size = 0;
 }
 
 //==============================================================================

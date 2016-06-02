@@ -14,17 +14,8 @@ struct
 VertexBufferGLES2_t
 : public ResourceImpl<VertexBufferGLES2_t, VertexBuffer::Descriptor>
 {
-    VertexBufferGLES2_t()
-        : size(0)
-        , mappedData(nullptr)
-        , uid(0)
-        , usage(USAGE_DEFAULT)
-        , isMapped(false)
-    {
-    }
-    ~VertexBufferGLES2_t()
-    {
-    }
+    VertexBufferGLES2_t();
+    ~VertexBufferGLES2_t();
 
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
@@ -41,6 +32,27 @@ RHI_IMPL_RESOURCE(VertexBufferGLES2_t, VertexBuffer::Descriptor)
 
 typedef ResourcePool<VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true, 3072);
+
+//------------------------------------------------------------------------------
+
+VertexBufferGLES2_t::VertexBufferGLES2_t()
+    : size(0)
+    , mappedData(nullptr)
+    , uid(0)
+    , usage(USAGE_DEFAULT)
+    , isMapped(false)
+{
+}
+
+//------------------------------------------------------------------------------
+
+VertexBufferGLES2_t::~VertexBufferGLES2_t()
+{
+    if (mappedData)
+    {
+        ::free(mappedData);
+    }
+}
 
 //------------------------------------------------------------------------------
 
@@ -106,17 +118,12 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
 void VertexBufferGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-    ExecGL(&cmd, 1, force_immediate);
-
-    if (mappedData)
+    if (uid)
     {
-        ::free(mappedData);
-        mappedData = nullptr;
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
+        ExecGL(&cmd, 1, force_immediate);
+        uid = 0;
     }
-
-    size = 0;
-    uid = 0;
 }
 
 //==============================================================================
