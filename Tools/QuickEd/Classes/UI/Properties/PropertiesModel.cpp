@@ -1,9 +1,8 @@
 #include "PropertiesModel.h"
 
 #include "Platform/SystemTimer.h"
+#include "QtTools/Utils/Utils.h"
 
-#include <QPoint>
-#include <QColor>
 #include <QFont>
 #include <QVector2D>
 #include <QVector4D>
@@ -113,13 +112,14 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+    DAVA::VariantType value = property->GetValue();
     uint32 flags = property->GetFlags();
     switch (role)
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValueType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
-            return property->GetValue().AsBool() ? Qt::Checked : Qt::Unchecked;
+        if (value.GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
+            return value.AsBool() ? Qt::Checked : Qt::Unchecked;
     }
     break;
 
@@ -156,7 +156,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         QVariant var;
         if (index.column() != 0)
         {
-            var.setValue<VariantType>(property->GetValue());
+            var.setValue<VariantType>(value);
         }
         return var;
     }
@@ -226,6 +226,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         {
             VariantType newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
+            UpdateProperty(property);
             return true;
         }
     }
@@ -245,6 +246,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         }
 
         ChangeProperty(property, newVal);
+        UpdateProperty(property);
         return true;
     }
     break;
@@ -252,6 +254,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     case ResetRole:
     {
         ResetProperty(property);
+        UpdateProperty(property);
         return true;
     }
     break;
@@ -286,19 +289,26 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::UpdateAllChangedProperties()
 {
-    for (auto pair : changedIndexes)
+    for (auto property : changedProperties)
     {
-        emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
+        UpdateProperty(property.Get());
     }
-    changedIndexes.clear();
+    changedProperties.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
+    property->Retain();
+    changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
+    continuousUpdater->Update();
+}
+
+void PropertiesModel::UpdateProperty(AbstractProperty* property)
+{
     QPersistentModelIndex nameIndex = indexByProperty(property, 0);
     QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    continuousUpdater->Update();
+    if (nameIndex.isValid() && valueIndex.isValid())
+        emit dataChanged(nameIndex, valueIndex, QVector<int>() << Qt::DisplayRole);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index)
@@ -423,7 +433,14 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     case VariantType::TYPE_BOOLEAN:
         return QString();
-
+    case VariantType::TYPE_INT8:
+        return QVariant(val.AsInt8()).toString();
+    case VariantType::TYPE_UINT8:
+        return QVariant(val.AsUInt8()).toString();
+    case VariantType::TYPE_INT16:
+        return QVariant(val.AsInt16()).toString();
+    case VariantType::TYPE_UINT16:
+        return QVariant(val.AsUInt16()).toString();
     case VariantType::TYPE_INT32:
         if (property->GetType() == AbstractProperty::TYPE_ENUM)
         {
@@ -456,8 +473,17 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_UINT32:
         return QVariant(val.AsUInt32()).toString();
 
+    case VariantType::TYPE_INT64:
+        return QVariant(val.AsInt64()).toString();
+
+    case VariantType::TYPE_UINT64:
+        return QVariant(val.AsUInt64()).toString();
+
     case VariantType::TYPE_FLOAT:
         return QVariant(val.AsFloat()).toString();
+
+    case VariantType::TYPE_FLOAT64:
+        return QVariant(val.AsFloat64()).toString();
 
     case VariantType::TYPE_STRING:
         return StringToQString(val.AsString());
@@ -465,14 +491,8 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_WIDE_STRING:
         return WideStringToQString(val.AsWideString());
 
-    //        case VariantType::TYPE_UINT32:
-    //            return val.AsUInt32();
-    //
-    //        case VariantType::TYPE_INT64:
-    //            return val.AsInt64();
-    //
-    //        case VariantType::TYPE_UINT64:
-    //            return val.AsUInt64();
+    case VariantType::TYPE_FASTNAME:
+        return StringToQString(val.AsFastName().c_str());
 
     case VariantType::TYPE_VECTOR2:
         return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
@@ -493,7 +513,6 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_MATRIX2:
     case VariantType::TYPE_MATRIX3:
     case VariantType::TYPE_MATRIX4:
-    case VariantType::TYPE_FASTNAME:
     case VariantType::TYPE_AABBOX3:
     default:
         DVASSERT(false);

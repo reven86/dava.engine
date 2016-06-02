@@ -1,11 +1,13 @@
 #ifndef __QUICKED_PROPERTIES_MODEL_H__
 #define __QUICKED_PROPERTIES_MODEL_H__
 
+#include "Base/RefPtr.h"
+#include "FileSystem/VariantType.h"
+
+#include "Model/ControlProperties/PropertyListener.h"
+
 #include <QAbstractItemModel>
 #include <QSet>
-
-#include "FileSystem/VariantType.h"
-#include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA
 {
@@ -44,11 +46,12 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
-private:
+protected:
     void UpdateAllChangedProperties();
 
     // PropertyListener
     void PropertyChanged(AbstractProperty* property) override;
+    void UpdateProperty(AbstractProperty* property);
 
     void ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
     void ComponentPropertiesWasAdded(RootProperty* root, ComponentPropertiesSection* section, int index) override;
@@ -68,20 +71,20 @@ private:
     void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
     void StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
 
-    void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
-    void ResetProperty(AbstractProperty* property);
+    virtual void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
+    virtual void ResetProperty(AbstractProperty* property);
 
     QModelIndex indexByProperty(AbstractProperty* property, int column = 0);
     QString makeQVariant(const AbstractProperty* property) const;
     void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
 
-private:
+protected:
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    QSet<QPair<QPersistentModelIndex, QPersistentModelIndex>> changedIndexes;
+    DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater* continuousUpdater = nullptr;
 };
 

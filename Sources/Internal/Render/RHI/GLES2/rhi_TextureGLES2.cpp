@@ -55,7 +55,11 @@ public:
     SamplerState::Descriptor::Sampler samplerState;
     uint32 forceSetSamplerState : 1;
 };
-RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor);
+
+RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor)
+
+typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
+RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 TextureGLES2_t::TextureGLES2_t()
     : uid(0)
@@ -353,9 +357,6 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         height = 0;
     }
 }
-
-typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
-RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 //------------------------------------------------------------------------------
 
@@ -915,7 +916,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureGLES2_t::NeedRestoreCount();
+    return TextureGLES2Pool::PendingRestoreCount();
 }
 
 } // namespace TextureGLES2

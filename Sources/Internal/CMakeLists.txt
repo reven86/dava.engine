@@ -71,8 +71,7 @@ set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
 set( SOURCE_FOLDERS                 "." )
 
-set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c )
-set( HPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.h )
+set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    
 set( ERASE_FOLDERS_IOS              "DX9" "DX11" )
 set( ERASE_FOLDERS_MACOS            "Metal" "DX9" "DX11" )
@@ -82,7 +81,9 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
-                                    "Compression/ZipCompressor.cpp" )
+                                    "Compression/ZipCompressor.cpp"
+                                    "Platform/Steam.cpp"
+                                    "DataStorage/Steam/DataStorageSteam.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
@@ -111,6 +112,7 @@ set( DEFINITIONS_PRIVATE            -D_UNICODE
 set( DEFINITIONS_PRIVATE_IOS        -DDDARWIN_NO_CARBON )
 set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )
 set( DEFINITIONS_PRIVATE_ANDROID    -D__ANDROID__ )
+set( DEFINITIONS_PRIVATE_WINUAP     -DSQLITE_OS_WINRT=1 )
 
 
 if( DAVA_DISABLE_AUTOTESTS  )
@@ -128,6 +130,10 @@ endif()
 
 if( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
 	list( APPEND DEFINITIONS -DDAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+endif()
+
+if( DENY_RUN_MULTIPLE_APP_INSTANCES )
+    list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
 endif()
 
 setup_main_module()

@@ -115,7 +115,7 @@ ZipFile::ZipFile(const FilePath& fileName)
     zipData->archive.m_pRead = &file_read_func;
     zipData->archive.m_archive_size = fileSize;
 
-    if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == 0)
+    if (mz_zip_reader_init(&zipData->archive, fileSize, 0) == MZ_FALSE)
     {
         throw std::runtime_error("can't init zip from file: " + fileName.GetStringValue());
     }
