@@ -12,6 +12,8 @@
 #include "Render/Texture.h"
 #include "Utils/CRC32.h"
 
+#include "Render/Image/ImageConvert.h"
+
 using namespace DAVA;
 
 namespace ISTLocal

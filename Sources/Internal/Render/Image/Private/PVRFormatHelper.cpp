@@ -28,6 +28,7 @@
 
 
 #include "Render/Image/Private/PVRFormatHelper.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
 #include "Render/PixelFormatDescriptor.h"
 
@@ -226,12 +227,14 @@ uint32 GetPVRChannelType(PixelFormat pixelFormat)
         return ePVRTVarTypeUnsignedByteNorm;
 
     case FORMAT_RGBA8888:
-    case FORMAT_RGBA5551:
-    case FORMAT_RGBA4444:
     case FORMAT_RGB888:
-    case FORMAT_RGB565:
     case FORMAT_A8:
         return ePVRTVarTypeUnsignedByteNorm;
+
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        return ePVRTVarTypeUnsignedShortNorm;
 
     case FORMAT_A16:
     case FORMAT_RGBA16161616:
@@ -467,10 +470,33 @@ std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
     pvrFile->compressedData.resize(compressedDataSize);
 
     uint32 offset = 0;
-    uint32 mip = 0;
     for (const Image* image : imageSet)
     {
-        Memcpy(pvrFile->compressedData.data() + offset, image->data, image->dataSize);
+        //TODO: this code should be re-worked with texture refactoring
+        if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+        {
+            ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
+            DVASSERT(savedImage->dataSize == image->dataSize);
+
+            if (image->format == PixelFormat::FORMAT_RGBA4444)
+            {
+                ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
+                convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+            }
+            else if (image->format == PixelFormat::FORMAT_RGBA5551)
+            {
+                ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
+                convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+            }
+
+            Memcpy(pvrFile->compressedData.data() + offset, savedImage->data, savedImage->dataSize);
+        }
+        else
+        {
+            Memcpy(pvrFile->compressedData.data() + offset, image->data, image->dataSize);
+        }
+        //END of TODO
+
         offset += image->dataSize;
 
         DVASSERT(image->format == zeroMip->format);
@@ -503,7 +529,32 @@ std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageS
         for (const Vector<Image*>& faceImageSet : imageSet)
         {
             Image* image = faceImageSet[mip];
-            Memcpy(compressedDataPtr, image->data, image->dataSize);
+
+            //TODO: this code should be re-worked with texture refactoring
+            if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+            {
+                ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
+                DVASSERT(savedImage->dataSize == image->dataSize);
+
+                if (image->format == PixelFormat::FORMAT_RGBA4444)
+                {
+                    ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
+                    convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                }
+                else if (image->format == PixelFormat::FORMAT_RGBA5551)
+                {
+                    ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
+                    convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                }
+
+                Memcpy(compressedDataPtr, savedImage->data, savedImage->dataSize);
+            }
+            else
+            {
+                Memcpy(compressedDataPtr, image->data, image->dataSize);
+            }
+            //END of TODO
+
             compressedDataPtr += image->dataSize;
         }
     }
@@ -584,6 +635,29 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
                         Logger::Error("Cannot read mip %d, fase %d from file", mip, face, infile->GetFilename().GetStringValue().c_str());
                         return false;
                     }
+
+                    //TODO: this code should be re-worked with texture refactoring
+                    if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+                    {
+                        Image* realImage = Image::Create(image->width, image->height, image->format);
+                        realImage->mipmapLevel = image->mipmapLevel;
+                        realImage->cubeFaceID = image->cubeFaceID;
+
+                        if (image->format == PixelFormat::FORMAT_RGBA4444)
+                        {
+                            ConvertDirect<uint16, uint16, ConvertABGR4444toRGBA4444> convert;
+                            convert(image->data, image->width, image->height, image->width * sizeof(uint16), realImage->data);
+                        }
+                        else if (image->format == PixelFormat::FORMAT_RGBA5551)
+                        {
+                            ConvertDirect<uint16, uint16, ConvertABGR1555toRGBA5551> convert;
+                            convert(image->data, image->width, image->height, image->width * sizeof(uint16), realImage->data);
+                        }
+
+                        image->Release();
+                        image = realImage;
+                    }
+                    //END of TODO
 
                     imageSet.push_back(image);
                 }

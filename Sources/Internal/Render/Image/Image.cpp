@@ -56,7 +56,6 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint32 size = GetSizeInBytes(width, height, format);
-
     if (size > 0)
     {
         Image* image = new Image();
@@ -67,11 +66,9 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
         image->data = new uint8[image->dataSize];
         return image;
     }
-    else
-    {
-        Logger::Error("[Image::Create] trying to create image with wrong format");
-        return nullptr;
-    }
+
+    Logger::Error("[Image::Create] trying to create image with wrong format");
+    return nullptr;
 }
 
 Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data)
