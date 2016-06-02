@@ -80,6 +80,13 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     return result;
 }
 
+int BaseApplication::StartApplication()
+{
+    IUIApplication* app = pluginManager.queryInterface<IUIApplication>();
+    DVASSERT(app != nullptr);
+    return app->startApplication();
+}
+
 DAVA::WideString BaseApplication::GetPluginsFolder() const
 {
     QFileInfo appFileInfo(commandLineParser.argv()[0]);
