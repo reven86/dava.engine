@@ -114,6 +114,7 @@ void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
     layout->addWidget(label);
     waitDialog->setLayout(layout);
 
+    waitDialog->setModal(true);
     waitDialog->setFixedSize(300, 100);
     waitDialog->show();
     waitDialog->raise();
