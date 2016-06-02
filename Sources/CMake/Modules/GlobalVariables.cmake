@@ -72,6 +72,10 @@ else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
 
+if ( ENABLE_CEF AND NO_CEF )
+    unset ( ENABLE_CEF )
+endif ()
+
 set( DAVA_PLATFORM_LIST IOS 
                         MACOS 
                         ANDROID 
