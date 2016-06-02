@@ -992,6 +992,12 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
 
         if (sprite->flags & Sprite::EST_SCALE)
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] * scaleX + x) - frameVertices[frame][0] * scaleX - x;
+                y += AlignToY(frameVertices[frame][1] * scaleY + y) - frameVertices[frame][1] * scaleY - y;
+            }
+
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
                 const Vector2& point = sprite->clipPolygon->GetPoints()[i];
@@ -1000,6 +1006,12 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         }
         else
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] + x) - frameVertices[frame][0] - x;
+                y += AlignToY(frameVertices[frame][1] + y) - frameVertices[frame][1] - y;
+            }
+
             Vector2 pos(x, y);
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
@@ -1030,7 +1042,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         }
     }
 
-    if (sprite->clipPolygon)
+    if (sprite->clipPolygon && (!state || !state->usePerPixelAccuracy))
     {
         PushClip();
         Rect clipRect;
@@ -1073,7 +1085,7 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     }
     PushBatch(batch);
 
-    if (sprite->clipPolygon)
+    if (sprite->clipPolygon && (!state || !state->usePerPixelAccuracy))
     {
         PopClip();
     }
