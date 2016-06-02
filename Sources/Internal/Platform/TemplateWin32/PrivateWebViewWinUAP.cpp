@@ -13,6 +13,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 
 #include "Utils/UTF8Utils.h"
 #include "Utils/Random.h"
@@ -24,6 +25,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
+#include "Utils/Utils.h"
 
 using namespace Windows::System;
 using namespace Windows::Foundation;
