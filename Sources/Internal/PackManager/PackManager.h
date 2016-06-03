@@ -10,6 +10,18 @@ class PackManagerImpl;
 class PackManager final
 {
 public:
+    enum class InitializeState : uint32
+    {
+        Starting,
+        LoadingDB,
+        UnpakingkDB,
+        LoadingPacksData,
+        MountingLocalPacks,
+        MountingDownloadedPacks,
+        Ready,
+        Error
+    };
+
     struct Pack
     {
         enum class Status : uint32
@@ -71,11 +83,13 @@ public:
     PackManager();
     ~PackManager();
 
-    // 1. open local database and read all packs info
-    // 2. list all packs on filesystem
-    // 3. mount all packs which found on filesystem and in database
+    // 0. connect to remote server and download DB with info about all packs and files
+    // 1. unpack DB to local write dir
+    // 2. open local database and read all packs info
+    // 3. list all packs on filesystem
+    // 4. mount all packs which found on filesystem and in database
     // throw exception if can't initialize with deteils
-    void Initialize(const FilePath& dbFile,
+    void Initialize(const String& dbFileName,
                     const FilePath& downloadPacksDir,
                     const FilePath& readOnlyPacksDir, // can be empty
                     const String& packsUrlCommon,
@@ -101,8 +115,12 @@ public:
 
     void DeletePack(const String& packName);
 
+    // user have to wait till InitializationState become Ready
+    // second argument - status text usfull for loging
+    Signal<InitializeState, const String&> onInitializationStatusChanged;
     // signal user about every pack state change
     Signal<const Pack&, Pack::Change> onPackStateChanged;
+    // signal per user request with complete size of all depended packs
     Signal<const IRequest&> onRequestProgressChanged;
 
     const FilePath& GetLocalPacksDirectory() const;
@@ -110,6 +128,7 @@ public:
 
 private:
     std::unique_ptr<PackManagerImpl> impl;
+    InitializeState state = InitializeState::Starting;
 };
 
 } // end namespace DAVA

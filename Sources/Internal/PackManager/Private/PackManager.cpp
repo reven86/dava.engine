@@ -13,7 +13,7 @@ PackManager::~PackManager() = default;
 
 PackManager::IRequest::~IRequest() = default;
 
-void PackManager::Initialize(const FilePath& filesDB_,
+void PackManager::Initialize(const String& dbFileName_,
                              const FilePath& downloadPacksDir_,
                              const FilePath& readOnlyPacksDir_,
                              const String& packsUrlCommon_,
