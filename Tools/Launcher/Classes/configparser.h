@@ -87,7 +87,6 @@ class ConfigParser
 public:
     ConfigParser();
     void Clear();
-    bool ParseJSON(const QByteArray& configData);
     bool Parse(const QByteArray& data);
     QByteArray Serialize();
     void SaveToFile(const QString& filePath);
@@ -126,6 +125,8 @@ public:
     void UpdateApplicationsNames();
 
 private:
+    bool ParseJSON(const QByteArray& configData);
+
     QString launcherVersion;
     QString launcherURL;
     QString webPageURL;
