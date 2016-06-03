@@ -74,6 +74,7 @@ DAVA_TESTCLASS (ImageSystemTest)
 
         { // Load images
             ScopedPtr<File> infile(File::Create(loadingData.path, File::OPEN | File::READ));
+            TEST_VERIFY_WITH_MESSAGE(infile, errorMessage);
             params.baseMipmap = loadingData.fromMipmap;
             params.firstMipmapIndex = 0;
             eErrorCode loadCode = ImageSystem::Load(infile, imageSet, params);
