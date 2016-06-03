@@ -7,11 +7,11 @@
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
-#include "Platform/SystemTimer.h"
 #include "UI/Private/CEFController.h"
 
 namespace DAVA
 {
+uint32 cacheSizeLimit = 50 * 1024 * 1024; // 50 MB default
 RefPtr<class CEFControllerImpl> cefControllerGlobal;
 
 //--------------------------------------------------------------------------------------------------
@@ -102,16 +102,16 @@ void CEFControllerImpl::PreCleanUp()
 
     if (fs->Exists(logPath))
     {
-        fs->DeleteFile(logPath);
+        fs->DeleteDirectory(logPath);
     }
 }
 
 // Clean cache
 void CEFControllerImpl::PostCleanUp()
 {
-    const size_t cacheSizeLimit = 150 * 1024 * 1024; // 150 MB
     FileSystem* fs = FileSystem::Instance();
-    Vector<FilePath> cacheDirContent = fs->EnumerateFilesInDirectory(GetCachePath());
+    FilePath cachePath = GetCachePath();
+    Vector<FilePath> cacheDirContent = fs->EnumerateFilesInDirectory(cachePath);
 
     size_t cacheSize = 0;
     for (const FilePath& path : cacheDirContent)
@@ -119,11 +119,25 @@ void CEFControllerImpl::PostCleanUp()
         uint32 size = 0;
         fs->GetFileSize(path, size);
         cacheSize += size;
+
+        if (cacheSize > cacheSizeLimit)
+        {
+            break;
+        }
     }
 
     if (cacheSize > cacheSizeLimit)
     {
-        fs->DeleteDirectory(GetCachePath());
+        bool result = fs->DeleteDirectory(cachePath);
+
+        // can't remove whole directory -> try to remove something
+        if (!result)
+        {
+            for (const FilePath& path : cacheDirContent)
+            {
+                fs->DeleteFile(path);
+            }
+        }
     }
 }
 
@@ -144,6 +158,16 @@ CEFController::~CEFController() = default;
 void CEFController::Update()
 {
     cefControllerImpl->Update();
+}
+
+uint32 CEFController::GetCacheLimitSize()
+{
+    return cacheSizeLimit;
+}
+
+void CEFController::SetCacheLimitSize(uint32 size)
+{
+    cacheSizeLimit = size;
 }
 
 } // namespace DAVA

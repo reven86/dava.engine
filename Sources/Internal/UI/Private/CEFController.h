@@ -13,6 +13,9 @@ public:
 
     void Update();
 
+    static uint32 GetCacheLimitSize();
+    static void SetCacheLimitSize(uint32 size);
+
 private:
     RefPtr<class CEFControllerImpl> cefControllerImpl;
 };
