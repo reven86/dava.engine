@@ -7,7 +7,6 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -42,6 +41,7 @@ class EditorLODSystem;
 class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
+class CommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -113,6 +113,7 @@ public:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
 
+    void ActivateCommandStack();
     void Exec(Command2::Pointer&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
@@ -171,7 +172,7 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack* commandStack = nullptr;
+    std::unique_ptr<CommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -200,6 +201,7 @@ private:
         EditorCommandNotify(SceneEditor2* _editor);
         void Notify(const Command2* command, bool redo) override;
         void CleanChanged(bool clean) override;
+        void UndoRedoStateChanged() override;
 
     private:
         SceneEditor2* editor = nullptr;

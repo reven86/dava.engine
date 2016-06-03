@@ -1,5 +1,4 @@
-#ifndef __DATA_DOWNLOAD_MANAGER_H__
-#define __DATA_DOWNLOAD_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -19,7 +18,6 @@ class DownloadManager : public Singleton<DownloadManager>
 public:
     using NotifyFunctor = Function<void(const uint32&, const DownloadStatus&)>;
 
-public:
     DownloadManager() = default;
     virtual ~DownloadManager();
 
@@ -75,7 +73,6 @@ private:
         DownloadStatus status;
     };
 
-private:
     void SetTaskStatus(DownloadTaskDescription* task, const DownloadStatus& status);
 
     void StartProcessingThread();
@@ -102,7 +99,6 @@ private:
     void ResetRetriesCount();
     void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
-private:
     Thread* thisThread = nullptr;
     bool isThreadStarted = false;
 
@@ -123,5 +119,3 @@ private:
     uint64 downloadedTotal = 0;
 };
 }
-
-#endif
