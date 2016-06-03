@@ -8,9 +8,9 @@ rhi::TextureFormat PixelFormatDescriptor::TEXTURE_FORMAT_INVALID = rhi::TextureF
 
 UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDescriptor::pixelDescriptors = {
 
-    { FORMAT_INVALID, { FORMAT_INVALID, FastName("Invalid"), 0, TEXTURE_FORMAT_INVALID, false, false, Size2i(0, 0)} },
+    { FORMAT_INVALID, { FORMAT_INVALID, FastName("Invalid"), 0, TEXTURE_FORMAT_INVALID, false, false, Size2i(0, 0) } },
 
-    { FORMAT_RGBA8888, { FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8, false, false, Size2i(1, 1)} },
+    { FORMAT_RGBA8888, { FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8, false, false, Size2i(1, 1) } },
     { FORMAT_RGBA5551, { FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_R5G5B5A1, false, false, Size2i(1, 1) } },
     { FORMAT_RGBA4444, { FORMAT_RGBA4444, FastName("RGBA4444"), 16, rhi::TEXTURE_FORMAT_R4G4B4A4, false, false, Size2i(1, 1) } },
     { FORMAT_RGB888, { FORMAT_RGB888, FastName("RGB888"), 24, rhi::TEXTURE_FORMAT_R8G8B8, false, false, Size2i(1, 1) } },

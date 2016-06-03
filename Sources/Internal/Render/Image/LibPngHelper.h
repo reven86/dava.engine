@@ -31,4 +31,3 @@ protected:
     bool CanProcessFileInternal(const ScopedPtr<File>& infile) const override;
 };
 }
-

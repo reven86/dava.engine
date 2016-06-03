@@ -502,7 +502,7 @@ public:
 
     bool IsSupportedFormat() const;
 
-    const ScopedPtr<File> &file;
+    const ScopedPtr<File>& file;
     dds::DDS_HEADER mainHeader;
     dds::DDS_HEADER_DXT10 extHeader;
     bool fileStoresTextureInD3DFormat = false;
@@ -1248,8 +1248,8 @@ bool DDSWriterImpl::Write(const Vector<Vector<Image*>>& images, PixelFormat dstF
                 if (ImageConvert::ConvertImage(mipImage, dstDavaImage) == false)
                 {
                     Logger::Error("Can't convert from %s to %s",
-                        GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
-                        GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
+                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(srcFormat),
+                                  GlobalEnumMap<PixelFormat>::Instance()->ToString(dstFormat));
                     return false;
                 }
             }

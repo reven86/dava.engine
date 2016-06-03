@@ -20,7 +20,7 @@ ImageFormatInterface::ImageFormatInterface(ImageFormat imageFormat_, const Strin
 // {
 //     other.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 // }
-// 
+//
 // ImageFormatInterface& ImageFormatInterface::operator=(ImageFormatInterface &&other)
 // {
 //     if (this != &other)
@@ -29,16 +29,14 @@ ImageFormatInterface::ImageFormatInterface(ImageFormat imageFormat_, const Strin
 //         supportedExtensions = std::move(other.supportedExtensions);
 //         interfaceName = std::move(other.interfaceName);
 //         imageFormat = other.imageFormat;
-// 
+//
 //         other.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 //     }
-// 
+//
 //     return *this;
 // }
 
-
 ImageFormatInterface::~ImageFormatInterface() = default;
-
 
 ImageFormat ImageFormatInterface::GetImageFormat() const
 {
@@ -103,5 +101,4 @@ bool ImageFormatInterface::CanProcessFileInternal(const ScopedPtr<File>& infile)
 {
     return GetImageInfo(infile).dataSize != 0;
 }
-
 }

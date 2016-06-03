@@ -622,7 +622,6 @@ void TextureDescriptor::LoadVersion11(File* file)
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }
 
-
 void TextureDescriptor::LoadVersion12(File* file)
 {
     //draw settings
@@ -882,7 +881,7 @@ FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFam
     return GetSourceTexturePathname();
 }
 
-bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath> &pathes) const
+bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath>& pathes) const
 {
     if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE)
     {
@@ -899,7 +898,7 @@ bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamil
     return true;
 }
 
-void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath> &pathes) const
+void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath>& pathes) const
 {
     CreateSingleMipPathnamesForGPU(gpuFamily, pathes);
     pathes.emplace_back(CreateMultiMipPathnameForGPU(gpuFamily));

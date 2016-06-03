@@ -13,20 +13,20 @@
 
 namespace DAVA
 {
-
 LibPVRHelper::LibPVRHelper()
     : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR, "PVR", { ".pvr" },
-    { FORMAT_RGBA8888,
-    FORMAT_RGBA5551,
-    FORMAT_RGBA4444,
-    FORMAT_RGB888,
-    FORMAT_RGB565,
-    FORMAT_A8,
-    FORMAT_A16,
-    FORMAT_PVR2,
-    FORMAT_PVR4,
-    FORMAT_ETC1,
-    })
+                           {
+                           FORMAT_RGBA8888,
+                           FORMAT_RGBA5551,
+                           FORMAT_RGBA4444,
+                           FORMAT_RGB888,
+                           FORMAT_RGB565,
+                           FORMAT_A8,
+                           FORMAT_A16,
+                           FORMAT_PVR2,
+                           FORMAT_PVR4,
+                           FORMAT_ETC1,
+                           })
 {
 }
 
@@ -295,12 +295,13 @@ bool LibPVRHelper::CanDecompressFrom(PixelFormat format)
 {
     switch (format)
     {
-        case FORMAT_PVR2: 
-        case FORMAT_PVR4:
-        case FORMAT_ETC1:
-            return true;
+    case FORMAT_PVR2:
+    case FORMAT_PVR4:
+    case FORMAT_ETC1:
+        return true;
 
-        default: return false;
+    default:
+        return false;
     }
 
     return false;
@@ -316,5 +317,4 @@ bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
     DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
     return false;
 }
-
 }

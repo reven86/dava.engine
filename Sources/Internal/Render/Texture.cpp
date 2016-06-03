@@ -504,7 +504,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         bool hasSimgleMipFiles = texDescriptor->CreateSingleMipPathnamesForGPU(gpu, singleMipFiles);
         if (hasSimgleMipFiles)
         {
-            uint32 singleMipFilesCount = static_cast<uint32> (singleMipFiles.size());
+            uint32 singleMipFilesCount = static_cast<uint32>(singleMipFiles.size());
             for (uint32 index = baseMipMap; index < singleMipFilesCount; ++index)
             {
                 params.baseMipmap = 0;

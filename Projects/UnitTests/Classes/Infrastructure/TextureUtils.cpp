@@ -32,7 +32,6 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, cons
         return compareResult;
     }
 
-
     uint32 step = 1;
     uint32 startIndex = 0;
 

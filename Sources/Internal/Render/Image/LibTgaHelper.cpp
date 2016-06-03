@@ -9,11 +9,11 @@ namespace DAVA
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
-    : ImageFormatInterface( ImageFormat::IMAGE_FORMAT_TGA, "TGA", 
-                            { ".tga", ".tpic" }, 
-                            { FORMAT_RGBA8888, FORMAT_RGBA5551, FORMAT_RGBA4444, FORMAT_RGB888,
-                            FORMAT_RGB565, FORMAT_RGBA16161616, FORMAT_RGBA32323232, FORMAT_A8,
-                            FORMAT_A16 })
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_TGA, "TGA",
+                           { ".tga", ".tpic" },
+                           { FORMAT_RGBA8888, FORMAT_RGBA5551, FORMAT_RGBA4444, FORMAT_RGB888,
+                             FORMAT_RGB565, FORMAT_RGBA16161616, FORMAT_RGBA32323232, FORMAT_A8,
+                             FORMAT_A16 })
 {
 }
 

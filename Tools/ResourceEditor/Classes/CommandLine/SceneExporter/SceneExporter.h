@@ -82,4 +82,3 @@ private:
 
     SceneExporter::Params exportingParams;
 };
-

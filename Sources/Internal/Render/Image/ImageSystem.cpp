@@ -19,12 +19,10 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
 
-
 namespace DAVA
 {
 namespace ImageSystem
 {
-
 const Vector<std::unique_ptr<ImageFormatInterface>>& GetWrappers()
 {
     static Vector<std::unique_ptr<ImageFormatInterface>> wrappers;
@@ -40,7 +38,7 @@ const Vector<std::unique_ptr<ImageFormatInterface>>& GetWrappers()
         wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibPSDHelper()));
     }
  
-#if defined (__DAVAENGINE_DEBUG__)
+#if defined(__DAVAENGINE_DEBUG__)
     DVASSERT(wrappers.size() == IMAGE_FORMAT_COUNT);
     for (size_type w = 0; w < IMAGE_FORMAT_COUNT; ++w)
     {
@@ -96,7 +94,7 @@ Image* LoadSingleMip(const FilePath& pathname, uint32 mip)
     if (images.empty() == false)
     {
         image = SafeRetain(images[0]);
-        for (Image *img: images)
+        for (Image* img : images)
         {
             SafeRelease(img);
         }
@@ -126,8 +124,8 @@ Image* EnsurePowerOf2Image(Image* image)
         return SafeRetain(image);
     }
     Image* newImage = Image::Create(NextPowerOf2(image->GetWidth()),
-        NextPowerOf2(image->GetHeight()),
-        image->GetPixelFormat());
+                                    NextPowerOf2(image->GetHeight()),
+                                    image->GetPixelFormat());
     newImage->InsertImage(image, 0, 0);
     return newImage;
 }
@@ -141,8 +139,8 @@ void EnsurePowerOf2Images(Vector<Image*>& images)
         if (!IsPowerOf2(image->GetWidth()) || !IsPowerOf2(image->GetHeight()))
         {
             Image* newImage = Image::Create(NextPowerOf2(image->GetWidth()),
-                NextPowerOf2(image->GetHeight()),
-                image->GetPixelFormat());
+                                            NextPowerOf2(image->GetHeight()),
+                                            image->GetPixelFormat());
             newImage->InsertImage(image, 0, 0);
             (*iter) = newImage;
             SafeRelease(image);
@@ -251,7 +249,6 @@ ImageFormat GetImageFormatByName(const String& name)
     return IMAGE_FORMAT_UNKNOWN;
 }
 
-
 ImageInfo GetImageInfo(const ScopedPtr<File>& infile)
 {
     DVASSERT(infile);
@@ -283,7 +280,6 @@ ImageInfo GetImageInfo(const FilePath& pathName)
     return properWrapper->GetImageInfo(pathName);
 }
 
-
 uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams)
 {
     if (sourceImageParams.minimalWidth != 0 || sourceImageParams.minimalHeight != 0)
@@ -313,8 +309,5 @@ const Vector<String>& GetExtensionsFor(ImageFormat format)
 {
     return GetImageFormatInterface(format)->Extensions();
 }
-
-
 }
 }
-

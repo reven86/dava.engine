@@ -21,4 +21,3 @@ public:
     ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 };
 };
-

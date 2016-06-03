@@ -167,8 +167,8 @@ public:
     static FilePath GetDescriptorPathname(const FilePath& texturePathname);
 
     FilePath CreateMultiMipPathnameForGPU(const eGPUFamily forGPU) const;
-    bool CreateSingleMipPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath> &pathes) const;
-    void CreateLoadPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath> &pathes) const;
+    bool CreateSingleMipPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath>& pathes) const;
+    void CreateLoadPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath>& pathes) const;
 
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
 
@@ -215,4 +215,3 @@ public:
     bool isCompressedFile = false;
 };
 };
-

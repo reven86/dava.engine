@@ -251,7 +251,7 @@ bool ReadMetaData(File* file, PVRFile* pvrFile)
     uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
     while (metaDataSize != 0)
     {
-        MetaDataBlock *block = new MetaDataBlock();
+        MetaDataBlock* block = new MetaDataBlock();
 
         uint32 readSize = file->Read(&block->DevFOURCC);
         if (readSize != sizeof(uint32))
@@ -610,7 +610,7 @@ bool WriteFile(ScopedPtr<File>& file, const PVRFile& pvrFile)
     DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE);
     DVASSERT(written == PVRFile::HEADER_SIZE);
 
-    for (MetaDataBlock *block : pvrFile.metaDatablocks)
+    for (MetaDataBlock* block : pvrFile.metaDatablocks)
     {
         file->Write(&block->DevFOURCC);
         file->Write(&block->u32Key);
@@ -631,7 +631,6 @@ bool WriteFile(ScopedPtr<File>& file, const PVRFile& pvrFile)
     }
     return true;
 }
-
 
 bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC)
 {

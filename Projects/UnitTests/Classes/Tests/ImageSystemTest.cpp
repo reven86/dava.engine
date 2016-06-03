@@ -60,14 +60,17 @@ DAVA_TESTCLASS (ImageSystemTest)
         params.minimalHeight = Texture::MINIMAL_HEIGHT;
 
         if (loadingData.width < params.minimalWidth)
-        {   
+        {
             loadingData.width = params.minimalWidth;
             loadingData.height = params.minimalHeight;
             loadingData.mipmapsCount = FastLog2(params.minimalWidth) + 1;
         }
 
         Vector<Image*> imageSet;
-        SCOPE_EXIT{ ISTLocal::ReleaseImages(imageSet); };
+        SCOPE_EXIT
+        {
+            ISTLocal::ReleaseImages(imageSet);
+        };
 
         { // Load images
             ScopedPtr<File> infile(File::Create(loadingData.path, File::OPEN | File::READ));
@@ -81,7 +84,7 @@ DAVA_TESTCLASS (ImageSystemTest)
             TEST_VERIFY_WITH_MESSAGE(loaded, errorMessage);
             if (loaded && loadingData.mipmapsCount > 0)
             {
-                Image *zeroMipMap = imageSet[0];
+                Image* zeroMipMap = imageSet[0];
                 TEST_VERIFY_WITH_MESSAGE(zeroMipMap->width >= params.minimalWidth, errorMessage);
                 TEST_VERIFY_WITH_MESSAGE(zeroMipMap->height >= params.minimalHeight, errorMessage);
 
@@ -105,7 +108,10 @@ DAVA_TESTCLASS (ImageSystemTest)
             TEST_VERIFY_WITH_MESSAGE(eErrorCode::SUCCESS == saveCode, errorMessage);
 
             Vector<Image*> reLoadedImageSet;
-            SCOPE_EXIT{ ISTLocal::ReleaseImages(reLoadedImageSet); };
+            SCOPE_EXIT
+            {
+                ISTLocal::ReleaseImages(reLoadedImageSet);
+            };
 
             { // Load saved images
                 ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
@@ -131,45 +137,44 @@ DAVA_TESTCLASS (ImageSystemTest)
         }
     }
 
-
-    DAVA_TEST(SaveLoadTest)
+    DAVA_TEST (SaveLoadTest)
     {
         static Vector<ISTLocal::TestData> testData =
         {
-            { "~res:/TestData/ImageSystemTest/a8.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_A8 },
-            { "~res:/TestData/ImageSystemTest/etc1.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ETC1 },
-            { "~res:/TestData/ImageSystemTest/pvr2.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR2 },
-            { "~res:/TestData/ImageSystemTest/pvr4.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR4 },
-            { "~res:/TestData/ImageSystemTest/rgb565.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB565 },
-            { "~res:/TestData/ImageSystemTest/rgb888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB888 },
-            { "~res:/TestData/ImageSystemTest/rgba4444.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA4444 },
-            { "~res:/TestData/ImageSystemTest/rgba5551.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA5551 },
-            { "~res:/TestData/ImageSystemTest/rgba8888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA8888 },
-            { "~res:/TestData/ImageSystemTest/rgba16161616.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA16161616 },
-            { "~res:/TestData/ImageSystemTest/rgba32323232.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA32323232 },
-            { "~res:/TestData/ImageSystemTest/dxt1.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
-            { "~res:/TestData/ImageSystemTest/dxt1a.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
-            { "~res:/TestData/ImageSystemTest/dxt3.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT3 },
-            { "~res:/TestData/ImageSystemTest/dxt5.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/dxt5nm.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/atcrgb.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGB },
-            { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
-            { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
-            
-            { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
-            { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/a8.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_A8 },
+          { "~res:/TestData/ImageSystemTest/etc1.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ETC1 },
+          { "~res:/TestData/ImageSystemTest/pvr2.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR2 },
+          { "~res:/TestData/ImageSystemTest/pvr4.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR4 },
+          { "~res:/TestData/ImageSystemTest/rgb565.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB565 },
+          { "~res:/TestData/ImageSystemTest/rgb888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB888 },
+          { "~res:/TestData/ImageSystemTest/rgba4444.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA4444 },
+          { "~res:/TestData/ImageSystemTest/rgba5551.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA5551 },
+          { "~res:/TestData/ImageSystemTest/rgba8888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA8888 },
+          { "~res:/TestData/ImageSystemTest/rgba16161616.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA16161616 },
+          { "~res:/TestData/ImageSystemTest/rgba32323232.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA32323232 },
+          { "~res:/TestData/ImageSystemTest/dxt1.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
+          { "~res:/TestData/ImageSystemTest/dxt1a.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
+          { "~res:/TestData/ImageSystemTest/dxt3.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT3 },
+          { "~res:/TestData/ImageSystemTest/dxt5.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/dxt5nm.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/atcrgb.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGB },
+          { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
+          { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
 
-            { "~res:/TestData/ImageSystemTest/a8.pvr", 16, 16, 5, 1, 1, PixelFormat::FORMAT_A8 },
-            { "~res:/TestData/ImageSystemTest/dxt3.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_DXT3 },
-            { "~res:/TestData/ImageSystemTest/atcrgb.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_ATC_RGB },
+          { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
+          { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
 
-            { "~res:/TestData/ImageSystemTest/etc1.pvr", 8, 8, 4, 2, 1, PixelFormat::FORMAT_ETC1 },
-            { "~res:/TestData/ImageSystemTest/pvr2.pvr", 4, 4, 3, 3, 1, PixelFormat::FORMAT_PVR2 },
-            { "~res:/TestData/ImageSystemTest/dxt5.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
+          { "~res:/TestData/ImageSystemTest/a8.pvr", 16, 16, 5, 1, 1, PixelFormat::FORMAT_A8 },
+          { "~res:/TestData/ImageSystemTest/dxt3.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_DXT3 },
+          { "~res:/TestData/ImageSystemTest/atcrgb.dds", 16, 16, 5, 1, 1, PixelFormat::FORMAT_ATC_RGB },
 
-            { "~res:/TestData/ImageSystemTest/pvr4.pvr", 2, 2, 2, 4, 1, PixelFormat::FORMAT_PVR4 },
-            { "~res:/TestData/ImageSystemTest/rgb565.pvr", 1, 1, 1, 5, 1, PixelFormat::FORMAT_RGB565 },
+          { "~res:/TestData/ImageSystemTest/etc1.pvr", 8, 8, 4, 2, 1, PixelFormat::FORMAT_ETC1 },
+          { "~res:/TestData/ImageSystemTest/pvr2.pvr", 4, 4, 3, 3, 1, PixelFormat::FORMAT_PVR2 },
+          { "~res:/TestData/ImageSystemTest/dxt5.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 4, 4, 3, 3, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
+
+          { "~res:/TestData/ImageSystemTest/pvr4.pvr", 2, 2, 2, 4, 1, PixelFormat::FORMAT_PVR4 },
+          { "~res:/TestData/ImageSystemTest/rgb565.pvr", 1, 1, 1, 5, 1, PixelFormat::FORMAT_RGB565 },
         };
 
         for (const ISTLocal::TestData& td : testData)
@@ -192,7 +197,10 @@ DAVA_TESTCLASS (ImageSystemTest)
         params.minimalHeight = Texture::MINIMAL_HEIGHT;
 
         Vector<Image*> imageSet;
-        SCOPE_EXIT{ ISTLocal::ReleaseImages(imageSet); };
+        SCOPE_EXIT
+        {
+            ISTLocal::ReleaseImages(imageSet);
+        };
 
         Vector<Vector<Image*>> cubeImageSet(Texture::CUBE_FACE_COUNT); // [face][mip]
         for (uint32 face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
@@ -224,7 +232,7 @@ DAVA_TESTCLASS (ImageSystemTest)
                 {
                     for (uint32 mip = 0; mip < loadingData.mipmapsCount; ++mip)
                     {
-                        Image *image = cubeImageSet[face][mip];
+                        Image* image = cubeImageSet[face][mip];
 
                         TEST_VERIFY_WITH_MESSAGE(image->mipmapLevel == mip, errorMessage);
                         TEST_VERIFY_WITH_MESSAGE(image->cubeFaceID == face, errorMessage);
@@ -245,7 +253,10 @@ DAVA_TESTCLASS (ImageSystemTest)
             TEST_VERIFY_WITH_MESSAGE(eErrorCode::SUCCESS == saveCode, errorMessage);
 
             Vector<Image*> reLoadedImageSet;
-            SCOPE_EXIT{ ISTLocal::ReleaseImages(reLoadedImageSet); };
+            SCOPE_EXIT
+            {
+                ISTLocal::ReleaseImages(reLoadedImageSet);
+            };
 
             { // Load saved images
                 ScopedPtr<File> infile(File::Create(savePath, File::OPEN | File::READ));
@@ -272,12 +283,12 @@ DAVA_TESTCLASS (ImageSystemTest)
         }
     }
 
-    DAVA_TEST(SaveLoadCubemapTest)
+    DAVA_TEST (SaveLoadCubemapTest)
     {
         static Vector<ISTLocal::TestData> testData =
         {
-            { "~res:/TestData/ImageSystemTest/pvr2_cube.pvr", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_PVR2 },
-            { "~res:/TestData/ImageSystemTest/dxt5_cube.dds", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/pvr2_cube.pvr", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_PVR2 },
+          { "~res:/TestData/ImageSystemTest/dxt5_cube.dds", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_DXT5 },
         };
 
         for (const ISTLocal::TestData& td : testData)
@@ -287,33 +298,33 @@ DAVA_TESTCLASS (ImageSystemTest)
         }
     }
 
-    DAVA_TEST(ImageInfoTest)
+    DAVA_TEST (ImageInfoTest)
     {
         static Vector<ISTLocal::TestData> testData =
         {
-            { "~res:/TestData/ImageSystemTest/a8.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_A8 },
-            { "~res:/TestData/ImageSystemTest/etc1.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ETC1 },
-            { "~res:/TestData/ImageSystemTest/pvr2.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR2 },
-            { "~res:/TestData/ImageSystemTest/pvr4.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR4 },
-            { "~res:/TestData/ImageSystemTest/rgb565.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB565 },
-            { "~res:/TestData/ImageSystemTest/rgb888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB888 },
-            { "~res:/TestData/ImageSystemTest/rgba4444.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA4444 },
-            { "~res:/TestData/ImageSystemTest/rgba5551.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA5551 },
-            { "~res:/TestData/ImageSystemTest/rgba8888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA8888 },
-            { "~res:/TestData/ImageSystemTest/rgba16161616.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA16161616 },
-            { "~res:/TestData/ImageSystemTest/rgba32323232.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA32323232 },
-            { "~res:/TestData/ImageSystemTest/dxt1.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
-            { "~res:/TestData/ImageSystemTest/dxt1a.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
-            { "~res:/TestData/ImageSystemTest/dxt3.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT3 },
-            { "~res:/TestData/ImageSystemTest/dxt5.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/dxt5nm.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/atcrgb.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGB },
-            { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
-            { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
-            { "~res:/TestData/ImageSystemTest/pvr2_cube.pvr", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_PVR2 },
-            { "~res:/TestData/ImageSystemTest/dxt5_cube.dds", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_DXT5 },
-            { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
-            { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/a8.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_A8 },
+          { "~res:/TestData/ImageSystemTest/etc1.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ETC1 },
+          { "~res:/TestData/ImageSystemTest/pvr2.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR2 },
+          { "~res:/TestData/ImageSystemTest/pvr4.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_PVR4 },
+          { "~res:/TestData/ImageSystemTest/rgb565.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB565 },
+          { "~res:/TestData/ImageSystemTest/rgb888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGB888 },
+          { "~res:/TestData/ImageSystemTest/rgba4444.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA4444 },
+          { "~res:/TestData/ImageSystemTest/rgba5551.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA5551 },
+          { "~res:/TestData/ImageSystemTest/rgba8888.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA8888 },
+          { "~res:/TestData/ImageSystemTest/rgba16161616.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA16161616 },
+          { "~res:/TestData/ImageSystemTest/rgba32323232.pvr", 32, 32, 6, 0, 1, PixelFormat::FORMAT_RGBA32323232 },
+          { "~res:/TestData/ImageSystemTest/dxt1.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
+          { "~res:/TestData/ImageSystemTest/dxt1a.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT1 },
+          { "~res:/TestData/ImageSystemTest/dxt3.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT3 },
+          { "~res:/TestData/ImageSystemTest/dxt5.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/dxt5nm.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/atcrgb.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGB },
+          { "~res:/TestData/ImageSystemTest/atcrgbae.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA },
+          { "~res:/TestData/ImageSystemTest/atcrgbai.dds", 32, 32, 6, 0, 1, PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA },
+          { "~res:/TestData/ImageSystemTest/pvr2_cube.pvr", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_PVR2 },
+          { "~res:/TestData/ImageSystemTest/dxt5_cube.dds", 32, 32, 6, 0, Texture::CUBE_FACE_COUNT, PixelFormat::FORMAT_DXT5 },
+          { "~res:/TestData/ImageSystemTest/pvr4_zeromip.pvr", 32, 32, 1, 0, 1, PixelFormat::FORMAT_PVR4 },
+          { "~res:/TestData/ImageSystemTest/dxt5_zeromip.dds", 32, 32, 1, 0, 1, PixelFormat::FORMAT_DXT5 },
         };
 
         for (const ISTLocal::TestData& td : testData)
@@ -337,7 +348,7 @@ DAVA_TESTCLASS (ImageSystemTest)
         }
     }
 
-    void AddGetCRCFromMetaData(const FilePath& sourceImagePath, Function<bool(const FilePath&)>addCrcFn, Function<uint32(const FilePath&)>getCrcFn)
+    void AddGetCRCFromMetaData(const FilePath& sourceImagePath, Function<bool(const FilePath&)> addCrcFn, Function<uint32(const FilePath&)> getCrcFn)
     {
         const FilePath outFolderPathname = "~doc:/TestData/ImageSystemTest/";
         ISTLocal::PrepareWorkingFolder(outFolderPathname);
@@ -355,7 +366,6 @@ DAVA_TESTCLASS (ImageSystemTest)
         TEST_VERIFY_WITH_MESSAGE(addCrcFn(savePath), errorMessage);
         TEST_VERIFY_WITH_MESSAGE(getCrcFn(savePath) == crc, errorMessage);
     }
-
 
     DAVA_TEST (CRCTest)
     {

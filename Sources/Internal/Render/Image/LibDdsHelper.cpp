@@ -11,19 +11,18 @@
 
 namespace DAVA
 {
-
 LibDdsHelper::LibDdsHelper()
-    : ImageFormatInterface(IMAGE_FORMAT_DDS, "DDS", { ".dds" }, 
-        { FORMAT_ATC_RGB, // supported pixel formats
-        FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
-        FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
-        FORMAT_DXT1,
-        FORMAT_REMOVED_DXT_1N,
-        FORMAT_DXT1A,
-        FORMAT_DXT3,
-        FORMAT_DXT5,
-        FORMAT_DXT5NM,
-        FORMAT_RGBA8888 })
+    : ImageFormatInterface(IMAGE_FORMAT_DDS, "DDS", { ".dds" },
+                           { FORMAT_ATC_RGB, // supported pixel formats
+                             FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
+                             FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+                             FORMAT_DXT1,
+                             FORMAT_REMOVED_DXT_1N,
+                             FORMAT_DXT1A,
+                             FORMAT_DXT3,
+                             FORMAT_DXT5,
+                             FORMAT_DXT5NM,
+                             FORMAT_RGBA8888 })
 {
 }
 
@@ -173,5 +172,4 @@ bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
 
     return false;
 }
-
 }

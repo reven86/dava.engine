@@ -6,7 +6,7 @@ namespace DAVA
 {
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
+
 //this code is from PowerVR SDK from PVRTTexture.h
 /*!****************************************************************************
 
@@ -603,6 +603,4 @@ struct MetaDataBlock
     
 
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
 }
-

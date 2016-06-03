@@ -24,7 +24,7 @@
 namespace DAVA
 {
 
-#pragma pack(push,4)
+#pragma pack(push, 4)
 
 struct PVRHeaderV3
 {

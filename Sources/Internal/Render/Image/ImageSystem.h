@@ -42,7 +42,6 @@ eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionF
 
 ImageInfo GetImageInfo(const FilePath& pathName);
 
-
 const Vector<String>& GetExtensionsFor(ImageFormat format);
 
 ImageFormat GetImageFormatForExtension(const String& extension);
@@ -57,4 +56,3 @@ uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams
 
 } //ImageSystem
 } //DAVA
-

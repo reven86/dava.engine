@@ -12,8 +12,8 @@ class ImageFormatInterface
 {
 public:
     ImageFormatInterface(ImageFormat imageFormat, const String& interfaceName, const Vector<String>& extensions, const Vector<PixelFormat>& pixelFormats);
-//     ImageFormatInterface(ImageFormatInterface &&other);
-//     ImageFormatInterface& operator=(ImageFormatInterface &&other);
+    //     ImageFormatInterface(ImageFormatInterface &&other);
+    //     ImageFormatInterface& operator=(ImageFormatInterface &&other);
 
     virtual ~ImageFormatInterface();
 
@@ -35,7 +35,6 @@ public:
     bool IsFileExtensionSupported(const String& extension) const;
 
 protected:
-
     virtual bool CanProcessFileInternal(const ScopedPtr<File>& file) const;
 
 private:
@@ -44,6 +43,4 @@ private:
     String interfaceName;
     ImageFormat imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
 };
-
 }
-

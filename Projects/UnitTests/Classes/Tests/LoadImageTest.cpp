@@ -145,4 +145,3 @@ DAVA_TESTCLASS (LoadImageTest)
     }
 #endif
 };
-

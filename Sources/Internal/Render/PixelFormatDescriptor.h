@@ -57,5 +57,4 @@ inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat 
 
     return bits / 8;
 }
-
 }

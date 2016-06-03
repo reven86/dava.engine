@@ -188,7 +188,7 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    
+
     const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     if (formatDescriptor.isCompressed == false)
     {
