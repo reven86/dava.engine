@@ -131,9 +131,9 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
-    QFile scrollBarStyle(":/QtTools/LightTheme.qss");
-    DVVERIFY(scrollBarStyle.open(QIODevice::ReadOnly));
-    QString styleSheetContent = scrollBarStyle.readAll();
+    QFile styleSheet(":/QtTools/LightTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
     qApp->setPalette(lightPalette);
     qApp->setStyleSheet(styleSheetContent);
@@ -170,9 +170,9 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
-    QFile scrollBarStyle(":/QtTools/DarkTheme.qss");
-    DVVERIFY(scrollBarStyle.open(QIODevice::ReadOnly));
-    QString styleSheetContent = scrollBarStyle.readAll();
+    QFile styleSheet(":/QtTools/DarkTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
     auto colorToString = [](const QColor& color)
     {
