@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
@@ -399,9 +370,9 @@ std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, b
     return std::unique_ptr<PVRFile>();
 }
 
-std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, bool readData /*= false*/)
+std::unique_ptr<PVRFile> ReadFile(const ScopedPtr<File>& file, bool readMetaData /*= false*/, bool readData /*= false*/)
 {
-    DVASSERT(file != nullptr);
+    DVASSERT(file);
     DVASSERT(file->GetPos() == 0);
 
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
@@ -448,12 +419,11 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
     return pvrFile;
 }
 
-std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
+std::unique_ptr<PVRFile> CreateHeader(const Vector<Image*>& imageSet)
 {
-    Image* zeroMip = imageSet[0];
-
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
 
+    Image* zeroMip = imageSet[0];
     pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
     pvrFile->header.u32ChannelType = GetPVRChannelType(zeroMip->format);
 
@@ -465,53 +435,15 @@ std::unique_ptr<PVRFile> GenerateHeader(const Vector<Image*>& imageSet)
     DVASSERT(zeroMip->cubeFaceID == Texture::INVALID_CUBEMAP_FACE);
 
     pvrFile->header.u32MIPMapCount = static_cast<uint32>(imageSet.size());
-
-    uint32 compressedDataSize = GetDataSize(imageSet);
-    pvrFile->compressedData.resize(compressedDataSize);
-
-    uint32 offset = 0;
-    for (const Image* image : imageSet)
-    {
-        //TODO: this code should be re-worked with texture refactoring
-        if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
-        {
-            ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
-            DVASSERT(savedImage->dataSize == image->dataSize);
-
-            if (image->format == PixelFormat::FORMAT_RGBA4444)
-            {
-                ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
-                convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
-            }
-            else if (image->format == PixelFormat::FORMAT_RGBA5551)
-            {
-                ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
-                convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
-            }
-
-            Memcpy(pvrFile->compressedData.data() + offset, savedImage->data, savedImage->dataSize);
-        }
-        else
-        {
-            Memcpy(pvrFile->compressedData.data() + offset, image->data, image->dataSize);
-        }
-        //END of TODO
-
-        offset += image->dataSize;
-
-        DVASSERT(image->format == zeroMip->format);
-    }
-
     return pvrFile;
 }
 
-std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageSet)
+std::unique_ptr<PVRFile> CreateCubeHeader(const Vector<Vector<Image*>>& imageSet)
 {
-    const Vector<Image*>& zeroFaceImageSet = imageSet[0];
-    Image* zeroMip = zeroFaceImageSet[0];
-
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
 
+    const Vector<Image*>& zeroFaceImageSet = imageSet[0];
+    Image* zeroMip = zeroFaceImageSet[0];
     pvrFile->header.u64PixelFormat = GetPVRFormatFromDAVA(zeroMip->format);
     pvrFile->header.u32ChannelType = GetPVRChannelType(zeroMip->format);
 
@@ -521,59 +453,18 @@ std::unique_ptr<PVRFile> GenerateCubeHeader(const Vector<Vector<Image*>>& imageS
     pvrFile->header.u32NumFaces = static_cast<uint32>(imageSet.size());
     pvrFile->header.u32MIPMapCount = static_cast<uint32>(zeroFaceImageSet.size());
 
-    uint32 compressedDataSize = GetDataSize(imageSet);
-    pvrFile->compressedData.resize(compressedDataSize);
-    uint8* compressedDataPtr = pvrFile->compressedData.data();
-    for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)
-    {
-        for (const Vector<Image*>& faceImageSet : imageSet)
-        {
-            Image* image = faceImageSet[mip];
-
-            //TODO: this code should be re-worked with texture refactoring
-            if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
-            {
-                ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
-                DVASSERT(savedImage->dataSize == image->dataSize);
-
-                if (image->format == PixelFormat::FORMAT_RGBA4444)
-                {
-                    ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
-                    convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
-                }
-                else if (image->format == PixelFormat::FORMAT_RGBA5551)
-                {
-                    ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
-                    convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
-                }
-
-                Memcpy(compressedDataPtr, savedImage->data, savedImage->dataSize);
-            }
-            else
-            {
-                Memcpy(compressedDataPtr, image->data, image->dataSize);
-            }
-            //END of TODO
-
-            compressedDataPtr += image->dataSize;
-        }
-    }
-
-    //    if(pvrFile->header.u32NumFaces > 1)
-    {
-        MetaDataBlock* cubeMetaBlock = new MetaDataBlock();
-        cubeMetaBlock->DevFOURCC = PVRTEX3_METADATAIDENT;
-        cubeMetaBlock->u32Key = METADATA_CUBE_KEY;
-        cubeMetaBlock->u32DataSize = METADATA_CUBE_SIZE;
-        cubeMetaBlock->Data = new uint8[METADATA_CUBE_SIZE];
-        Memcpy(cubeMetaBlock->Data, "XxYyZz", METADATA_CUBE_SIZE);
-        AddMetaData(*pvrFile, cubeMetaBlock);
-    }
+    MetaDataBlock* cubeMetaBlock = new MetaDataBlock();
+    cubeMetaBlock->DevFOURCC = PVRTEX3_METADATAIDENT;
+    cubeMetaBlock->u32Key = METADATA_CUBE_KEY;
+    cubeMetaBlock->u32DataSize = METADATA_CUBE_SIZE;
+    cubeMetaBlock->Data = new uint8[METADATA_CUBE_SIZE];
+    Memcpy(cubeMetaBlock->Data, "XxYyZz", METADATA_CUBE_SIZE);
+    AddMetaData(*pvrFile, cubeMetaBlock);
 
     return pvrFile;
 }
 
-bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
+bool LoadImages(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, true, false);
     if (!pvrFile)
@@ -704,35 +595,43 @@ bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)
     ScopedPtr<File> file(File::Create(pathname, File::CREATE | File::WRITE));
     if (file)
     {
-        uint32 written = file->Write(&pvrFile.header);
-        DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE);
-        DVASSERT(written == PVRFile::HEADER_SIZE);
-
-        for (MetaDataBlock *block : pvrFile.metaDatablocks)
-        {
-            file->Write(&block->DevFOURCC);
-            file->Write(&block->u32Key);
-            file->Write(&block->u32DataSize);
-            if (block->u32DataSize != 0)
-            {
-                file->Write(block->Data, block->u32DataSize);
-            }
-        }
-        
-        DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize);
-
-        if (!pvrFile.compressedData.empty())
-        {
-            written = file->Write(pvrFile.compressedData.data(), static_cast<uint32>(pvrFile.compressedData.size()));
-            DVASSERT(written == pvrFile.compressedData.size());
-            DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize + pvrFile.compressedData.size());
-        }
-        return true;
+        return WriteFile(file, pvrFile);
     }
 
     Logger::Error("Сan't open file: %s", pathname.GetStringValue().c_str());
     return false;
 }
+
+bool WriteFile(ScopedPtr<File>& file, const PVRFile& pvrFile)
+{
+    DVASSERT(file);
+
+    uint32 written = file->Write(&pvrFile.header);
+    DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE);
+    DVASSERT(written == PVRFile::HEADER_SIZE);
+
+    for (MetaDataBlock *block : pvrFile.metaDatablocks)
+    {
+        file->Write(&block->DevFOURCC);
+        file->Write(&block->u32Key);
+        file->Write(&block->u32DataSize);
+        if (block->u32DataSize != 0)
+        {
+            file->Write(block->Data, block->u32DataSize);
+        }
+    }
+
+    DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize);
+
+    if (!pvrFile.compressedData.empty())
+    {
+        written = file->Write(pvrFile.compressedData.data(), static_cast<uint32>(pvrFile.compressedData.size()));
+        DVASSERT(written == pvrFile.compressedData.size());
+        DVASSERT(file->GetPos() == PVRFile::HEADER_SIZE + pvrFile.header.u32MetaDataSize + pvrFile.compressedData.size());
+    }
+    return true;
+}
+
 
 bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC)
 {

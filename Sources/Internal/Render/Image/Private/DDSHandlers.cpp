@@ -502,7 +502,7 @@ public:
 
     bool IsSupportedFormat() const;
 
-    ScopedPtr<File> file;
+    const ScopedPtr<File> &file;
     dds::DDS_HEADER mainHeader;
     dds::DDS_HEADER_DXT10 extHeader;
     bool fileStoresTextureInD3DFormat = false;

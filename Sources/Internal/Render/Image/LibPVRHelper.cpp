@@ -1,5 +1,6 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Private/PVRFormatHelper.h"
 #include "Render/PixelFormatDescriptor.h"
@@ -107,11 +108,46 @@ eErrorCode LibPVRHelper::Save(const FilePath& fileName, const Vector<Image*>& im
         return eErrorCode::ERROR_WRITE_FAIL;
     }
 
-    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GenerateHeader(imageSet);
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::CreateHeader(imageSet);
     if (pvrFile)
     {
-        if (PVRFormatHelper::WriteFile(fileName, *pvrFile))
+        ScopedPtr<File> file(File::Create(fileName, File::CREATE | File::WRITE));
+        if (file && PVRFormatHelper::WriteFile(file, *pvrFile))
         {
+            for (const Image* image : imageSet)
+            {
+                uint32 written = 0;
+
+                //TODO: this code should be re-worked with texture refactoring
+                if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+                {
+                    ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
+                    DVASSERT(savedImage->dataSize == image->dataSize);
+
+                    if (image->format == PixelFormat::FORMAT_RGBA4444)
+                    {
+                        ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
+                        convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                    }
+                    else if (image->format == PixelFormat::FORMAT_RGBA5551)
+                    {
+                        ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
+                        convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                    }
+
+                    written = file->Write(savedImage->data, savedImage->dataSize);
+                }
+                else
+                {
+                    written = file->Write(image->data, image->dataSize);
+                }
+                //END of TODO
+
+                if (written != image->dataSize)
+                {
+                    return eErrorCode::ERROR_WRITE_FAIL;
+                }
+            }
             return eErrorCode::SUCCESS;
         }
     }
@@ -139,11 +175,52 @@ eErrorCode LibPVRHelper::SaveCubeMap(const FilePath& fileName, const Vector<Vect
         }
     }
 
-    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::GenerateCubeHeader(imageSet);
+    std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::CreateCubeHeader(imageSet);
     if (pvrFile)
     {
-        if (PVRFormatHelper::WriteFile(fileName, *pvrFile))
+        ScopedPtr<File> file(File::Create(fileName, File::CREATE | File::WRITE));
+        if (file && PVRFormatHelper::WriteFile(file, *pvrFile))
         {
+            for (uint32 mip = 0; mip < pvrFile->header.u32MIPMapCount; ++mip)
+            {
+                for (const Vector<Image*>& faceImageSet : imageSet)
+                {
+                    uint32 written = 0;
+
+                    Image* image = faceImageSet[mip];
+
+                    //TODO: this code should be re-worked with texture refactoring
+                    if (image->format == PixelFormat::FORMAT_RGBA4444 || image->format == PixelFormat::FORMAT_RGBA5551)
+                    {
+                        ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, image->format));
+                        DVASSERT(savedImage->dataSize == image->dataSize);
+
+                        if (image->format == PixelFormat::FORMAT_RGBA4444)
+                        {
+                            ConvertDirect<uint16, uint16, ConvertRGBA4444toABGR4444> convert;
+                            convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                        }
+                        else if (image->format == PixelFormat::FORMAT_RGBA5551)
+                        {
+                            ConvertDirect<uint16, uint16, ConvertRGBA5551toABGR1555> convert;
+                            convert(image->data, image->width, image->height, image->width * sizeof(uint16), savedImage->data);
+                        }
+
+                        written = file->Write(savedImage->data, savedImage->dataSize);
+                    }
+                    else
+                    {
+                        written = file->Write(image->data, image->dataSize);
+                    }
+                    //END of TODO
+
+                    if (written != image->dataSize)
+                    {
+                        return eErrorCode::ERROR_WRITE_FAIL;
+                    }
+                }
+            }
+
             return eErrorCode::SUCCESS;
         }
     }
