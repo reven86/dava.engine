@@ -1146,7 +1146,11 @@ bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 void TextFieldPlatformImpl::SetVisible(bool value)
 {
     objcWrapper->SetVisible(value);
-    UpdateRect(objcWrapper->davaText->GetRect());
+    if (!value)
+    {
+        // when we hide dava text field control, need update it, for move native control
+        UpdateRect(objcWrapper->davaText->GetRect());
+    }
 }
 
 void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
