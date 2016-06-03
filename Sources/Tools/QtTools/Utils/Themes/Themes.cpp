@@ -131,16 +131,9 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
-    QFile scrollBarStyle(":/QtTools/QScrollBarStyleSheet.txt");
+    QFile scrollBarStyle(":/QtTools/LightTheme.qss");
     DVVERIFY(scrollBarStyle.open(QIODevice::ReadOnly));
     QString styleSheetContent = scrollBarStyle.readAll();
-
-    styleSheetContent.append("QTabBar::tab { height: 20px; }");
-    styleSheetContent.append("QDockWidget::title{ background: #d5d5d5; }");
-    //workaround for expanded combobox interval
-    styleSheetContent.append("QComboBox{ combobox - popup: 0 }");
-    styleSheetContent.append("QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }");
-    styleSheetContent.append("QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }");
 
     qApp->setPalette(lightPalette);
     qApp->setStyleSheet(styleSheetContent);
@@ -177,22 +170,9 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
-    qApp->setPalette(darkPalette);
-
-    QString styleSheet = "QToolTip { color: #e0e0e0; background-color: #373737;}"
-                         "QTabBar::tab { height: 20px; }"
-                         "QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }"
-                         "QDockWidget::title { background: #454545; }"
-                         "QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }"
-                         // workaround for expanded combobox interval
-                         // "combobox-popup : 0" - force for QComboBox draw drop-down list below control
-                         // and not centre it by selected value
-                         "QComboBox{ combobox-popup: 0 }"
-                         "QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }"
-                         "QCheckBox::indicator:checked{ image: url(:/QtTools/Icons/checked-checkbox.png); }"
-                         "QCheckBox::indicator:unchecked{ image: url(:/QtTools/Icons/unchecked-checkbox.png); }"
-                         "QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }"
-                         "QAbstractItemView::indicator::unchecked { image: url(:/QtTools/Icons/unchecked-checkbox.png); }";
+    QFile scrollBarStyle(":/QtTools/DarkTheme.qss");
+    DVVERIFY(scrollBarStyle.open(QIODevice::ReadOnly));
+    QString styleSheetContent = scrollBarStyle.readAll();
 
     auto colorToString = [](const QColor& color)
     {
@@ -208,9 +188,10 @@ void SetupDarkTheme()
                           .
                           arg(colorToString(darkDisabledTextColor));
 
-    styleSheet.append(tabBarStyle);
+    styleSheetContent.append(tabBarStyle);
 
-    qApp->setStyleSheet(styleSheet);
+    qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
 const QString& GetCurrentThemeStr()

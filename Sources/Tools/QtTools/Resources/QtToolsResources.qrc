@@ -11,6 +11,7 @@
         <file>Icons/light-uparrow.png</file>
         <file>Icons/light-leftarrow.png</file>
         <file>Icons/light-rightarrow.png</file>
-        <file>QScrollBarStyleSheet.txt</file>
+        <file>LightTheme.qss</file>
+        <file>DarkTheme.qss</file>
     </qresource>
 </RCC>

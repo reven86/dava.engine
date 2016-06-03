@@ -1,3 +1,7 @@
+QTabBar::tab { height: 20px; }
+QDockWidget::title{ background: #d5d5d5; }
+QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }
+QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }
 QScrollBar:vertical
 {
     background:#B4B4B4;
