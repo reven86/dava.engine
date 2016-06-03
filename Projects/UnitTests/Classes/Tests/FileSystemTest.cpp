@@ -184,7 +184,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
 #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem* fs = FileSystem::Instance();
-        String externalDrive = "d:\\";
+        String externalDrive = "d:\\Temp";
         bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {

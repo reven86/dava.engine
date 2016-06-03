@@ -7,6 +7,8 @@
 #include "defines.h"
 #include "filemanager.h"
 #include "configdownloader.h"
+#include "errormessenger.h"
+
 #include <QSet>
 #include <QQueue>
 #include <QInputDialog>
@@ -83,12 +85,9 @@ bool VersionListComparator(const QString& left, const QString& right)
 };
 
 MainWindow::MainWindow(QWidget* parent)
-    :
-    QMainWindow(parent)
-    ,
-    ui(new Ui::MainWindow)
-    ,
-    appManager(0)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , appManager(0)
 {
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
@@ -117,7 +116,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     UpdateURLValue();
 
-    OnRefreshClicked();
+    //if run this method directly qApp->exec() will be called twice
+    QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -201,7 +201,7 @@ void MainWindow::OnRefreshClicked()
     if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
         return;
 
-    FileManager::Instance()->ClearTempDirectory();
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     ConfigDownloader downloader(appManager, networkManager, this);
     downloader.exec();
@@ -387,8 +387,9 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)
+            {
                 return;
-
+            }
             tasks.dequeue();
         }
         if (!tasks.isEmpty())

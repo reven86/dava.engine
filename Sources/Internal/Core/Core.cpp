@@ -23,6 +23,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "PackManager/PackManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
@@ -33,10 +34,6 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
-
-#if defined(__DAVAENGINE_STEAM__)
-#include "Platform/Steam.h"
-#endif
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -262,15 +259,13 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+    packManager.reset(new PackManager());
+
     new LocalNotificationController();
 
     RegisterDAVAClasses();
 
     new Net::NetCore();
-
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Init();
-#endif
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
@@ -314,9 +309,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Deinit();
-#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -328,6 +320,7 @@ void Core::ReleaseSingletons()
 
     LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
+    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -676,6 +669,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        packManager->Update();
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
         JobManager::Instance()->Update();
@@ -968,6 +962,12 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+PackManager& Core::GetPackManager()
+{
+    DVASSERT(packManager);
+    return *packManager;
 }
 
 } // namespace DAVA
