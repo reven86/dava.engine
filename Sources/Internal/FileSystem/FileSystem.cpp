@@ -321,6 +321,34 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     return fileCount;
 }
 
+Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, bool isRecursive)
+{
+    ScopedPtr<FileList> fileList(new FileList(path));
+    Vector<FilePath> result;
+
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsNavigationDirectory(i))
+        {
+            continue;
+        }
+        else if (fileList->IsDirectory(i))
+        {
+            if (isRecursive)
+            {
+                Vector<FilePath> subDirList = EnumerateFilesInDirectory(fileList->GetPathname(i));
+                std::move(subDirList.begin(), subDirList.end(), std::back_inserter(result));
+            }
+        }
+        else
+        {
+            result.push_back(fileList->GetPathname(i));
+        }
+    }
+
+    return result;
+}
+
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
     return File::CreateFromSystemPath(frameworkPath, attributes);

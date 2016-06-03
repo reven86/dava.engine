@@ -545,6 +545,7 @@ void Core::SystemAppFinished()
 {
     Logger::Info("Core::SystemAppFinished in");
 
+    systemAppFinished.Emit();
     if (core != nullptr)
     {
         #if TRACER_ENABLED

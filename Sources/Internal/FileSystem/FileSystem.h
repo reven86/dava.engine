@@ -58,6 +58,14 @@ public:
 	*/
     virtual uint32 DeleteDirectoryFiles(const FilePath& path, bool isRecursive = false);
 
+    /*
+		\brief Enumerate all files in specific directory
+        \param[in] path full path to the directory you want to delete
+		\param[in] isRecursive if true go into child directories and enumarate files there also, true by default
+		\returns list of files
+	*/
+    virtual Vector<FilePath> EnumerateFilesInDirectory(const FilePath& path, bool isRecursive = true);
+
     enum eCreateDirectoryResult
     {
         DIRECTORY_CANT_CREATE = 0,
