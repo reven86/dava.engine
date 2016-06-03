@@ -12,6 +12,8 @@
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
+#include "UI/Input/UIInputSystem.h"
+#include "UI/UIControlSystem.h"
 
 using namespace DAVA;
 
@@ -255,5 +257,6 @@ void EditorSystemsManager::RefreshRootControls()
     {
         editingRootControls = newRootControls;
         EditingRootControlsChanged.Emit(editingRootControls);
+        UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
     }
 }
