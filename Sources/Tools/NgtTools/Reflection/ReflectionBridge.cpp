@@ -33,7 +33,7 @@ public:
         {
             int value = 0;
             if (desc.enumMap->GetValue(i, value))
-                enumMap->insert(std::make_pair(i, desc.enumMap->ToString(value)));
+                enumMap->insert(std::make_pair(static_cast<int>(i), desc.enumMap->ToString(value)));
         }
 
         return Collection(*enumMap);
@@ -163,7 +163,7 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
 
     const DAVA::InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
-        metaBase = metaBase + MetaEnum(new EnumGenerator(memberInsp));
+        metaBase = metaBase + MetaEnum(IEnumGeneratorPtr(new EnumGenerator(memberInsp)));
 
     const DAVA::MetaInfo* metaType = member->Type();
 

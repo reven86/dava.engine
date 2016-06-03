@@ -46,6 +46,10 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     {
         String relative = filename.GetRelativePathname("~res:/");
 
+        // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
+        // from DB with all files, then check if such pack mounted and from
+        // mountedPackIndex find by name archive with file or skip to next step
+
         Vector<uint8> contentAndSize;
         for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
         {
@@ -136,6 +140,10 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         if (attributes & File::WRITE)
         {
             file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+#ifdef __DAVAENGINE_DEBUG__
+            String p = filePath.GetAbsolutePathname();
+            Logger::FrameworkDebug("can't open file %s: %s", p.c_str(), std::strerror(errno));
+#endif
         }
         else
         {

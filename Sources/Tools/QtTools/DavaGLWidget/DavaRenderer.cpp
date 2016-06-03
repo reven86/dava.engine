@@ -134,10 +134,7 @@ void DavaRenderer::paint()
     mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
     mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
 
-    if (DAVA::DVAssertMessage::IsHidden())
-    {
-        DAVA::QtLayer::Instance()->ProcessFrame();
-    }
+    DAVA::QtLayer::Instance()->ProcessFrame();
 }
 
 RenderContextGuard::RenderContextGuard()

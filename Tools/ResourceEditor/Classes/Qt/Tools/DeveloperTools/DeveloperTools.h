@@ -14,7 +14,6 @@ public slots:
 
     void OnDebugFunctionsGridCopy();
     void OnDebugCreateTestSkinnedObject(); //creates
-    void OnSpyWidget();
     void OnImageSplitterNormals();
     void OnReplaceTextureMipmap();
     void OnToggleLandscapeInstancing();

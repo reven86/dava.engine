@@ -12,7 +12,6 @@
 
 #include "Platform/SystemTimer.h"
 
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include <QVBoxLayout>

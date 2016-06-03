@@ -29,3 +29,11 @@ void CommandNotifyProvider::EmitCleanChanged(bool clean)
         curNotify->CleanChanged(clean);
     }
 }
+
+void CommandNotifyProvider::EmitUndoRedoStateChanged()
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->UndoRedoStateChanged();
+    }
+}

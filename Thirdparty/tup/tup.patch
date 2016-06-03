@@ -1,0 +1,150 @@
+diff --git a/Tupfile b/Tupfile
+index a24139b..fab8fa5 100644
+--- a/Tupfile
++++ b/Tupfile
+@@ -1,5 +1,6 @@
+ include_rules
+ 
++ifndef WIN_HOST
+ client_objs += src/tup/vardict.o
+ client_objs += src/tup/send_event.o
+ client_objs += src/tup/flock/fcntl.o
+@@ -26,6 +27,7 @@ endif
+ LDFLAGS += `pkg-config fuse --libs`
+ LDFLAGS += -lm
+ : src/tup/tup/main.o libtup.a src/lua/liblua.a |> ^ LINK tup^ version=`git describe`; echo "const char *tup_version(void) {return \"$version\";}" | $(CC) -x c -c - -o tup-version.o $(CFLAGS) -Wno-missing-prototypes; $(CC) %f tup-version.o -o tup -lpthread $(LDFLAGS) $(suid) |> tup tup-version.o
++endif
+ 
+ ifneq (@(TUP_MINGW),)
+ : src/dllinject/*.omingw |> ^ MINGWLINK %o^ @(TUP_MINGW)-gcc -shared -static-libgcc %f -lws2_32 -lpsapi -lshlwapi -o %o |> tup-dllinject.dll
+diff --git a/Tuprules.tup b/Tuprules.tup
+index a23ea8e..c820ee8 100644
+--- a/Tuprules.tup
++++ b/Tuprules.tup
+@@ -44,7 +44,7 @@ MINGWCFLAGS += -I$(TUP_CWD)/src/compat/win32
+ MINGWCFLAGS += -D_GNU_SOURCE
+ 
+ # No symlinks on windows
+-MINGWCFLAGS += -D'S_ISLNK(a)=0'
++MINGWCFLAGS += -DS_ISLNK(a)=0
+ 
+ # No sig_atomic_t on windows
+ MINGWCFLAGS += -Dsig_atomic_t=int
+@@ -68,9 +68,11 @@ ifeq (@(TUP_MINGW),)
+ else
+ !mingwcc = |> ^ MINGWCC %f^ @(TUP_MINGW)-gcc -c %f -o %o $(CFLAGS) $(CFLAGS_%f) $(MINGWCFLAGS) |> %B.omingw
+ !mingwcc32 = |> ^ MINGW32CC %f^ @(TUP_MINGW32)-gcc -c %f -o %o $(CFLAGS) $(CFLAGS_%f) $(MINGWCFLAGS) |> %B.omingw32
+-!mingwar = |> ^ MINGWAR %o^ @(TUP_MINGW)-ar crs %o %f |>
++!mingwar = |> ^ MINGWAR %o^ @(TUP_MINGW)-gcc-ar crs %o %f |>
+ endif
+ 
++luaexe = lua
++
+ TUP_MONITOR = null
+ TUP_SUID_GROUP = root
+ include @(TUP_PLATFORM).tup
+diff --git a/src/lua/Tupfile b/src/lua/Tupfile
+index b483b97..7d0f10d 100644
+--- a/src/lua/Tupfile
++++ b/src/lua/Tupfile
+@@ -46,4 +46,4 @@ CFLAGS += -w
+ : foreach lua.c |> !cc |>
+ 
+ LDFLAGS += -lm
+-: lua.o liblua.a |> !ld |> lua
++: lua.o liblua.a |> !ld |> $(luaexe)
+diff --git a/src/luabuiltin/Tupfile b/src/luabuiltin/Tupfile
+index 3913fcf..26a39e2 100644
+--- a/src/luabuiltin/Tupfile
++++ b/src/luabuiltin/Tupfile
+@@ -1,2 +1,2 @@
+ include_rules
+-: builtin.lua | ../lua/lua |> ../lua/lua xxd.lua %f %o |> luabuiltin.h
++: builtin.lua | ../lua/$(luaexe) |> ../lua/$(luaexe) xxd.lua %f %o |> luabuiltin.h
+diff --git a/src/tup/Tupfile b/src/tup/Tupfile
+index 9c57670..61be019 100644
+--- a/src/tup/Tupfile
++++ b/src/tup/Tupfile
+@@ -1,3 +1,5 @@
+ include_rules
++ifndef WIN_HOST
+ : foreach *.c | ../luabuiltin/luabuiltin.h |> !cc |>
++endif
+ : foreach *.c | ../luabuiltin/luabuiltin.h |> !mingwcc |>
+diff --git a/src/tup/flock/Tupfile b/src/tup/flock/Tupfile
+index 143a5cb..ddb7321 100644
+--- a/src/tup/flock/Tupfile
++++ b/src/tup/flock/Tupfile
+@@ -1,4 +1,6 @@
+ include_rules
+ 
++ifndef WIN_HOST
+ : foreach fcntl.c |> !cc |>
++endif
+ : foreach lock_file.c |> !mingwcc |>
+diff --git a/src/tup/luaparser.c b/src/tup/luaparser.c
+index 6b64468..a3edbd0 100644
+--- a/src/tup/luaparser.c
++++ b/src/tup/luaparser.c
+@@ -773,6 +773,7 @@ int parse_lua_tupfile(struct tupfile *tf, struct buf *b, const char *name)
+ 		 * tracebacks for errors can be formatted nicely
+ 		 */
+ 		luaL_requiref(ls, "_G", luaopen_base, 1); lua_pop(ls, 1);
++		luaL_requiref(ls, LUA_LOADLIBNAME, luaopen_package, 1); lua_pop(ls, 1);
+ 		luaL_requiref(ls, LUA_TABLIBNAME, luaopen_table, 1); lua_pop(ls, 1);
+ 		luaL_requiref(ls, LUA_STRLIBNAME, luaopen_string, 1); lua_pop(ls, 1);
+ 		luaL_requiref(ls, LUA_BITLIBNAME, luaopen_bit32, 1); lua_pop(ls, 1);
+@@ -782,7 +783,7 @@ int parse_lua_tupfile(struct tupfile *tf, struct buf *b, const char *name)
+ 		lua_pushnil(ls); lua_setglobal(ls, "dofile");
+ 		lua_pushnil(ls); lua_setglobal(ls, "loadfile");
+ 		lua_pushnil(ls); lua_setglobal(ls, "load");
+-		lua_pushnil(ls); lua_setglobal(ls, "require");
++		//lua_pushnil(ls); lua_setglobal(ls, "require");
+ 
+ 		/* Load lua built-in lua helper functions from luabuiltin.h */
+ 		lua_getglobal(ls, "debug");
+diff --git a/src/tup/monitor/Tupfile b/src/tup/monitor/Tupfile
+index 9b1dc30..575846d 100644
+--- a/src/tup/monitor/Tupfile
++++ b/src/tup/monitor/Tupfile
+@@ -1,4 +1,6 @@
+ include_rules
+ 
++ifndef WIN_HOST
+ : $(TUP_MONITOR).c |> !cc |>
++endif
+ : null.c |> !mingwcc |>
+diff --git a/src/tup/server/Tupfile b/src/tup/server/Tupfile
+index dcaf166..01f4089 100644
+--- a/src/tup/server/Tupfile
++++ b/src/tup/server/Tupfile
+@@ -1,8 +1,10 @@
+ include_rules
+ 
++ifndef WIN_HOST
+ fuse_cflags = `pkg-config fuse --cflags`
+ CFLAGS_fuse_server.c += $(fuse_cflags)
+ CFLAGS_fuse_fs.c += $(fuse_cflags)
+-
+ : foreach fuse_server.c fuse_fs.c master_fork.c |> !cc |>
++endif
++
+ : windepfile.c |> !mingwcc |>
+diff --git a/src/tup/tup/Tupfile b/src/tup/tup/Tupfile
+index f53cc2a..c499582 100644
+--- a/src/tup/tup/Tupfile
++++ b/src/tup/tup/Tupfile
+@@ -1,3 +1,5 @@
+ include_rules
++ifndef WIN_HOST
+ : foreach *.c |> !cc |>
++endif
+ : foreach *.c |> !mingwcc |>
+diff --git a/win32.tup b/win32.tup
+new file mode 100644
+index 0000000..8c75821
+--- /dev/null
++++ b/win32.tup
+@@ -0,0 +1,2 @@
++CFLAGS += -DPATH_MAX=4096
++luaexe = lua.exe
