@@ -9,7 +9,7 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
                                  const FilePath& localPacksDir_,
                                  const FilePath& readOnlyPacksDir_,
                                  const String& remotePacksURL_,
-                                 const String& packUrlGpu,
+                                 const String& packsUrlGpu_,
                                  Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal,
                                  Signal<const PackManager::IRequest&>& signal2)
 {
@@ -17,6 +17,7 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     localPacksDir = localPacksDir_;
     readOnlyPacksDir = readOnlyPacksDir_;
     packsUrlCommon = remotePacksURL_;
+    packsUrlGpu = packsUrlGpu_;
     requestManager.reset(new RequestManager(*this));
 
     onPackChange = &signal;

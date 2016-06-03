@@ -77,8 +77,9 @@ void PackRequest::StartLoadingHashFile()
 
     // build url to pack_name_crc32_file
 
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
-    String url = packManager->GetRemotePacksURL() + subRequest.pack->name + RequestManager::hashPostfix;
+    PackManager::Pack& pack = *subRequest.pack;
+    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + pack.name + RequestManager::hashPostfix;
+    String url = packManager->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::hashPostfix;
 
     // start downloading file
 
@@ -202,8 +203,10 @@ void PackRequest::StartLoadingPackFile()
 
     // build url to pack file and build filePath to pack file
 
-    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
-    String url = packManager->GetRemotePacksURL() + subRequest.pack->name + RequestManager::packPostfix;
+    PackManager::Pack& pack = *subRequest.pack;
+
+    FilePath packPath = packManager->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+    String url = packManager->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::packPostfix;
 
     // start downloading
 
@@ -213,7 +216,6 @@ void PackRequest::StartLoadingPackFile()
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
 
-    PackManager::Pack& pack = *subRequest.pack;
     pack.state = PackManager::Pack::Status::Downloading;
 
     packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);

@@ -106,7 +106,7 @@ public:
     Signal<const IRequest&> onRequestProgressChanged;
 
     const FilePath& GetLocalPacksDirectory() const;
-    const String& GetRemotePacksUrl() const;
+    const String& GetRemotePacksUrl(bool isGPU) const;
 
 private:
     std::unique_ptr<PackManagerImpl> impl;

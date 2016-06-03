@@ -62,6 +62,7 @@ public:
 
 private:
     void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
+    const String GetUrl(bool isGpu);
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
 
     void StartLoadingHashFile();

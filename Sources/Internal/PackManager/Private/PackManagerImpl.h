@@ -44,7 +44,7 @@ public:
 
     const FilePath& GetLocalPacksDir() const;
 
-    const String& GetRemotePacksURL() const;
+    const String& GetRemotePacksURL(bool isGpu) const;
 
     Signal<const PackManager::Pack&, PackManager::Pack::Change>* onPackChange;
     Signal<const PackManager::IRequest&>* onRequestChange;
@@ -54,6 +54,7 @@ private:
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
     String packsUrlCommon;
+    String packsUrlGpu;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
@@ -132,8 +133,12 @@ inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
     return localPacksDir;
 }
 
-inline const String& PackManagerImpl::GetRemotePacksURL() const
+inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
 {
+    if (isGpu)
+    {
+        return packsUrlGpu;
+    }
     return packsUrlCommon;
 }
 
