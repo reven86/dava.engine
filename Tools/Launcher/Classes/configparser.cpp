@@ -12,7 +12,6 @@
 
 namespace ConfigParser_local
 {
-
 bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
 {
     QJsonObject launcherObject = value.toObject();
