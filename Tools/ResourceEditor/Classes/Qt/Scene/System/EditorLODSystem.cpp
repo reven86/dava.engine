@@ -14,6 +14,7 @@
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "Main/Guards.h"
 
