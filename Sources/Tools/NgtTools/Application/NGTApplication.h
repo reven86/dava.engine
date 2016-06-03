@@ -1,12 +1,11 @@
-#ifndef __QTTOOLS_NGTAPPLICATION_H__
-#define __QTTOOLS_NGTAPPLICATION_H__
+#pragma once
 
 #include "NGTCmdLineParser.h"
 
 #include "Base/BaseTypes.h"
 
-#include "core_generic_plugin_manager/generic_plugin_manager.hpp"
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
+#include <core_generic_plugin_manager/generic_plugin_manager.hpp>
+#include <core_generic_plugin/interfaces/i_component_context.hpp>
 
 class QMainWindow;
 namespace NGTLayer
@@ -23,7 +22,12 @@ public:
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
-    virtual void OnPostLoadPugins(){};
+    virtual void OnPostLoadPugins()
+    {
+    }
+    virtual void OnPreUnloadPlugins()
+    {
+    }
 
 private:
     DAVA::WideString GetPluginsFolder() const;
@@ -33,5 +37,3 @@ private:
     NGTCmdLineParser commandLineParser;
 };
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTAPPLICATION_H__
