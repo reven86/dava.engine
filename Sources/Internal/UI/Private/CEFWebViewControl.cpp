@@ -318,27 +318,21 @@ eKeyModifiers GetKeyModifier()
             switch (keyIter)
             {
             case DAVA::Key::LSHIFT:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::SHIFT_DOWN);
                 break;
             case DAVA::Key::RSHIFT:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::SHIFT_DOWN);
                 break;
             case DAVA::Key::LCTRL:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::CONTROL_DOWN);
                 break;
             case DAVA::Key::RCTRL:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::CONTROL_DOWN);
                 break;
             case DAVA::Key::LALT:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_LEFT);
                 modifier |= static_cast<int32>(eKeyModifiers::ALT_DOWN);
                 break;
             case DAVA::Key::RALT:
-                //                 modifier |= static_cast<int32>(eKeyModifiers::IS_RIGHT);
                 modifier |= static_cast<int32>(eKeyModifiers::ALT_DOWN);
                 break;
             case DAVA::Key::CAPSLOCK:
@@ -474,7 +468,6 @@ int32 GetCefKeyType(UIEvent* input)
     {
     case UIEvent::Phase::KEY_DOWN:
         keyType = cef_key_event_type_t::KEYEVENT_RAWKEYDOWN;
-        //         keyType = cef_key_event_type_t::KEYEVENT_KEYDOWN;
         break;
     case UIEvent::Phase::KEY_DOWN_REPEAT:
         break;
