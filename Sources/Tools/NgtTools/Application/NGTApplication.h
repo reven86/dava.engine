@@ -33,7 +33,7 @@ protected:
 
 private:
     DAVA::WideString GetPluginsFolder() const;
-    void OnMainWindowClosed(const IWindow* sender, const IWindow::CloseEventArgs& args);
+    void OnMainWindowClosed();
 
 private:
     GenericPluginManager pluginManager;
