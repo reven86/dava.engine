@@ -874,21 +874,24 @@ void VegetationRenderObject::RestoreRenderData()
 #if defined(__DAVAENGINE_IPHONE__)
     DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
 #endif
-    if (!renderData)
+
+    if (renderData == nullptr)
         return;
 
-    if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    if ((vertexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreVertexBuffer(vertexBuffer))
     {
         const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
         uint32 vertexBufferSize = static_cast<uint32>(vertexData.size() * sizeof(VegetationVertex));
         rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
     }
-    if (rhi::NeedRestoreIndexBuffer(indexBuffer))
+
+    if ((indexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreIndexBuffer(indexBuffer))
     {
         const Vector<VegetationIndex>& indexData = renderData->GetIndices();
         uint32 indexBufferSize = static_cast<uint32>(indexData.size() * sizeof(VegetationIndex));
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
     }
+
     if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
     {
         uint32 hmSize = uint32(heightmap->Size());

@@ -6,7 +6,7 @@ project               ( Launcher )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
-find_package          ( QT5 REQUIRED  COMPONENTS Network WebKitWidgets)
+find_package          ( QT5 REQUIRED  COMPONENTS Network )
 
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
 
@@ -37,7 +37,7 @@ define_source_folders          ( SRC_ROOT "Classes"  )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
 
 if ( MACOS )
-	set( MACOS_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
+	set( APP_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
 endif ()
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
@@ -54,8 +54,22 @@ setup_main_executable()
 
 if( WIN32 )
 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+#   OutDir is a MSVC macro variable
     COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir)
     COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir)
+    
+    #this command is deprecated. Remove it after 2017 plz 
+    COMMAND if $(ConfigurationName) == Release ${CMAKE_COMMAND} -E copy $(OutDir)/platforms/qwindows.dll $(OutDir)
 )    
 endif ()
+
+#create package info for users, which install launcher at the first time
+if (WIN32 AND DEPLOY)
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/createPackageInfo.py"
+            "${DEPLOY_DIR}"
+        )
+endif()
+
+
 

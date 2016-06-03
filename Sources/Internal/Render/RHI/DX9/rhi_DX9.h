@@ -94,6 +94,7 @@ void SetupDispatch(Dispatch* dispatch);
 namespace CommandBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
+void BlockNonRenderThreads();
 }
 
 

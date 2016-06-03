@@ -1,5 +1,4 @@
-#ifndef __QTTOOLS_NGTCOLLECTIONSIMPL_H__
-#define __QTTOOLS_NGTCOLLECTIONSIMPL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -21,7 +20,7 @@ class NGTCollection : public CollectionImplBase
 public:
     NGTCollection(void* object, const DAVA::InspColl* collectionImpl);
 
-    bool empty() const override;
+    bool empty() const;
     size_t size() const override;
 
     CollectionIteratorImplPtr begin() override;
@@ -35,18 +34,9 @@ public:
 
     const TypeId& keyType() const override;
     const TypeId& valueType() const override;
-
     const TypeId& containerType() const override;
-    void* containerData() const override;
-
-    bool isMapping() const override
-    {
-        return false;
-    }
-    bool canResize() const override
-    {
-        return false;
-    }
+    const void* container() const override;
+    int flags() const override;
 
 private:
     void* object;
@@ -63,7 +53,7 @@ class NGTKeyedArchiveImpl : public CollectionImplBase
 public:
     NGTKeyedArchiveImpl(DAVA::KeyedArchive* keyedArchive);
 
-    bool empty() const override;
+    bool empty() const;
     size_t size() const override;
 
     CollectionIteratorImplPtr begin() override;
@@ -76,9 +66,8 @@ public:
     const TypeId& keyType() const override;
     const TypeId& valueType() const override;
     const TypeId& containerType() const override;
-    void* containerData() const override;
-    bool isMapping() const override;
-    bool canResize() const override;
+    const void* container() const override;
+    int flags() const override;
 
 private:
     DAVA::KeyedArchive* archive;
@@ -88,5 +77,3 @@ private:
 };
 
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTCOLLECTIONSIMPL_H__

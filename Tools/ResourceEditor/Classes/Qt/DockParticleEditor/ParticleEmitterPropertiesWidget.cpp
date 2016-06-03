@@ -1,4 +1,5 @@
 #include "ParticleEmitterPropertiesWidget.h"
+#include "Commands2/Base/CommandBatch.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/TransformCommand.h"
 #include "Qt/Scene/SceneSignals.h"
