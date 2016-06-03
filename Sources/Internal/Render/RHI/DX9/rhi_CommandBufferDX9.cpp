@@ -54,8 +54,8 @@ static std::atomic<bool> _DX9_ResetPending = false;
 
 static DAVA::Thread::Id _DX9_ThreadId = 0;
 
-static DAVA::AutoResetEvent _DX9_FramePreparedEvent(false, 400);
-static DAVA::AutoResetEvent _DX9_FrameDoneEvent(false, 400);
+HANDLE _DX9_FramePreparedEvent;
+HANDLE _DX9_FrameDoneEvent;
 
 //------------------------------------------------------------------------------
 
@@ -1183,23 +1183,21 @@ dx9_Present(Handle sync)
         }
         _DX9_FrameSync.Unlock();
 
-        _DX9_FramePreparedEvent.Signal();
+        SetEvent(_DX9_FramePreparedEvent);
 
         size_t frame_cnt = 0;
 
-        do
+        for (;;)
         {
             _DX9_FrameSync.Lock();
             frame_cnt = _DX9_Frame.size();
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _DX9_FrameSync.Unlock();
 
-            if (frame_cnt >= _DX9_RenderThreadFrameCount)
-            {
-                _DX9_FrameDoneEvent.Wait();
-            }
+            if (frame_cnt < _DX9_RenderThreadFrameCount)
+                break;
 
-        } while (frame_cnt >= _DX9_RenderThreadFrameCount);
+            WaitForSingleObject(_DX9_FrameDoneEvent, INFINITE);
+        }
     }
     else
     {
@@ -1752,7 +1750,7 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 
             if (!executed)
             {
-                _DX9_FramePreparedEvent.Signal();
+                SetEvent(_DX9_FramePreparedEvent);
             }
 
         } while (!executed);
@@ -1765,6 +1763,9 @@ static void
 _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
 {
     _DX9_ThreadId = DAVA::Thread::GetCurrentId();
+    _DX9_FramePreparedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    _DX9_FrameDoneEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
     _InitDX9();
 
     _DX9_RenderThreadStartedSync.Post();
@@ -1793,12 +1794,15 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         }
         else
         {
-            _DX9_FramePreparedEvent.Wait();
+            WaitForSingleObject(_DX9_FramePreparedEvent, INFINITE);
         }
 
-        _DX9_FrameDoneEvent.Signal();
+        SetEvent(_DX9_FrameDoneEvent);
     }
+
     Trace("RHI render-thread stopped\n");
+    CloseHandle(_DX9_FramePreparedEvent);
+    CloseHandle(_DX9_FrameDoneEvent);
 }
 
 void InitializeRenderThreadDX9(uint32 frameCount)
@@ -1826,7 +1830,7 @@ void UninitializeRenderThreadDX9()
     if (_DX9_RenderThreadFrameCount)
     {
         _DX9_RenderThreadRunning = false;
-        _DX9_FramePreparedEvent.Signal();
+        SetEvent(_DX9_FramePreparedEvent);
         _DX9_RenderThread->Join();
     }
 }
