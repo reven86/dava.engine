@@ -1,5 +1,4 @@
-#ifndef __ARCHIVE_UNPACK_TOOL_H__
-#define __ARCHIVE_UNPACK_TOOL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
@@ -22,5 +21,3 @@ private:
     DAVA::FilePath packFilename;
 };
 
-
-#endif // __ARCHIVE_UNPACK_TOOL_H__

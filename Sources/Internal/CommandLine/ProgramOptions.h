@@ -23,7 +23,6 @@ public:
     bool Parse(uint32 argc, char* argv[]);
     bool Parse(const Vector<String>& commandLine);
     String GetUsageString() const;
-    void PrintUsage() const;
 
 private:
     bool ParseOption(size_type& argIndex, const Vector<String>& commandLine);

@@ -1,5 +1,4 @@
-#ifndef __COMMAND_TOOL_MANAGER_H__
-#define __COMMAND_TOOL_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "CommandLine/ProgramOptions.h"
@@ -28,4 +27,3 @@ private:
     DAVA::ProgramOptions helpOption;
 };
 
-#endif // __COMMAND_TOOL_MANAGER_H__

@@ -1,5 +1,4 @@
-#ifndef __RESOURCE_ARCHIVE_TOOL_H__
-#define __RESOURCE_ARCHIVE_TOOL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "CommandLine/ProgramOptions.h"
@@ -31,4 +30,3 @@ protected:
     DAVA::ProgramOptions options;
 };
 
-#endif // __RESOURCE_ARCHIVE_TOOL_H__

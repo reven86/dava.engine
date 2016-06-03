@@ -218,11 +218,6 @@ bool ProgramOptions::ParseOption(size_type& argIndex, const Vector<String>& argv
     return false;
 }
 
-void ProgramOptions::PrintUsage() const
-{
-    Logger::Info("%s", GetUsageString().c_str());
-}
-
 String ProgramOptions::GetUsageString() const
 {
     std::stringstream ss;

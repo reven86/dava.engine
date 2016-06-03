@@ -16,7 +16,7 @@ enum ResourceArchiverResult : int
     // archive format errors
     ERROR_CANT_OPEN_ARCHIVE = -30,
     ERROR_CANT_EXTRACT_FILE = -31,
-    ERROR_EMPTY_ARCHIVE = 32,
+    ERROR_EMPTY_ARCHIVE = -32,
 
     // program errors
     ERROR_INTERNAL = -40,

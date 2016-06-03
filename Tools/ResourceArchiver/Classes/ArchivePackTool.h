@@ -1,5 +1,4 @@
-#ifndef __ARCHIVE_PACK_TOOL_H__
-#define __ARCHIVE_PACK_TOOL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
@@ -42,5 +41,3 @@ private:
     Source source = Source::Unknown;
 };
 
-
-#endif // __ARCHIVE_PACK_TOOL_H__

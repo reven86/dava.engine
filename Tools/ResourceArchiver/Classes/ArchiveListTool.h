@@ -1,5 +1,4 @@
-#ifndef __ARCHIVE_LIST_TOOL_H__
-#define __ARCHIVE_LIST_TOOL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
@@ -18,5 +17,3 @@ private:
     DAVA::FilePath packFilePath;
 };
 
-
-#endif // __ARCHIVE_LIST_TOOL_H__
