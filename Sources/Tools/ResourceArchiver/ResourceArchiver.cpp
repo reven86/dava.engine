@@ -272,9 +272,9 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
-Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHiddenFiles)
+bool CollectFiles(const Vector<String>& sources, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
-    Vector<CollectedFile> collectedFiles;
+    collectedFiles.clear();
 
     for (String source : sources)
     {
@@ -294,10 +294,44 @@ Vector<CollectedFile> CollectFiles(const Vector<String>& sources, bool addHidden
 
     std::stable_sort(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
                      {
-                         return std::strcmp(left.archivePath.c_str(), right.archivePath.c_str()) < 0;
+                         return left.archivePath < right.archivePath;
                      });
 
-    return collectedFiles;
+    // removing duplicate files
+    auto pointerAtDuplicates = std::unique(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
+                     {
+                         if (left.absPath == right.absPath)
+                         {
+                             Logger::Warning("Skipping duplicate %s", left.absPath.GetAbsolutePathname().c_str());
+                             return true;
+                         }
+                         else
+                         {
+                             return false;
+                         }
+                     });
+    collectedFiles.erase(pointerAtDuplicates, collectedFiles.end());
+
+    // check colliding files (they are different but have same archivePath and thus one will rewrite another during unpack)
+    pointerAtDuplicates = std::unique(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
+    {
+        if (left.archivePath == right.archivePath)
+        {
+            Logger::Error("'%s' and '%s' will be having the same path '%s' in archive", 
+                left.absPath.GetAbsolutePathname().c_str(), right.absPath.GetAbsolutePathname().c_str(), right.archivePath.c_str());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    });
+    if (pointerAtDuplicates != collectedFiles.end())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 const Compressor* GetCompressor(Compressor::Type compressorType)
@@ -450,7 +484,6 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     }
     else
     {
-        Logger::Error("Packing failed");
         if (!FileSystem::Instance()->DeleteFile(archivePath))
         {
             Logger::Error("Can't delete %s", archivePath.GetAbsolutePathname().c_str());
@@ -461,7 +494,13 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
 bool CreateArchive(const Params& params)
 {
-    Vector<CollectedFile> collectedFiles = CollectFiles(params.sourcesList, params.addHiddenFiles);
+    Vector<CollectedFile> collectedFiles;
+    if (false == CollectFiles(params.sourcesList, params.addHiddenFiles, collectedFiles))
+    {
+        Logger::Error("Collecting files error");
+        return false;
+    }
+
     if (collectedFiles.empty())
     {
         Logger::Error("No input files for pack");
