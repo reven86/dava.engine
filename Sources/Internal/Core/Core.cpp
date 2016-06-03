@@ -23,6 +23,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "PackManager/PackManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
@@ -258,6 +259,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+    packManager.reset(new PackManager());
+
     new LocalNotificationController();
 
     RegisterDAVAClasses();
@@ -317,6 +320,7 @@ void Core::ReleaseSingletons()
 
     LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
+    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -665,6 +669,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        packManager->Update();
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
         JobManager::Instance()->Update();
@@ -957,6 +962,12 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+PackManager& Core::GetPackManager()
+{
+    DVASSERT(packManager);
+    return *packManager;
 }
 
 } // namespace DAVA

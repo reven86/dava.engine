@@ -20,6 +20,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
+#include "Commands2/Base/CommandBatch.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -722,6 +723,11 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
 
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
+    if (command == nullptr)
+    {
+        return;
+    }
+
     static const DAVA::Vector<DAVA::int32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,

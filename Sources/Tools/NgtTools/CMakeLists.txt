@@ -11,11 +11,17 @@ include               ( NGTMacro )
 
 get_ngt_modules(NGT_LIBS NGT_PLUGINS QT_COMPONENTS)
 
-include_directories ( ${DAVA_ROOT_DIR}/Sources/Internal)
-include_directories ( ${DAVA_ROOT_DIR}/Sources/Tools)
-
 find_package ( QT5 REQUIRED COMPONENTS ${QT_COMPONENTS} )
 find_package ( NGT REQUIRED )
+
+include_directories( ${Qt5Core_INCLUDE_DIRS} )
+include_directories( ${Qt5Gui_INCLUDE_DIRS} )
+include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+include_directories( ${Qt5Qml_INCLUDE_DIRS} )
+include_directories( ${Qt5Quick_INCLUDE_DIRS} )   
+
+include_directories ( ${DAVA_ROOT_DIR}/Sources/Internal)
+include_directories ( ${DAVA_ROOT_DIR}/Sources/Tools)
 
 ASSERT(NGT_OUTPUT_DIR "Please call \"configure_ngt\" function from NGTMarco module before find NgtTools")
 

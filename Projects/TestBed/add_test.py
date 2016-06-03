@@ -45,7 +45,6 @@ def createHeader(className):
     with open(h_write, 'w') as outfile:
         with open(h_read, 'r') as infile:
             data = infile.read()
-            data = data.replace("$UNITTEST_GUARD_IFDEF$", className.upper())
             data = data.replace("$UNITTEST_CLASSNAME$", className)
             outfile.write(data)
 
