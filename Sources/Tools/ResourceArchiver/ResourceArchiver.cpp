@@ -468,6 +468,11 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
 bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
 {
+    if (FileSystem::Instance()->Exists(archivePath))
+    {
+        Logger::Warning("%s is already existing and will be rewritten", archivePath.GetAbsolutePathname().c_str());
+    }
+
     ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
     if (!outputFile)
     {

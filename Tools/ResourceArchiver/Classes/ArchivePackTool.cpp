@@ -94,6 +94,12 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
         }
     }
 
+    if (source == Source::Unknown)
+    {
+        Logger::Error("Source is not specified. Either -src or -listfile should be added");
+        return false;
+    }
+
     packFileName = options.GetArgument("packfile");
     if (packFileName.empty())
     {
