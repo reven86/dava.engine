@@ -1,8 +1,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
-#include "WebViewControliOS.h"
-#include "DAVAEngine.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
 
 #import <UIKit/UIKit.h>
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
