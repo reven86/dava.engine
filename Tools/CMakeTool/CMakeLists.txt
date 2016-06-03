@@ -4,7 +4,12 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( CMakeTool )
 
+get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set                   ( DAVA_USE_QT_WIDGETS    true )
+
 include               ( CMake-common )
 
 
