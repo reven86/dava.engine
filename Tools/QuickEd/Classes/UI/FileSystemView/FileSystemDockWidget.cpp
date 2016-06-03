@@ -17,6 +17,7 @@
 #include <QDirIterator>
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/Utils/Utils.h"
 #include "Project/Project.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
@@ -270,25 +271,7 @@ void FileSystemDockWidget::onDeleteFile()
 void FileSystemDockWidget::OnShowInExplorer()
 {
     auto pathIn = GetPathByCurrentPos();
-#ifdef Q_OS_MAC
-    QStringList args;
-    args << "-e";
-    args << "tell application \"Finder\"";
-    args << "-e";
-    args << "activate";
-    args << "-e";
-    args << "select POSIX file \"" + pathIn + "\"";
-    args << "-e";
-    args << "end tell";
-    QProcess::startDetached("osascript", args);
-#endif
-#ifdef Q_OS_WIN
-    QString param;
-    param = QLatin1String("/select,");
-    param += QDir::toNativeSeparators(pathIn);
-    QString command = QString("explorer") + " " + param;
-    QProcess::startDetached(command);
-#endif
+    ShowFileInExplorer(pathIn);
 }
 
 void FileSystemDockWidget::OnRename()

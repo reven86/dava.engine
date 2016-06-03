@@ -2,6 +2,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/TextureDescriptor.h"
 #include <QPainter>
+#include <QProcess>
 
 // Truncate the file extension.
 QString TruncateFileExtension(const QString& fileName, const QString& extension)
@@ -65,4 +66,24 @@ QColor ColorToQColor(const DAVA::Color& davaColor)
     DAVA::float32 maxC = std::max({ 1.0f, davaColor.r, davaColor.g, davaColor.b });
 
     return QColor::fromRgbF(davaColor.r / maxC, davaColor.g / maxC, davaColor.b / maxC, DAVA::Clamp(davaColor.a, 0.0f, 1.0f));
+}
+
+void ShowFileInExplorer(const QString& path)
+{
+#if defined(Q_OS_MAC)
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \"" + path + "\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached("osascript", args);
+#elif defined(Q_OS_WIN)
+    QStringList args;
+    args << "/select," << QDir::toNativeSeparators(path);
+    QProcess::startDetached("explorer", args);
+#endif //
 }

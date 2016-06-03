@@ -163,27 +163,6 @@ String ReplaceInString(const String& sourceString, const String& what, const Str
     return sourceString;
 }
 
-void ShowFileInExplorer(const QString& path)
-{
-    const QFileInfo fileInfo(path);
-
-#if defined(Q_OS_MAC)
-    QStringList args;
-    args << "-e";
-    args << "tell application \"Finder\"";
-    args << "-e";
-    args << "activate";
-    args << "-e";
-    args << "select POSIX file \"" + fileInfo.absoluteFilePath() + "\"";
-    args << "-e";
-    args << "end tell";
-    QProcess::startDetached("osascript", args);
-#elif defined(Q_OS_WIN)
-    QStringList args;
-    args << "/select," << QDir::toNativeSeparators(fileInfo.absoluteFilePath());
-    QProcess::startDetached("explorer", args);
-#endif //
-}
 
 void SaveSpriteToFile(Sprite* sprite, const FilePath& path)
 {
