@@ -16,4 +16,3 @@ private:
     DAVA::FilePath outFilePath;
     DAVA::FilePath packFilePath;
 };
-

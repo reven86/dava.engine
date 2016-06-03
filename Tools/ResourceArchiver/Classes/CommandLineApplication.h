@@ -26,4 +26,3 @@ private:
     DAVA::Vector<std::unique_ptr<CommandLineTool>> tools;
     DAVA::ProgramOptions helpOption;
 };
-

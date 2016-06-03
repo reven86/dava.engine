@@ -29,4 +29,3 @@ protected:
     int codeOk = 0;
     DAVA::ProgramOptions options;
 };
-

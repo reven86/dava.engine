@@ -8,7 +8,6 @@ namespace DAVA
 {
 namespace StringUtils
 {
-
 void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
@@ -110,6 +109,5 @@ bool StringUtils::RemoveEmoji(WideString& string)
     // true means "we removed some emojies".
     return isChanged;
 }
-
 }
 }

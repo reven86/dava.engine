@@ -299,33 +299,33 @@ bool CollectFiles(const Vector<String>& sources, bool addHiddenFiles, Vector<Col
 
     // removing duplicate files
     auto pointerAtDuplicates = std::unique(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
-                     {
-                         if (left.absPath == right.absPath)
-                         {
-                             Logger::Warning("Skipping duplicate %s", left.absPath.GetAbsolutePathname().c_str());
-                             return true;
-                         }
-                         else
-                         {
-                             return false;
-                         }
-                     });
+                                           {
+                                               if (left.absPath == right.absPath)
+                                               {
+                                                   Logger::Warning("Skipping duplicate %s", left.absPath.GetAbsolutePathname().c_str());
+                                                   return true;
+                                               }
+                                               else
+                                               {
+                                                   return false;
+                                               }
+                                           });
     collectedFiles.erase(pointerAtDuplicates, collectedFiles.end());
 
     // check colliding files (they are different but have same archivePath and thus one will rewrite another during unpack)
     pointerAtDuplicates = std::unique(collectedFiles.begin(), collectedFiles.end(), [](const CollectedFile& left, const CollectedFile& right) -> bool
-    {
-        if (left.archivePath == right.archivePath)
-        {
-            Logger::Error("'%s' and '%s' will be having the same path '%s' in archive", 
-                left.absPath.GetAbsolutePathname().c_str(), right.absPath.GetAbsolutePathname().c_str(), right.archivePath.c_str());
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    });
+                                      {
+                                          if (left.archivePath == right.archivePath)
+                                          {
+                                              Logger::Error("'%s' and '%s' will be having the same path '%s' in archive",
+                                                            left.absPath.GetAbsolutePathname().c_str(), right.absPath.GetAbsolutePathname().c_str(), right.archivePath.c_str());
+                                              return true;
+                                          }
+                                          else
+                                          {
+                                              return false;
+                                          }
+                                      });
     if (pointerAtDuplicates != collectedFiles.end())
     {
         return false;

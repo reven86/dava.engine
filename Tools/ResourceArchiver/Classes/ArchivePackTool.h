@@ -40,4 +40,3 @@ private:
     DAVA::String packFileName;
     Source source = Source::Unknown;
 };
-

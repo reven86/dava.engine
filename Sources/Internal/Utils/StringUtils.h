@@ -34,17 +34,20 @@ enum eLineBreakType
 */
 void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale = 0);
 
+bool IsWhitespace(char8 t);
+bool IsWhitespace(char16 t);
+
 /**
 * \brief Trims the given string.
 * \param [in] string The string.
 * \return output string.
 */
-template<typename StringType>
+template <typename StringType>
 StringType Trim(const StringType& string)
 {
-    StringType::const_iterator it = string.begin();
-    StringType::const_iterator end = string.end();
-    StringType::const_reverse_iterator rit = string.rbegin();
+    typename StringType::const_iterator it = string.begin();
+    typename StringType::const_iterator end = string.end();
+    typename StringType::const_reverse_iterator rit = string.rbegin();
     while (it != end && IsWhitespace(*it)) ++it;
     while (rit.base() != it && IsWhitespace(*rit)) ++rit;
     return StringType(it, rit.base());
@@ -55,11 +58,11 @@ StringType Trim(const StringType& string)
 * \param [in] string The string.
 * \return output string.
 */
-template<typename StringType>
+template <typename StringType>
 StringType TrimLeft(const StringType& string)
 {
-    StringType::const_iterator it = string.begin();
-    StringType::const_iterator end = string.end();
+    typename StringType::const_iterator it = string.begin();
+    typename StringType::const_iterator end = string.end();
     while (it != end && IsWhitespace(*it)) ++it;
     return StringType(it, end);
 }
@@ -69,11 +72,11 @@ StringType TrimLeft(const StringType& string)
 * \param [in] string The string.
 * \return output string.
 */
-template<typename StringType>
+template <typename StringType>
 StringType TrimRight(const StringType& string)
 {
-    StringType::const_reverse_iterator rit = string.rbegin();
-    StringType::const_reverse_iterator rend = string.rend();
+    typename StringType::const_reverse_iterator rit = string.rbegin();
+    typename StringType::const_reverse_iterator rend = string.rend();
     while (rit != rend && IsWhitespace(*rit)) ++rit;
     return StringType(rend.base(), rit.base());
 }
@@ -144,7 +147,6 @@ inline bool IsWhitespace(char8 t)
 {
     return (std::isspace(t) != 0);
 }
-
 }
 }
 

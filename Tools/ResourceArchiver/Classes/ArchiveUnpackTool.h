@@ -20,4 +20,3 @@ private:
     DAVA::FilePath dstDir;
     DAVA::FilePath packFilename;
 };
-
