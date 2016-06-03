@@ -79,3 +79,9 @@ bool CommandBatch::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIdVec
 
     return false;
 }
+
+void CommandBatch::Execute()
+{
+    // empty because we execute commands immediatly after we push it info batch.
+    // No need to execute it one more time.
+}
