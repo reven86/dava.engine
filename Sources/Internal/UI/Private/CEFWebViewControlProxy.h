@@ -4,6 +4,7 @@
 
 #include <cef/include/internal/cef_ptr.h>
 #include "UI/IWebViewControl.h"
+#include "UI/Private/CEFController.h"
 
 namespace DAVA
 {
@@ -47,6 +48,7 @@ public:
 
 private:
     CefRefPtr<class CEFWebViewControl> impl;
+    CEFController cefController;
 };
 
 } // namespace DAVA

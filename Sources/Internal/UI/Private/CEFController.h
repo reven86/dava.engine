@@ -1,14 +1,17 @@
 #pragma once
 #if defined(ENABLE_CEF_WEBVIEW)
 
+#include <cef/include/internal/cef_ptr.h>
 #include "Base/RefPtr.h"
+
+class CefClient;
 
 namespace DAVA
 {
 class CEFController
 {
 public:
-    CEFController();
+    CEFController(const CefRefPtr<CefClient>& client);
     ~CEFController();
 
     void Update();

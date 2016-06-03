@@ -97,7 +97,6 @@ private:
     UIWebView& webView;
     Vector2 webViewOffSet;
     IUIWebViewDelegate* delegate = nullptr;
-    CEFController cefController;
     CefRefPtr<CefBrowser> cefBrowser;
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;

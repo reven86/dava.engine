@@ -20,12 +20,12 @@ public:
     {
     }
 
-    void Retain()
+    virtual void Retain()
     {
         refCount++;
     }
 
-    void Release()
+    virtual void Release()
     {
         if (0 == --refCount)
         {

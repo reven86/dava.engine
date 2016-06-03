@@ -76,12 +76,6 @@ void CEFWebViewControl::Deinitialize()
     cefBrowser = nullptr;
     webPageRender->ShutDown();
     webPageRender = nullptr;
-
-    // Wait until CEF release this object
-    while (!this->HasOneRef())
-    {
-        cefController.Update();
-    }
 }
 
 void CEFWebViewControl::OpenURL(const String& url)
@@ -175,8 +169,6 @@ bool CEFWebViewControl::IsRenderToTexture() const
 
 void CEFWebViewControl::Update()
 {
-    cefController.Update();
-
     if (pageLoaded)
     {
         if (delegate)

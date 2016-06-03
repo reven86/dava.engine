@@ -7,12 +7,14 @@ namespace DAVA
 {
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     : impl(new CEFWebViewControl(uiWebView))
+    , cefController(impl)
 {
 }
 
 WebViewControl::~WebViewControl()
 {
     impl->Deinitialize();
+    impl = nullptr;
 }
 
 void WebViewControl::Initialize(const Rect& rect)
@@ -97,6 +99,7 @@ void WebViewControl::Input(UIEvent* currentInput)
 
 void WebViewControl::Update()
 {
+    cefController.Update();
     impl->Update();
 }
 

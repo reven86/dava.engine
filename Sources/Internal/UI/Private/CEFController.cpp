@@ -1,12 +1,14 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_app.h>
+#include <cef/include/cef_client.h>
 #include "UI/Private/CEFDavaResourceHandler.h"
 
 #include "Base/TypeHolders.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
+#include "Job/JobManager.h"
 #include "UI/Private/CEFController.h"
 
 namespace DAVA
@@ -36,18 +38,24 @@ public:
     CEFControllerImpl();
     ~CEFControllerImpl();
 
+    void Release() override;
+    void AddClient(const CefRefPtr<CefClient>& client);
+
     FilePath GetCachePath();
     FilePath GetLogPath();
 
     void Update();
-    void PreCleanUp();
-    void PostCleanUp();
+    void CleanLogs();
+    void CleanCache();
+
+private:
+    List<CefRefPtr<CefClient>> clients;
 };
 
 CEFControllerImpl::CEFControllerImpl()
 {
     Core::Instance()->systemAppFinished.Connect([] { cefControllerGlobal = nullptr; });
-    PreCleanUp();
+    CleanLogs();
 
     CefSettings settings;
     settings.no_sandbox = 1;
@@ -76,7 +84,12 @@ CEFControllerImpl::~CEFControllerImpl()
 {
     Update();
     CefShutdown();
-    PostCleanUp();
+    CleanCache();
+}
+
+void CEFControllerImpl::AddClient(const CefRefPtr<CefClient>& client)
+{
+    clients.push_back(client);
 }
 
 FilePath CEFControllerImpl::GetCachePath()
@@ -89,13 +102,45 @@ FilePath CEFControllerImpl::GetLogPath()
     return "~doc:/cef_data/log.txt";
 }
 
+void CEFControllerImpl::Release()
+{
+    // CEFController releases CEFControllerImpl
+    if (GetReferenceCount() == 2)
+    {
+        JobManager* jm = JobManager::Instance();
+        jm->CreateMainJob([this] { Update(); }, JobManager::JOB_MAINLAZY);
+    }
+    RefCounter::Release();
+}
+
 void CEFControllerImpl::Update()
 {
     CefDoMessageLoopWork();
+
+    // Check active clients
+    clients.remove_if([](const CefRefPtr<CefClient>& client) { return client->HasOneRef(); });
+
+    // We should handle situation if no CEFController instances exist, but some clients are active
+    // CEF should release it during some time period and we should call CefDoMessageLoopWork
+    // until the clients will be released
+    // If no CEFController instances, nobody can call Update
+    if (!clients.empty())
+    {
+        if (GetReferenceCount() == 1)
+        {
+            JobManager* jm = JobManager::Instance();
+            jm->CreateMainJob([this] { Update(); }, JobManager::JOB_MAINLAZY);
+        }
+        // Recursive update if destruction in progress
+        else if (GetReferenceCount() == 0)
+        {
+            Update();
+        }
+    }
 }
 
 // Remove
-void CEFControllerImpl::PreCleanUp()
+void CEFControllerImpl::CleanLogs()
 {
     FileSystem* fs = FileSystem::Instance();
     FilePath logPath = GetLogPath();
@@ -107,7 +152,7 @@ void CEFControllerImpl::PreCleanUp()
 }
 
 // Clean cache
-void CEFControllerImpl::PostCleanUp()
+void CEFControllerImpl::CleanCache()
 {
     FileSystem* fs = FileSystem::Instance();
     FilePath cachePath = GetCachePath();
@@ -144,13 +189,15 @@ void CEFControllerImpl::PostCleanUp()
 //--------------------------------------------------------------------------------------------------
 // CEF controller public implementation
 //--------------------------------------------------------------------------------------------------
-CEFController::CEFController()
+CEFController::CEFController(const CefRefPtr<CefClient>& client)
 {
     if (!cefControllerGlobal)
     {
         cefControllerGlobal.Set(new CEFControllerImpl);
     }
+
     cefControllerImpl = cefControllerGlobal;
+    cefControllerImpl->AddClient(client);
 }
 
 CEFController::~CEFController() = default;
