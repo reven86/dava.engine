@@ -1,11 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
+#include "Base/Introspection.h"
 #include "Logger/Logger.h"
+#include "Render/RenderBase.h"
 #include "ui_mainwindow.h"
 
-#include "EditorSettings.h"
+#include "Preferences/PreferencesRegistrator.h"
+
 #include <QtGui>
 #include <QtWidgets>
 
@@ -21,7 +23,7 @@ class SpritesPacker;
 class LoggerOutputObject;
 class Project;
 
-class MainWindow : public QMainWindow, public Ui::MainWindow
+class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
     Q_OBJECT
 
@@ -34,6 +36,7 @@ public:
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     QComboBox* GetComboBoxLanguage();
+    void RebuildRecentMenu(const QStringList& lastProjectsPathes);
 
 signals:
     void CloseProject();
@@ -52,19 +55,14 @@ public slots:
 
 private slots:
     void OnShowHelp();
-
-    void OnOpenProject();
-
-    void RebuildRecentMenu();
-
-    void OnBackgroundCustomColorClicked();
-
+    void OnOpenProjectAction();
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
+    void OnEditorPreferencesTriggered();
 
 private:
     void InitLanguageBox();
@@ -76,18 +74,39 @@ private:
     void InitMenu();
     void SetupViewMenu();
     void SetupBackgroundMenu();
-    void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings();
+    void OnPreferencesPropertyChanged(const DAVA::InspMember* member, const DAVA::VariantType& value);
 
-    // Save/restore positions of DockWidgets and main window geometry
-    void SaveMainWindowState();
-    void RestoreMainWindowState();
+    bool IsPixelized() const;
+    void SetPixelized(bool pixelized);
+
+    DAVA::String GetState() const;
+    void SetState(const DAVA::String& array);
+
+    DAVA::String GetGeometry() const;
+    void SetGeometry(const DAVA::String& array);
+
+    DAVA::String GetConsoleState() const;
+    void SetConsoleState(const DAVA::String& array);
 
     QCheckBox* emulationBox = nullptr;
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QComboBox* comboboxLanguage = nullptr;
-    QAction* previousBackgroundColorAction = nullptr; //need to store it to undo custom color action
+    QString currentProjectPath;
+
+    const DAVA::InspMember* backgroundIndexMember = nullptr;
+    DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
+    QActionGroup* backgroundActions = nullptr;
+
+public:
+    INTROSPECTION(MainWindow,
+                  PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
+                  PROPERTY("state", "MainWindowInternal/State", GetState, SetState, DAVA::I_PREFERENCE)
+                  PROPERTY("geometry", "MainWindowInternal/Geometry", GetGeometry, SetGeometry, DAVA::I_PREFERENCE)
+                  PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
+                  )
 };
 
 #endif // MAINWINDOW_H

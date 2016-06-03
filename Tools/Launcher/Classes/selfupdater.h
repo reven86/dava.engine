@@ -1,5 +1,4 @@
-#ifndef SELFUPDATER_H
-#define SELFUPDATER_H
+#pragma once
 
 #include <QDialog>
 #include <QNetworkAccessManager>
@@ -17,18 +16,25 @@ class SelfUpdater final : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = 0);
+    explicit SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent = nullptr);
     ~SelfUpdater() override;
-
-signals:
-    void StartUpdating();
 
 private slots:
     void NetworkError(QNetworkReply::NetworkError code);
     void DownloadFinished();
-    void OnStartUpdating();
+    void DownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
+    enum UpdateError
+    {
+        NO_ERRORS,
+        ARCHIVE_ERROR,
+        MOVE_FILES_ERROR,
+        INFO_FILE_ERROR
+    };
+    UpdateError ProcessLauncherUpdate();
+    QString ErrorString(UpdateError err) const;
+
     std::unique_ptr<Ui::SelfUpdater> ui;
     QString archiveUrl;
 
@@ -38,5 +44,3 @@ private:
     int lastErrorCode = QNetworkReply::NoError;
     QString lastErrorDesrc;
 };
-
-#endif // SELFUPDATER_H

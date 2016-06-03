@@ -11,6 +11,7 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "Settings/SettingsManager.h"
 

@@ -114,7 +114,7 @@ void ProcessRecourcePacker()
         String timeoutStr = CommandLineParser::GetCommandParam("-t");
 
         AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? AssetCache::LOCALHOST : ipStr);
+        params.ip = (ipStr.empty() ? AssetCache::GetLocalHost() : ipStr);
         params.port = (portStr.empty()) ? AssetCache::ASSET_SERVER_PORT : atoi(portStr.c_str());
         params.timeoutms = (timeoutStr.empty() ? 1000 : atoi(timeoutStr.c_str()) * 1000); //in ms
 
