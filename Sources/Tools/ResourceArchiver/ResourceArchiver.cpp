@@ -322,7 +322,7 @@ const Compressor* GetCompressor(Compressor::Type compressorType)
     }
 }
 
-bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
+bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, File* outputFile)
 {
     PackFormat::PackFile packFile;
     PackFormat::PackFile::HeaderBlock& headerBlock = packFile.header;
@@ -352,13 +352,6 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     headerBlock.filesTableBlockSize = static_cast<uint32>(fileTable.size() * sizeof(PackFormat::PackFile::FilesDataBlock::Data));
     headerBlock.startPackedFilesBlockPosition = headerBlock.startFilesDataBlockPosition + headerBlock.filesTableBlockSize;
-
-    ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
-    if (!outputFile)
-    {
-        Logger::Error("Can't create %s", archivePath.GetAbsolutePathname().c_str());
-        return false;
-    }
 
     if (!WriteHeaderBlock(outputFile, headerBlock) || !WriteNamesBlock(outputFile, namesBlock) || !WriteFilesDataBlock(outputFile, filesDataBlock))
     {
@@ -437,6 +430,33 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     }
 
     return true;
+}
+
+bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath)
+{
+    ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
+    if (!outputFile)
+    {
+        Logger::Error("Can't create %s", archivePath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    bool packWasSuccessfull = Pack(collectedFiles, compressionType, outputFile);
+    outputFile.reset();
+
+    if (packWasSuccessfull)
+    {
+        return true;
+    }
+    else
+    {
+        Logger::Error("Packing failed");
+        if (!FileSystem::Instance()->DeleteFile(archivePath))
+        {
+            Logger::Error("Can't delete %s", archivePath.GetAbsolutePathname().c_str());
+        }
+        return false;
+    }
 }
 
 bool CreateArchive(const Params& params)
