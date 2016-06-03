@@ -187,7 +187,9 @@ Key KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
     if (systemKeyCode < MAX_KEYS)
     {
         Key key = keyTranslator[systemKeyCode];
+#if defined(ENABLE_CEF_WEBVIEW)
         backCodeTranslator[static_cast<int32>(key)] = systemKeyCode;
+#endif
         return key;
     }
     DVASSERT(false && "bad system key code");
