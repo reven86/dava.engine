@@ -77,6 +77,11 @@ CEFControllerImpl::CEFControllerImpl()
 
     // Register custom url scheme for dava-based applications
     result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory);
+
+    if (!result)
+    {
+        Logger::Error("%s: cannot initialize CEF", __FUNCTION__);
+    }
     DVASSERT_MSG(result == true, "CEF cannot be initialized");
 }
 
