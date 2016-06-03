@@ -11,6 +11,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/AssertGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
 
 #include <QtGlobal>
@@ -65,6 +66,8 @@ int main(int argc, char* argv[])
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
+        ToolsAssetGuard::Instance()->Init();
+
         QEApplication a(argc, argv);
         a.LoadPlugins();
 

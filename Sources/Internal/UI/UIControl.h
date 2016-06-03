@@ -616,8 +616,14 @@ public:
      \param[in] hierarchic use true if you want to all control children change multi nput support state.
      */
     virtual void SetMultiInput(bool isMultiInput, bool hierarchic = true);
-
     /**
+    \brief Children will be sorted with predicate.
+    Function uses stable sort, sets layout dirty flag and invalidates iteration.
+    \param[in] predicate sorting predicate. All predicates for std::list<>::sort are allowed for this function too.
+    */
+    template <class T>
+    inline void SortChildren(const T& predicate);
+    /*
      \brief Sets the contol name.
         Later you can find control by this name.
      \param[in] _name new control name.
@@ -1126,7 +1132,6 @@ private:
     FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
 
-protected:
     UIControl* parent;
     List<UIControl*> children;
 
@@ -1403,6 +1408,15 @@ bool UIControl::GetExclusiveInput() const
 bool UIControl::GetMultiInput() const
 {
     return multiInput;
+}
+
+template <class T>
+inline void UIControl::SortChildren(const T& predicate)
+{
+    children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
+
+    isIteratorCorrupted = true;
+    SetLayoutDirty();
 }
 
 int32 UIControl::GetState() const

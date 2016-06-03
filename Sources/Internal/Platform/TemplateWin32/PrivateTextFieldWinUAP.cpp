@@ -14,7 +14,9 @@
 #include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
