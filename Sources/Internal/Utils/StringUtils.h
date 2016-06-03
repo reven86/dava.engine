@@ -2,6 +2,7 @@
 #define __DAVAENGINE_STRING_UTILS__
 
 #include "Base/BaseTypes.h"
+#include <cctype>
 
 namespace DAVA
 {
@@ -38,21 +39,44 @@ void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8*
 * \param [in] string The string.
 * \return output string.
 */
-WideString Trim(const WideString& string);
+template<typename StringType>
+StringType Trim(const StringType& string)
+{
+    StringType::const_iterator it = string.begin();
+    StringType::const_iterator end = string.end();
+    StringType::const_reverse_iterator rit = string.rbegin();
+    while (it != end && IsWhitespace(*it)) ++it;
+    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
+    return StringType(it, rit.base());
+}
 
 /**
 * \brief Trim left.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimLeft(const WideString& string);
+template<typename StringType>
+StringType TrimLeft(const StringType& string)
+{
+    StringType::const_iterator it = string.begin();
+    StringType::const_iterator end = string.end();
+    while (it != end && IsWhitespace(*it)) ++it;
+    return StringType(it, end);
+}
 
 /**
 * \brief Trim right.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimRight(const WideString& string);
+template<typename StringType>
+StringType TrimRight(const StringType& string)
+{
+    StringType::const_reverse_iterator rit = string.rbegin();
+    StringType::const_reverse_iterator rend = string.rend();
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
+    return StringType(rend.base(), rit.base());
+}
 
 /**
 * \brief Remove from line non-printable characters and replace 
@@ -115,6 +139,12 @@ inline bool IsWhitespace(char16 t)
         return false;
     }
 }
+
+inline bool IsWhitespace(char8 t)
+{
+    return (std::isspace(t) != 0);
+}
+
 }
 }
 

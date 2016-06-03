@@ -5,6 +5,7 @@
 
 #include "ArchivePackTool.h"
 #include "ResultCodes.h"
+#include "Utils/StringUtils.h"
 
 using namespace DAVA;
 
@@ -118,7 +119,7 @@ int ArchivePackTool::ProcessInternal()
             {
                 while (!listFile->IsEof())
                 {
-                    String str = listFile->ReadLine();
+                    String str = StringUtils::Trim(listFile->ReadLine());
                     if (!str.empty())
                     {
                         sources.push_back(str);
