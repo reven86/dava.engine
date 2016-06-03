@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
         DVASSERT(app != nullptr);
 
         std::unique_ptr<IWindow> window = framework->createWindow(":/MainWindow.ui", IUIFramework::ResourceType::File);
-        app->addWindow(*window.get());
+        app->addWindow(*window);
 
         GLView glView;
         app->addView(glView);

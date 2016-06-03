@@ -35,7 +35,7 @@ const LayoutHint& GLView::hint() const
 
 void GLView::update()
 {
-    glWidget->update();
+    //we update this widget 60 times per second manually
 }
 
 void GLView::focusInEvent()
