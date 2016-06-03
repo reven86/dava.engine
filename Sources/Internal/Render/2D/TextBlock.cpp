@@ -508,14 +508,16 @@ void TextBlock::CalculateCacheParams()
         }
         textBox->CleanUpVisualLines();
         visualText = textBox->GetLine(0).visualString;
-        textMetrics = font->GetStringMetrics(visualText);
+
+        Vector<float32> visualCharactersSizes;
+        textMetrics = font->GetStringMetrics(visualText, &visualCharactersSizes);
 
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
             static float32 FT_WIDTH_EPSILON = 0.3f;
 
-            uint32 length = static_cast<uint32>(charactersSizes.size());
+            uint32 length = static_cast<uint32>(visualCharactersSizes.size());
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width) - FT_WIDTH_EPSILON;
             pointsStr.clear();
@@ -530,7 +532,7 @@ void TextBlock::CalculateCacheParams()
                     pointsStr += L"...";
                     break;
                 }
-                fullWidth -= charactersSizes[i - 1];
+                fullWidth -= visualCharactersSizes[i - 1];
             }
             if (pointsStr.empty())
             {
@@ -539,7 +541,7 @@ void TextBlock::CalculateCacheParams()
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))
         {
-            uint32 length = static_cast<uint32>(charactersSizes.size());
+            uint32 length = static_cast<uint32>(visualCharactersSizes.size());
             float32 fullWidth = static_cast<float32>(textMetrics.width);
             if (ALIGN_RIGHT & visualAlign)
             {
@@ -551,7 +553,7 @@ void TextBlock::CalculateCacheParams()
                         pointsStr.append(visualText, i, length - i);
                         break;
                     }
-                    fullWidth -= charactersSizes[i];
+                    fullWidth -= visualCharactersSizes[i];
                 }
             }
             else if (ALIGN_HCENTER & visualAlign)
@@ -571,11 +573,11 @@ void TextBlock::CalculateCacheParams()
 
                     if (cutFromBegin)
                     {
-                        fullWidth -= charactersSizes[left++];
+                        fullWidth -= visualCharactersSizes[left++];
                     }
                     else
                     {
-                        fullWidth -= charactersSizes[right--];
+                        fullWidth -= visualCharactersSizes[right--];
                     }
                     cutFromBegin = !cutFromBegin;
                 }
@@ -584,7 +586,7 @@ void TextBlock::CalculateCacheParams()
             {
                 for (uint32 i = 1U; i < length; ++i)
                 {
-                    fullWidth -= charactersSizes[length - i];
+                    fullWidth -= visualCharactersSizes[length - i];
                     if (fullWidth <= drawSize.x)
                     {
                         pointsStr.clear();
