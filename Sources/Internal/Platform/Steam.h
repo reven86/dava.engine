@@ -17,6 +17,7 @@ public:
     static void Init();
     static void Deinit();
     static bool IsInited();
+    static void Update();
 
     static ISteamRemoteStorage* CreateStorage();
 
