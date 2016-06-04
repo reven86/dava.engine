@@ -5,6 +5,8 @@
 
 #include "Debug/DVAssert.h"
 
+#include <core_reflection/i_definition_manager.hpp>
+
 const char* NGTCommand::getId() const
 {
     return wgt::getClassIdentifier<NGTCommand>();
