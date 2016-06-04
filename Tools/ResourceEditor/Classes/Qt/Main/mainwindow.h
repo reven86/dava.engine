@@ -14,7 +14,10 @@
 #include <QDockWidget>
 #include <QPointer>
 
-namespace wgt { class IComponentContext; }
+namespace wgt
+{
+class IComponentContext;
+}
 
 class AddSwitchEntityDialog;
 class Request;

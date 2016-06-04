@@ -1,4 +1,4 @@
-#pragma  once
+#pragma once
 
 #include <core_generic_plugin/interfaces/i_component_context.hpp>
 #include "Debug/DVAssert.h"

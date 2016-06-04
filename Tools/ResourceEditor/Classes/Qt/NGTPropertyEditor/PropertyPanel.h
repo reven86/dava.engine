@@ -38,7 +38,9 @@ public:
 private:
     void onFocusIn(wgt::IView* view) override;
     void onFocusOut(wgt::IView* view) override;
-    void onLoaded(wgt::IView* view) override {}
+    void onLoaded(wgt::IView* view) override
+    {
+    }
 
 private:
     std::unique_ptr<wgt::IView> view;

@@ -4,7 +4,10 @@
 
 class QtMainWindow;
 class NGTCommand;
-namespace wgt { class ICommandManager; }
+namespace wgt
+{
+class ICommandManager;
+}
 
 class REApplication : public NGTLayer::BaseApplication
 {

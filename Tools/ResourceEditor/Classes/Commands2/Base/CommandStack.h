@@ -7,7 +7,10 @@
 #include <core_command_system/i_command_event_listener.hpp>
 #include <core_common/signal.hpp>
 
-namespace wgt { class ICommandManager; }
+namespace wgt
+{
+class ICommandManager;
+}
 
 class CommandStack : public CommandNotifyProvider, public wgt::ICommandEventListener
 {
