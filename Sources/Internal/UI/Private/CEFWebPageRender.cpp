@@ -36,7 +36,11 @@ CEFWebPageRender::CEFWebPageRender()
 {
     auto focusChanged = [this](bool isFocused) -> void
     {
-        if (!isFocused)
+        if (isFocused)
+        {
+            RestoreCursor();
+        }
+        else
         {
             ResetCursor();
         }
@@ -73,7 +77,11 @@ void CEFWebPageRender::SetVisible(bool visibility)
     }
 
     isVisible = visibility;
-    if (!isVisible)
+    if (isVisible)
+    {
+        RestoreCursor();
+    }
+    else
     {
         ResetCursor();
     }
@@ -107,8 +115,19 @@ void CEFWebPageRender::ResetCursor()
 {
     if (currentCursorType != CursorType::CT_POINTER)
     {
+        cursorToRestore = currentCursor;
+        needToRestore = true;
         currentCursorType = CursorType::CT_POINTER;
         SetCursor(GetDefaultCursor());
+    }
+}
+
+void CEFWebPageRender::RestoreCursor()
+{
+    if (needToRestore)
+    {
+        SetCursor(cursorToRestore);
+        needToRestore = false;
     }
 }
 
@@ -230,6 +249,7 @@ void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     SetClassLongPtr(wnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(cursor)));
     ::SetCursor(cursor);
+    currentCursor = cursor;
 }
 
 #endif

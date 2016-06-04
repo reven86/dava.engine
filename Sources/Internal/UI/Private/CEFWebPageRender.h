@@ -42,6 +42,7 @@ private:
     CefCursorHandle GetDefaultCursor();
     void SetCursor(CefCursorHandle cursor);
     void ResetCursor();
+    void RestoreCursor();
 
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
 
@@ -53,7 +54,10 @@ private:
     bool transparency = true;
     bool isActive = true;
     bool isVisible = true;
+    bool needToRestore = false;
     CursorType currentCursorType = CursorType::CT_POINTER;
+    CefCursorHandle currentCursor;
+    CefCursorHandle cursorToRestore;
 };
 
 } // namespace DAVA
