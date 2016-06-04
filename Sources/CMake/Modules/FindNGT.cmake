@@ -44,7 +44,7 @@ endforeach()
 set(CMAKE_MODULE_TMP ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${NGT_ROOT}/build/cmake/)
 
-include (BWQtCommon)
-include (BWMacros)
+include (WGQtCommon)
+include (WGMacros)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_TMP})

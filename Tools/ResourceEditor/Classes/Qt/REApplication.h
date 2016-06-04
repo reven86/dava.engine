@@ -4,7 +4,7 @@
 
 class QtMainWindow;
 class NGTCommand;
-class ICommandManager;
+namespace wgt { class ICommandManager; }
 
 class REApplication : public NGTLayer::BaseApplication
 {
@@ -20,7 +20,7 @@ protected:
     void OnPreUnloadPlugins() override;
 
 private:
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<NGTCommand> ngtCommand;
     QtMainWindow* mainWindow = nullptr;
 };

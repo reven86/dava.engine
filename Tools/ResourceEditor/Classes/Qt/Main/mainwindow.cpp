@@ -91,7 +91,7 @@
 #include <QMetaType>
 #include <QShortcut>
 
-QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
+QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , waitDialog(nullptr)
@@ -162,8 +162,8 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
     DiableUIForFutureUsing();
     SynchronizeStateWithUI();
 
-    IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
-    IUIFramework* uiFramework = ngtContext.queryInterface<IUIFramework>();
+    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
+    wgt::IUIFramework* uiFramework = ngtContext.queryInterface<wgt::IUIFramework>();
     DVASSERT(uiApplication != nullptr);
     DVASSERT(uiFramework != nullptr);
     propertyPanel->Initialize(*uiFramework, *uiApplication);
@@ -172,7 +172,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
 
 QtMainWindow::~QtMainWindow()
 {
-    IUIApplication* uiApplication = ngtContext.queryInterface<IUIApplication>();
+    wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
     DVASSERT(uiApplication != nullptr);
     propertyPanel->Finalize(*uiApplication);
     propertyPanel.reset();
