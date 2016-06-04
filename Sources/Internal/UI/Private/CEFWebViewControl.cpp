@@ -278,6 +278,8 @@ void CEFWebViewControl::StopLoading()
     }
 }
 
+namespace CEFDetails
+{
 enum class eKeyModifiers : int32
 {
     NONE = 0,
@@ -387,14 +389,42 @@ int32 ConvertMouseTypeDavaToCef(UIEvent* input)
     return mouseType;
 }
 
+int32 GetCefKeyType(UIEvent* input)
+{
+    int32 keyType = 0;
+    switch (input->phase)
+    {
+    case UIEvent::Phase::KEY_DOWN:
+        keyType = cef_key_event_type_t::KEYEVENT_RAWKEYDOWN;
+        break;
+    case UIEvent::Phase::KEY_DOWN_REPEAT:
+        break;
+    case UIEvent::Phase::KEY_UP:
+        keyType = cef_key_event_type_t::KEYEVENT_KEYUP;
+        break;
+    case UIEvent::Phase::CHAR:
+        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
+        break;
+    case UIEvent::Phase::CHAR_REPEAT:
+        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
+        break;
+    default:
+        break;
+    }
+    return keyType;
+}
+} // namespace CEFDetails
+
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
+    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
         webViewOffSet = webView.GetAbsolutePosition();
-        webViewOffSet.dx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(webViewOffSet.dx);
-        webViewOffSet.dy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(webViewOffSet.dy);
+        webViewOffSet.dx = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dx);
+        webViewOffSet.dy = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dy);
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -430,8 +460,9 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
     CefMouseEvent clickEvent;
     clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
     clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
-    clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
-    CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(ConvertMouseTypeDavaToCef(input));
+    clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
+    int32 mouseType = CEFDetails::ConvertMouseTypeDavaToCef(input);
+    CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(mouseType);
     bool mouseUp = (input->phase == UIEvent::Phase::ENDED);
     int clickCount = input->tapCount;
     host->SendFocusEvent(true);
@@ -444,7 +475,7 @@ void CEFWebViewControl::OnMouseMove(UIEvent* input)
     CefMouseEvent clickEvent;
     clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
     clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
-    clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
+    clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
 }
@@ -455,43 +486,18 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
     CefMouseEvent clickEvent;
     clickEvent.x = static_cast<int>(webViewOffSet.dx);
     clickEvent.y = static_cast<int>(webViewOffSet.dy);
-    clickEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
+    clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
     int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);
     host->SendMouseWheelEvent(clickEvent, deltaX, deltaY);
-}
-
-int32 GetCefKeyType(UIEvent* input)
-{
-    int32 keyType = 0;
-    switch (input->phase)
-    {
-    case UIEvent::Phase::KEY_DOWN:
-        keyType = cef_key_event_type_t::KEYEVENT_RAWKEYDOWN;
-        break;
-    case UIEvent::Phase::KEY_DOWN_REPEAT:
-        break;
-    case UIEvent::Phase::KEY_UP:
-        keyType = cef_key_event_type_t::KEYEVENT_KEYUP;
-        break;
-    case UIEvent::Phase::CHAR:
-        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
-        break;
-    case UIEvent::Phase::CHAR_REPEAT:
-        keyType = cef_key_event_type_t::KEYEVENT_CHAR;
-        break;
-    default:
-        break;
-    }
-    return keyType;
 }
 
 void CEFWebViewControl::OnKey(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefKeyEvent keyEvent;
-    keyEvent.type = static_cast<cef_key_event_type_t>(GetCefKeyType(input));
-    keyEvent.modifiers = ConvertDAVAModifiersToCef(GetKeyModifier());
+    keyEvent.type = static_cast<cef_key_event_type_t>(CEFDetails::GetCefKeyType(input));
+    keyEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     if (UIEvent::Phase::CHAR == input->phase || UIEvent::Phase::CHAR == input->phase)
     {
         keyEvent.windows_key_code = input->keyChar;
