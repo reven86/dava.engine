@@ -487,16 +487,6 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             }
         }
     }
-    else if (obj == this)
-    {
-        if (eventType == QEvent::Close)
-        {
-            if (ShouldClose(static_cast<QCloseEvent*>(event)) == false)
-            {
-                event->ignore();
-            }
-        }
-    }
 
     return QMainWindow::eventFilter(obj, event);
 }
@@ -2695,7 +2685,7 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
     ui->actionModifySnapToLandscape->setChecked(isSpanToLandscape);
 }
 
-bool QtMainWindow::ShouldClose(QCloseEvent* e)
+bool QtMainWindow::CanBeClosed()
 {
     if (spritesPacker->IsRunning())
         return false;

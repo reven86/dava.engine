@@ -31,8 +31,14 @@ protected:
     {
     }
 
+    virtual bool OnRequestCloseApp()
+    {
+        return true;
+    }
+
 private:
     DAVA::WideString GetPluginsFolder() const;
+    void OnMainWindowTryClose(bool& result);
     void OnMainWindowClosed();
 
 private:
