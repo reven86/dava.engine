@@ -1,9 +1,11 @@
 
-if( MACOS )
-    set( ERASE_FILES  UIAlertView_Modal.h
-                      UIAlertView_Modal.m 
-                      UIDismissionHandlerAlertView.h 
-                      UIDismissionHandlerAlertView.mm )
-endif()
+set( HPP_FILES *.h )
+set( CPP_FILES *.cpp )
+set( CPP_FILES_APPLE *.mm  )
+set( ERASE_FILES_MACOS  UIAlertView_Modal.h
+                        UIAlertView_Modal.mm 
+                        UIDismissionHandlerAlertView.h 
+                        UIDismissionHandlerAlertView.mm )
 
-define_source_files (PARENT_SCOPE GLOB_ERASE_FILES ${ERASE_FILES} )
+
+setup_main_module()

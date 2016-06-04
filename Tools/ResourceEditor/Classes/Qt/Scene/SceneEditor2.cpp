@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
+#include "Commands2/Base/CommandStack.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
@@ -152,7 +124,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(DAVA::Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorStatisticsSystem = new EditorStatisticsSystem(this);
-    AddSystem(editorStatisticsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+    AddSystem(editorStatisticsSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
@@ -175,8 +147,6 @@ SceneEditor2::~SceneEditor2()
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
-
-    SafeRelease(commandStack);
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
@@ -190,7 +160,6 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         }
         curScenePath = path;
         isLoaded = true;
-        commandStack->SetClean(true);
     }
 
     SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
@@ -203,6 +172,13 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
+    bool cameraLightState = false;
+    if (editorLightSystem != nullptr)
+    {
+        cameraLightState = editorLightSystem->GetCameraLightEnabled();
+        editorLightSystem->SetCameraLightEnabled(false);
+    }
+
     ExtractEditorEntities();
 
     DAVA::ScopedPtr<DAVA::Texture> tilemaskTexture(nullptr);
@@ -232,6 +208,11 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
     }
 
     InjectEditorEntities();
+
+    if (editorLightSystem != nullptr)
+    {
+        editorLightSystem->SetCameraLightEnabled(cameraLightState);
+    }
 
     SceneSignals::Instance()->EmitSaved(this);
 
@@ -362,6 +343,11 @@ void SceneEditor2::EndBatch()
     commandStack->EndBatch();
 }
 
+void SceneEditor2::ActivateCommandStack()
+{
+    commandStack->Activate();
+}
+
 void SceneEditor2::Exec(Command2::Pointer&& command)
 {
     if (command)
@@ -382,7 +368,7 @@ void SceneEditor2::ClearAllCommands()
 
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
-    return commandStack;
+    return commandStack.get();
 }
 
 bool SceneEditor2::IsLoaded() const
@@ -461,7 +447,10 @@ void SceneEditor2::Draw()
 
 void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
 {
-    DVASSERT(command != nullptr);
+    if (command == nullptr)
+    {
+        return;
+    }
 
     if (collisionSystem)
     {
@@ -520,6 +509,11 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
     {
         SceneSignals::Instance()->EmitModifyStatusChanged(editor, !clean);
     }
+}
+
+void SceneEditor2::EditorCommandNotify::UndoRedoStateChanged()
+{
+    SceneSignals::Instance()->EmitUndoRedoStateChanged(editor);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const

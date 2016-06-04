@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "SpritesPacker/SpritesPackerModule.h"
 
 #include "Functional/Function.h"
@@ -50,10 +22,15 @@ SpritesPackerModule::SpritesPackerModule()
 
 SpritesPackerModule::~SpritesPackerModule()
 {
+    spritesPacker->Cancel();
+    spritesPacker->ClearTasks();
+
     if (cacheClient != nullptr)
     {
         DisconnectCacheClient();
     }
+
+    DAVA::JobManager::Instance()->WaitWorkerJobs();
 }
 
 QAction* SpritesPackerModule::GetReloadAction() const
@@ -137,6 +114,7 @@ void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
     layout->addWidget(label);
     waitDialog->setLayout(layout);
 
+    waitDialog->setModal(true);
     waitDialog->setFixedSize(300, 100);
     waitDialog->show();
     waitDialog->raise();
@@ -173,7 +151,7 @@ void SpritesPackerModule::ConnectCacheClient()
         DAVA::uint64 timeoutSec = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsUInt32();
 
         DAVA::AssetCacheClient::ConnectionParams params;
-        params.ip = (ipStr.empty() ? DAVA::AssetCache::LOCALHOST : ipStr);
+        params.ip = (ipStr.empty() ? DAVA::AssetCache::GetLocalHost() : ipStr);
         params.port = port;
         params.timeoutms = timeoutSec * 1000; //in ms
 
@@ -206,4 +184,9 @@ void SpritesPackerModule::DisconnectCacheClientInternal(DAVA::AssetCacheClient* 
 
     cacheClientForDisconnect->Disconnect();
     SafeDelete(cacheClientForDisconnect);
+}
+
+bool SpritesPackerModule::IsRunning() const
+{
+    return spritesPacker->IsRunning();
 }

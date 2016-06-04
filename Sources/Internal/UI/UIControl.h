@@ -1,32 +1,3 @@
-﻿/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UI_CONTROL_H__
 #define __DAVAENGINE_UI_CONTROL_H__
 
@@ -644,8 +615,14 @@ public:
      \param[in] hierarchic use true if you want to all control children change multi nput support state.
      */
     virtual void SetMultiInput(bool isMultiInput, bool hierarchic = true);
-
     /**
+    \brief Children will be sorted with predicate.
+    Function uses stable sort, sets layout dirty flag and invalidates iteration.
+    \param[in] predicate sorting predicate. All predicates for std::list<>::sort are allowed for this function too.
+    */
+    template <class T>
+    inline void SortChildren(const T& predicate);
+    /*
      \brief Sets the contol name.
         Later you can find control by this name.
      \param[in] _name new control name.
@@ -1135,7 +1112,7 @@ public:
 
     virtual void OnTouchOutsideFocus();
 
-    virtual void OnAllAnimationsFinished();
+    void OnAllAnimationsFinished() override;
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
@@ -1154,7 +1131,6 @@ private:
     FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
 
-protected:
     UIControl* parent;
     List<UIControl*> children;
 
@@ -1431,6 +1407,15 @@ bool UIControl::GetExclusiveInput() const
 bool UIControl::GetMultiInput() const
 {
     return multiInput;
+}
+
+template <class T>
+inline void UIControl::SortChildren(const T& predicate)
+{
+    children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
+
+    isIteratorCorrupted = true;
+    SetLayoutDirty();
 }
 
 int32 UIControl::GetState() const

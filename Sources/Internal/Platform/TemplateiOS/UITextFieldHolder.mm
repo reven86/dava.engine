@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UITextFieldHolder.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -169,121 +140,57 @@
 
 - (BOOL)textField:(UITextField*)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string
 {
-    // range.location - charracter from
-    // range.lenght - count of replaced charracters
-    if (nullptr == cppTextField || nullptr == cppTextField->GetDelegate())
+    DAVA::int32 maxLength = -1;
+    if (nullptr != cppTextField)
     {
-        return YES;
+        maxLength = cppTextField->GetMaxLength();
     }
 
-    // if some emojies was  removed, we should set our changes directly and retutn NO
-    // because if we will return YES - unchenged diff will be applyed.
-    // first change we made - is try to cut emojies.
-    DAVA::WideString input = DAVA::WideStringFromNSString(string);
-    BOOL ignoreDelegateResult = DAVA::StringUtils::RemoveEmoji(input);
-    NSString* difference = DAVA::NSStringFromWideString(input);
+    BOOL applyChanges = YES;
+    // Get string after changing
+    NSString* origString = [textCtrl valueForKey:@"text"];
+    NSString* replStr = string;
 
-    // adapt range to the new input difference string
-    if (range.length > 0)
+    if ([replStr length] > 0)
     {
-        range.length -= [string length] - [difference length];
-    }
-
-    DAVA::int32 maxLength = cppTextField->GetMaxLength();
-
-    NSString* stringWithAppliedDiff = nil;
-    if (maxLength >= 0)
-    {
-        // when the last insert was out of bounds, and after that revert button was pressed.
-
-        // for example we have maxLen = 7.
-        // we have string [1 2 3 4 5 _ _ ]
-        // then inserts [6 7 8 9] to the end of the string and it should be [1 2 3 4 5 6 7 8 9].
-        // but we have maxLen = 7. So we need to cut [8 9] and we have [1 2 3 4 5 6 7] and we returns YES.
-        // text field remembers that and Undo will remove 4 symbols but not 2!
-        // then er press undo. It tryes to remove 4 symbols from position 6. We have 2 symbols!
-        // it causes exception inside UITextField.
-        NSString* currentText = [textCtrl valueForKey:@"text"];
-
-        // There are WORKAROUND!
-        // we don't accepts the diff, but we apply it by ourself.
-        if (range.location + range.length > [currentText length])
+        applyChanges = !DAVA::NSStringModified(range, origString, maxLength, &replStr);
+        if (!applyChanges)
         {
-            range.length = [currentText length] - range.location;
-            ignoreDelegateResult = YES;
-        }
-
-        if (range.location + range.length > NSUInteger(maxLength))
-        {
-            range.length = maxLength - static_cast<DAVA::int32>(range.location);
-            DAVA::int32 replaceLocation = static_cast<DAVA::int32>(range.location);
-            ignoreDelegateResult = YES; // return NO at the end of the function
-        }
-
-        stringWithAppliedDiff = [currentText stringByReplacingCharactersInRange:range withString:difference]; // Get string after changing
-
-        NSInteger newLength = [stringWithAppliedDiff length]; // Length in UTF32 charactres
-        // new string is larger than allowed
-        if (newLength > maxLength)
-        {
-            NSUInteger charsToInsert = 0;
-            if (range.length == 0)
-            {
-                // charactres count independent from encoding and bytes per each charracter
-                DAVA::int32 curLength = static_cast<DAVA::int32>([[textCtrl valueForKey:@"text"] length]);
-
-                charsToInsert = maxLength - curLength;
-                DVASSERT(maxLength >= curLength);
-            }
-            else
-            {
-                // Inserting with replace.
-                charsToInsert = range.length;
-            }
-
-            // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
-            // back for decrease string length in UTF32 code points
-            NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
-            char buffer[byteCount];
-            NSUInteger usedBufferCount;
-
-            // Cut difference to make total string not wider than maxLength
-            [difference getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, difference.length) remainingRange:nil];
-
-            NSString* cuttedDifference = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
-            DVASSERT(cuttedDifference && "Error on convert utf32 to NSString");
-
-            NSString* currentText = [textCtrl valueForKey:@"text"];
-            stringWithAppliedDiff = [currentText stringByReplacingCharactersInRange:range withString:cuttedDifference];
-            [cuttedDifference release];
-
-            ignoreDelegateResult = YES; // return NO at the end of the function
+            // remove all changes for undoMansger
+            NSUndoManager* undoManager = [textField_ undoManager];
+            [undoManager removeAllActions];
         }
     }
-
-    // Length check OK, continue with the delegate.
-    DAVA::WideString repString;
-    const char* cutfstr = [difference cStringUsingEncoding:NSUTF8StringEncoding];
-    if (nullptr != cutfstr) //cause strlen(nullptr) will crash
+    // if we revert insert text
+    if (range.location + range.length > [origString length])
     {
-        DAVA::int32 len = static_cast<DAVA::int32>(strlen(cutfstr));
-        const DAVA::uint8* str = reinterpret_cast<const DAVA::uint8*>(cutfstr);
-        DAVA::UTF8Utils::EncodeToWideString(str, len, repString);
+        range.length = [origString length] - range.location;
+        applyChanges = NO;
     }
 
-    BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), repString);
-
-    if (ignoreDelegateResult)
+    BOOL clientApply = NO;
+    if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
-        // We need to apply change manually.
-        [textCtrl setValue:stringWithAppliedDiff forKey:@"text"];
-        return NO;
+        if (range.length > 0 || [replStr length] > 0)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
+            clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+        }
+        if (!clientApply)
+        {
+            return NO;
+        }
     }
-    else
+    if (!applyChanges)
     {
-        // We did't changed difference string. Just apply it if delegate allows.
-        return delegateResult;
+        NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
+        [textCtrl setValue:newString forKey:@"text"];
+        UITextPosition* caret = textField_.beginningOfDocument;
+        caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
+        UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
+        [textField_ setSelectedTextRange:rangeCaret];
     }
+    return applyChanges;
 }
 
 - (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString*)string

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
@@ -126,6 +97,7 @@ Landscape::~Landscape()
 
 void Landscape::RestoreGeometry()
 {
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (auto& restoreData : bufferRestoreData)
     {
         switch (restoreData.bufferType)
@@ -139,6 +111,16 @@ void Landscape::RestoreGeometry()
             if (rhi::NeedRestoreIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer)))
                 rhi::UpdateIndexBuffer(static_cast<rhi::HIndexBuffer>(restoreData.buffer), restoreData.data, 0, restoreData.dataSize);
             break;
+
+        case RestoreBufferData::RESTORE_TEXTURE:
+            // if (rhi::NeedRestoreTexture(static_cast<rhi::HTexture>(restoreData.buffer)))
+            // we are not checking condition above,
+            // because texture is marked as restored immediately after updating zero level
+            rhi::UpdateTexture(static_cast<rhi::HTexture>(restoreData.buffer), restoreData.data, restoreData.level, rhi::TextureFace::TEXTURE_FACE_POSITIVE_X);
+            break;
+
+        default:
+            DVASSERT_MSG(0, "Invalid RestoreBufferData type");
         }
     }
 }
@@ -153,9 +135,12 @@ void Landscape::ReleaseGeometryData()
     renderBatchArray.clear();
     activeRenderBatchArray.clear();
 
-    for (auto& restoreData : bufferRestoreData)
-        SafeDeleteArray(restoreData.data);
-    bufferRestoreData.clear();
+    {
+        LockGuard<Mutex> lock(restoreDataMutex);
+        for (auto& restoreData : bufferRestoreData)
+            SafeDeleteArray(restoreData.data);
+        bufferRestoreData.clear();
+    }
 
     ////Non-instanced data
     for (rhi::HVertexBuffer handle : vertexBuffers)
@@ -245,7 +230,7 @@ bool Landscape::BuildHeightmap()
     if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image*> imageSet;
-        ImageSystem::Instance()->Load(heightmapPath, imageSet);
+        ImageSystem::Load(heightmapPath, imageSet);
         if (0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))
@@ -297,7 +282,7 @@ void Landscape::RebuildLandscape()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (!landscapeMaterial)
+    if (landscapeMaterial == nullptr)
     {
         landscapeMaterial = new NMaterial();
         landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
@@ -328,11 +313,27 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
     Vector<Image*> textureData = CreateHeightTextureData(heightmap, renderMode);
 
     Texture* tx = Texture::CreateFromData(textureData);
+    tx->texDescriptor->pathname = "memoryfile_landscape_height";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
 
+    uint32 level = 0;
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (Image* img : textureData)
+    {
+        bufferRestoreData.emplace_back();
+
+        auto& restore = bufferRestoreData.back();
+        restore.bufferType = RestoreBufferData::RESTORE_TEXTURE;
+        restore.buffer = tx->handle;
+        restore.dataSize = img->dataSize;
+        restore.data = new uint8[img->dataSize];
+        restore.level = level;
+        memcpy(restore.data, img->data, img->dataSize);
+
         img->Release();
+        ++level;
+    }
 
     return tx;
 }
@@ -416,11 +417,25 @@ Texture* Landscape::CreateTangentTexture()
     Vector<Image*> textureData = CreateTangentBasisTextureData();
 
     Texture* tx = Texture::CreateFromData(textureData);
+    tx->texDescriptor->pathname = "memoryfile_landscape_tangents";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
+    uint32 level = 0;
+    LockGuard<Mutex> lock(restoreDataMutex);
     for (Image* img : textureData)
+    {
+        auto& restore = bufferRestoreData.back();
+        restore.bufferType = RestoreBufferData::RESTORE_TEXTURE;
+        restore.buffer = tx->handle;
+        restore.dataSize = img->dataSize;
+        restore.data = new uint8[img->dataSize];
+        restore.level = level;
+        memcpy(restore.data, img->data, img->dataSize);
+
         img->Release();
+        ++level;
+    }
 
     return tx;
 }
@@ -726,7 +741,8 @@ int16 Landscape::AllocateParcelVertexBuffer(uint32 quadX, uint32 quadY, uint32 q
 #if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(landscapeVertices);
 #else
-    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, RestoreBufferData::RESTORE_BUFFER_VERTEX });
+    LockGuard<Mutex> lock(restoreDataMutex);
+    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
 #endif
 
     return int16(vertexBuffers.size() - 1);
@@ -969,6 +985,7 @@ void Landscape::AllocateGeometryDataInstancing()
         rhi::VertexBuffer::Descriptor instanceBufferDesc;
         instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
         instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+        instanceBufferDesc.needRestore = false;
 
         InstanceDataBuffer* instanceDataBuffer = new InstanceDataBuffer();
         instanceDataBuffer->bufferSize = instanceBufferDesc.size;
@@ -993,8 +1010,9 @@ void Landscape::AllocateGeometryDataInstancing()
     SafeDeleteArray(patchVertices);
     SafeDeleteArray(patchIndices);
 #else
-    bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, RestoreBufferData::RESTORE_BUFFER_VERTEX });
-    bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, RestoreBufferData::RESTORE_BUFFER_INDEX });
+    LockGuard<Mutex> lock(restoreDataMutex);
+    bufferRestoreData.push_back({ patchVertexBuffer, reinterpret_cast<uint8*>(patchVertices), vdesc.size, 0, RestoreBufferData::RESTORE_BUFFER_VERTEX });
+    bufferRestoreData.push_back({ patchIndexBuffer, reinterpret_cast<uint8*>(patchIndices), idesc.size, 0, RestoreBufferData::RESTORE_BUFFER_INDEX });
 #endif
 
     RenderBatch* batch = new RenderBatch();
@@ -1064,6 +1082,7 @@ void Landscape::DrawLandscapeInstancing()
             rhi::VertexBuffer::Descriptor instanceBufferDesc;
             instanceBufferDesc.size = instanceDataMaxCount * instanceDataSize;
             instanceBufferDesc.usage = rhi::USAGE_DYNAMICDRAW;
+            instanceBufferDesc.needRestore = false;
 
             instanceDataBuffer = new InstanceDataBuffer();
             instanceDataBuffer->bufferSize = instanceBufferDesc.size;
@@ -1478,13 +1497,7 @@ bool Landscape::IsDrawWired() const
 void Landscape::SetUseInstancing(bool isUse)
 {
     RenderMode newRenderMode = (isUse && rhi::DeviceCaps().isInstancingSupported) ? RENDERMODE_INSTANCING : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_INSTANCING) ? 1 : 0);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseInstancing() const
@@ -1496,18 +1509,25 @@ void Landscape::SetUseMorphing(bool useMorph)
 {
     RenderMode newRenderMode = useMorph ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
     newRenderMode = rhi::DeviceCaps().isInstancingSupported ? newRenderMode : RENDERMODE_NO_INSTANCING;
-    if (renderMode != newRenderMode)
-    {
-        renderMode = newRenderMode;
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, 1);
-        landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
-        RebuildLandscape();
-    }
+    SetRenderMode(newRenderMode);
 }
 
 bool Landscape::IsUseMorphing() const
 {
     return (renderMode == RENDERMODE_INSTANCING_MORPHING);
+}
+
+void Landscape::SetRenderMode(RenderMode newRenderMode)
+{
+    if (renderMode == newRenderMode)
+        return;
+
+    renderMode = newRenderMode;
+    RebuildLandscape();
+
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
+    landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
+    landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 void Landscape::SetDrawMorphing(bool drawMorph)

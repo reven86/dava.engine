@@ -1,49 +1,17 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "applicationmanager.h"
 #include "filemanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "processhelper.h"
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
 
 ApplicationManager::ApplicationManager(QObject* parent)
-    :
-    QObject(parent)
-    ,
-    localConfig(0)
-    ,
-    remoteConfig(0)
+    : QObject(parent)
+    , localConfig(0)
+    , remoteConfig(0)
 {
-    localConfigFilePath = FileManager::Instance()->GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
+    localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
 }
 
@@ -64,7 +32,7 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
     }
     else
     {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_DOC_ACCESS);
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_DOC_ACCESS);
         localConfig = new ConfigParser(QByteArray());
     }
 }
@@ -178,11 +146,11 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
     AppVersion* version = localConfig->GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, appID) + version->runPath;
+        QString runPath = FileManager::GetApplicationDirectory(branchID, appID) + version->runPath;
         if (!ProcessHelper::IsProcessRuning(runPath))
             ProcessHelper::RunProcess(runPath);
         else
-            ErrorMessanger::Instance()->ShowNotificationDlg("Application is already launched.");
+            ErrorMessenger::ShowNotificationDlg("Application is already launched.");
     }
 }
 
@@ -191,16 +159,16 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     AppVersion* version = localConfig->GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, appID) + version->runPath;
+        QString runPath = FileManager::GetApplicationDirectory(branchID, appID) + version->runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
         {
-            int result = ErrorMessanger::Instance()->ShowRetryDlg(true);
+            int result = ErrorMessenger::ShowRetryDlg(true);
             if (result == QMessageBox::Cancel)
                 return false;
         }
 
-        QString appPath = FileManager::Instance()->GetApplicationFolder(branchID, appID);
-        FileManager::Instance()->DeleteDirectory(appPath);
+        QString appPath = FileManager::GetApplicationDirectory(branchID, appID);
+        FileManager::DeleteDirectory(appPath);
         localConfig->RemoveApplication(branchID, appID, versionID);
         localConfig->SaveToYamlFile(localConfigFilePath);
 
@@ -223,18 +191,18 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
         for (int j = 0; j < versionCount; ++j)
         {
             AppVersion* version = app->GetVersion(j);
-            QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, app->id) + version->runPath;
+            QString runPath = FileManager::GetApplicationDirectory(branchID, app->id) + version->runPath;
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessanger::Instance()->ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }
         }
     }
 
-    QString branchPath = FileManager::Instance()->GetBranchFolder(branchID);
-    FileManager::Instance()->DeleteDirectory(branchPath);
+    QString branchPath = FileManager::GetBranchDirectory(branchID);
+    FileManager::DeleteDirectory(branchPath);
     localConfig->RemoveBranch(branch->id);
     localConfig->SaveToYamlFile(localConfigFilePath);
 

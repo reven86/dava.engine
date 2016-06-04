@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __LANDSCAPETOOLSTOGGLECOMMAND_H__
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
@@ -40,6 +11,7 @@ class LandscapeToolsToggleCommand : public Command2
 {
 public:
     LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,
+                                const DAVA::String& commandDescr, bool isEnabling,
                                 DAVA::uint32 allowedTools, DAVA::String disablingError);
     DAVA::Entity* GetEntity() const override;
 
@@ -79,7 +51,7 @@ class LandscapeToolsReverseCommand : public ForwardCommand
 public:
     template <typename... Args>
     LandscapeToolsReverseCommand(SceneEditor2* sceneEditor, Args... a)
-        : ForwardCommand(sceneEditor, a...)
+        : ForwardCommand(sceneEditor, a..., false)
     {
     }
 
@@ -100,7 +72,7 @@ public:
 class EnableHeightmapEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor);
+    EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 
 private:
     void OnDisabled() override;
@@ -110,28 +82,28 @@ using DisableHeightmapEditorCommand = LandscapeToolsReverseCommand<EnableHeightm
 class EnableNotPassableCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableNotPassableCommand(SceneEditor2* forSceneEditor);
+    EnableNotPassableCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableNotPassableCommand = LandscapeToolsReverseCommand<EnableNotPassableCommand>;
 
 class EnableRulerToolCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableRulerToolCommand(SceneEditor2* forSceneEditor);
+    EnableRulerToolCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableRulerToolCommand = LandscapeToolsReverseCommand<EnableRulerToolCommand>;
 
 class EnableTilemaskEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor);
+    EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableTilemaskEditorCommand = LandscapeToolsReverseCommand<EnableTilemaskEditorCommand>;
 
 class EnableCustomColorsCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool saveChanges);
+    EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool saveChanges, bool isEnabling = true);
 
 private:
     void OnEnabled() override;

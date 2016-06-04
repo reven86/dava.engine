@@ -1,41 +1,26 @@
+set( HPP_FILES *.h   )
+set( CPP_FILES *.cpp )
+set( CPP_FILES_APPLE *.mm  )
 
-if( ANDROID )
-#    set( ADDED_CPP_PATTERNS TemplateAndroid/*.cpp  TemplateAndroid/ExternC/*.cpp ) 	
-#    set( ADDED_H_PATTERNS   TemplateAndroid/*.h    TemplateAndroid/ExternC/*.h   )
-    set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} "${CMAKE_CURRENT_LIST_DIR}/TemplateAndroid" PARENT_SCOPE)
+set( CPP_FILES_IOS TemplateiOS/*.cpp TemplateiOS/*.mm  )
+set( HPP_FILES_IOS TemplateiOS/*.h  )
 
-elseif( APPLE ) 
+set( CPP_FILES_MACOS TemplateMacOS/*.cpp TemplateMacOS/*.mm  )
+set( HPP_FILES_MACOS TemplateMacOS/*.h  )
 
-    if( IOS )
-     	set( ADDED_CPP_PATTERNS *.mm *.m TemplateiOS/*.cpp TemplateiOS/*.mm )
-    	set( ADDED_H_PATTERNS TemplateiOS/*.h )
+set( CPP_FILES_WIN   TemplateWin32/*.cpp )
+set( HPP_FILES_WIN   TemplateWin32/*.h  )
 
-        set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR}
-            "${CMAKE_CURRENT_LIST_DIR}/"
-            "${CMAKE_CURRENT_LIST_DIR}/TemplateiOS/" PARENT_SCOPE )
+set( CPP_FILES_WINUAP TemplateWin32/*.cpp )
+set( HPP_FILES_WINUAP TemplateWin32/*.h  )
 
-    else()
-        set( ADDED_CPP_PATTERNS *.mm *.m TemplateMacOS/*.cpp TemplateMacOS/*.mm TemplateMacOS/*.m  )
-    	set( ADDED_H_PATTERNS TemplateMacOS/*.h  )
-        list( APPEND ERASE_FILES     AppDelegate.h AppDelegate.mm HelperAppDelegate.h HelperAppDelegate.mm MainWindowController.h MainWindowController.mm OpenGLView.h OpenGLView.mm CoreMacOSPlatform.h )
+set( ERASE_FILES_ANDROID  )
 
-        set(CMAKE_C_FLAGS  ${CMAKE_C_FLAGS} "-x objective-c")
-        set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS} "-x objective-c++")
-        set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x Objective-C++" )  
+set( ERASE_FILES_IOS  )
 
-    endif()
+set( ERASE_FILES_MACOS AppDelegate.h AppDelegate.mm HelperAppDelegate.h HelperAppDelegate.mm MainWindowController.h MainWindowController.mm OpenGLView.h OpenGLView.mm CoreMacOSPlatform.h )
 
-elseif( WIN32 ) 
-    set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp  )
-    set( ADDED_H_PATTERNS   TemplateWin32/*.h    )
-    list( APPEND ERASE_FILES  CorePlatformWin32.cpp CorePlatformWin32.h  )
- 
-endif()
+set( ERASE_FILES_WIN CorePlatformWin32.cpp CorePlatformWin32.h )
+set( ERASE_FILES_WINUAP ${ERASE_FILES_WIN32} )
 
-
-define_source_files (
-GLOB_CPP_PATTERNS  *.cpp ${ADDED_CPP_PATTERNS}
-GLOB_H_PATTERNS    *.h   ${ADDED_H_PATTERNS}
-GLOB_ERASE_FILES   ${ERASE_FILES}
-PARENT_SCOPE)  
-
+setup_main_module()

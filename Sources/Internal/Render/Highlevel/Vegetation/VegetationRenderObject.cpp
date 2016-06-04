@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <cfloat>
 
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
@@ -903,21 +874,24 @@ void VegetationRenderObject::RestoreRenderData()
 #if defined(__DAVAENGINE_IPHONE__)
     DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
 #endif
-    if (!renderData)
+
+    if (renderData == nullptr)
         return;
 
-    if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    if ((vertexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreVertexBuffer(vertexBuffer))
     {
         const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
         uint32 vertexBufferSize = static_cast<uint32>(vertexData.size() * sizeof(VegetationVertex));
         rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
     }
-    if (rhi::NeedRestoreIndexBuffer(indexBuffer))
+
+    if ((indexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreIndexBuffer(indexBuffer))
     {
         const Vector<VegetationIndex>& indexData = renderData->GetIndices();
         uint32 indexBufferSize = static_cast<uint32>(indexData.size() * sizeof(VegetationIndex));
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
     }
+
     if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
     {
         uint32 hmSize = uint32(heightmap->Size());
@@ -1329,7 +1303,7 @@ Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
 {
     Vector<Image*> images;
 
-    ImageSystem::Instance()->Load(path, images);
+    ImageSystem::Load(path, images);
 
     Image* image = nullptr;
     if (images.size() > 0)
@@ -1398,5 +1372,15 @@ uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
     }
 
     return index;
+}
+
+void VegetationRenderObject::BindDynamicParameters(Camera* camera)
+{
+    RenderObject::BindDynamicParameters(camera);
+
+    if (heightmap != nullptr)
+    {
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSize, pointer_size(&heightmapSize));
+    }
 }
 };

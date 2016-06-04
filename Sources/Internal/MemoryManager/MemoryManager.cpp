@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/BaseTypes.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -167,6 +138,7 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 
     RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
+    RegisterAllocPoolName(ALLOC_POOL_SQLITE, "sqlite");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -408,7 +380,7 @@ bool IsMemoryAddressAccessible(void* blockStart)
     vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
     vm_size_t size = 0;
     mach_port_t obj;
-    
+
 #if defined(__aarch64__)
     kern_return_t status = vm_region_64(
 #else
@@ -474,6 +446,21 @@ void MemoryManager::Deallocate(void* ptr)
         }
         MallocHook::Free(ptrToFree);
     }
+}
+
+uint32 MemoryManager::MemorySize(void* ptr)
+{
+    if (ptr != nullptr)
+    {
+        MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
+        {
+            return block->allocByApp;
+        }
+    }
+    return static_cast<uint32>(MallocHook::MallocSize(ptr));
 }
 
 void* MemoryManager::InternalAllocate(size_t size)

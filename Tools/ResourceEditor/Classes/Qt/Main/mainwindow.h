@@ -1,34 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "ui_mainwindow.h"
 
@@ -36,12 +6,9 @@
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/RecentMenuItems.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
-
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -54,12 +21,12 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+class IComponentContext;
+class PropertyPanel;
+
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow
-: public QMainWindow
-  ,
-  public DAVA::Singleton<QtMainWindow>
+class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
     Q_OBJECT
 
@@ -213,6 +180,8 @@ public slots:
     void SetupTitle();
 
     void RestartParticleEffects();
+    bool SetVisibilityToolEnabledIfPossible(bool);
+    void SetLandscapeInstancingEnabled(bool);
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -248,6 +217,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
+    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -286,7 +256,6 @@ private:
     void UpdateWayEditor(const Command2* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
-    void LoadUndoRedoState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
     void LoadEditorLightState(SceneEditor2* scene);
     void LoadGPUFormat();
@@ -313,7 +282,7 @@ private:
     RecentMenuItems recentProjects;
 
     IComponentContext& ngtContext;
-    PropertyPanel propertyPanel;
+    std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
@@ -335,6 +304,3 @@ private:
 
     void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };
-
-
-#endif // MAINWINDOW_H
