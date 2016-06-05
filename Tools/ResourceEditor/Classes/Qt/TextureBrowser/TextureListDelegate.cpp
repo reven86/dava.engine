@@ -17,6 +17,7 @@
 #include "Project/ProjectManager.h"
 #include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Utils.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -411,7 +412,8 @@ void TextureListDelegate::onOpenTexturePath()
     }
 
     const QString pathname = lastSelectedTextureDescriptor->pathname.GetAbsolutePathname().c_str();
-    ShowFileInExplorer(pathname);
+    QFileInfo fileInfo(pathname);
+    ShowFileInExplorer(fileInfo.absoluteFilePath());
 
     lastSelectedTextureDescriptor = nullptr;
 }
