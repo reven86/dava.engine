@@ -43,7 +43,11 @@ public:
     unsigned isDepthStencil : 1;
     unsigned isMapped : 1;
 };
-RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor);
+
+RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor)
+
+typedef ResourcePool<TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX9Pool;
+RHI_IMPL_POOL(TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 TextureDX9_t::TextureDX9_t()
     : width(0)
@@ -91,6 +95,8 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
     {
     case TEXTURE_TYPE_2D:
     {
+        DVASSERT(tex9 == nullptr);
+
         unsigned cmd1_cnt = 1;
         DX9Command cmd1[32] =
         {
@@ -148,7 +154,6 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
             if (desc.isRenderTarget || is_depthbuf)
             {
                 DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&surf9) } };
-
                 ExecDX9(&cmd3, 1, force_immediate);
             }
 
@@ -168,6 +173,8 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
     case TEXTURE_TYPE_CUBE:
     {
+        DVASSERT(cubetex9 == nullptr);
+
         uint32 cmd1_cnt = 1;
         DX9Command cmd1[128] =
         {
@@ -309,14 +316,13 @@ void TextureDX9_t::Destroy(bool force_immediate)
     height = 0;
 }
 
-typedef ResourcePool<TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX9Pool;
-RHI_IMPL_POOL(TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
-
 //------------------------------------------------------------------------------
 
 static Handle
 dx9_Texture_Create(const Texture::Descriptor& desc)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     Handle handle = TextureDX9Pool::Alloc();
     TextureDX9_t* tex = TextureDX9Pool::Get(handle);
 
@@ -335,7 +341,6 @@ static void
 dx9_Texture_Delete(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
-
     self->MarkRestored();
     self->Destroy();
     TextureDX9Pool::Free(tex);
@@ -401,6 +406,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
             if (!self->rt_tex9)
             {
+                DVASSERT(self->rt_tex9 == nullptr);
                 DX9Command cmd1 = { DX9Command::CREATE_TEXTURE, { self->width, self->height, 1, 0, DX9_TextureFormat(self->format), D3DPOOL_SYSTEMMEM, uint64_t(&self->rt_tex9), 0 } };
 
                 ExecDX9(&cmd1, 1);
@@ -609,11 +615,12 @@ void SetAsDepthStencil(Handle tex)
 
 void ReleaseAll()
 {
+    TextureDX9Pool::Lock();
     for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
     {
         t->Destroy(true);
-        t->MarkNeedRestore();
     }
+    TextureDX9Pool::Unlock();
 }
 
 void ReCreateAll()
@@ -625,7 +632,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureDX9_t::NeedRestoreCount();
+    return TextureDX9Pool::PendingRestoreCount();
 }
 }
 

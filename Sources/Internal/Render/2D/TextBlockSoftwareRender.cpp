@@ -78,6 +78,7 @@ void TextBlockSoftwareRender::Restore()
     if (!rhi::NeedRestoreTexture(tex->handle))
         return;
 
+    textBlock->CalculateCacheParams();
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
     int32 bsz = width * height;

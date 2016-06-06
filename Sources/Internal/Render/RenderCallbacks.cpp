@@ -6,10 +6,6 @@ namespace DAVA
 {
 namespace
 {
-Mutex callbackListMutex;
-Vector<Function<void()>> resourceRestoreCallbacks;
-Vector<Function<void()>> postRestoreCallbacks;
-
 struct SyncCallback
 {
     rhi::HSyncObject syncObject;
@@ -17,7 +13,13 @@ struct SyncCallback
 };
 Vector<SyncCallback> syncCallbacks;
 
-bool isInRestore = false;
+Vector<Function<void()>> restoreCallbacks;
+Mutex restoreMutex;
+
+Vector<Function<void()>> postRestoreCallbacks;
+Mutex postRestoreMutex;
+
+bool restoreInProgress = false;
 }
 
 namespace RenderCallbacks
@@ -25,70 +27,80 @@ namespace RenderCallbacks
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    LockGuard<Mutex> guard(callbackListMutex);
-    resourceRestoreCallbacks.push_back(callback);
+    LockGuard<Mutex> lock(restoreMutex);
+    if (restoreCallbacks.empty())
+    {
+        restoreCallbacks.reserve(256);
+    }
+    restoreCallbacks.push_back(callback);
 }
+
 void UnRegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    LockGuard<Mutex> guard(callbackListMutex);
-    for (size_t i = 0, sz = resourceRestoreCallbacks.size(); i < sz; ++i)
+    LockGuard<Mutex> lock(restoreMutex);
+    for (size_type i = 0, e = restoreCallbacks.size(); i < e; ++i)
     {
-        if (resourceRestoreCallbacks[i].Target() == callback.Target())
+        if (restoreCallbacks[i].Target() == callback.Target())
         {
-            RemoveExchangingWithLast(resourceRestoreCallbacks, i);
+            DAVA::RemoveExchangingWithLast(restoreCallbacks, i);
             return;
         }
     }
-    DVASSERT_MSG(false, "trying to unregister callback that was not perviously registered");
+    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
 }
 
 void RegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    LockGuard<Mutex> guard(callbackListMutex);
+    LockGuard<Mutex> lock(postRestoreMutex);
+    if (postRestoreCallbacks.empty())
+    {
+        postRestoreCallbacks.reserve(256);
+    }
     postRestoreCallbacks.push_back(callback);
 }
+
 void UnRegisterPostRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
-    LockGuard<Mutex> guard(callbackListMutex);
-    for (size_t i = 0, sz = postRestoreCallbacks.size(); i < sz; ++i)
+    LockGuard<Mutex> lock(postRestoreMutex);
+    for (size_type i = 0, e = postRestoreCallbacks.size(); i < e; ++i)
     {
         if (postRestoreCallbacks[i].Target() == callback.Target())
         {
-            RemoveExchangingWithLast(postRestoreCallbacks, i);
+            DAVA::RemoveExchangingWithLast(postRestoreCallbacks, i);
             return;
         }
     }
-    DVASSERT_MSG(false, "trying to unregister callback that was not perviously registered");
+    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
+}
+
+void ExecuteResourcesCallbacks()
+{
+    if (rhi::NeedRestoreResources())
+    {
+        restoreInProgress = true;
+        LockGuard<Mutex> lock(restoreMutex);
+        for (auto& cb : restoreCallbacks)
+        {
+            cb();
+        }
+    }
+    else if (restoreInProgress)
+    {
+        LockGuard<Mutex> lock(postRestoreMutex);
+        for (auto& cb : postRestoreCallbacks)
+        {
+            cb();
+        }
+        restoreInProgress = false;
+    }
 }
 
 void ProcessFrame()
 {
-    if (rhi::NeedRestoreResources())
-    {
-        isInRestore = true;
-        LockGuard<Mutex> guard(callbackListMutex);
-        for (auto& callback : resourceRestoreCallbacks)
-        {
-            callback();
-        }
-        Logger::Debug("Resources still need restore: ");
-        rhi::NeedRestoreResources();
-    }
-    else
-    {
-        if (isInRestore)
-        {
-            isInRestore = false;
-            LockGuard<Mutex> guard(callbackListMutex);
-            for (auto& callback : postRestoreCallbacks)
-            {
-                callback();
-            }
-        }
-    }
+    ExecuteResourcesCallbacks();
 
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {

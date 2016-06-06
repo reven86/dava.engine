@@ -8,6 +8,7 @@
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
