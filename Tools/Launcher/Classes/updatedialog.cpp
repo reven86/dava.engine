@@ -194,7 +194,7 @@ void UpdateDialog::DownloadFinished()
         currentDownload = nullptr;
 
         QString appDir = FileManager::GetApplicationDirectory(task.branchID, task.appID);
-
+        FileManager::MakeDirectory(appDir);
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
             ErrorMessenger::ShowRetryDlg(false);

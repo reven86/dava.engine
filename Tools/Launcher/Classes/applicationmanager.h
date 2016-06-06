@@ -40,6 +40,8 @@ private:
     void LoadLocalConfig(const QString& configPath);
     void ParseRemoteConfigData(const QByteArray& data);
 
+    QString GetApplicationDirectory(const QString& branchID, const QString& appID) const;
+
     QString localConfigFilePath;
 
     ConfigParser localConfig;

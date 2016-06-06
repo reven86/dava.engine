@@ -28,6 +28,17 @@ void ApplicationManager::LoadLocalConfig(const QString& configPath)
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_DOC_ACCESS);
     }
+    //kostil
+    Branch* branch = localConfig.GetBranch("ST");
+    if (branch != nullptr)
+    {
+        branch->id = "Stable";
+    }
+    branch = localConfig.GetBranch("BLITZTOSTABLE");
+    if (branch != nullptr)
+    {
+        branch->id = "Blitz To Stable";
+    }
 }
 
 void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
@@ -44,6 +55,31 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     }
     localConfig.CopyStringsAndFavsFromConfig(remoteConfig);
     localConfig.SaveToFile(localConfigFilePath);
+}
+
+QString ApplicationManager::GetApplicationDirectory(const QString& branchID, const QString& appID) const
+{
+    QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
+    if (QFile::exists(runPath))
+    {
+        return runPath;
+    }
+    QList<QString> branchKeys = localConfig.GetStrings().keys(branchID);
+    branchKeys.append(branchID);
+    for (const QString& branchKey : branchKeys)
+    {
+        QList<QString> appKeys = localConfig.GetStrings().keys(appID);
+        for (const QString& appKey : appKeys)
+        {
+            runPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            if (QFile::exists(runPath))
+            {
+                return runPath;
+            }
+        }
+    }
+    ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application path %1 %2 not exists!").arg(branchID).arg(appID));
+    return "";
 }
 
 bool ApplicationManager::ShouldShowNews()
@@ -133,7 +169,11 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::GetApplicationDirectory(branchID, appID) + version->runPath;
+        QString runPath = GetApplicationDirectory(branchID, appID) + version->runPath;
+        if (runPath.isEmpty())
+        {
+            return;
+        }
         if (!ProcessHelper::IsProcessRuning(runPath))
             ProcessHelper::RunProcess(runPath);
         else
@@ -146,7 +186,11 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::GetApplicationDirectory(branchID, appID) + version->runPath;
+        QString runPath = GetApplicationDirectory(branchID, appID) + version->runPath;
+        if (runPath.isEmpty())
+        {
+            return false;
+        }
         while (ProcessHelper::IsProcessRuning(runPath))
         {
             int result = ErrorMessenger::ShowRetryDlg(true);
@@ -154,7 +198,11 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
                 return false;
         }
 
-        QString appPath = FileManager::GetApplicationDirectory(branchID, appID);
+        QString appPath = GetApplicationDirectory(branchID, appID);
+        if (appPath.isEmpty())
+        {
+            return false;
+        }
         FileManager::DeleteDirectory(appPath);
         localConfig.RemoveApplication(branchID, appID, versionID);
         localConfig.SaveToFile(localConfigFilePath);
@@ -178,7 +226,11 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
         for (int j = 0; j < versionCount; ++j)
         {
             AppVersion* version = app->GetVersion(j);
-            QString runPath = FileManager::GetApplicationDirectory(branchID, app->id) + version->runPath;
+            QString runPath = GetApplicationDirectory(branchID, app->id) + version->runPath;
+            if (runPath.isEmpty())
+            {
+                return false;
+            }
             while (ProcessHelper::IsProcessRuning(runPath))
             {
                 int result = ErrorMessenger::ShowRetryDlg(true);

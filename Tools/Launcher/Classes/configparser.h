@@ -105,6 +105,7 @@ public:
     void RemoveBranch(const QString& branchID);
 
     QString GetString(const QString& stringID) const;
+    const QMap<QString, QString>& GetStrings() const;
 
     void SetLauncherURL(const QString& url);
     void SetWebpageURL(const QString& url);

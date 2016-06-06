@@ -250,18 +250,12 @@ void MakeDirectory(const QString& path)
 QString GetApplicationDirectory(const QString& branchID, const QString& appID)
 {
     QString path = GetBranchDirectory(branchID) + appID + "/";
-    if (!QDir(path).exists())
-        QDir().mkpath(path);
-
     return path;
 }
 
 QString GetBranchDirectory(const QString& branchID)
 {
     QString path = GetBaseAppsDirectory() + branchID + "/";
-    if (!QDir(path).exists())
-        QDir().mkpath(path);
-
     return path;
 }
 }

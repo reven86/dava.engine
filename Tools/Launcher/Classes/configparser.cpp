@@ -627,6 +627,11 @@ QString ConfigParser::GetString(const QString& stringID) const
     return stringID;
 }
 
+const QMap<QString, QString>& ConfigParser::GetStrings() const
+{
+    return strings;
+}
+
 const QString& ConfigParser::GetLauncherVersion() const
 {
     return launcherVersion;
