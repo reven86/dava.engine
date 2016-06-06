@@ -14,6 +14,7 @@ extern void FrameworkWillTerminate();
 
 #include "Core/Core.h"
 #include "UI/UIScreenManager.h"
+#include "Platform/Steam.h"
 
 - (void)setWindowController:(MainWindowController*)ctrlr
 {
@@ -104,6 +105,9 @@ extern void FrameworkWillTerminate();
 
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Deinit();
+#endif
 
     // Wait job completion before releasing singletons
     // But client should stop its jobs in GameCore::OnAppFinished or in FrameworkWillTerminate

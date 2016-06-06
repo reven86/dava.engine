@@ -13,6 +13,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
+#include "Platform/Steam.h"
 
 namespace DAVA
 {
@@ -47,6 +48,10 @@ void ApplicationCore::Update(float32 timeElapsed)
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
     UIControlSystem::Instance()->Update();
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
+    
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Update();
+#endif
 }
 
 void ApplicationCore::OnEnterFullscreen()

@@ -1,5 +1,4 @@
-#ifndef __COMMAND2_H__
-#define __COMMAND2_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Scene3D/Entity.h"
@@ -9,7 +8,7 @@
 #include "Commands2/CommandID.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class Command2 : public CommandNotifyProvider, public DAVA::ICommand
+class Command2 : public DAVA::ICommand
 {
 public:
     using Pointer = std::unique_ptr<Command2>;
@@ -71,5 +70,3 @@ inline bool Command2::IsModifying() const
 {
     return true;
 }
-
-#endif // __COMMAND2_H__

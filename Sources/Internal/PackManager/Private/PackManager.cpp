@@ -77,9 +77,9 @@ const FilePath& PackManager::GetLocalPacksDirectory() const
     return impl->GetLocalPacksDir();
 }
 
-const String& PackManager::GetRemotePacksUrl() const
+const String& PackManager::GetRemotePacksUrl(bool isGPU) const
 {
-    return impl->GetRemotePacksURL();
+    return impl->GetRemotePacksURL(isGPU);
 }
 
 } // end namespace DAVA

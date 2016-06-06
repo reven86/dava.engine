@@ -60,6 +60,11 @@ bool Steam::IsInited()
     return isInited;
 }
 
+void Steam::Update()
+{
+    SteamAPI_RunCallbacks();
+}
+
 ISteamRemoteStorage* Steam::CreateStorage()
 {
     return SteamRemoteStorage();
