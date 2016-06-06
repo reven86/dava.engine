@@ -30,8 +30,8 @@
 #include "BoolPropertyDelegate.h"
 #include "ResourceFilePropertyDelegate.h"
 #include "Vector4PropertyDelegate.h"
-
 #include "FontPropertyDelegate.h"
+#include "TablePropertyDelegate.h"
 
 using namespace DAVA;
 
@@ -56,6 +56,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
+    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
