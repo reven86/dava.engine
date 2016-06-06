@@ -2,8 +2,8 @@ set( HPP_FILES *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Pr
 set( CPP_FILES *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp )
 set( CPP_FILES_APPLE *.mm )
 
-set( HPP_FILES_ANDROID Private/Android/*.cpp )
-set( CPP_FILES_ANDROID Private/Android/*.h   )
+set( HPP_FILES_ANDROID Private/Android/*.h )
+set( CPP_FILES_ANDROID Private/Android/*.cpp   )
 
 set( HPP_FILES_IOS Private/iOS/*.h )
 set( CPP_FILES_IOS Private/iOS/*.cpp Private/iOS/*.mm  )
