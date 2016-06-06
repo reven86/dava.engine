@@ -53,10 +53,12 @@ void LodSystem::Process(float32 timeElapsed)
     for (int32 index = 0; index < size; ++index)
     {
         FastStruct& fast = fastVector[index];
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
         __builtin_prefetch(&fastVector[index + 1]);
         __builtin_prefetch(&fastVector[index + 2]);
         __builtin_prefetch(&fastVector[index + 3]);
         __builtin_prefetch(&fastVector[index + 4]);
+#endif
 
         if (fast.effectStopped)
         {
@@ -120,7 +122,7 @@ void LodSystem::Process(float32 timeElapsed)
                 SlowStruct& slow = slowVector[index];
                 fast.nearSquare = slow.nearSquares[fast.currentLod];
                 fast.farSquare = slow.farSquares[fast.currentLod];
-                slow.lod->SetCurrentLod(fast.currentLod);
+                slow.lod->currentLod = fast.currentLod;
 
                 ParticleEffectComponent* effect = slow.effect;
                 if (effect)
@@ -170,7 +172,6 @@ void LodSystem::AddEntity(Entity* entity)
     LodComponent* lod = static_cast<LodComponent*>(entity->GetComponent(Component::LOD_COMPONENT));
     ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     Vector3 position = transform->GetWorldTransform().GetTranslationVector();
-    bool effectStopped = effect ? effect->IsStopped() : false;
 
     SlowStruct slow;
     slow.entity = entity;
@@ -179,15 +180,14 @@ void LodSystem::AddEntity(Entity* entity)
     UpdateDistances(lod, &slow);
     slowVector.push_back(slow);
 
-    FastStruct fast{
-        slow.farSquares[0],
-        position,
-        lod->currentLod,
-        lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.nearSquares[lod->currentLod],
-        lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.farSquares[lod->currentLod],
-        effectStopped,
-        effect != nullptr
-    };
+    FastStruct fast;
+    fast.farSquare0 = slow.farSquares[0];
+    fast.position = position;
+    fast.currentLod = lod->currentLod;
+    fast.nearSquare = lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.nearSquares[lod->currentLod];
+    fast.farSquare = lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.farSquares[lod->currentLod];
+    fast.effectStopped = effect ? effect->IsStopped() : false;
+    fast.isEffect = effect != nullptr;
 
     fastVector.push_back(fast);
     fastMap.insert(std::make_pair(entity, static_cast<int32>(fastVector.size() - 1)));

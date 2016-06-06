@@ -4,6 +4,8 @@
 #include "Entity/Component.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
 
 namespace DAVA
 {
@@ -20,8 +22,6 @@ public:
     static const float32 MAX_LOD_DISTANCE;
     static const float32 INVALID_DISTANCE;
 
-    LodComponent();
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -34,24 +34,24 @@ public:
     void EnableRecursiveUpdate();
 
 private:
-    static float32 GetDefaultDistance(int32 layer);
-    int32 currentLod;
-    Vector<float32> distances;
-    void SetCurrentLod(int32 lod);
-
-public:
-    INTROSPECTION_EXTEND(LodComponent, Component,
-                         COLLECTION(distances, "Lod Distances", I_SAVE | I_VIEW)
-                         );
+    int32 currentLod = INVALID_LOD_LAYER;
+    Array<float32, MAX_LOD_LAYERS> distances = Array<float32, MAX_LOD_LAYERS>{ 300.f, 600.f, 900.f, 1000.f }; //cause list initialization for members not implemented in MSVC https://msdn.microsoft.com/en-us/library/dn793970.aspx
 
     friend class LodSystem;
 };
 
 REGISTER_CLASS(LodComponent);
 
-inline void LodComponent::SetCurrentLod(int32 lod)
+inline void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 {
-    currentLod = lod;
+    DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+    distances[layerNum] = distance;
+    GlobalEventSystem::Instance()->Event(this, EventSystem::LOD_DISTANCE_CHANGED);
+}
+
+inline void LodComponent::EnableRecursiveUpdate()
+{
+    GlobalEventSystem::Instance()->Event(this, EventSystem::LOD_RECURSIVE_UPDATE_ENABLED);
 }
 
 inline int32 LodComponent::GetCurrentLod() const
