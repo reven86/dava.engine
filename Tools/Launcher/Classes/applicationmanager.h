@@ -41,7 +41,6 @@ private:
     void LoadLocalConfig(const QString& configPath);
     void ParseRemoteConfigData(const QByteArray& data);
 
-
     QString localConfigFilePath;
 
     ConfigParser localConfig;
