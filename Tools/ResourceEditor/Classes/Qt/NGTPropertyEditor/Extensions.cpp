@@ -202,7 +202,7 @@ Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int col
 {
     if (column == 1 && roleId == ValueRole::roleId_)
     {
-        Variant result = GetterExtension::getValue(item, column, roleId, definitionManager);
+        Variant result = SetterGetterExtension::getValue(item, column, roleId, definitionManager);
         ObjectHandle handle;
         if (result.tryCast(handle))
         {
@@ -215,21 +215,28 @@ Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int col
             return type.getName();
         }
     }
-    return GetterExtension::getValue(item, column, roleId, definitionManager);
+    return SetterGetterExtension::getValue(item, column, roleId, definitionManager);
 }
 
-EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, IDefinitionManager& defManager_)
+EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, IComponentContext& context)
     : delegateObj(delegateObj_)
-    , defManager(defManager_)
+    , defManagerHolder(context)
 {
 }
 
 void EntityInjectDataExtension::inject(RefPropertyItem* item)
 {
-    static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
 
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
+    static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
     std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, defManager);
+    Variant value = node->propertyInstance->get(node->object, *defManager);
     ObjectHandle handle;
     if (value.tryCast(handle))
     {
@@ -242,7 +249,7 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
             std::vector<ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
         else if (type == ExtensionsDetails::renderBatchType)
         {
@@ -251,14 +258,14 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
             buttons.emplace_back(true, "/QtIcons/shadow.png", std::bind(&EntityInjectDataExtension::ConvertBatchToShadow, this, item));
             buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveRenderBatch, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
         else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
         {
             std::vector<ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/3d.png", std::bind(&EntityInjectDataExtension::OpenMaterials, this, item));
             ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
         }
     }
     else if (node->propertyInstance->getType() == ExtensionsDetails::keyedArchive)
@@ -266,13 +273,20 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
         std::vector<ButtonItem> buttons;
         buttons.emplace_back(true, "/QtIcons/keyplus.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
         ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-        item->injectData(ButtonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
     }
 }
 
 void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
 {
-    Variant buttons = item->getInjectedData(ButtonsDefinitionRole::roleId_);
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
+    Variant buttons = item->getInjectedData(buttonsDefinitionRole::roleId_);
     ObjectHandle modelHandle;
     if (!buttons.tryCast(modelHandle))
         return;
@@ -291,7 +305,7 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
     std::shared_ptr<const PropertyNode> node = objects.front();
     ObjectHandle valueHandle;
 
-    if (node->propertyInstance->get(node->object, defManager).tryCast(valueHandle))
+    if (node->propertyInstance->get(node->object, *defManager).tryCast(valueHandle))
     {
         TypeId type = valueHandle.type();
         if (type.isPointer())
@@ -333,15 +347,22 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
 
 void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
 {
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
     const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
     delegateObj.StartBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
     for (const std::shared_ptr<const PropertyNode>& object : objects)
     {
-        Variant value = object->propertyInstance->get(object->object, defManager);
+        Variant value = object->propertyInstance->get(object->object, *defManager);
         ObjectHandle handle;
         DVVERIFY(value.tryCast(handle));
 
-        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
+        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), *defManager);
         DVASSERT(component != nullptr);
 
         delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
@@ -351,7 +372,14 @@ void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
 
 void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
 {
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
     DAVA::RenderObject* renderObject = batch->GetRenderObject();
     DVASSERT(renderObject != nullptr);
 
@@ -372,7 +400,14 @@ void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
 
 void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item)
 {
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
 
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
 
@@ -381,18 +416,32 @@ void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item
 
 void EntityInjectDataExtension::RebuildTangentSpace(const RefPropertyItem* item)
 {
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
     delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
 }
 
 void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
 {
+    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
+    if (defManager == nullptr)
+    {
+        DVASSERT(defManager != nullptr);
+        return;
+    }
+
     std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, defManager);
+    Variant value = node->propertyInstance->get(node->object, *defManager);
     ObjectHandle handle;
     DVVERIFY(value.tryCast(handle));
 
-    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
+    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), *defManager);
     DVASSERT(material != nullptr);
     delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
@@ -410,7 +459,7 @@ void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
                                   Collection collectionHandle;
                                   if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
                                   {
-                                      CollectionImplPtr impl = collectionHandle.getImpl();
+                                      CollectionImplPtr impl = collectionHandle.impl();
                                       NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
                                       DVASSERT(archImpl != nullptr);
                                       DAVA::KeyedArchive* archive = archImpl->GetArchive();

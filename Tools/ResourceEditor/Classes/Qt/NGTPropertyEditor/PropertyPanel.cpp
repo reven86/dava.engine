@@ -20,20 +20,13 @@
 PropertyPanel::PropertyPanel()
     : updater(DAVA::MakeFunction(this, &PropertyPanel::UpdateModel))
 {
-    ICommandManager* commandManager = NGTLayer::queryInterface<ICommandManager>();
-    DVASSERT(commandManager != nullptr);
-
-    IDefinitionManager* definitionManager = NGTLayer::queryInterface<IDefinitionManager>();
-    DVASSERT(definitionManager != nullptr);
-
-    IReflectionController* reflectionController = NGTLayer::queryInterface<IReflectionController>();
-    DVASSERT(reflectionController != nullptr);
-
-    model.reset(new ReflectedPropertyModel(*definitionManager, *commandManager, *reflectionController));
+    IComponentContext* context = NGTLayer::GetGlobalContext();
+    DVASSERT(context != nullptr);
+    model.reset(new ReflectedPropertyModel(*context));
     model->registerExtension(new EntityChildCreatorExtension());
     model->registerExtension(new EntityMergeValueExtension());
     model->registerExtension(new PropertyPanelGetExtension());
-    model->registerExtension(new EntityInjectDataExtension(*this, *definitionManager));
+    model->registerExtension(new EntityInjectDataExtension(*this, *context));
 }
 
 PropertyPanel::~PropertyPanel()
@@ -51,7 +44,7 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
     uiApplication.addView(*view);
 }
 
-void PropertyPanel::Finalize()
+void PropertyPanel::Finalize(IUIApplication& uiApplication)
 {
     selectedObjects.clear();
     SetObject(selectedObjects);

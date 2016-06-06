@@ -33,6 +33,7 @@
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include <core_data_model/reflection/property_model_extensions.hpp>
+#include <core_dependency_system/depends.hpp>
 
 #include <QWidget>
 #include <QLineEdit>
@@ -47,7 +48,7 @@ struct DAVAProperiesEnum
     };
 };
 
-class PropertyPanelGetExtension : public GetterExtension
+class PropertyPanelGetExtension : public SetterGetterExtension
 {
 public:
     Variant getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager& definitionManager) const override;
@@ -102,7 +103,7 @@ public:
         virtual void EndBatch() = 0;
     };
 
-    EntityInjectDataExtension(Delegate& delegateObj, IDefinitionManager& defManager);
+    EntityInjectDataExtension(Delegate& delegateObj, IComponentContext& context);
 
     void inject(RefPropertyItem* item) override;
     void updateInjection(RefPropertyItem* item) override;
@@ -119,5 +120,5 @@ private:
 
 private:
     Delegate& delegateObj;
-    IDefinitionManager& defManager;
+    Depends<IDefinitionManager> defManagerHolder;
 };

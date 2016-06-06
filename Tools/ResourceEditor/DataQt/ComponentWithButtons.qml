@@ -8,7 +8,7 @@ WGExpandingRowLayout
     WGListModel
     {
         id: buttonsModel
-        source: itemData != null ? itemData.ButtonsDefinition : null
+        source: itemData != null ? itemData.buttonsDefinition : null
         ButtonsModelExtension{}
     }
 
@@ -20,12 +20,12 @@ WGExpandingRowLayout
             id: button
             Layout.preferredHeight: defaultSpacing.minimumRowHeight
             Layout.preferredWidth: defaultSpacing.minimumRowHeight
-            iconSource: ButtonIcon
-            enabled: ButtonEnabled
+            iconSource: buttonIcon
+            enabled: buttonEnabled
 
             onClicked:
             {
-                ButtonClicked = true;
+                buttonClicked = true;
             }
         }
     }
