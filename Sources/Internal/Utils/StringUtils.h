@@ -45,9 +45,9 @@ bool IsWhitespace(char16 t);
 template <typename StringType>
 StringType Trim(const StringType& string)
 {
-    typename StringType::const_iterator it = string.begin();
-    typename StringType::const_iterator end = string.end();
-    typename StringType::const_reverse_iterator rit = string.rbegin();
+    auto it = string.begin();
+    auto end = string.end();
+    auto rit = string.rbegin();
     while (it != end && IsWhitespace(*it)) ++it;
     while (rit.base() != it && IsWhitespace(*rit)) ++rit;
     return StringType(it, rit.base());
@@ -61,8 +61,8 @@ StringType Trim(const StringType& string)
 template <typename StringType>
 StringType TrimLeft(const StringType& string)
 {
-    typename StringType::const_iterator it = string.begin();
-    typename StringType::const_iterator end = string.end();
+    auto it = string.begin();
+    auto end = string.end();
     while (it != end && IsWhitespace(*it)) ++it;
     return StringType(it, end);
 }
@@ -75,8 +75,8 @@ StringType TrimLeft(const StringType& string)
 template <typename StringType>
 StringType TrimRight(const StringType& string)
 {
-    typename StringType::const_reverse_iterator rit = string.rbegin();
-    typename StringType::const_reverse_iterator rend = string.rend();
+    auto rit = string.rbegin();
+    auto rend = string.rend();
     while (rit != rend && IsWhitespace(*rit)) ++rit;
     return StringType(rend.base(), rit.base());
 }

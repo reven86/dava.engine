@@ -733,7 +733,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     }
     touchUp.phase = UIEvent::Phase::ENDED;
     touchUp.touchId = touchId;
-    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.f;
+    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
 
     ProcessInput(touchUp);
 }
