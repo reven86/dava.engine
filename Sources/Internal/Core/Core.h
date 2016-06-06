@@ -25,6 +25,8 @@ using AppHandle = struct android_app*;
 using AppHandle = uint32;
 #endif
 
+class PackManager;
+
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms. 
@@ -107,7 +109,6 @@ public:
     const Vector<String>& GetCommandLine();
     bool IsConsoleMode();
 
-public:
     void SetOptions(KeyedArchive* archiveOfOptions);
     KeyedArchive* GetOptions();
 
@@ -242,6 +243,8 @@ public:
     rhi::InitParam rendererParams;
     Signal<bool> focusChanged;
 
+    PackManager& GetPackManager();
+
 protected:
     eScreenOrientation screenOrientation;
 
@@ -277,6 +280,8 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
+
+    std::unique_ptr<PackManager> packManager;
 };
 
 inline bool Core::IsActive()

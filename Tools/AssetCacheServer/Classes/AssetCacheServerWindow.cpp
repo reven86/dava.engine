@@ -31,7 +31,7 @@
 
 namespace
 {
-const DAVA::String DEFAULT_REMOTE_IP = DAVA::AssetCache::LOCALHOST;
+const DAVA::String DEFAULT_REMOTE_IP = DAVA::AssetCache::GetLocalHost();
 const DAVA::uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
 }
 

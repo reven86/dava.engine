@@ -69,5 +69,6 @@
         <file>Cursors/northWestSouthEastResizeCursor.png</file>
         <file>Cursors/cursorRotate.png</file>
         <file>Cursors/cursorCross.png</file>
+        <file>Icons/settings.png</file>
     </qresource>
 </RCC>

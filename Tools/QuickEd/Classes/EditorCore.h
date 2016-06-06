@@ -1,11 +1,14 @@
 #ifndef QUICKED_EDITOR_CORE_H
 #define QUICKED_EDITOR_CORE_H
 
-#include <QObject>
-#include "UI/mainwindow.h"
+
+#include "Base/Introspection.h"
 #include "Project/Project.h"
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "AssetCache/AssetCacheClient.h"
+#include "UI/mainwindow.h"
+#include <QObject>
 
 class QAction;
 class Document;
@@ -19,7 +22,7 @@ namespace DAVA
 class AssetCacheClient;
 }
 
-class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
+class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DAVA::InspBase
 {
     Q_OBJECT
 public:
@@ -52,7 +55,12 @@ private slots:
 private:
     void OpenProject(const QString& path);
 
+    bool IsUsingAssetCache() const;
     bool eventFilter(QObject* object, QEvent* event) override;
+    void SetUsingAssetCacheEnabled(bool enabled);
+
+    void EnableCacheClient();
+    void DisableCacheClient();
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
@@ -60,6 +68,15 @@ private:
     Project* project = nullptr;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
+
+    DAVA::AssetCacheClient::ConnectionParams connectionParams;
+    bool assetCacheEnabled;
+    REGISTER_PREFERENCES(EditorCore)
+
+public:
+    INTROSPECTION(EditorCore,
+                  PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_PREFERENCE)
+                  )
 };
 
 inline EditorFontSystem* GetEditorFontSystem()

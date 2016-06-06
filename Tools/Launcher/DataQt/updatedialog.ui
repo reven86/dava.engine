@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>335</width>
+    <width>365</width>
     <height>225</height>
    </rect>
   </property>
@@ -101,19 +101,6 @@
        <widget class="QProgressBar" name="progressBar_downloading">
         <property name="whatsThis">
          <string>Download progress</string>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="textVisible">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressBar_testing">
-        <property name="whatsThis">
-         <string>Test progress</string>
         </property>
         <property name="value">
          <number>0</number>

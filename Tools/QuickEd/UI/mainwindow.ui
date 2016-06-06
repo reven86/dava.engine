@@ -108,6 +108,8 @@
     </widget>
     <addaction name="separator"/>
     <addaction name="menuDebug"/>
+    <addaction name="separator"/>
+    <addaction name="action_preferences"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -154,6 +156,7 @@
    <addaction name="actionSaveDocument"/>
    <addaction name="actionSaveAllDocuments"/>
    <addaction name="actionClose_project"/>
+   <addaction name="action_preferences"/>
    <addaction name="separator"/>
    <addaction name="actionPixelized"/>
   </widget>
@@ -478,6 +481,18 @@
    </property>
    <property name="toolTip">
     <string>reload sprites</string>
+   </property>
+  </action>
+  <action name="action_preferences">
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/settings.png</normaloff>:/Icons/settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+   <property name="toolTip">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>

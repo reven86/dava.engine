@@ -14,7 +14,9 @@
 #include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -575,6 +577,9 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
     {
     case VirtualKey::Back:
         savedCaretPosition += 1;
+        break;
+    case VirtualKey::Tab:
+        args->Handled = true; // To avoid handling tab navigation by windows. We will handle navigation by our focus system.
         break;
     case VirtualKey::Escape:
     {
