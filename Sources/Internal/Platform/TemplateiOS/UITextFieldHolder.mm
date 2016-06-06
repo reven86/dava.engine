@@ -189,6 +189,10 @@
         caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
         UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
         [textField_ setSelectedTextRange:rangeCaret];
+        if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
+        {
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, DAVA::WideStringFromNSString(newString), cppTextField->GetText());
+        }
     }
     return applyChanges;
 }

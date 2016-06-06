@@ -1287,7 +1287,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 
 - (void)controlTextDidChange:(NSNotification*)notification
 {
-    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && nullptr != text->ctrl->davaText->GetDelegate())
     {
         text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
     }

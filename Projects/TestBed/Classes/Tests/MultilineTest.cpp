@@ -91,6 +91,7 @@ void MultilineTest::LoadResources()
     textField2->SetTextAlign(ALIGN_RIGHT | ALIGN_TOP);
 
     textFieldMulti = new UITextField(Rect(450, 10, 400, 120));
+    textFieldMulti->GetOrCreateComponent<UIFocusComponent>();
     textFieldMulti->SetFont(font);
     textFieldMulti->SetText(L"Multiline text field");
     textFieldMulti->SetDebugDraw(true);
@@ -130,8 +131,8 @@ void MultilineTest::LoadResources()
     SafeRelease(field);
 
     field = new UITextField(Rect(0, Y_OFFSET + 2 * (CONTROL_HEIGTH + 10), CONTROL_LENGHT, CONTROL_HEIGTH));
+    field->GetOrCreateComponent<UIFocusComponent>();
     field->SetFont(font);
-    field->SetFocused();
     field->SetDebugDraw(true);
     field->SetText(L"Test text inside UITextField used for test");
     field->SetDelegate(this);
