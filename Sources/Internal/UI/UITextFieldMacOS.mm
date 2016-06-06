@@ -889,7 +889,7 @@ public:
         [nsTextField setHidden:!value];
         if (!value)
         {
-            // when we hide dava TextField control, move native control
+            // force UpdateRect call when dava control is hiding. should be done to ensure that nativeControl will also become hidden (moved away from visible screen)
             UpdateRect(davaText->GetRect());
         }
     }
