@@ -29,6 +29,7 @@ public:
 
     bool ShouldShowNews();
     void NewsShowed();
+    QString GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExist = true) const;
 
 signals:
     void Refresh();
@@ -40,7 +41,6 @@ private:
     void LoadLocalConfig(const QString& configPath);
     void ParseRemoteConfigData(const QByteArray& data);
 
-    QString GetApplicationDirectory(const QString& branchID, const QString& appID) const;
 
     QString localConfigFilePath;
 

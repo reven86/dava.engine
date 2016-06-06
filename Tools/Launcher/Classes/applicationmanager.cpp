@@ -57,7 +57,7 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     localConfig.SaveToFile(localConfigFilePath);
 }
 
-QString ApplicationManager::GetApplicationDirectory(const QString& branchID, const QString& appID) const
+QString ApplicationManager::GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExists) const
 {
     QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
     if (QFile::exists(runPath))
@@ -69,17 +69,26 @@ QString ApplicationManager::GetApplicationDirectory(const QString& branchID, con
     for (const QString& branchKey : branchKeys)
     {
         QList<QString> appKeys = localConfig.GetStrings().keys(appID);
+        appKeys.append(appID);
         for (const QString& appKey : appKeys)
         {
-            runPath = FileManager::GetApplicationDirectory(branchKey, appKey);
-            if (QFile::exists(runPath))
+            QString newRunPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            if (QFile::exists(newRunPath))
             {
-                return runPath;
+                return newRunPath;
             }
         }
     }
-    ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application path %1 %2 not exists!").arg(branchID).arg(appID));
-    return "";
+    if (mustExists)
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application path %1 %2 not exists!").arg(branchID).arg(appID));
+        return "";
+    }
+    else
+    {
+        FileManager::MakeDirectory(runPath);
+        return runPath;
+    }
 }
 
 bool ApplicationManager::ShouldShowNews()
@@ -124,7 +133,8 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
             {
                 AppVersion* appVersion = app->GetVersion(0);
                 Application* localApp = localConfig.GetApplication(branch->id, app->id);
-                if (localApp->GetVersion(0)->id != appVersion->id)
+                AppVersion* localAppVersion = localApp->GetVersion(0);
+                if (localAppVersion->id != appVersion->id)
                     tasks.push_back(UpdateTask(branch->id, app->id, *appVersion));
             }
         }

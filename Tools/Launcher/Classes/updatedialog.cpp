@@ -193,8 +193,7 @@ void UpdateDialog::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = nullptr;
 
-        QString appDir = FileManager::GetApplicationDirectory(task.branchID, task.appID);
-        FileManager::MakeDirectory(appDir);
+        QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
             ErrorMessenger::ShowRetryDlg(false);
