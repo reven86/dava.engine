@@ -14,29 +14,17 @@ public:
     GameClient(DAVA::PackManager& packManager_)
         : packManager(packManager_)
     {
-        sigConnection = packManager.onPackStateChanged.Connect(this, &GameClient::OnPackStateChange);
+        sigConnection = packManager.packState.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change)
+    void OnPackStateChange(const DAVA::PackManager::Pack& pack)
     {
         DAVA::StringStream ss;
 
         ss << "pack: " << pack.name << " change: ";
-
-        switch (change)
+        ss << "new state - " << static_cast<unsigned>(pack.state);
+        if (pack.state == DAVA::PackManager::Pack::Status::ErrorLoading)
         {
-        case DAVA::PackManager::Pack::Change::State:
-            ss << "new state - " << static_cast<unsigned>(pack.state);
-            if (pack.state == DAVA::PackManager::Pack::Status::ErrorLoading)
-            {
-                ss << '\n' << pack.otherErrorMsg;
-            }
-            break;
-        case DAVA::PackManager::Pack::Change::DownloadProgress:
-            ss << "download progress - " << pack.downloadProgress;
-            break;
-        case DAVA::PackManager::Pack::Change::Priority:
-            ss << "new priority - " << pack.priority;
-            break;
+            ss << '\n' << pack.otherErrorMsg;
         }
 
         DAVA::Logger::FrameworkDebug("%s", ss.str().c_str());
@@ -91,15 +79,13 @@ DAVA_TESTCLASS (PackManagerTest)
         dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
         gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
 
-        FilePath sqliteDbFile(dbFile);
-
         PackManager& packManager = Core::Instance()->GetPackManager();
 
         FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
 
         try
         {
-            packManager.Initialize(sqliteDbFile,
+            packManager.Initialize(dbFile,
                                    folderWithDownloadedPacks,
                                    "",
                                    commonPacksUrl,
