@@ -22,22 +22,22 @@ NSInteger returnButtonIndex = -1;
 
 - (NSInteger)showModal
 {
-	returnButtonIndex = -1;
+    returnButtonIndex = -1;
     self.delegate = self;
     [self show];
-	[self autorelease];
+    [self autorelease];
 
-	// This view must be modal, so wait for result
-	[NSRunLoop currentRunLoop];
-	while (-1 == returnButtonIndex)
-	{
+    // This view must be modal, so wait for result
+    [NSRunLoop currentRunLoop];
+    while (-1 == returnButtonIndex)
+    {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
     }
 
     return returnButtonIndex;
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (void)alertView:(UIAlertView*)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     returnButtonIndex = buttonIndex;
 }
