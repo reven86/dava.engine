@@ -191,7 +191,8 @@ void CEFWebPageRender::AppyTexture()
     else
     {
         Texture* texture = contentBackground->GetSprite()->GetTexture();
-        texture->TexImage(0, imageWidth, imageHeight, imageData.data(), imageData.size(), 0);
+        uint32 dataSize = static_cast<uint32>(imageData.size());
+        texture->TexImage(0, imageWidth, imageHeight, imageData.data(), dataSize, 0);
     }
 }
 

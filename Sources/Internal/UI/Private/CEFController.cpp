@@ -178,7 +178,7 @@ void CEFControllerImpl::CleanCache()
     FilePath cachePath = GetCachePath();
     Vector<FilePath> cacheDirContent = fs->EnumerateFilesInDirectory(cachePath);
 
-    uint32 cacheSize = 0;
+    size_t cacheSize = 0;
     for (const FilePath& path : cacheDirContent)
     {
         uint32 size = 0;
