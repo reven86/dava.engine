@@ -84,10 +84,7 @@ void Thread::SetCurrentThreadName(const String& str)
 unsigned __stdcall ThreadFunc(void* param)
 {
     Thread* t = static_cast<Thread*>(param);
-
-#if defined(__DAVAENGINE_DEBUG__)
     Thread::SetCurrentThreadName(t->name);
-#endif
 
     Thread::ThreadFunction(param);
     return 0;
