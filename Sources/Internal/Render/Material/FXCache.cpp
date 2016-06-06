@@ -37,7 +37,7 @@ void Initialize()
     defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
     defaultPass.shaderFileName = FastName("~res:/Materials/Shaders/Default/materials");
     defaultPass.shader = ShaderDescriptorCache::GetShaderDescriptor(defaultPass.shaderFileName, defFlags);
-    defaultPass.templateDefines.insert(FastName("MATERIAL_TEXTURE"));
+    defaultPass.templateDefines[FastName("MATERIAL_TEXTURE")] = 1;
 
     defaultFX.renderPassDescriptors.clear();
     defaultFX.renderPassDescriptors.push_back(defaultPass);
@@ -201,7 +201,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                 for (int32 k = 0; k < count; ++k)
                 {
                     const YamlNode* singleDefineNode = definesNode->Get(k);
-                    passDescriptor.templateDefines.insert(FastName(singleDefineNode->AsString().c_str()));
+                    passDescriptor.templateDefines[FastName(singleDefineNode->AsString().c_str())] = 1;
                 }
             }
 
@@ -337,6 +337,20 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     }
     SafeRelease(parser);
 
+    //add render pass for reflection/refraction - hard coded for now
+    //TODO: rethink how to modify material template without full copy for all passes
+    for (RenderPassDescriptor& pass : target.renderPassDescriptors)
+    {
+        if (pass.passName == PASS_FORWARD)
+        {
+            RenderPassDescriptor noFog = pass;
+            noFog.passName = PASS_REFLECTION_REFRACTION;
+            noFog.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
+            target.renderPassDescriptors.push_back(noFog);
+            break;
+        }
+    }
+
     return oldTemplateMap[std::make_pair(fxName, quality)] = target;
 }
 
@@ -350,7 +364,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
     {
         HashMap<FastName, int32> shaderDefines = defines;
         for (auto& templateDefine : pass.templateDefines)
-            shaderDefines[templateDefine] = 1;
+            shaderDefines[templateDefine.first] = templateDefine.second;
         if (pass.hasBlend)
         {
             if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
