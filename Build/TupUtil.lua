@@ -1,4 +1,4 @@
-debugger = require("debugger")
+-- debugger = require("debugger")
 
 if debugger == nil then
     debugger = function() end

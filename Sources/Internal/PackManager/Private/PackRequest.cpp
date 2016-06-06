@@ -177,7 +177,7 @@ bool PackRequest::IsLoadingHashFileFinished()
 
                     subRequest.status = SubRequest::Error;
 
-                    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
+                    packManager->onPackChange->Emit(currentPack);
                     packManager->onRequestChange->Emit(*this);
                     break;
                 }
@@ -218,7 +218,7 @@ void PackRequest::StartLoadingPackFile()
 
     pack.state = PackManager::Pack::Status::Downloading;
 
-    packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+    packManager->onPackChange->Emit(pack);
 }
 
 bool PackRequest::IsLoadingPackFileFinished()
@@ -253,7 +253,7 @@ bool PackRequest::IsLoadingPackFileFinished()
                     currentPack.downloadedSize = static_cast<uint32>(progress);
                     currentPack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
-                    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::DownloadProgress);
+                    packManager->packDownload->Emit(currentPack);
                     packManager->onRequestChange->Emit(*this);
                 }
             }
@@ -273,7 +273,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 currentPack.downloadProgress = 1.0f;
                 currentPack.downloadedSize = progress;
-                packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::DownloadProgress);
+                packManager->packDownload->Emit(currentPack);
             }
             else
             {
@@ -290,7 +290,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 subRequest.status = SubRequest::Error;
 
-                packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
+                packManager->onPackChange->Emit(currentPack);
             }
             packManager->onRequestChange->Emit(*this);
         }
@@ -318,7 +318,7 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
     }
 
     // inform user about problem with pack
-    packManager->onPackChange->Emit(currentPack, PackManager::Pack::Change::State);
+    packManager->onPackChange->Emit(currentPack);
 
     packManager->onRequestChange->Emit(*this);
 }
@@ -401,7 +401,7 @@ void PackRequest::MountPack()
 
     pack.state = PackManager::Pack::Status::Mounted;
 
-    packManager->onPackChange->Emit(pack, PackManager::Pack::Change::State);
+    packManager->onPackChange->Emit(pack);
 }
 
 void PackRequest::GoToNextSubRequest()
@@ -490,7 +490,6 @@ void PackRequest::ChangePriority(float32 newPriority)
         if (pack.priority < newPriority)
         {
             pack.priority = newPriority;
-            packManager->onPackChange->Emit(pack, PackManager::Pack::Change::Priority);
         }
     }
 }

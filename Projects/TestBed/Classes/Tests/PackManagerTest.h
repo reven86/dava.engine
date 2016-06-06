@@ -49,7 +49,8 @@ private:
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change);
+    void OnPackStateChange(const DAVA::PackManager::Pack& pack);
+    void OnPackDownloadChange(const DAVA::PackManager::Pack& pack);
     void OnRequestChange(const DAVA::PackManager::IRequest& request);
 
     DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db";

@@ -34,13 +34,6 @@ public:
             OtherError = 5 // mount failed, check hash failed, file IO failed see otherErrorMsg
         };
 
-        enum class Change : uint32
-        {
-            State = 1,
-            DownloadProgress = 2,
-            Priority = 4,
-        };
-
         Vector<String> dependency; // names of dependency packs or empty
 
         String name; // unique pack name
@@ -117,11 +110,12 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<InitializeState, const String&> onInitializationStatusChanged;
+    Signal<InitializeState, const String&> initializationStatus;
     // signal user about every pack state change
-    Signal<const Pack&, Pack::Change> onPackStateChanged;
+    Signal<const Pack&> packState;
+    Signal<const Pack&> packDownload;
     // signal per user request with complete size of all depended packs
-    Signal<const IRequest&> onRequestProgressChanged;
+    Signal<const IRequest&> requestProgress;
 
     const FilePath& GetLocalPacksDirectory() const;
     const String& GetRemotePacksUrl(bool isGPU) const;

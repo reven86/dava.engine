@@ -10,7 +10,8 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
                                  const FilePath& readOnlyPacksDir_,
                                  const String& remotePacksURL_,
                                  const String& packsUrlGpu_,
-                                 Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal,
+                                 Signal<const PackManager::Pack&>& signal,
+                                 Signal<const PackManager::Pack&>& signalDownload,
                                  Signal<const PackManager::IRequest&>& signal2)
 {
     dbFile = dbFile_;
@@ -22,6 +23,7 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
 
     onPackChange = &signal;
     onRequestChange = &signal2;
+    packDownload = &signalDownload;
 
     // open DB and load packs state then mount all archives to FileSystem
     db.reset(new PacksDB(dbFile));

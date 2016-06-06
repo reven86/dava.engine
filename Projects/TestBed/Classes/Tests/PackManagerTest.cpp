@@ -178,23 +178,21 @@ void PackManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change)
+void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack)
 {
-    if (change == PackManager::Pack::Change::DownloadProgress)
+    if (pack.state == PackManager::Pack::Status::Mounted)
     {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
     }
-    else if (change == PackManager::Pack::Change::State)
+    else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
     {
-        if (pack.state == PackManager::Pack::Status::Mounted)
-        {
-            packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
-        }
-        else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
-        {
-            packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
-        }
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
     }
+}
+
+void PackManagerTest::OnPackDownloadChange(const DAVA::PackManager::Pack& pack)
+{
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
 }
 
 void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request)
@@ -231,16 +229,15 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
     String dbFile = sqliteDbFile.GetStringValue();
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
-    FilePath dbPath(dbFile);
 
     // clear and renew all packs state
-    packManager.Initialize(dbPath, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
+    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
     packManager.EnableProcessing();
 
-    packManager.onPackStateChanged.DisconnectAll();
+    packManager.packState.DisconnectAll();
 
-    packManager.onPackStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
-    packManager.onRequestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
+    packManager.packState.Connect(this, &PackManagerTest::OnPackStateChange);
+    packManager.requestProgress.Connect(this, &PackManagerTest::OnRequestChange);
 
     String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
 
