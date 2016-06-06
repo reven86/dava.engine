@@ -887,6 +887,11 @@ public:
         updateViewState = true;
 
         [nsTextField setHidden:!value];
+        if (!value)
+        {
+            // when we hide dava TextField control, move native control
+            UpdateRect(davaText->GetRect());
+        }
     }
 
     void ShowField() override
@@ -1146,11 +1151,6 @@ bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 void TextFieldPlatformImpl::SetVisible(bool value)
 {
     objcWrapper->SetVisible(value);
-    if (!value)
-    {
-        // when we hide dava text field control, need update it, for move native control
-        UpdateRect(objcWrapper->davaText->GetRect());
-    }
 }
 
 void TextFieldPlatformImpl::TextFieldPlatformImpl::ShowField()
