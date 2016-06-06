@@ -140,6 +140,25 @@ struct C : public M, virtual public V, virtual public A
     }
 };
 
+struct MindChangingClass
+{
+    MindChangingClass(Signal<>& sig)
+        : signal(sig)
+    {
+        id = signal.Connect([this] { Tick(); });
+    }
+
+    void Tick()
+    {
+        count++;
+        signal.Disconnect(id);
+    }
+
+    uint32 count = 0;
+    Signal<>& signal;
+    SigConnectionID id;
+};
+
 // =======================================================================================================================================
 // =======================================================================================================================================
 // =======================================================================================================================================
@@ -490,6 +509,21 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             // so "res" should be equal to the "v" value
             sig.Emit(res, w);
             TEST_VERIFY(res == v);
+        }
+
+        // check disconnection correctness during signal emission
+        {
+            Signal<> signal;
+            MindChangingClass mco(signal);
+            TEST_VERIFY(mco.count == 0);
+
+            // increment count in signal handler
+            signal.Emit();
+            TEST_VERIFY(mco.count == 1);
+
+            // second emission, mco is not connected to the signal, count isn't changed
+            signal.Emit();
+            TEST_VERIFY(mco.count == 1);
         }
     }
 };
