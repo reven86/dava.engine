@@ -72,11 +72,6 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
     impl->SetBackgroundTransparency(enabled);
 }
 
-UIControlBackground* WebViewControl::GetContentBackground()
-{
-    return impl->GetContentBackground();
-}
-
 void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView)
 {
     impl->SetDelegate(webViewDelegate, webView);
@@ -90,6 +85,11 @@ void WebViewControl::SetRenderToTexture(bool value)
 bool WebViewControl::IsRenderToTexture() const
 {
     return impl->IsRenderToTexture();
+}
+
+void WebViewControl::Draw(const UIGeometricData& geometricData)
+{
+    impl->Draw(geometricData);
 }
 
 void WebViewControl::Input(UIEvent* currentInput)

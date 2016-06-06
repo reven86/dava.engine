@@ -38,6 +38,7 @@ public:
 };
 
 class FilePath;
+class UIGeometricData;
 
 // Common interface for Web View Controls for different platforms.
 class IWebViewControl
@@ -84,10 +85,6 @@ public:
 
     virtual void SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView) = 0;
     virtual void SetBackgroundTransparency(bool enabled);
-    virtual UIControlBackground* GetContentBackground()
-    {
-        return nullptr;
-    }
 
     // Bounces settings.
     virtual bool GetBounces() const
@@ -115,6 +112,9 @@ public:
 
     // Draw events
     virtual void WillDraw()
+    {
+    }
+    virtual void Draw(const UIGeometricData& geometricData)
     {
     }
     virtual void DidDraw()

@@ -147,11 +147,6 @@ void CEFWebViewControl::SetBackgroundTransparency(bool enabled)
     cefBrowser->GetHost()->Invalidate(PET_VIEW);
 }
 
-UIControlBackground* CEFWebViewControl::GetContentBackground()
-{
-    return webPageRender->GetContentBackground();
-}
-
 void CEFWebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
 {
     delegate = webViewDelegate;
@@ -165,6 +160,11 @@ void CEFWebViewControl::SetRenderToTexture(bool value)
 bool CEFWebViewControl::IsRenderToTexture() const
 {
     return true;
+}
+
+void CEFWebViewControl::Draw(const UIGeometricData& geometricData)
+{
+    webPageRender->GetContentBackground()->Draw(geometricData);
 }
 
 void CEFWebViewControl::Update()

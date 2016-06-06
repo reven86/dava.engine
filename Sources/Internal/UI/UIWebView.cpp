@@ -227,12 +227,7 @@ void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
 void UIWebView::Draw(const UIGeometricData& geometricData)
 {
     UIControl::Draw(geometricData);
-
-    UIControlBackground* contentBackground = webViewControl->GetContentBackground();
-    if (contentBackground)
-    {
-        contentBackground->Draw(geometricData);
-    }
+    webViewControl->Draw(geometricData);
 }
 
 void UIWebView::Input(UIEvent* currentInput)

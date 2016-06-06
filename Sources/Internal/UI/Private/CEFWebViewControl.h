@@ -44,11 +44,11 @@ public:
     void SetRect(const Rect& rect);
     void SetVisible(bool isVisible, bool hierarchic);
     void SetBackgroundTransparency(bool enabled);
-    UIControlBackground* GetContentBackground();
 
     void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView);
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
+    void Draw(const UIGeometricData& geometricData);
     void Input(UIEvent* currentInput);
     void Update();
 

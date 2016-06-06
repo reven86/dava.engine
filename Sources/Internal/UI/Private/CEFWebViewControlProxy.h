@@ -38,11 +38,11 @@ public:
     void SetRect(const Rect& rect) override;
     void SetVisible(bool isVisible, bool hierarchic) override;
     void SetBackgroundTransparency(bool enabled) override;
-    UIControlBackground* GetContentBackground() override;
 
     void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
+    void Draw(const UIGeometricData& geometricData) override;
     void Input(UIEvent* currentInput) override;
     void Update() override;
 
