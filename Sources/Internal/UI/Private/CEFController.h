@@ -14,6 +14,7 @@ public:
     CEFController(const CefRefPtr<CefClient>& client);
     ~CEFController();
 
+    static bool IsCEFInitialized();
     void Update();
 
     static uint32 GetCacheLimitSize();

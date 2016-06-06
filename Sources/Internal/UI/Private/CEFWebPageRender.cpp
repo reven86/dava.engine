@@ -20,11 +20,6 @@ struct CEFColor
     {
     }
 
-    bool IsTransparent()
-    {
-        return (red | green | blue | alpha) == 0;
-    }
-
     uint8 red = 0;
     uint8 green = 0;
     uint8 blue = 0;
@@ -41,21 +36,22 @@ CEFWebPageRender::CEFWebPageRender()
             ResetCursor();
         }
     };
-    Core::Instance()->focusChanged.Connect(focusChanged);
+    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
     contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
 }
 
 CEFWebPageRender::~CEFWebPageRender()
 {
+    Core::Instance()->focusChanged.Disconnect(focusConnection);
     ShutDown();
 }
 
 void CEFWebPageRender::ClearRenderSurface()
 {
-    if (imageData)
+    if (!imageData.empty())
     {
-        ::memset(imageData.get(), 0, imageWidth * imageHeight * 4);
+        ::memset(imageData.data(), 0, imageWidth * imageHeight * 4);
         AppyTexture();
     }
 }
@@ -100,7 +96,7 @@ void CEFWebPageRender::ShutDown()
     ResetCursor();
 
     contentBackground.Set(nullptr);
-    imageData.reset();
+    imageData.clear();
 }
 
 void CEFWebPageRender::ResetCursor()
@@ -154,12 +150,12 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
     {
         imageWidth = width;
         imageHeight = height;
-        imageData.reset(new uint8[pixelCount * 4]);
+        imageData.resize(pixelCount * 4);
         contentBackground->SetSprite(nullptr);
     }
 
     // Update texture
-    ::memcpy(imageData.get(), buffer, pixelCount * 4);
+    ::memcpy(imageData.data(), buffer, imageData.size());
 
     // BGRA -> RGBA, resolve transparency and apply
     PostProcessImage();
@@ -169,17 +165,11 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
 void CEFWebPageRender::PostProcessImage()
 {
     uint32 pixelCount = static_cast<uint32>(imageWidth * imageHeight);
-    CEFColor* picture = reinterpret_cast<CEFColor*>(imageData.get());
-    CEFColor defaultBackgroundColor(Color::White);
+    CEFColor* picture = reinterpret_cast<CEFColor*>(imageData.data());
 
     for (size_t i = 0; i < pixelCount; ++i)
     {
         std::swap(picture[i].blue, picture[i].red);
-
-        if (!transparency && picture[i].IsTransparent())
-        {
-            picture[i] = defaultBackgroundColor;
-        }
     }
 }
 
@@ -188,7 +178,7 @@ void CEFWebPageRender::AppyTexture()
     // Create texture or update texture
     if (contentBackground->GetSprite() == nullptr)
     {
-        RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.get(),
+        RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.data(),
                                                         imageWidth, imageHeight, true));
         texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
@@ -201,8 +191,7 @@ void CEFWebPageRender::AppyTexture()
     else
     {
         Texture* texture = contentBackground->GetSprite()->GetTexture();
-        uint32 pixelCount = static_cast<uint32>(imageWidth * imageHeight);
-        texture->TexImage(0, imageWidth, imageHeight, imageData.get(), pixelCount * 4, 0);
+        texture->TexImage(0, imageWidth, imageHeight, imageData.data(), imageData.size(), 0);
     }
 }
 

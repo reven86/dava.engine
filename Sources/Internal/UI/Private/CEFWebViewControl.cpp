@@ -13,16 +13,20 @@ namespace DAVA
 {
 struct CookieTerminator : public CefCookieVisitor
 {
+    IMPLEMENT_REFCOUNTING(CookieTerminator);
+
     bool Visit(const CefCookie& cookie, int count, int total, bool& deleteCookie) override
     {
         deleteCookie = true;
         return true;
     }
-    IMPLEMENT_REFCOUNTING(CookieTerminator);
 };
 
-struct CookieHarvester : public CefCookieVisitor
+class CookieHarvester : public CefCookieVisitor
 {
+    IMPLEMENT_REFCOUNTING(CookieHarvester);
+
+public:
     CookieHarvester(const String& name = "")
         : specificName(name)
     {
@@ -46,7 +50,7 @@ struct CookieHarvester : public CefCookieVisitor
         return cookies;
     }
 
-    IMPLEMENT_REFCOUNTING(CookieHarvester);
+private:
     String specificName;
     Map<String, String> cookies;
 };
@@ -509,7 +513,7 @@ void CEFWebViewControl::OnKey(UIEvent* input)
 
 // TODO: remove this conversion from CorePlatformWin32
 #ifdef __DAVAENGINE_WIN32__
-        keyEvent.windows_key_code ^= 0x100;
+        keyEvent.windows_key_code &= ~0x100;
 #endif
     }
     else

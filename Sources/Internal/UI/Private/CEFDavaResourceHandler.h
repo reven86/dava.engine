@@ -10,6 +10,8 @@ namespace DAVA
 {
 class CEFDavaResourceHandler : public CefResourceHandler
 {
+    IMPLEMENT_REFCOUNTING(CEFDavaResourceHandler);
+
 public:
     CEFDavaResourceHandler(const FilePath& path);
 
@@ -24,18 +26,18 @@ public:
                       CefRefPtr<CefCallback> callback) override;
 
 private:
-    IMPLEMENT_REFCOUNTING(CEFDavaResourceHandler);
     FilePath davaPath;
     RefPtr<class File> file;
 };
 
 class CEFDavaResourceHandlerFactory : public CefSchemeHandlerFactory
 {
+    IMPLEMENT_REFCOUNTING(CEFDavaResourceHandlerFactory);
+
     CefRefPtr<CefResourceHandler> Create(CefRefPtr<CefBrowser> browser,
                                          CefRefPtr<CefFrame> frame,
                                          const CefString& scheme_name,
                                          CefRefPtr<CefRequest> request) override;
-    IMPLEMENT_REFCOUNTING(CEFDavaResourceHandlerFactory);
 };
 
 } // namespace DAVA

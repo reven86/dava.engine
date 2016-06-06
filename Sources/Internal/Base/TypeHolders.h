@@ -16,26 +16,19 @@ public:
     {
     }
 
-    virtual ~RefCounter()
-    {
-    }
+    virtual ~RefCounter() = default;
 
-    virtual void Retain()
+    void Retain()
     {
         refCount++;
     }
 
-    virtual void Release()
+    void Release()
     {
         if (0 == --refCount)
         {
             delete this;
         }
-    }
-
-    uint32 GetReferenceCount()
-    {
-        return refCount.Get();
     }
 
 private:

@@ -8,7 +8,7 @@
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
-#include "Job/JobManager.h"
+#include "Functional/Signal.h"
 #include "UI/Private/CEFController.h"
 
 namespace DAVA
@@ -22,11 +22,12 @@ RefPtr<class CEFControllerImpl> cefControllerGlobal;
 //--------------------------------------------------------------------------------------------------
 class CEFDavaApp : public CefApp
 {
+    IMPLEMENT_REFCOUNTING(CEFDavaApp);
+
     void OnRegisterCustomSchemes(CefRefPtr<CefSchemeRegistrar> registrar) override
     {
         registrar->AddCustomScheme("dava", false, false, false);
     }
-    IMPLEMENT_REFCOUNTING(CEFDavaApp)
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -38,7 +39,7 @@ public:
     CEFControllerImpl();
     ~CEFControllerImpl();
 
-    void Release() override;
+    bool IsCEFInitializedSuccessfully();
     void AddClient(const CefRefPtr<CefClient>& client);
 
     FilePath GetCachePath();
@@ -49,12 +50,17 @@ public:
     void CleanCache();
 
 private:
+    void DoUpdate();
+
     List<CefRefPtr<CefClient>> clients;
+    SigConnectionID appFinishedConnectionID = SigConnectionID();
+    SigConnectionID updateConnectionID = SigConnectionID();
+    bool isInitialized = false;
+    bool schemeRegistered = false;
 };
 
 CEFControllerImpl::CEFControllerImpl()
 {
-    Core::Instance()->systemAppFinished.Connect([] { cefControllerGlobal = nullptr; });
     CleanLogs();
 
     CefSettings settings;
@@ -66,30 +72,62 @@ CEFControllerImpl::CEFControllerImpl()
     CefString(&settings.log_file).FromString(GetLogPath().GetAbsolutePathname());
     CefString(&settings.browser_subprocess_path).FromASCII("CEFHelperProcess.exe");
 
-    bool result = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
+    isInitialized = CefInitialize(CefMainArgs(), settings, new CEFDavaApp, nullptr);
 
     // CefInitialize replaces thread name, so we need to restore it
     // Restore name only on Main Thread
-    if (result && Thread::IsMainThread())
+    if (isInitialized && Thread::IsMainThread())
     {
         Thread::SetCurrentThreadName(Thread::davaMainThreadName);
     }
 
     // Register custom url scheme for dava-based applications
-    result |= CefRegisterSchemeHandlerFactory("dava", "", new CEFDavaResourceHandlerFactory);
+    if (isInitialized)
+    {
+        CefRefPtr<CefSchemeHandlerFactory> davaFactory = new CEFDavaResourceHandlerFactory;
+        schemeRegistered = CefRegisterSchemeHandlerFactory("dava", "", davaFactory);
+    }
 
-    if (!result)
+    if (IsCEFInitializedSuccessfully())
+    {
+        Core* core = Core::Instance();
+        auto shutdown = [] { cefControllerGlobal = nullptr; };
+        auto update = [this](float32) { Update(); };
+
+        appFinishedConnectionID = core->systemAppFinished.Connect(shutdown);
+        updateConnectionID = core->updated.Connect(update);
+    }
+    else
     {
         Logger::Error("%s: cannot initialize CEF", __FUNCTION__);
+        DVASSERT_MSG(false, "CEF cannot be initialized");
     }
-    DVASSERT_MSG(result == true, "CEF cannot be initialized");
 }
 
 CEFControllerImpl::~CEFControllerImpl()
 {
-    Update();
-    CefShutdown();
-    CleanCache();
+    if (isInitialized)
+    {
+        if (schemeRegistered)
+        {
+            Core* core = Core::Instance();
+            core->systemAppFinished.Disconnect(appFinishedConnectionID);
+            core->updated.Disconnect(updateConnectionID);
+        }
+
+        do
+        {
+            DoUpdate();
+        } while (!clients.empty());
+
+        CefShutdown();
+        CleanCache();
+    }
+}
+
+bool CEFControllerImpl::IsCEFInitializedSuccessfully()
+{
+    return isInitialized && schemeRegistered;
 }
 
 void CEFControllerImpl::AddClient(const CefRefPtr<CefClient>& client)
@@ -107,44 +145,22 @@ FilePath CEFControllerImpl::GetLogPath()
     return "~doc:/cef_data/log.txt";
 }
 
-void CEFControllerImpl::Release()
+void CEFControllerImpl::Update()
 {
-    // CEFController releases CEFControllerImpl
-    if (GetReferenceCount() == 2)
+    if (IsCEFInitializedSuccessfully() && !clients.empty())
     {
-        JobManager* jm = JobManager::Instance();
-        jm->CreateMainJob([this] { Update(); }, JobManager::JOB_MAINLAZY);
+        DoUpdate();
     }
-    RefCounter::Release();
 }
 
-void CEFControllerImpl::Update()
+void CEFControllerImpl::DoUpdate()
 {
     CefDoMessageLoopWork();
 
     // Check active clients
     clients.remove_if([](const CefRefPtr<CefClient>& client) { return client->HasOneRef(); });
-
-    // We should handle situation if no CEFController instances exist, but some clients are active
-    // CEF should release it during some time period and we should call CefDoMessageLoopWork
-    // until the clients will be released
-    // If no CEFController instances, nobody can call Update
-    if (!clients.empty())
-    {
-        if (GetReferenceCount() == 1)
-        {
-            JobManager* jm = JobManager::Instance();
-            jm->CreateMainJob([this] { Update(); }, JobManager::JOB_MAINLAZY);
-        }
-        // Recursive update if destruction in progress
-        else if (GetReferenceCount() == 0)
-        {
-            Update();
-        }
-    }
 }
 
-// Remove
 void CEFControllerImpl::CleanLogs()
 {
     FileSystem* fs = FileSystem::Instance();
@@ -156,7 +172,6 @@ void CEFControllerImpl::CleanLogs()
     }
 }
 
-// Clean cache
 void CEFControllerImpl::CleanCache()
 {
     FileSystem* fs = FileSystem::Instance();
@@ -202,10 +217,18 @@ CEFController::CEFController(const CefRefPtr<CefClient>& client)
     }
 
     cefControllerImpl = cefControllerGlobal;
-    cefControllerImpl->AddClient(client);
+    if (IsCEFInitialized())
+    {
+        cefControllerImpl->AddClient(client);
+    }
 }
 
 CEFController::~CEFController() = default;
+
+bool CEFController::IsCEFInitialized()
+{
+    return cefControllerGlobal && cefControllerGlobal->IsCEFInitializedSuccessfully();
+}
 
 void CEFController::Update()
 {

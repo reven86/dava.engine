@@ -15,6 +15,8 @@ class CEFWebViewControl : public CefClient,
                           public CefRequestHandler,
                           public CefLifeSpanHandler
 {
+    IMPLEMENT_REFCOUNTING(CEFWebViewControl);
+
 public:
     CEFWebViewControl(UIWebView& uiWebView);
     ~CEFWebViewControl() = default;
@@ -91,8 +93,6 @@ private:
     void OnMouseClick(UIEvent* input);
     void OnMouseWheel(UIEvent* input);
     void OnKey(UIEvent* input);
-
-    IMPLEMENT_REFCOUNTING(CEFWebViewControl);
 
     UIWebView& webView;
     Vector2 webViewOffSet;

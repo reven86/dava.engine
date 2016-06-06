@@ -11,6 +11,8 @@ namespace DAVA
 {
 class CEFWebPageRender : public CefRenderHandler
 {
+    IMPLEMENT_REFCOUNTING(CEFWebPageRender);
+
 public:
     CEFWebPageRender();
     ~CEFWebPageRender();
@@ -43,17 +45,16 @@ private:
     void SetCursor(CefCursorHandle cursor);
     void ResetCursor();
 
-    IMPLEMENT_REFCOUNTING(CEFWebPageRender);
-
     int imageWidth = 0;
     int imageHeight = 0;
-    std::unique_ptr<uint8[]> imageData;
+    Vector<uint8> imageData;
     Vector2 logicalViewSize;
     RefPtr<UIControlBackground> contentBackground;
     bool transparency = true;
     bool isActive = true;
     bool isVisible = true;
     CursorType currentCursorType = CursorType::CT_POINTER;
+    SigConnectionID focusConnection = SigConnectionID();
 };
 
 } // namespace DAVA
