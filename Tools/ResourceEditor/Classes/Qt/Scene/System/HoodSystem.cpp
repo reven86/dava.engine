@@ -320,7 +320,7 @@ void HoodSystem::Draw()
         }
 
         curHood->Draw(showAsSelected, moseOverAxis, GetScene()->GetRenderSystem()->GetDebugDrawer(), textDrawSys);
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(AABBox3(GetPosition(), curHood->objScale * .04f), Color::White, RenderHelper::DRAW_SOLID_NO_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(DAVA::AABBox3(GetPosition(), curHood->objScale * .04f), DAVA::Color::White, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
     }
     else
     {
