@@ -8,6 +8,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
+#include "Preferences/PreferencesStorage.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include <core_command_system/i_command_manager.hpp>
@@ -65,6 +66,10 @@ void REApplication::OnPostLoadPugins()
     commandManager = NGTLayer::queryInterface<ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
+
+    const char* settingsPath = "ResourceEditorSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
 }

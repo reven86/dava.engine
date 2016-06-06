@@ -1,7 +1,21 @@
-QTabBar::tab { height: 20px; }
+QTabBar::tab { height: 24px; }
 QDockWidget::title{ background: #d5d5d5; }
 QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }
-QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }
+QTabBar::close-button { image: url(:/QtTools/Icons/close-16.png); }
+QTabBar::close-button::hover
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #eeeeee;
+    image: url(:/QtTools/Icons/close-16.png);
+}
+QTabBar::close-button::pressed
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #dddddd;
+    image: url(:/QtTools/Icons/close-16.png);
+}
 QScrollBar:vertical
 {
     background:#B4B4B4;

@@ -1,5 +1,6 @@
 #include "SettingsDialog.h"
 #include "SettingsManager.h"
+#include "Scene/SceneSignals.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataKeyedArchiveMember.h"
 
 #include <QBoxLayout>
@@ -23,6 +24,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 
     QObject::connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     QObject::connect(defaultsBtn, SIGNAL(pressed()), this, SLOT(OnResetPressed()));
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &SettingsDialog::InitProperties);
 
     dlgLayout->setMargin(5);
     dlgLayout->addWidget(editor);

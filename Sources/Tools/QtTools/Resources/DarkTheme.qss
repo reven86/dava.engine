@@ -1,9 +1,25 @@
 QToolTip { color: #e0e0e0; background-color: #373737;}
-QTabBar::tab { height: 20px; }
-QTabBar::close-button { image: url(:/QtTools/Icons/close-10.png); }
+QTabBar::tab { height: 24px; }
+QTabBar::close-button { image: url(:/QtTools/Icons/close-16.png); }
+QTabBar::close-button::hover
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #090909;
+    image: url(:/QtTools/Icons/close-16.png);
+}
+QTabBar::close-button::pressed
+{
+    border: 1px solid #bebebe;
+    border-radius: 3px;
+    background: #a0a0a0;
+    image: url(:/QtTools/Icons/close-16.png);
+}
+
 QDockWidget::title { background: #454545; }
 QStatusBar > QToolButton:checked { border: 1px solid rgba(230, 230, 0, 50%) }
 QComboBox QAbstractItemView::item { margin: 2px 0 2px 0; }
+QComboBox QAbstractItemView { border: 1px solid white }
 QCheckBox::indicator:checked{ image: url(:/QtTools/Icons/checked-checkbox.png); }
 QCheckBox::indicator:unchecked{ image: url(:/QtTools/Icons/unchecked-checkbox.png); }
 QAbstractItemView::indicator::checked { image: url(:/QtTools/Icons/checked-checkbox.png); }
