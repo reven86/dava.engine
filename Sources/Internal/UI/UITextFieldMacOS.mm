@@ -887,6 +887,11 @@ public:
         updateViewState = true;
 
         [nsTextField setHidden:!value];
+        if (!value)
+        {
+            // force UpdateRect call when dava control is hiding. should be done to ensure that nativeControl will also become hidden (moved away from visible screen)
+            UpdateRect(davaText->GetRect());
+        }
     }
 
     void ShowField() override
