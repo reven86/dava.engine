@@ -226,17 +226,11 @@ EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, ICo
 
 void EntityInjectDataExtension::inject(RefPropertyItem* item)
 {
-
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
 
     static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
     std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, *defManager);
+    Variant value = node->propertyInstance->get(node->object, defManager);
     ObjectHandle handle;
     if (value.tryCast(handle))
     {
@@ -279,12 +273,7 @@ void EntityInjectDataExtension::inject(RefPropertyItem* item)
 
 void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
 
     Variant buttons = item->getInjectedData(buttonsDefinitionRole::roleId_);
     ObjectHandle modelHandle;
@@ -305,7 +294,7 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
     std::shared_ptr<const PropertyNode> node = objects.front();
     ObjectHandle valueHandle;
 
-    if (node->propertyInstance->get(node->object, *defManager).tryCast(valueHandle))
+    if (node->propertyInstance->get(node->object, defManager).tryCast(valueHandle))
     {
         TypeId type = valueHandle.type();
         if (type.isPointer())
@@ -347,22 +336,17 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
 
 void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
 
     const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
     delegateObj.StartBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
     for (const std::shared_ptr<const PropertyNode>& object : objects)
     {
-        Variant value = object->propertyInstance->get(object->object, *defManager);
+        Variant value = object->propertyInstance->get(object->object, defManager);
         ObjectHandle handle;
         DVVERIFY(value.tryCast(handle));
 
-        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), *defManager);
+        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
         DVASSERT(component != nullptr);
 
         delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
@@ -372,14 +356,8 @@ void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
 
 void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
-
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::RenderObject* renderObject = batch->GetRenderObject();
     DVASSERT(renderObject != nullptr);
 
@@ -400,15 +378,8 @@ void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
 
 void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
-
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
-
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
 
     delegateObj.Exec(Command2::Create<ConvertToShadowCommand>(entity, batch));
@@ -416,40 +387,30 @@ void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item
 
 void EntityInjectDataExtension::RebuildTangentSpace(const RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
-
-    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, *defManager);
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
 }
 
 void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
 {
-    IDefinitionManager* defManager = defManagerHolder.get<IDefinitionManager>();
-    if (defManager == nullptr)
-    {
-        DVASSERT(defManager != nullptr);
-        return;
-    }
-
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
     std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, *defManager);
+    Variant value = node->propertyInstance->get(node->object, defManager);
     ObjectHandle handle;
     DVVERIFY(value.tryCast(handle));
 
-    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), *defManager);
+    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
     delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
 {
+    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+
     AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
-    w->ValueReady.Connect([this, item](const DAVA::String& name, const DAVA::VariantType& value)
+    w->ValueReady.Connect([this, item, &defManager](const DAVA::String& name, const DAVA::VariantType& value)
                           {
                               const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
                               delegateObj.StartBatch("Add custom property", static_cast<DAVA::uint32>(objects.size()));

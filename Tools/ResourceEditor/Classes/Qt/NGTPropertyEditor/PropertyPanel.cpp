@@ -18,15 +18,14 @@
 #include <QTimerEvent>
 
 PropertyPanel::PropertyPanel()
-    : updater(DAVA::MakeFunction(this, &PropertyPanel::UpdateModel))
 {
     IComponentContext* context = NGTLayer::GetGlobalContext();
     DVASSERT(context != nullptr);
     model.reset(new ReflectedPropertyModel(*context));
-    model->registerExtension(new EntityChildCreatorExtension());
-    model->registerExtension(new EntityMergeValueExtension());
-    model->registerExtension(new PropertyPanelGetExtension());
-    model->registerExtension(new EntityInjectDataExtension(*this, *context));
+    model->registerExtension(std::make_shared<EntityChildCreatorExtension>());
+    model->registerExtension(std::make_shared<EntityMergeValueExtension>());
+    model->registerExtension(std::make_shared<PropertyPanelGetExtension>());
+    model->registerExtension(std::make_shared<EntityInjectDataExtension>(*this, *context));
 }
 
 PropertyPanel::~PropertyPanel()
@@ -46,6 +45,7 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
 
 void PropertyPanel::Finalize(IUIApplication& uiApplication)
 {
+    killTimer(updateTimerId);
     selectedObjects.clear();
     SetObject(selectedObjects);
     view->deregisterListener(this);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "QtTools/Updaters/LazyUpdater.h"
 #include "Extensions.h"
 
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
@@ -59,8 +58,6 @@ private:
 private:
     std::unique_ptr<IView> view;
     std::unique_ptr<ReflectedPropertyModel> model;
-
-    LazyUpdater updater;
 
     int updateTimerId = -1;
 
