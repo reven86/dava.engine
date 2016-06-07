@@ -77,7 +77,7 @@ void SettingsDialog::InitProperties()
                     QFont boldFont = prop->GetFont();
                     boldFont.setBold(true);
                     prop->SetFont(boldFont);
-                    prop->SetBackground(QBrush(QColor(Qt::lightGray)));
+                    prop->SetBackground(palette().alternateBase());
                     prop->SetEnabled(false);
 
                     parent->ChildAdd(std::unique_ptr<QtPropertyData>(prop));
