@@ -388,6 +388,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
