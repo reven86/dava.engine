@@ -47,6 +47,7 @@ set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()

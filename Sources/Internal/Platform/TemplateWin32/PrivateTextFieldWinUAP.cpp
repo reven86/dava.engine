@@ -578,6 +578,9 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
     case VirtualKey::Back:
         savedCaretPosition += 1;
         break;
+    case VirtualKey::Tab:
+        args->Handled = true; // To avoid handling tab navigation by windows. We will handle navigation by our focus system.
+        break;
     case VirtualKey::Escape:
     {
         auto self{ shared_from_this() };
