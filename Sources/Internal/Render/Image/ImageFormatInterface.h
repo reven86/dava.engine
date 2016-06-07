@@ -12,17 +12,15 @@ class ImageFormatInterface
 {
 public:
     ImageFormatInterface(ImageFormat imageFormat, const String& interfaceName, const Vector<String>& extensions, const Vector<PixelFormat>& pixelFormats);
-    //     ImageFormatInterface(ImageFormatInterface &&other);
-    //     ImageFormatInterface& operator=(ImageFormatInterface &&other);
 
-    virtual ~ImageFormatInterface();
+    virtual ~ImageFormatInterface() = default;
 
-    const String& Name() const;
+    const String& GetName() const;
     ImageInfo GetImageInfo(const FilePath& path) const;
     virtual ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const = 0;
 
     ImageFormat GetImageFormat() const;
-    const Vector<String>& Extensions() const;
+    const Vector<String>& GetExtensions() const;
 
     bool CanProcessFile(const ScopedPtr<File>& file) const;
 

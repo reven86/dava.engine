@@ -1,4 +1,6 @@
 #include "Render/Image/Private/DDSHandlers.h"
+#include "Render/Image/Private/QualcommHelper.h"
+#include "Render/Image/Private/NvttHelper.h"
 
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -452,29 +454,14 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
 
 void UpdatePitch(dds::DDS_HEADER& mainHeader, PixelFormat format)
 {
-    switch (format)
-    {
-    case FORMAT_DXT1:
-    case FORMAT_DXT1A:
-    case FORMAT_DXT3:
-    case FORMAT_DXT5:
-    case FORMAT_DXT5NM:
-    case FORMAT_ATC_RGB:
-    case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
-    case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+    if (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format))
     {
         const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
         const Size2i& blockSize = formatDescriptor.blockSize;
 
-        uint32 blockSizeInBytes = blockSize.dx * blockSize.dy * formatDescriptor.pixelSize;
-        mainHeader.pitchOrLinearSize = (mainHeader.width + 3) / 4 * blockSizeInBytes;
+        uint32 blockSizeInBits = blockSize.dx * blockSize.dy * formatDescriptor.pixelSize;
+        mainHeader.pitchOrLinearSize = (mainHeader.width + 3) / 4 * blockSizeInBits;
         mainHeader.flags |= dds::DDSD_LINEARSIZE;
-        break;
-    }
-
-    default:
-        DVASSERT_MSG(false, Format("undefined format: %d", format).c_str());
-        break;
     }
 }
 

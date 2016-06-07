@@ -26,7 +26,7 @@ struct ImageInfo
 {
     bool IsEmpty() const
     {
-        return (0 == width * height);
+        return (0 == width || 0 == height);
     }
 
     Size2i GetImageSize() const

@@ -501,8 +501,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
     else
     {
         Vector<FilePath> singleMipFiles;
-        bool hasSimgleMipFiles = texDescriptor->CreateSingleMipPathnamesForGPU(gpu, singleMipFiles);
-        if (hasSimgleMipFiles)
+        bool hasSingleMipFiles = texDescriptor->CreateSingleMipPathnamesForGPU(gpu, singleMipFiles);
+        if (hasSingleMipFiles)
         {
             uint32 singleMipFilesCount = static_cast<uint32>(singleMipFiles.size());
             for (uint32 index = baseMipMap; index < singleMipFilesCount; ++index)
@@ -512,7 +512,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 ImageSystem::Load(singleMipFiles[index], *images, params);
             }
 
-            params.baseMipmap = Max((int32)baseMipMap - (int32)singleMipFilesCount, 0);
+            params.baseMipmap = Max(static_cast<int32>(baseMipMap)-static_cast<int32>(singleMipFilesCount), 0);
             params.firstMipmapIndex = static_cast<uint32>(images->size());
         }
 

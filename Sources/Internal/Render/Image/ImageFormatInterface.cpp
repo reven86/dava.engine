@@ -12,32 +12,6 @@ ImageFormatInterface::ImageFormatInterface(ImageFormat imageFormat_, const Strin
 {
 }
 
-// ImageFormatInterface::ImageFormatInterface(ImageFormatInterface &&other)
-//     : supportedFormats(std::move(other.supportedFormats))
-//     , supportedExtensions(std::move(other.supportedExtensions))
-//     , interfaceName(std::move(other.interfaceName))
-//     , imageFormat(other.imageFormat)
-// {
-//     other.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
-// }
-//
-// ImageFormatInterface& ImageFormatInterface::operator=(ImageFormatInterface &&other)
-// {
-//     if (this != &other)
-//     {
-//         supportedFormats = std::move(other.supportedFormats);
-//         supportedExtensions = std::move(other.supportedExtensions);
-//         interfaceName = std::move(other.interfaceName);
-//         imageFormat = other.imageFormat;
-//
-//         other.imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
-//     }
-//
-//     return *this;
-// }
-
-ImageFormatInterface::~ImageFormatInterface() = default;
-
 ImageFormat ImageFormatInterface::GetImageFormat() const
 {
     return imageFormat;
@@ -72,12 +46,12 @@ bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) con
     return false;
 }
 
-const Vector<String>& ImageFormatInterface::Extensions() const
+const Vector<String>& ImageFormatInterface::GetExtensions() const
 {
     return supportedExtensions;
 }
 
-const String& ImageFormatInterface::Name() const
+const String& ImageFormatInterface::GetName() const
 {
     return interfaceName;
 }

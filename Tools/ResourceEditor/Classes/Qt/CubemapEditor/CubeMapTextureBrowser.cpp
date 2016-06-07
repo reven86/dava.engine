@@ -309,10 +309,10 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
         if (failedToRemove.size() > 0)
         {
             DAVA::String fileList;
-            DAVA::size_type count = failedToRemove.size();
-            for (DAVA::size_type i = 0; i < count; ++i)
+
+            for (const DAVA::String& pathstr : failedToRemove)
             {
-                fileList += failedToRemove[i];
+                fileList += pathstr;
                 fileList += "\n";
             }
 

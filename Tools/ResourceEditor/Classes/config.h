@@ -1,1 +1,0 @@
-#define EDITOR_VERSION "1"

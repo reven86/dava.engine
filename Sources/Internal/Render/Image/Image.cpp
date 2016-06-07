@@ -33,8 +33,6 @@ Image::~Image()
     height = 0;
 }
 
-const uint32 BLOCK_SIZE = 4;
-
 uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
 {
     DVASSERT(width != 0 && height != 0);
@@ -98,7 +96,7 @@ void Image::MakePink(bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (data == NULL)
+    if (data == nullptr)
         return;
 
     uint32 pink = 0xffff00ff;
@@ -190,55 +188,53 @@ bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
-    if (formatDescriptor.isCompressed == false)
+    if (formatDescriptor.isCompressed)
+        return false;
+
+    int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
+    const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
+
+    uint8* newData = new uint8[newDataSize];
+    Memset(newData, 0, newDataSize);
+
+    float32 kx = float32(width) / float32(newWidth);
+    float32 ky = float32(height) / float32(newHeight);
+
+    float32 xx = 0, yy = 0;
+    uint32 offset = 0;
+    uint32 offsetOld = 0;
+    uint32 posX, posY;
+    for (uint32 y = 0; y < newHeight; ++y)
     {
-        int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
-        const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
-
-        uint8* newData = new uint8[newDataSize];
-        Memset(newData, 0, newDataSize);
-
-        float32 kx = float32(width) / float32(newWidth);
-        float32 ky = float32(height) / float32(newHeight);
-
-        float32 xx = 0, yy = 0;
-        uint32 offset = 0;
-        uint32 offsetOld = 0;
-        uint32 posX, posY;
-        for (uint32 y = 0; y < newHeight; ++y)
+        for (uint32 x = 0; x < newWidth; ++x)
         {
-            for (uint32 x = 0; x < newWidth; ++x)
-            {
-                posX = uint32(xx + 0.5f);
-                posY = uint32(yy + 0.5f);
-                if (posX >= width)
-                    posX = width - 1;
+            posX = uint32(xx + 0.5f);
+            posY = uint32(yy + 0.5f);
+            if (posX >= width)
+                posX = width - 1;
 
-                if (posY >= height)
-                    posY = height - 1;
+            if (posY >= height)
+                posY = height - 1;
 
-                offsetOld = (posY * width + posX) * formatSizeInBytes;
-                Memcpy(newData + offset, data + offsetOld, formatSizeInBytes);
+            offsetOld = (posY * width + posX) * formatSizeInBytes;
+            Memcpy(newData + offset, data + offsetOld, formatSizeInBytes);
 
-                xx += kx;
-                offset += formatSizeInBytes;
-            }
-            yy += ky;
-            xx = 0;
+            xx += kx;
+            offset += formatSizeInBytes;
         }
-
-        // resized data
-        width = newWidth;
-        height = newHeight;
-
-        SafeDeleteArray(data);
-        data = newData;
-        dataSize = newDataSize;
-
-        return true;
+        yy += ky;
+        xx = 0;
     }
 
-    return false;
+    // resized data
+    width = newWidth;
+    height = newHeight;
+
+    SafeDeleteArray(data);
+    data = newData;
+    dataSize = newDataSize;
+
+    return true;
 }
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)

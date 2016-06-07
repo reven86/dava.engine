@@ -110,11 +110,6 @@ public:
                       )
     };
 
-    struct GPUSettings
-    {
-        Compression compression;
-    };
-
 public:
     TextureDescriptor();
 

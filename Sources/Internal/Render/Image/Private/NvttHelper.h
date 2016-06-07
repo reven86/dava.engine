@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_NVTT_HELPER_H__
-#define __DAVAENGINE_NVTT_HELPER_H__
+#pragma once
 
 #include "Render/RenderBase.h"
 
@@ -12,5 +11,3 @@ bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage);
 bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage);
 }
 }
-
-#endif // __DAVAENGINE_NVTT_HELPER_H__

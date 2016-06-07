@@ -3,6 +3,8 @@
 #include "Render/Image/Image.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#include "Base/BaseTypes.h"
+
 #include "Render/Texture.h"
 
 #include "FileSystem/File.h"
@@ -78,106 +80,76 @@ uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
 
 PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
 {
-    switch (pixelFormat)
+    static const UnorderedMap<uint64, PixelFormat> mapping = 
     {
-    case ePVRTPF_PVRTCI_2bpp_RGB:
-        return FORMAT_PVR2;
-    case ePVRTPF_PVRTCI_2bpp_RGBA:
-        return FORMAT_PVR2;
-    case ePVRTPF_PVRTCI_4bpp_RGB:
-        return FORMAT_PVR4;
-    case ePVRTPF_PVRTCI_4bpp_RGBA:
-        return FORMAT_PVR4;
-    case ePVRTPF_PVRTCII_2bpp:
-        return FORMAT_PVR2_2;
-    case ePVRTPF_PVRTCII_4bpp:
-        return FORMAT_PVR4_2;
-    case ePVRTPF_ETC1:
-        return FORMAT_ETC1;
-    case ePVRTPF_EAC_R11:
-        return FORMAT_EAC_R11_UNSIGNED;
-    case ePVRTPF_ETC2_RGB:
-        return FORMAT_ETC2_RGB;
-    case ePVRTPF_ETC2_RGB_A1:
-        return FORMAT_ETC2_RGB_A1;
-    case ePVRTPF_EAC_RG11:
-        return FORMAT_EAC_RG11_UNSIGNED;
-    case ePVRTPF_ETC2_RGBA:
-        return FORMAT_ETC2_RGBA;
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8):
-        return FORMAT_RGBA8888;
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1):
-        return FORMAT_RGBA5551;
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4):
-        return FORMAT_RGBA4444;
-    case PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8):
-        return FORMAT_RGB888;
-    case PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5):
-        return FORMAT_RGB565;
-    case PVRTGENPIXELID1('l', 8):
-    case PVRTGENPIXELID1('a', 8):
-        return FORMAT_A8;
-    case PVRTGENPIXELID1('a', 16):
-        return FORMAT_A16;
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16):
-        return FORMAT_RGBA16161616;
-    case PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32):
-        return FORMAT_RGBA32323232;
-    default:
-        break;
+        { ePVRTPF_PVRTCI_2bpp_RGB, FORMAT_PVR2 },
+        { ePVRTPF_PVRTCI_2bpp_RGBA, FORMAT_PVR2 },
+        { ePVRTPF_PVRTCI_4bpp_RGB, FORMAT_PVR4 },
+        { ePVRTPF_PVRTCI_4bpp_RGBA, FORMAT_PVR4 },
+        { ePVRTPF_PVRTCII_2bpp, FORMAT_PVR2_2 },
+        { ePVRTPF_PVRTCII_4bpp, FORMAT_PVR4_2 },
+        { ePVRTPF_ETC1, FORMAT_ETC1 },
+        { ePVRTPF_EAC_R11, FORMAT_EAC_R11_UNSIGNED },
+        { ePVRTPF_ETC2_RGB, FORMAT_ETC2_RGB },
+        { ePVRTPF_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
+        { ePVRTPF_EAC_RG11, FORMAT_EAC_RG11_UNSIGNED },
+        { ePVRTPF_ETC2_RGBA, FORMAT_ETC2_RGBA },
+        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8), FORMAT_RGBA8888 },
+        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1), FORMAT_RGBA5551 },
+        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4), FORMAT_RGBA4444 },
+        { PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8), FORMAT_RGB888 },
+        { PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5), FORMAT_RGB565 },
+        { PVRTGENPIXELID1('l', 8), FORMAT_A8 },
+        { PVRTGENPIXELID1('a', 8), FORMAT_A8 },
+        { PVRTGENPIXELID1('a', 16), FORMAT_A16 },
+        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16), FORMAT_RGBA16161616 },
+        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32), FORMAT_RGBA32323232 }
+    };
+
+    auto found = mapping.find(pixelFormat);
+    if (found != mapping.end())
+    {
+        return found->second;
     }
 
+    DVASSERT_MSG(false, Format("Unsupported format: %lu", pixelFormat));
     return FORMAT_INVALID;
 }
 
 uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
 {
-    switch (pixelFormat)
+    static const UnorderedMap<PixelFormat, uint64> mapping =
     {
-    case FORMAT_PVR2:
-        return ePVRTPF_PVRTCI_2bpp_RGBA; //ePVRTPF_PVRTCI_2bpp_RGB;
-    case FORMAT_PVR4:
-        return ePVRTPF_PVRTCI_4bpp_RGBA; //ePVRTPF_PVRTCI_4bpp_RGB
-    case FORMAT_PVR2_2:
-        return ePVRTPF_PVRTCII_2bpp;
-    case FORMAT_PVR4_2:
-        return ePVRTPF_PVRTCII_4bpp;
-    case FORMAT_ETC1:
-        return ePVRTPF_ETC1;
-    case FORMAT_EAC_R11_UNSIGNED:
-        return ePVRTPF_EAC_R11;
-    case FORMAT_ETC2_RGB:
-        return ePVRTPF_ETC2_RGB;
-    case FORMAT_ETC2_RGB_A1:
-        return ePVRTPF_ETC2_RGB_A1;
-    case FORMAT_EAC_RG11_UNSIGNED:
-        return ePVRTPF_EAC_RG11;
-    case FORMAT_ETC2_RGBA:
-        return ePVRTPF_ETC2_RGBA;
-    case FORMAT_RGBA8888:
-        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8);
-    case FORMAT_RGBA5551:
-        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1);
-    case FORMAT_RGBA4444:
-        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4);
-    case FORMAT_RGB888:
-        return PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8);
-    case FORMAT_RGB565:
-        return PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5);
-    case FORMAT_A8:
-        return PVRTGENPIXELID1('a', 8);
-    case FORMAT_A16:
-        return PVRTGENPIXELID1('a', 16);
-    case FORMAT_RGBA16161616:
-        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16);
-    case FORMAT_RGBA32323232:
-        return PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32);
+        { FORMAT_PVR2, ePVRTPF_PVRTCI_2bpp_RGBA }, 
+        { FORMAT_PVR4, ePVRTPF_PVRTCI_4bpp_RGBA },
+        { FORMAT_PVR2_2, ePVRTPF_PVRTCII_2bpp },
+        { FORMAT_PVR4_2, ePVRTPF_PVRTCII_4bpp },
 
-    default:
-        DVASSERT(false);
-        break;
+        { FORMAT_ETC1, ePVRTPF_ETC1 },
+        { FORMAT_EAC_R11_UNSIGNED, ePVRTPF_EAC_R11 },
+        { FORMAT_ETC2_RGB, FORMAT_ETC2_RGB },
+        { FORMAT_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
+        { FORMAT_EAC_RG11_UNSIGNED, ePVRTPF_EAC_RG11 },
+
+        { FORMAT_ETC2_RGBA, ePVRTPF_ETC2_RGBA },
+        { FORMAT_RGBA8888, PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8) },
+        { FORMAT_RGBA5551, PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1) },
+        { FORMAT_RGBA4444, PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4) },
+        { FORMAT_RGB888, PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8) },
+        { FORMAT_RGB565, PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5) },
+        { FORMAT_A8, PVRTGENPIXELID1('a', 8) },
+        { FORMAT_A16, PVRTGENPIXELID1('a', 16) },
+        { FORMAT_RGBA16161616, PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16) },
+        { FORMAT_RGBA32323232, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) }
+    };
+
+    auto found = mapping.find(pixelFormat);
+    if (found != mapping.end())
+    {
+        return found->second;
     }
 
+    DVASSERT_MSG(false, Format("Unsupported format: %u", pixelFormat));
     return ePVRTPF_NumCompressedPFs;
 }
 
@@ -220,7 +192,7 @@ uint32 GetPVRChannelType(PixelFormat pixelFormat)
     return ePVRTVarTypeUnsignedByteNorm;
 }
 
-PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader)
+PixelFormat GetPixelFormat(const PVRHeaderV3& textureHeader)
 {
     return GetDAVAFormatFromPVR(textureHeader.u64PixelFormat);
 }
@@ -251,38 +223,50 @@ bool ReadMetaData(File* file, PVRFile* pvrFile)
     uint32 metaDataSize = pvrFile->header.u32MetaDataSize;
     while (metaDataSize != 0)
     {
-        MetaDataBlock* block = new MetaDataBlock();
+        // fields from MetaDataBlock
+        uint32 DevFOURCC = 0; 
+        uint32 u32Key = 0; 
+        uint32 u32DataSize = 0;
+        uint8* Data = nullptr;
 
-        uint32 readSize = file->Read(&block->DevFOURCC);
+        uint32 readSize = file->Read(&DevFOURCC);
         if (readSize != sizeof(uint32))
         {
             return false;
         }
 
-        readSize = file->Read(&block->u32Key);
+        readSize = file->Read(&u32Key);
         if (readSize != sizeof(uint32))
         {
             return false;
         }
 
-        readSize = file->Read(&block->u32DataSize);
+        readSize = file->Read(&u32DataSize);
         if (readSize != sizeof(uint32))
         {
             return false;
         }
 
-        if (block->u32DataSize != 0)
+        if (u32DataSize != 0)
         {
-            block->Data = new uint8[block->u32DataSize];
-            readSize = file->Read(block->Data, block->u32DataSize);
-            if (readSize != block->u32DataSize)
+            Data = new uint8[u32DataSize];
+            readSize = file->Read(Data, u32DataSize);
+            if (readSize != u32DataSize)
             {
+                delete[] Data;
                 return false;
             }
         }
 
-        DVASSERT(metaDataSize >= block->u32DataSize + METADATA_DATA_OFFSET);
-        metaDataSize -= (block->u32DataSize + METADATA_DATA_OFFSET);
+        DVASSERT(metaDataSize >= u32DataSize + METADATA_DATA_OFFSET);
+        metaDataSize -= (u32DataSize + METADATA_DATA_OFFSET);
+
+        MetaDataBlock* block = new MetaDataBlock();
+        block->DevFOURCC = DevFOURCC;
+        block->u32Key = u32Key;
+        block->u32DataSize = u32DataSize;
+        block->Data = Data;
+
         pvrFile->metaDatablocks.push_back(block);
     }
 
@@ -472,9 +456,13 @@ bool LoadImages(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const I
         return false;
     }
 
-    DVASSERT(pvrFile->header.u32NumSurfaces == 1);
+    if (pvrFile->header.u32NumSurfaces != 1)
+    {
+        Logger::Error("File %s has wrong surface count %d. Must be 1", infile->GetFilename().GetStringValue().c_str(), pvrFile->header.u32NumSurfaces);
+        return false;
+    }
 
-    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
+    PixelFormat pxFormat = GetPixelFormat(pvrFile->header);
     if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
     {
         Logger::Error("Non-square textures with %s compression are unsupported. Failed to load : %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),

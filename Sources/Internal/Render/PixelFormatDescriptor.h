@@ -33,13 +33,13 @@ private:
 public:
     static rhi::TextureFormat TEXTURE_FORMAT_INVALID;
 
-    PixelFormat formatID;
-    FastName name;
-    uint8 pixelSize;
-    rhi::TextureFormat format;
-    bool isHardwareSupported;
-    bool isCompressed;
-    Size2i blockSize;
+    PixelFormat formatID;       // compile-time: pixel format for DAVA::Image
+    FastName name;              // compile-time: name for logging/console tools
+    uint8 pixelSize;            // compile-time: size of pixel in bits 
+    rhi::TextureFormat format;  // compile-time: pixel format for texture and rendering of the DAVA::Image
+    bool isHardwareSupported;   // run-time: is true for rhi::TextureFormat that are supported by GPU on every device
+    bool isCompressed;          // compile-time: is true for PVR2/4, DXT[n], ATC_[] formats
+    Size2i blockSize;           // compile-time: size of block for compressed formats, should be 1x1 for uncompressed formats
 };
 
 inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat format)

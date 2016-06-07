@@ -343,7 +343,7 @@ bool IsImageSizeValidForTextures(const DAVA::ImageInfo& info)
 
 namespace SceneExporterLocal
 {
-DAVA::FilePath CompressTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor)
+void CompressNotActualTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor)
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(gpu));
 
@@ -351,10 +351,8 @@ DAVA::FilePath CompressTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverte
     if (needToConvert)
     {
         DAVA::Logger::Warning("Need recompress texture: %s", descriptor.GetSourceTexturePathname().GetAbsolutePathname().c_str());
-        return TextureConverter::ConvertTexture(descriptor, gpu, true, quality);
+        TextureConverter::ConvertTexture(descriptor, gpu, true, quality);
     }
-
-    return descriptor.CreateMultiMipPathnameForGPU(gpu);
 }
 
 void CollectSourceImageInfo(const DAVA::TextureDescriptor& descriptor, DAVA::Vector<DAVA::ImageInfo>& sourceImageInfos)
@@ -455,7 +453,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 
                 if (exportedStatus.count(gpu) == 0)
                 {
-                    SceneExporterLocal::CompressTexture(gpu, exportingParams.quality, descriptor);
+                    SceneExporterLocal::CompressNotActualTexture(gpu, exportingParams.quality, descriptor);
                 }
             }
             else if (gpu != DAVA::eGPUFamily::GPU_ORIGIN)

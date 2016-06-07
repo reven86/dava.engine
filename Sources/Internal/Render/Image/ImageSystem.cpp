@@ -23,66 +23,20 @@ namespace DAVA
 {
 namespace ImageSystem
 {
-const Vector<std::unique_ptr<ImageFormatInterface>>& GetWrappers()
+const Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COUNT>& GetWrappers()
 {
-    static Vector<std::unique_ptr<ImageFormatInterface>> wrappers;
-
-    if (wrappers.empty())
+    static Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COUNT> wrappers =
     {
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibPngHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibDdsHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibPVRHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()));
-        wrappers.emplace_back(std::unique_ptr<ImageFormatInterface>(new LibPSDHelper()));
-    }
- 
-#if defined(__DAVAENGINE_DEBUG__)
-    DVASSERT(wrappers.size() == IMAGE_FORMAT_COUNT);
-    for (size_type w = 0; w < IMAGE_FORMAT_COUNT; ++w)
-    {
-        DVASSERT(w == wrappers[w]->GetImageFormat());
-        DVASSERT(wrappers[w] != nullptr);
-    }
-#endif //#if defined (__DAVAENGINE_DEBUG__)
+        std::unique_ptr<ImageFormatInterface>(new LibPngHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibDdsHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibPVRHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibPSDHelper())
+    };
 
     return wrappers;
-}
-
-ImageFormatInterface* GetDecoder(PixelFormat format)
-{
-    switch (format)
-    {
-    case PixelFormat::FORMAT_PVR2:
-    case PixelFormat::FORMAT_PVR4:
-    case PixelFormat::FORMAT_ETC1:
-    case PixelFormat::FORMAT_PVR2_2:
-    case PixelFormat::FORMAT_PVR4_2:
-    case PixelFormat::FORMAT_EAC_R11_UNSIGNED:
-    case PixelFormat::FORMAT_EAC_R11_SIGNED:
-    case PixelFormat::FORMAT_EAC_RG11_UNSIGNED:
-    case PixelFormat::FORMAT_EAC_RG11_SIGNED:
-    case PixelFormat::FORMAT_ETC2_RGB:
-    case PixelFormat::FORMAT_ETC2_RGBA:
-    case PixelFormat::FORMAT_ETC2_RGB_A1:
-        return GetImageFormatInterface(ImageFormat::IMAGE_FORMAT_PVR);
-
-    case PixelFormat::FORMAT_DXT1:
-    case PixelFormat::FORMAT_DXT1A:
-    case PixelFormat::FORMAT_DXT3:
-    case PixelFormat::FORMAT_DXT5:
-    case PixelFormat::FORMAT_DXT5NM:
-    case PixelFormat::FORMAT_ATC_RGB:
-    case PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
-    case PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
-        return GetImageFormatInterface(ImageFormat::IMAGE_FORMAT_DDS);
-
-    default:
-        break;
-    }
-
-    return nullptr;
 }
 
 Image* LoadSingleMip(const FilePath& pathname, uint32 mip)
@@ -242,7 +196,7 @@ ImageFormat GetImageFormatByName(const String& name)
 {
     for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
     {
-        if (CompareCaseInsensitive(wrapper->Name(), name) == 0)
+        if (CompareCaseInsensitive(wrapper->GetName(), name) == 0)
             return wrapper->GetImageFormat();
     }
 
@@ -307,7 +261,7 @@ ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat)
 
 const Vector<String>& GetExtensionsFor(ImageFormat format)
 {
-    return GetImageFormatInterface(format)->Extensions();
+    return GetImageFormatInterface(format)->GetExtensions();
 }
 }
 }

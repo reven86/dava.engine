@@ -43,9 +43,8 @@ struct PVRHeaderV3
 };
 #pragma pack(pop)
 
-class PVRFile final
+struct PVRFile final
 {
-public:
     static const uint32 HEADER_SIZE = 52;
     ~PVRFile();
 
@@ -75,6 +74,7 @@ bool LoadImages(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const I
 
 bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage);
 
-PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader);
+PixelFormat GetPixelFormat(const PVRHeaderV3& textureHeader);
+
 }
 }
