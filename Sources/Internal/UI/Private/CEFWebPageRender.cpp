@@ -51,7 +51,7 @@ void CEFWebPageRender::ClearRenderSurface()
 {
     if (!imageData.empty())
     {
-        ::memset(imageData.data(), 0, imageWidth * imageHeight * 4);
+        ::memset(imageData.data(), 0, imageData.size());
         AppyTexture();
     }
 }
