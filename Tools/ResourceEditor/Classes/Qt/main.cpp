@@ -15,15 +15,14 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
-#include "NgtTools/Application/NGTApplication.h"
+#include "QtTools/Utils/AssertGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include "Platform/Qt5/QtLayer.h"
-
-#include "ResourceEditorLauncher.h"
+#include "REApplication.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -36,34 +35,6 @@ void FixOSXFonts();
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
 void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
-
-class REApplication : public NGTLayer::BaseApplication
-{
-public:
-    REApplication(int argc, char** argv)
-        : BaseApplication(argc, argv)
-    {
-    }
-
-protected:
-    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
-    {
-        names.push_back(L"plg_reflection");
-        names.push_back(L"plg_variant");
-        names.push_back(L"plg_command_system");
-        names.push_back(L"plg_serialization");
-        names.push_back(L"plg_file_system");
-        names.push_back(L"plg_editor_interaction");
-        names.push_back(L"plg_qt_app");
-        names.push_back(L"plg_qt_common");
-    }
-
-    void OnPostLoadPugins() override
-    {
-        qApp->setOrganizationName("DAVA");
-        qApp->setApplicationName("Resource Editor");
-    }
-};
 
 int main(int argc, char* argv[])
 {
@@ -100,7 +71,11 @@ int main(int argc, char* argv[])
         {
             RunConsole(argc, argv, cmdLine);
         }
-        else if (argc == 1)
+        else if (argc == 1
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 )
         {
             RunGui(argc, argv, cmdLine);
         }
@@ -155,6 +130,8 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
 
+    ToolsAssetGuard::Instance()->Init();
+
     REApplication a(argc, argv);
     a.LoadPlugins();
 
@@ -183,20 +160,9 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-    // create and init UI
-    ResourceEditorLauncher launcher;
-    QtMainWindow mainWindow(a.GetComponentContext());
-
-    mainWindow.EnableGlobalTimeout(true);
-    DavaGLWidget* glWidget = mainWindow.GetSceneWidget()->GetDavaWidget();
-
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
-    // start app
-    a.StartApplication(&mainWindow);
-
-    ControlsFactory::ReleaseFonts();
+    a.Run();
 }
 
 void UnpackHelpDoc()

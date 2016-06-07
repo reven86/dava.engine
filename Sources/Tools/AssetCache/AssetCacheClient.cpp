@@ -5,9 +5,19 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 namespace DAVA
 {
+namespace AssetCacheClient_local
+{
+InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::TypeInfo(), {
+                                                                                        PREF_ARG("ip", DAVA::AssetCache::GetLocalHost()),
+                                                                                        PREF_ARG("port", DAVA::AssetCache::ASSET_SERVER_PORT),
+                                                                                        PREF_ARG("timeoutms", DAVA::uint64(10 * 1000))
+                                                                                        });
+};
+
 AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
     : isActive(false)
     , isJobStarted(false)
@@ -73,7 +83,7 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
 {
     {
         LockGuard<Mutex> guard(requestLocker);
-        request = Request(key, FilePath(), AssetCache::PACKET_ADD_REQUEST);
+        request = Request(key, nullptr, AssetCache::PACKET_ADD_REQUEST);
     }
 
     AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_ADD;
@@ -92,11 +102,13 @@ AssetCache::Error AssetCacheClient::AddToCacheSynchronously(const AssetCache::Ca
     return resultCode;
 }
 
-AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outputFolder)
+AssetCache::Error AssetCacheClient::RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, AssetCache::CachedItemValue* value)
 {
+    DVASSERT(value != nullptr);
+
     {
         LockGuard<Mutex> guard(requestLocker);
-        request = Request(key, outputFolder, AssetCache::PACKET_GET_REQUEST);
+        request = Request(key, value, AssetCache::PACKET_GET_REQUEST);
     }
 
     AssetCache::Error resultCode = AssetCache::Error::CANNOT_SEND_REQUEST_GET;
@@ -206,15 +218,11 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
                 request.result = AssetCache::Error::NO_ERRORS;
                 request.recieved = true;
                 request.processingRequest = true;
-            }
 
-            DumpInfo(key, value);
+                DVASSERT_MSG(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
+                *(request.value) = value;
 
-            FileSystem::Instance()->CreateDirectory(currentRequest.outputFolder, true);
-            value.Export(currentRequest.outputFolder);
-
-            { // mark request as processed
-                LockGuard<Mutex> guard(requestLocker);
+                DumpInfo(key, value);
                 request.processingRequest = false;
             }
         }

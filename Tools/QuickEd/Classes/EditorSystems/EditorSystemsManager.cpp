@@ -11,68 +11,42 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UIFocusComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
+#include "UI/Input/UIInputSystem.h"
+#include "UI/UIControlSystem.h"
 
 using namespace DAVA;
 
-const Vector2 minimumSize = Vector2(16.0f, 16.0f);
-
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
-class EditorSystemsManager::RootControl : public UIControl
+class EditorSystemsManager::InputLayerControl : public UIControl
 {
 public:
-    RootControl(EditorSystemsManager* arg);
-    void SetEmulationMode(bool arg);
-
-private:
-    bool SystemInput(UIEvent* currentInput) override;
-    bool SystemProcessInput(UIEvent* currentInput) override;
-
-    EditorSystemsManager* systemManager = nullptr;
-    bool emulationMode = false;
-    Vector2 prevPosition;
-};
-
-EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
-    : UIControl()
-    , systemManager(arg)
-{
-    GetOrCreateComponent<UIFocusComponent>();
-    DVASSERT(nullptr != systemManager);
-}
-
-void EditorSystemsManager::RootControl::SetEmulationMode(bool arg)
-{
-    emulationMode = arg;
-}
-
-bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
-{
-    if (!emulationMode && nullptr != systemManager)
+    InputLayerControl(EditorSystemsManager* systemManager_)
+        : UIControl()
+        , systemManager(systemManager_)
     {
-        return SystemProcessInput(currentInput);
+        GetOrCreateComponent<UIModalInputComponent>();
     }
-    return UIControl::SystemInput(currentInput);
-}
 
-bool EditorSystemsManager::RootControl::SystemProcessInput(UIEvent* currentInput)
-{
-    if (!emulationMode && nullptr != systemManager)
+    bool SystemProcessInput(UIEvent* currentInput) override
     {
         return systemManager->OnInput(currentInput);
     }
 
-    return UIControl::SystemProcessInput(currentInput);
-}
+private:
+    EditorSystemsManager* systemManager = nullptr;
+};
 
 EditorSystemsManager::EditorSystemsManager()
-    : rootControl(new RootControl(this))
+    : rootControl(new UIControl())
+    , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
+    rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
@@ -95,6 +69,11 @@ UIControl* EditorSystemsManager::GetRootControl() const
     return rootControl.Get();
 }
 
+DAVA::UIControl* EditorSystemsManager::GetInputLayerControl() const
+{
+    return inputLayerControl.Get();
+}
+
 UIControl* EditorSystemsManager::GetScalableControl() const
 {
     return scalableControl.Get();
@@ -114,7 +93,14 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    rootControl->SetEmulationMode(emulationMode);
+    if (emulationMode)
+    {
+        rootControl->RemoveControl(inputLayerControl.Get());
+    }
+    else
+    {
+        rootControl->AddControl(inputLayerControl.Get());
+    }
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
@@ -143,7 +129,7 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-    for (uint32 i = 0; i < controlsNode->GetCount(); ++i)
+    for (uint32 i = 0, count = controlsNode->GetCount(); i < count; ++i)
     {
         if (controlsNode->Get(i) == target)
         {
@@ -271,5 +257,6 @@ void EditorSystemsManager::RefreshRootControls()
     {
         editingRootControls = newRootControls;
         EditingRootControlsChanged.Emit(editingRootControls);
+        UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
     }
 }

@@ -348,7 +348,7 @@ void CachedItemValue::Free()
     }
 }
 
-void CachedItemValue::Export(const FilePath& folder) const
+void CachedItemValue::ExportToFolder(const FilePath& folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -376,6 +376,42 @@ void CachedItemValue::Export(const FilePath& folder) const
         {
             Logger::Error("[CachedItemValue::%s] Cannot create file %s", __FUNCTION__, savedPath.GetStringValue().c_str());
         }
+    }
+}
+
+size_type CachedItemValue::GetItemCount() const
+{
+    return dataContainer.size();
+}
+
+bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
+{
+    if (GetItemCount() != 1)
+    {
+        Logger::Error("Item count is %u, expected is 1", GetItemCount());
+        return false;
+    }
+
+    const String& itemName = dataContainer.begin()->first;
+    const CachedItemValue::ValueData& itemData = dataContainer.begin()->second;
+    if (IsDataLoaded(itemData) == false)
+    {
+        Logger::Warning("File(%s) is not loaded", itemName.c_str());
+        return false;
+    }
+
+    ScopedPtr<File> file(File::Create(exportToPath, File::CREATE | File::WRITE));
+    if (file)
+    {
+        uint32 itemSize = static_cast<uint32>(itemData->size());
+        uint32 written = file->Write(itemData->data(), itemSize);
+        DVASSERT(written == itemSize);
+        return true;
+    }
+    else
+    {
+        Logger::Error("Cannot create file %s", exportToPath.GetStringValue().c_str());
+        return false;
     }
 }
 

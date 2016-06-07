@@ -1,3 +1,7 @@
+#include "Core/Core.h"
+#include "Particles/ParticleEmitter.h"
+#include "FileSystem/FileSystem.h"
+
 #include <QApplication>
 #include "UI/mainwindow.h"
 
@@ -7,6 +11,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/AssertGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
 
 #include <QtGlobal>
@@ -17,6 +22,13 @@ public:
     QEApplication(int argc, char** argv)
         : BaseApplication(argc, argv)
     {
+    }
+
+    int Run()
+    {
+        editorCore.reset(new EditorCore());
+        editorCore->Start();
+        return StartApplication(editorCore->GetMainWindow());
     }
 
 protected:
@@ -37,6 +49,14 @@ protected:
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
     }
+
+    bool OnRequestCloseApp() override
+    {
+        return editorCore->CloseProject();
+    }
+
+private:
+    std::unique_ptr<EditorCore> editorCore;
 };
 
 void InitPVRTexTool()
@@ -55,10 +75,13 @@ int main(int argc, char* argv[])
     DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-
+    const char* settingsPath = "QuickEdSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
+        ToolsAssetGuard::Instance()->Init();
 
         QEApplication a(argc, argv);
         a.LoadPlugins();
@@ -67,16 +90,7 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();
-        {
-            // Editor Settings might be used by any singleton below during initialization, so
-            // initialize it before any other one.
-            EditorSettings editorSettings;
-
-            EditorCore editorCore;
-
-            editorCore.Start();
-            returnCode = a.StartApplication(editorCore.GetMainWindow());
-        }
+        returnCode = a.Run();
     }
     return returnCode;
 }

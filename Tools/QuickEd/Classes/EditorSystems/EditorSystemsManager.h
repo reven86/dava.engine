@@ -17,8 +17,6 @@ class VariantType;
 class UIGeometricData;
 }
 
-extern const DAVA::Vector2 minimumSize;
-
 struct HUDAreaInfo
 {
     enum eArea
@@ -96,6 +94,7 @@ public:
     ~EditorSystemsManager();
 
     DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetInputLayerControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
     bool OnInput(DAVA::UIEvent* currentInput);
@@ -129,7 +128,7 @@ public:
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
 private:
-    class RootControl;
+    class InputLayerControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
@@ -141,7 +140,8 @@ private:
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
 
-    DAVA::RefPtr<RootControl> rootControl;
+    DAVA::RefPtr<DAVA::UIControl> rootControl;
+    DAVA::RefPtr<InputLayerControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
@@ -153,6 +153,9 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
+
+public:
+    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 };
 
 template <class OutIt, class Predicate>

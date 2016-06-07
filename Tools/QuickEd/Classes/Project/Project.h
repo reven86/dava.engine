@@ -5,11 +5,12 @@
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
 #include "Base/Result.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 class PackageNode;
 class QFileInfo;
 
-class Project : public QObject
+class Project : public QObject, public DAVA::InspBase
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
@@ -18,7 +19,6 @@ class Project : public QObject
 
 public:
     explicit Project(QObject* parent = nullptr);
-    virtual ~Project();
     bool Open(const QString& path);
     void Close();
     bool CanOpenProject(const QString& path) const;
@@ -41,6 +41,8 @@ public:
     QString GetProjectPath() const;
     QString GetProjectName() const;
 
+    QStringList GetProjectsHistory() const;
+
 signals:
     void IsOpenChanged(bool arg);
     void ProjectPathChanged(QString arg);
@@ -54,6 +56,17 @@ private:
     bool isOpen = false;
     DAVA::FilePath projectPath;
     QString projectName;
+    DAVA::String projectsHistory;
+    DAVA::uint32 projectsHistorySize;
+
+public:
+    INTROSPECTION(Project,
+                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  //maximum size of projects history
+                  MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  )
+
+    REGISTER_PREFERENCES(Project)
 };
 
 #endif // QUICKED__PROJECT_H__

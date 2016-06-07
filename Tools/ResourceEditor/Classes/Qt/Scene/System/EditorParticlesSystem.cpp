@@ -16,6 +16,7 @@
 // particles-related commands
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/ParticleLayerCommands.h"
+#include "Commands2/Base/CommandBatch.h"
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)

@@ -12,8 +12,6 @@ public:
     // Get path to documentation folder
     static QString GetDocumentationPath();
 
-    // Working directory
-    static QString GetDefaultDirectory();
     // Resource directory
     static QString GetResourceRootDirectory();
     // Get project title string

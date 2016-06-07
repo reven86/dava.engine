@@ -134,7 +134,7 @@ dx9_Reset(const ResetParam& param)
         _DX9_PresentParam.Windowed = !param.fullScreen;
         _DX9_PresentParam.PresentationInterval = interval;
 
-        _DX9_ResetPending = true;
+        ScheduleDeviceReset();
     }
 }
 

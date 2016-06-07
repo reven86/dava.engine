@@ -1,7 +1,9 @@
 #ifndef __ASSET_CACHE_CLIENT_H__
 #define __ASSET_CACHE_CLIENT_H__
 
+#include "Base/Introspection.h"
 #include "AssetCache/AssetCache.h"
+#include "Preferences/PreferencesRegistrator.h"
 #include <atomic>
 
 namespace DAVA
@@ -11,9 +13,9 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     struct Request
     {
         Request() = default;
-        Request(const AssetCache::CacheItemKey& key_, const FilePath& outputFolder_, AssetCache::ePacketID requestID_)
+        Request(const AssetCache::CacheItemKey& key_, AssetCache::CachedItemValue* value_, AssetCache::ePacketID requestID_)
             : key(key_)
-            , outputFolder(outputFolder_)
+            , value(value_)
             , requestID(requestID_)
             , result(AssetCache::Error::CODE_NOT_INITIALIZED)
             , recieved(false)
@@ -23,7 +25,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 
         void Reset()
         {
-            outputFolder = "";
+            value = nullptr;
 
             requestID = AssetCache::PACKET_UNKNOWN;
             result = AssetCache::Error::CODE_NOT_INITIALIZED;
@@ -33,7 +35,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         }
 
         AssetCache::CacheItemKey key;
-        FilePath outputFolder;
+        AssetCache::CachedItemValue* value = nullptr;
 
         AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
         AssetCache::Error result = AssetCache::Error::NO_ERRORS;
@@ -43,11 +45,19 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     };
 
 public:
-    struct ConnectionParams
+    struct ConnectionParams : InspBase
     {
-        String ip = AssetCache::LOCALHOST;
+        String ip = AssetCache::GetLocalHost();
         uint16 port = AssetCache::ASSET_SERVER_PORT;
         uint64 timeoutms = 60 * 1000;
+
+        REGISTER_PREFERENCES(ConnectionParams)
+
+        INTROSPECTION(ConnectionParams,
+                      MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_PREFERENCE)
+                      MEMBER(port, "Asset cache/Asset Cache Port", DAVA::I_PREFERENCE)
+                      MEMBER(timeoutms, "Asset cache/Asset Cache Timeout (ms)", DAVA::I_PREFERENCE)
+                      )
     };
 
     AssetCacheClient(bool emulateNetworkLoop);
@@ -57,7 +67,7 @@ public:
     void Disconnect();
 
     AssetCache::Error AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
-    AssetCache::Error RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
+    AssetCache::Error RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, AssetCache::CachedItemValue* value);
 
     bool IsConnected() const;
 

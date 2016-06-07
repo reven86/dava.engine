@@ -114,11 +114,11 @@ void FontPropertyDelegate::configurePresetClicked()
 void FontPropertyDelegate::valueChanged()
 {
     QComboBox* comboBox = qobject_cast<QComboBox*>(sender());
-    configurePresetAction->setDisabled(comboBox->currentText().isEmpty());
     if (nullptr == comboBox)
     {
         return;
     }
+    configurePresetAction->setDisabled(comboBox->currentText().isEmpty());
     QWidget* editor = comboBox->parentWidget();
     if (nullptr == editor)
     {
