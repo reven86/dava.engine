@@ -3,6 +3,7 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "UI/Input/UIInputSystem.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -1379,6 +1380,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         if (IsPointInside(currentInput->point, true))
                         {
                             PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
+                            UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
                         else
                         {
@@ -1558,6 +1560,7 @@ void UIControl::SystemVisible()
 
     ChangeViewState(eViewState::VISIBLE);
 
+    UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
     auto it = children.begin();
@@ -1610,8 +1613,7 @@ void UIControl::SystemInvisible()
 
     ChangeViewState(eViewState::ACTIVE);
 
-    UIControlSystem::Instance()->ControlBecomeInvisible(this);
-
+    UIControlSystem::Instance()->OnControlInvisible(this);
     OnInvisible();
 }
 
