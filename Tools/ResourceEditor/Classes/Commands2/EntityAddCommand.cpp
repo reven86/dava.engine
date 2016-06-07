@@ -3,8 +3,10 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Utils/StringFormat.h"
+
 EntityAddCommand::EntityAddCommand(DAVA::Entity* _entityToAdd, DAVA::Entity* toParent)
-    : Command2(CMDID_ENTITY_ADD, "Add Entity")
+    : Command2(CMDID_ENTITY_ADD, DAVA::Format("Add Entity %s", _entityToAdd->GetName().c_str()))
     , entityToAdd(_entityToAdd)
     , parentToAdd(toParent)
 {
