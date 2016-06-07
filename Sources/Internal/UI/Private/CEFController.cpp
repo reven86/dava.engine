@@ -168,7 +168,7 @@ void CEFControllerImpl::CleanLogs()
 
     if (fs->Exists(logPath))
     {
-        fs->DeleteDirectory(logPath);
+        fs->DeleteFile(logPath);
     }
 }
 
