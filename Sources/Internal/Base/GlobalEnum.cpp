@@ -14,6 +14,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Input/KeyboardShortcut.h"
 #include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
@@ -323,7 +324,13 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
+    ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");
+    ENUM_ADD_DESCR(UIComponent::NAVIGATION_COMPONENT, "Navigation");
+    ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
+    ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
+    ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
@@ -352,10 +359,12 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
 };
 
-ENUM_DECLARE(UIFocusComponent::ePolicy)
+ENUM_DECLARE(KeyboardShortcut::Modifier)
 {
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE, "Focusable");
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE_GROUP, "FocusableGroup");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_SHIFT, "SHIFT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CTRL, "CTRL");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_ALT, "ALT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_WIN, "WIN");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)
