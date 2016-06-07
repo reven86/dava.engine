@@ -111,7 +111,6 @@ void VertexBufferGLES2_t::Destroy(bool force_immediate)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
-        uid = 0;
     }
 
     if (mappedData)
@@ -119,6 +118,9 @@ void VertexBufferGLES2_t::Destroy(bool force_immediate)
         ::free(mappedData);
         mappedData = nullptr;
     }
+
+    size = 0;
+    uid = 0;
 }
 
 //==============================================================================
