@@ -18,7 +18,6 @@ IndexBufferGLES2_t
 {
 public:
     IndexBufferGLES2_t();
-    ~IndexBufferGLES2_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
@@ -48,16 +47,6 @@ IndexBufferGLES2_t::IndexBufferGLES2_t()
     , isMapped(false)
     , isUPBuffer(false)
 {
-}
-
-//------------------------------------------------------------------------------
-
-IndexBufferGLES2_t::~IndexBufferGLES2_t()
-{
-    if (mappedData)
-    {
-        ::free(mappedData);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -148,6 +137,12 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
         uid = 0;
+    }
+
+    if (mappedData)
+    {
+        ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 

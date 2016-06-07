@@ -141,12 +141,14 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     if (!Object)
     {
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL);
-        Object = reinterpret_cast<Entry*>(::calloc(ObjectCount, sizeof(Entry)));
+        Object = new Entry[ObjectCount]();
 
         uint32 objectIndex = 0;
         while (objectIndex < ObjectCount)
         {
             Entry& e = Object[objectIndex];
+            e.allocated = false;
+            e.generation = 0;
             e.nextObjectIndex = ++objectIndex;
         }
 
@@ -156,7 +158,6 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     Entry* e = Object + HeadIndex;
     DVASSERT(!e->allocated);
     HeadIndex = e->nextObjectIndex;
-    new (&e->object) T();
     e->allocated = true;
     ++e->generation;
 
@@ -187,7 +188,6 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     ObjectSync.Lock();
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
-    e->object.~T();
     e->allocated = false;
     ObjectSync.Unlock();
 }

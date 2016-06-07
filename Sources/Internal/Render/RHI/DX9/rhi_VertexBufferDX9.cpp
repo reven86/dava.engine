@@ -17,7 +17,6 @@ VertexBufferDX9_t
 {
 public:
     VertexBufferDX9_t();
-    ~VertexBufferDX9_t();
 
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
@@ -27,6 +26,7 @@ public:
     uint8* mappedData;
     unsigned isMapped : 1;
     unsigned updatePending : 1;
+    unsigned recreatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
@@ -40,18 +40,8 @@ VertexBufferDX9_t::VertexBufferDX9_t()
     , mappedData(nullptr)
     , isMapped(false)
     , updatePending(false)
+    , recreatePending(false)
 {
-}
-
-//------------------------------------------------------------------------------
-
-VertexBufferDX9_t::~VertexBufferDX9_t()
-{
-    DVASSERT(!isMapped)
-    if (mappedData)
-    {
-        ::free(mappedData);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -60,6 +50,9 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 {
     DVASSERT(desc.size);
     bool success = false;
+
+    recreatePending = false;
+
     UpdateCreationDesc(desc);
 
     if (desc.size)
@@ -114,9 +107,17 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
+        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
+        DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
+    }
+
+    if (!recreatePending && mappedData)
+    {
+        DVASSERT(!isMapped)
+        ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 
@@ -147,6 +148,7 @@ static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
+    self->recreatePending = false;
     self->MarkRestored();
     self->Destroy();
     VertexBufferDX9Pool::Free(vb);
@@ -292,6 +294,7 @@ void ReleaseAll()
     VertexBufferDX9Pool::Unlock();
     for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
     {
+        b->recreatePending = true;
         b->Destroy(true);
     }
     VertexBufferDX9Pool::Unlock();

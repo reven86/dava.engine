@@ -18,7 +18,6 @@ IndexBufferDX9_t
 {
 public:
     IndexBufferDX9_t();
-    ~IndexBufferDX9_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
@@ -28,6 +27,7 @@ public:
     uint8* mappedData;
     unsigned isMapped : 1;
     unsigned updatePending : 1;
+    unsigned recreatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -43,18 +43,8 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     , mappedData(nullptr)
     , isMapped(false)
     , updatePending(false)
+    , recreatePending(false)
 {
-}
-
-//------------------------------------------------------------------------------
-
-IndexBufferDX9_t::~IndexBufferDX9_t()
-{
-    DVASSERT(!isMapped)
-    if (mappedData)
-    {
-        ::free(mappedData);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -62,8 +52,10 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
-
     bool success = false;
+
+    recreatePending = false;
+
     UpdateCreationDesc(desc);
 
     if (desc.size)
@@ -118,9 +110,17 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
+        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
+        DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
+    }
+
+    if (!recreatePending && mappedData)
+    {
+        DVASSERT(!isMapped)
+        ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 
@@ -149,6 +149,7 @@ static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
+    self->recreatePending = false;
     self->MarkRestored();
     self->Destroy();
     IndexBufferDX9Pool::Free(ib);
@@ -293,6 +294,7 @@ void ReleaseAll()
     IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
+        b->recreatePending = true;
         b->Destroy(true);
     }
     IndexBufferDX9Pool::Unlock();
