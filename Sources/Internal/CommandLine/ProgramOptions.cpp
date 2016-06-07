@@ -49,8 +49,15 @@ void ProgramOptions::AddArgument(const String& argumentName, bool required)
 
 bool ProgramOptions::Parse(uint32 argc, char* argv[])
 {
+    Vector<String> commandLine(argv, argv + argc);
+    return Parse(commandLine);
+}
+bool ProgramOptions::Parse(const Vector<String>& argv)
+{
+    size_type argc = argv.size();
+
     // if first argument equal command name we should skip it else we should stop parsing
-    uint32 argIndex = 1; //skip executable pathname in params
+    size_type argIndex = 1; //skip executable pathname in params
     if (argIndex < argc && commandName == String(argv[argIndex]))
     {
         argIndex++;
@@ -60,11 +67,11 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
         return false;
     }
 
-    uint32 curParamPos = 0;
+    size_type curParamPos = 0;
     while (argIndex < argc)
     {
         // search if there is options with such name
-        if (!ParseOption(argIndex, argc, argv))
+        if (!ParseOption(argIndex, argv))
         {
             // set required
             if (curParamPos < arguments.size())
@@ -75,12 +82,12 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
             }
             else if (argIndex < argc)
             {
-                printf("Error - unknown argument: [%d] %s\n", argIndex, argv[argIndex]);
+                Logger::Error("Unknown argument: [%d] %s", argIndex, argv[argIndex].c_str());
                 return false;
             }
             else
             {
-                printf("Error of parsing command line\n");
+                Logger::Error("Command line parsing error");
                 return false;
             }
         }
@@ -93,7 +100,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     {
         if (arg.required && !arg.set)
         {
-            printf("Error - required argument not specified: %s\n", arg.name.c_str());
+            Logger::Error("Required argument is not specified: %s", arg.name.c_str());
             return false;
         }
     }
@@ -101,8 +108,10 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     return true;
 }
 
-bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
+bool ProgramOptions::ParseOption(size_type& argIndex, const Vector<String>& argv)
 {
+    size_type argc = argv.size();
+
     const String argString = argv[argIndex];
     for (auto& opt : options)
     {
@@ -209,55 +218,58 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
     return false;
 }
 
-void ProgramOptions::PrintUsage() const
+String ProgramOptions::GetUsageString() const
 {
-    printf("  %s ", commandName.c_str());
+    std::stringstream ss;
+    ss << "  " << commandName << " ";
 
     if (options.size() > 0)
     {
-        printf("[options] ");
+        ss << "[options] ";
     }
 
     for (auto& arg : arguments)
     {
         if (arg.required)
         {
-            printf("<%s> ", arg.name.c_str());
+            ss << "<" << arg.name << "> ";
         }
         else
         {
-            printf("[%s] ", arg.name.c_str());
+            ss << "[" << arg.name << "] ";
         }
     }
 
-    printf("\n");
+    ss << std::endl;
 
     for (auto& opt : options)
     {
-        printf("\t%s", opt.name.c_str());
+        ss << "\t" << opt.name;
 
         int optionType = opt.defaultValue.GetType();
         if (optionType != VariantType::TYPE_BOOLEAN)
         {
-            printf(" <value>");
+            ss << " <value>";
             if (opt.multipleValuesSuported)
             {
-                printf(",[additional values...]");
+                ss << ",[additional values...]";
             }
-            printf("\t");
+            ss << "\t";
         }
         else
         {
-            printf("\t\t");
+            ss << "\t\t";
         }
 
         if (!opt.descr.empty())
         {
-            printf("- %s", opt.descr.c_str());
+            ss << "- " << opt.descr;
         }
 
-        printf("\n");
+        ss << std::endl;
     }
+
+    return ss.str();
 }
 
 uint32 ProgramOptions::GetOptionValuesCount(const String& optionName) const
