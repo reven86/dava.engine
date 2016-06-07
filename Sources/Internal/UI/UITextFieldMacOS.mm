@@ -887,6 +887,11 @@ public:
         updateViewState = true;
 
         [nsTextField setHidden:!value];
+        if (!value)
+        {
+            // force UpdateRect call when dava control is hiding. should be done to ensure that nativeControl will also become hidden (moved away from visible screen)
+            UpdateRect(davaText->GetRect());
+        }
     }
 
     void ShowField() override
@@ -1273,7 +1278,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 
 - (void)controlTextDidChange:(NSNotification*)notification
 {
-    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && nullptr != text->ctrl->davaText->GetDelegate())
     {
         text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
     }

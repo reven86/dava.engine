@@ -10,6 +10,7 @@
 #include "Input/KeyboardDevice.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/TextBox.h"
 
 #include <numeric>
 
@@ -35,6 +36,8 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
+    staticText->GetTextBlock()->SetMeasureEnable(true);
+    staticText->SetForceBiDiSupportEnabled(true);
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
@@ -104,7 +107,11 @@ void TextFieldStbImpl::SetText(const WideString& newText)
         {
             stb->Paste(newText);
         }
+        stb->ClearUndoStack();
         ignoreKeyPressedDelegate = false;
+
+        staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
+
         needRedraw = true;
     }
 }
@@ -123,26 +130,6 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             showCursor = !showCursor;
         }
         needRedraw = true;
-
-        UpdateSelection(stb->GetSelectionStart(), stb->GetSelectionEnd());
-        UpdateCursor(stb->GetCursorPosition(), stb->IsInsertMode());
-        UpdateOffset(cursorRect);
-
-        // Fix cursor position for multiline if end of some line contains many
-        // spaces over control size (same behavior in MS Word)
-        if (!stb->IsSingleLineMode())
-        {
-            const Vector2& controlSize = control->GetSize();
-            if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
-            {
-                cursorRect.dx = DEFAULT_CURSOR_WIDTH;
-                cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
-            }
-            else if (cursorRect.x + cursorRect.dx > controlSize.x)
-            {
-                cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
-            }
-        }
     }
     else if (showCursor)
     {
@@ -156,9 +143,45 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
         return;
     }
 
-    const WideString& txt = control->GetVisibleText();
-    staticText->SetText(txt, UIStaticText::NO_REQUIRED_SIZE);
+    staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
+
+    if (isEditing)
+    {
+        if (lastCursorPos != stb->GetCursorPosition())
+        {
+            lastCursorPos = stb->GetCursorPosition();
+
+            UpdateCursor(lastCursorPos, stb->IsInsertMode());
+            UpdateOffset(cursorRect);
+            // Fix cursor position for multiline if end of some line contains many
+            // spaces over control size (same behavior in MS Word)
+            if (!stb->IsSingleLineMode())
+            {
+                const Vector2& controlSize = control->GetSize();
+                if (cursorRect.x + DEFAULT_CURSOR_WIDTH > controlSize.x)
+                {
+                    cursorRect.dx = DEFAULT_CURSOR_WIDTH;
+                    cursorRect.x = controlSize.x - cursorRect.dx - 1.f;
+                }
+                else if (cursorRect.x + cursorRect.dx > controlSize.x)
+                {
+                    cursorRect.dx = controlSize.x - cursorRect.x - 1.f;
+                }
+            }
+
+            // Show cursor again
+            cursorTime = 0.f;
+            showCursor = true;
+        }
+
+        if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+        {
+            lastSelStart = stb->GetSelectionStart();
+            lastSelEnd = stb->GetSelectionEnd();
+            UpdateSelection(lastSelStart, lastSelEnd);
+        }
+    }
 }
 
 void TextFieldStbImpl::SetAutoCapitalizationType(int32)
@@ -220,11 +243,11 @@ void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
 
 void TextFieldStbImpl::SetVisible(bool v)
 {
-    //staticText->SetVisibilityFlag(v);
 }
 
 void TextFieldStbImpl::SetFont(Font* f)
 {
+    DropLastCursorAndSelection();
     staticText->SetFont(f);
 }
 
@@ -250,6 +273,7 @@ void TextFieldStbImpl::SetShadowColor(const Color& c)
 
 void TextFieldStbImpl::SetTextAlign(int32 align)
 {
+    DropLastCursorAndSelection();
     staticText->SetTextAlign(align);
 }
 
@@ -260,6 +284,7 @@ TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
 
 void TextFieldStbImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
 {
+    DropLastCursorAndSelection();
     staticText->SetTextUseRtlAlign(align);
 }
 
@@ -270,6 +295,7 @@ void TextFieldStbImpl::SetSize(const Vector2 vector2)
 
 void TextFieldStbImpl::SetMultiline(bool is_multiline)
 {
+    DropLastCursorAndSelection();
     staticText->SetMultiline(is_multiline);
     stb->SetSingleLineMode(!is_multiline);
 }
@@ -296,6 +322,7 @@ rhi::int32 TextFieldStbImpl::GetTextAlign()
 
 void TextFieldStbImpl::SetRect(const Rect& rect)
 {
+    DropLastCursorAndSelection();
     staticText->SetSize(rect.GetSize());
 }
 
@@ -311,6 +338,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     for (const Rect& r : selectionRects)
     {
         Rect sr = r;
+        sr.x += staticTextOffset.x;
+        sr.y += staticTextOffset.y;
         sr.x *= scale.x;
         sr.y *= scale.y;
         sr.dx *= scale.x;
@@ -326,6 +355,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     if (showCursor)
     {
         Rect sr = cursorRect;
+        sr.x += staticTextOffset.x;
+        sr.y += staticTextOffset.y;
         sr.x *= scale.x;
         sr.y *= scale.y;
         sr.dx *= scale.x;
@@ -380,6 +411,8 @@ uint32 TextFieldStbImpl::InsertText(uint32 position, const WideString::value_typ
         {
             delegate->TextFieldOnTextChanged(control, text, prevText);
         }
+
+        DropLastCursorAndSelection();
         return length;
     }
     return 0;
@@ -402,19 +435,16 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
         {
             delegate->TextFieldOnTextChanged(control, text, prevText);
         }
+
+        DropLastCursorAndSelection();
         return length;
     }
     return 0;
 }
 
-const Vector<TextBlock::Line>& TextFieldStbImpl::GetMultilineInfo()
+const TextBox* TextFieldStbImpl::GetTextBox()
 {
-    return staticText->GetTextBlock()->GetMultilineInfo();
-}
-
-const Vector<float32>& TextFieldStbImpl::GetCharactersSizes()
-{
-    return staticText->GetTextBlock()->GetCharactersSize();
+    return staticText->GetTextBlock()->GetTextBox();
 }
 
 uint32 TextFieldStbImpl::GetTextLength()
@@ -424,7 +454,47 @@ uint32 TextFieldStbImpl::GetTextLength()
 
 WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
 {
-    return text[i];
+    return text.at(i);
+}
+
+void TextFieldStbImpl::CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight)
+{
+#if 1 // Simple correcting with RTL check
+    const uint32 charsCount = tb->GetCharactersCount();
+    if (pos < charsCount)
+    {
+        while (pos > 0 && tb->GetCharacter(pos).skip)
+        {
+            pos--;
+        }
+        cursorRight = tb->GetCharacter(pos).rtl;
+    }
+    else
+    {
+        pos = charsCount - 1;
+        cursorRight = !tb->GetCharacter(pos).rtl;
+    }
+#else // Correct cursor like notepad (more complex)
+    int32 charsCount = tb->GetCharactersCount();
+    if (pos < charsCount)
+    {
+        while (pos > 0 && tb->GetCharacter(pos).skip)
+        {
+            pos--;
+        }
+        cursorRight = tb->GetCharacter(pos).rtl;
+        if ((pos > 0) && (tb->GetCharacter(pos - 1).rtl != tb->GetCharacter(pos).rtl))
+        {
+            pos--;
+            cursorRight = !tb->GetCharacter(pos).rtl;
+        }
+    }
+    else
+    {
+        pos = charsCount - 1;
+        cursorRight = !tb->GetCharacter(pos).rtl;
+    }
+#endif
 }
 
 void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
@@ -434,45 +504,25 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     uint32 selEnd = std::max(start, end);
     if (selStart < selEnd)
     {
-        const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-        const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
-        for (const TextBlock::Line& line : linesInfo)
+        const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+        for (uint32 i = selStart; i < selEnd; ++i)
         {
-            if (selStart >= line.offset + line.length || selEnd <= line.offset)
+            const TextBox::Character& c = tb->GetCharacter(i);
+            if (c.skip)
+            {
+                continue;
+            }
+            const TextBox::Line& line = tb->GetLine(c.lineIndex);
+            if (line.skip)
             {
                 continue;
             }
 
             Rect r;
-            r.y += line.yoffset;
+            r.x = c.xoffset + line.xoffset;
+            r.y = line.yoffset;
+            r.dx = c.xadvance;
             r.dy = line.yadvance;
-            if (selStart > line.offset)
-            {
-                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selStart, 0.f);
-            }
-
-            if (selEnd >= line.offset + line.length)
-            {
-                r.dx = line.xadvance;
-            }
-            else
-            {
-                r.dx = std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + selEnd, 0.f);
-            }
-            r.dx -= r.x;
-            r.x += line.xoffset;
-
-            r.x += staticTextOffset.x;
-            r.y += staticTextOffset.y;
-
-            if (r.x > control->GetSize().x)
-            {
-                continue;
-            }
-            else if (r.x + r.dx > control->GetSize().x)
-            {
-                r.dx = control->GetSize().x - r.x;
-            }
 
             selectionRects.push_back(r);
         }
@@ -481,68 +531,50 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
-    const Vector<TextBlock::Line>& linesInfo = staticText->GetTextBlock()->GetMultilineInfo();
-    const Vector<float32>& charsSizes = staticText->GetTextBlock()->GetCharactersSize();
+    const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
-    r.x = staticTextOffset.x;
-    r.y = staticTextOffset.y;
-    r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
     r.dx = DEFAULT_CURSOR_WIDTH;
 
-    if (!linesInfo.empty())
+    int32 charsCount = tb->GetCharactersCount();
+    if (charsCount > 0)
     {
-        auto lineInfoIt = std::find_if(linesInfo.begin(), linesInfo.end(), [cursorPos](const DAVA::TextBlock::Line& l)
-                                       {
-                                           return l.offset <= cursorPos && cursorPos < l.offset + l.length;
-                                       });
-        if (lineInfoIt != linesInfo.end())
+        bool atEnd = false;
+        CorrectPos(tb, cursorPos, atEnd);
+
+        const TextBox::Character& c = tb->GetCharacter(cursorPos);
+        const TextBox::Line& line = tb->GetLine(c.lineIndex);
+
+        r.x += c.xoffset + line.xoffset;
+        if (atEnd)
         {
-            const TextBlock::Line& line = *lineInfoIt;
-            r.y += line.yoffset;
-            r.dy = line.yadvance;
-            if (cursorPos != line.offset)
-            {
-                r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + cursorPos, 0.f);
-            }
-            r.x += line.xoffset;
+            r.x += c.xadvance;
         }
-        else
-        {
-            const TextBlock::Line& line = *linesInfo.rbegin();
-            r.y += line.yoffset;
-            r.dy = line.yadvance;
-            r.x += std::accumulate(charsSizes.begin() + line.offset, charsSizes.begin() + line.offset + line.length, 0.f);
-            r.x += line.xoffset;
-        }
+        r.y += line.yoffset;
+        r.dy = line.yadvance;
     }
     else
     {
+        r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
+
         int32 ctrlAlign = control->GetTextAlign();
-        if (ctrlAlign & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
+        if (ctrlAlign & ALIGN_RIGHT)
         {
-            r.x = 0;
+            r.x += control->GetSize().x - r.dx;
         }
-        else if (ctrlAlign & ALIGN_RIGHT)
+        else if (ctrlAlign & ALIGN_HCENTER)
         {
-            r.x = control->GetSize().x - r.dx;
-        }
-        else //if (ctrlAlign & ALIGN_HCENTER)
-        {
-            r.x = (control->GetSize().x - r.dx) * 0.5f;
+            r.x += (control->GetSize().x - r.dx) * 0.5f;
         }
 
-        if (ctrlAlign & ALIGN_TOP)
+        if (ctrlAlign & ALIGN_BOTTOM)
         {
-            r.y = 0;
+            r.y += control->GetSize().y - r.dy;
         }
-        else if (ctrlAlign & ALIGN_BOTTOM)
+        else if (ctrlAlign & ALIGN_VCENTER)
         {
-            r.y = control->GetSize().y - r.dy;
-        }
-        else //if (ctrlAlign & ALIGN_VCENTER)
-        {
-            r.y = (control->GetSize().y - r.dy) * 0.5f;
+            r.y += (control->GetSize().y - r.dy) * 0.5f;
         }
     }
 
@@ -555,7 +587,7 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
     const Vector2& textSize = staticText->GetTextSize();
     const Vector2 offsetMoveDelta = controlSize * 0.25f;
 
-    if (controlSize.dx < textSize.dx)
+    if (controlSize.dx < textSize.dx && stb->IsSingleLineMode())
     {
         if (visibleRect.x < 0.f)
         {
@@ -572,7 +604,7 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
         staticTextOffset.x = 0.f;
     }
 
-    if (controlSize.dy < textSize.dy)
+    if (controlSize.dy < textSize.dy && !stb->IsSingleLineMode())
     {
         if (visibleRect.y < 0.f)
         {
@@ -838,5 +870,12 @@ bool TextFieldStbImpl::PasteFromClipboard()
     }
 #endif
     return false;
+}
+
+void TextFieldStbImpl::DropLastCursorAndSelection()
+{
+    lastCursorPos = INVALID_POS;
+    lastSelStart = INVALID_POS;
+    lastSelEnd = INVALID_POS;
 }
 }

@@ -21,7 +21,7 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
-class UIKeyInputSystem;
+class UIInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -175,7 +175,7 @@ public:
 	 \brief Returns all currently active inputs.
 	 \returns all inputs active in the system
 	 */
-    const Vector<UIEvent>& GetAllInputs();
+    const Vector<UIEvent>& GetAllInputs() const;
 
     /**
 	 \brief Sets requested control as a exclusive input locker.
@@ -189,7 +189,7 @@ public:
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
 	 \returns exclusive input locker
 	 */
-    UIControl* GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker() const;
 
     /**
 	 \brief Returns base geometric data seted in the system.
@@ -233,19 +233,20 @@ public:
     /**
 	 \brief Returns control hovered by the mnouse for now
 	 */
-    UIControl* GetHoveredControl(UIControl* newHovered);
+    UIControl* GetHoveredControl() const;
 
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
     void SetFocusedControl(UIControl* newFocused);
 
-    void ControlBecomeInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control
 	 */
-    UIControl* GetFocusedControl();
+    UIControl* GetFocusedControl() const;
 
     void AddScreenSwitchListener(ScreenSwitchListener* listener);
     void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
@@ -273,7 +274,9 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
+
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
@@ -295,12 +298,10 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem = nullptr;
+    UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
-    Vector<UIEvent> touchEvents;
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIScreen> nextScreen;
@@ -312,11 +313,6 @@ private:
     int32 lockInputCounter = 0;
     int32 screenLockCount = 0;
     int32 frameSkip = 0;
-
-    UIControl* exclusiveInputLocker = nullptr;
-    UIControl* hovered = nullptr;
-    UIControl* focusedControlWhenTouchBegan = nullptr;
-    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;
