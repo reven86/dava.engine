@@ -3,17 +3,18 @@
 
 #include "Debug/DVAssert.h"
 
-#include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
-#include "core_generic_plugin/interfaces/i_application.hpp"
-#include "core_generic_plugin/generic_plugin.hpp"
-#include "core_variant/variant.hpp"
-#include "core_ui_framework/i_ui_application.hpp"
-#include "core_qt_common/i_qt_framework.hpp"
+#include <core_generic_plugin/interfaces/i_plugin_context_manager.hpp>
+#include <core_generic_plugin/interfaces/i_application.hpp>
+#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_variant/variant.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_qt_common/i_qt_framework.hpp>
 
-#include "core_qt_common/qt_window.hpp"
+#include <core_qt_common/qt_window.hpp>
 
 #include <QMainWindow>
 #include <QFileInfo>
+#include <QApplication>
 
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
@@ -33,6 +34,7 @@ BaseApplication::BaseApplication(int argc, char** argv)
 
 BaseApplication::~BaseApplication()
 {
+    OnPreUnloadPlugins();
     NGTLayer::SetGlobalContext(nullptr);
 }
 
@@ -69,12 +71,15 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     DVASSERT(framework != nullptr);
 
     std::unique_ptr<QtWindow> window(new QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    Connection tryCloseSignalConnetion = window->signalTryClose.connect(std::bind(&BaseApplication::OnMainWindowTryClose, this, std::placeholders::_1));
+    Connection closeSignalConnection = window->signalClose.connect(std::bind(&BaseApplication::OnMainWindowClosed, this));
 
     IUIApplication* app = pluginManager.queryInterface<IUIApplication>();
     DVASSERT(app != nullptr);
     window->show();
     app->addWindow(*window);
     int result = app->startApplication();
+    app->removeWindow(*window);
     window->releaseWindow();
 
     return result;
@@ -92,4 +97,15 @@ DAVA::WideString BaseApplication::GetPluginsFolder() const
 
     return pluginsBasePath_.toStdWString();
 }
+
+void BaseApplication::OnMainWindowTryClose(bool& result)
+{
+    result = OnRequestCloseApp();
+}
+
+void BaseApplication::OnMainWindowClosed()
+{
+    qApp->quit();
+}
+
 } // namespace NGTLayer

@@ -20,6 +20,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
+#include "Commands2/Base/CommandBatch.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -61,6 +62,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
         QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
+        QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &PropertyEditor::ResetProperties);
     }
     posSaver.Attach(this, "DocPropetyEditor");
 
@@ -722,6 +724,11 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
 
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
+    if (command == nullptr)
+    {
+        return;
+    }
+
     static const DAVA::Vector<DAVA::int32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,

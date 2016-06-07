@@ -97,7 +97,8 @@ private:
     int32 LoadString(const WideString& str);
     void Prepare(FT_Vector* advances);
 
-    inline FT_Pos Round(FT_Pos val);
+    inline int32 FtRound(int32 val);
+    inline int32 FtCeil(int32 val);
 
     static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count);
     static void StreamClose(FT_Stream stream);
@@ -202,6 +203,10 @@ Font::StringMetrics FTFont::DrawStringToBuffer(void* buffer, int32 bufWidth, int
 
 Font::StringMetrics FTFont::GetStringMetrics(const WideString& str, Vector<float32>* charSizes) const
 {
+    if (charSizes != nullptr)
+    {
+        charSizes->clear();
+    }
     return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, ascendScale, descendScale, charSizes);
 }
 
@@ -484,7 +489,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 int32 realH = Min(height, bufHeight - top);
                 int32 realW = Min(width, bufWidth - left);
                 int32 ind = top * bufWidth + left;
-                DVASSERT(ind >= 0);
+                DVASSERT(((ind >= 0) && (ind < bufWidth * bufHeight)) || (realW * realH == 0));
                 uint8* writeBuf = resultBuf + ind;
 
                 if (glyph.index == 0)
@@ -546,8 +551,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
     // Transform width from FT points to pixels
-    // Increase width by 1 for get total size litle larged that summ of length all symbols in float32 (charSizes)
-    metrics.width = (layoutWidth >> ftToPixelShift) + 1;
+    metrics.width = FtCeil(layoutWidth) >> ftToPixelShift;
 
     if (!contentScaleIncluded)
     {
@@ -701,9 +705,14 @@ int32 FTInternalFont::LoadString(const WideString& str)
     return spacesCount;
 }
 
-FT_Pos FTInternalFont::Round(FT_Pos val)
+int32 FTInternalFont::FtRound(int32 val)
 {
     return (((val) + 32) & -64);
+}
+
+inline int32 FTInternalFont::FtCeil(int32 val)
+{
+    return (((val) + 63) & -64);
 }
 
 unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count)

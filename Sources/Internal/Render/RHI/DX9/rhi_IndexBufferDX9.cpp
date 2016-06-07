@@ -26,10 +26,9 @@ public:
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
     unsigned isMapped : 1;
-
-    IDirect3DIndexBuffer9* prevBuffer;
 };
-RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor);
+
+RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
 
 typedef ResourcePool<IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true);
@@ -40,7 +39,6 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , prevBuffer(nullptr)
 {
 }
 
@@ -55,7 +53,9 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
+
     bool success = false;
+    UpdateCreationDesc(desc);
 
     if (desc.size)
     {
@@ -73,6 +73,8 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
             break;
         }
+
+        DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
@@ -111,9 +113,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
-
-        prevBuffer = buffer;
+        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
@@ -126,16 +126,12 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
-    if (ib->Create(desc))
-    {
-        IndexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        ib->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (ib->Create(desc) == false)
     {
         IndexBufferDX9Pool::Free(handle);
         handle = InvalidHandle;
@@ -267,11 +263,12 @@ void SetToRHI(Handle ib)
 
 void ReleaseAll()
 {
+    IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
-        b->MarkNeedRestore();
     }
+    IndexBufferDX9Pool::Unlock();
 }
 
 void ReCreateAll()
@@ -282,7 +279,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferDX9_t::NeedRestoreCount();
+    return IndexBufferDX9Pool::PendingRestoreCount();
 }
 }
 

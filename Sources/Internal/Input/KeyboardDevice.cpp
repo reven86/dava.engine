@@ -165,6 +165,16 @@ const String& KeyboardDevice::GetKeyName(Key key)
     return keyNames[static_cast<unsigned>(key)];
 }
 
+const Key KeyboardDevice::GetKeyByName(const String& name)
+{
+    for (size_t i = 0; i < keyNames.size(); i++)
+    {
+        if (keyNames[i] == name)
+            return static_cast<Key>(i);
+    }
+    return Key::UNKNOWN;
+}
+
 void KeyboardDevice::OnKeyPressed(Key key)
 {
     unsigned index = static_cast<unsigned>(key);

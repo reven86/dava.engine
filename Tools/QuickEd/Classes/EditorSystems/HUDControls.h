@@ -24,7 +24,7 @@ protected:
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(ControlNode* node);
+    explicit HUDContainer(EditorSystemsManager* systemsManager, ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
@@ -35,6 +35,7 @@ private:
     VisibleValueProperty* visibleProperty = nullptr;
     DAVA::UIControl* control = nullptr;
     DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
+    EditorSystemsManager* systemsManager = nullptr;
 };
 
 class FrameControl : public ControlContainer

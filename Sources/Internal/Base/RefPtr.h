@@ -47,6 +47,13 @@ public:
         SafeRetain(_ptr);
     }
 
+    static RefPtr<T> ConstructWithRetain(T* p)
+    {
+        static_assert(std::is_base_of<BaseObject, T>::value, "RefPtr works only with classes, derived from BaseObject!");
+        p->Retain();
+        return RefPtr<T>(p);
+    }
+
     T* Get() const
     {
         return _ptr;
@@ -80,6 +87,11 @@ public:
         SafeRetain(_ptr);
         SafeRelease(tmp_ptr);
         return *this;
+    }
+
+    bool operator<(const RefPtr& other) const
+    {
+        return _ptr < other._ptr;
     }
 
     /// implicit output conversion

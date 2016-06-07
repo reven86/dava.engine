@@ -2,33 +2,28 @@
 #define STEAM_H
 
 #if defined(__DAVAENGINE_STEAM__)
+#include "Base/BaseTypes.h"
 
-// wrapped for UNITY BUILD
-namespace STEAM_SDK
-{
-#include "steam/steam_api.h"
-}
-
+class ISteamRemoteStorage;
 namespace DAVA
 {
 class Steam final
 {
 public:
-    using Storage = STEAM_SDK::ISteamRemoteStorage;
+    static const String appIdPropertyKey;
 
     Steam() = default;
 
     static void Init();
     static void Deinit();
     static bool IsInited();
+    static void Update();
 
-    static Storage* CreateStorage();
+    static ISteamRemoteStorage* CreateStorage();
 
 private:
     static bool isInited;
 };
 }
-
 #endif
-
 #endif

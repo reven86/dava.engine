@@ -1,7 +1,7 @@
 #include "EditorSystems/BaseEditorSystem.h"
 
 BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
-    : systemManager(parent)
+    : systemsManager(parent)
 {
 }
 
