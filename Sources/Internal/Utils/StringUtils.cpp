@@ -116,3 +116,4 @@ void StringUtils::ReplaceAll(WideString& string, const WideString& search, const
     }
 }
 }
+}
