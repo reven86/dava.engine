@@ -234,7 +234,7 @@ void UpdateDialog::DownloadFinished()
 
 bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
 {
-    UpdateDialog_local::UpdateDialogZipFunctor functor("", "", tr("Archive not found or damaged!"), this, nullptr);
+    UpdateDialog_local::UpdateDialogZipFunctor functor("Retreiveing archive info...", "Unpacking archive...", tr("Archive not found or damaged!"), this, nullptr);
     return ZipUtils::GetFileList(archivePath, files, functor);
 }
 

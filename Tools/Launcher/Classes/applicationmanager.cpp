@@ -16,8 +16,12 @@ ApplicationManager::ApplicationManager(QObject* parent)
 void ApplicationManager::LoadLocalConfig(const QString& configPath)
 {
     QFile configFile(configPath);
+    if (!configFile.exists())
+    {
+        return;
+    }
     localConfig.Clear();
-    if (configFile.open(QFile::ReadWrite))
+    if (configFile.open(QFile::ReadOnly))
     {
         QByteArray data = configFile.readAll();
         configFile.close();
@@ -184,10 +188,17 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
         {
             return;
         }
-        if (!ProcessHelper::IsProcessRuning(runPath))
-            ProcessHelper::RunProcess(runPath);
+        if (!QFile::exists(runPath))
+        {
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
+        }
         else
-            ErrorMessenger::ShowNotificationDlg("Application is already launched.");
+        {
+            if (!ProcessHelper::IsProcessRuning(runPath))
+                ProcessHelper::RunProcess(runPath);
+            else
+                ErrorMessenger::ShowNotificationDlg("Application is already launched.");
+        }
     }
 }
 
@@ -196,22 +207,21 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = GetApplicationDirectory(branchID, appID) + version->runPath;
-        if (runPath.isEmpty())
+        QString runPath = GetApplicationDirectory(branchID, appID, false) + version->runPath;
+        if (!runPath.isEmpty())
         {
-            return false;
-        }
-        while (ProcessHelper::IsProcessRuning(runPath))
-        {
-            int result = ErrorMessenger::ShowRetryDlg(true);
-            if (result == QMessageBox::Cancel)
-                return false;
+            while (ProcessHelper::IsProcessRuning(runPath))
+            {
+                int result = ErrorMessenger::ShowRetryDlg(true);
+                if (result == QMessageBox::Cancel)
+                    return false;
+            }
         }
 
         QString appPath = GetApplicationDirectory(branchID, appID);
         if (appPath.isEmpty())
         {
-            return false;
+            return true;
         }
         FileManager::DeleteDirectory(appPath);
         localConfig.RemoveApplication(branchID, appID, versionID);
