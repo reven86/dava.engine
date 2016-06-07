@@ -1,6 +1,6 @@
 #include "UI/mainwindow.h"
-#include "DocumentGroup.h"
-#include "Document.h"
+#include "Document/DocumentGroup.h"
+#include "Document/Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"

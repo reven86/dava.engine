@@ -6,7 +6,7 @@
 #include <QFont>
 #include <QVector2D>
 #include <QVector4D>
-#include "Document.h"
+#include "Document/Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"

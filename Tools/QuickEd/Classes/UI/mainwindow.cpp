@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "Project/Project.h"
-#include "Document.h"
-#include "DocumentGroup.h"
+#include "Document/Document.h"
+#include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
 #include "Helpers/ResourcesManageHelper.h"
@@ -411,7 +411,7 @@ void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const Va
     if (member == backgroundIndexMember)
     {
         uint32 index = value.AsUInt32();
-        DVASSERT(actions.size() > index);
+        DVASSERT(actions.size() > static_cast<int>(index));
         actions.at(index)->setChecked(true);
         return;
     }

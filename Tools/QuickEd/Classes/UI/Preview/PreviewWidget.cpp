@@ -15,7 +15,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
 
-#include "Document.h"
+#include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/CanvasSystem.h"

@@ -1,6 +1,6 @@
 #include "QtModelPackageCommandExecutor.h"
 
-#include "Document.h"
+#include "Document/Document.h"
 
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/Commands/InsertControlCommand.h"
