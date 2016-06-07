@@ -100,13 +100,6 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
 
     // Render to texture
 
-    //[CLEAR]
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = screenshot->GetWidth();
-    viewport.height = screenshot->GetHeight();
-    RenderHelper::CreateClearPass(screenshot->handle, screenshot->handleDepthStencil, PRIORITY_SCREENSHOT + PRIORITY_CLEAR, Color::Clear, viewport);
-
     //[DRAW]
     RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.colorAttachment = screenshot->handle;
@@ -114,7 +107,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.width = screenshot->GetWidth();
     desc.height = screenshot->GetHeight();
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
-    desc.clearTarget = false;
+    desc.clearTarget = true;
     desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
