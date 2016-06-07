@@ -163,7 +163,6 @@ String ReplaceInString(const String& sourceString, const String& what, const Str
     return sourceString;
 }
 
-
 void SaveSpriteToFile(Sprite* sprite, const FilePath& path)
 {
     if (sprite)
