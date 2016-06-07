@@ -69,13 +69,21 @@ GameCore::GameCore(Engine* eng)
 {
     pthis = this;
 
-    engine->signalGameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
-    engine->signalGameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
+    engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
+    engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
 
     if (engine->IsConsoleMode())
-        engine->signalUpdate.Connect(this, &GameCore::OnUpdateConsole);
+    {
+        engine->update.Connect(this, &GameCore::OnUpdateConsole);
+    }
     else
-        engine->PrimaryWindow()->signalSizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+    {
+        engine->windowCreated.Connect(this, &GameCore::OnWindowCreated);
+        engine->windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
+
+        Window* w = engine->PrimaryWindow();
+        w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+    }
 }
 
 void GameCore::RunOnlyThisTest()
@@ -87,26 +95,9 @@ void GameCore::OnGameLoopStarted()
 {
     Logger::Debug("****** GameCore::OnGameLoopStarted");
 
-    if (!engine->IsConsoleMode())
-    {
-        testListScreen = new TestListScreen();
-        UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-        RegisterTests();
-        RunTests();
-
-        engine->PrimaryWindow()->Resize(1024, 768);
-    }
-
     engine->RunAsyncOnMainThread([]() {
         Logger::Error("******** KABOOM on main thread********");
     });
-
-    if (!engine->IsConsoleMode())
-    {
-        engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
-            Logger::Error("******** KABOOM on UI thread********");
-        });
-    }
 }
 
 void GameCore::OnGameLoopStopped()
@@ -119,6 +110,26 @@ void GameCore::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
+}
+
+void GameCore::OnWindowCreated(DAVA::Window* w)
+{
+    Logger::Error("****** GameCore::OnWindowCreated");
+
+    testListScreen = new TestListScreen();
+    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
+    RegisterTests();
+    RunTests();
+
+    w->Resize(1024, 768);
+    w->RunAsyncOnUIThread([]() {
+        Logger::Error("******** KABOOM on UI thread********");
+    });
+}
+
+void GameCore::OnWindowDestroyed(DAVA::Window* w)
+{
+    Logger::Error("****** GameCore::OnWindowDestroyed");
 }
 
 void GameCore::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)

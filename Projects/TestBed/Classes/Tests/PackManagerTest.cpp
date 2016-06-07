@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Tests/PackManagerTest.h"
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
@@ -237,3 +239,5 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
         // std::system("python scripts/stop_local_http_server.py");
     }
 }
+
+#endif // !__DAVAENGINE_COREV2__
