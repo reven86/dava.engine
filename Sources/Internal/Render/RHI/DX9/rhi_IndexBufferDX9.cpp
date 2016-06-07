@@ -75,6 +75,8 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             break;
         }
 
+        DVASSERT(buffer == nullptr);
+
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
         {

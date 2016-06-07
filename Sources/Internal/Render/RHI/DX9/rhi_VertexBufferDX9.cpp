@@ -72,6 +72,8 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
             break;
         }
 
+        DVASSERT(buffer == nullptr);
+
         uint32 cmd_cnt = 2;
         DX9Command cmd[2] =
         {
