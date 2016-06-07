@@ -150,8 +150,8 @@ ResourcePool<T, RT, DT, nr>::Alloc()
             e.allocated = false;
             e.generation = 0;
 
-            ++objectIndex
-              e.nextObjectIndex = objectIndex;
+            ++objectIndex;
+            e.nextObjectIndex = objectIndex;
         }
 
         (Object + ObjectCount - 1)->nextObjectIndex = 0;
