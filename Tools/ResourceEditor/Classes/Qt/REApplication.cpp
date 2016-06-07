@@ -70,3 +70,8 @@ void REApplication::OnPreUnloadPlugins()
 {
     commandManager->deregisterCommand(ngtCommand->getId());
 }
+
+bool REApplication::OnRequestCloseApp()
+{
+    return mainWindow->CanBeClosed();
+}
