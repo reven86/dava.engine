@@ -194,6 +194,7 @@ private:
      */
 class UIControl : public AnimatedObject
 {
+    friend class UIInputSystem;
     friend class UIControlSystem;
 
 public:

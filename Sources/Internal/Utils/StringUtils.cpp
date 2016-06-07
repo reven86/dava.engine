@@ -42,6 +42,45 @@ WideString StringUtils::TrimRight(const WideString& string)
     return WideString(rend.base(), rit.base());
 }
 
+String StringUtils::Trim(const String& str)
+{
+    String::size_type pos1 = str.find_first_not_of(" \t");
+    String::size_type pos2 = str.find_last_not_of(" \t");
+
+    if (pos1 == String::npos || pos2 == String::npos)
+    {
+        return String("");
+    }
+
+    return str.substr(pos1, pos2 - pos1 + 1);
+}
+
+String StringUtils::TrimLeft(const String& str)
+{
+    String::size_type pos1 = str.find_first_not_of(" \t");
+    String::size_type pos2 = str.length() - 1;
+
+    if (pos1 == String::npos)
+    {
+        return String("");
+    }
+
+    return str.substr(pos1, pos2 - pos1 + 1);
+}
+
+String StringUtils::TrimRight(const String& str)
+{
+    String::size_type pos1 = 0;
+    String::size_type pos2 = str.find_last_not_of(" \t");
+
+    if (pos2 == String::npos)
+    {
+        return String("");
+    }
+
+    return str.substr(pos1, pos2 - pos1 + 1);
+}
+
 WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -1*/)
 {
     WideString out;
