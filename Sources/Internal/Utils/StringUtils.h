@@ -96,6 +96,38 @@ WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1)
  * \return output string.
  */
 bool RemoveEmoji(WideString& string);
+
+/**
+ * \brief Replaces all occurrences of a search string in the specified string with replacement string
+ * \param string Original string
+ * \param search Seeking value
+ * \param replacement Replacement value
+ */
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement);
+
+/**
+* \brief Query if 't' is kind of printable character.
+* \param t The char16 to process.
+* \return false if not printable.
+*/
+inline bool IsPrintable(char16 t)
+{
+    switch (t)
+    {
+    case L'\n': // Line feed
+    case L'\r': // Carriage return
+    case 0x200B: // Zero-width space
+    case 0x200C: // Zero-width non-joiner
+    case 0x200D: // Zero-width joiner
+    case 0x200E: // Zero-width Left-to-right zero-width character
+    case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+    case 0x061C: // Arabic letter mark
+        return false;
+    default:
+        return true;
+    }
+}
+
 /**
  * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespace.
  * \param t The char16 to process.
@@ -129,9 +161,9 @@ inline bool IsWhitespace(char16 t)
     case 0x205F: // Medium mathematical space
     case 0x3000: // Ideographic space
     // Unicode characters in 'Separator, Line' category (Zl)
-    case 0x2028:
+    case 0x2028: // Line separator
     // Unicode characters in 'Separator, Paragraph' category (Zp)
-    case 0x2029:
+    case 0x2029: // Paragraph separator
     // Additional characters are treated as spaces
     case 0x200B: // Zero-width space
     case 0x200E: // Left-to-right zero-width character

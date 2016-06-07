@@ -834,7 +834,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
     // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
     obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
-    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
+    Windows::UI::Xaml::Controls::TextBox ^ textBox = dynamic_cast<Windows::UI::Xaml::Controls::TextBox ^>(obj);
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();
