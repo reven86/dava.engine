@@ -3,6 +3,7 @@
 #include "Render/TextureDescriptor.h"
 #include <QPainter>
 #include <QProcess>
+#include <QDir>
 
 // Truncate the file extension.
 QString TruncateFileExtension(const QString& fileName, const QString& extension)
