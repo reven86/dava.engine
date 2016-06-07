@@ -62,6 +62,8 @@ public:
 
     void EnableGlobalTimeout(bool enable);
 
+    bool CanBeClosed();
+
     // qt actions slots
 public slots:
     void OnProjectOpen();
@@ -185,7 +187,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();
