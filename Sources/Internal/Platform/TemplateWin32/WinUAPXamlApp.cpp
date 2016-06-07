@@ -328,10 +328,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             {
                 Core::Instance()->SetIsActive(true);
             }
-            else
-            {
-                Core::Instance()->FocusReceived();
-            }
+            Core::Instance()->FocusReceived();
 
             //We need to activate high-resolution timer
             //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
@@ -342,10 +339,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             {
                 Core::Instance()->SetIsActive(false);
             }
-            else
-            {
-                Core::Instance()->FocusLost();
-            }
+            Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             EnableHighResolutionTimer(false);
             break;
@@ -365,21 +359,21 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
             if (!isPhoneApiDetected)
             {
                 Core::Instance()->GoForeground();
-                Core::Instance()->FocusReceived();
             }
             Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
+            Core::Instance()->FocusReceived();
         }
         else
         {
             if (!isPhoneApiDetected)
             {
                 Core::Instance()->GoBackground(false);
-                Core::Instance()->FocusLost();
             }
             else
             {
                 Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
             }
+            Core::Instance()->FocusLost();
             InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         }
     });
