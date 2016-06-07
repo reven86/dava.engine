@@ -45,14 +45,14 @@ public:
 
 public:
     // Signals
-    Signal<> signalGameLoopStarted;
-    Signal<> signalGameLoopStopped;
-    Signal<> signalBeginFrame;
-    Signal<float32> signalPreUpdate;
-    Signal<float32> signalUpdate;
-    Signal<float32> signalPostUpdate;
-    Signal<> signalDraw;
-    Signal<> signalEndFrame;
+    Signal<> gameLoopStarted;
+    Signal<> gameLoopStopped;
+    Signal<Window*> windowCreated;
+    Signal<Window*> windowDestroyed;
+    Signal<> beginFrame;
+    Signal<float32> update;
+    Signal<> draw;
+    Signal<> endFrame;
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

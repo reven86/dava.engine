@@ -4,6 +4,7 @@
 
 #include "Engine/Public/AppContext.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 
@@ -57,11 +58,12 @@ EngineBackend::EngineBackend(int argc, char* argv[])
     , platformCore(new PlatformCore)
     , context(new AppContext)
 {
-    //DVASSERT(instance == nullptr);
+    DVASSERT(instance == nullptr);
     instance = this;
 
     new Logger;
 
+    windows.reserve(10);
     cmdargs = platformCore->GetCommandLine(argc, argv);
 }
 
@@ -79,17 +81,18 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 
     consoleMode = consoleMode_;
 
-    platformCore->Init(consoleMode);
+    platformCore->Init();
     if (!consoleMode)
     {
-#if defined(__DAVAENGINE_WIN32__)
-        primaryWindow = CreateWindowFrontend(true);
+#if defined(__DAVAENGINE_QT__)
+        ;
+#elif defined(__DAVAENGINE_WIN32__)
+        primaryWindow = new WindowBackend(this, true);
+        windows.push_back(primaryWindow);
 #endif
     }
 
     // init modules
-
-    context->jobManager = new JobManager(engine);
 
     new AllocatorFactory();
     new FileSystem();
@@ -127,6 +130,12 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+    context->jobManager = new JobManager(engine);
+
+    context->inputSystem = InputSystem::Instance();
+    context->uiControlSystem = UIControlSystem::Instance();
+    context->virtualCoordSystem = VirtualCoordinatesSystem::Instance();
+
     RegisterDAVAClasses();
 
     if (!consoleMode_)
@@ -140,341 +149,29 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 
 int EngineBackend::Run()
 {
-    if (!consoleMode)
+    if (consoleMode)
     {
-        platformCore->CreateNativeWindow(primaryWindow);
+        RunConsole();
     }
-    platformCore->Run();
+    else
+    {
+#if defined(__DAVAENGINE_QT__)
+        ;
+#elif defined(__DAVAENGINE_WIN32__)
+        platformCore->CreateNativeWindow(primaryWindow);
+#endif
+        platformCore->Run();
+    }
     return exitCode;
 }
 
 void EngineBackend::Quit(int exitCode_)
 {
     exitCode = exitCode_;
-    platformCore->Quit();
-}
-
-void EngineBackend::OnGameLoopStarted()
-{
-    engine->signalGameLoopStarted.Emit();
-}
-
-void EngineBackend::OnGameLoopStopped()
-{
-    engine->signalGameLoopStopped.Emit();
-    if (!consoleMode)
-        Renderer::Uninitialize();
-}
-
-void EngineBackend::DoEvents()
-{
-    dispatcher->ProcessEvents(MakeFunction(this, &EngineBackend::EventHandler));
-}
-
-void EngineBackend::OnFrameConsole()
-{
-    DoEvents();
-
-    SystemTimer::Instance()->Start();
-    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
-
-    DownloadManager::Instance()->Update();
-
-    // JobManager::Update() is invoked through signalPreUpdate
-    engine->signalPreUpdate.Emit(frameDelta);
-    engine->signalUpdate.Emit(frameDelta);
-    engine->signalPostUpdate.Emit(frameDelta);
-}
-
-int32 EngineBackend::OnFrame()
-{
-    DoEvents();
-
-    OnBeginFrame();
-
-    SystemTimer::Instance()->Start();
-    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
-
-    InputSystem::Instance()->OnBeforeUpdate();
-    LocalNotificationController::Instance()->Update();
-    SoundSystem::Instance()->Update(frameDelta);
-    AnimationManager::Instance()->Update(frameDelta);
-    UIControlSystem::Instance()->Update();
-
-    DownloadManager::Instance()->Update();
-
-    // JobManager::Update() is invoked through signalPreUpdate
-    engine->signalPreUpdate.Emit(frameDelta);
-
-    engine->signalUpdate.Emit(frameDelta);
-
-    InputSystem::Instance()->OnAfterUpdate();
-    engine->signalPostUpdate.Emit(frameDelta);
-
-    OnDraw();
-    OnEndFrame();
-
-    if (!consoleMode)
-        return Renderer::GetDesiredFPS();
-    return 0;
-}
-
-void EngineBackend::OnBeginFrame()
-{
-    Renderer::BeginFrame();
-    engine->signalBeginFrame.Emit();
-}
-
-void EngineBackend::OnDraw()
-{
-    RenderSystem2D::Instance()->BeginFrame();
-
-    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
-    UIControlSystem::Instance()->Draw();
-    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
-
-    engine->signalDraw.Emit();
-    RenderSystem2D::Instance()->EndFrame();
-}
-
-void EngineBackend::OnEndFrame()
-{
-    engine->signalEndFrame.Emit();
-    Renderer::EndFrame();
-}
-
-Window* EngineBackend::CreateWindowFrontend(bool primary)
-{
-    //DVASSERT(!primary || primaryWindow == nullptr);
-    Window* w = new Window(primary);
-    return w;
-}
-
-void EngineBackend::EventHandler(const DispatcherEvent& e)
-{
-    switch (e.type)
-    {
-    case DispatcherEvent::MOUSE_MOVE:
-        HandleMouseMove(e);
-        break;
-    case DispatcherEvent::MOUSE_BUTTON_DOWN:
-    case DispatcherEvent::MOUSE_BUTTON_UP:
-        HandleMouseClick(e);
-        break;
-    case DispatcherEvent::MOUSE_WHEEL:
-        HandleMouseWheel(e);
-        break;
-    case DispatcherEvent::KEY_DOWN:
-    case DispatcherEvent::KEY_UP:
-        HandleKeyPress(e);
-        break;
-    case DispatcherEvent::KEY_CHAR:
-        HandleKeyChar(e);
-        break;
-    case DispatcherEvent::FUNCTOR:
-        e.functor();
-        break;
-    case DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED:
-        HandleWindowSizeChanged(e);
-        break;
-    case DispatcherEvent::WINDOW_FOCUS_CHANGED:
-        HandleWindowFocusChanged(e);
-        break;
-    case DispatcherEvent::WINDOW_VISIBILITY_CHANGED:
-        HandleWindowVisibilityChanged(e);
-        break;
-    case DispatcherEvent::WINDOW_CREATED:
-        HandleWindowCreated(e);
-        break;
-    case DispatcherEvent::WINDOW_DESTROYED:
-        HandleWindowDestroyed(e);
-        break;
-    default:
-        break;
-    }
-}
-
-void EngineBackend::HandleWindowCreated(const DispatcherEvent& e)
-{
-    Logger::Debug("****** WINDOW_CREATED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
-    e.window->PreHandleWindowCreated(e);
-    CreateRenderer();
-    e.window->HandleWindowCreated(e);
-}
-
-void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
-{
-    e.window->HandleWindowDestroyed(e);
-    if (e.window->IsPrimary())
-    {
-        engine->Quit();
-    }
-}
-
-void EngineBackend::HandleWindowSizeChanged(const DispatcherEvent& e)
-{
-    Logger::Debug("****** WINDOW_SIZE_SCALE_CHANGED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
-    e.window->PreHandleSizeScaleChanged(e);
-    ResetRenderer();
-    e.window->HandleSizeScaleChanged(e);
-}
-
-void EngineBackend::HandleWindowFocusChanged(const DispatcherEvent& e)
-{
-    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-    ClearMouseButtons();
-    e.window->HandleFocusChanged(e);
-}
-
-void EngineBackend::HandleWindowVisibilityChanged(const DispatcherEvent& e)
-{
-    e.window->HandleVisibilityChanged(e);
-}
-
-void EngineBackend::HandleMouseClick(const DispatcherEvent& e)
-{
-    bool pressed = e.type == DispatcherEvent::MOUSE_BUTTON_DOWN;
-
-    Logger::Debug("****** %s: x=%.1f, y=%.1f, button=%d", pressed ? "MOUSE_BUTTON_DOWN" : "MOUSE_BUTTON_UP", e.mclickEvent.x, e.mclickEvent.y, e.mclickEvent.button);
-
-    UIEvent uie;
-    uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.mclickEvent.x, e.mclickEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mclickEvent.button);
-
-    // NOTE: Taken from CoreWin32Platform::OnMouseClick
-
-    bool isAnyButtonDownBefore = mouseButtonState.any();
-    bool isButtonDown = uie.phase == UIEvent::Phase::BEGAN;
-    uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
-    mouseButtonState[buttonIndex] = isButtonDown;
-
-    UIControlSystem::Instance()->OnInput(&uie);
-
-    bool isAnyButtonDownAfter = mouseButtonState.any();
-
-    //if (isAnyButtonDownBefore && !isAnyButtonDownAfter)
-    //{
-    //    ReleaseCapture();
-    //}
-    //else if (!isAnyButtonDownBefore && isAnyButtonDownAfter)
-    //{
-    //    SetCapture(hWindow);
-    //}
-}
-
-void EngineBackend::HandleMouseWheel(const DispatcherEvent& e)
-{
-    Logger::Debug("****** MOUSE_WHEEL: x=%.1f, y=%.1f, delta=%d", e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
-
-    UIEvent uie;
-    uie.phase = UIEvent::Phase::WHEEL;
-    uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { 0.0f, static_cast<float32>(e.mwheelEvent.delta) };
-
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
-    {
-        std::swap(uie.wheelDelta.x, uie.wheelDelta.y);
-    }
-
-    UIControlSystem::Instance()->OnInput(&uie);
-}
-
-void EngineBackend::HandleMouseMove(const DispatcherEvent& e)
-{
-    //Logger::Debug("****** MOUSE_MOVE: x=%.1f, y=%.1f", e.mmoveEvent.x, e.mmoveEvent.y);
-
-    UIEvent uie;
-    uie.phase = UIEvent::Phase::MOVE;
-    uie.physPoint = Vector2(e.mmoveEvent.x, e.mmoveEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = UIEvent::MouseButton::NONE;
-
-    // NOTE: Taken from CoreWin32Platform::OnMouseMove
-    if (mouseButtonState.any())
-    {
-        uie.phase = UIEvent::Phase::DRAG;
-
-        uint32 firstButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-        uint32 lastButton = static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
-        for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
-        {
-            if (mouseButtonState[buttonIndex - 1])
-            {
-                uie.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
-                UIControlSystem::Instance()->OnInput(&uie);
-            }
-        }
-    }
+    if (consoleMode)
+        quitConsole = true;
     else
-    {
-        UIControlSystem::Instance()->OnInput(&uie);
-    }
-}
-
-void EngineBackend::HandleKeyPress(const DispatcherEvent& e)
-{
-    bool pressed = e.type == DispatcherEvent::KEY_DOWN;
-
-    Logger::Debug("****** %s", pressed ? "KEY_DOWN" : "KEY_UP");
-
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-
-    UIEvent uie;
-    uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-    uie.device = UIEvent::Device::KEYBOARD;
-    uie.timestamp = e.timestamp / 1000.0;
-
-    if (pressed)
-        uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::KEY_DOWN_REPEAT : UIEvent::Phase::KEY_DOWN;
-    else
-        uie.phase = UIEvent::Phase::KEY_UP;
-
-    UIControlSystem::Instance()->OnInput(&uie);
-    keyboard.OnKeyPressed(uie.key);
-}
-
-void EngineBackend::HandleKeyChar(const DispatcherEvent& e)
-{
-    Logger::Debug("****** KEY_CHAR");
-
-    UIEvent uie;
-    uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
-    uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
-    uie.device = UIEvent::Device::KEYBOARD;
-    uie.timestamp = e.timestamp / 1000.0;
-
-    UIControlSystem::Instance()->OnInput(&uie);
-}
-
-void EngineBackend::ClearMouseButtons()
-{
-    // NOTE: Taken from CoreWin32Platform::ClearMouseButtons
-
-    UIEvent uie;
-    uie.phase = UIEvent::Phase::ENDED;
-    uie.device = UIEvent::Device::MOUSE;
-    uie.timestamp = SystemTimer::FrameStampTimeMS() / 1000.0;
-
-    uint32 firstButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-    uint32 lastButton = static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
-    for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
-    {
-        if (mouseButtonState[buttonIndex - 1])
-        {
-            uie.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
-            UIControlSystem::Instance()->OnInput(&uie);
-        }
-    }
-    mouseButtonState.reset();
+        platformCore->Quit();
 }
 
 void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
@@ -486,7 +183,157 @@ void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
     dispatcher->PostEvent(e);
 }
 
-void EngineBackend::CreateRenderer()
+void EngineBackend::RunConsole()
+{
+    OnGameLoopStarted();
+    while (!quitConsole)
+    {
+        OnFrameConsole();
+        Thread::Sleep(1);
+    }
+    OnGameLoopStopped();
+}
+
+void EngineBackend::OnGameLoopStarted()
+{
+    engine->gameLoopStarted.Emit();
+}
+
+void EngineBackend::OnGameLoopStopped()
+{
+    engine->gameLoopStopped.Emit();
+    if (!consoleMode)
+    {
+        Renderer::Uninitialize();
+    }
+}
+
+void EngineBackend::DoEvents()
+{
+    dispatcher->ProcessEvents(MakeFunction(this, &EngineBackend::EventHandler));
+    for (WindowBackend* w : windows)
+    {
+        w->FinishEventHandlingOnCurrentFrame();
+    }
+}
+
+void EngineBackend::OnFrameConsole()
+{
+    SystemTimer::Instance()->Start();
+    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
+    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+
+    DoEvents();
+
+    DownloadManager::Instance()->Update();
+
+    // JobManager::Update() is invoked through signal update
+    engine->update.Emit(frameDelta);
+}
+
+int32 EngineBackend::OnFrame()
+{
+    SystemTimer::Instance()->Start();
+    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
+    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+
+#if defined(__DAVAENGINE_QT__)
+    rhi::InvalidateCache();
+#endif
+
+    DoEvents();
+    OnBeginFrame();
+    OnUpdate(frameDelta);
+    OnDraw();
+    OnEndFrame();
+
+    return Renderer::GetDesiredFPS();
+}
+
+void EngineBackend::OnBeginFrame()
+{
+    Renderer::BeginFrame();
+
+    InputSystem::Instance()->OnBeforeUpdate();
+    engine->beginFrame.Emit();
+}
+
+void EngineBackend::OnUpdate(float32 frameDelta)
+{
+    LocalNotificationController::Instance()->Update();
+    SoundSystem::Instance()->Update(frameDelta);
+    AnimationManager::Instance()->Update(frameDelta);
+    DownloadManager::Instance()->Update();
+
+    for (WindowBackend* w : windows)
+    {
+        w->Update(frameDelta);
+    }
+    // JobManager::Update() is invoked through signal update
+    engine->update.Emit(frameDelta);
+}
+
+void EngineBackend::OnDraw()
+{
+    RenderSystem2D::Instance()->BeginFrame();
+
+    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
+    for (WindowBackend* w : windows)
+    {
+        w->Draw();
+    }
+    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
+
+    engine->draw.Emit();
+    RenderSystem2D::Instance()->EndFrame();
+}
+
+void EngineBackend::OnEndFrame()
+{
+    InputSystem::Instance()->OnAfterUpdate();
+    engine->endFrame.Emit();
+    Renderer::EndFrame();
+}
+
+void EngineBackend::EventHandler(const DispatcherEvent& e)
+{
+    switch (e.type)
+    {
+    case DispatcherEvent::FUNCTOR:
+        e.functor();
+        break;
+    case DispatcherEvent::WINDOW_CREATED:
+        HandleWindowCreated(e);
+        break;
+    case DispatcherEvent::WINDOW_DESTROYED:
+        HandleWindowDestroyed(e);
+        break;
+    default:
+        if (e.window != nullptr)
+        {
+            e.window->EventHandler(e);
+        }
+        break;
+    }
+}
+
+void EngineBackend::HandleWindowCreated(const DispatcherEvent& e)
+{
+    e.window->EventHandler(e);
+    engine->windowCreated.Emit(e.window->GetWindow());
+}
+
+void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
+{
+    engine->windowDestroyed.Emit(e.window->GetWindow());
+    e.window->EventHandler(e);
+    if (e.window->IsPrimary())
+    {
+        engine->Quit();
+    }
+}
+
+void EngineBackend::InitRenderer(WindowBackend* w)
 {
     rhi::InitParam rendererParams;
     rhi::Api renderer = rhi::RHI_DX9; //static_cast<rhi::Api>(options->GetInt32("renderer"));
@@ -509,39 +356,41 @@ void EngineBackend::CreateRenderer()
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
-    rendererParams.window = primaryWindow->NativeHandle();
-    rendererParams.width = (int)primaryWindow->Width();
-    rendererParams.height = (int)primaryWindow->Height();
-    rendererParams.scaleX = primaryWindow->ScaleX();
-    rendererParams.scaleY = primaryWindow->ScaleY();
+    rendererParams.window = w->GetNativeHandle();
+    rendererParams.width = static_cast<int>(w->GetWidth());
+    rendererParams.height = static_cast<int>(w->GetHeight());
+    rendererParams.scaleX = w->GetScaleX();
+    rendererParams.scaleY = w->GetScaleY();
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     RenderSystem2D::Instance()->Init();
-
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
-    virtSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
-    virtSystem->EnableReloadResourceOnResize(true);
-    virtSystem->ScreenSizeChanged();
 }
 
-void EngineBackend::ResetRenderer()
+void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
 {
     rhi::ResetParam rendererParams;
-    rendererParams.window = primaryWindow->NativeHandle();
-    rendererParams.width = (int)primaryWindow->Width();
-    rendererParams.height = (int)primaryWindow->Height();
-    rendererParams.scaleX = primaryWindow->ScaleX();
-    rendererParams.scaleY = primaryWindow->ScaleY();
+    if (resetToNull)
+    {
+        rendererParams.window = nullptr;
+        rendererParams.width = 0;
+        rendererParams.height = 0;
+        rendererParams.scaleX = 0.f;
+        rendererParams.scaleY = 0.f;
+    }
+    else
+    {
+        rendererParams.window = w->GetNativeHandle();
+        rendererParams.width = static_cast<int>(w->GetWidth());
+        rendererParams.height = static_cast<int>(w->GetHeight());
+        rendererParams.scaleX = w->GetScaleX();
+        rendererParams.scaleY = w->GetScaleY();
+    }
     Renderer::Reset(rendererParams);
+}
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
-    virtSystem->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
-    virtSystem->UnregisterAllAvailableResourceSizes();
-    virtSystem->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
-    virtSystem->ScreenSizeChanged();
+void EngineBackend::DeinitRender(WindowBackend* w)
+{
 }
 
 } // namespace Private

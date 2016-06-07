@@ -33,7 +33,7 @@ JobManager::JobManager(Engine* e)
         workerThreads.push_back(thread);
     }
 
-    sigPreUpdateId = e->signalPreUpdate.Connect(this, &JobManager::Update);
+    sigUpdateId = e->update.Connect(this, &JobManager::Update);
 }
 #else
 JobManager::JobManager()
@@ -55,7 +55,7 @@ JobManager::JobManager()
 JobManager::~JobManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->signalPreUpdate.Disconnect(sigPreUpdateId);
+    engine->update.Disconnect(sigUpdateId);
 #endif
 
     {

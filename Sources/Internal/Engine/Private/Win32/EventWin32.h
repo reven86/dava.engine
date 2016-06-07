@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
+
 namespace DAVA
 {
 namespace Private
@@ -32,4 +34,5 @@ struct EventWin32 final
 } // namespace Private
 } // namespace DAVA
 
+#endif // __DAVAENGINE_WIN32__
 #endif // __DAVAENGINE_COREV2__

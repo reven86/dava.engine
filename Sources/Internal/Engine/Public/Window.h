@@ -4,6 +4,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
+#include "Math/Vector.h"
 
 #include "Engine/Private/EngineFwd.h"
 
@@ -11,97 +12,61 @@ namespace DAVA
 {
 class Window final
 {
-    friend class Private::EngineBackend;
-    friend Private::PlatformWindow;
-
 public:
-    void Resize(float32 width, float32 height);
-    void* NativeHandle() const;
-
     bool IsPrimary() const;
     bool IsVisible() const;
     bool HasFocus() const;
 
-    float32 Width() const;
-    float32 Height() const;
-    float32 ScaleX() const;
-    float32 ScaleY() const;
+    float32 GetWidth() const;
+    float32 GetHeight() const;
+    float32 GetScaleX() const;
+    float32 GetScaleY() const;
+
+    Vector2 GetSize() const;
+    Vector2 GetScale() const;
+
+    void Resize(float32 w, float32 h);
+    void Resize(Vector2 size);
+
+    void* GetNativeHandle() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 public:
     // Signals
-    Signal<Window*> signalWindowCreated;
-    Signal<Window*> signalWindowDestroyed;
-    Signal<Window*, bool> signalVisibilityChanged;
-    Signal<Window*, bool> signalFocusChanged;
-    Signal<Window*, float32, float32, float32, float32> signalSizeScaleChanged;
+    Signal<Window*, bool> visibilityChanged;
+    Signal<Window*, bool> focusChanged;
+    Signal<Window*, float32, float32, float32, float32> sizeScaleChanged;
+    Signal<Window*, float32> update;
 
 private:
-    Window(bool primary);
+    Window(Private::WindowBackend* backend);
     ~Window();
 
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
-    void BindNativeWindow(Private::PlatformWindow* nativeWindow_);
-
-    void PreHandleWindowCreated(const Private::DispatcherEvent& e);
-    void HandleWindowCreated(const Private::DispatcherEvent& e);
-
-    void HandleWindowDestroyed(const Private::DispatcherEvent& e);
-
-    void PreHandleSizeScaleChanged(const Private::DispatcherEvent& e);
-    void HandleSizeScaleChanged(const Private::DispatcherEvent& e);
-
-    void HandleFocusChanged(const Private::DispatcherEvent& e);
-    void HandleVisibilityChanged(const Private::DispatcherEvent& e);
-
 private:
-    Private::PlatformWindow* nativeWindow = nullptr;
+    Private::WindowBackend* windowBackend = nullptr;
 
-    bool isPrimary = false;
-    bool isVisible = false;
-    bool hasFocus = false;
-    float32 width = 0.0f;
-    float32 height = 0.0f;
-    float32 scaleX = 1.0f;
-    float32 scaleY = 1.0f;
+    // Friends
+    friend class Private::EngineBackend;
+    friend class Private::WindowBackend;
 };
 
-inline bool Window::IsPrimary() const
+inline Vector2 Window::GetSize() const
 {
-    return isPrimary;
+    return Vector2(GetWidth(), GetHeight());
 }
 
-inline bool Window::IsVisible() const
+inline Vector2 Window::GetScale() const
 {
-    return isVisible;
+    return Vector2(GetScaleX(), GetScaleY());
 }
 
-inline bool Window::HasFocus() const
+inline void Window::Resize(Vector2 size)
 {
-    return hasFocus;
-}
-
-inline float32 Window::Width() const
-{
-    return width;
-}
-
-inline float32 Window::Height() const
-{
-    return height;
-}
-
-inline float32 Window::ScaleX() const
-{
-    return scaleX;
-}
-
-inline float32 Window::ScaleY() const
-{
-    return scaleY;
+    Resize(size.dx, size.dy);
 }
 
 } // namespace DAVA

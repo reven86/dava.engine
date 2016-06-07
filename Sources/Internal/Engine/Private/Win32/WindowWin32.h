@@ -7,7 +7,7 @@
 
 #include "Engine/Private/EngineFwd.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -16,23 +16,21 @@
 
 namespace DAVA
 {
-class Window;
-
 namespace Private
 {
 class WindowWin32 final
 {
 public:
-    static WindowWin32* Create(Window* w);
+    static WindowWin32* Create(Dispatcher* dispatcher, WindowBackend* window);
     static void Destroy(WindowWin32* nativeWindow);
 
     void Resize(float32 width, float32 height);
-    void* Handle() const;
+    void* GetHandle() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 private:
-    WindowWin32(Window* w);
+    WindowWin32(Dispatcher* dispatcher_, WindowBackend* window_);
     ~WindowWin32();
 
     WindowWin32(const WindowWin32&) = delete;
@@ -61,7 +59,7 @@ private:
 private:
     HWND hwnd = nullptr;
     Dispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    WindowBackend* window = nullptr;
 
     bool isMinimized = false;
 

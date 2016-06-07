@@ -1,94 +1,68 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Engine.h"
 #include "Engine/Public/Window.h"
-#include "Engine/Private/PlatformWindow.h"
-#include "Engine/Private/Dispatcher/DispatcherEvent.h"
+#include "Engine/Private/WindowBackend.h"
 
 namespace DAVA
 {
-Window::Window(bool primary)
-    : isPrimary(primary)
+Window::Window(Private::WindowBackend* backend)
+    : windowBackend(backend)
 {
 }
 
-Window::~Window() = default;
-
-void Window::Resize(float32 width, float32 height)
+Window::~Window()
 {
-    if (nativeWindow != nullptr)
-    {
-        nativeWindow->Resize(width, height);
-    }
+    windowBackend = nullptr;
 }
 
-void* Window::NativeHandle() const
+bool Window::IsPrimary() const
 {
-    if (nativeWindow != nullptr)
-    {
-        return nativeWindow->Handle();
-    }
-    return nullptr;
+    return windowBackend->IsPrimary();
+}
+
+bool Window::IsVisible() const
+{
+    return windowBackend->IsVisible();
+}
+
+bool Window::HasFocus() const
+{
+    return windowBackend->HasFocus();
+}
+
+float32 Window::GetWidth() const
+{
+    return windowBackend->GetWidth();
+}
+
+float32 Window::GetHeight() const
+{
+    return windowBackend->GetHeight();
+}
+
+float32 Window::GetScaleX() const
+{
+    return windowBackend->GetScaleX();
+}
+
+float32 Window::GetScaleY() const
+{
+    return windowBackend->GetScaleY();
+}
+
+void Window::Resize(float32 w, float32 h)
+{
+    return windowBackend->Resize(w, h);
+}
+
+void* Window::GetNativeHandle() const
+{
+    return windowBackend->GetNativeHandle();
 }
 
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
-    if (nativeWindow != nullptr)
-    {
-        nativeWindow->RunAsyncOnUIThread(task);
-    }
-}
-
-void Window::BindNativeWindow(Private::PlatformWindow* nativeWindow_)
-{
-    nativeWindow = nativeWindow_;
-    signalWindowCreated.Emit(this);
-}
-
-void Window::PreHandleWindowCreated(const Private::DispatcherEvent& e)
-{
-    width = e.sizeEvent.width;
-    height = e.sizeEvent.height;
-    scaleX = e.sizeEvent.scaleX;
-    scaleY = e.sizeEvent.scaleY;
-}
-
-void Window::HandleWindowCreated(const Private::DispatcherEvent& /*e*/)
-{
-    signalWindowCreated.Emit(this);
-}
-
-void Window::HandleWindowDestroyed(const Private::DispatcherEvent& e)
-{
-    signalWindowDestroyed.Emit(this);
-    nativeWindow = nullptr;
-}
-
-void Window::PreHandleSizeScaleChanged(const Private::DispatcherEvent& e)
-{
-    width = e.sizeEvent.width;
-    height = e.sizeEvent.height;
-    scaleX = e.sizeEvent.scaleX;
-    scaleY = e.sizeEvent.scaleY;
-}
-
-void Window::HandleSizeScaleChanged(const Private::DispatcherEvent& /*e*/)
-{
-    signalSizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
-}
-
-void Window::HandleFocusChanged(const Private::DispatcherEvent& e)
-{
-    Logger::Error("****** WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state);
-    hasFocus = e.stateEvent.state != 0;
-    signalFocusChanged.Emit(this, hasFocus);
-}
-
-void Window::HandleVisibilityChanged(const Private::DispatcherEvent& e)
-{
-    Logger::Error("****** WINDOW_VISIBILITY_CHANGED: state=%u", e.stateEvent.state);
-    isVisible = e.stateEvent.state != 0;
-    signalVisibilityChanged.Emit(this, isVisible);
+    windowBackend->RunAsyncOnUIThread(task);
 }
 
 } // namespace DAVA

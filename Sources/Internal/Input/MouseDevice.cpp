@@ -80,7 +80,7 @@ MouseDevice::MouseDevice()
     };
 #if defined(__DAVAENGINE_COREV2__)
     Window* primaryWindow = Engine::Instance()->PrimaryWindow();
-    primaryWindow->signalFocusChanged.Connect(focusChanged);
+    primaryWindow->focusChanged.Connect(focusChanged);
     context->focused = primaryWindow->HasFocus();
 #else
     Core::Instance()->focusChanged.Connect(focusChanged);
@@ -151,9 +151,7 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
         {
             bool inRect = true;
 #if defined(__DAVAENGINE_COREV2__)
-            Vector2 windowSize;
-            windowSize.dx = Engine::Instance()->PrimaryWindow()->Width();
-            windowSize.dy = Engine::Instance()->PrimaryWindow()->Height();
+            Vector2 windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
 #else
             Vector2 windowSize = Core::Instance()->GetWindowSize();
 #endif

@@ -1,8 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Window.h"
-
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Win32/CoreWin32.h"
 #include "Engine/Private/Win32/WindowWin32.h"
@@ -11,7 +10,7 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
 
 namespace DAVA
 {
@@ -21,15 +20,37 @@ namespace Private
 bool WindowWin32::windowClassRegistered = false;
 const wchar_t WindowWin32::windowClassName[] = L"DAVA_WND_CLASS";
 
-WindowWin32* WindowWin32::Create(Window* w)
+WindowWin32* WindowWin32::Create(Dispatcher* dispatcher, WindowBackend* window)
 {
-    WindowWin32* nativeWindow = new WindowWin32(w);
-    if (!nativeWindow->CreateNativeWindow())
+    if (!RegisterWindowClass())
+    {
+        Logger::Error("Failed to register win32 window class: %d", GetLastError());
+        return nullptr;
+    }
+
+    WindowWin32* nativeWindow = new WindowWin32(dispatcher, window);
+    HWND hwnd = ::CreateWindowExW(windowExStyle,
+                                  windowClassName,
+                                  L"DAVA_WINDOW",
+                                  windowStyle,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  nullptr,
+                                  nullptr,
+                                  CoreWin32::Win32AppInstance(),
+                                  nativeWindow);
+    if (hwnd != nullptr)
+    {
+        ::ShowWindow(hwnd, SW_SHOWNORMAL);
+        ::UpdateWindow(hwnd);
+    }
+    else
     {
         delete nativeWindow;
         nativeWindow = nullptr;
     }
-    w->BindNativeWindow(nativeWindow);
     return nativeWindow;
 }
 
@@ -37,16 +58,15 @@ void WindowWin32::Destroy(WindowWin32* nativeWindow)
 {
 }
 
-WindowWin32::WindowWin32(Window* w)
-    : dispatcher(EngineBackend::instance->dispatcher)
-    , window(w)
+WindowWin32::WindowWin32(Dispatcher* dispatcher_, WindowBackend* window_)
+    : dispatcher(dispatcher_)
+    , window(window_)
 {
-    RegisterWindowClass();
 }
 
 WindowWin32::~WindowWin32()
 {
-    //DVASSERT(hwnd == nullptr);
+    DVASSERT(hwnd == nullptr);
 }
 
 void WindowWin32::Resize(float32 width, float32 height)
@@ -58,7 +78,7 @@ void WindowWin32::Resize(float32 width, float32 height)
     PostCustomMessage(e);
 }
 
-void* WindowWin32::Handle() const
+void* WindowWin32::GetHandle() const
 {
     return static_cast<void*>(hwnd);
 }
@@ -249,10 +269,15 @@ LRESULT WindowWin32::OnCreate()
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
     e.type = DispatcherEvent::WINDOW_CREATED;
-    e.sizeEvent.width = static_cast<float32>(rc.right - rc.left);
-    e.sizeEvent.height = static_cast<float32>(rc.bottom - rc.top);
-    e.sizeEvent.scaleX = 1.0f;
-    e.sizeEvent.scaleY = 1.0f;
+    e.windowCreatedEvent.nativeWindow = this;
+    e.windowCreatedEvent.size.width = static_cast<float32>(rc.right - rc.left);
+    e.windowCreatedEvent.size.height = static_cast<float32>(rc.bottom - rc.top);
+    e.windowCreatedEvent.size.scaleX = 1.0f;
+    e.windowCreatedEvent.size.scaleY = 1.0f;
+    dispatcher->PostEvent(e);
+
+    e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
+    e.stateEvent.state = 1;
     dispatcher->PostEvent(e);
     return 0;
 }
@@ -260,8 +285,16 @@ LRESULT WindowWin32::OnCreate()
 LRESULT WindowWin32::OnDestroy()
 {
     DispatcherEvent e;
-    e.type = DispatcherEvent::WINDOW_DESTROYED;
     e.window = window;
+
+    if (!isMinimized)
+    {
+        e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
+        e.stateEvent.state = 0;
+        dispatcher->PostEvent(e);
+    }
+
+    e.type = DispatcherEvent::WINDOW_DESTROYED;
     dispatcher->PostEvent(e);
     return 0;
 }
@@ -280,7 +313,6 @@ LRESULT WindowWin32::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool
     {
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
-        //Logger::Error("WM_SIZE: type=%d, w=%d, h=%d", int(wparam), w, h);
         lresult = OnSize(static_cast<int>(wparam), w, h);
     }
     else if (message == WM_ERASEBKGND)
@@ -411,29 +443,6 @@ bool WindowWin32::RegisterWindowClass()
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
     }
     return windowClassRegistered;
-}
-
-bool WindowWin32::CreateNativeWindow()
-{
-    HWND hwndCheck = ::CreateWindowExW(windowExStyle,
-                                       windowClassName,
-                                       L"DAVA_WINDOW",
-                                       windowStyle,
-                                       CW_USEDEFAULT,
-                                       CW_USEDEFAULT,
-                                       CW_USEDEFAULT,
-                                       CW_USEDEFAULT,
-                                       nullptr,
-                                       nullptr,
-                                       CoreWin32::Win32AppInstance(),
-                                       this);
-    if (hwndCheck != nullptr)
-    {
-        ::ShowWindow(hwndCheck, SW_SHOWNORMAL);
-        ::UpdateWindow(hwndCheck);
-        return true;
-    }
-    return false;
 }
 
 void WindowWin32::ResizeNativeWindow(int32 width, int32 height)

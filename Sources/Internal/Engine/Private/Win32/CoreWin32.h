@@ -4,7 +4,9 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
+
+#include "Engine/Private/EngineFwd.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -30,19 +32,13 @@ public:
 
     Vector<String> GetCommandLine(int argc, char* argv[]);
 
-    void Init(bool consoleMode_);
+    void Init();
     void Run();
     void Quit();
 
-    WindowWin32* CreateNativeWindow(Window* w);
+    WindowWin32* CreateNativeWindow(WindowBackend* w);
 
 private:
-    void RunGUI();
-    void RunConsole();
-
-private:
-    bool consoleMode = false;
-    bool quitConsole = false;
     static HINSTANCE hinstance;
 };
 

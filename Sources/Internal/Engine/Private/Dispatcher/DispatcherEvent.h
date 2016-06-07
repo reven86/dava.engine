@@ -5,10 +5,10 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 
+#include "Engine/Private/EngineFwd.h"
+
 namespace DAVA
 {
-class Window;
-
 namespace Private
 {
 struct DispatcherEvent final
@@ -47,6 +47,12 @@ struct DispatcherEvent final
         float32 scaleY;
     };
 
+    struct WindowCreatedEvent
+    {
+        NativeWindow* nativeWindow;
+        WindowSizeEvent size;
+    };
+
     struct MouseClickEvent
     {
         uint32 button;
@@ -76,10 +82,11 @@ struct DispatcherEvent final
 
     eType type = DUMMY;
     uint64 timestamp = 0;
-    Window* window = nullptr;
+    WindowBackend* window = nullptr;
     Function<void()> functor;
     union
     {
+        WindowCreatedEvent windowCreatedEvent;
         WindowStateEvent stateEvent;
         WindowSizeEvent sizeEvent;
         MouseClickEvent mclickEvent;

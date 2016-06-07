@@ -1,12 +1,12 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Win32/CoreWin32.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
 
 #include <shellapi.h>
 
-#include "Engine/Private/Win32/CoreWin32.h"
+#include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/WindowWin32.h"
 
 #include "Platform/SystemTimer.h"
@@ -44,28 +44,11 @@ Vector<String> CoreWin32::GetCommandLine(int argc, char* argv[])
     return cmdargs;
 }
 
-void CoreWin32::Init(bool consoleMode_)
+void CoreWin32::Init()
 {
-    consoleMode = consoleMode_;
 }
 
 void CoreWin32::Run()
-{
-    if (consoleMode)
-        RunConsole();
-    else
-        RunGUI();
-}
-
-void CoreWin32::Quit()
-{
-    if (consoleMode)
-        quitConsole = true;
-    else
-        ::PostQuitMessage(0);
-}
-
-void CoreWin32::RunGUI()
 {
     MSG msg;
     bool quitLoop = false;
@@ -104,20 +87,14 @@ void CoreWin32::RunGUI()
     EngineBackend::instance->OnGameLoopStopped();
 }
 
-void CoreWin32::RunConsole()
+void CoreWin32::Quit()
 {
-    EngineBackend::instance->OnGameLoopStarted();
-    while (!quitConsole)
-    {
-        EngineBackend::instance->OnFrameConsole();
-        Sleep(1);
-    }
-    EngineBackend::instance->OnGameLoopStopped();
+    ::PostQuitMessage(0);
 }
 
-WindowWin32* CoreWin32::CreateNativeWindow(Window* w)
+WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w)
 {
-    return WindowWin32::Create(w);
+    return WindowWin32::Create(EngineBackend::instance->dispatcher, w);
 }
 
 } // namespace Private

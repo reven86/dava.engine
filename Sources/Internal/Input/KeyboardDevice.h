@@ -3,6 +3,8 @@
 
 #include "Base/BaseObject.h"
 
+#include "Engine/Private/EngineFwd.h"
+
 /**
 	\defgroup inputsystem	Input System
 */
@@ -143,11 +145,6 @@ enum class Key : uint32
     TOTAL_KEYS_COUNT
 };
 
-namespace Private
-{
-class EngineBackend;
-}
-
 class KeyboardDevice : public BaseObject
 {
 public:
@@ -161,7 +158,7 @@ private:
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
     friend class QtLayer;
-    friend class Private::EngineBackend;
+    friend class Private::WindowBackend;
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif

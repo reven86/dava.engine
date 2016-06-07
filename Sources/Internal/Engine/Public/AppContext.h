@@ -7,6 +7,9 @@
 namespace DAVA
 {
 class JobManager;
+class InputSystem;
+class UIControlSystem;
+class VirtualCoordinatesSystem;
 
 class AppContext
 {
@@ -15,6 +18,9 @@ public:
     ~AppContext();
 
     JobManager* jobManager = nullptr;
+    InputSystem* inputSystem = nullptr;
+    UIControlSystem* uiControlSystem = nullptr;
+    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 };
 
 } // namespace DAVA

@@ -121,7 +121,7 @@ protected:
 
 #if defined(__DAVAENGINE_COREV2__)
     Engine* engine = nullptr;
-    size_t sigPreUpdateId = 0;
+    size_t sigUpdateId = 0;
 #endif
 };
 }
