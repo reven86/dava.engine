@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "ui_mainwindow.h"
 
@@ -7,12 +6,9 @@
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/RecentMenuItems.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
-
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -25,12 +21,12 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+class IComponentContext;
+class PropertyPanel;
+
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow
-: public QMainWindow
-  ,
-  public DAVA::Singleton<QtMainWindow>
+class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
     Q_OBJECT
 
@@ -65,6 +61,8 @@ public:
     bool BeastWaitCanceled();
 
     void EnableGlobalTimeout(bool enable);
+
+    bool CanBeClosed();
 
     // qt actions slots
 public slots:
@@ -189,7 +187,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
     void SetupToolBars();
@@ -221,6 +218,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
+    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -259,7 +257,6 @@ private:
     void UpdateWayEditor(const Command2* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
-    void LoadUndoRedoState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
     void LoadEditorLightState(SceneEditor2* scene);
     void LoadGPUFormat();
@@ -286,7 +283,7 @@ private:
     RecentMenuItems recentProjects;
 
     IComponentContext& ngtContext;
-    PropertyPanel propertyPanel;
+    std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
@@ -308,6 +305,3 @@ private:
 
     void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };
-
-
-#endif // MAINWINDOW_H

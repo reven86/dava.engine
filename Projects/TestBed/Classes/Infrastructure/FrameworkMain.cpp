@@ -62,7 +62,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
 
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenWidth, screenHeight);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenWidth, screenHeight, "Gfx");
 
     GameCore* core = new GameCore();

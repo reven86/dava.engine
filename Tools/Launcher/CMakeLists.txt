@@ -48,7 +48,8 @@ set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 set( LIBRARIES            yaml-cpp  )
 set( LIBRARIES_RELEASE    ${LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${LIB_DEBUG} )
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()
 

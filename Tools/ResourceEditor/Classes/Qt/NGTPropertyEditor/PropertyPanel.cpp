@@ -33,9 +33,10 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
     uiApplication.addView(*view);
 }
 
-void PropertyPanel::Finalize()
+void PropertyPanel::Finalize(IUIApplication& uiApplication)
 {
     SetObject(nullptr);
+    uiApplication.removeView(*view);
     view->deregisterListener(this);
     view.reset();
 }
@@ -53,6 +54,8 @@ void PropertyPanel::SceneSelectionChanged(SceneEditor2* scene, const SelectableG
 {
     if (selected->IsEmpty())
     {
+        selectedObject = nullptr;
+        isSelectionDirty = false;
         SetObject(nullptr);
     }
     else
