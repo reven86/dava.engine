@@ -6,7 +6,6 @@
 
 using DWORD = std::uint32_t;
 #define MAX_PATH 260
-#include "wcxhead.h"
 
 #if defined(__MINGW32__)
 #define DLL_EXPORT __declspec(dllexport)
@@ -15,6 +14,8 @@ using DWORD = std::uint32_t;
 #define DLL_EXPORT
 #define STDCALL
 #endif
+
+#include "wcxhead.h"
 
 using HANDLE = void*;
 
@@ -67,12 +68,14 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 
         std::string name(info.relativeFilePath);
 
+#ifdef __MINGW32__
         std::for_each(begin(name), end(name), [](char& ch) {
             if (ch == '/')
             {
                 ch = '\\';
             }
         });
+#endif
 
         HeaderData->FileAttr = 1; // FILE_SHARE_READ;
         std::strcpy(HeaderData->FileName, name.c_str());

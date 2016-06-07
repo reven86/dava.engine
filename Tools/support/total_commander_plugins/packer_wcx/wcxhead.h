@@ -98,6 +98,6 @@ typedef struct
 
 /* Definition of callback functions called by the DLL
 Ask to swap disk for multi-volume archive */
-typedef int(__stdcall* tChangeVolProc)(char* ArcName, int Mode);
+typedef int(STDCALL* tChangeVolProc)(char* ArcName, int Mode);
 /* Notify that data is processed - used for progress dialog */
-typedef int(__stdcall* tProcessDataProc)(char* FileName, int Size);
+typedef int(STDCALL* tProcessDataProc)(char* FileName, int Size);

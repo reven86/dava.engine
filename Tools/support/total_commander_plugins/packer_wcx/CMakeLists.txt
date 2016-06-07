@@ -19,7 +19,9 @@ endif()
 set_target_properties(double_commander_packer_plugin PROPERTIES OUTPUT_NAME "packer_plugin"
         SUFFIX ${OUT_PREFIX})
 
-add_custom_command(TARGET double_commander_packer_plugin
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    add_custom_command(TARGET double_commander_packer_plugin
         POST_BUILD
-        COMMAND "strip.exe" "libpacker_plugin${OUT_PREFIX}"
+        COMMAND "strip" "libpacker_plugin${OUT_PREFIX}"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+endif()
