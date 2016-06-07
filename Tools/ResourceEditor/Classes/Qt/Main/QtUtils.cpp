@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
 
@@ -97,7 +68,7 @@ Image* CreateTopLevelImage(const FilePath& imagePathname)
 {
     Image* image = NULL;
     Vector<Image*> imageSet;
-    ImageSystem::Instance()->Load(imagePathname, imageSet);
+    ImageSystem::Load(imagePathname, imageSet);
     if (0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
@@ -157,25 +128,6 @@ bool IsKeyModificatorPressed(Key key)
 bool IsKeyModificatorsPressed()
 {
     return (IsKeyModificatorPressed(Key::LSHIFT) || IsKeyModificatorPressed(Key::LCTRL) || IsKeyModificatorPressed(Key::LALT));
-}
-
-QColor ColorToQColor(const Color& color)
-{
-    float32 maxC = 1.0;
-
-    if (maxC < color.r)
-        maxC = color.r;
-    if (maxC < color.g)
-        maxC = color.g;
-    if (maxC < color.b)
-        maxC = color.b;
-
-    return QColor::fromRgbF(color.r / maxC, color.g / maxC, color.b / maxC, Clamp(color.a, 0.0f, 1.0f));
-}
-
-Color QColorToColor(const QColor& qcolor)
-{
-    return Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF(), qcolor.alphaF());
 }
 
 int ShowQuestion(const String& header, const String& question, int buttons, int defaultButton)
@@ -253,5 +205,5 @@ void SaveTextureToFile(Texture* texture, const FilePath& path)
 
 void SaveImageToFile(Image* image, const FilePath& path)
 {
-    ImageSystem::Instance()->Save(path, image);
+    ImageSystem::Save(path, image);
 }

@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -51,6 +23,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "PackManager/PackManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
@@ -61,10 +34,6 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
-
-#if defined(__DAVAENGINE_STEAM__)
-#include "Platform/Steam.h"
-#endif
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -268,7 +237,6 @@ void Core::CreateSingletons()
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new ImageSystem();
     new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
@@ -291,15 +259,13 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+    packManager.reset(new PackManager());
+
     new LocalNotificationController();
 
     RegisterDAVAClasses();
 
     new Net::NetCore();
-
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Init();
-#endif
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
@@ -343,9 +309,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Deinit();
-#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -357,6 +320,7 @@ void Core::ReleaseSingletons()
 
     LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
+    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -380,7 +344,6 @@ void Core::ReleaseSingletons()
     VersionInfo::Instance()->Release();
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
-    ImageSystem::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();
@@ -706,6 +669,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        packManager->Update();
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
         JobManager::Instance()->Update();
@@ -998,6 +962,12 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+PackManager& Core::GetPackManager()
+{
+    DVASSERT(packManager);
+    return *packManager;
 }
 
 } // namespace DAVA

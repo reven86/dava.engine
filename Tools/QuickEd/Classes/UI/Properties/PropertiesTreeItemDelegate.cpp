@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PropertiesTreeItemDelegate.h"
 #include <QWidget>
 #include <QHBoxLayout>
@@ -42,6 +13,8 @@
 #include <QToolButton>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QSortFilterProxyModel>
+#include <QAbstractItemModel>
 
 #include "DAVAEngine.h"
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -57,8 +30,8 @@
 #include "BoolPropertyDelegate.h"
 #include "ResourceFilePropertyDelegate.h"
 #include "Vector4PropertyDelegate.h"
-
 #include "FontPropertyDelegate.h"
+#include "TablePropertyDelegate.h"
 
 using namespace DAVA;
 
@@ -70,15 +43,20 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_STRING] = new StringPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_COLOR] = new ColorPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_WIDE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FILEPATH] = new FilePathPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT8] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT8] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT16] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT16] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_INT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT64] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
+    propertyNameTypeItemDelegates["Actions"] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
     propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Mask"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
     propertyNameTypeItemDelegates["Detail"] = new ResourceFilePropertyDelegate(".txt", "/Gfx/", this);
@@ -115,12 +93,19 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
 
 QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* model = index.model();
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
         PropertyWidget* editorWidget = new PropertyWidget(parent);
         editorWidget->setObjectName(QString::fromUtf8("editorWidget"));
-        QWidget* editor = currentDelegate->createEditor(editorWidget, option, index);
+        QWidget* editor = currentDelegate->createEditor(editorWidget, option, sourceIndex);
         if (!editor)
         {
             DAVA::SafeDelete(editorWidget);
@@ -142,7 +127,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
             editorWidget->layout()->addWidget(editor);
 
             QList<QAction*> actions;
-            currentDelegate->enumEditorActions(editorWidget, index, actions);
+            currentDelegate->enumEditorActions(editorWidget, sourceIndex, actions);
 
             foreach (QAction* action, actions)
             {
@@ -157,7 +142,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
         return editorWidget;
     }
 
-    if (index.data(Qt::EditRole).type() == QVariant::Bool)
+    if (sourceIndex.data(Qt::EditRole).type() == QVariant::Bool)
         return NULL;
 
     return QStyledItemDelegate::createEditor(parent, option, index);
@@ -165,10 +150,18 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
 
 void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* model = index.model();
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
-        return currentDelegate->setEditorData(editor, index);
+        return currentDelegate->setEditorData(editor, sourceIndex);
     }
 
     QStyledItemDelegate::setEditorData(editor, index);
@@ -176,7 +169,14 @@ void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelInde
 
 void PropertiesTreeItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(index);
+    QModelIndex sourceIndex = index;
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+
+    AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
         currentDelegate->setModelData(editor, model, index);
@@ -188,11 +188,6 @@ void PropertiesTreeItemDelegate::setModelData(QWidget* editor, QAbstractItemMode
         return;
 
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-bool PropertiesTreeItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
-{
-    return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIndex(const QModelIndex& index) const

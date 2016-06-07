@@ -2886,18 +2886,6 @@
 		176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA29C33F1446EF270049FD7A /* libfreetype_macos.a */; };
-		320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */; };
-		320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */; };
-		321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
-		321CCA531C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
-		321CCA541C6E04490048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */; };
-		321CCA551C6E04490048FAC9 /* FocusHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */; };
-		321CCA561C6E04490048FAC9 /* UIFocusComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */; };
-		321CCA571C6E04490048FAC9 /* UIFocusComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */; };
-		321CCA581C6E04490048FAC9 /* UIFocusSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */; };
-		321CCA591C6E04490048FAC9 /* UIFocusSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */; };
-		321CCA5A1C6E04490048FAC9 /* UIKeyInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */; };
-		321CCA5B1C6E04490048FAC9 /* UIKeyInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */; };
 		1CE8234F1C91C93B00D4087C /* ICommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE823481C91C93B00D4087C /* ICommand.h */; };
 		1CE823501C91C93B00D4087C /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CE823491C91C93B00D4087C /* ObjectHandle.cpp */; };
 		1CE823511C91C93B00D4087C /* ObjectHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CE8234A1C91C93B00D4087C /* ObjectHandle.h */; };
@@ -2911,6 +2899,38 @@
 		1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */; };
 		1DAA2B351CA5964D00E9E3EE /* MouseDeviceMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */; };
 		1DAA2B361CA5964D00E9E3EE /* MouseDeviceMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */; };
+		320791411C7F343D00E26609 /* TabTraversalAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */; };
+		320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */; };
+		3215130A1CA566A9007D0600 /* KeyboardShortcut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321513081CA566A9007D0600 /* KeyboardShortcut.cpp */; };
+		3215130B1CA566A9007D0600 /* KeyboardShortcut.h in Headers */ = {isa = PBXBuildFile; fileRef = 321513091CA566A9007D0600 /* KeyboardShortcut.h */; };
+		321CCA521C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */; };
+		321CCA531C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */; };
+		321CCA541C6E04490048FAC9 /* FocusHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */; };
+		321CCA551C6E04490048FAC9 /* FocusHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */; };
+		321CCA561C6E04490048FAC9 /* UIFocusComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */; };
+		321CCA571C6E04490048FAC9 /* UIFocusComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */; };
+		321CCA581C6E04490048FAC9 /* UIFocusSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */; };
+		321CCA591C6E04490048FAC9 /* UIFocusSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */; };
+		325055271CE3394B008357B2 /* ParticleEmitterInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325055251CE3394B008357B2 /* ParticleEmitterInstance.cpp */; };
+		325055281CE3394B008357B2 /* ParticleEmitterInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = 325055261CE3394B008357B2 /* ParticleEmitterInstance.h */; };
+		32A8BB401CC4CEA1006E69E3 /* UIActionBindingComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB331CC4CEA1006E69E3 /* UIActionBindingComponent.cpp */; };
+		32A8BB411CC4CEA1006E69E3 /* UIActionBindingComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB341CC4CEA1006E69E3 /* UIActionBindingComponent.h */; };
+		32A8BB421CC4CEA1006E69E3 /* UIActionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB351CC4CEA1006E69E3 /* UIActionComponent.cpp */; };
+		32A8BB431CC4CEA1006E69E3 /* UIActionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB361CC4CEA1006E69E3 /* UIActionComponent.h */; };
+		32A8BB441CC4CEA1006E69E3 /* UIActionMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB371CC4CEA1006E69E3 /* UIActionMap.cpp */; };
+		32A8BB451CC4CEA1006E69E3 /* UIActionMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB381CC4CEA1006E69E3 /* UIActionMap.h */; };
+		32A8BB461CC4CEA1006E69E3 /* UIInputMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB391CC4CEA1006E69E3 /* UIInputMap.cpp */; };
+		32A8BB471CC4CEA1006E69E3 /* UIInputMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */; };
+		32A8BB481CC4CEA1006E69E3 /* UIInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */; };
+		32A8BB491CC4CEA1006E69E3 /* UIInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */; };
+		32A8BB4B1CC4CEA1006E69E3 /* UiModalInputComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */; };
+		32A8BB4C1CC4CEA1006E69E3 /* UiModalInputComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */; };
+		32A8BB531CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB4D1CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp */; };
+		32A8BB541CC4CEAB006E69E3 /* UIFocusGroupComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB4E1CC4CEAB006E69E3 /* UIFocusGroupComponent.h */; };
+		32A8BB551CC4CEAB006E69E3 /* UiNavigationComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB4F1CC4CEAB006E69E3 /* UiNavigationComponent.cpp */; };
+		32A8BB561CC4CEAB006E69E3 /* UiNavigationComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB501CC4CEAB006E69E3 /* UiNavigationComponent.h */; };
+		32A8BB571CC4CEAB006E69E3 /* UITabOrderComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A8BB511CC4CEAB006E69E3 /* UITabOrderComponent.cpp */; };
+		32A8BB581CC4CEAB006E69E3 /* UITabOrderComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A8BB521CC4CEAB006E69E3 /* UITabOrderComponent.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED4A19A23C3300D3869D /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		50C16DDE1A52D8C4003C307A /* libuv_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C16DDD1A52D8C4003C307A /* libuv_macos.a */; };
@@ -3015,6 +3035,13 @@
 		FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
 		FE578C611327927C0081BDE9 /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		FE578C621327927C0081BDE9 /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
+		FEE0ADA81CD8ADB600EE3886 /* ImageConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */; };
+		FEE0ADB21CD8AE8100EE3886 /* DDSHandlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */; };
+		FEE0ADB31CD8AE8100EE3886 /* DDSHandlers.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */; };
+		FEE0ADB41CD8AE8100EE3886 /* NvttHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */; };
+		FEE0ADB51CD8AE8100EE3886 /* NvttHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */; };
+		FEE0ADB61CD8AE8100EE3886 /* QualcommHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */; };
+		FEE0ADB71CD8AE8100EE3886 /* QualcommHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -4001,18 +4028,6 @@
 		15373F201C4FA5E50054A940 /* ParticlesQualitySettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticlesQualitySettings.cpp; sourceTree = "<group>"; };
 		15373F211C4FA5E50054A940 /* ParticlesQualitySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticlesQualitySettings.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
-		320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
-		321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
-		321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
-		321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
-		321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FocusHelpers.h; sourceTree = "<group>"; };
-		321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusComponent.cpp; sourceTree = "<group>"; };
-		321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusComponent.h; sourceTree = "<group>"; };
-		321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusSystem.cpp; sourceTree = "<group>"; };
-		321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
-		321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyInputSystem.cpp; sourceTree = "<group>"; };
-		321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyInputSystem.h; sourceTree = "<group>"; };
 		1CE823481C91C93B00D4087C /* ICommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ICommand.h; path = Command/ICommand.h; sourceTree = "<group>"; };
 		1CE823491C91C93B00D4087C /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ObjectHandle.cpp; path = Command/ObjectHandle.cpp; sourceTree = "<group>"; };
 		1CE8234A1C91C93B00D4087C /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ObjectHandle.h; path = Command/ObjectHandle.h; sourceTree = "<group>"; };
@@ -4026,6 +4041,38 @@
 		1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDevice.h; sourceTree = "<group>"; };
 		1DAA2B331CA5964D00E9E3EE /* MouseDeviceMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MouseDeviceMacOS.h; sourceTree = "<group>"; };
 		1DAA2B341CA5964D00E9E3EE /* MouseDeviceMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MouseDeviceMacOS.mm; sourceTree = "<group>"; };
+		3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TabTraversalAlgorithm.cpp; sourceTree = "<group>"; };
+		320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabTraversalAlgorithm.h; sourceTree = "<group>"; };
+		321513081CA566A9007D0600 /* KeyboardShortcut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyboardShortcut.cpp; sourceTree = "<group>"; };
+		321513091CA566A9007D0600 /* KeyboardShortcut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyboardShortcut.h; sourceTree = "<group>"; };
+		321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionBasedNavigationAlgorithm.cpp; sourceTree = "<group>"; };
+		321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectionBasedNavigationAlgorithm.h; sourceTree = "<group>"; };
+		321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FocusHelpers.cpp; sourceTree = "<group>"; };
+		321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FocusHelpers.h; sourceTree = "<group>"; };
+		321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusComponent.cpp; sourceTree = "<group>"; };
+		321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusComponent.h; sourceTree = "<group>"; };
+		321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusSystem.cpp; sourceTree = "<group>"; };
+		321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusSystem.h; sourceTree = "<group>"; };
+		325055251CE3394B008357B2 /* ParticleEmitterInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitterInstance.cpp; sourceTree = "<group>"; };
+		325055261CE3394B008357B2 /* ParticleEmitterInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleEmitterInstance.h; sourceTree = "<group>"; };
+		32A8BB331CC4CEA1006E69E3 /* UIActionBindingComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionBindingComponent.cpp; sourceTree = "<group>"; };
+		32A8BB341CC4CEA1006E69E3 /* UIActionBindingComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionBindingComponent.h; sourceTree = "<group>"; };
+		32A8BB351CC4CEA1006E69E3 /* UIActionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionComponent.cpp; sourceTree = "<group>"; };
+		32A8BB361CC4CEA1006E69E3 /* UIActionComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionComponent.h; sourceTree = "<group>"; };
+		32A8BB371CC4CEA1006E69E3 /* UIActionMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIActionMap.cpp; sourceTree = "<group>"; };
+		32A8BB381CC4CEA1006E69E3 /* UIActionMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIActionMap.h; sourceTree = "<group>"; };
+		32A8BB391CC4CEA1006E69E3 /* UIInputMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputMap.cpp; sourceTree = "<group>"; };
+		32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputMap.h; sourceTree = "<group>"; };
+		32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputSystem.cpp; sourceTree = "<group>"; };
+		32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputSystem.h; sourceTree = "<group>"; };
+		32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UiModalInputComponent.cpp; sourceTree = "<group>"; };
+		32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UiModalInputComponent.h; sourceTree = "<group>"; };
+		32A8BB4D1CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFocusGroupComponent.cpp; sourceTree = "<group>"; };
+		32A8BB4E1CC4CEAB006E69E3 /* UIFocusGroupComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFocusGroupComponent.h; sourceTree = "<group>"; };
+		32A8BB4F1CC4CEAB006E69E3 /* UiNavigationComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UiNavigationComponent.cpp; sourceTree = "<group>"; };
+		32A8BB501CC4CEAB006E69E3 /* UiNavigationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UiNavigationComponent.h; sourceTree = "<group>"; };
+		32A8BB511CC4CEAB006E69E3 /* UITabOrderComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UITabOrderComponent.cpp; sourceTree = "<group>"; };
+		32A8BB521CC4CEAB006E69E3 /* UITabOrderComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITabOrderComponent.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		50C16DDD1A52D8C4003C307A /* libuv_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_macos.a; path = ../../Libs/libs/libuv_macos.a; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -4081,6 +4128,13 @@
 		FE578C5D1327927C0081BDE9 /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/oggvorbis/lib/libogg_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbis_macos.a; path = ../../Libs/oggvorbis/lib/libvorbis_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbisfile_macos.a; path = ../../Libs/oggvorbis/lib/libvorbisfile_macos.a; sourceTree = SOURCE_ROOT; };
+		FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageConvert.cpp; sourceTree = "<group>"; };
+		FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DDSHandlers.cpp; path = DDS/DDSHandlers.cpp; sourceTree = "<group>"; };
+		FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DDSHandlers.h; path = DDS/DDSHandlers.h; sourceTree = "<group>"; };
+		FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NvttHelper.cpp; path = DDS/NvttHelper.cpp; sourceTree = "<group>"; };
+		FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NvttHelper.h; path = DDS/NvttHelper.h; sourceTree = "<group>"; };
+		FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = QualcommHelper.cpp; path = DDS/QualcommHelper.cpp; sourceTree = "<group>"; };
+		FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QualcommHelper.h; path = DDS/QualcommHelper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4519,6 +4573,8 @@
 		028C09391BD66A5E00B2266F /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				321513081CA566A9007D0600 /* KeyboardShortcut.cpp */,
+				321513091CA566A9007D0600 /* KeyboardShortcut.h */,
 				1DAA2B2F1CA595FB00E9E3EE /* MouseDevice.cpp */,
 				1DAA2B301CA595FB00E9E3EE /* MouseDevice.h */,
 				028C093A1BD66A5E00B2266F /* Accelerometer.cpp */,
@@ -4750,6 +4806,8 @@
 		028C09DE1BD66A5E00B2266F /* Particles */ = {
 			isa = PBXGroup;
 			children = (
+				325055251CE3394B008357B2 /* ParticleEmitterInstance.cpp */,
+				325055261CE3394B008357B2 /* ParticleEmitterInstance.h */,
 				028C09DF1BD66A5E00B2266F /* Particle.h */,
 				028C09E01BD66A5E00B2266F /* ParticleEmitter.cpp */,
 				028C09E11BD66A5E00B2266F /* ParticleEmitter.h */,
@@ -5001,6 +5059,8 @@
 		028C0B0F1BD66A5E00B2266F /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				FEE0ADAB1CD8AE7100EE3886 /* DDS */,
+				FEE0ADA71CD8ADB600EE3886 /* ImageConvert.cpp */,
 				028C0B101BD66A5E00B2266F /* CRCAdditionInterface.h */,
 				028C0B111BD66A5E00B2266F /* Image.cpp */,
 				028C0B121BD66A5E00B2266F /* Image.h */,
@@ -5378,6 +5438,7 @@
 		028C0C7B1BD66A5F00B2266F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				32A8BB321CC4CEA1006E69E3 /* Input */,
 				321CCA471C6E04490048FAC9 /* Focus */,
 				0347B7DE1C64C211004DB76C /* UITextFieldMacOS.h */,
 				0347B7DF1C64C211004DB76C /* UITextFieldMacOS.mm */,
@@ -5667,25 +5728,6 @@
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
 		};
-		321CCA471C6E04490048FAC9 /* Focus */ = {
-			isa = PBXGroup;
-			children = (
-				3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */,
-				320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */,
-				321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */,
-				321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
-				321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */,
-				321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */,
-				321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */,
-				321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */,
-				321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */,
-				321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */,
-				321CCA501C6E04490048FAC9 /* UIKeyInputSystem.cpp */,
-				321CCA511C6E04490048FAC9 /* UIKeyInputSystem.h */,
-			);
-			path = Focus;
-			sourceTree = "<group>";
-        };
 		1CE823471C91C93000D4087C /* Command */ = {
 			isa = PBXGroup;
 			children = (
@@ -5707,6 +5749,48 @@
 				1D1022851CC1119F00AD68BD /* MouseDeviceWinUAP.h */,
 			);
 			name = TemplateWin32;
+			sourceTree = "<group>";
+		};
+		321CCA471C6E04490048FAC9 /* Focus */ = {
+			isa = PBXGroup;
+			children = (
+				32A8BB4D1CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp */,
+				32A8BB4E1CC4CEAB006E69E3 /* UIFocusGroupComponent.h */,
+				32A8BB4F1CC4CEAB006E69E3 /* UiNavigationComponent.cpp */,
+				32A8BB501CC4CEAB006E69E3 /* UiNavigationComponent.h */,
+				32A8BB511CC4CEAB006E69E3 /* UITabOrderComponent.cpp */,
+				32A8BB521CC4CEAB006E69E3 /* UITabOrderComponent.h */,
+				3207913F1C7F343D00E26609 /* TabTraversalAlgorithm.cpp */,
+				320791401C7F343D00E26609 /* TabTraversalAlgorithm.h */,
+				321CCA481C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.cpp */,
+				321CCA491C6E04490048FAC9 /* DirectionBasedNavigationAlgorithm.h */,
+				321CCA4A1C6E04490048FAC9 /* FocusHelpers.cpp */,
+				321CCA4B1C6E04490048FAC9 /* FocusHelpers.h */,
+				321CCA4C1C6E04490048FAC9 /* UIFocusComponent.cpp */,
+				321CCA4D1C6E04490048FAC9 /* UIFocusComponent.h */,
+				321CCA4E1C6E04490048FAC9 /* UIFocusSystem.cpp */,
+				321CCA4F1C6E04490048FAC9 /* UIFocusSystem.h */,
+			);
+			path = Focus;
+			sourceTree = "<group>";
+		};
+		32A8BB321CC4CEA1006E69E3 /* Input */ = {
+			isa = PBXGroup;
+			children = (
+				32A8BB331CC4CEA1006E69E3 /* UIActionBindingComponent.cpp */,
+				32A8BB341CC4CEA1006E69E3 /* UIActionBindingComponent.h */,
+				32A8BB351CC4CEA1006E69E3 /* UIActionComponent.cpp */,
+				32A8BB361CC4CEA1006E69E3 /* UIActionComponent.h */,
+				32A8BB371CC4CEA1006E69E3 /* UIActionMap.cpp */,
+				32A8BB381CC4CEA1006E69E3 /* UIActionMap.h */,
+				32A8BB391CC4CEA1006E69E3 /* UIInputMap.cpp */,
+				32A8BB3A1CC4CEA1006E69E3 /* UIInputMap.h */,
+				32A8BB3B1CC4CEA1006E69E3 /* UIInputSystem.cpp */,
+				32A8BB3C1CC4CEA1006E69E3 /* UIInputSystem.h */,
+				32A8BB3E1CC4CEA1006E69E3 /* UiModalInputComponent.cpp */,
+				32A8BB3F1CC4CEA1006E69E3 /* UiModalInputComponent.h */,
+			);
+			path = Input;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -5799,6 +5883,19 @@
 			name = Internal;
 			path = ../../Sources/Internal;
 			sourceTree = SOURCE_ROOT;
+		};
+		FEE0ADAB1CD8AE7100EE3886 /* DDS */ = {
+			isa = PBXGroup;
+			children = (
+				FEE0ADAC1CD8AE8100EE3886 /* DDSHandlers.cpp */,
+				FEE0ADAD1CD8AE8100EE3886 /* DDSHandlers.h */,
+				FEE0ADAE1CD8AE8100EE3886 /* NvttHelper.cpp */,
+				FEE0ADAF1CD8AE8100EE3886 /* NvttHelper.h */,
+				FEE0ADB01CD8AE8100EE3886 /* QualcommHelper.cpp */,
+				FEE0ADB11CD8AE8100EE3886 /* QualcommHelper.h */,
+			);
+			name = DDS;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -6364,6 +6461,7 @@
 				028C157F1BD66A6000B2266F /* ImageSystem.h in Headers */,
 				028C0DF01BD66A6000B2266F /* EnumMap.h in Headers */,
 				028C1A2F1BD66A6100B2266F /* UIControlHelpers.h in Headers */,
+				FEE0ADB31CD8AE8100EE3886 /* DDSHandlers.h in Headers */,
 				028C0E111BD66A6000B2266F /* Hash.h in Headers */,
 				028C14CE1BD66A6000B2266F /* Frustum.h in Headers */,
 				028C17D71BD66A6000B2266F /* SpeedTreeComponent.h in Headers */,
@@ -6395,7 +6493,6 @@
 				028C10F61BD66A6000B2266F /* AllocatorBridge.h in Headers */,
 				028C19361BD66A6000B2266F /* WindSystem.h in Headers */,
 				028C10421BD66A6000B2266F /* Function.h in Headers */,
-				321CCA5B1C6E04490048FAC9 /* UIKeyInputSystem.h in Headers */,
 				028C192A1BD66A6000B2266F /* UpdateSystem.h in Headers */,
 				028C165D1BD66A6000B2266F /* rhi_RingBuffer.h in Headers */,
 				028C19181BD66A6000B2266F /* StaticOcclusionSystem.h in Headers */,
@@ -6426,6 +6523,7 @@
 				028C11921BD66A6000B2266F /* ITransport.h in Headers */,
 				028C15791BD66A6000B2266F /* ImageFormatInterface.h in Headers */,
 				028C0F761BD66A6000B2266F /* DownloadManager.h in Headers */,
+				32A8BB491CC4CEA1006E69E3 /* UIInputSystem.h in Headers */,
 				028C17FB1BD66A6000B2266F /* WaveComponent.h in Headers */,
 				1D1022861CC1119F00AD68BD /* MouseDeviceWin32.h in Headers */,
 				028C11771BD66A6000B2266F /* NetService.h in Headers */,
@@ -6457,6 +6555,7 @@
 				028C14471BD66A6000B2266F /* FTFont.h in Headers */,
 				028C1B1C1BD66A6100B2266F /* UIWebView.h in Headers */,
 				028C0EE61BD66A6000B2266F /* DisplayMode.h in Headers */,
+				32A8BB581CC4CEAB006E69E3 /* UITabOrderComponent.h in Headers */,
 				028C0E231BD66A6000B2266F /* IntrospectionBase.h in Headers */,
 				028C0FA61BD66A6000B2266F /* SceneSystem.h in Headers */,
 				028C14981BD66A6000B2266F /* PolygonGroup.h in Headers */,
@@ -6500,11 +6599,13 @@
 				028C14B01BD66A6000B2266F /* DynamicBindings.h in Headers */,
 				320791421C7F343D00E26609 /* TabTraversalAlgorithm.h in Headers */,
 				028C10B41BD66A6000B2266F /* Matrix3.h in Headers */,
+				FEE0ADB51CD8AE8100EE3886 /* NvttHelper.h in Headers */,
 				028C17EF1BD66A6000B2266F /* UpdatableComponent.h in Headers */,
 				028C0F041BD66A6000B2266F /* DataStorage.h in Headers */,
 				028C11DD1BD66A6000B2266F /* SimpleEchoServer.h in Headers */,
 				028C127C1BD66A6000B2266F /* SystemTimer.h in Headers */,
 				028C14D41BD66A6000B2266F /* Heightmap.h in Headers */,
+				32A8BB411CC4CEA1006E69E3 /* UIActionBindingComponent.h in Headers */,
 				028C1B041BD66A6100B2266F /* UITextField.h in Headers */,
 				03B249A11CBCEDC900015637 /* Compressor.h in Headers */,
 				028C0E3B1BD66A6000B2266F /* Meta.h in Headers */,
@@ -6551,6 +6652,7 @@
 				028C11021BD66A6000B2266F /* MallocHook.h in Headers */,
 				028C191E1BD66A6000B2266F /* SwitchSystem.h in Headers */,
 				028C19691BD66A6000B2266F /* AbstractUIPackageBuilder.h in Headers */,
+				325055281CE3394B008357B2 /* ParticleEmitterInstance.h in Headers */,
 				028C185E1BD66A6000B2266F /* Scene.h in Headers */,
 				028C1AA11BD66A6100B2266F /* UIParticles.h in Headers */,
 				03B249AD1CBCEDC900015637 /* ZipCompressor.h in Headers */,
@@ -6588,6 +6690,7 @@
 				028C11381BD66A6000B2266F /* IOLoop.h in Headers */,
 				028C158B1BD66A6000B2266F /* LibJpegHelper.h in Headers */,
 				028C19301BD66A6000B2266F /* WaveSystem.h in Headers */,
+				32A8BB431CC4CEA1006E69E3 /* UIActionComponent.h in Headers */,
 				028C17F51BD66A6000B2266F /* UserComponent.h in Headers */,
 				028C19AB1BD66A6000B2266F /* UIAnchorComponent.h in Headers */,
 				028C18D61BD66A6000B2266F /* FoliageSystem.h in Headers */,
@@ -6614,6 +6717,7 @@
 				028C0F701BD66A6000B2266F /* DownloaderCommon.h in Headers */,
 				028C171A1BD66A6000B2266F /* rhi_ShaderCache.h in Headers */,
 				028C10961BD66A6000B2266F /* Circle.h in Headers */,
+				32A8BB451CC4CEA1006E69E3 /* UIActionMap.h in Headers */,
 				028C110E1BD66A6000B2266F /* MemoryProfiler.h in Headers */,
 				03B2498F1CBCE81700015637 /* ResourceArchivePrivate.h in Headers */,
 				028C19121BD66A6000B2266F /* StaticOcclusionBuildSystem.h in Headers */,
@@ -6650,6 +6754,7 @@
 				028C1A951BD66A6100B2266F /* UIPackageLoader.h in Headers */,
 				03C12A8F1C4FD7F9002D4636 /* LocalNotificationMac.h in Headers */,
 				028C18F41BD66A6000B2266F /* QualitySettingsSystem.h in Headers */,
+				32A8BB561CC4CEAB006E69E3 /* UiNavigationComponent.h in Headers */,
 				028C18581BD66A6000B2266F /* PathManip.h in Headers */,
 				15373F251C4FA5E50054A940 /* ParticlesQualitySettings.h in Headers */,
 				028C0DF91BD66A6000B2266F /* Exception.h in Headers */,
@@ -6670,6 +6775,7 @@
 				028C16571BD66A6000B2266F /* rhi_Private.h in Headers */,
 				028C18CA1BD66A6000B2266F /* DebugRenderSystem.h in Headers */,
 				028C139C1BD66A6000B2266F /* DeviceInfoMacOS.h in Headers */,
+				3215130B1CA566A9007D0600 /* KeyboardShortcut.h in Headers */,
 				028C116B1BD66A6000B2266F /* NetConfig.h in Headers */,
 				028C15011BD66A6000B2266F /* RenderLayer.h in Headers */,
 				028C15F41BD66A6000B2266F /* RenderHelper.h in Headers */,
@@ -6677,6 +6783,7 @@
 				028C0D421BD66A6000B2266F /* AnimationManager.h in Headers */,
 				028C15D91BD66A6000B2266F /* PixelFormatDescriptor.h in Headers */,
 				028C0E561BD66A6000B2266F /* Platform.h in Headers */,
+				32A8BB471CC4CEA1006E69E3 /* UIInputMap.h in Headers */,
 				028C16271BD66A6000B2266F /* mcpp_lib.h in Headers */,
 				028C13CF1BD66A6000B2266F /* OpenGLView.h in Headers */,
 				028C1AE61BD66A6100B2266F /* UIScrollViewContainer.h in Headers */,
@@ -6699,6 +6806,7 @@
 				028C1B2B1BD66A6100B2266F /* TestClass.h in Headers */,
 				1DAA2B321CA595FB00E9E3EE /* MouseDevice.h in Headers */,
 				028C11B91BD66A6000B2266F /* ServiceRegistrar.h in Headers */,
+				FEE0ADB71CD8AE8100EE3886 /* QualcommHelper.h in Headers */,
 				028C0F401BD66A6000B2266F /* Profiler.h in Headers */,
 				028C15851BD66A6000B2266F /* LibDdsHelper.h in Headers */,
 				028C1ADA1BD66A6100B2266F /* UIScrollBar.h in Headers */,
@@ -6814,6 +6922,7 @@
 				028C13A51BD66A6000B2266F /* MainWindowController.h in Headers */,
 				028C16421BD66A6000B2266F /* PreProcess.h in Headers */,
 				028C17E91BD66A6000B2266F /* TransformComponent.h in Headers */,
+				32A8BB4C1CC4CEA1006E69E3 /* UiModalInputComponent.h in Headers */,
 				028C12521BD66A6000B2266F /* DPIHelper.h in Headers */,
 				028C1B521BD66A6100B2266F /* Random.h in Headers */,
 				028C0F221BD66A6000B2266F /* DVAssert.h in Headers */,
@@ -6874,6 +6983,7 @@
 				028C10AB1BD66A6000B2266F /* MathDefines.h in Headers */,
 				028C19751BD66A6000B2266F /* UIControlFamily.h in Headers */,
 				028C19061BD66A6000B2266F /* SoundUpdateSystem.h in Headers */,
+				32A8BB541CC4CEAB006E69E3 /* UIFocusGroupComponent.h in Headers */,
 				028C13D51BD66A6000B2266F /* OpenUDIDMacOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7979,6 +8089,7 @@
 				028C1ACB1BD66A6100B2266F /* UIScreenshoter.cpp in Sources */,
 				028C12791BD66A6000B2266F /* SystemTimer.cpp in Sources */,
 				028C19B41BD66A6000B2266F /* UIFlowLayoutHintComponent.cpp in Sources */,
+				32A8BB4B1CC4CEA1006E69E3 /* UiModalInputComponent.cpp in Sources */,
 				028C0D5D1BD66A6000B2266F /* LinearPropertyAnimation.cpp in Sources */,
 				028C15A61BD66A6000B2266F /* FXCache.cpp in Sources */,
 				028C17C81BD66A6000B2266F /* SkeletonComponent.cpp in Sources */,
@@ -8022,6 +8133,7 @@
 				028C17C21BD66A6000B2266F /* RenderComponent.cpp in Sources */,
 				028C0DA51BD66A6000B2266F /* Polygon2Swig.cpp in Sources */,
 				028C14F21BD66A6000B2266F /* RenderBatchArray.cpp in Sources */,
+				32A8BB441CC4CEA1006E69E3 /* UIActionMap.cpp in Sources */,
 				028C1AF51BD66A6100B2266F /* UIStaticText.cpp in Sources */,
 				D7E452D01C50BABD00E5A97D /* LocalizationApple.mm in Sources */,
 				028C16E71BD66A6000B2266F /* rhi_QueryBufferGLES2.cpp in Sources */,
@@ -8087,6 +8199,7 @@
 				028C18FD1BD66A6000B2266F /* SkeletonSystem.cpp in Sources */,
 				028C10721BD66A6000B2266F /* JobManager.cpp in Sources */,
 				028C19031BD66A6000B2266F /* SoundUpdateSystem.cpp in Sources */,
+				FEE0ADB61CD8AE8100EE3886 /* QualcommHelper.cpp in Sources */,
 				028C14951BD66A6000B2266F /* PolygonGroup.cpp in Sources */,
 				028C0E831BD66A6000B2266F /* CollisionPolygons.cpp in Sources */,
 				028C19AE1BD66A6000B2266F /* UIFlowLayoutComponent.cpp in Sources */,
@@ -8125,6 +8238,7 @@
 				028C0E9E1BD66A6000B2266F /* ConditionVariable.cpp in Sources */,
 				028C0D961BD66A6000B2266F /* KeyedArchiveSwig.cpp in Sources */,
 				028C18D91BD66A6000B2266F /* GlobalEventSystem.cpp in Sources */,
+				32A8BB421CC4CEA1006E69E3 /* UIActionComponent.cpp in Sources */,
 				028C172F1BD66A6000B2266F /* ShaderCache.cpp in Sources */,
 				028C0F671BD66A6000B2266F /* Downloader.cpp in Sources */,
 				028C1A8C1BD66A6100B2266F /* UIPackage.cpp in Sources */,
@@ -8169,6 +8283,7 @@
 				028C193F1BD66A6000B2266F /* FMODFileSoundEvent.cpp in Sources */,
 				028C1A861BD66A6100B2266F /* UIMovieView.cpp in Sources */,
 				028C17921BD66A6000B2266F /* SnapToLandscapeControllerComponent.cpp in Sources */,
+				32A8BB481CC4CEA1006E69E3 /* UIInputSystem.cpp in Sources */,
 				028C150A1BD66A6000B2266F /* RenderPass.cpp in Sources */,
 				028C10601BD66A6000B2266F /* GamepadDevice.mm in Sources */,
 				028C19901BD66A6000B2266F /* FlowLayoutAlgorithm.cpp in Sources */,
@@ -8180,6 +8295,8 @@
 				028C11D71BD66A6000B2266F /* NetLogger.cpp in Sources */,
 				028C151F1BD66A6000B2266F /* ShadowVolumeRenderLayer.cpp in Sources */,
 				028C1B5B1BD66A6100B2266F /* StringUtils.cpp in Sources */,
+				32A8BB461CC4CEA1006E69E3 /* UIInputMap.cpp in Sources */,
+				32A8BB401CC4CEA1006E69E3 /* UIActionBindingComponent.cpp in Sources */,
 				028C0E7D1BD66A6000B2266F /* CollisionObject2.cpp in Sources */,
 				028C0E891BD66A6000B2266F /* Collisions.cpp in Sources */,
 				03C12A971C4FD827002D4636 /* Reachability.mm in Sources */,
@@ -8220,10 +8337,12 @@
 				028C1AFB1BD66A6100B2266F /* UISwitch.cpp in Sources */,
 				028C11741BD66A6000B2266F /* NetService.cpp in Sources */,
 				028C1A921BD66A6100B2266F /* UIPackageLoader.cpp in Sources */,
+				FEE0ADA81CD8ADB600EE3886 /* ImageConvert.cpp in Sources */,
 				028C18281BD66A6000B2266F /* DataNode.cpp in Sources */,
 				028C19D81BD66A6000B2266F /* UIPriorityStyleSheet.cpp in Sources */,
 				028C11F81BD66A6000B2266F /* LocalNotificationDelayed.cpp in Sources */,
 				028C17801BD66A6000B2266F /* CameraComponent.cpp in Sources */,
+				3215130A1CA566A9007D0600 /* KeyboardShortcut.cpp in Sources */,
 				028C15371BD66A6000B2266F /* SpriteObject.cpp in Sources */,
 				028C186D1BD66A6000B2266F /* VersionInfo.cpp in Sources */,
 				028C1A681BD66A6100B2266F /* UIJoypad.cpp in Sources */,
@@ -8238,6 +8357,7 @@
 				028C19A81BD66A6000B2266F /* UIAnchorComponent.cpp in Sources */,
 				03C12A8C1C4FD7F9002D4636 /* LocalNotificationMac.mm in Sources */,
 				028C15A01BD66A6000B2266F /* LibWebPHelper.cpp in Sources */,
+				32A8BB571CC4CEAB006E69E3 /* UITabOrderComponent.cpp in Sources */,
 				028C0DAE1BD66A6000B2266F /* RectSwig.cpp in Sources */,
 				028C19781BD66A6000B2266F /* DefaultUIPackageBuilder.cpp in Sources */,
 				03B249BD1CBCF17100015637 /* lz4hc.c in Sources */,
@@ -8266,6 +8386,7 @@
 				028C14381BD66A6000B2266F /* Font.cpp in Sources */,
 				028C17981BD66A6000B2266F /* WASDControllerComponent.cpp in Sources */,
 				028C0F911BD66A6000B2266F /* ZLibStream.cpp in Sources */,
+				FEE0ADB41CD8AE8100EE3886 /* NvttHelper.cpp in Sources */,
 				028C0DCC1BD66A6000B2266F /* BaseMath.cpp in Sources */,
 				028C0D751BD66A6000B2266F /* AutotestingSystem_wrap.cxx in Sources */,
 				028C14771BD66A6000B2266F /* TextBlockSoftwareRender.cpp in Sources */,
@@ -8323,13 +8444,13 @@
 				028C18D31BD66A6000B2266F /* FoliageSystem.cpp in Sources */,
 				028C1A3E1BD66A6100B2266F /* UIEvent.cpp in Sources */,
 				028C0DD21BD66A6000B2266F /* BaseObject.cpp in Sources */,
+				32A8BB531CC4CEAB006E69E3 /* UIFocusGroupComponent.cpp in Sources */,
 				028C1B731BD66A6100B2266F /* UtilsMacOS.mm in Sources */,
 				028C15191BD66A6000B2266F /* ShadowVolume.cpp in Sources */,
 				028C15881BD66A6000B2266F /* LibJpegHelper.cpp in Sources */,
 				028C14C51BD66A6000B2266F /* CullingSystem.cpp in Sources */,
 				028C118C1BD66A6000B2266F /* Discoverer.cpp in Sources */,
 				028C0DB71BD66A6000B2266F /* UIControlSwig.cpp in Sources */,
-				321CCA5A1C6E04490048FAC9 /* UIKeyInputSystem.cpp in Sources */,
 				028C15CA1BD66A6000B2266F /* MipmapReplacer.cpp in Sources */,
 				321CCA581C6E04490048FAC9 /* UIFocusSystem.cpp in Sources */,
 				028C0D571BD66A6000B2266F /* LinearAnimation.cpp in Sources */,
@@ -8390,6 +8511,7 @@
 				028C144A1BD66A6000B2266F /* GraphicFont.cpp in Sources */,
 				028C10BD1BD66A6000B2266F /* NeonMath.cpp in Sources */,
 				028C15551BD66A6000B2266F /* VegetationPropertyNames.cpp in Sources */,
+				32A8BB551CC4CEAB006E69E3 /* UiNavigationComponent.cpp in Sources */,
 				028C17AA1BD66A6000B2266F /* LightComponent.cpp in Sources */,
 				028C0E291BD66A6000B2266F /* IntrospectionDynamic.cpp in Sources */,
 				028C0F6D1BD66A6000B2266F /* DownloaderCommon.cpp in Sources */,
@@ -8403,9 +8525,11 @@
 				028C15311BD66A6000B2266F /* SpeedTreeObject.cpp in Sources */,
 				028C165A1BD66A6000B2266F /* rhi_Render.cpp in Sources */,
 				028C17A41BD66A6000B2266F /* DebugRenderComponent.cpp in Sources */,
+				FEE0ADB21CD8AE8100EE3886 /* DDSHandlers.cpp in Sources */,
 				028C16EA1BD66A6000B2266F /* rhi_TextureGLES2.cpp in Sources */,
 				028C0FD01BD66A6000B2266F /* FileSystemObjective.mm in Sources */,
 				028C14DA1BD66A6000B2266F /* Landscape.cpp in Sources */,
+				325055271CE3394B008357B2 /* ParticleEmitterInstance.cpp in Sources */,
 				028C10301BD66A6000B2266F /* YamlNode.cpp in Sources */,
 				028C11411BD66A6000B2266F /* NetworkUtils.cpp in Sources */,
 				028C16DB1BD66A6000B2266F /* rhi_IndexBufferGLES2.cpp in Sources */,

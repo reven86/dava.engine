@@ -1,32 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <numeric>
 #include "HUDSystem.h"
 
@@ -77,7 +48,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl);
+    HUD(EditorSystemsManager* systemsManager, ControlNode* node, UIControl* hudControl);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -86,11 +57,11 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(EditorSystemsManager* systemsManager, ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
-    , container(new HUDContainer(node_))
+    , container(new HUDContainer(systemsManager, node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
     DAVA::Vector<HUDAreaInfo::eArea> areas;
@@ -147,16 +118,16 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 {
     InvalidatePressedPoint();
     hudControl->SetName(FastName("hudControl"));
-    systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
-    systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
-    systemManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
-    systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
-    systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+    systemsManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
+    systemsManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemsManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
+    systemsManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemsManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
 
 HUDSystem::~HUDSystem()
 {
-    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+    systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
     SetCanDrawRect(false);
 }
 
@@ -180,7 +151,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                hudMap[controlNode] = std::make_unique<HUD>(systemsManager, controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -216,7 +187,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             DVASSERT(node->GetControl() != nullptr);
             return visibleProp->GetVisibleInEditor() && node->GetControl()->IsPointInside(point);
         };
-        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
+        systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
         bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
@@ -241,7 +212,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
-            systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
+            systemsManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::Phase::ENDED:
@@ -309,14 +280,14 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     static const float32 axtraSizeValue = 50.0f;
     DVASSERT(magnetControls.size() == magnetTargetControls.size());
 
-    const size_t magnetsSize = magnetControls.size();
-    const size_t newMagnetsSize = magnetLines.size();
+    const size_type magnetsSize = magnetControls.size();
+    const size_type newMagnetsSize = magnetLines.size();
     if (newMagnetsSize < magnetsSize)
     {
         auto linesRIter = magnetControls.rbegin();
         auto rectsRIter = magnetTargetControls.rbegin();
-        size_t count = magnetsSize - newMagnetsSize;
-        for (size_t i = 0; i < count; ++i)
+        size_type count = magnetsSize - newMagnetsSize;
+        for (size_type i = 0; i < count; ++i)
         {
             UIControl* lineControl = (*linesRIter++).Get();
             UIControl* targetRectControl = (*rectsRIter++).Get();
@@ -330,11 +301,11 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
     else if (newMagnetsSize > magnetsSize)
     {
-        size_t count = newMagnetsSize - magnetsSize;
+        size_type count = newMagnetsSize - magnetsSize;
 
         magnetControls.reserve(count);
         magnetTargetControls.reserve(count);
-        for (int i = 0; i < count; ++i)
+        for (size_type i = 0; i < count; ++i)
         {
             UIControl* lineControl = new UIControl();
             lineControl->SetName(FastName("magnet line control"));
@@ -433,7 +404,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
     if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
-        systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
+        systemsManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }
 }
 
@@ -496,10 +467,10 @@ void HUDSystem::UpdatePlacedOnScreenStatus()
     isPlacedOnScreen = isPlaced;
     if (isPlacedOnScreen)
     {
-        systemManager->GetRootControl()->AddControl(hudControl.Get());
+        systemsManager->GetRootControl()->AddControl(hudControl.Get());
     }
     else
     {
-        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
+        systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
     }
 }

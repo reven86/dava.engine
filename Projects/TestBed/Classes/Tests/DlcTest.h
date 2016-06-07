@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __TEST_SCREEN_H__
 #define __TEST_SCREEN_H__
 
@@ -55,15 +27,13 @@ struct DLCCrashTest
     void ExitThread(BaseObject* caller, void* callerData, void* userData);
 };
 
-class DlcTest : public BaseScreen
+class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
     DlcTest();
 
 protected:
-    ~DlcTest()
-    {
-    }
+    ~DlcTest() = default;
 
 public:
     void LoadResources() override;
@@ -73,10 +43,13 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
+    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override;
+
 private:
     void UpdateInfoStr();
     void SetInternalDlServer(BaseObject* obj, void* data, void* callerData);
     void SetExternalDlServer(BaseObject* obj, void* data, void* callerData);
+    void SetSpeed(BaseObject* obj, void* data, void* callerData);
     void IncDlThreads(BaseObject* obj, void* data, void* callerData);
     void DecDlThreads(BaseObject* obj, void* data, void* callerData);
     void Start(BaseObject* obj, void* data, void* callerData);
@@ -84,22 +57,29 @@ private:
     void Restart(BaseObject* obj, void* data, void* callerData);
 
 protected:
-    String gameVersion = "dlcdevtest";
-    String currentDownloadUrl;
+    const FilePath optionsPath = "~doc:/dlc_options.yaml";
+    ScopedPtr<KeyedArchive> options;
+
+    const String gameVersion = "DlcGameVersion";
+    const String defaultGameVersion = "dlcdevtest";
+    const String currentDownloadUrl = "DlcServerUrl";
+    const String downloadThreadsCount = "DlcThreadsCount";
+    const uint32 defaultdownloadTreadsCount = 4;
+    const String downloadSpeed = "DlcDownloadSpeed";
 
     DAVA::FilePath workingDir;
     DAVA::FilePath sourceDir;
     DAVA::FilePath destinationDir;
 
     UITextField* gameVersionIn = nullptr;
+    UITextField* dlSpeedIn = nullptr;
     UIStaticText* infoText = nullptr;
     WideString infoStr;
-
-    uint32 downloadTreadsCount = 4;
 
     UIStaticText* staticText = nullptr;
     UIControl* animControl = nullptr;
     UIControl* progressControl = nullptr;
+    UIStaticText* progressStatistics = nullptr;
 
     float32 angle = 0;
     float32 lastUpdateTime = 0.f;

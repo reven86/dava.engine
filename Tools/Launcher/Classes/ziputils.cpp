@@ -1,33 +1,5 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ziputils.h"
+#include "filemanager.h"
 #include <QString>
 #include <QProcess>
 #include <QFile>
@@ -36,8 +8,9 @@
 #include <QDir>
 #include <QApplication>
 #include <numeric>
+#include <QDebug>
 
-const QString& ZipUtils::GetArchiverPath()
+QString ZipUtils::GetArchiverPath()
 {
     static QString processAddr = qApp->applicationDirPath() +
 #if defined(Q_OS_WIN)
@@ -136,6 +109,7 @@ bool ZipUtils::LaunchArchiver(const QStringList& arguments, ReadyReadCallback ca
     });
     QEventLoop loop;
     QObject::connect(&zipProcess, static_cast<void (QProcess::*)(int)>(&QProcess::finished), &loop, &QEventLoop::quit, Qt::QueuedConnection);
+
     zipProcess.start(processAddr, arguments);
     if (!zipProcess.waitForStarted(5000))
     {
@@ -159,6 +133,7 @@ bool ZipUtils::GetFileList(const QString& archivePath, CompressedFilesAndSizes& 
         functor.OnError(err);
         return false;
     }
+    fileList.clear();
     QRegularExpression regExp("\\s+");
     bool foundOutputData = false;
     ReadyReadCallback callback = [&regExp, &foundOutputData, &fileList, &functor](const QByteArray& line) {
@@ -296,7 +271,9 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
     QStringList arguments;
     arguments << "x"
               << "-y"
-              << "-bb1" << archivePath << "-o" + outDirPath;
+              << "-bb1"
+              << archivePath
+              << "-o" + outDirPath;
     if (!LaunchArchiver(arguments, callback, &err))
     {
         functor.OnError(err);

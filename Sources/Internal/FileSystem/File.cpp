@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
@@ -74,6 +45,10 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
     {
         String relative = filename.GetRelativePathname("~res:/");
+
+        // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
+        // from DB with all files, then check if such pack mounted and from
+        // mountedPackIndex find by name archive with file or skip to next step
 
         Vector<uint8> contentAndSize;
         for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
@@ -382,7 +357,7 @@ uint32 File::GetSize() const
     return size;
 }
 
-bool File::Seek(int32 position, uint32 seekType)
+bool File::Seek(int32 position, eFileSeek seekType)
 {
     int realSeekType = 0;
     switch (seekType)

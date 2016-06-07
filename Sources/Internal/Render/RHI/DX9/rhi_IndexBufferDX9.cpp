@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "rhi_DX9.h"
 
@@ -54,10 +26,9 @@ public:
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
     unsigned isMapped : 1;
-
-    IDirect3DIndexBuffer9* prevBuffer;
 };
-RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor);
+
+RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
 
 typedef ResourcePool<IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true);
@@ -68,7 +39,6 @@ IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
     , isMapped(false)
-    , prevBuffer(nullptr)
 {
 }
 
@@ -83,7 +53,9 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
+
     bool success = false;
+    UpdateCreationDesc(desc);
 
     if (desc.size)
     {
@@ -101,6 +73,8 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
             break;
         }
+
+        DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
@@ -139,9 +113,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
-
-        prevBuffer = buffer;
+        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         buffer = nullptr;
     }
@@ -154,16 +126,12 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
-    if (ib->Create(desc))
-    {
-        IndexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        ib->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (ib->Create(desc) == false)
     {
         IndexBufferDX9Pool::Free(handle);
         handle = InvalidHandle;
@@ -295,11 +263,12 @@ void SetToRHI(Handle ib)
 
 void ReleaseAll()
 {
+    IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
         b->Destroy(true);
-        b->MarkNeedRestore();
     }
+    IndexBufferDX9Pool::Unlock();
 }
 
 void ReCreateAll()
@@ -310,7 +279,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferDX9_t::NeedRestoreCount();
+    return IndexBufferDX9Pool::PendingRestoreCount();
 }
 }
 

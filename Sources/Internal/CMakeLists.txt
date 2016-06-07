@@ -12,7 +12,9 @@ set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR}
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
 
 set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared        
-                                    $ENV{DXSDK_DIR}/include )
+                                    $ENV{DXSDK_DIR}/include 
+                                    ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
+
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 
@@ -64,11 +66,12 @@ set( STATIC_LIBRARIES_WINUAP_RELEASE ${DAVA_STATIC_LIBRARIES_WINUAP_RELEASE} )
 set( STATIC_LIBRARIES_WINUAP_DEBUG  ${DAVA_STATIC_LIBRARIES_WINUAP_DEBUG} )
 
 set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so )
+set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
+set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
 set( SOURCE_FOLDERS                 "." )
 
-set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c )
-set( HPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.h )
+set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    
 set( ERASE_FOLDERS_IOS              "DX9" "DX11" )
 set( ERASE_FOLDERS_MACOS            "Metal" "DX9" "DX11" )
@@ -78,7 +81,9 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
-                                    "Compression/ZipCompressor.cpp" )
+                                    "Compression/ZipCompressor.cpp"
+                                    "Platform/Steam.cpp"
+                                    "DataStorage/Steam/DataStorageSteam.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
@@ -107,6 +112,7 @@ set( DEFINITIONS_PRIVATE            -D_UNICODE
 set( DEFINITIONS_PRIVATE_IOS        -DDDARWIN_NO_CARBON )
 set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )
 set( DEFINITIONS_PRIVATE_ANDROID    -D__ANDROID__ )
+set( DEFINITIONS_PRIVATE_WINUAP     -DSQLITE_OS_WINRT=1 )
 
 
 if( DAVA_DISABLE_AUTOTESTS  )
@@ -120,6 +126,14 @@ endif ()
 
 if( DAVA_USE_RENDERSTATS )
     list( APPEND DEFINITIONS -D__DAVAENGINE_RENDERSTATS__ )
+endif()
+
+if( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+	list( APPEND DEFINITIONS -DDAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+endif()
+
+if( DENY_RUN_MULTIPLE_APP_INSTANCES )
+    list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
 endif()
 
 setup_main_module()

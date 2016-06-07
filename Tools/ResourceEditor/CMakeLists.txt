@@ -19,8 +19,8 @@ if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
 
     if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/ResourceEditor)
-        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/ResourceEditor)
+        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
     endif()
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
@@ -141,13 +141,16 @@ set( LIBRARIES            ${BEAST_LIB} NgtTools)
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 
-if ( WIN32 AND X64_MODE )
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
-else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
-endif ()
-
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
+
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Commands2/NGTCommand.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Commands2/Base/CommandStack.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/NGTPropertyEditor/PropertyPanel.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/main.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/Main/mainwindow.cpp")
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/Qt/REApplication.cpp")
 
 DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
                            COPY_WIN32  ${BEAST_DLL}

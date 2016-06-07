@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UI_CONTROL_SYSTEM_H__
 #define __DAVAENGINE_UI_CONTROL_SYSTEM_H__
 
@@ -50,7 +21,7 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
-class UIKeyInputSystem;
+class UIInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -204,7 +175,7 @@ public:
 	 \brief Returns all currently active inputs.
 	 \returns all inputs active in the system
 	 */
-    const Vector<UIEvent>& GetAllInputs();
+    const Vector<UIEvent>& GetAllInputs() const;
 
     /**
 	 \brief Sets requested control as a exclusive input locker.
@@ -218,7 +189,7 @@ public:
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
 	 \returns exclusive input locker
 	 */
-    UIControl* GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker() const;
 
     /**
 	 \brief Returns base geometric data seted in the system.
@@ -262,19 +233,20 @@ public:
     /**
 	 \brief Returns control hovered by the mnouse for now
 	 */
-    UIControl* GetHoveredControl(UIControl* newHovered);
+    UIControl* GetHoveredControl() const;
 
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
     void SetFocusedControl(UIControl* newFocused);
 
-    void ControlBecomeInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control
 	 */
-    UIControl* GetFocusedControl();
+    UIControl* GetFocusedControl() const;
 
     void AddScreenSwitchListener(ScreenSwitchListener* listener);
     void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
@@ -302,7 +274,9 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
+
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
@@ -324,12 +298,10 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem = nullptr;
+    UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
-    Vector<UIEvent> touchEvents;
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIScreen> nextScreen;
@@ -341,11 +313,6 @@ private:
     int32 lockInputCounter = 0;
     int32 screenLockCount = 0;
     int32 frameSkip = 0;
-
-    UIControl* exclusiveInputLocker = nullptr;
-    UIControl* hovered = nullptr;
-    UIControl* focusedControlWhenTouchBegan = nullptr;
-    Vector2 positionOfTouchWhenTouchBegan;
 
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;

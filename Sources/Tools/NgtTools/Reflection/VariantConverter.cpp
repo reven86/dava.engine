@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
- 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
- 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
- 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "VariantConverter.h"
 
 #include "Base/FastName.h"
@@ -122,9 +94,29 @@ Variant DVtoV_bool(DAVA::VariantType const& v)
 {
     return Variant(v.AsBool());
 }
+Variant DVtoV_int8(DAVA::VariantType const& v)
+{
+    return Variant(v.AsInt8());
+}
+Variant DVtoV_uint8(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt8());
+}
+Variant DVtoV_int16(DAVA::VariantType const& v)
+{
+    return Variant(v.AsInt16());
+}
+Variant DVtoV_uint16(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt16());
+}
 Variant DVtoV_int32(DAVA::VariantType const& v)
 {
     return Variant(v.AsInt32());
+}
+Variant DVtoV_uint32(DAVA::VariantType const& v)
+{
+    return Variant(v.AsUInt32());
 }
 Variant DVtoV_float(DAVA::VariantType const& v)
 {
@@ -141,10 +133,6 @@ Variant DVtoV_wideString(DAVA::VariantType const& v)
 Variant DVtoV_int64(DAVA::VariantType const& v)
 {
     return Variant(v.AsInt64());
-}
-Variant DVtoV_uint32(DAVA::VariantType const& v)
-{
-    return Variant(v.AsUInt32());
 }
 Variant DVtoV_uint64(DAVA::VariantType const& v)
 {
@@ -252,11 +240,15 @@ Converter::Converter()
 
     convertFunctions[DAVA::VariantType::TYPE_NONE] = { bind(&VtoDV<void>, _1), bind(&DVtoV_void, _1) };
     convertFunctions[DAVA::VariantType::TYPE_BOOLEAN] = { bind(&VtoDV<bool>, _1), bind(&DVtoV_bool, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_INT8] = { bind(&VtoDV<DAVA::int8>, _1), bind(&DVtoV_int8, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT8] = { bind(&VtoDV<DAVA::uint8>, _1), bind(&DVtoV_uint8, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_INT16] = { bind(&VtoDV<DAVA::int16>, _1), bind(&DVtoV_int16, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT16] = { bind(&VtoDV<DAVA::uint16>, _1), bind(&DVtoV_uint16, _1) };
     convertFunctions[DAVA::VariantType::TYPE_INT32] = { bind(&VtoDV<DAVA::int32>, _1), bind(&DVtoV_int32, _1) };
+    convertFunctions[DAVA::VariantType::TYPE_UINT32] = { bind(&VtoDV<DAVA::uint32>, _1), bind(&DVtoV_uint32, _1) };
     convertFunctions[DAVA::VariantType::TYPE_FLOAT] = { bind(&VtoDV<DAVA::float32>, _1), bind(&DVtoV_float, _1) };
     convertFunctions[DAVA::VariantType::TYPE_STRING] = { bind(&VtoDV<DAVA::String>, _1), bind(&DVtoV_string, _1) };
     convertFunctions[DAVA::VariantType::TYPE_WIDE_STRING] = { bind(&VtoDV<DAVA::WideString>, _1), bind(&DVtoV_wideString, _1) };
-    convertFunctions[DAVA::VariantType::TYPE_UINT32] = { bind(&VtoDV<DAVA::uint32>, _1), bind(&DVtoV_uint32, _1) };
     convertFunctions[DAVA::VariantType::TYPE_INT64] = { bind(&VtoDV<DAVA::int64>, _1), bind(&DVtoV_int64, _1) };
     convertFunctions[DAVA::VariantType::TYPE_UINT64] = { bind(&VtoDV<DAVA::uint64>, _1), bind(&DVtoV_uint64, _1) };
     convertFunctions[DAVA::VariantType::TYPE_VECTOR2] = { bind(&VtoDV<DAVA::Vector2>, _1), bind(&DVtoV_vector2, _1) };

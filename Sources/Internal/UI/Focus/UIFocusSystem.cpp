@@ -1,31 +1,3 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
 #include "UIFocusSystem.h"
 
 #include "UI/Focus/UIFocusComponent.h"
@@ -65,6 +37,7 @@ void UIFocusSystem::SetRoot(UIControl* newRoot)
     {
         UIControl* focusedControl = FindFirstControl(newRoot);
         ClearFocusState(newRoot);
+        SetFocusedControl(nullptr);
 
         SetFocusedControl(focusedControl);
     }
@@ -82,6 +55,22 @@ UIControl* UIFocusSystem::GetFocusedControl() const
 void UIFocusSystem::SetFocusedControl(UIControl* control)
 {
     bool textFieldWasEditing = false;
+
+    if (control)
+    {
+        UIControl* c = control;
+        while (c && c != root.Get())
+        {
+            c = c->GetParent();
+        }
+
+        if (c != root.Get())
+        {
+            DVASSERT(false);
+            return;
+        }
+    }
+
     if (control != focusedControl.Get())
     {
         if (focusedControl.Valid())
@@ -121,7 +110,24 @@ void UIFocusSystem::SetFocusedControl(UIControl* control)
     }
 }
 
-void UIFocusSystem::ControlBecomInvisible(UIControl* control)
+void UIFocusSystem::OnControlVisible(UIControl* control)
+{
+    if (!focusedControl.Valid() && FocusHelpers::CanFocusControl(control) && root.Valid())
+    {
+        UIControl* c = control;
+        while (c != nullptr && c != root.Get())
+        {
+            c = c->GetParent();
+        }
+
+        if (c != nullptr) // control in current hierarchy
+        {
+            SetFocusedControl(control);
+        }
+    }
+}
+
+void UIFocusSystem::OnControlInvisible(UIControl* control)
 {
     if (focusedControl == control)
     {
@@ -138,37 +144,7 @@ void UIFocusSystem::ControlBecomInvisible(UIControl* control)
     }
 }
 
-bool UIFocusSystem::MoveFocusLeft()
-{
-    return MoveFocus(FocusHelpers::Direction::LEFT);
-}
-
-bool UIFocusSystem::MoveFocusRight()
-{
-    return MoveFocus(FocusHelpers::Direction::RIGHT);
-}
-
-bool UIFocusSystem::MoveFocusUp()
-{
-    return MoveFocus(FocusHelpers::Direction::UP);
-}
-
-bool UIFocusSystem::MoveFocusDown()
-{
-    return MoveFocus(FocusHelpers::Direction::DOWN);
-}
-
-bool UIFocusSystem::MoveFocusForward()
-{
-    return MoveFocus(FocusHelpers::TabDirection::FORWARD);
-}
-
-bool UIFocusSystem::MoveFocusBackward()
-{
-    return MoveFocus(FocusHelpers::TabDirection::BACKWARD);
-}
-
-bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
+bool UIFocusSystem::MoveFocus(UINavigationComponent::Direction dir)
 {
     if (root.Valid() && focusedControl.Valid())
     {
@@ -183,12 +159,12 @@ bool UIFocusSystem::MoveFocus(FocusHelpers::Direction dir)
     return false;
 }
 
-bool UIFocusSystem::MoveFocus(FocusHelpers::TabDirection dir)
+bool UIFocusSystem::MoveFocus(UITabOrderComponent::Direction dir, bool repeat)
 {
     if (root.Valid() && focusedControl.Valid())
     {
         TabTraversalAlgorithm alg(root.Get());
-        UIControl* next = alg.GetNextControl(focusedControl.Get(), dir);
+        UIControl* next = alg.GetNextControl(focusedControl.Get(), dir, repeat);
         if (next != nullptr && next != focusedControl)
         {
             SetFocusedControl(next);

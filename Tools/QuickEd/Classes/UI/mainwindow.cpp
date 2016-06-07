@@ -1,66 +1,36 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "mainwindow.h"
 #include "Project/Project.h"
 #include "Document.h"
 #include "DocumentGroup.h"
+#include "Render/Texture.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "Preferences/PreferencesStorage.h"
+#include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
+#include "Preferences/PreferencesDialog.h"
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-namespace MainWindow_namespace
-{
-const QString APP_GEOMETRY = "geometry";
-const QString APP_STATE = "windowstate";
-const QString CONSOLE_STATE = "console state";
-
-void SetColoredIconToAction(QAction* action, QColor color)
-{
-    QPixmap pixmap(16, 16);
-    pixmap.fill(color);
-    action->setIcon(pixmap);
-    action->setData(color);
-}
-}
-
 using namespace DAVA;
+
+REGISTER_PREFERENCES_ON_START(MainWindow,
+                              PREF_ARG("isPixelized", false),
+                              PREF_ARG("state", String()),
+                              PREF_ARG("geometry", String()),
+                              PREF_ARG("consoleState", String())
+                              )
+
+Q_DECLARE_METATYPE(const InspMember*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -96,19 +66,20 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    InitMenu();
-    RestoreMainWindowState();
 
-    RebuildRecentMenu();
+    InitMenu();
+
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
     OnDocumentChanged(nullptr);
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 MainWindow::~MainWindow()
 {
-    SaveMainWindowState();
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
@@ -154,34 +125,6 @@ void MainWindow::OnDocumentChanged(Document* document)
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-}
-
-void MainWindow::SaveMainWindowState()
-{
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(MainWindow_namespace::APP_GEOMETRY, saveGeometry());
-    settings.setValue(MainWindow_namespace::APP_STATE, saveState());
-    settings.setValue(MainWindow_namespace::CONSOLE_STATE, logWidget->Serialize());
-}
-
-void MainWindow::RestoreMainWindowState()
-{
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    auto val = settings.value(MainWindow_namespace::APP_GEOMETRY);
-    if (val.canConvert<QByteArray>())
-    {
-        restoreGeometry(settings.value(MainWindow_namespace::APP_GEOMETRY).toByteArray());
-    }
-    val = settings.value(MainWindow_namespace::APP_STATE);
-    if (val.canConvert<QByteArray>())
-    {
-        restoreState(settings.value(MainWindow_namespace::APP_STATE).toByteArray());
-    }
-    val = settings.value(MainWindow_namespace::CONSOLE_STATE);
-    if (val.canConvert<QByteArray>())
-    {
-        logWidget->Deserialize(val.toByteArray());
-    }
 }
 
 QComboBox* MainWindow::GetComboBoxLanguage()
@@ -280,7 +223,7 @@ void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProject);
+    connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProjectAction);
     connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
@@ -299,7 +242,8 @@ void MainWindow::InitMenu()
 
     // Pixelization.
     connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-    actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
+
+    connect(action_preferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
 }
 
 void MainWindow::SetupViewMenu()
@@ -343,149 +287,79 @@ void MainWindow::SetupViewMenu()
 
 void MainWindow::SetupBackgroundMenu()
 {
+    const InspInfo* inspInfo = PreferencesStorage::Instance()->GetInspInfo(FastName("ColorControl"));
+
+    backgroundIndexMember = inspInfo->Member(FastName("backgroundColorIndex"));
+    DVASSERT(backgroundIndexMember != nullptr);
+    if (backgroundIndexMember == nullptr)
+    {
+        return;
+    }
+
+    uint32 currentIndex = PreferencesStorage::Instance()->GetValue(backgroundIndexMember).AsUInt32();
+
+    PreferencesStorage::Instance()->valueChanged.Connect(this, &MainWindow::OnPreferencesPropertyChanged);
+
     menuView->addSeparator();
     // Setup the Background Color menu.
     QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
     menuView->addSeparator();
     menuView->addMenu(backgroundColorMenu);
 
-    QActionGroup* actionGroup = new QActionGroup(backgroundColorMenu);
-    QAction* defaultBackgroundColorAction = new QAction(tr("Default"), backgroundColorMenu);
-
-    actionGroup->addAction(defaultBackgroundColorAction);
-    connect(defaultBackgroundColorAction, &QAction::toggled, [](bool toggled) {
-        if (toggled)
+    backgroundActions = new QActionGroup(this);
+    for (int i = 0, count = inspInfo->MembersCount(), index = 0; i < count; ++i)
+    {
+        const InspMember* member = inspInfo->Member(i);
+        backgroundColorMembers.insert(member);
+        QString str(member->Name().c_str());
+        if (str.contains(QRegExp("backgroundColor\\d+")))
         {
-            EditorSettings::Instance()->SetGridType(BackgroundTexture);
-        }
-    });
-
-    backgroundColorMenu->addAction(defaultBackgroundColorAction);
-    backgroundColorMenu->addSeparator();
-    static const struct
-    {
-        QColor color;
-        QString colorName;
-    } colorsMap[] =
-    {
-      { Qt::black, "Black" },
-      { QColor(0x69, 0x69, 0x69, 0xFF), "Dim Gray" },
-      { QColor(0x80, 0x80, 0x80, 0xFF), "Gray" },
-      { QColor(0xD3, 0xD3, 0xD3, 0xFF), "Light Gray" },
-    };
-    for (const auto& colorItem : colorsMap)
-    {
-        QAction* colorAction = new QAction(colorItem.colorName, backgroundColorMenu);
-        QColor color(colorItem.color);
-        MainWindow_namespace::SetColoredIconToAction(colorAction, color);
-
-        actionGroup->addAction(colorAction);
-        backgroundColorMenu->addAction(colorAction);
-        connect(colorAction, &QAction::toggled, [color](bool toggled) {
-            if (toggled)
+            QAction* colorAction = new QAction(QString("Background color %1").arg(index), backgroundColorMenu);
+            backgroundActions->addAction(colorAction);
+            colorAction->setCheckable(true);
+            colorAction->setData(QVariant::fromValue<const InspMember*>(member));
+            if (index == currentIndex)
             {
-                EditorSettings::Instance()->SetGridType(BackgroundColor);
-                EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
+                colorAction->setChecked(true);
             }
-        });
-    }
-    QAction* backgroundCustomColorAction = new QAction(tr("Custom color ..."), backgroundColorMenu);
-    backgroundColorMenu->addAction(backgroundCustomColorAction);
-    connect(backgroundCustomColorAction, &QAction::triggered, this, &MainWindow::OnBackgroundCustomColorClicked);
-    actionGroup->addAction(backgroundCustomColorAction);
-
-    for (auto& action : actionGroup->actions())
-    {
-        action->setCheckable(true);
-    }
-    connect(actionGroup, &QActionGroup::triggered, [this](QAction* action) {
-        previousBackgroundColorAction = action;
-    });
-
-    auto editorSettings = EditorSettings::Instance();
-    if (!editorSettings->GetGridType())
-    {
-        defaultBackgroundColorAction->trigger();
-    }
-    else
-    {
-        QColor color = ColorToQColor(editorSettings->GetGrigColor());
-        for (auto& action : actionGroup->actions())
-        {
-            if (action->data().value<QColor>() == color)
-            {
-                action->trigger();
-            }
-        }
-        if (actionGroup->checkedAction() == nullptr)
-        {
-            MainWindow_namespace::SetColoredIconToAction(backgroundCustomColorAction, color);
-            backgroundCustomColorAction->setChecked(true);
+            backgroundColorMenu->addAction(colorAction);
+            QColor color = ColorToQColor(PreferencesStorage::Instance()->GetValue(member).AsColor());
+            colorAction->setIcon(CreateIconFromColor(color));
+            connect(colorAction, &QAction::toggled, [this, index](bool toggled)
+                    {
+                        if (toggled)
+                        {
+                            VariantType value(static_cast<uint32>(index));
+                            PreferencesStorage::Instance()->SetValue(backgroundIndexMember, value);
+                        }
+                    });
+            ++index;
         }
     }
 }
 
-void MainWindow::RebuildRecentMenu()
+void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
 {
     menuRecent->clear();
-    // Get up to date count of recent project actions
-    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
-    QStringList projectList;
-
-    for (int32 i = 0; i < projectCount; ++i)
-    {
-        projectList << QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(i).c_str()));
-    }
-    projectList.removeDuplicates();
-    for (auto& projectPath : projectList)
+    for (auto& projectPath : lastProjectsPathes)
     {
         QAction* recentProject = new QAction(projectPath, this);
         recentProject->setData(projectPath);
         menuRecent->addAction(recentProject);
     }
-    menuRecent->setEnabled(projectCount > 0);
-}
-
-void MainWindow::OnBackgroundCustomColorClicked()
-{
-    QAction* customColorAction = qobject_cast<QAction*>(sender());
-    QColor curColor = customColorAction->data().value<QColor>();
-    QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
-    if (!color.isValid())
-    {
-        if (previousBackgroundColorAction != nullptr && previousBackgroundColorAction != customColorAction) //if we launch app with custom color previous color action will be nullptr
-        {
-            previousBackgroundColorAction->trigger();
-        }
-        return;
-    }
-    MainWindow_namespace::SetColoredIconToAction(customColorAction, color);
-    EditorSettings::Instance()->SetGridType(BackgroundColor);
-    EditorSettings::Instance()->SetGrigColor(QColorToColor(color));
-}
-
-void MainWindow::closeEvent(QCloseEvent* ev)
-{
-    if (!CloseRequested()) //we cannot access to EditorCore directly by parent
-    {
-        ev->ignore();
-    }
-    else
-    {
-        ev->accept();
-    }
+    menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
 }
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    QString projectPath = project->GetProjectPath() + project->GetProjectName();
+    currentProjectPath = project->GetProjectPath() + project->GetProjectName();
     if (resultList)
     {
-        UpdateProjectSettings(projectPath);
+        UpdateProjectSettings();
 
-        RebuildRecentMenu();
+        RebuildRecentMenu(project->GetProjectsHistory());
         FillComboboxLanguages(project);
         this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
@@ -501,10 +375,16 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     }
 }
 
-void MainWindow::OnOpenProject()
+void MainWindow::OnOpenProjectAction()
 {
+    QString defaultPath = currentProjectPath;
+    if (defaultPath.isNull() || defaultPath.isEmpty())
+    {
+        defaultPath = QDir::currentPath();
+    }
+
     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-                                                      ResourcesManageHelper::GetDefaultDirectory(),
+                                                      defaultPath,
                                                       tr("Project (*.uieditor)"));
     if (projectPath.isEmpty())
     {
@@ -515,27 +395,42 @@ void MainWindow::OnOpenProject()
     emit ActionOpenProjectTriggered(projectPath);
 }
 
-void MainWindow::UpdateProjectSettings(const QString& projectPath)
+void MainWindow::UpdateProjectSettings()
 {
-    // Add file to recent project files list
-    EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-
     // Save to settings default project directory
-    QFileInfo fileInfo(projectPath);
+    QFileInfo fileInfo(currentProjectPath);
     QString projectDir = fileInfo.absoluteDir().absolutePath();
-    EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
     // Update window title
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(currentProjectPath));
+}
 
-    // Apply the pixelization value.
-    Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
+void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)
+{
+    QList<QAction*> actions = backgroundActions->actions();
+    if (member == backgroundIndexMember)
+    {
+        uint32 index = value.AsUInt32();
+        DVASSERT(actions.size() > index);
+        actions.at(index)->setChecked(true);
+        return;
+    }
+    auto iter = backgroundColorMembers.find(member);
+    if (iter != backgroundColorMembers.end())
+    {
+        for (QAction* action : actions)
+        {
+            if (action->data().value<const InspMember*>() == member)
+            {
+                QColor color = ColorToQColor(value.AsColor());
+                action->setIcon(CreateIconFromColor(color));
+            }
+        }
+    }
 }
 
 void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
-    EditorSettings::Instance()->SetPixelized(isPixelized);
-
     Texture::SetPixelization(isPixelized);
 }
 
@@ -560,4 +455,56 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
     {
         logWidget->AddMessage(logLevel, output);
     }
+}
+
+void MainWindow::OnEditorPreferencesTriggered()
+{
+    PreferencesDialog dialog(this);
+    dialog.exec();
+}
+
+bool MainWindow::IsPixelized() const
+{
+    return actionPixelized->isChecked();
+}
+
+void MainWindow::SetPixelized(bool pixelized)
+{
+    actionPixelized->setChecked(pixelized);
+}
+
+String MainWindow::GetState() const
+{
+    QByteArray state = saveState().toBase64();
+    return state.toStdString();
+}
+
+void MainWindow::SetState(const String& array)
+{
+    QByteArray state = QByteArray::fromStdString(array);
+    restoreState(QByteArray::fromBase64(state));
+}
+
+String MainWindow::GetGeometry() const
+{
+    QByteArray geometry = saveGeometry().toBase64();
+    return geometry.toStdString();
+}
+
+void MainWindow::SetGeometry(const String& array)
+{
+    QByteArray geometry = QByteArray::fromStdString(array);
+    restoreGeometry(QByteArray::fromBase64(geometry));
+}
+
+String MainWindow::GetConsoleState() const
+{
+    QByteArray consoleState = logWidget->Serialize().toBase64();
+    return consoleState.toStdString();
+}
+
+void MainWindow::SetConsoleState(const String& array)
+{
+    QByteArray consoleState = QByteArray::fromStdString(array);
+    logWidget->Deserialize(QByteArray::fromBase64(consoleState));
 }

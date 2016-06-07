@@ -30,6 +30,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_ios.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_ios.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColladaS.a
@@ -53,7 +54,8 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libvorbisfile_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a 
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_macos.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a 
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_macos.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
@@ -72,6 +74,7 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_a
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_android.a"
                                     "-lEGL"
                                     "-lGLESv1_CM"
                                     "-llog"
@@ -113,7 +116,16 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/TextureConverter.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak_win.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/zlib.lib"   
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swscale.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib"   )
 
     set( DAVA_STATIC_LIBRARIES_WIN32_DEBUG
                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/detours.lib"
@@ -143,7 +155,16 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverterD.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak_wind.lib"  
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/zlib.lib" 
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swscale.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_RELEASE
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/FColladaVS2010.lib"
@@ -172,7 +193,16 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/theora_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/unibreak.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/uv.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/z.lib" 
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/swscale.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
@@ -198,7 +228,16 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"
-                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib" )
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/z.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avcodec.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avdevice.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avfilter.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avformat.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/avutil.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/postproc.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swresample.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/swscale.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/sqlite3.lib")
 
 
     set( DAVA_STATIC_LIBRARIES_WIN32 "Wininet.lib"
@@ -214,6 +253,20 @@ if( WIN )
                                      "userenv.lib"
                                      "delayimp.lib"
                                      "dxgi.lib" )
+
+    set( DAVA_DYNAMIC_LIBRARIES_WIN32 "${DAVA_TOOLS_BIN_DIR}/avcodec-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avdevice-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avfilter-6.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avformat-57.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/avutil-55.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/postproc-54.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" 
+                                      "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
+                                      "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll" )
+
+    set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
+
 
     set ( DAVA_STATIC_LIBRARIES_WIN64 ${DAVA_STATIC_LIBRARIES_WIN32} )
 
