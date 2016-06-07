@@ -698,7 +698,7 @@ void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
     UIEvent touchDown;
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
-    touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
+    touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
@@ -708,7 +708,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
 {
     UIEvent touchMove;
     touchMove.touchId = touchId;
-    touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
+    touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     touchMove.point = point;
 
@@ -737,7 +737,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     }
     touchUp.phase = UIEvent::Phase::ENDED;
     touchUp.touchId = touchId;
-    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000;
+    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
 
     ProcessInput(touchUp);
 }

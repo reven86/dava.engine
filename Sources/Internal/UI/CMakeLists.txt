@@ -1,5 +1,5 @@
-set( HPP_FILES *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Private/*.h )
-set( CPP_FILES *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp )
+set( HPP_FILES *.h   Components/*.h   Layouts/*.h    Styles/*.h   Focus/*.h   Private/*.h   Input/*.cpp)
+set( CPP_FILES *.cpp Components/*.cpp Layouts/*.cpp  Styles/*.cpp Focus/*.cpp Private/*.cpp Input/*.h)
 set( CPP_FILES_APPLE *.mm )
 
 set( HPP_FILES_ANDROID Private/android/*.cpp )

@@ -353,14 +353,10 @@ int main(int argc, char* argv[])
     {
         printf("Usage: ResourcePatcher <command>\n");
         printf("\n Commands: write, list, apply, apply-all\n\n");
-        writeOptions.PrintUsage();
-        printf("\n");
-        listOptions.PrintUsage();
-        printf("\n");
-        applyOptions.PrintUsage();
-        printf("\n");
-        applyAllOptions.PrintUsage();
-        printf("\n");
+        printf("%s\n\n", writeOptions.GetUsageString().c_str());
+        printf("%s\n\n", listOptions.GetUsageString().c_str());
+        printf("%s\n\n", applyOptions.GetUsageString().c_str());
+        printf("%s\n\n", applyAllOptions.GetUsageString().c_str());
     }
 
     DAVA::FileSystem::Instance()->Release();

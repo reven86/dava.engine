@@ -277,6 +277,23 @@ void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 {
     systemsManager->SetEmulationMode(emulationMode);
+
+    if (emulationMode)
+    {
+        focusNextChildAction->setShortcut(0);
+        focusNextChildAction->setEnabled(false);
+
+        focusPreviousChildAction->setShortcut(0);
+        focusPreviousChildAction->setEnabled(false);
+    }
+    else
+    {
+        focusNextChildAction->setShortcut(Qt::Key_Tab);
+        focusNextChildAction->setEnabled(true);
+
+        focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
+        focusPreviousChildAction->setEnabled(true);
+    }
 }
 
 void PreviewWidget::ApplyPosChanges()
