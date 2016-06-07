@@ -12,7 +12,7 @@ namespace DAVA
 void MouseDeviceWin32::SetCursorInCenter()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    HWND hWnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->NativeHandle());
+    HWND hWnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->GetNativeHandle());
 #else
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
 #endif

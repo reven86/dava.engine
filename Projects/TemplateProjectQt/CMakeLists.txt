@@ -27,6 +27,9 @@ endif()
 
 configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
+add_definitions(-D__DAVAENGINE_COREV2__)
+add_definitions(-D__DAVAENGINE_QT__)
+
 add_definitions       ( 
 -DDISABLE_NATIVE_WEBVIEW 
 -DDISABLE_NATIVE_TEXTFIELD 

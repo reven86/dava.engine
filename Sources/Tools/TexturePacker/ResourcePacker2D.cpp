@@ -17,6 +17,8 @@
 
 #include "AssetCache/AssetCacheClient.h"
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.3";
@@ -95,7 +97,11 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
+#if defined(__DAVAENGINE_QT__)
+        if (Engine::Instance()->IsConsoleMode())
+#else
         if (Core::Instance()->IsConsoleMode())
+#endif
         {
             Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
         }
@@ -446,7 +452,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
+#if defined(__DAVAENGINE_QT__)
+                if (Engine::Instance()->IsConsoleMode())
+#else
                 if (Core::Instance()->IsConsoleMode())
+#endif
                 {
                     Logger::Info("[%u files packed with flags: %s]", static_cast<uint32>(definitionFileList.size()), mergedFlags.c_str());
                 }
