@@ -1042,25 +1042,6 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         }
     }
 
-    if (sprite->clipPolygon && (!state || !state->usePerPixelAccuracy))
-    {
-        PushClip();
-        Rect clipRect;
-        if (sprite->flags & Sprite::EST_SCALE)
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x * state->scale.x;
-            float32 coordY = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) * state->scale.x + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) * state->scale.y + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) * state->scale.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) * state->scale.y);
-        }
-        else
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x;
-            float32 coordY = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
-        }
-        IntersectClipRect(clipRect);
-    }
-
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
@@ -1084,11 +1065,6 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         batch.indexPointer = spriteClippedIndecex.data();
     }
     PushBatch(batch);
-
-    if (sprite->clipPolygon && (!state || !state->usePerPixelAccuracy))
-    {
-        PopClip();
-    }
 }
 
 void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color)
