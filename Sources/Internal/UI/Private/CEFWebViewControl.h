@@ -88,6 +88,7 @@ private:
     void LoadURL(const String& url, bool clearSurface);
     void LoadHtml(const CefString& html, const CefString& url);
     void StopLoading();
+    bool IsEmail(const String& url);
 
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);

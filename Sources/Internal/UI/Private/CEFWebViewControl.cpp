@@ -1,6 +1,7 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_browser.h>
+#include <regex>
 
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
@@ -216,6 +217,12 @@ bool CEFWebViewControl::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
 {
     String url = request->GetURL();
 
+    // Disallow email processing
+    if (IsEmail(url))
+    {
+        return true;
+    }
+
     // Always allow loading of URL from OpenURL method or if delegate is not set
     if (url == requestedUrl || delegate == nullptr)
     {
@@ -280,6 +287,17 @@ void CEFWebViewControl::StopLoading()
     {
         cefBrowser->StopLoad();
     }
+}
+
+bool CEFWebViewControl::IsEmail(const String& url)
+{
+    const char* emailRegex = "^[-a-z0-9!#$%&'*+/=?^_`{|}~]+(\\.[-a-z0-9!#$%&'*+/=?^_`{|}~]+)*@"
+                             "([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\\.)*(aero|arpa|asia|biz|cat|"
+                             "com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|"
+                             "tel|travel|[a-z][a-z])$";
+
+    bool result = url.find("mailto:") == 0 || std::regex_match(url, std::regex(emailRegex));
+    return result;
 }
 
 namespace CEFDetails
