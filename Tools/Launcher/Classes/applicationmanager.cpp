@@ -85,7 +85,7 @@ QString ApplicationManager::GetApplicationDirectory(const QString& branchID, con
     }
     if (mustExists)
     {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application path %1 %2 not exists!").arg(branchID).arg(appID));
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application %1 in branch %2 not exists!").arg(appID).arg(branchID));
         return "";
     }
     else
@@ -183,11 +183,12 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = GetApplicationDirectory(branchID, appID) + version->runPath;
+        QString runPath = GetApplicationDirectory(branchID, appID);
         if (runPath.isEmpty())
         {
             return;
         }
+        runPath += version->runPath;
         if (!QFile::exists(runPath))
         {
             ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
