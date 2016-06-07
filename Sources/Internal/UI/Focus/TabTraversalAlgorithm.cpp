@@ -1,7 +1,7 @@
 #include "TabTraversalAlgorithm.h"
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UIFocusComponent.h"
+#include "UI/Focus/FocusHelpers.h"
 
 namespace DAVA
 {
@@ -14,7 +14,7 @@ TabTraversalAlgorithm::~TabTraversalAlgorithm()
 {
 }
 
-UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITabOrderComponent::Direction dir, bool repeat)
 {
     if (focusedControl != nullptr && root != focusedControl)
     {
@@ -26,7 +26,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
             PrepareChildren(parent, children);
 
             UIControl* res = nullptr;
-            if (dir == FocusHelpers::FORWARD)
+            if (dir == UITabOrderComponent::FORWARD)
             {
                 res = FindNextControl(focusedControl, children.begin(), children.end(), dir);
             }
@@ -39,9 +39,16 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
             {
                 return res;
             }
-            else
+
+            res = GetNextControl(parent, dir, repeat);
+            if (res != nullptr)
             {
-                return GetNextControl(parent, dir);
+                return res;
+            }
+
+            if (repeat)
+            {
+                return FindFirstControl(parent, dir);
             }
         }
     }
@@ -49,7 +56,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, Focu
 }
 
 template <typename It>
-UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It begin, It end, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It begin, It end, UITabOrderComponent::Direction dir)
 {
     auto it = begin;
     while (it != end && *it != focusedControl)
@@ -76,7 +83,7 @@ UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It 
     return nullptr;
 }
 
-UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, UITabOrderComponent::Direction dir)
 {
     if (FocusHelpers::CanFocusControl(control))
     {
@@ -86,7 +93,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelp
     Vector<UIControl*> children;
     PrepareChildren(control, children);
 
-    if (dir == FocusHelpers::FORWARD)
+    if (dir == UITabOrderComponent::FORWARD)
     {
         return FindFirstControlRecursive(children.begin(), children.end(), dir);
     }
@@ -97,7 +104,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, FocusHelp
 }
 
 template <typename It>
-UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, FocusHelpers::TabDirection dir)
+UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, UITabOrderComponent::Direction dir)
 {
     for (auto it = begin; it != end; ++it)
     {
@@ -118,13 +125,13 @@ void TabTraversalAlgorithm::PrepareChildren(UIControl* control, Vector<UIControl
     children.insert(children.end(), control->GetChildren().begin(), control->GetChildren().end());
 
     std::stable_sort(children.begin(), children.end(), [](UIControl* c1, UIControl* c2) {
-        UIFocusComponent* f1 = c1->GetComponent<UIFocusComponent>();
+        UITabOrderComponent* f1 = c1->GetComponent<UITabOrderComponent>();
         if (f1 == nullptr)
         {
             return false;
         }
 
-        UIFocusComponent* f2 = c2->GetComponent<UIFocusComponent>();
+        UITabOrderComponent* f2 = c2->GetComponent<UITabOrderComponent>();
         return f2 == nullptr || f1->GetTabOrder() < f2->GetTabOrder(); // important: f1 != nullptr
     });
 }
