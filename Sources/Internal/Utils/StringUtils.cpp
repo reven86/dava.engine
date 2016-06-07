@@ -56,7 +56,7 @@ WideString RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -
 bool IsEmoji(int32 sym)
 {
     // ranges of symbol codes with unicode emojies.
-    static Vector<std::pair<DAVA::int32, DAVA::int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
+    static Vector<std::pair<int32, int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
     for (auto range : ranges)
     {
         if (sym >= range.first && sym <= range.second)
@@ -67,9 +67,9 @@ bool IsEmoji(int32 sym)
     return false;
 }
 
-bool StringUtils::RemoveEmoji(WideString& string)
+bool RemoveEmoji(WideString& string)
 {
-    DAVA::WideString ret;
+    WideString ret;
     bool isChanged = false;
 
     auto data = string.data();
@@ -105,7 +105,7 @@ bool StringUtils::RemoveEmoji(WideString& string)
     return isChanged;
 }
 
-void StringUtils::ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
 {
     size_t pos = 0;
     size_t oldSubStringLength = search.length();
