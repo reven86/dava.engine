@@ -397,6 +397,17 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
+
+        // HACK if user click cleartext button and current
+        // native control not in focus - remove focus from dava control too
+        // to show hint to user
+        if (string.empty() &&
+            [[NSApp keyWindow] firstResponder] != nsTextView &&
+            !insideTextShouldReturn &&
+            davaText == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            davaText->ReleaseFocus();
+        }
     }
 
     void UpdateRect(const Rect& rectSrc) override
@@ -1668,6 +1679,55 @@ doCommandBySelector:(SEL)commandSelector
 @end
 
 @implementation CustomTextView
+
+- (bool)DAVATextFieldEditing
+{
+    MultilineDelegate* delegate = static_cast<MultilineDelegate*>([self delegate]);
+    if (nullptr == delegate || nullptr == delegate->text || nullptr == delegate->text->ctrl || nullptr == delegate->text->ctrl->davaText)
+    {
+        return true;
+    }
+    return (delegate->text->ctrl->davaText == UIControlSystem::Instance()->GetFocusedControl()) && delegate->text->ctrl->davaText->IsEditing();
+}
+
+- (void)mouseUp:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super mouseUp:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView mouseUp:theEvent];
+    }
+}
+
+- (void)mouseDown:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super mouseDown:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView mouseDown:theEvent];
+    }
+}
+
+- (void)rightMouseDown:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super rightMouseDown:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView rightMouseDown:theEvent];
+    }
+}
 
 @end
 
