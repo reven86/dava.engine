@@ -50,7 +50,7 @@ protected:
     virtual ~File();
 
 public:
-    /** 
+    /**
 		\brief function to create a file instance with give attributes.
         Use framework notation for paths.
 		\param[in] filePath absolute or relative framework specific path to file
@@ -59,7 +59,7 @@ public:
 	 */
     static File* Create(const FilePath& filePath, uint32 attributes);
 
-    /** 
+    /**
         \brief funciton to create a file instance with give attributes
         this function must be used for opening existing files also
         \param[in] filePath absolute system path to file
@@ -81,13 +81,23 @@ public:
 	 */
     virtual const FilePath& GetFilename();
 
-    /** 
+    /**
 		\brief Write [dataSize] bytes to this file from [pointerToData]
 		\param[in] sourceBuffer function get data from this buffer
 		\param[in] dataSize size of data we want to write
 		\returns number of bytes actually written
 	 */
-    virtual uint32 Write(const void* sourceBuffer, uint32 dataSize);
+    DAVA_DEPRECATED(virtual uint32 Write(const void* sourceBuffer, uint32 dataSize));
+
+    /**
+     * \brief   Writes [dataSize] bytes to file.
+     *
+     * \param   sourceBuffer    Buffer for source data.
+     * \param   dataSize        Size of the data.
+     *
+     * \return  An uint32.
+     */
+    virtual uint64 Write64(const void* sourceBuffer, uint64 dataSize);
 
     /**
 		\brief Write [sizeof(T)] bytes to this file from [value]
@@ -97,7 +107,7 @@ public:
     template <class T>
     uint32 Write(const T* value);
 
-    /** 
+    /**
 		\brief Write string.
 		write null-terminated string from current position in file.
 		\param[in] string string data loaded to this variable/
@@ -122,13 +132,23 @@ public:
 	 */
     virtual bool WriteLine(const String& string);
 
-    /** 
-		\brief Read [dataSize] bytes from this file to [pointerToData] 
+    /**
+		\brief Read [dataSize] bytes from this file to [pointerToData]
 		\param[in, out] destinationBuffer function write data to this pointer
 		\param[in] dataSize size of data we want to read
 		\return number of bytes actually read
 	*/
-    virtual uint32 Read(void* destinationBuffer, uint32 dataSize);
+    DAVA_DEPRECATED(virtual uint32 Read(void* destinationBuffer, uint32 dataSize));
+
+    /**
+     * \brief   Reads bytes into specified buffer.
+     *
+     * \param [in,out]  destBuf non-null, buffer for destination data.
+     * \param   dataSize        Size of the data.
+     *
+     * \return  An uint64.
+     */
+    virtual uint64 Read64(void* destBuf, uint64 dataSize);
 
     /**
 		\brief Read [sizeof(T)] bytes from this file to [value]
@@ -160,24 +180,48 @@ public:
     virtual uint32 ReadString(char8* destinationBuffer, uint32 destinationBufferSize);
     uint32 ReadString(String& destinationString);
 
-    /** 
+    /**
 		\brief Get current file position
 	*/
-    virtual uint32 GetPos() const;
+    DAVA_DEPRECATED(virtual uint32 GetPos() const);
 
-    /** 
+    /**
+     * \brief   Gets position in file stream.
+     *
+     * \return  The position as uint64.
+     */
+    virtual uint64 GetPos64() const;
+
+    /**
 		\brief Get current file size if writing
 		       and get real file size if file for reading
 	*/
-    virtual uint32 GetSize() const;
+    DAVA_DEPRECATED(virtual uint32 GetSize() const);
 
-    /** 
+    /**
+     * \brief   Gets size 64.
+     *
+     * \return  The size 64.
+     */
+    virtual uint64 GetSize64() const;
+
+    /**
 		\brief Set current file position
 		\param position - position to set
 		\param seekType - \ref IO::eFileSeek flag to set type of positioning
 		\return true if successful otherwise false.
 	*/
-    virtual bool Seek(int32 position, eFileSeek seekType);
+    DAVA_DEPRECATED(virtual bool Seek(int32 position, eFileSeek seekType));
+
+    /**
+     * \brief   Seek to new position in file.
+     *
+     * \param   position        The new position.
+     * \param   seekDirection   The seek direction.
+     *
+     * \return  true if it succeeds, false if it fails.
+     */
+    virtual bool Seek64(int64 position, eFileSeek seekDirection);
 
     //! return true if end of file reached and false in another case
     virtual bool IsEof() const;
@@ -186,7 +230,7 @@ public:
         \brief Truncate a file to a specified length
         \param size A size, that file is going to be truncated to
     */
-    bool Truncate(int32 size);
+    bool Truncate(uint64 size);
 
     /**
         \brief Flushes file buffers to output device
@@ -196,28 +240,27 @@ public:
 
     static String GetModificationDate(const FilePath& filePathname);
 
+protected:
+    FilePath filename;
+
 private:
     // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
     bool GetNextChar(uint8* nextChar);
 
-private:
     FILE* file = nullptr;
-    uint32 size = 0;
-
-protected:
-    FilePath filename;
+    uint64 size = 0;
 };
 
 template <class T>
 uint32 File::Read(T* value)
 {
-    return Read(value, sizeof(T));
+    return static_cast<uint32>(Read64(value, sizeof(T)));
 }
 
 template <class T>
 uint32 File::Write(const T* value)
 {
-    return Write(value, sizeof(T));
+    return static_cast<uint32>(Write64(value, sizeof(T)));
 }
 };
 
