@@ -34,11 +34,11 @@ private:
 };
 }
 
-SelfUpdater::SelfUpdater(const QString& arcUrl, QNetworkAccessManager* accessManager, QWidget* parent)
+SelfUpdater::SelfUpdater(const QString& arcUrl, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::SelfUpdater)
     , archiveUrl(arcUrl)
-    , networkManager(accessManager)
+    , networkManager(new QNetworkAccessManager(this))
 {
     ui->setupUi(this);
 
