@@ -49,8 +49,6 @@ static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
 static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
-
-static bool _D3D9_DeviceLost = false;
 static std::atomic<bool> _DX9_ResetPending = false;
 
 static DAVA::Thread::Id _DX9_ThreadId = 0;
@@ -1335,7 +1333,7 @@ _DX9_ExecuteQueuedCommands()
     if (_DX9_ResetPending)
     {
         HRESULT hr = _D3D9_Device->TestCooperativeLevel();
-        if ((_DX9_PendingImmediateCmdCount == 0) && (_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
+        if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
@@ -1359,7 +1357,6 @@ _DX9_ExecuteQueuedCommands()
 
                 Logger::Info("Device reset completed");
 
-                _D3D9_DeviceLost = false;
                 _DX9_ResetPending = false;
             }
             else
@@ -1382,9 +1379,7 @@ _DX9_ExecuteQueuedCommands()
             if (hr == D3DERR_DEVICELOST)
             {
                 _RejectAllFrames();
-
                 _DX9_ResetPending = true;
-                _D3D9_DeviceLost = true;
             }
             else if (hr == 0x88760872)
             {
