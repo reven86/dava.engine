@@ -9,6 +9,8 @@
 
 #include "FileSystem/File.h"
 
+#include "Utils/StringFormat.h"
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 #include "libpvr/PVRTError.h"
 #include "libpvr/PVRTDecompress.h"
@@ -112,7 +114,7 @@ PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %lu", pixelFormat));
+    DVASSERT_MSG(false, Format("Unsupported format: %lu", pixelFormat).c_str());
     return FORMAT_INVALID;
 }
 
@@ -149,7 +151,7 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %u", pixelFormat));
+    DVASSERT_MSG(false, Format("Unsupported format: %u", pixelFormat).c_str());
     return ePVRTPF_NumCompressedPFs;
 }
 
