@@ -1685,13 +1685,15 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::QUERY_INTERFACE:
         {
-            cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
         }
         break;
 
         case DX9Command::RELEASE:
         {
-            cmd->retval = ((IUnknown*)arg[0])->Release();
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->Release();
         }
         break;
 
@@ -1707,6 +1709,11 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
 void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 {
+    if (DAVA::Thread::GetCurrentId() == _DX9_ThreadId)
+    {
+        DVASSERT_MSG(force_immediate, "Call to ExecDX9 from render thread without force_immediate");
+    }
+
     CommandBufferDX9::BlockNonRenderThreads();
 
     if (force_immediate || !_DX9_RenderThreadFrameCount)

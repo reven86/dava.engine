@@ -109,7 +109,7 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(buffer) } };
+        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
@@ -171,14 +171,14 @@ dx9_VertexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned s
         void* ptr = nullptr;
         DX9Command cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
-        ExecDX9(&cmd1, 1);
+        ExecDX9(&cmd1, 1, false);
         if (SUCCEEDED(cmd1.retval))
         {
             memcpy(ptr, data, size);
 
             DX9Command cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
 
-            ExecDX9(&cmd2, 1);
+            ExecDX9(&cmd2, 1, false);
             success = true;
 
             self->MarkRestored();

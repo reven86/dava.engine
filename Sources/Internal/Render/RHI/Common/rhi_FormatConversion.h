@@ -9,7 +9,7 @@ _FlipRGBA4_ABGR4(void* srcPtr, void* dstPtr, uint32 size)
     uint8* dst = static_cast<uint8*>(dstPtr);
     uint8* src = static_cast<uint8*>(srcPtr);
     uint8* srcEnd = src + size;
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         uint8 t0 = src[0];
         uint8 t1 = src[1];
@@ -33,7 +33,7 @@ _ABGR1555toRGBA5551(void* srcPtr, void* dstPtr, uint32 size)
     uint16* dst = static_cast<uint16*>(dstPtr);
     uint16* src = static_cast<uint16*>(srcPtr);
     uint16* srcEnd = src + size / sizeof(uint16);
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         const uint16 in = *src;
         uint16 r = (in & 0xF800) >> 11;
@@ -56,7 +56,7 @@ _RGBA5551toABGR1555(void* srcPtr, void* dstPtr, uint32 size)
     uint16* dst = static_cast<uint16*>(dstPtr);
     uint16* src = static_cast<uint16*>(srcPtr);
     uint16* srcEnd = src + size / sizeof(uint16);
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         const uint16 in = *src;
         uint16 r = (in & 0x001F) << 11;
@@ -79,7 +79,7 @@ _SwapRB8(void* srcPtr, void* dstPtr, uint32 size)
     uint8* dst = static_cast<uint8*>(dstPtr);
     uint8* src = static_cast<uint8*>(srcPtr);
     uint8* srcEnd = src + size;
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         uint8 src0 = src[0];
         uint8 src2 = src[2];
@@ -102,7 +102,7 @@ _SwapRB4(void* srcPtr, void* dstPtr, uint32 size)
     uint8* dst = static_cast<uint8*>(dstPtr);
     uint8* src = static_cast<uint8*>(srcPtr);
     uint8* srcEnd = src + size;
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         uint8 t0 = src[0];
         uint8 t1 = src[1];
@@ -123,7 +123,7 @@ _SwapRB5551(void* srcPtr, void* dstPtr, uint32 size)
     uint8* dst = static_cast<uint8*>(dstPtr);
     uint8* src = static_cast<uint8*>(srcPtr);
     uint8* srcEnd = src + size;
-    while (src != srcEnd)
+    while (src < srcEnd)
     {
         uint8 t0 = src[0];
         uint8 t1 = src[1];
