@@ -15,6 +15,7 @@ using DAVA::Logger;
 
 #include "_dx9.h"
 #include <vector>
+#include <atomic>
 
 namespace rhi
 {
