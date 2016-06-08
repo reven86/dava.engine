@@ -194,7 +194,9 @@ public:
         bool SetConst(unsigned const_i, unsigned count, const float* cdata);
         bool SetConst(unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count);
 
+        unsigned Instance();
         void SetToRHI(unsigned bufIndex, id<MTLRenderCommandEncoder> ce) const;
+        void SetToRHI(unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce) const;
         void InvalidateInst();
 
     private:
@@ -503,6 +505,36 @@ void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, id<MTLRenderCom
         [ce setVertexBuffer:buf offset:inst_offset atIndex:MAX_VERTEX_STREAM_COUNT + bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
     else
         [ce setFragmentBuffer:buf offset:inst_offset atIndex:bufIndex];
+}
+
+//------------------------------------------------------------------------------
+
+void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce) const
+{
+    id<MTLBuffer> buf = DefaultConstRingBuffer.BufferUID();
+
+    if (type == PROG_VERTEX)
+        [ce setVertexBuffer:buf offset:instOffset atIndex:MAX_VERTEX_STREAM_COUNT + bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
+    else
+        [ce setFragmentBuffer:buf offset:instOffset atIndex:bufIndex];
+}
+
+//------------------------------------------------------------------------------
+
+unsigned
+PipelineStateMetal_t::ConstBuf::Instance()
+{
+    if (!inst)
+    {
+        inst = DefaultConstRingBuffer.Alloc(count * 4 * sizeof(float), &inst_offset);
+        //        inst = (type == PROG_VERTEX)
+        //               ? VertexConstRingBuffer.Alloc( count*4*sizeof(float), &inst_offset )
+        //               : FragmentConstRingBuffer.Alloc( count*4*sizeof(float), &inst_offset );
+
+        memcpy(inst, data, count * 4 * sizeof(float));
+    }
+
+    return inst_offset;
 }
 
 //------------------------------------------------------------------------------
@@ -1088,6 +1120,21 @@ void SetToRHI(Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce)
     PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
 
     cbuf->SetToRHI(bufIndex, ce);
+}
+
+void SetToRHI(Handle buf, unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce)
+{
+    PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
+
+    cbuf->SetToRHI(bufIndex, instOffset, ce);
+}
+
+unsigned
+Instance(Handle buf)
+{
+    PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
+
+    return cbuf->Instance();
 }
 
 void InvalidateAllInstances()

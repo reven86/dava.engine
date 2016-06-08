@@ -62,6 +62,8 @@ void InitializeRingBuffer(uint32 size);
 void InvalidateAllInstances();
 
 void SetToRHI(Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce);
+unsigned Instance(Handle buf);
+void SetToRHI(Handle buf, unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce);
 }
 
 
