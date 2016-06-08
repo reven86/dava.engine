@@ -1419,6 +1419,8 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
     CHECK_HR(hr)
 #endif
 
+    CommandBufferDX9::BlockNonRenderThreads();
+
     for (DX9Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
@@ -1537,7 +1539,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
+            cmd->retval = ((IDirect3DBaseTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1689,7 +1691,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::RELEASE:
         {
-            ((IUnknown*)arg[0])->Release();
+            cmd->retval = ((IUnknown*)arg[0])->Release();
         }
         break;
 

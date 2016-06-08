@@ -42,6 +42,7 @@ public:
     unsigned isRenderTarget : 1;
     unsigned isDepthStencil : 1;
     unsigned isMapped : 1;
+    unsigned destroying : 1;
 };
 
 RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor)
@@ -62,6 +63,7 @@ TextureDX9_t::TextureDX9_t()
     , mappedData(nullptr)
     , isRenderTarget(false)
     , isMapped(false)
+    , destroying(false)
 {
 }
 
@@ -69,6 +71,8 @@ TextureDX9_t::TextureDX9_t()
 
 bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 {
+    DVASSERT(destroying == 0);
+
     DVASSERT(desc.levelCount);
     bool success = false;
     UpdateCreationDesc(desc);
@@ -95,53 +99,62 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
     {
     case TEXTURE_TYPE_2D:
     {
+        DVASSERT(tex9 == nullptr);
+
         unsigned cmd1_cnt = 1;
-        DX9Command cmd1[32] =
+        DX9Command cmd1[] =
         {
-          DX9Command::CREATE_TEXTURE, { desc.width, desc.height, mip_count, usage, fmt, pool, uint64_t(&tex9), 0 }
+          { DX9Command::CREATE_TEXTURE, { desc.width, desc.height, mip_count, usage, fmt, pool, uint64_t(&tex9), 0 } }
         };
-
-        DVASSERT(desc.levelCount <= countof(desc.initialData));
-        for (unsigned m = 0; m != desc.levelCount; ++m)
-        {
-            DX9Command* cmd = cmd1 + cmd1_cnt;
-
-            if (desc.initialData[m])
-            {
-                Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
-                void* data = desc.initialData[m];
-                uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
-
-                cmd->func = DX9Command::UPDATE_TEXTURE_LEVEL;
-                cmd->arg[0] = uint64_t(&tex9);
-                cmd->arg[1] = m;
-                cmd->arg[2] = (uint64)(data);
-                cmd->arg[3] = data_sz;
-
-                if (desc.format == TEXTURE_FORMAT_R8G8B8A8)
-                    _SwapRB8(data, data_sz);
-                else if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                    _SwapRB4(data, data_sz);
-                else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                    _SwapRB5551(data, data_sz);
-
-                ++cmd1_cnt;
-            }
-            else
-            {
-                break;
-            }
-        }
-
         ExecDX9(cmd1, cmd1_cnt, force_immediate);
         hr = cmd1[0].retval;
 
         if (SUCCEEDED(hr))
         {
+            DVASSERT(desc.levelCount <= countof(desc.initialData));
+
+            for (uint32 level = 0; level < desc.levelCount; ++level)
+            {
+                void* data = desc.initialData[level];
+                if (data)
+                {
+                    Size2i sz = TextureExtents(Size2i(desc.width, desc.height), level);
+                    uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
+
+                    D3DLOCKED_RECT lockedRect = {};
+                    DX9Command cmdLock = { DX9Command::LOCK_TEXTURE_RECT, { uint64(&tex9), level, uint64(&lockedRect), 0, 0 } };
+                    ExecDX9(&cmdLock, 1, force_immediate);
+
+                    if (desc.format == TEXTURE_FORMAT_R8G8B8A8)
+                    {
+                        _SwapRB8(data, lockedRect.pBits, data_sz);
+                    }
+                    else if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
+                    {
+                        _SwapRB4(data, lockedRect.pBits, data_sz);
+                    }
+                    else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                    {
+                        _SwapRB5551(data, lockedRect.pBits, data_sz);
+                    }
+                    else
+                    {
+                        Memcpy(lockedRect.pBits, data, data_sz);
+                    }
+
+                    DX9Command cmdUnlock = { DX9Command::UNLOCK_TEXTURE_RECT, { uint64(&tex9) } };
+                    ExecDX9(&cmdUnlock, 1, force_immediate);
+                    hr = cmdUnlock.retval;
+                }
+            }
+        }
+
+        if (SUCCEEDED(hr))
+        {
             DX9Command cmd2[] =
             {
-              { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(tex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&basetex9)) } },
-              { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(basetex9), D3DTEXF_LINEAR } }
+              { DX9Command::QUERY_INTERFACE, { uint64_t(tex9), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&basetex9)) } },
+              { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(tex9), D3DTEXF_LINEAR } }
             };
 
             if (!auto_mip)
@@ -171,53 +184,56 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
     case TEXTURE_TYPE_CUBE:
     {
-        uint32 cmd1_cnt = 1;
-        DX9Command cmd1[128] =
-        {
-          { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } }
-        };
+        DVASSERT(cubetex9 == nullptr);
 
-        DVASSERT(desc.levelCount * 6 <= countof(desc.initialData));
-        TextureFace face[] = { TEXTURE_FACE_POSITIVE_X, TEXTURE_FACE_NEGATIVE_X, TEXTURE_FACE_POSITIVE_Y, TEXTURE_FACE_NEGATIVE_Y, TEXTURE_FACE_POSITIVE_Z, TEXTURE_FACE_NEGATIVE_Z };
-        D3DCUBEMAP_FACES d3d_face[] = { D3DCUBEMAP_FACE_POSITIVE_X, D3DCUBEMAP_FACE_NEGATIVE_X, D3DCUBEMAP_FACE_POSITIVE_Y, D3DCUBEMAP_FACE_NEGATIVE_Y, D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z };
+        DX9Command cmd1 = { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } };
+        ExecDX9(&cmd1, 1, force_immediate);
+        HRESULT hr = cmd1.retval;
 
-        for (unsigned f = 0; f != countof(face); ++f)
+        if (SUCCEEDED(hr))
         {
-            for (unsigned m = 0; m != desc.levelCount; ++m)
+            DVASSERT(desc.levelCount * 6 <= countof(desc.initialData));
+
+            TextureFace face[] = { TEXTURE_FACE_POSITIVE_X, TEXTURE_FACE_NEGATIVE_X, TEXTURE_FACE_POSITIVE_Y, TEXTURE_FACE_NEGATIVE_Y, TEXTURE_FACE_POSITIVE_Z, TEXTURE_FACE_NEGATIVE_Z };
+            D3DCUBEMAP_FACES d3d_face[] = { D3DCUBEMAP_FACE_POSITIVE_X, D3DCUBEMAP_FACE_NEGATIVE_X, D3DCUBEMAP_FACE_POSITIVE_Y, D3DCUBEMAP_FACE_NEGATIVE_Y, D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z };
+
+            for (unsigned f = 0; f != countof(face); ++f)
             {
-                DX9Command* cmd = cmd1 + cmd1_cnt;
-                void* data = desc.initialData[f * desc.levelCount + m];
-
-                if (data)
+                for (unsigned m = 0; m != desc.levelCount; ++m)
                 {
-                    Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
-                    uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
+                    void* data = desc.initialData[f * desc.levelCount + m];
+                    if (data)
+                    {
+                        D3DLOCKED_RECT lockedRect = {};
+                        Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
+                        uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
+                        DX9Command lockCmd = { DX9Command::LOCK_CUBETEXTURE_RECT, { uint64(&cubetex9), d3d_face[f], m, uint64(&lockedRect), 0 } };
+                        ExecDX9(&lockCmd, 1, force_immediate);
 
-                    cmd->func = DX9Command::UPDATE_CUBETEXTURE_LEVEL;
-                    cmd->arg[0] = uint64_t(&cubetex9);
-                    cmd->arg[1] = m;
-                    cmd->arg[2] = d3d_face[f];
-                    cmd->arg[3] = (uint64)(data);
-                    cmd->arg[4] = data_sz;
+                        if (desc.format == TEXTURE_FORMAT_R8G8B8A8)
+                        {
+                            _SwapRB8(data, lockedRect.pBits, data_sz);
+                        }
+                        else if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
+                        {
+                            _SwapRB4(data, lockedRect.pBits, data_sz);
+                        }
+                        else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                        {
+                            _SwapRB5551(data, lockedRect.pBits, data_sz);
+                        }
+                        else
+                        {
+                            Memcpy(lockedRect.pBits, data, data_sz);
+                        }
 
-                    if (desc.format == TEXTURE_FORMAT_R8G8B8A8)
-                        _SwapRB8(data, data_sz);
-                    else if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                        _SwapRB4(data, data_sz);
-                    else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                        _SwapRB5551(data, data_sz);
-
-                    ++cmd1_cnt;
-                }
-                else
-                {
-                    break;
+                        DX9Command unlockCmd = { DX9Command::UNLOCK_CUBETEXTURE_RECT, { uint64(&cubetex9), d3d_face[f], m } };
+                        ExecDX9(&unlockCmd, 1, force_immediate);
+                        hr = unlockCmd.retval;
+                    }
                 }
             }
         }
-
-        ExecDX9(cmd1, cmd1_cnt, force_immediate);
-        hr = cmd1[0].retval;
 
         if (SUCCEEDED(hr))
         {
@@ -226,7 +242,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
             DX9Command cmd2[] =
             {
               { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(cubetex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&basetex9)) } },
-              { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(basetex9), D3DTEXF_LINEAR } }
+              { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(cubetex9), D3DTEXF_LINEAR } }
             };
 
             if (!auto_mip)
@@ -258,58 +274,38 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
 void TextureDX9_t::Destroy(bool force_immediate)
 {
+    destroying = true;
+
     DVASSERT(!isMapped);
 
     DX9Command cmd[] =
     {
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(surf9)) } },
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(basetex9)) } },
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(tex9)) } },
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(cubetex9)) } },
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(rt_surf9)) } },
-      { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(rt_tex9)) } }
+      { tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(tex9) } },
+      { cubetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(cubetex9) } },
+      { basetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(basetex9) } },
+
+      { surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(surf9) } },
+      { rt_surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(rt_surf9) } },
+      { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(rt_tex9) } }
     };
 
-    if (surf9)
-    {
-        cmd[0].func = DX9Command::RELEASE;
-        surf9 = nullptr;
-    }
-
-    if (basetex9)
-    {
-        cmd[1].func = DX9Command::RELEASE;
-        basetex9 = nullptr;
-    }
-
-    if (tex9)
-    {
-        cmd[2].func = DX9Command::RELEASE;
-        tex9 = nullptr;
-    }
-
-    if (cubetex9)
-    {
-        cmd[3].func = DX9Command::RELEASE;
-        cubetex9 = nullptr;
-    }
-
-    if (rt_surf9)
-    {
-        cmd[4].func = DX9Command::RELEASE;
-        rt_surf9 = nullptr;
-    }
-
-    if (rt_tex9)
-    {
-        cmd[5].func = DX9Command::RELEASE;
-        rt_tex9 = nullptr;
-    }
+    DVASSERT(cmd[0].arg[0] == uint64(tex9));
+    DVASSERT(cmd[1].arg[0] == uint64(cubetex9));
+    DVASSERT(cmd[2].arg[0] == uint64(basetex9));
 
     ExecDX9(cmd, countof(cmd), force_immediate);
 
+    surf9 = nullptr;
+    tex9 = nullptr;
+    cubetex9 = nullptr;
+    basetex9 = nullptr;
+    rt_surf9 = nullptr;
+    rt_tex9 = nullptr;
+
     width = 0;
     height = 0;
+
+    destroying = false;
 }
 
 //------------------------------------------------------------------------------
@@ -402,6 +398,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
             if (!self->rt_tex9)
             {
+                DVASSERT(self->rt_tex9 == nullptr);
                 DX9Command cmd1 = { DX9Command::CREATE_TEXTURE, { self->width, self->height, 1, 0, DX9_TextureFormat(self->format), D3DPOOL_SYSTEMMEM, uint64_t(&self->rt_tex9), 0 } };
 
                 ExecDX9(&cmd1, 1);
@@ -457,15 +454,15 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
-        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
     return mem;
@@ -482,15 +479,15 @@ dx9_Texture_Unmap(Handle tex)
 
     if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
-        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
     if (self->cubetex9)
