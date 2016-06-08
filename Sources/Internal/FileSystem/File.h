@@ -87,17 +87,7 @@ public:
 		\param[in] dataSize size of data we want to write
 		\returns number of bytes actually written
 	 */
-    DAVA_DEPRECATED(virtual uint32 Write(const void* sourceBuffer, uint32 dataSize));
-
-    /**
-     * \brief   Writes [dataSize] bytes to file.
-     *
-     * \param   sourceBuffer    Buffer for source data.
-     * \param   dataSize        Size of the data.
-     *
-     * \return  An uint32.
-     */
-    virtual uint64 Write64(const void* sourceBuffer, uint64 dataSize);
+    virtual uint32 Write(const void* sourceBuffer, uint32 dataSize);
 
     /**
 		\brief Write [sizeof(T)] bytes to this file from [value]
@@ -138,17 +128,7 @@ public:
 		\param[in] dataSize size of data we want to read
 		\return number of bytes actually read
 	*/
-    DAVA_DEPRECATED(virtual uint32 Read(void* destinationBuffer, uint32 dataSize));
-
-    /**
-     * \brief   Reads bytes into specified buffer.
-     *
-     * \param [in,out]  destBuf non-null, buffer for destination data.
-     * \param   dataSize        Size of the data.
-     *
-     * \return  An uint64.
-     */
-    virtual uint64 Read64(void* destBuf, uint64 dataSize);
+    virtual uint32 Read(void* destinationBuffer, uint32 dataSize);
 
     /**
 		\brief Read [sizeof(T)] bytes from this file to [value]
@@ -183,27 +163,13 @@ public:
     /**
 		\brief Get current file position
 	*/
-    DAVA_DEPRECATED(virtual uint32 GetPos() const);
-
-    /**
-     * \brief   Gets position in file stream.
-     *
-     * \return  The position as uint64.
-     */
-    virtual uint64 GetPos64() const;
+    virtual uint64 GetPos() const;
 
     /**
 		\brief Get current file size if writing
 		       and get real file size if file for reading
 	*/
-    DAVA_DEPRECATED(virtual uint32 GetSize() const);
-
-    /**
-     * \brief   Gets size 64.
-     *
-     * \return  The size 64.
-     */
-    virtual uint64 GetSize64() const;
+    virtual uint64 GetSize() const;
 
     /**
 		\brief Set current file position
@@ -211,17 +177,7 @@ public:
 		\param seekType - \ref IO::eFileSeek flag to set type of positioning
 		\return true if successful otherwise false.
 	*/
-    DAVA_DEPRECATED(virtual bool Seek(int32 position, eFileSeek seekType));
-
-    /**
-     * \brief   Seek to new position in file.
-     *
-     * \param   position        The new position.
-     * \param   seekDirection   The seek direction.
-     *
-     * \return  true if it succeeds, false if it fails.
-     */
-    virtual bool Seek64(int64 position, eFileSeek seekDirection);
+    virtual bool Seek(int64 position, eFileSeek seekType);
 
     //! return true if end of file reached and false in another case
     virtual bool IsEof() const;
@@ -254,13 +210,13 @@ private:
 template <class T>
 uint32 File::Read(T* value)
 {
-    return static_cast<uint32>(Read64(value, sizeof(T)));
+    return static_cast<uint32>(Read(value, sizeof(T)));
 }
 
 template <class T>
 uint32 File::Write(const T* value)
 {
-    return static_cast<uint32>(Write64(value, sizeof(T)));
+    return static_cast<uint32>(Write(value, sizeof(T)));
 }
 };
 

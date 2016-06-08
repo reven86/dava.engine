@@ -93,7 +93,7 @@ static int FileSize(sqlite3_file* pFile, sqlite_int64* pSize)
 {
     WrapFile* p = reinterpret_cast<WrapFile*>(pFile);
 
-    DAVA::uint32 fileSize = p->file->GetSize();
+    DAVA::uint64 fileSize = p->file->GetSize();
 
     *pSize = static_cast<sqlite_int64>(fileSize);
     return SQLITE_OK;

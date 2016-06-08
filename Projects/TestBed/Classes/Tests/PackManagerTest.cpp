@@ -66,10 +66,12 @@ void PackManagerTest::LoadResources()
     }
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
+    font->SetSize(14);
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
     packInput->SetText(L"vpack");
+    packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packInput->SetInputEnabled(true);
@@ -132,6 +134,7 @@ void PackManagerTest::LoadResources()
 
     url = new UITextField(Rect(5, 250, 400, 20));
     url->SetFont(font);
+    url->SetFontSize(14);
     url->SetText(UTF8Utils::EncodeToWideString(urlPacksCommon));
     url->SetDebugDraw(true);
     url->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));

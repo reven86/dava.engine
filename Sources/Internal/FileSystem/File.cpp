@@ -213,14 +213,7 @@ uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
-    return static_cast<uint32>(Read64(pointerToData, dataSize));
-}
-
-uint64 File::Read64(void* pointerToData, uint64 dataSize)
-{
-    //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
-    //! May be performance issues
-    return static_cast<uint64>(fread(pointerToData, 1, dataSize, file));
+    return fread(pointerToData, 1, static_cast<size_t>(dataSize), file);
 }
 
 uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
@@ -230,7 +223,7 @@ uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
 
     if (destinationBufferSize > 0)
     {
-        while (Read64(&currentChar, 1) > 0)
+        while (Read(&currentChar, 1) > 0)
         {
             if (writeIndex < destinationBufferSize)
             {
@@ -261,7 +254,7 @@ uint32 File::ReadString(String& destinationString)
     uint32 writeIndex = 0;
     uint8 currentChar = 0;
 
-    while (!IsEof() && Read64(&currentChar, 1) != 0)
+    while (!IsEof() && Read(&currentChar, 1) != 0)
     {
         if (0 != currentChar)
         {
@@ -325,7 +318,7 @@ String File::ReadLine()
 
 bool File::GetNextChar(uint8* nextChar)
 {
-    uint64 actuallyRead = Read64(nextChar, 1);
+    uint64 actuallyRead = Read(nextChar, 1);
     if (actuallyRead != 1)
     {
         //seems IsEof()
@@ -354,32 +347,17 @@ bool File::GetNextChar(uint8* nextChar)
     }
 }
 
-uint32 File::GetPos() const
-{
-    return static_cast<uint32>(GetPos64());
-}
-
-uint64 File::GetPos64() const
+uint64 File::GetPos() const
 {
     return static_cast<uint32>(_ftelli64(file));
 }
 
-uint32 File::GetSize() const
-{
-    return static_cast<uint32>(GetSize64());
-}
-
-uint64 File::GetSize64() const
+uint64 File::GetSize() const
 {
     return size;
 }
 
-bool File::Seek(int32 position, eFileSeek seekType)
-{
-    return Seek64(position, seekType);
-}
-
-bool File::Seek64(int64 position, eFileSeek seekType)
+bool File::Seek(int64 position, eFileSeek seekType)
 {
     int realSeekType = 0;
     switch (seekType)
@@ -427,13 +405,13 @@ bool File::WriteString(const String& strtowrite, bool shouldNullBeWritten)
 {
     const char* str = strtowrite.c_str();
     uint32 null = (shouldNullBeWritten) ? (1) : (0);
-    return (Write64(str, static_cast<uint32>(strtowrite.length() + null)) == strtowrite.length() + null);
+    return (Write(str, static_cast<uint32>(strtowrite.length() + null)) == strtowrite.length() + null);
 }
 
 bool File::WriteNonTerminatedString(const String& strtowrite)
 {
     const char* str = strtowrite.c_str();
-    return (Write64(str, static_cast<uint32>(strtowrite.length())) == strtowrite.length());
+    return (Write(str, static_cast<uint32>(strtowrite.length())) == strtowrite.length());
 }
 
 bool File::WriteLine(const String& string)
@@ -444,8 +422,8 @@ bool File::WriteLine(const String& string)
     uint32 endLength = static_cast<uint32>(strlen(endLine));
     uint32 strLength = static_cast<uint32>(string.length());
 
-    written += Write64(str, strLength);
-    written += Write64(endLine, endLength);
+    written += Write(str, strLength);
+    written += Write(endLine, endLength);
 
     return (written == strLength + endLength);
 }

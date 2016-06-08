@@ -105,19 +105,19 @@ uint32 DynamicMemoryFile::Read(void* pointerToData, uint32 dataSize)
     return 0;
 }
 
-uint32 DynamicMemoryFile::GetPos() const
+uint64 DynamicMemoryFile::GetPos() const
 {
     return currentPtr;
 }
 
-uint32 DynamicMemoryFile::GetSize() const
+uint64 DynamicMemoryFile::GetSize() const
 {
     return static_cast<uint32>(data.size());
 }
 
-bool DynamicMemoryFile::Seek(int32 position, eFileSeek seekType)
+bool DynamicMemoryFile::Seek(int64 position, eFileSeek seekType)
 {
-    int32 pos = 0;
+    int64 pos = 0;
     switch (seekType)
     {
     case SEEK_FROM_START:
