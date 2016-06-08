@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_DDS_HANDLERS_H__
-#define __DAVAENGINE_DDS_HANDLERS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/Image/ImageFormatInterface.h"
@@ -19,7 +18,7 @@ struct DDSReader
     virtual bool GetCRC(uint32& crc) const = 0;
     virtual bool AddCRC() = 0;
 
-    static std::unique_ptr<DDSReader> CreateReader(const ScopedPtr<File>& file);
+    static std::unique_ptr<DDSReader> CreateReader(File* file);
 };
 
 struct DDSWriter
@@ -27,9 +26,8 @@ struct DDSWriter
     virtual ~DDSWriter() = default;
     virtual bool Write(const Vector<Vector<Image*>>& images, PixelFormat dstFormat) = 0;
 
-    static std::unique_ptr<DDSWriter> CreateWriter(const ScopedPtr<File>& file);
+    static std::unique_ptr<DDSWriter> CreateWriter(File* file);
 };
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_DDS_HANDLERS_H__

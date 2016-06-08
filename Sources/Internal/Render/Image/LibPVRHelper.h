@@ -16,15 +16,15 @@ public:
     static uint32 GetCRCFromMetaData(const FilePath& filePathname);
 
     //ImageFormatInterface
-    eErrorCode Load(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const;
+    eErrorCode Load(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const;
     eErrorCode Save(const FilePath& fileName, const Vector<Image*>& imageSet) const;
     eErrorCode SaveCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet) const;
 
-    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 
     static bool CanCompressTo(PixelFormat format);
     static bool CompressFromRGBA(const Image* image, Image* dstImage);
@@ -33,6 +33,6 @@ public:
     static bool DecompressToRGBA(const Image* encodedImage, Image* decodedImage);
 
 protected:
-    bool CanProcessFileInternal(const ScopedPtr<File>& infile) const override;
+    bool CanProcessFileInternal(File* infile) const override;
 };
 }

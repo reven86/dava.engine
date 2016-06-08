@@ -14,7 +14,7 @@ LibPSDHelper::LibPSDHelper()
 {
 }
 
-eErrorCode LibPSDHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     auto fileName = infile->GetFilename().GetAbsolutePathname();
@@ -75,7 +75,7 @@ eErrorCode LibPSDHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPSDHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibPSDHelper::GetImageInfo(File* infile) const
 {
     ImageInfo info;
 

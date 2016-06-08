@@ -59,7 +59,7 @@ class Image;
 namespace PVRFormatHelper
 {
 std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, bool readData);
-std::unique_ptr<PVRFile> ReadFile(const ScopedPtr<File>& file, bool readMetaData, bool readData);
+std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData, bool readData);
 
 std::unique_ptr<PVRFile> CreateHeader(const Vector<Image*>& imageSet);
 std::unique_ptr<PVRFile> CreateCubeHeader(const Vector<Vector<Image*>>& imageSet);
@@ -70,7 +70,7 @@ bool WriteFile(ScopedPtr<File>& file, const PVRFile& pvrFile);
 bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC);
 void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc);
 
-bool LoadImages(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
+bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
 
 bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage);
 

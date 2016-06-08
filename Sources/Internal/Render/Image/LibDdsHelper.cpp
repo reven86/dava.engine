@@ -26,13 +26,13 @@ LibDdsHelper::LibDdsHelper()
 {
 }
 
-bool LibDdsHelper::CanProcessFileInternal(const ScopedPtr<File>& infile) const
+bool LibDdsHelper::CanProcessFileInternal(File* infile) const
 {
     std::unique_ptr<DDSReader> reader = DDSReader::CreateReader(infile);
     return (reader.get() != nullptr);
 }
 
-eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -74,7 +74,7 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& outFileName, const V
     return WriteFileInternal(outFileName, imageSet, dstFormat, quality);
 }
 
-ImageInfo LibDdsHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
 {
     std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(infile));
     return (reader ? reader->GetImageInfo() : ImageInfo());

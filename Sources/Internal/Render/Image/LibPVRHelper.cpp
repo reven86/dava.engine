@@ -30,7 +30,7 @@ LibPVRHelper::LibPVRHelper()
 {
 }
 
-bool LibPVRHelper::CanProcessFileInternal(const ScopedPtr<File>& file) const
+bool LibPVRHelper::CanProcessFileInternal(File* file) const
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(file, false, false);
     if (pvrFile)
@@ -40,7 +40,7 @@ bool LibPVRHelper::CanProcessFileInternal(const ScopedPtr<File>& file) const
     return false;
 }
 
-eErrorCode LibPVRHelper::Load(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPVRHelper::Load(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     if (PVRFormatHelper::LoadImages(infile, imageSet, loadingParams))
     {
@@ -51,7 +51,7 @@ eErrorCode LibPVRHelper::Load(const ScopedPtr<File>& infile, Vector<Image*>& ima
     return eErrorCode::ERROR_READ_FAIL;
 }
 
-eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     eErrorCode loadResult = Load(infile, imageSet, loadingParams);
     if (eErrorCode::SUCCESS != loadResult || imageSet.empty())
@@ -228,7 +228,7 @@ eErrorCode LibPVRHelper::SaveCubeMap(const FilePath& fileName, const Vector<Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
 {
     ImageInfo info;
 

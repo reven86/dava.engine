@@ -48,7 +48,7 @@ LibJpegHelper::LibJpegHelper()
 {
 }
 
-eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -269,7 +269,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(File* infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;

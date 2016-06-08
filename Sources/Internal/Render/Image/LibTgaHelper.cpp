@@ -17,7 +17,7 @@ LibTgaHelper::LibTgaHelper()
 {
 }
 
-DAVA::ImageInfo LibTgaHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
 {
     DVASSERT(infile);
 
@@ -79,7 +79,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
     return ReadTgaHeader(fileRead, tgaInfo);
 }
 
-DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const ScopedPtr<File>& infile, TgaInfo& tgaInfo) const
+DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File* infile, TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields;
     size_t bytesRead = infile->Read(&fields, static_cast<uint32>(fields.size()));
@@ -171,7 +171,7 @@ struct Convert_RGBA5551_to_TgaARGB1555
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -275,7 +275,7 @@ PixelFormat LibTgaHelper::DefinePixelFormat(const TgaInfo& tgaInfo) const
         return FORMAT_INVALID;
 }
 
-eErrorCode LibTgaHelper::ReadUncompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadUncompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     auto readSize = infile->Read(image->data, image->dataSize);
     if (readSize != image->dataSize)
@@ -308,7 +308,7 @@ eErrorCode LibTgaHelper::ReadUncompressedTga(const ScopedPtr<File>& infile, cons
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibTgaHelper::ReadCompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadCompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     uint8 chunkHeader;
     Array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;

@@ -56,7 +56,7 @@ const String& ImageFormatInterface::GetName() const
     return interfaceName;
 }
 
-bool ImageFormatInterface::CanProcessFile(const ScopedPtr<File>& file) const
+bool ImageFormatInterface::CanProcessFile(File* file) const
 {
     if (!file)
     {
@@ -71,7 +71,7 @@ bool ImageFormatInterface::CanProcessFile(const ScopedPtr<File>& file) const
     return canProcess;
 }
 
-bool ImageFormatInterface::CanProcessFileInternal(const ScopedPtr<File>& infile) const
+bool ImageFormatInterface::CanProcessFileInternal(File* infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

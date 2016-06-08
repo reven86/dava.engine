@@ -15,7 +15,7 @@ LibWebPHelper::LibWebPHelper()
 {
 }
 
-eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -158,7 +158,7 @@ eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vec
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibWebPHelper::GetImageInfo(File* infile) const
 {
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);

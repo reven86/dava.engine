@@ -66,7 +66,7 @@ LibPngHelper::LibPngHelper()
 {
 }
 
-bool LibPngHelper::CanProcessFileInternal(const ScopedPtr<File>& infile) const
+bool LibPngHelper::CanProcessFileInternal(File* infile) const
 {
     unsigned char sig[8];
     infile->Read(sig, 8);
@@ -74,7 +74,7 @@ bool LibPngHelper::CanProcessFileInternal(const ScopedPtr<File>& infile) const
     return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
@@ -247,7 +247,7 @@ eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(File* infile) const
 {
     if (!infile)
     {

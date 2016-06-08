@@ -57,7 +57,7 @@ Image* LoadSingleMip(const FilePath& pathname, uint32 mip)
     return image;
 }
 
-ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file)
+ImageFormatInterface* GetImageFormatInterface(File* file)
 {
     for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
     {
@@ -114,7 +114,7 @@ eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const Loadin
     return result;
 }
 
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+eErrorCode Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
     if (nullptr == properWrapper)
@@ -203,9 +203,9 @@ ImageFormat GetImageFormatByName(const String& name)
     return IMAGE_FORMAT_UNKNOWN;
 }
 
-ImageInfo GetImageInfo(const ScopedPtr<File>& infile)
+ImageInfo GetImageInfo(File* infile)
 {
-    DVASSERT(infile);
+    DVASSERT(infile != nullptr);
 
     const ImageFormatInterface* properWrapper = GetImageFormatInterface(infile);
     if (nullptr != properWrapper)

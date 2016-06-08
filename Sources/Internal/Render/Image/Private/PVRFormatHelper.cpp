@@ -354,9 +354,9 @@ std::unique_ptr<PVRFile> ReadFile(const FilePath& pathname, bool readMetaData, b
     return std::unique_ptr<PVRFile>();
 }
 
-std::unique_ptr<PVRFile> ReadFile(const ScopedPtr<File>& file, bool readMetaData /*= false*/, bool readData /*= false*/)
+std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, bool readData /*= false*/)
 {
-    DVASSERT(file);
+    DVASSERT(file != nullptr);
     DVASSERT(file->GetPos() == 0);
 
     std::unique_ptr<PVRFile> pvrFile(new PVRFile());
@@ -448,7 +448,7 @@ std::unique_ptr<PVRFile> CreateCubeHeader(const Vector<Vector<Image*>>& imageSet
     return pvrFile;
 }
 
-bool LoadImages(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
+bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
     std::unique_ptr<PVRFile> pvrFile = PVRFormatHelper::ReadFile(infile, true, false);
     if (!pvrFile)

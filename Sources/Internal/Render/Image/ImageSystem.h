@@ -31,7 +31,7 @@ struct LoadingParams
 Image* LoadSingleMip(const FilePath& pathname, uint32 mip = 0);
 
 eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
+eErrorCode Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams = LoadingParams());
 
 Image* EnsurePowerOf2Image(Image* image);
 void EnsurePowerOf2Images(Vector<Image*>& images);

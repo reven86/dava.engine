@@ -40,18 +40,18 @@ public:
 
     eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
 
-    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
 
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 
 private:
-    eErrorCode ReadTgaHeader(const ScopedPtr<File>& infile, TgaInfo& tgaHeader) const;
+    eErrorCode ReadTgaHeader(File* infile, TgaInfo& tgaHeader) const;
 
-    eErrorCode ReadCompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
-    eErrorCode ReadUncompressedTga(const ScopedPtr<File>& infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadCompressedTga(File* infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadUncompressedTga(File* infile, const TgaInfo& tgaHeader, ScopedPtr<Image>& image) const;
     PixelFormat DefinePixelFormat(const TgaInfo& tgaHeader) const;
 
     eErrorCode WriteTgaHeader(File* outfile, const TgaInfo& tgaHeader) const;

@@ -17,14 +17,14 @@ public:
 
     const String& GetName() const;
     ImageInfo GetImageInfo(const FilePath& path) const;
-    virtual ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const = 0;
+    virtual ImageInfo GetImageInfo(File* infile) const = 0;
 
     ImageFormat GetImageFormat() const;
     const Vector<String>& GetExtensions() const;
 
-    bool CanProcessFile(const ScopedPtr<File>& file) const;
+    bool CanProcessFile(File* file) const;
 
-    virtual eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const = 0;
+    virtual eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const = 0;
 
     virtual eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
     virtual eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const = 0;
@@ -33,7 +33,7 @@ public:
     bool IsFileExtensionSupported(const String& extension) const;
 
 protected:
-    virtual bool CanProcessFileInternal(const ScopedPtr<File>& file) const;
+    virtual bool CanProcessFileInternal(File* file) const;
 
 private:
     Vector<PixelFormat> supportedFormats;

@@ -470,7 +470,7 @@ void UpdatePitch(dds::DDS_HEADER& mainHeader, PixelFormat format)
 class DDSHandler
 {
 public:
-    explicit DDSHandler(const ScopedPtr<File>& file);
+    explicit DDSHandler(File* file);
 
     bool WriteMagicWord();
     bool WriteMainHeader();
@@ -489,7 +489,7 @@ public:
 
     bool IsSupportedFormat() const;
 
-    const ScopedPtr<File>& file;
+    File* file;
     dds::DDS_HEADER mainHeader;
     dds::DDS_HEADER_DXT10 extHeader;
     bool fileStoresTextureInD3DFormat = false;
@@ -499,7 +499,7 @@ public:
     Array<rhi::TextureFace, Texture::CUBE_FACE_COUNT> faces;
 };
 
-DDSHandler::DDSHandler(const ScopedPtr<File>& _ddsFile)
+DDSHandler::DDSHandler(File* _ddsFile)
     : file(_ddsFile)
 {
 }
@@ -960,7 +960,7 @@ void DDSHandler::FetchPixelFormats()
 
 struct DDSReaderImpl : public DDSReader, public DDSHandler
 {
-    explicit DDSReaderImpl(const ScopedPtr<File>& file)
+    explicit DDSReaderImpl(File* file)
         : DDSHandler(file)
     {
     }
@@ -972,9 +972,9 @@ struct DDSReaderImpl : public DDSReader, public DDSHandler
     bool AddCRC() override;
 };
 
-std::unique_ptr<DDSReader> DDSReader::CreateReader(const ScopedPtr<File>& file)
+std::unique_ptr<DDSReader> DDSReader::CreateReader(File* file)
 {
-    DVASSERT(file);
+    DVASSERT(file != nullptr);
 
     DDSReaderImpl* readerImpl = new DDSReaderImpl(file);
     std::unique_ptr<DDSReader> ddsFile(readerImpl);
@@ -1149,13 +1149,13 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
 
 struct DDSWriterImpl : public DDSWriter, public DDSHandler
 {
-    explicit DDSWriterImpl(const ScopedPtr<File>& file);
+    explicit DDSWriterImpl(File* file);
 
     // from DDSWriter
     bool Write(const Vector<Vector<Image*>>& images, PixelFormat dstFormat) override;
 };
 
-std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(const ScopedPtr<File>& file)
+std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(File* file)
 {
     DVASSERT(file);
     DVASSERT_MSG(file->GetSize() == 0, Format("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str()).c_str());
@@ -1163,7 +1163,7 @@ std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(const ScopedPtr<File>& file)
     return writerPtr;
 }
 
-DDSWriterImpl::DDSWriterImpl(const ScopedPtr<File>& file)
+DDSWriterImpl::DDSWriterImpl(File* file)
     : DDSHandler(file)
 {
     Memset(&mainHeader, 0, sizeof(mainHeader));
