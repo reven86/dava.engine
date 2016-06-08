@@ -29,7 +29,6 @@ public:
 public slots:
     void OnRefreshClicked();
     void OnListItemClicked(QModelIndex);
-    void RefreshApps();
 
     void OnRun(int rowNumber);
     void OnInstall(int rowNumber);
@@ -43,6 +42,9 @@ public slots:
     void NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
+    void CheckUpdates();
+    void RefreshApps();
+
     void ShowWebpage();
     void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);

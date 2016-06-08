@@ -23,6 +23,7 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
+    aborted = false;
     appManager->GetRemoteConfig()->Clear();
     QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher" //version, url, news
                                      << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=seo_list" //stirngs
@@ -32,19 +33,28 @@ int ConfigDownloader::exec()
     for (const QString& str : urls)
     {
         requests << networkManager->get(QNetworkRequest(QUrl(str)));
+        bool test = requests.last()->parent() == networkManager;
+        test = test;
     }
     return QDialog::exec();
 }
 
 void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 {
+    requests.removeOne(reply);
     reply->deleteLater();
+    if (aborted)
+    {
+        return;
+    }
     QNetworkReply::NetworkError error = reply->error();
 
     if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
     {
+        aborted = true;
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
         reject();
+        return;
     }
     else
     {
@@ -56,7 +66,6 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
         reject();
         return;
     }
-    requests.removeOne(reply);
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();

@@ -31,9 +31,6 @@ public:
     void NewsShowed();
     QString GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExist = true) const;
 
-signals:
-    void Refresh();
-
 public slots:
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 

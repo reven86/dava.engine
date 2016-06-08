@@ -108,7 +108,6 @@ MainWindow::MainWindow(QWidget* parent)
     appManager = new ApplicationManager(this);
     newsDownloader = new FileDownloader(this);
 
-    connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
     connect(newsDownloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
             this, SLOT(NewsDownloadFinished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)));
     listModel = new ListModel(appManager, this);
@@ -181,17 +180,23 @@ void MainWindow::OnRefreshClicked()
     FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     ConfigDownloader downloader(appManager, this);
-    downloader.exec();
+    if (downloader.exec() == QDialog::Accepted)
+    {
+        CheckUpdates();
+    }
 
     RefreshApps();
 }
 
-void MainWindow::RefreshApps()
+void MainWindow::CheckUpdates()
 {
     QQueue<UpdateTask> tasks;
     appManager->CheckUpdates(tasks);
     ShowUpdateDialog(tasks);
+}
 
+void MainWindow::RefreshApps()
+{
     RefreshBranchesList();
 
     if (appManager->ShouldShowNews())
@@ -307,7 +312,7 @@ void MainWindow::ShowTable(const QString& branchID)
             for (int i = 0; i < appCount; ++i)
             {
                 Application* localApp = localBranch->GetApplication(i);
-                if (remoteBranch->GetApplication(localApp->id) != nullptr)
+                if (remoteBranch != nullptr && remoteBranch->GetApplication(localApp->id) != nullptr)
                 {
                     continue;
                 }
