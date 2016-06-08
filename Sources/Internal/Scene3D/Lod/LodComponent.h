@@ -64,5 +64,4 @@ inline float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     return distances[layerNum];
 }
-
 };

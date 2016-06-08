@@ -64,5 +64,4 @@ private:
 
     bool forceLodUsed = false;
 };
-
 }

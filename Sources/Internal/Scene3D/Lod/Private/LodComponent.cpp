@@ -83,6 +83,4 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
 
     Component::Deserialize(archive, serializationContext);
 }
-
-
 };

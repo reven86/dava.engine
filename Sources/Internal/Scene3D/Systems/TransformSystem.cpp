@@ -41,17 +41,17 @@ void TransformSystem::Process(float32 timeElapsed)
 
     {
         SCOPED_NAMED_TIMING("TransformSystem::FindNodeThatRequireUpdate");
-    uint32 size = static_cast<uint32>(updatableEntities.size());
-    for (uint32 i = 0; i < size; ++i)
-    {
-        //HierahicFindUpdatableTransform(updatableEntities[i]);
-        FindNodeThatRequireUpdate(updatableEntities[i]);
-    }
+        uint32 size = static_cast<uint32>(updatableEntities.size());
+        for (uint32 i = 0; i < size; ++i)
+        {
+            //HierahicFindUpdatableTransform(updatableEntities[i]);
+            FindNodeThatRequireUpdate(updatableEntities[i]);
+        }
     }
 
     {
         SCOPED_NAMED_TIMING("TransformSystem::GroupEvent");
-    GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
+        GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
     }
     sendEvent.clear();
 
