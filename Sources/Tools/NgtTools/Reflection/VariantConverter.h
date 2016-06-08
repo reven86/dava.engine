@@ -12,8 +12,8 @@ namespace NGTLayer
 {
 namespace VariantConverter
 {
-DAVA::VariantType Convert(Variant const& v, DAVA::MetaInfo const* info);
-Variant Convert(DAVA::VariantType const& value);
+DAVA::VariantType Convert(wgt::Variant const& v, DAVA::MetaInfo const* info);
+wgt::Variant Convert(DAVA::VariantType const& value);
 }
 }
 

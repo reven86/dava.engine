@@ -30,17 +30,17 @@
 
 #include "core_ui_framework/i_component_provider.hpp"
 
-class IDefinitionManager;
+namespace wgt { class IDefinitionManager; }
 
 namespace NGTLayer
 {
-class ComponentProvider : public IComponentProvider
+class ComponentProvider : public wgt::IComponentProvider
 {
 public:
-    ComponentProvider(IDefinitionManager& defMng);
-    const char* componentId(const TypeId& typeId, std::function<bool(size_t)>& predicate) const override;
+    ComponentProvider(wgt::IDefinitionManager& defMng);
+    const char* componentId(const wgt::TypeId& typeId, std::function<bool(size_t)>& predicate) const override;
 
 private:
-    IDefinitionManager& definitionManager;
+    wgt::IDefinitionManager& definitionManager;
 };
 }

@@ -19,9 +19,9 @@
 
 PropertyPanel::PropertyPanel()
 {
-    IComponentContext* context = NGTLayer::GetGlobalContext();
+    wgt::IComponentContext* context = NGTLayer::GetGlobalContext();
     DVASSERT(context != nullptr);
-    model.reset(new ReflectedPropertyModel(*context));
+    model.reset(new wgt::ReflectedPropertyModel(*context));
     model->registerExtension(std::make_shared<EntityChildCreatorExtension>());
     model->registerExtension(std::make_shared<EntityMergeValueExtension>());
     model->registerExtension(std::make_shared<PropertyPanelGetExtension>());
@@ -32,18 +32,18 @@ PropertyPanel::~PropertyPanel()
 {
 }
 
-void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
+void PropertyPanel::Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication)
 {
-    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
+    wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defMng != nullptr);
-    defMng->registerDefinition(new TypeClassDefinition<PropertyPanel>());
+    defMng->registerDefinition(std::unique_ptr<wgt::IClassDefinitionDetails>(new wgt::TypeClassDefinition<PropertyPanel>()));
 
-    view = uiFramework.createView("Views/PropertyPanel.qml", IUIFramework::ResourceType::Url, this);
+    view = uiFramework.createView("Views/PropertyPanel.qml", wgt::IUIFramework::ResourceType::Url, this);
     view->registerListener(this);
     uiApplication.addView(*view);
 }
 
-void PropertyPanel::Finalize(IUIApplication& uiApplication)
+void PropertyPanel::Finalize(wgt::IUIApplication& uiApplication)
 {
     killTimer(updateTimerId);
     selectedObjects.clear();
@@ -53,12 +53,12 @@ void PropertyPanel::Finalize(IUIApplication& uiApplication)
     model.reset();
 }
 
-ObjectHandle PropertyPanel::GetPropertyTree() const
+wgt::ObjectHandle PropertyPanel::GetPropertyTree() const
 {
-    return ObjectHandleT<ITreeModel>(model.get());
+    return wgt::ObjectHandleT<wgt::ITreeModel>(model.get());
 }
 
-void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
+void PropertyPanel::SetPropertyTree(const wgt::ObjectHandle& /*dummyTree*/)
 {
 }
 
@@ -86,16 +86,16 @@ void PropertyPanel::SetObject(const std::vector<DAVA::InspBase*>& davaObjects)
 {
     DVASSERT(model != nullptr);
 
-    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
+    wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defMng != nullptr);
 
-    std::vector<ObjectHandle> objects;
+    std::vector<wgt::ObjectHandle> objects;
     for (DAVA::InspBase* object : davaObjects)
     {
         const DAVA::InspInfo* info = object->GetTypeInfo();
         NGTLayer::RegisterType(*defMng, info);
 
-        IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
+        wgt::IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
         objects.push_back(NGTLayer::CreateObjectHandle(*defMng, info, object));
     }
 
@@ -111,7 +111,7 @@ void PropertyPanel::timerEvent(QTimerEvent* e)
     }
 }
 
-void PropertyPanel::onFocusIn(IView* view_)
+void PropertyPanel::onFocusIn(wgt::IView* view_)
 {
     DVASSERT(view_ == view.get());
     visible = true;
@@ -127,7 +127,7 @@ void PropertyPanel::onFocusIn(IView* view_)
     }
 }
 
-void PropertyPanel::onFocusOut(IView* view_)
+void PropertyPanel::onFocusOut(wgt::IView* view_)
 {
     DVASSERT(view_ == view.get());
     visible = false;
@@ -166,4 +166,8 @@ void PropertyPanel::EndBatch()
     DVASSERT(scene != nullptr);
 
     scene->EndBatch();
+}
+
+void PropertyPanel::onLoaded(wgt::IView* view)
+{
 }

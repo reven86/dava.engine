@@ -5,7 +5,7 @@
 
 class QtMainWindow;
 class NGTCommand;
-class ICommandManager;
+namespace wgt { class ICommandManager; }
 
 class REApplication : public NGTLayer::BaseApplication
 {
@@ -22,8 +22,8 @@ protected:
     bool OnRequestCloseApp() override;
 
 private:
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<NGTCommand> ngtCommand;
-    std::unique_ptr<IComponentProvider> componentProvider;
+    std::unique_ptr<wgt::IComponentProvider> componentProvider;
     QtMainWindow* mainWindow = nullptr;
 };

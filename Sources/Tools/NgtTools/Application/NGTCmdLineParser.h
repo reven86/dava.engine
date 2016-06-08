@@ -7,7 +7,7 @@
 namespace NGTLayer
 {
 class NGTCmdLineParser
-: public Implements<ICommandLineParser>
+: public wgt::Implements<wgt::ICommandLineParser>
 {
 public:
     NGTCmdLineParser(int argc_, char** argv_);

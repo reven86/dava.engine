@@ -44,27 +44,27 @@ struct DAVAProperiesEnum
 {
     enum Type
     {
-        EntityRoot = PropertyNode::DomainSpecificProperty,
+        EntityRoot = wgt::PropertyNode::DomainSpecificProperty,
     };
 };
 
-class PropertyPanelGetExtension : public SetterGetterExtension
+class PropertyPanelGetExtension : public wgt::SetterGetterExtension
 {
 public:
-    Variant getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager& definitionManager) const override;
+    wgt::Variant getValue(const wgt::RefPropertyItem* item, int column, size_t roleId, wgt::IDefinitionManager& definitionManager) const override;
 };
 
-class EntityChildCreatorExtension : public ChildCreatorExtension
+class EntityChildCreatorExtension : public wgt::ChildCreatorExtension
 {
 public:
-    void exposeChildren(const std::shared_ptr<const PropertyNode>& node, std::vector<std::shared_ptr<const PropertyNode>>& children, IDefinitionManager& defMng) const override;
+    void exposeChildren(const std::shared_ptr<const wgt::PropertyNode>& node, std::vector<std::shared_ptr<const wgt::PropertyNode>>& children, wgt::IDefinitionManager& defMng) const override;
 };
 
-class EntityMergeValueExtension : public MergeValuesExtension
+class EntityMergeValueExtension : public wgt::MergeValuesExtension
 {
 public:
-    RefPropertyItem* lookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
-                                IDefinitionManager& definitionManager) const override;
+    wgt::RefPropertyItem* lookUpItem(const std::shared_ptr<const wgt::PropertyNode>& node, const std::vector<std::unique_ptr<wgt::RefPropertyItem>>& items,
+        wgt::IDefinitionManager& definitionManager) const override;
 };
 
 class AddCustomPropertyWidget : public QWidget
@@ -92,7 +92,7 @@ private:
     QPushButton* defaultBtn;
 };
 
-class EntityInjectDataExtension : public InjectDataExtension
+class EntityInjectDataExtension : public wgt::InjectDataExtension
 {
 public:
     class Delegate
@@ -103,22 +103,22 @@ public:
         virtual void EndBatch() = 0;
     };
 
-    EntityInjectDataExtension(Delegate& delegateObj, IComponentContext& context);
+    EntityInjectDataExtension(Delegate& delegateObj, wgt::IComponentContext& context);
 
-    void inject(RefPropertyItem* item) override;
-    void updateInjection(RefPropertyItem* item) override;
+    void inject(wgt::RefPropertyItem* item) override;
+    void updateInjection(wgt::RefPropertyItem* item) override;
 
 private:
-    void RemoveComponent(const RefPropertyItem* item);
+    void RemoveComponent(const wgt::RefPropertyItem* item);
 
-    void RemoveRenderBatch(const RefPropertyItem* item);
-    void ConvertBatchToShadow(const RefPropertyItem* item);
-    void RebuildTangentSpace(const RefPropertyItem* item);
+    void RemoveRenderBatch(const wgt::RefPropertyItem* item);
+    void ConvertBatchToShadow(const wgt::RefPropertyItem* item);
+    void RebuildTangentSpace(const wgt::RefPropertyItem* item);
 
-    void AddCustomProperty(const RefPropertyItem* item);
-    void OpenMaterials(const RefPropertyItem* item);
+    void AddCustomProperty(const wgt::RefPropertyItem* item);
+    void OpenMaterials(const wgt::RefPropertyItem* item);
 
 private:
     Delegate& delegateObj;
-    Depends<IDefinitionManager> defManagerHolder;
+    wgt::Depends<wgt::IDefinitionManager> defManagerHolder;
 };

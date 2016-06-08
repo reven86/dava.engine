@@ -61,15 +61,15 @@
 
 #include <QMessageBox>
 
-class ProxyProperty : public BaseProperty
+class ProxyProperty : public wgt::BaseProperty
 {
 public:
     ProxyProperty(const char* name)
-        : BaseProperty(name, TypeId::getType<ObjectHandle>())
+        : BaseProperty(name, wgt::TypeId::getType<wgt::ObjectHandle>())
     {
     }
 
-    Variant get(const ObjectHandle& handle, const IDefinitionManager&) const override
+    wgt::Variant get(const wgt::ObjectHandle& handle, const wgt::IDefinitionManager&) const override
     {
         return handle;
     }
@@ -77,19 +77,19 @@ public:
 
 namespace ExtensionsDetails
 {
-const TypeId entityType = TypeId::getType<DAVA::Entity>();
-const TypeId objectHandleType = TypeId::getType<ObjectHandle>();
-const TypeId nmaterialType = TypeId::getType<DAVA::NMaterial*>();
-const TypeId keyedArchive = TypeId::getType<DAVA::KeyedArchive*>();
-const TypeId renderBatchType = TypeId::getType<DAVA::RenderBatch>();
+const wgt::TypeId entityType = wgt::TypeId::getType<DAVA::Entity>();
+const wgt::TypeId objectHandleType = wgt::TypeId::getType<wgt::ObjectHandle>();
+const wgt::TypeId nmaterialType = wgt::TypeId::getType<DAVA::NMaterial*>();
+const wgt::TypeId keyedArchive = wgt::TypeId::getType<DAVA::KeyedArchive*>();
+const wgt::TypeId renderBatchType = wgt::TypeId::getType<DAVA::RenderBatch>();
 
-DAVA::RenderBatch* ExtractRenderBatch(const RefPropertyItem* item, IDefinitionManager& defManager)
+DAVA::RenderBatch* ExtractRenderBatch(const wgt::RefPropertyItem* item, wgt::IDefinitionManager& defManager)
 {
-    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
     DVASSERT(objects.size() == 1);
 
-    std::shared_ptr<const PropertyNode> node = objects.front();
-    ObjectHandle valueHandle;
+    std::shared_ptr<const wgt::PropertyNode> node = objects.front();
+    wgt::ObjectHandle valueHandle;
     DVVERIFY(node->propertyInstance->get(node->object, defManager).tryCast(valueHandle));
     DAVA::RenderBatch* batch = valueHandle.getBase<DAVA::RenderBatch>();
     DVASSERT(batch != nullptr);
@@ -97,18 +97,18 @@ DAVA::RenderBatch* ExtractRenderBatch(const RefPropertyItem* item, IDefinitionMa
     return batch;
 }
 
-DAVA::Entity* FindEntityWithRenderObject(const RefPropertyItem* item, DAVA::RenderObject* renderObject)
+DAVA::Entity* FindEntityWithRenderObject(const wgt::RefPropertyItem* item, DAVA::RenderObject* renderObject)
 {
-    const RefPropertyItem* parent = item->getParent();
+    const wgt::RefPropertyItem* parent = item->getParent();
     while (parent != nullptr)
     {
         item = parent;
         parent = item->getParent();
     }
 
-    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
     DVASSERT(objects.size() == 1);
-    std::shared_ptr<const PropertyNode> object = objects.front();
+    std::shared_ptr<const wgt::PropertyNode> object = objects.front();
     DAVA::Entity* entity = object->object.getBase<DAVA::Entity>();
 
     DVASSERT(GetRenderObject(entity) == renderObject);
@@ -117,16 +117,16 @@ DAVA::Entity* FindEntityWithRenderObject(const RefPropertyItem* item, DAVA::Rend
 }
 }
 
-std::string BuildCollectionElementName(const Collection::ConstIterator& iter, IDefinitionManager& defMng)
+std::string BuildCollectionElementName(const wgt::Collection::ConstIterator& iter, wgt::IDefinitionManager& defMng)
 {
-    Variant v = iter.value();
-    ObjectHandle handle;
+    wgt::Variant v = iter.value();
+    wgt::ObjectHandle handle;
     if (v.tryCast(handle))
     {
-        const IClassDefinition* definition = handle.getDefinition(defMng);
+        const wgt::IClassDefinition* definition = handle.getDefinition(defMng);
         DVASSERT(definition);
 
-        const MetaDisplayNameObj* displayData = findFirstMetaData<MetaDisplayNameObj>(*definition, defMng);
+        const wgt::MetaDisplayNameObj* displayData = wgt::findFirstMetaData<wgt::MetaDisplayNameObj>(*definition, defMng);
         return DAVA::WStringToString(DAVA::WideString(displayData->getDisplayName()));
     }
     else
@@ -135,16 +135,16 @@ std::string BuildCollectionElementName(const Collection::ConstIterator& iter, ID
     }
 }
 
-void EntityChildCreatorExtension::exposeChildren(const std::shared_ptr<const PropertyNode>& node, std::vector<std::shared_ptr<const PropertyNode>>& children, IDefinitionManager& defMng) const
+void EntityChildCreatorExtension::exposeChildren(const std::shared_ptr<const wgt::PropertyNode>& node, std::vector<std::shared_ptr<const wgt::PropertyNode>>& children, wgt::IDefinitionManager& defMng) const
 {
     if (node->propertyType == DAVAProperiesEnum::EntityRoot)
     {
-        std::shared_ptr<const PropertyNode> newNode = allocator->createPropertyNode(node->propertyInstance, node->object);
+        std::shared_ptr<const wgt::PropertyNode> newNode = allocator->createPropertyNode(node->propertyInstance, node->object);
         ChildCreatorExtension::exposeChildren(newNode, children, defMng);
 
         for (auto iter = children.rbegin(); iter != children.rend(); ++iter)
         {
-            const std::shared_ptr<const PropertyNode> child = *iter;
+            const std::shared_ptr<const wgt::PropertyNode> child = *iter;
             if (strcmp(child->propertyInstance->getName(), "components") == 0)
             {
                 auto forwardIter = (iter + 1).base();
@@ -153,31 +153,31 @@ void EntityChildCreatorExtension::exposeChildren(const std::shared_ptr<const Pro
             }
         }
     }
-    else if (node->object.type() == ExtensionsDetails::entityType && node->propertyType == PropertyNode::SelfRoot)
+    else if (node->object.type() == ExtensionsDetails::entityType && node->propertyType == wgt::PropertyNode::SelfRoot)
     {
-        static IBasePropertyPtr entityProxy = std::make_shared<ProxyProperty>("Entity");
+        static wgt::IBasePropertyPtr entityProxy = std::make_shared<ProxyProperty>("Entity");
         children.push_back(allocator->createPropertyNode(entityProxy, node->object, DAVAProperiesEnum::EntityRoot));
         DAVA::Entity* entity = node->object.getBase<DAVA::Entity>();
         DVASSERT(entity != nullptr);
 
-        const IClassDefinition* definition = node->object.getDefinition(defMng);
+        const wgt::IClassDefinition* definition = node->object.getDefinition(defMng);
         DVASSERT(definition != nullptr);
-        IBasePropertyPtr components = definition->findProperty("components");
+        wgt::IBasePropertyPtr components = definition->findProperty("components");
         DVASSERT(components != nullptr);
-        Variant componentsCollection = components->get(node->object, defMng);
+        wgt::Variant componentsCollection = components->get(node->object, defMng);
 
-        Collection collection;
+        wgt::Collection collection;
         if (componentsCollection.tryCast(collection))
         {
             for (auto iter = collection.begin(); iter != collection.end(); ++iter)
             {
-                ReflectedIteratorValue value;
+                wgt::ReflectedIteratorValue value;
                 value.iterator = iter;
                 value.value = iter.value();
 
                 std::string name = BuildCollectionElementName(iter, defMng);
-                IBasePropertyPtr property = allocator->getCollectionItemProperty(std::move(name), iter.value().type()->typeId(), defMng);
-                children.push_back(allocator->createPropertyNode(property, ObjectHandle(value), PropertyNode::CollectionItem));
+                wgt::IBasePropertyPtr property = allocator->getCollectionItemProperty(std::move(name), iter.value().type()->typeId(), defMng);
+                children.push_back(allocator->createPropertyNode(property, wgt::ObjectHandle(value), wgt::PropertyNode::CollectionItem));
             }
         }
     }
@@ -192,21 +192,21 @@ void EntityChildCreatorExtension::exposeChildren(const std::shared_ptr<const Pro
     }
 }
 
-RefPropertyItem* EntityMergeValueExtension::lookUpItem(const std::shared_ptr<const PropertyNode>& node, const std::vector<std::unique_ptr<RefPropertyItem>>& items,
-                                                       IDefinitionManager& definitionManager) const
+wgt::RefPropertyItem* EntityMergeValueExtension::lookUpItem(const std::shared_ptr<const wgt::PropertyNode>& node, const std::vector<std::unique_ptr<wgt::RefPropertyItem>>& items,
+                                                            wgt::IDefinitionManager& definitionManager) const
 {
     return MergeValuesExtension::lookUpItem(node, items, definitionManager);
 }
 
-Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int column, size_t roleId, IDefinitionManager& definitionManager) const
+wgt::Variant PropertyPanelGetExtension::getValue(const wgt::RefPropertyItem* item, int column, size_t roleId, wgt::IDefinitionManager& definitionManager) const
 {
-    if (column == 1 && roleId == ValueRole::roleId_)
+    if (column == 1 && roleId == wgt::ValueRole::roleId_)
     {
-        Variant result = SetterGetterExtension::getValue(item, column, roleId, definitionManager);
-        ObjectHandle handle;
+        wgt::Variant result = SetterGetterExtension::getValue(item, column, roleId, definitionManager);
+        wgt::ObjectHandle handle;
         if (result.tryCast(handle))
         {
-            TypeId type = handle.type();
+            wgt::TypeId type = handle.type();
             if (type.isPointer())
             {
                 type = type.removePointer();
@@ -218,85 +218,85 @@ Variant PropertyPanelGetExtension::getValue(const RefPropertyItem* item, int col
     return SetterGetterExtension::getValue(item, column, roleId, definitionManager);
 }
 
-EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, IComponentContext& context)
+EntityInjectDataExtension::EntityInjectDataExtension(Delegate& delegateObj_, wgt::IComponentContext& context)
     : delegateObj(delegateObj_)
     , defManagerHolder(context)
 {
 }
 
-void EntityInjectDataExtension::inject(RefPropertyItem* item)
+void EntityInjectDataExtension::inject(wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
-    static TypeId removableComponents[] = { TypeId::getType<DAVA::RenderComponent>(), TypeId::getType<DAVA::ActionComponent>() };
-    std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, defManager);
-    ObjectHandle handle;
+    static wgt::TypeId removableComponents[] = { wgt::TypeId::getType<DAVA::RenderComponent>(), wgt::TypeId::getType<DAVA::ActionComponent>() };
+    std::shared_ptr<const wgt::PropertyNode> node = item->getObjects().front();
+    wgt::Variant value = node->propertyInstance->get(node->object, defManager);
+    wgt::ObjectHandle handle;
     if (value.tryCast(handle))
     {
-        TypeId type = handle.type();
+        wgt::TypeId type = handle.type();
         if (type.isPointer())
             type = type.removePointer();
 
         if (std::find(std::begin(removableComponents), std::end(removableComponents), type) != std::end(removableComponents))
         {
-            std::vector<ButtonItem> buttons;
+            std::vector<wgt::ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveComponent, this, item));
-            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            wgt::ButtonsModel* buttonsModel = new wgt::ButtonsModel(std::move(buttons));
+            item->injectData(wgt::buttonsDefinitionRole::roleId_, wgt::Variant(wgt::ObjectHandle(std::unique_ptr<wgt::IListModel>(buttonsModel))));
         }
         else if (type == ExtensionsDetails::renderBatchType)
         {
-            std::vector<ButtonItem> buttons;
+            std::vector<wgt::ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/external.png", std::bind(&EntityInjectDataExtension::RebuildTangentSpace, this, item));
             buttons.emplace_back(true, "/QtIcons/shadow.png", std::bind(&EntityInjectDataExtension::ConvertBatchToShadow, this, item));
             buttons.emplace_back(true, "/QtIcons/remove.png", std::bind(&EntityInjectDataExtension::RemoveRenderBatch, this, item));
-            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            wgt::ButtonsModel* buttonsModel = new wgt::ButtonsModel(std::move(buttons));
+            item->injectData(wgt::buttonsDefinitionRole::roleId_, wgt::Variant(wgt::ObjectHandle(std::unique_ptr<wgt::IListModel>(buttonsModel))));
         }
         else if (node->propertyInstance->getType() == ExtensionsDetails::nmaterialType)
         {
-            std::vector<ButtonItem> buttons;
+            std::vector<wgt::ButtonItem> buttons;
             buttons.emplace_back(true, "/QtIcons/3d.png", std::bind(&EntityInjectDataExtension::OpenMaterials, this, item));
-            ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-            item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+            wgt::ButtonsModel* buttonsModel = new wgt::ButtonsModel(std::move(buttons));
+            item->injectData(wgt::buttonsDefinitionRole::roleId_, wgt::Variant(wgt::ObjectHandle(std::unique_ptr<wgt::IListModel>(buttonsModel))));
         }
     }
     else if (node->propertyInstance->getType() == ExtensionsDetails::keyedArchive)
     {
-        std::vector<ButtonItem> buttons;
+        std::vector<wgt::ButtonItem> buttons;
         buttons.emplace_back(true, "/QtIcons/keyplus.png", std::bind(&EntityInjectDataExtension::AddCustomProperty, this, item));
-        ButtonsModel* buttonsModel = new ButtonsModel(std::move(buttons));
-        item->injectData(buttonsDefinitionRole::roleId_, Variant(ObjectHandle(std::unique_ptr<IListModel>(buttonsModel))));
+        wgt::ButtonsModel* buttonsModel = new wgt::ButtonsModel(std::move(buttons));
+        item->injectData(wgt::buttonsDefinitionRole::roleId_, wgt::Variant(wgt::ObjectHandle(std::unique_ptr<wgt::IListModel>(buttonsModel))));
     }
 }
 
-void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
+void EntityInjectDataExtension::updateInjection(wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
-    Variant buttons = item->getInjectedData(buttonsDefinitionRole::roleId_);
-    ObjectHandle modelHandle;
+    wgt::Variant buttons = item->getInjectedData(wgt::buttonsDefinitionRole::roleId_);
+    wgt::ObjectHandle modelHandle;
     if (!buttons.tryCast(modelHandle))
         return;
 
-    ButtonsModel* model = dynamic_cast<ButtonsModel*>(modelHandle.getBase<IListModel>());
+    wgt::ButtonsModel* model = dynamic_cast<wgt::ButtonsModel*>(modelHandle.getBase<wgt::IListModel>());
 
     if (model == nullptr)
     {
         return;
     }
 
-    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
     DVASSERT(!objects.empty());
 
     bool isSingleSelection = objects.size() == 1;
-    std::shared_ptr<const PropertyNode> node = objects.front();
-    ObjectHandle valueHandle;
+    std::shared_ptr<const wgt::PropertyNode> node = objects.front();
+    wgt::ObjectHandle valueHandle;
 
     if (node->propertyInstance->get(node->object, defManager).tryCast(valueHandle))
     {
-        TypeId type = valueHandle.type();
+        wgt::TypeId type = valueHandle.type();
         if (type.isPointer())
             type = type.removePointer();
 
@@ -334,19 +334,19 @@ void EntityInjectDataExtension::updateInjection(RefPropertyItem* item)
     }
 }
 
-void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
+void EntityInjectDataExtension::RemoveComponent(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
-    const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+    const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
     delegateObj.StartBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
-    for (const std::shared_ptr<const PropertyNode>& object : objects)
+    for (const std::shared_ptr<const wgt::PropertyNode>& object : objects)
     {
-        Variant value = object->propertyInstance->get(object->object, defManager);
-        ObjectHandle handle;
+        wgt::Variant value = object->propertyInstance->get(object->object, defManager);
+        wgt::ObjectHandle handle;
         DVVERIFY(value.tryCast(handle));
 
-        DAVA::Component* component = reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
+        DAVA::Component* component = wgt::reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
         DVASSERT(component != nullptr);
 
         delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
@@ -354,9 +354,9 @@ void EntityInjectDataExtension::RemoveComponent(const RefPropertyItem* item)
     delegateObj.EndBatch();
 }
 
-void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
+void EntityInjectDataExtension::RemoveRenderBatch(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::RenderObject* renderObject = batch->GetRenderObject();
     DVASSERT(renderObject != nullptr);
@@ -376,51 +376,51 @@ void EntityInjectDataExtension::RemoveRenderBatch(const RefPropertyItem* item)
     delegateObj.Exec(Command2::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
 }
 
-void EntityInjectDataExtension::ConvertBatchToShadow(const RefPropertyItem* item)
+void EntityInjectDataExtension::ConvertBatchToShadow(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
 
     delegateObj.Exec(Command2::Create<ConvertToShadowCommand>(entity, batch));
 }
 
-void EntityInjectDataExtension::RebuildTangentSpace(const RefPropertyItem* item)
+void EntityInjectDataExtension::RebuildTangentSpace(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
 }
 
-void EntityInjectDataExtension::OpenMaterials(const RefPropertyItem* item)
+void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
-    std::shared_ptr<const PropertyNode> node = item->getObjects().front();
-    Variant value = node->propertyInstance->get(node->object, defManager);
-    ObjectHandle handle;
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
+    std::shared_ptr<const wgt::PropertyNode> node = item->getObjects().front();
+    wgt::Variant value = node->propertyInstance->get(node->object, defManager);
+    wgt::ObjectHandle handle;
     DVVERIFY(value.tryCast(handle));
 
-    DAVA::NMaterial* material = reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
+    DAVA::NMaterial* material = wgt::reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
     delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
 
-void EntityInjectDataExtension::AddCustomProperty(const RefPropertyItem* item)
+void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* item)
 {
-    INTERFACE_REQUEST(IDefinitionManager, defManager, defManagerHolder, void());
+    INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
     AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
     w->ValueReady.Connect([this, item, &defManager](const DAVA::String& name, const DAVA::VariantType& value)
                           {
-                              const std::vector<std::shared_ptr<const PropertyNode>>& objects = item->getObjects();
+                              const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
                               delegateObj.StartBatch("Add custom property", static_cast<DAVA::uint32>(objects.size()));
 
-                              for (const std::shared_ptr<const PropertyNode>& object : objects)
+                              for (const std::shared_ptr<const wgt::PropertyNode>& object : objects)
                               {
-                                  Collection collectionHandle;
+                                  wgt::Collection collectionHandle;
                                   if (object->propertyInstance->get(object->object, defManager).tryCast(collectionHandle))
                                   {
-                                      CollectionImplPtr impl = collectionHandle.impl();
+                                      wgt::CollectionImplPtr impl = collectionHandle.impl();
                                       NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
                                       DVASSERT(archImpl != nullptr);
                                       DAVA::KeyedArchive* archive = archImpl->GetArchive();

@@ -7,9 +7,9 @@
 #include <core_command_system/i_command_event_listener.hpp>
 #include <core_common/signal.hpp>
 
-class ICommandManager;
+namespace wgt { class ICommandManager; }
 
-class CommandStack : public CommandNotifyProvider, public ICommandEventListener
+class CommandStack : public CommandNotifyProvider, public wgt::ICommandEventListener
 {
 public:
     CommandStack();
@@ -35,7 +35,7 @@ public:
     void SetClean(bool clean);
 
 private:
-    void commandExecuted(const CommandInstance& commandInstance, CommandOperation operation) override;
+    void commandExecuted(const wgt::CommandInstance& commandInstance, wgt::CommandOperation operation) override;
     void CleanCheck();
 
     void HistoryIndexChanged(int currentIndex);
@@ -55,7 +55,7 @@ private:
     class ActiveCommandStack;
     class ActiveStackGuard;
 
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<CommandBatch> curBatchCommand;
 
     int enviromentID = 0;
@@ -66,5 +66,5 @@ private:
 
     DAVA::UnorderedSet<DAVA::int32> uncleanCommandIds;
 
-    Connection indexChanged;
+    wgt::Connection indexChanged;
 };

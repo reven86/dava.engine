@@ -6,13 +6,13 @@
 
 namespace NGTLayer
 {
-void SetGlobalContext(IComponentContext* context);
-IComponentContext* GetGlobalContext();
+void SetGlobalContext(wgt::IComponentContext* context);
+wgt::IComponentContext* GetGlobalContext();
 
 template <class T>
 T* queryInterface()
 {
-    IComponentContext* context = GetGlobalContext();
+    wgt::IComponentContext* context = GetGlobalContext();
     DVASSERT(context != nullptr);
     return context->queryInterface<T>();
 }

@@ -21,7 +21,7 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
-class IComponentContext;
+namespace wgt { class IComponentContext; }
 class PropertyPanel;
 
 class DeviceListController;
@@ -38,7 +38,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -283,7 +283,7 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    IComponentContext& ngtContext;
+    wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 

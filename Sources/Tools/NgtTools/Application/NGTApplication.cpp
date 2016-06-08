@@ -16,6 +16,8 @@
 #include <QFileInfo>
 #include <QApplication>
 
+namespace wgt
+{
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
@@ -23,6 +25,8 @@ PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
 }
+
+} // namespace wgt
 
 namespace NGTLayer
 {
@@ -50,31 +54,31 @@ void BaseApplication::LoadPlugins()
                        return plugindFolder + pluginPath;
                    });
 
-    pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
+    pluginManager.getContextManager().getGlobalContext()->registerInterface<wgt::ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
     NGTLayer::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
-    Variant::setMetaTypeManager(NGTLayer::queryInterface<IMetaTypeManager>());
+    wgt::Variant::setMetaTypeManager(NGTLayer::queryInterface<wgt::IMetaTypeManager>());
 
     OnPostLoadPugins();
 }
 
-IComponentContext& BaseApplication::GetComponentContext()
+wgt::IComponentContext& BaseApplication::GetComponentContext()
 {
-    IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
+    wgt::IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
     DVASSERT(context != nullptr);
     return *context;
 }
 
 int BaseApplication::StartApplication(QMainWindow* appMainWindow)
 {
-    IQtFramework* framework = pluginManager.queryInterface<IQtFramework>();
+    wgt::IQtFramework* framework = pluginManager.queryInterface<wgt::IQtFramework>();
     DVASSERT(framework != nullptr);
 
-    std::unique_ptr<QtWindow> window(new QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
-    Connection tryCloseSignalConnetion = window->signalTryClose.connect(std::bind(&BaseApplication::OnMainWindowTryClose, this, std::placeholders::_1));
-    Connection closeSignalConnection = window->signalClose.connect(std::bind(&BaseApplication::OnMainWindowClosed, this));
+    std::unique_ptr<wgt::QtWindow> window(new wgt::QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    wgt::Connection tryCloseSignalConnetion = window->signalTryClose.connect(std::bind(&BaseApplication::OnMainWindowTryClose, this, std::placeholders::_1));
+    wgt::Connection closeSignalConnection = window->signalClose.connect(std::bind(&BaseApplication::OnMainWindowClosed, this));
 
-    IUIApplication* app = pluginManager.queryInterface<IUIApplication>();
+    wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
     DVASSERT(app != nullptr);
     window->show();
     app->addWindow(*window);
