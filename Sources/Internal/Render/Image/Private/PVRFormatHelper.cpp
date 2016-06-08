@@ -82,30 +82,30 @@ uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
 
 PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
 {
-    static const UnorderedMap<uint64, PixelFormat> mapping = 
+    static const UnorderedMap<uint64, PixelFormat> mapping =
     {
-        { ePVRTPF_PVRTCI_2bpp_RGB, FORMAT_PVR2 },
-        { ePVRTPF_PVRTCI_2bpp_RGBA, FORMAT_PVR2 },
-        { ePVRTPF_PVRTCI_4bpp_RGB, FORMAT_PVR4 },
-        { ePVRTPF_PVRTCI_4bpp_RGBA, FORMAT_PVR4 },
-        { ePVRTPF_PVRTCII_2bpp, FORMAT_PVR2_2 },
-        { ePVRTPF_PVRTCII_4bpp, FORMAT_PVR4_2 },
-        { ePVRTPF_ETC1, FORMAT_ETC1 },
-        { ePVRTPF_EAC_R11, FORMAT_EAC_R11_UNSIGNED },
-        { ePVRTPF_ETC2_RGB, FORMAT_ETC2_RGB },
-        { ePVRTPF_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
-        { ePVRTPF_EAC_RG11, FORMAT_EAC_RG11_UNSIGNED },
-        { ePVRTPF_ETC2_RGBA, FORMAT_ETC2_RGBA },
-        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8), FORMAT_RGBA8888 },
-        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1), FORMAT_RGBA5551 },
-        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4), FORMAT_RGBA4444 },
-        { PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8), FORMAT_RGB888 },
-        { PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5), FORMAT_RGB565 },
-        { PVRTGENPIXELID1('l', 8), FORMAT_A8 },
-        { PVRTGENPIXELID1('a', 8), FORMAT_A8 },
-        { PVRTGENPIXELID1('a', 16), FORMAT_A16 },
-        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16), FORMAT_RGBA16161616 },
-        { PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32), FORMAT_RGBA32323232 }
+      { ePVRTPF_PVRTCI_2bpp_RGB, FORMAT_PVR2 },
+      { ePVRTPF_PVRTCI_2bpp_RGBA, FORMAT_PVR2 },
+      { ePVRTPF_PVRTCI_4bpp_RGB, FORMAT_PVR4 },
+      { ePVRTPF_PVRTCI_4bpp_RGBA, FORMAT_PVR4 },
+      { ePVRTPF_PVRTCII_2bpp, FORMAT_PVR2_2 },
+      { ePVRTPF_PVRTCII_4bpp, FORMAT_PVR4_2 },
+      { ePVRTPF_ETC1, FORMAT_ETC1 },
+      { ePVRTPF_EAC_R11, FORMAT_EAC_R11_UNSIGNED },
+      { ePVRTPF_ETC2_RGB, FORMAT_ETC2_RGB },
+      { ePVRTPF_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
+      { ePVRTPF_EAC_RG11, FORMAT_EAC_RG11_UNSIGNED },
+      { ePVRTPF_ETC2_RGBA, FORMAT_ETC2_RGBA },
+      { PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8), FORMAT_RGBA8888 },
+      { PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1), FORMAT_RGBA5551 },
+      { PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4), FORMAT_RGBA4444 },
+      { PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8), FORMAT_RGB888 },
+      { PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5), FORMAT_RGB565 },
+      { PVRTGENPIXELID1('l', 8), FORMAT_A8 },
+      { PVRTGENPIXELID1('a', 8), FORMAT_A8 },
+      { PVRTGENPIXELID1('a', 16), FORMAT_A16 },
+      { PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16), FORMAT_RGBA16161616 },
+      { PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32), FORMAT_RGBA32323232 }
     };
 
     auto found = mapping.find(pixelFormat);
@@ -122,27 +122,27 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
 {
     static const UnorderedMap<PixelFormat, uint64> mapping =
     {
-        { FORMAT_PVR2, ePVRTPF_PVRTCI_2bpp_RGBA }, 
-        { FORMAT_PVR4, ePVRTPF_PVRTCI_4bpp_RGBA },
-        { FORMAT_PVR2_2, ePVRTPF_PVRTCII_2bpp },
-        { FORMAT_PVR4_2, ePVRTPF_PVRTCII_4bpp },
+      { FORMAT_PVR2, ePVRTPF_PVRTCI_2bpp_RGBA },
+      { FORMAT_PVR4, ePVRTPF_PVRTCI_4bpp_RGBA },
+      { FORMAT_PVR2_2, ePVRTPF_PVRTCII_2bpp },
+      { FORMAT_PVR4_2, ePVRTPF_PVRTCII_4bpp },
 
-        { FORMAT_ETC1, ePVRTPF_ETC1 },
-        { FORMAT_EAC_R11_UNSIGNED, ePVRTPF_EAC_R11 },
-        { FORMAT_ETC2_RGB, FORMAT_ETC2_RGB },
-        { FORMAT_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
-        { FORMAT_EAC_RG11_UNSIGNED, ePVRTPF_EAC_RG11 },
+      { FORMAT_ETC1, ePVRTPF_ETC1 },
+      { FORMAT_EAC_R11_UNSIGNED, ePVRTPF_EAC_R11 },
+      { FORMAT_ETC2_RGB, FORMAT_ETC2_RGB },
+      { FORMAT_ETC2_RGB_A1, FORMAT_ETC2_RGB_A1 },
+      { FORMAT_EAC_RG11_UNSIGNED, ePVRTPF_EAC_RG11 },
 
-        { FORMAT_ETC2_RGBA, ePVRTPF_ETC2_RGBA },
-        { FORMAT_RGBA8888, PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8) },
-        { FORMAT_RGBA5551, PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1) },
-        { FORMAT_RGBA4444, PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4) },
-        { FORMAT_RGB888, PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8) },
-        { FORMAT_RGB565, PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5) },
-        { FORMAT_A8, PVRTGENPIXELID1('a', 8) },
-        { FORMAT_A16, PVRTGENPIXELID1('a', 16) },
-        { FORMAT_RGBA16161616, PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16) },
-        { FORMAT_RGBA32323232, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) }
+      { FORMAT_ETC2_RGBA, ePVRTPF_ETC2_RGBA },
+      { FORMAT_RGBA8888, PVRTGENPIXELID4('r', 'g', 'b', 'a', 8, 8, 8, 8) },
+      { FORMAT_RGBA5551, PVRTGENPIXELID4('r', 'g', 'b', 'a', 5, 5, 5, 1) },
+      { FORMAT_RGBA4444, PVRTGENPIXELID4('r', 'g', 'b', 'a', 4, 4, 4, 4) },
+      { FORMAT_RGB888, PVRTGENPIXELID3('r', 'g', 'b', 8, 8, 8) },
+      { FORMAT_RGB565, PVRTGENPIXELID3('r', 'g', 'b', 5, 6, 5) },
+      { FORMAT_A8, PVRTGENPIXELID1('a', 8) },
+      { FORMAT_A16, PVRTGENPIXELID1('a', 16) },
+      { FORMAT_RGBA16161616, PVRTGENPIXELID4('r', 'g', 'b', 'a', 16, 16, 16, 16) },
+      { FORMAT_RGBA32323232, PVRTGENPIXELID4('r', 'g', 'b', 'a', 32, 32, 32, 32) }
     };
 
     auto found = mapping.find(pixelFormat);
@@ -226,8 +226,8 @@ bool ReadMetaData(File* file, PVRFile* pvrFile)
     while (metaDataSize != 0)
     {
         // fields from MetaDataBlock
-        uint32 DevFOURCC = 0; 
-        uint32 u32Key = 0; 
+        uint32 DevFOURCC = 0;
+        uint32 u32Key = 0;
         uint32 u32DataSize = 0;
         uint8* Data = nullptr;
 

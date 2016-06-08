@@ -30,4 +30,3 @@ struct DDSWriter
 };
 
 } // namespace DAVA
-

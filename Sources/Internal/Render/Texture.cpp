@@ -512,7 +512,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 ImageSystem::Load(singleMipFiles[index], *images, params);
             }
 
-            params.baseMipmap = Max(static_cast<int32>(baseMipMap)-static_cast<int32>(singleMipFilesCount), 0);
+            params.baseMipmap = Max(static_cast<int32>(baseMipMap) - static_cast<int32>(singleMipFilesCount), 0);
             params.firstMipmapIndex = static_cast<uint32>(images->size());
         }
 
@@ -584,9 +584,9 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     descriptor.format = formatDescriptor.format;
     descriptor.levelCount = static_cast<uint32>((descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? images->size() / 6 : images->size());
 
-    const uint32 oldLevelCountVerify = descriptor.levelCount;   //to notify about wrong images
+    const uint32 oldLevelCountVerify = descriptor.levelCount; //to notify about wrong images
     for (Image* img : (*images))
-    {   // kostil for some wrong data
+    { // kostil for some wrong data
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
     }
     if (oldLevelCountVerify != descriptor.levelCount)

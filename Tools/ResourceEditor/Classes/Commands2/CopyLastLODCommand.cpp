@@ -26,7 +26,7 @@ CopyLastLODToLod0Command::CopyLastLODToLod0Command(DAVA::LodComponent* component
 
 CopyLastLODToLod0Command::~CopyLastLODToLod0Command()
 {
-    for (DAVA::RenderBatch *batch : newBatches)
+    for (DAVA::RenderBatch* batch : newBatches)
     {
         DAVA::SafeRelease(batch);
     }

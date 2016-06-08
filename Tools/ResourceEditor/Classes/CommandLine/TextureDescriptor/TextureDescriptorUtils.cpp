@@ -63,7 +63,7 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
     bool descriptorChanged = false;
 
     if (FileSystem::Instance()->Exists(descriptorPath))
-    {   
+    {
         descriptor.reset(TextureDescriptor::CreateFromFile(descriptorPath));
     }
 

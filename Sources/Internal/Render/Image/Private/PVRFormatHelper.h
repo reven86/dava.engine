@@ -75,6 +75,5 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
 bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage);
 
 PixelFormat GetPixelFormat(const PVRHeaderV3& textureHeader);
-
 }
 }

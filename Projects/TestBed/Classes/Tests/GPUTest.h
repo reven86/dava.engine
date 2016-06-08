@@ -13,4 +13,3 @@ public:
 public:
     void LoadResources() override;
 };
-
