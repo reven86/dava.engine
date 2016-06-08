@@ -55,7 +55,7 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
     String locale = GetDeviceLocale();
-    SetCurrentLocale(locale);    
+    SetCurrentLocale(locale);
 #else
     DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
@@ -171,7 +171,7 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
     if (!yamlFile)
         return NULL;
 
-    dataHolder->fileSize = yamlFile->GetSize();
+    dataHolder->fileSize = static_cast<uint32>(yamlFile->GetSize());
     dataHolder->data = new uint8[dataHolder->fileSize];
     dataHolder->dataOffset = 0;
     yamlFile->Read(dataHolder->data, dataHolder->fileSize);

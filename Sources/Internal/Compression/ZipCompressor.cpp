@@ -109,7 +109,7 @@ ZipFile::ZipFile(const FilePath& fileName)
         throw std::runtime_error("can't open archive file: " + fileName.GetStringValue());
     }
 
-    uint32 fileSize = zipData->file->GetSize();
+    uint64 fileSize = zipData->file->GetSize();
 
     zipData->archive.m_pIO_opaque = zipData->file.get();
     zipData->archive.m_pRead = &file_read_func;

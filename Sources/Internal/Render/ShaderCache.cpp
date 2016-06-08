@@ -89,7 +89,7 @@ ShaderSourceCode LoadFromSource(const String& source)
     File* fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
-        uint32 fileSize = fp->GetSize();
+        uint32 fileSize = static_cast<uint32>(fp->GetSize());
         sourceCode.vertexProgText = new char8[fileSize + 1];
         sourceCode.vertexProgText[fileSize] = 0;
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
@@ -119,7 +119,7 @@ ShaderSourceCode LoadFromSource(const String& source)
     fp = File::Create(sourceCode.fragmentProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
-        uint32 fileSize = fp->GetSize();
+        uint32 fileSize = static_cast<uint32>(fp->GetSize());
         sourceCode.fragmentProgText = new char8[fileSize + 1];
         sourceCode.fragmentProgText[fileSize] = 0;
         uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);

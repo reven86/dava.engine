@@ -27,7 +27,7 @@ bool YamlParser::Parse(const FilePath& pathName)
     }
 
     YamlDataHolder dataHolder;
-    dataHolder.fileSize = yamlFile->GetSize();
+    dataHolder.fileSize = static_cast<uint32>(yamlFile->GetSize());
     dataHolder.data = new uint8[dataHolder.fileSize];
     dataHolder.dataOffset = 0;
     yamlFile->Read(dataHolder.data, dataHolder.fileSize);

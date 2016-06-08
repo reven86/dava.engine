@@ -146,6 +146,7 @@ void PackManagerTest::LoadResources()
 
     filePathField = new UITextField(Rect(5, 380, 400, 20));
     filePathField->SetFont(font);
+    filePathField->SetFontSize(14);
     filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/3d/LandscapeTest/landscapetest.sc2"));
     filePathField->SetDebugDraw(true);
     filePathField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));

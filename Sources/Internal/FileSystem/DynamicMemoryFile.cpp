@@ -66,12 +66,12 @@ uint32 DynamicMemoryFile::Write(const void* pointerToData, uint32 dataSize)
 
     if (data.size() < currentPtr + dataSize)
     {
-        data.resize(currentPtr + dataSize);
+        data.resize(static_cast<size_t>(currentPtr + dataSize));
     }
     if (dataSize)
     {
         DVASSERT(nullptr != pointerToData);
-        Memcpy(&(data[currentPtr]), pointerToData, dataSize);
+        Memcpy(&(data[static_cast<size_t>(currentPtr)]), pointerToData, dataSize);
         currentPtr += dataSize;
     }
 
@@ -92,11 +92,11 @@ uint32 DynamicMemoryFile::Read(void* pointerToData, uint32 dataSize)
     if (currentPtr + realReadSize > size)
     {
         isEof = true;
-        realReadSize = size - currentPtr;
+        realReadSize = size - static_cast<uint32>(currentPtr);
     }
     if (0 < realReadSize)
     {
-        Memcpy(pointerToData, &(data[currentPtr]), realReadSize);
+        Memcpy(pointerToData, &(data[static_cast<size_t>(currentPtr)]), realReadSize);
         currentPtr += realReadSize;
 
         return realReadSize;

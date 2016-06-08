@@ -90,7 +90,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
     }
     lua_close(luaState);
     luaState = nullptr;
-    
+
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     destroy_mspace(memorySpace);
     free(memoryPool);
@@ -545,7 +545,7 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
             break;
         }
         WideString str;
-        str += keyPress.keyChar;
+        str += static_cast<wchar_t>(keyPress.keyChar);
         if (uiTextField->GetDelegate()->TextFieldKeyPressed(uiTextField, static_cast<int32>(uiTextField->GetText().length()), 1, str))
         {
             uiTextField->SetText(uiTextField->GetAppliedChanges(static_cast<int32>(uiTextField->GetText().length()), 1, str));
@@ -805,9 +805,9 @@ bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
         Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", luaFilePath.GetAbsolutePathname().c_str());
         return false;
     }
-    char* data = new char[file->GetSize()];
-    file->Read(data, file->GetSize());
-    uint32 fileSize = file->GetSize();
+    char* data = new char[static_cast<uint32>(file->GetSize())];
+    file->Read(data, static_cast<uint32>(file->GetSize()));
+    uint32 fileSize = static_cast<uint32>(file->GetSize());
     file->Release();
     bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
     delete[] data;

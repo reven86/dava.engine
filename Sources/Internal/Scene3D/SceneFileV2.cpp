@@ -436,7 +436,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         if (header.nodeCount > 0)
         {
             // try to load global material
-            uint32 filePos = file->GetPos();
+            uint32 filePos = static_cast<uint32>(file->GetPos());
             KeyedArchive* archive = new KeyedArchive();
             const bool loaded = archive->Load(file);
             if (!loaded)
@@ -729,7 +729,7 @@ bool SceneFileV2::SaveDataNode(DataNode* node, File* file)
 bool SceneFileV2::LoadDataNode(Scene* scene, DataNode* parent, File* file)
 {
     bool loaded = true;
-    uint32 currFilePos = file->GetPos();
+    uint32 currFilePos = static_cast<uint32>(file->GetPos());
     KeyedArchive* archive = new KeyedArchive();
     loaded &= archive->Load(file);
 

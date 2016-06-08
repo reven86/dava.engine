@@ -15,12 +15,12 @@ namespace DAVA
 /**
 	\ingroup filesystem
 	\brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
-	
+
 	Class is platform dependent but it must used in all places where you want to be sure that portability is an issue
 
 	Supported platforms:
 		Windows, MacOS X, iPhone OS
- 
+
 	\todo add functions to enumerate files in directories to be full functional FileSystem
 	\todo refactoring of utils and ~res:/ ~doc:/ access for the project files
 	\todo add support for pack files
@@ -40,9 +40,9 @@ public:
 
     /*
 		\brief Function to delete directory
-		
+
 		If isRecursive variable is false, function will succeed only in case if directory is empty.
-	 
+
 		\param[in] path full path to the directory you want to delete
 		\param[in] isRecursive if true trying to delete all subfolders, if not just trying to delete this directory
 		\returns true if this directory was deleted
@@ -67,7 +67,7 @@ public:
     /**
 		\brief Function to create directory at filePath you've requested
 		\param[in] filePath where you want to create a directory
-        \param[in] isRecursive create requiried 
+        \param[in] isRecursive create requiried
 		\returns true if directory created successfully
 	 */
     virtual eCreateDirectoryResult CreateDirectory(const FilePath& filePath, bool isRecursive = false);
@@ -181,15 +181,15 @@ public:
     virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
-        \brief Read whole file contents into new buffer. 
+        \brief Read whole file contents into new buffer.
         If function returns zero error happened and it haven't loaded the file
-        After you'll finish using the date you should DELETE returned buffer using function SafeDeleteArray.  
-     
+        After you'll finish using the date you should DELETE returned buffer using function SafeDeleteArray.
+
         \param[in] pathname path to the file we want to read
         \param[out] fileSize
         \returns pointer to newly created buffer with file contents
      */
-    uint8* ReadFileContents(const FilePath& pathname, uint32& fileSize);
+    uint8* ReadFileContents(const FilePath& pathname, uint64& fileSize);
 
     /**
         \brief Read whole file contents into string.
@@ -202,9 +202,9 @@ public:
 
     /**
 		\brief Function to attach ResourceArchive to filesystem
-	
+
 		\param[in] archiveName pathname or local filename of archive we want to attach
-		\param[in] attachPath path we attach our archive 
+		\param[in] attachPath path we attach our archive
 
         can throw std::runtime_exception in case of error
 	*/
@@ -246,7 +246,7 @@ public:
     */
     bool CompareBinaryFiles(const FilePath& filePath1, const FilePath& filePath2);
 
-    bool GetFileSize(const FilePath& path, uint32& size);
+    bool GetFileSize(const FilePath& path, uint64& size);
 
     /**
      \brief Function check if specified path exists on file system

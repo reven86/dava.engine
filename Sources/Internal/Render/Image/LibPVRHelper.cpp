@@ -147,7 +147,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
         info.width = pvrFile->header.u32Width;
         info.height = pvrFile->header.u32Height;
         info.format = GetTextureFormat(pvrFile->header);
-        info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+        info.dataSize = static_cast<uint32>(infile->GetSize()) - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
         info.faceCount = pvrFile->header.u32NumFaces;
 
@@ -339,7 +339,7 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
         file->Seek(pvrFile->header.u32MetaDataSize, File::SEEK_FROM_CURRENT);
     }
 
-    pvrFile->compressedDataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+    pvrFile->compressedDataSize = static_cast<uint32>(file->GetSize()) - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
     if (readData)
     {
         pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
@@ -2354,7 +2354,7 @@ const PixelFormat LibPVRHelper::GetCompressedFormat(const uint64 pixelFormat)
 
     return FORMAT_INVALID;
 }
-    
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -2515,7 +2515,7 @@ PVRHeaderV3 LibPVRHelper::CreateDecompressedHeader(const PVRHeaderV3& compressed
 
     return decompressedHeader;
 }
-   
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

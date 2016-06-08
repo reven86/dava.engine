@@ -347,7 +347,7 @@ bool Logger::CutOldLogFileIfExist(const FilePath& logFile) const
 
     const uint32 sizeToCut = cutLogSize;
 
-    const uint32 fileSize = log->GetSize();
+    const uint32 fileSize = static_cast<uint32>(log->GetSize());
     if (sizeToCut >= fileSize)
     {
         return true; // ok! Have less data than we should to cut.

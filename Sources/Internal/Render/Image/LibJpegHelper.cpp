@@ -74,7 +74,7 @@ eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
     jpegErrorManager jerr;
 
     infile->Seek(0, File::SEEK_FROM_START);
-    uint32 fileSize = infile->GetSize();
+    uint32 fileSize = static_cast<uint32>(infile->GetSize());
     uint8* fileBuffer = new uint8[fileSize];
     infile->Read(fileBuffer, fileSize);
     infile->Seek(0, File::SEEK_FROM_START);
@@ -107,7 +107,7 @@ eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
 #endif
 
     jpeg_create_decompress(&cinfo);
-    
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -228,14 +228,14 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
         SafeRelease(convertedImage);
         return eErrorCode::ERROR_WRITE_FAIL;
     }
-    
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
     jpeg_create_compress(&cinfo);
-    
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -285,7 +285,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     DVASSERT(infile);
 
     infile->Seek(0, File::SEEK_FROM_START);
-    uint32 fileSize = infile->GetSize();
+    uint32 fileSize = static_cast<uint32>(infile->GetSize());
     uint8* fileBuffer = new uint8[fileSize];
     infile->Read(fileBuffer, fileSize);
     cinfo.err = jpeg_std_error(&jerr.pub);
@@ -298,7 +298,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
         infile->Seek(0, File::SEEK_FROM_START);
         return ImageInfo();
     }
-    
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"

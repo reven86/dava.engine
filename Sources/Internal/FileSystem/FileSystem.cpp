@@ -22,7 +22,7 @@
 #include <sys/sysctl.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
 #include <direct.h>
-#include <io.h> 
+#include <io.h>
 #include <Shlobj.h>
 #include <tchar.h>
 #include <process.h>
@@ -100,7 +100,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 
     if (IsDirectory(filePath))
         return DIRECTORY_EXISTS;
-    
+
 #ifdef __DAVAENGINE_WINDOWS__
     FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
     BOOL res = ::CreateDirectoryW(path.c_str(), 0);
@@ -372,7 +372,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
-    
+
 #if defined(__DAVAENGINE_WINDOWS__)
     FilePath::NativeStringType path = newWorkingDirectory.GetNativeAbsolutePathname();
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
@@ -701,11 +701,11 @@ String FileSystem::ReadFileContents(const FilePath& pathname)
     }
     else
     {
-        uint32 fileSize = fp->GetSize();
+        uint64 fileSize = fp->GetSize();
 
-        fileContents.resize(fileSize);
+        fileContents.resize(static_cast<size_t>(fileSize));
 
-        uint32 dataRead = fp->Read(&fileContents[0], fileSize);
+        uint32 dataRead = fp->Read(&fileContents[0], static_cast<uint32>(fileSize));
 
         if (dataRead != fileSize)
         {
@@ -716,7 +716,7 @@ String FileSystem::ReadFileContents(const FilePath& pathname)
     return fileContents;
 }
 
-uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
+uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint64& fileSize)
 {
     File* fp = File::Create(pathname, File::OPEN | File::READ);
     if (!fp)
@@ -725,8 +725,8 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
         return 0;
     }
     fileSize = fp->GetSize();
-    uint8* bytes = new uint8[fileSize];
-    uint32 dataRead = fp->Read(bytes, fileSize);
+    uint8* bytes = new uint8[static_cast<size_t>(fileSize)];
+    uint32 dataRead = fp->Read(bytes, static_cast<uint32>(fileSize));
 
     if (dataRead != fileSize)
     {
@@ -747,7 +747,7 @@ bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffe
         return false;
     }
 
-    uint32 fileSize = fp->GetSize();
+    uint32 fileSize = static_cast<uint32>(fp->GetSize());
     buffer.resize(fileSize);
     uint32 dataRead = fp->Read(buffer.data(), fileSize);
 
@@ -966,7 +966,7 @@ bool FileSystem::CompareBinaryFiles(const FilePath& filePath1, const FilePath& f
     return res;
 }
 
-bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
+bool FileSystem::GetFileSize(const FilePath& path, uint64& size)
 {
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if (file)

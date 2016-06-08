@@ -201,7 +201,7 @@ bool MMBigDataTransferService::BeginNextSnapshot(SnapshotInfo* snapshot)
     fileHandle = File::Create(snapshot->filename, File::OPEN | File::READ);
     if (fileHandle != nullptr)
     {
-        snapshot->fileSize = fileHandle->GetSize();
+        snapshot->fileSize = static_cast<uint32>(fileHandle->GetSize());
         if (snapshot->fileSize > 0)
         {
             SendNextChunk(snapshot);

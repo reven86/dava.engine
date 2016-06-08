@@ -23,17 +23,17 @@ bool XMLParser::ParseFile(const FilePath& fileName, XMLParserDelegate* delegatep
     File* xmlFile = File::Create(fileName, File::OPEN | File::READ);
     if (xmlFile)
     {
-        int32 dataSize = xmlFile->GetSize();
+        uint64 dataSize = xmlFile->GetSize();
         //			Logger::FrameworkDebug("[XMLParser::ParseFile] dataSize = %d", dataSize);
 
-        uint8* data = new uint8[dataSize];
+        uint8* data = new uint8[static_cast<size_t>(dataSize)];
         if (data)
         {
-            int32 readBytes = xmlFile->Read(data, dataSize);
+            uint32 readBytes = xmlFile->Read(data, static_cast<uint32>(dataSize));
             //				Logger::FrameworkDebug("[XMLParser::ParseFile] readBytes = %d", readBytes);
             if (readBytes == dataSize)
             {
-                retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
+                retValue = XMLParser::ParseBytes(data, static_cast<uint32>(dataSize), delegateptr);
             }
             else
             {
