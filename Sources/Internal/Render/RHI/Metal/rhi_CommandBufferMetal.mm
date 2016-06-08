@@ -51,6 +51,7 @@ CommandBufferMetal_t
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
+    bool commit_on_end;
 
     void _ApplyVertexData( unsigned firstVertex=0 );
 };
@@ -233,6 +234,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
+        cb->commit_on_end = !pass->do_present;
+
         pass->cmdBuf[0] = cb_h;
         cmdBuf[0] = cb_h;
 
@@ -261,6 +264,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             cb->cur_vstream_count = 0;
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
+
+            cb->commit_on_end = !pass->do_present;
 
             pass->cmdBuf[i] = cb_h;
             cmdBuf[i] = cb_h;
@@ -303,9 +308,6 @@ metal_RenderPass_End(Handle pass_h)
     {
         [pass->encoder endEncoding];
     }
-
-    if (!pass->do_present)
-        [pass->buf commit];
 
     MTL_TRACE("  drawable %p %i", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount]);
 }
@@ -351,6 +353,9 @@ metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
           sync->is_signaled = true;
         }];
     }
+
+    if (cb->commit_on_end)
+        [cb->buf commit];
 }
 
 //------------------------------------------------------------------------------
@@ -978,8 +983,6 @@ metal_Present(Handle syncObject)
                                     }
 
                                   }];
-
-        [pbuf commit];
     }
 
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
@@ -987,11 +990,13 @@ metal_Present(Handle syncObject)
         RenderPassMetal_t* rp = *p;
 
         MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
-        //        [rp->buf commit];
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
         {
             Handle cbh = rp->cmdBuf[b];
             CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
+
+            if (!cb->commit_on_end)
+                [cb->buf commit];
 
             cb->buf = nil;
             [cb->encoder release];
