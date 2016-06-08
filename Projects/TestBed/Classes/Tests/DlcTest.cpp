@@ -271,7 +271,14 @@ void DlcTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     options->SaveToYamlFile(optionsPath);
-    DownloadManager::Instance()->SetDownloadSpeedLimit(0);
+
+    // App crashes when exiting with active DlcTest screen as DownloadManager destroyed
+    // before UIControlSystem in Core::ReleaseSingletons
+    // So add this strange check
+    if (DownloadManager::Instance() != nullptr)
+    {
+        DownloadManager::Instance()->SetDownloadSpeedLimit(0);
+    }
 
     SafeRelease(dlSpeedIn);
     SafeRelease(gameVersionIn);
