@@ -49,10 +49,11 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
 ResourceArchive::~ResourceArchive() = default;
 
-ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, Compressor::Type compressionType_)
+ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, uint32 hash_, Compressor::Type compressionType_)
     : relativeFilePath(relativePath_)
     , originalSize(originalSize_)
     , compressedSize(compressedSize_)
+    , hash(hash_)
     , compressionType(compressionType_)
 {
 }
@@ -100,7 +101,7 @@ bool ResourceArchive::UnpackToFolder(const FilePath& dir) const
             Logger::Error("can't open file: %s", filePath.GetStringValue().c_str());
             return false;
         }
-        uint32 bytesInFile = file->Write(content.data(), static_cast<uint32>(content.size()));
+        uint32 bytesInFile = file->Write(content.data(), static_cast<size_t>(content.size()));
         if (bytesInFile != content.size())
         {
             Logger::Error("can't write file: %s", res.relativeFilePath.c_str());

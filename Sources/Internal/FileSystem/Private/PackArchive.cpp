@@ -22,7 +22,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("can't read header from packfile: " + fileName);
     }
-    if (headerBlock.marker != FileMarker)
+    if (headerBlock.packArchiveMarker != FileMarker)
     {
         throw std::runtime_error("incorrect marker in pack file: " + fileName);
     }
