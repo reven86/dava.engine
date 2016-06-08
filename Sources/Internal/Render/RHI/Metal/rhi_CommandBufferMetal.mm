@@ -31,8 +31,8 @@ RenderPassMetal_t
     MTLRenderPassDescriptor* desc;
     id<MTLCommandBuffer> buf;
     id<MTLParallelRenderCommandEncoder> encoder;
-    //    id<MTLCommandBuffer> blit_buf;
-    //    id<MTLBlitCommandEncoder> blit_encoder;
+    id<MTLCommandBuffer> blit_buf;
+    id<MTLBlitCommandEncoder> blit_encoder;
     std::vector<Handle> cmdBuf;
     int priority;
     uint32 do_present:1;
@@ -117,6 +117,8 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
     DVASSERT(cmdBufCount);
 
+    bool need_drawable = passConf.colorBuffer[0].texture == InvalidHandle;
+
     if (_Metal_NewFramePending)
     {
         MTL_TRACE("--- next-frame");
@@ -125,31 +127,29 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         f.drawable = nil;
         _Metal_Frame.push_back(f);
         _Metal_NewFramePending = false;
-    }
 
-    bool need_drawable = passConf.colorBuffer[0].texture == InvalidHandle;
+        if (need_drawable)
+        {
+            @autoreleasepool
+            {
+                _Metal_Frame.back().drawable = [_Metal_Layer nextDrawable];
+                [_Metal_Frame.back().drawable retain];
+                MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
+                _Metal_DefFrameBuf = _Metal_Frame.back().drawable.texture;
+            }
+        }
+    }
 
     if (need_drawable && !_Metal_Frame.back().drawable)
     {
-        @autoreleasepool
-        {
-            _Metal_Frame.back().drawable = [_Metal_Layer nextDrawable];
-            [_Metal_Frame.back().drawable retain];
-            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
-            _Metal_DefFrameBuf = _Metal_Frame.back().drawable.texture;
-        }
+        _Metal_Frame.clear();
 
-        if (!_Metal_Frame.back().drawable)
-        {
-            _Metal_Frame.clear();
+        for (unsigned i = 0; i != cmdBufCount; ++i)
+            cmdBuf[i] = InvalidHandle;
 
-            for (unsigned i = 0; i != cmdBufCount; ++i)
-                cmdBuf[i] = InvalidHandle;
-
-            MTL_TRACE("-rp.alloc InvalidHande (no drawable)");
-            _Metal_NewFramePending = true;
-            return InvalidHandle;
-        }
+        MTL_TRACE("-rp.alloc InvalidHande (no drawable)");
+        _Metal_NewFramePending = true;
+        return InvalidHandle;
     }
 
     Handle pass_h = RenderPassPool::Alloc();
@@ -181,7 +181,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     if (passConf.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
         pass->desc.depthAttachment.texture = _Metal_DefDepthBuf;
-        pass->desc.stencilAttachment.texture = _Metal_DefStencilBuf;
+        ///        pass->desc.stencilAttachment.texture = _Metal_DefStencilBuf;
         ds_used = true;
     }
     else if (passConf.depthStencilBuffer.texture != rhi::InvalidHandle)
@@ -196,9 +196,9 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         pass->desc.depthAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
         pass->desc.depthAttachment.clearDepth = passConf.depthStencilBuffer.clearDepth;
 
-        pass->desc.stencilAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        pass->desc.stencilAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        pass->desc.stencilAttachment.clearStencil = passConf.depthStencilBuffer.clearStencil;
+        ///        pass->desc.stencilAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        ///        pass->desc.stencilAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+        ///        pass->desc.stencilAttachment.clearStencil = passConf.depthStencilBuffer.clearStencil;
     }
 
     if (passConf.queryBuffer != InvalidHandle)
@@ -271,10 +271,10 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     }
 
     //    pass->blit_buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-    //    pass->blit_buf = [_Metal_DefCmdQueue commandBuffer];
-    //    [pass->blit_buf retain];
-    //    pass->blit_encoder = [pass->blit_buf blitCommandEncoder];
-    //    [pass->blit_encoder retain];
+    pass->blit_buf = [_Metal_DefCmdQueue commandBuffer];
+    [pass->blit_buf retain];
+    pass->blit_encoder = [pass->blit_buf blitCommandEncoder];
+    [pass->blit_encoder retain];
 
     return pass_h;
 }
@@ -303,10 +303,6 @@ metal_RenderPass_End(Handle pass_h)
     {
         [pass->encoder endEncoding];
     }
-
-    if (!pass->do_present)
-        [pass->buf commit];
-
     MTL_TRACE("  drawable %p %i", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount]);
 }
 
@@ -898,21 +894,22 @@ metal_Present(Handle syncObject)
 
             rp->desc = nullptr;
 
-            //            [rp->blit_encoder endEncoding];
+            [rp->blit_encoder endEncoding];
 
             [rp->buf release];
             rp->buf = nil;
             [rp->encoder release];
             rp->encoder = nil;
 
-            //            [rp->blit_encoder release];
-            //            rp->blit_encoder = nil;
-            //            [rp->blit_buf release];
-            //            rp->blit_buf = nil;
+            [rp->blit_encoder release];
+            rp->blit_encoder = nil;
+            [rp->blit_buf release];
+            rp->blit_buf = nil;
 
             rp->cmdBuf.clear();
         }
 
+        [_Metal_Frame.back().drawable release]; // this additional 'release' is due to workaround
         [_Metal_Frame.back().drawable release];
         _Metal_Frame.back().drawable = nil;
         _Metal_NewFramePending = true;
@@ -968,18 +965,102 @@ metal_Present(Handle syncObject)
         [pbuf presentDrawable:_Metal_Frame.back().drawable];
 
         unsigned f = frame_n;
-        [pbuf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
-                                  {
-                                    if (syncObject != InvalidHandle)
-                                    {
-                                        SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+        [pbuf addCompletedHandler:^(id<MTLCommandBuffer> cb) {
+          MTL_TRACE("  .frame %u complete", f);
+        }];
+    }
 
-                                        sync->is_signaled = true;
-                                    }
+    if (pass.size() && pass.back()->cmdBuf.size())
+    {
+        Handle last_cb_h = pass.back()->cmdBuf.back();
+        CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
+        id<MTLTexture> back_buf = _Metal_DefFrameBuf;
 
-                                  }];
+        _Metal_ScreenshotCallbackSync.Lock();
+        {
+            if (_Metal_PendingScreenshotCallback)
+            {
+                if (!_ScreenshotTexture)
+                {
+                    MTLPixelFormat pf = MTLPixelFormatBGRA8Unorm;
+                    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:_Metal_DefFrameBuf.width height:_Metal_DefFrameBuf.height mipmapped:NO];
 
-        [pbuf commit];
+                    desc.textureType = MTLTextureType2D;
+                    desc.mipmapLevelCount = 1;
+                    desc.sampleCount = 1;
+
+                    _ScreenshotTexture = [_Metal_Device newTextureWithDescriptor:desc];
+                }
+
+                if (!_Metal_ScreenshotData)
+                {
+                    MTLOrigin org;
+                    MTLSize sz;
+                    org.x = 0;
+                    org.y = 0;
+                    org.z = 0;
+                    sz.width = _Metal_DefFrameBuf.width;
+                    sz.height = _Metal_DefFrameBuf.height;
+                    sz.depth = 1;
+                    [pass.back()->blit_encoder copyFromTexture:back_buf sourceSlice:0 sourceLevel:0 sourceOrigin:org sourceSize:sz toTexture:_ScreenshotTexture destinationSlice:0 destinationLevel:0 destinationOrigin:org];
+                }
+            }
+        }
+        _Metal_ScreenshotCallbackSync.Unlock();
+
+        [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
+                                          {
+                                            if (syncObject != InvalidHandle)
+                                            {
+                                                SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+
+                                                sync->is_signaled = true;
+                                            }
+
+                                          }];
+
+        _Metal_ScreenshotCallbackSync.Lock();
+        if (_Metal_PendingScreenshotCallback)
+        {
+            [pass.back()
+             ->blit_buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
+                                            {
+                                              _Metal_ScreenshotCallbackSync.Lock();
+                                              if (_Metal_PendingScreenshotCallback)
+                                              {
+                                                  uint32 stride = _Metal_DefFrameBuf.width * sizeof(uint32);
+                                                  uint32 sz = stride * _Metal_DefFrameBuf.height;
+                                                  _Metal_ScreenshotData = ::malloc(sz);
+                                                  MTLRegion rgn;
+
+                                                  rgn.origin.x = 0;
+                                                  rgn.origin.y = 0;
+                                                  rgn.origin.z = 0;
+                                                  rgn.size.width = _Metal_DefFrameBuf.width;
+                                                  rgn.size.height = _Metal_DefFrameBuf.height;
+                                                  rgn.size.depth = 1;
+
+                                                  [_ScreenshotTexture getBytes:_Metal_ScreenshotData bytesPerRow:stride bytesPerImage:sz fromRegion:rgn mipmapLevel:0 slice:0];
+                                                  for (uint8 *p = (uint8 *)_Metal_ScreenshotData, *p_end = (uint8 *)_Metal_ScreenshotData + _Metal_DefFrameBuf.width * _Metal_DefFrameBuf.height * 4; p != p_end; p += 4)
+                                                  {
+                                                      uint8 tmp = p[0];
+                                                      p[0] = p[2];
+                                                      p[2] = tmp;
+                                                      p[3] = 0xFF;
+                                                  }
+
+                                                  (*_Metal_PendingScreenshotCallback)(_Metal_DefFrameBuf.width, _Metal_DefFrameBuf.height, _Metal_ScreenshotData);
+                                                  ::free(_Metal_ScreenshotData);
+                                                  _Metal_PendingScreenshotCallback = nullptr;
+                                                  _Metal_ScreenshotData = nullptr;
+                                                  [_ScreenshotTexture setPurgeableState:MTLPurgeableStateEmpty];
+                                                  _ScreenshotTexture = nil;
+                                              }
+
+                                              _Metal_ScreenshotCallbackSync.Unlock();
+                                            }];
+        };
+        _Metal_ScreenshotCallbackSync.Unlock();
     }
 
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
@@ -987,7 +1068,7 @@ metal_Present(Handle syncObject)
         RenderPassMetal_t* rp = *p;
 
         MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
-        //        [rp->buf commit];
+        [rp->buf commit];
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
         {
             Handle cbh = rp->cmdBuf[b];
@@ -1005,18 +1086,18 @@ metal_Present(Handle syncObject)
         //        rp->desc.depthAttachment.texture = nil;
         rp->desc = nullptr;
 
-        //        [rp->blit_encoder endEncoding];
-        //        [rp->blit_buf commit];
+        [rp->blit_encoder endEncoding];
+        [rp->blit_buf commit];
 
         [rp->buf release];
         rp->buf = nil;
         [rp->encoder release];
         rp->encoder = nil;
 
-        //        [rp->blit_encoder release];
-        //        rp->blit_encoder = nil;
-        //        [rp->blit_buf release];
-        //        rp->blit_buf = nil;
+        [rp->blit_encoder release];
+        rp->blit_encoder = nil;
+        [rp->blit_buf release];
+        rp->blit_buf = nil;
 
         rp->cmdBuf.clear();
     }
