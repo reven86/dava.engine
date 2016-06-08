@@ -50,6 +50,7 @@ protected slots:
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool isRedo);
+    void OnThemeChanged();
 
 private:
     void showEvent(QShowEvent* event) override;
