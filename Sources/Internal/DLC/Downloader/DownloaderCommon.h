@@ -84,6 +84,16 @@ struct DownloadTaskDescription
                             uint64 _downloadOffset,
                             uint64 _downloadSize);
 
+    DownloadTaskDescription(const String& srcUrl,
+                            void* buffer,
+                            uint32 bufSize,
+                            DownloadType downloadMode,
+                            int32 _timeout,
+                            int32 _retriesCount,
+                            uint8 _partsCount,
+                            uint64 _downloadOffset,
+                            uint64 _downloadSize);
+
     uint32 id;
     String url;
     FilePath storePath;
@@ -100,6 +110,9 @@ struct DownloadTaskDescription
 
     uint64 downloadOffset;
     uint64 downloadSize;
+    void* memoryBuffer = nullptr;
+    uint32 memoryBufferSize = 0;
+    uint32 memoryBufferContentSize = 0;
 };
 
 /*
