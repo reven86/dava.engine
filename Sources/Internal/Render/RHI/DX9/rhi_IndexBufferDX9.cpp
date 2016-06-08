@@ -18,16 +18,12 @@ IndexBufferDX9_t
 {
 public:
     IndexBufferDX9_t();
-    ~IndexBufferDX9_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
-    uint8* mappedData;
-    unsigned isMapped : 1;
-    unsigned updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -40,21 +36,7 @@ RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, 
 IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
-    , mappedData(nullptr)
-    , isMapped(false)
-    , updatePending(false)
 {
-}
-
-//------------------------------------------------------------------------------
-
-IndexBufferDX9_t::~IndexBufferDX9_t()
-{
-    DVASSERT(!isMapped)
-    if (mappedData)
-    {
-        ::free(mappedData);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -62,8 +44,10 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     DVASSERT(desc.size);
-
     bool success = false;
+
+    recreatePending = false;
+
     UpdateCreationDesc(desc);
 
     if (desc.size)
@@ -82,6 +66,8 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
             break;
         }
+
+        DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
         DX9Command cmd[] =
@@ -118,9 +104,17 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 {
     if (buffer)
     {
-        DX9Command cmd[] = { DX9Command::RELEASE, { reinterpret_cast<uint64_t>(buffer) } };
+        DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
+        DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
+    }
+
+    if (!recreatePending && mappedData)
+    {
+        DVASSERT(!isMapped)
+        ::free(mappedData);
+        mappedData = nullptr;
     }
 }
 
@@ -149,6 +143,7 @@ static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
+    self->recreatePending = false;
     self->MarkRestored();
     self->Destroy();
     IndexBufferDX9Pool::Free(ib);
@@ -169,14 +164,14 @@ dx9_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned si
         void* ptr = nullptr;
         DX9Command cmd1 = { DX9Command::LOCK_INDEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
-        ExecDX9(&cmd1, 1);
+        ExecDX9(&cmd1, 1, false);
         if (SUCCEEDED(cmd1.retval))
         {
             memcpy(ptr, data, size);
 
             DX9Command cmd2 = { DX9Command::UNLOCK_INDEX_BUFFER, { uint64_t(&(self->buffer)) } };
 
-            ExecDX9(&cmd2, 1);
+            ExecDX9(&cmd2, 1, false);
             success = true;
 
             self->MarkRestored();
@@ -293,6 +288,7 @@ void ReleaseAll()
     IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
+        b->recreatePending = true;
         b->Destroy(true);
     }
     IndexBufferDX9Pool::Unlock();

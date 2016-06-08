@@ -9,7 +9,7 @@
 #include <QSet>
 
 QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue = "");
-QVector<QString> GetArrayValueFromYamlNode(const YAML::Node* node);
+QStringList GetArrayValueFromYamlNode(const YAML::Node* node);
 
 class ConfigParser;
 
@@ -19,6 +19,7 @@ struct AppVersion
     QString runPath;
     QString cmd;
     QString url;
+    QString buildNum;
 
     static AppVersion LoadFromYamlNode(const YAML::Node* node);
 };
@@ -49,10 +50,7 @@ struct Application
 
     static Application LoadFromYamlNode(const YAML::Node* node);
 
-private:
     QVector<AppVersion> versions;
-
-    friend class ConfigParser;
 };
 
 struct Branch
@@ -81,18 +79,17 @@ struct Branch
 
     static Branch LoadFromYamlNode(const YAML::Node* node);
 
-private:
     QVector<Application> applications;
-
-    friend class ConfigParser;
 };
 
 class ConfigParser
 {
 public:
-    ConfigParser(const QByteArray& configData);
-
-    void SaveToYamlFile(const QString& filePath);
+    ConfigParser();
+    void Clear();
+    bool Parse(const QByteArray& data);
+    QByteArray Serialize();
+    void SaveToFile(const QString& filePath);
 
     void InsertApplication(const QString& branchID, const QString& appID, const AppVersion& version);
     void RemoveApplication(const QString& branchID, const QString& appID, const QString& version);
@@ -107,33 +104,37 @@ public:
 
     void RemoveBranch(const QString& branchID);
 
-    const QString& GetString(const QString& stringID);
+    QString GetString(const QString& stringID) const;
+    const QMap<QString, QString>& GetStrings() const;
 
     void SetLauncherURL(const QString& url);
     void SetWebpageURL(const QString& url);
     void SetRemoteConfigURL(const QString& url);
     void SetLastNewsID(const QString& id);
 
-    const QString& GetLauncherVersion();
-    const QString& GetLauncherURL();
-    const QString& GetWebpageURL();
-    const QString& GetRemoteConfigURL();
-    const QString& GetNewsID();
+    const QString& GetLauncherVersion() const;
+    const QString& GetLauncherURL() const;
+    const QString& GetWebpageURL() const;
+    const QString& GetNewsID() const;
 
-    const QVector<QString>& GetFavorites();
+    const QStringList& GetFavorites();
 
     void MergeBranchesIDs(QSet<QString>& branches);
 
     void CopyStringsAndFavsFromConfig(const ConfigParser& parser);
 
+    void UpdateApplicationsNames();
+
 private:
+    bool ParseJSON(const QByteArray& configData);
+
     QString launcherVersion;
     QString launcherURL;
     QString webPageURL;
     QString remoteConfigURL;
     QString newsID;
 
-    QVector<QString> favorites;
+    QStringList favorites;
 
     QVector<Branch> branches;
     QMap<QString, QString> strings;

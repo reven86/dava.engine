@@ -15,6 +15,7 @@ using DAVA::Logger;
 
 #include "_dx9.h"
 #include <vector>
+#include <atomic>
 
 namespace rhi
 {
@@ -48,8 +49,6 @@ static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
 static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
-
-static bool _D3D9_DeviceLost = false;
 static std::atomic<bool> _DX9_ResetPending = false;
 
 static DAVA::Thread::Id _DX9_ThreadId = 0;
@@ -1344,7 +1343,7 @@ _DX9_ExecuteQueuedCommands()
     if (_DX9_ResetPending)
     {
         HRESULT hr = _D3D9_Device->TestCooperativeLevel();
-        if ((_DX9_PendingImmediateCmdCount == 0) && (_D3D9_DeviceLost && hr == D3DERR_DEVICENOTRESET) || (!_D3D9_DeviceLost && SUCCEEDED(hr)))
+        if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
@@ -1368,13 +1367,11 @@ _DX9_ExecuteQueuedCommands()
 
                 Logger::Info("Device reset completed");
 
-                _D3D9_DeviceLost = false;
                 _DX9_ResetPending = false;
             }
             else
             {
-                DAVA::String info = DAVA::Format("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
-                DVASSERT_MSG(0, info.c_str());
+                Logger::Error("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
             }
         }
         else
@@ -1391,9 +1388,7 @@ _DX9_ExecuteQueuedCommands()
             if (hr == D3DERR_DEVICELOST)
             {
                 _RejectAllFrames();
-
                 _DX9_ResetPending = true;
-                _D3D9_DeviceLost = true;
             }
             else if (hr == 0x88760872)
             {
@@ -1427,6 +1422,8 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 #else
     CHECK_HR(hr)
 #endif
+
+    CommandBufferDX9::BlockNonRenderThreads();
 
     for (DX9Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1546,12 +1543,12 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
+            cmd->retval = ((IDirect3DBaseTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
             CHECK_HR(cmd->retval);
         }
         break;
 
-        case DX9Command::GET_TEXTURE_SURFACE_LEVEl:
+        case DX9Command::GET_TEXTURE_SURFACE_LEVEL:
         {
             cmd->retval = ((IDirect3DTexture9*)(arg[0]))->GetSurfaceLevel(UINT(arg[1]), (IDirect3DSurface9**)(arg[2]));
             CHECK_HR(cmd->retval);
@@ -1585,12 +1582,60 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 UINT lev = UINT(arg[1]);
                 void* src = (void*)(arg[2]);
                 unsigned sz = unsigned(arg[3]);
-                D3DLOCKED_RECT rc = { 0 };
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                D3DLOCKED_RECT rc = {};
                 HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
+                    cmd->retval = tex->UnlockRect(lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
+        case DX9Command::READ_TEXTURE_LEVEL:
+        {
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                unsigned sz = unsigned(arg[2]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[3]);
+                void* dst = (void*)(arg[4]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
+
                     cmd->retval = tex->UnlockRect(lev);
                 }
                 else
@@ -1634,12 +1679,61 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
                 void* src = (void*)(arg[3]);
                 unsigned sz = unsigned(arg[4]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[5]);
                 D3DLOCKED_RECT rc = { 0 };
                 HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
+                    cmd->retval = tex->UnlockRect(face, lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
+        case DX9Command::READ_CUBETEXTURE_LEVEL:
+        {
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
+                unsigned sz = unsigned(arg[3]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                void* dst = (void*)(arg[5]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
+
                     cmd->retval = tex->UnlockRect(face, lev);
                 }
                 else
@@ -1692,13 +1786,15 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::QUERY_INTERFACE:
         {
-            cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
         }
         break;
 
         case DX9Command::RELEASE:
         {
-            ((IUnknown*)arg[0])->Release();
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->Release();
         }
         break;
 
@@ -1714,6 +1810,11 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
 void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 {
+    if (DAVA::Thread::GetCurrentId() == _DX9_ThreadId)
+    {
+        DVASSERT_MSG(force_immediate, "Call to ExecDX9 from render thread without force_immediate");
+    }
+
     CommandBufferDX9::BlockNonRenderThreads();
 
     if (force_immediate || !_DX9_RenderThreadFrameCount)
