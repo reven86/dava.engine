@@ -189,6 +189,7 @@ protected:
     bool eventFilter(QObject* object, QEvent* event) override;
 
     void SetupMainMenu();
+    void SetupThemeActions();
     void SetupToolBars();
     void SetupStatusBar();
     void SetupDocks();

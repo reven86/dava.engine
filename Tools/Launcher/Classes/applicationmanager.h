@@ -15,9 +15,6 @@ class ApplicationManager : public QObject
     Q_OBJECT
 public:
     explicit ApplicationManager(QObject* parent = 0);
-    ~ApplicationManager();
-
-    void RefreshRemoteConfig();
 
     QString GetString(const QString& stringID) const;
 
@@ -32,6 +29,7 @@ public:
 
     bool ShouldShowNews();
     void NewsShowed();
+    QString GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExist = true) const;
 
 signals:
     void Refresh();
@@ -45,8 +43,8 @@ private:
 
     QString localConfigFilePath;
 
-    ConfigParser* localConfig;
-    ConfigParser* remoteConfig;
+    ConfigParser localConfig;
+    ConfigParser remoteConfig;
 
     friend class ConfigDownloader;
 };

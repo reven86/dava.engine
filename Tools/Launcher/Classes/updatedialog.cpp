@@ -62,10 +62,10 @@ private:
 };
 }
 
-UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
+UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::UpdateDialog)
-    , networkManager(accessManager)
+    , networkManager(new QNetworkAccessManager(this))
     , tasks(taskQueue)
     , appManager(_appManager)
 {
@@ -193,8 +193,7 @@ void UpdateDialog::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = nullptr;
 
-        QString appDir = FileManager::GetApplicationDirectory(task.branchID, task.appID);
-
+        QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
         QString runPath = appDir + task.version.runPath;
         while (ProcessHelper::IsProcessRuning(runPath))
             ErrorMessenger::ShowRetryDlg(false);
@@ -235,7 +234,7 @@ void UpdateDialog::DownloadFinished()
 
 bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
 {
-    UpdateDialog_local::UpdateDialogZipFunctor functor("", "", tr("Archive not found or damaged!"), this, nullptr);
+    UpdateDialog_local::UpdateDialogZipFunctor functor("Retreiveing archive info...", "Unpacking archive...", tr("Archive not found or damaged!"), this, nullptr);
     return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
