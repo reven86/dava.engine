@@ -456,7 +456,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
     if (textControl)
     {
-        nativeText = ref new TextBox();
+        nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
         InstallTextEventHandlers();

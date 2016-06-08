@@ -14,6 +14,7 @@ class Font;
 class Color;
 class UIEvent;
 class Vector2;
+class TextBox;
 struct Rect;
 
 // This implementation simulate iOS/Android native controls,
@@ -23,6 +24,8 @@ struct Rect;
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
+    static const uint32 INVALID_POS = uint32(-1);
+
     friend class UITextField;
     TextFieldStbImpl(UITextField* control);
     ~TextFieldStbImpl();
@@ -76,14 +79,16 @@ public:
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
-    const Vector<TextBlock::Line>& GetMultilineInfo() override;
-    const Vector<float32>& GetCharactersSizes() override;
+    const TextBox* GetTextBox() override;
     uint32 GetTextLength() override;
     WideString::value_type GetCharAt(uint32 i) override;
 
 private:
+    void DropLastCursorAndSelection();
+    void CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight);
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
+    void UpdateOffset(const Rect& visibleRect);
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
@@ -99,7 +104,9 @@ private:
     Vector<Rect> selectionRects;
     Rect cursorRect;
     Vector2 staticTextOffset;
-    void UpdateOffset(const Rect& visibleRect);
+    uint32 lastCursorPos = INVALID_POS;
+    uint32 lastSelStart = INVALID_POS;
+    uint32 lastSelEnd = INVALID_POS;
 };
 
 } // end namespace DAVA
