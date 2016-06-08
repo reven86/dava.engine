@@ -18,7 +18,15 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     localPacksDir = localPacksDir_;
     readOnlyPacksDir = readOnlyPacksDir_;
     packsUrlCommon = remotePacksURL_;
+    if (packsUrlCommon.empty() || packsUrlCommon.back() != '/')
+    {
+        throw std::runtime_error("incorrect common url");
+    }
     packsUrlGpu = packsUrlGpu_;
+    if (packsUrlGpu.empty() || packsUrlGpu.back() != '/')
+    {
+        throw std::runtime_error("incorrect gpu url");
+    }
     requestManager.reset(new RequestManager(*this));
 
     onPackChange = &signal;
