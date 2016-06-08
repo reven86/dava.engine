@@ -32,8 +32,16 @@ public:
     // Checks tasks status and determine current task and handles tasks queues
     void Update();
 
-    // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode = RESUMED, const int16 partsCount = -1, int32 timeout = 30, int32 retriesCount = 3);
+    // Schedule download content or get content size (indicated by downloadMode)
+    uint32 Download(const String& srcUrl,
+                    const FilePath& storeToFilePath,
+                    const DownloadType downloadMode = RESUMED,
+                    const int16 partsCount = -1,
+                    int32 timeout = 30,
+                    int32 retriesCount = 3,
+                    uint64 downloadOffset = 0,
+                    uint64 downloadSize = 0);
+    uint32 DownloadRange(const String& srcUrl, const FilePath& storeToFilePath, uint64 downloadOffset, uint64 downloadSize);
 
     // Retry finished download
     void Retry(const uint32& taskId);

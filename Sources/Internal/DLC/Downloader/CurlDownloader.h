@@ -37,7 +37,7 @@ protected:
      \param[in] partsCount - quantity of download threads
      \param[in] timeout - operation timeout
      */
-    DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout) override;
+    DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout, uint64 downloadOffset, uint64 downloadSize) override;
     /**
      \brief Sets maximum allowed download speed. -1 means unlimited.
      \param[in] limit - speed limit in bytes per second.

@@ -41,8 +41,10 @@ protected:
         \param[in] savePath - path to save location of remote file
         \param[in] partsCount - quantity of download threads
         \param[in] timeout - operation timeout
+        \param[in] downloadOffset - offset to download from, used together with contentSize parameter
+        \param[in] downloadSize - size in bytes to download starting from downloadOffset; if downloadSize is zero then download full content
     */
-    virtual DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout) = 0;
+    virtual DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout, uint64 downloadOffset, uint64 downloadSize) = 0;
     /**
         \brief Interrupt download process. We expects that you will save last data chunk came before 
      */
@@ -52,7 +54,7 @@ protected:
         Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
         \param[in] ptr - pointer to data
         \param[in] storePath - path to save location of remote file
-        \param[in] size - amout of data
+        \param[in] size - amount of data
         \param[in] seek - position in file where data should be stored
     */
     virtual bool SaveData(const void* ptr, const FilePath& storePath, uint64 size);

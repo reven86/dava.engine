@@ -4,7 +4,14 @@
 
 namespace DAVA
 {
-DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl, const FilePath& storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount)
+DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
+                                                 const FilePath& storeToFilePath,
+                                                 DownloadType downloadMode,
+                                                 int32 _timeout,
+                                                 int32 _retriesCount,
+                                                 uint8 _partsCount,
+                                                 uint64 _downloadOffset,
+                                                 uint64 _downloadSize)
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
@@ -18,6 +25,8 @@ DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl, const Fil
     , downloadTotal(0)
     , downloadProgress(0)
     , partsCount(_partsCount)
+    , downloadOffset(_downloadOffset)
+    , downloadSize(_downloadSize)
 {
 }
 

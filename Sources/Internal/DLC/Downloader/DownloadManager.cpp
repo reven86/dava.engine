@@ -130,11 +130,25 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode, const int16 partsCount, int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String& srcUrl,
+                                 const FilePath& storeToFilePath,
+                                 const DownloadType downloadMode,
+                                 const int16 partsCount,
+                                 int32 timeout,
+                                 int32 retriesCount,
+                                 uint64 downloadOffset,
+                                 uint64 downloadSize)
 {
     int16 usePartsCount = (-1 == partsCount) ? (preferredDownloadThreadsCount) : partsCount;
     DVASSERT(usePartsCount > 0);
-    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, static_cast<uint8>(usePartsCount));
+    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl,
+                                                                storeToFilePath,
+                                                                downloadMode,
+                                                                timeout,
+                                                                retriesCount,
+                                                                static_cast<uint8>(usePartsCount),
+                                                                downloadOffset,
+                                                                downloadSize);
 
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -144,6 +158,11 @@ uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFi
     task->status = DL_PENDING;
 
     return task->id;
+}
+
+uint32 DownloadManager::DownloadRange(const String& srcUrl, const FilePath& storeToFilePath, uint64 downloadOffset, uint64 downloadSize)
+{
+    return Download(srcUrl, storeToFilePath, FULL, -1, 30, 3, downloadOffset, downloadSize);
 }
 
 void DownloadManager::Retry(const uint32& taskId)
@@ -555,7 +574,8 @@ DownloadError DownloadManager::Download()
 
         if (DLE_CONTENT_NOT_FOUND == error
             || DLE_CANCELLED == error
-            || DLE_FILE_ERROR == error)
+            || DLE_FILE_ERROR == error
+            || DLE_INVALID_RANGE == error)
             break;
 
         currentTask->type = RESUMED;
@@ -610,7 +630,12 @@ DownloadError DownloadManager::TryDownload()
         return currentTask->error;
     }
 
-    currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+    currentTask->error = downloader->Download(currentTask->url,
+                                              currentTask->storePath,
+                                              currentTask->partsCount,
+                                              currentTask->timeout,
+                                              currentTask->downloadOffset,
+                                              currentTask->downloadSize);
     currentTask->fileErrno = downloader->GetFileErrno();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
@@ -619,7 +644,12 @@ DownloadError DownloadManager::TryDownload()
         MakeFullDownload();
         if (DLE_NO_ERROR == currentTask->error)
         {
-            currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+            currentTask->error = downloader->Download(currentTask->url,
+                                                      currentTask->storePath,
+                                                      currentTask->partsCount,
+                                                      currentTask->timeout,
+                                                      currentTask->downloadOffset,
+                                                      currentTask->downloadSize);
             currentTask->fileErrno = downloader->GetFileErrno();
         }
     }

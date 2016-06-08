@@ -421,7 +421,7 @@ DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
     return retCode;
 }
 
-DownloadError CurlDownloader::Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout)
+DownloadError CurlDownloader::Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout, uint64 downloadOffset, uint64 downloadSize)
 {
     Logger::FrameworkDebug("[CurlDownloader::Download]");
 
@@ -437,8 +437,20 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
         return retCode;
     }
 
+    if (downloadSize == 0)
+    {
+        downloadSize = remoteFileSize;
+        downloadOffset = 0;
+    }
+
+    // Check download range against file size
+    if (downloadOffset + downloadSize > remoteFileSize)
+    {
+        return DLE_INVALID_RANGE;
+    }
+
     uint64 currentFileSize = 0;
-    // if file esists - don't reload already downloaded part, just report
+    // if file exists - don't reload already downloaded part, just report
     File* dstFile = File::Create(storePath, File::OPEN | File::READ);
     if (NULL != dstFile)
     {
@@ -455,15 +467,30 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
     }
     SafeRelease(dstFile);
 
+    // Something is wrong if already downloaded part size is greater then download size
+    if (currentFileSize > downloadSize)
+    {
+        return DLE_INVALID_RANGE;
+    }
+
+    // File already downloaded
+    if (currentFileSize == downloadSize)
+    {
+        return DLE_NO_ERROR;
+    }
+
     saveResult = DLE_NO_ERROR;
 
+    downloadSize -= currentFileSize;
+    downloadOffset += currentFileSize;
+
     // rest part of file to download
-    sizeToDownload = remoteFileSize - currentFileSize;
+    sizeToDownload = downloadSize;
 
     // reset download speed statistics
     ResetStatistics(sizeToDownload);
 
-    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(remoteFileSize / 100));
+    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(downloadSize / 100));
     // a part of file to parallel download
     // cast is needed because it is garanteed that download part is lesser than 4Gb
     uint32 fileChunkSize = Max<uint32>(minChunkSize, inMemoryBufferChunkSize);
@@ -472,8 +499,8 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
     // if file exists
     uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
 
-    // Range Request is a trying to download a part of file from some offset.
-    // file is dividen on fileChunksCount, so if they are more than 1 - then RangeRequest will be performed
+    // Range Request is a trying to download a part of file starting from some offset.
+    // File is divided into fileChunksCount chunks, so if chunk count is more than 1 - then RangeRequest will be performed
     // if we want to use more than 1 download part - then we need RangeRequest
     isRangeRequestSent = 1 < fileChunksCount || 1 < partsCount;
 
@@ -491,7 +518,7 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
         for (uint64 i = 0; i < fileChunksCount; ++i)
         {
             // download from seek pos
-            uint64 seek = currentFileSize + fileChunkSize * i;
+            uint64 seek = downloadOffset + fileChunkSize * i;
 
             // last download part considers the inaccuracy of division of file to parts
             if (i == fileChunksCount - 1)
