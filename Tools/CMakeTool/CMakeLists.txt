@@ -31,6 +31,7 @@ set( ADDED_SRC            ${RCC_APP_SRCS}  CMakeTool.rc )
 
 set( QML_SCAN_DIR				${CMAKE_CURRENT_LIST_DIR} )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()

@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "AssetCache/CachedItemValue.h"
 #include "Base/Data.h"
 #include "FileSystem/KeyedArchive.h"
@@ -376,7 +348,7 @@ void CachedItemValue::Free()
     }
 }
 
-void CachedItemValue::Export(const FilePath& folder) const
+void CachedItemValue::ExportToFolder(const FilePath& folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -404,6 +376,42 @@ void CachedItemValue::Export(const FilePath& folder) const
         {
             Logger::Error("[CachedItemValue::%s] Cannot create file %s", __FUNCTION__, savedPath.GetStringValue().c_str());
         }
+    }
+}
+
+size_type CachedItemValue::GetItemCount() const
+{
+    return dataContainer.size();
+}
+
+bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
+{
+    if (GetItemCount() != 1)
+    {
+        Logger::Error("Item count is %u, expected is 1", GetItemCount());
+        return false;
+    }
+
+    const String& itemName = dataContainer.begin()->first;
+    const CachedItemValue::ValueData& itemData = dataContainer.begin()->second;
+    if (IsDataLoaded(itemData) == false)
+    {
+        Logger::Warning("File(%s) is not loaded", itemName.c_str());
+        return false;
+    }
+
+    ScopedPtr<File> file(File::Create(exportToPath, File::CREATE | File::WRITE));
+    if (file)
+    {
+        uint32 itemSize = static_cast<uint32>(itemData->size());
+        uint32 written = file->Write(itemData->data(), itemSize);
+        DVASSERT(written == itemSize);
+        return true;
+    }
+    else
+    {
+        Logger::Error("Cannot create file %s", exportToPath.GetStringValue().c_str());
+        return false;
     }
 }
 

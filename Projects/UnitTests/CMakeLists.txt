@@ -15,6 +15,9 @@ include      ( CMake-common )
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED )
+if ( WIN32 OR MACOS )
+	find_package(DavaTools REQUIRED )
+endif()
 
 include_directories   ( "Classes" )
 
@@ -31,7 +34,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  )
+define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 generate_source_groups_project( SRC_ROOT "Classes" )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )

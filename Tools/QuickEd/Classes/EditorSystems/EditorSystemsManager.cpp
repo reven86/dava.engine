@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -39,68 +11,42 @@
 #include "EditorSystems/EditorTransformSystem.h"
 
 #include "UI/UIControl.h"
-#include "UI/Focus/UIFocusComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
+#include "UI/Input/UIInputSystem.h"
+#include "UI/UIControlSystem.h"
 
 using namespace DAVA;
 
-const Vector2 minimumSize = Vector2(16.0f, 16.0f);
-
 EditorSystemsManager::StopPredicate EditorSystemsManager::defaultStopPredicate = [](const ControlNode*) { return false; };
 
-class EditorSystemsManager::RootControl : public UIControl
+class EditorSystemsManager::InputLayerControl : public UIControl
 {
 public:
-    RootControl(EditorSystemsManager* arg);
-    void SetEmulationMode(bool arg);
-
-private:
-    bool SystemInput(UIEvent* currentInput) override;
-    bool SystemProcessInput(UIEvent* currentInput) override;
-
-    EditorSystemsManager* systemManager = nullptr;
-    bool emulationMode = false;
-    Vector2 prevPosition;
-};
-
-EditorSystemsManager::RootControl::RootControl(EditorSystemsManager* arg)
-    : UIControl()
-    , systemManager(arg)
-{
-    GetOrCreateComponent<UIFocusComponent>();
-    DVASSERT(nullptr != systemManager);
-}
-
-void EditorSystemsManager::RootControl::SetEmulationMode(bool arg)
-{
-    emulationMode = arg;
-}
-
-bool EditorSystemsManager::RootControl::SystemInput(UIEvent* currentInput)
-{
-    if (!emulationMode && nullptr != systemManager)
+    InputLayerControl(EditorSystemsManager* systemManager_)
+        : UIControl()
+        , systemManager(systemManager_)
     {
-        return SystemProcessInput(currentInput);
+        GetOrCreateComponent<UIModalInputComponent>();
     }
-    return UIControl::SystemInput(currentInput);
-}
 
-bool EditorSystemsManager::RootControl::SystemProcessInput(UIEvent* currentInput)
-{
-    if (!emulationMode && nullptr != systemManager)
+    bool SystemProcessInput(UIEvent* currentInput) override
     {
         return systemManager->OnInput(currentInput);
     }
 
-    return UIControl::SystemProcessInput(currentInput);
-}
+private:
+    EditorSystemsManager* systemManager = nullptr;
+};
 
 EditorSystemsManager::EditorSystemsManager()
-    : rootControl(new RootControl(this))
+    : rootControl(new UIControl())
+    , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
+    rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
     PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
@@ -123,6 +69,11 @@ UIControl* EditorSystemsManager::GetRootControl() const
     return rootControl.Get();
 }
 
+DAVA::UIControl* EditorSystemsManager::GetInputLayerControl() const
+{
+    return inputLayerControl.Get();
+}
+
 UIControl* EditorSystemsManager::GetScalableControl() const
 {
     return scalableControl.Get();
@@ -142,7 +93,14 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    rootControl->SetEmulationMode(emulationMode);
+    if (emulationMode)
+    {
+        rootControl->RemoveControl(inputLayerControl.Get());
+    }
+    else
+    {
+        rootControl->AddControl(inputLayerControl.Get());
+    }
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
@@ -171,7 +129,7 @@ uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-    for (uint32 i = 0; i < controlsNode->GetCount(); ++i)
+    for (uint32 i = 0, count = controlsNode->GetCount(); i < count; ++i)
     {
         if (controlsNode->Get(i) == target)
         {
@@ -299,5 +257,6 @@ void EditorSystemsManager::RefreshRootControls()
     {
         editingRootControls = newRootControls;
         EditingRootControlsChanged.Emit(editingRootControls);
+        UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
     }
 }

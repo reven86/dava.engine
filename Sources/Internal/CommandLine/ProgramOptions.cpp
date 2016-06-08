@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "CommandLine/ProgramOptions.h"
 
 #include "FileSystem/FileSystem.h"
@@ -49,6 +21,10 @@ void ProgramOptions::Option::SetValue(const VariantType& value)
 ProgramOptions::ProgramOptions(const String& _commandName)
     : commandName(_commandName)
 {
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+    AddOption("-NSDocumentRevisionsDebugMode", VariantType(false), "-dummy-");
+    AddOption("YES", VariantType(false), "-dummy-");
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
 }
 
 void ProgramOptions::AddOption(const String& optionName, const VariantType& defaultValue, const String& description, bool canBeMultiple)
@@ -73,8 +49,15 @@ void ProgramOptions::AddArgument(const String& argumentName, bool required)
 
 bool ProgramOptions::Parse(uint32 argc, char* argv[])
 {
+    Vector<String> commandLine(argv, argv + argc);
+    return Parse(commandLine);
+}
+bool ProgramOptions::Parse(const Vector<String>& argv)
+{
+    size_type argc = argv.size();
+
     // if first argument equal command name we should skip it else we should stop parsing
-    uint32 argIndex = 1; //skip executable pathname in params
+    size_type argIndex = 1; //skip executable pathname in params
     if (argIndex < argc && commandName == String(argv[argIndex]))
     {
         argIndex++;
@@ -84,11 +67,11 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
         return false;
     }
 
-    uint32 curParamPos = 0;
+    size_type curParamPos = 0;
     while (argIndex < argc)
     {
         // search if there is options with such name
-        if (!ParseOption(argIndex, argc, argv))
+        if (!ParseOption(argIndex, argv))
         {
             // set required
             if (curParamPos < arguments.size())
@@ -99,12 +82,12 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
             }
             else if (argIndex < argc)
             {
-                printf("Error - unknown argument: [%d] %s\n", argIndex, argv[argIndex]);
+                Logger::Error("Unknown argument: [%d] %s", argIndex, argv[argIndex].c_str());
                 return false;
             }
             else
             {
-                printf("Error of parsing command line\n");
+                Logger::Error("Command line parsing error");
                 return false;
             }
         }
@@ -117,7 +100,7 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     {
         if (arg.required && !arg.set)
         {
-            printf("Error - required argument not specified: %s\n", arg.name.c_str());
+            Logger::Error("Required argument is not specified: %s", arg.name.c_str());
             return false;
         }
     }
@@ -125,8 +108,10 @@ bool ProgramOptions::Parse(uint32 argc, char* argv[])
     return true;
 }
 
-bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
+bool ProgramOptions::ParseOption(size_type& argIndex, const Vector<String>& argv)
 {
+    size_type argc = argv.size();
+
     const String argString = argv[argIndex];
     for (auto& opt : options)
     {
@@ -233,55 +218,58 @@ bool ProgramOptions::ParseOption(uint32& argIndex, uint32 argc, char* argv[])
     return false;
 }
 
-void ProgramOptions::PrintUsage() const
+String ProgramOptions::GetUsageString() const
 {
-    printf("  %s ", commandName.c_str());
+    std::stringstream ss;
+    ss << "  " << commandName << " ";
 
     if (options.size() > 0)
     {
-        printf("[options] ");
+        ss << "[options] ";
     }
 
     for (auto& arg : arguments)
     {
         if (arg.required)
         {
-            printf("<%s> ", arg.name.c_str());
+            ss << "<" << arg.name << "> ";
         }
         else
         {
-            printf("[%s] ", arg.name.c_str());
+            ss << "[" << arg.name << "] ";
         }
     }
 
-    printf("\n");
+    ss << std::endl;
 
     for (auto& opt : options)
     {
-        printf("\t%s", opt.name.c_str());
+        ss << "\t" << opt.name;
 
         int optionType = opt.defaultValue.GetType();
         if (optionType != VariantType::TYPE_BOOLEAN)
         {
-            printf(" <value>");
+            ss << " <value>";
             if (opt.multipleValuesSuported)
             {
-                printf(",[additional values...]");
+                ss << ",[additional values...]";
             }
-            printf("\t");
+            ss << "\t";
         }
         else
         {
-            printf("\t\t");
+            ss << "\t\t";
         }
 
         if (!opt.descr.empty())
         {
-            printf("- %s", opt.descr.c_str());
+            ss << "- " << opt.descr;
         }
 
-        printf("\n");
+        ss << std::endl;
     }
+
+    return ss.str();
 }
 
 uint32 ProgramOptions::GetOptionValuesCount(const String& optionName) const

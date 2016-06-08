@@ -1,53 +1,31 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Themes.h"
 #include "Debug/DVassert.h"
+#include "Base/GlobalEnum.h"
+
+#include "Preferences/PreferencesStorage.h"
+#include "Preferences/PreferencesRegistrator.h"
+
 #include <QtGlobal>
 #include <QStyle>
 #include <QApplication>
 #include <QStyleFactory>
-#include <QSettings>
 #include <QFont>
+#include <QFile>
 
-namespace Themes_namespace
+ENUM_DECLARE(Themes::eTheme)
 {
-const QString themeSettingsGroup = "QtTools/Themes";
-const QString themeSettingsKey = "ThemeName";
+    ENUM_ADD_DESCR(Themes::Light, "Classic");
+    ENUM_ADD_DESCR(Themes::Dark, "Dark");
+};
+
+namespace Themes_local
+{
+const DAVA::FastName themeSettingsKey("ThemeName");
+GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Dark)));
 }
 
 namespace Themes
 {
-eTheme currentTheme;
-bool themesInitialized = false;
-QStringList themesNames = { "light", "dark" };
-
 QColor lightTextColor(Qt::black);
 QColor lightDisabledTextColor(0x0, 0x0, 0x0, 0x50);
 QColor lightWindowColor(0xF0, 0xF0, 0xF0);
@@ -55,6 +33,8 @@ QColor lightWindowColor(0xF0, 0xF0, 0xF0);
 QColor darkTextColor(0xF2, 0xF2, 0xF2);
 QColor darkDisabledTextColor(0x75, 0x75, 0x75);
 QColor darkWindowColor(0x32, 0x32, 0x32);
+
+bool themesInitialized = false;
 
 void SetupClassicTheme();
 void SetupDarkTheme();
@@ -71,42 +51,50 @@ void InitFromQApplication()
 #error "unsupported OS"
 #endif //platform
     themesInitialized = true;
-    qAddPostRoutine([]() {
-        QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-        settings.beginGroup(Themes_namespace::themeSettingsGroup);
-        settings.setValue(Themes_namespace::themeSettingsKey, static_cast<int>(currentTheme));
-        settings.endGroup();
-        settings.sync();
-    });
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.beginGroup(Themes_namespace::themeSettingsGroup);
-    auto value = settings.value(Themes_namespace::themeSettingsKey);
-    settings.endGroup();
-    if (value.canConvert<int>())
-    {
-        currentTheme = static_cast<eTheme>(value.value<int>());
-    }
-    else
-    {
-        currentTheme = Light;
-    }
-    SetCurrentTheme(currentTheme);
+
+    SetCurrentTheme(GetCurrentTheme());
 }
 
 QStringList ThemesNames()
 {
-    return themesNames;
+    QStringList names;
+    const auto& themesMap = GlobalEnumMap<eTheme>::Instance();
+    for (size_t i = 0; i < themesMap->GetCount(); ++i)
+    {
+        int value;
+        bool ok = themesMap->GetValue(i, value);
+        if (!ok)
+        {
+            DVASSERT_MSG(ok, "wrong enum used to create Themes names");
+            break;
+        }
+        names << QString::fromStdString(themesMap->ToString(value));
+    }
+    return names;
 }
 
 void SetCurrentTheme(const QString& theme)
 {
-    if (!themesNames.contains(theme))
+    DAVA::String themeStr = theme.toStdString();
+    const auto& themesMap = GlobalEnumMap<eTheme>::Instance();
+    for (size_t i = 0; i < themesMap->GetCount(); ++i)
     {
-        qWarning("Invalid theme passed to SetTheme");
-        return;
+        int value;
+        bool ok = themesMap->GetValue(i, value);
+        if (!ok)
+        {
+            DVASSERT_MSG(ok, "wrong enum used");
+            break;
+        }
+        if (themesMap->ToString(value) == themeStr)
+        {
+            eTheme newTheme = static_cast<eTheme>(value);
+            SetCurrentTheme(newTheme);
+            return;
+        }
     }
-    int index = themesNames.indexOf(theme);
-    SetCurrentTheme(static_cast<eTheme>(index));
+
+    DVASSERT_MSG(false, "Invalid theme passed to SetTheme");
 }
 
 void SetCurrentTheme(eTheme theme)
@@ -116,7 +104,6 @@ void SetCurrentTheme(eTheme theme)
         qWarning("ThemesFactiry uninitialized");
         return;
     }
-    currentTheme = theme;
     switch (theme)
     {
     case Light:
@@ -129,6 +116,7 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
+    PreferencesStorage::Instance()->SetValue(Themes_local::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
 }
 
 void SetupClassicTheme()
@@ -139,6 +127,9 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Window, lightWindowColor);
     lightPalette.setColor(QPalette::WindowText, QColor(0x25, 0x25, 0x25));
     lightPalette.setColor(QPalette::Disabled, QPalette::WindowText, lightDisabledTextColor);
+
+    lightPalette.setColor(QPalette::Dark, lightWindowColor);
+    lightPalette.setColor(QPalette::Midlight, lightWindowColor.darker(130));
 
     lightPalette.setColor(QPalette::Base, Qt::white);
     lightPalette.setColor(QPalette::Disabled, QPalette::Base, lightWindowColor);
@@ -165,11 +156,12 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
-    qApp->setPalette(lightPalette);
+    QFile styleSheet(":/QtTools/LightTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
-    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }"
-                        //workaround for expanded combobox interval
-                        "QComboBox { font: 11px;  }");
+    qApp->setPalette(lightPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
 void SetupDarkTheme()
@@ -179,6 +171,9 @@ void SetupDarkTheme()
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkWindowColor);
     darkPalette.setColor(QPalette::WindowText, darkTextColor);
+
+    darkPalette.setColor(QPalette::Dark, darkWindowColor);
+    darkPalette.setColor(QPalette::Midlight, darkWindowColor.lighter(130));
 
     darkPalette.setColor(QPalette::Base, darkWindowColor.darker(130));
     darkPalette.setColor(QPalette::AlternateBase, darkWindowColor);
@@ -203,47 +198,64 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
-    qApp->setPalette(darkPalette);
+    QFile styleSheet(":/QtTools/DarkTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
-    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }"
-                        "QTabBar::close-button { image: url(:/Icons/close.png); }"
-                        "QDockWidget::title { background: #454545; }"
-                        //workaround for expanded combobox interval
-                        "QComboBox{ font: 11px; }");
+    auto colorToString = [](const QColor& color)
+    {
+        return QString("rgba(%1, %2, %3, %4)").arg(color.red()).arg(color.green())
+        .arg(color.blue())
+        .arg(color.alpha());
+    };
+
+    QString tabBarStyle = QString("QTabBar::tab:selected { color: %1 }"
+                                  "QTabBar::tab:!selected { color: %2 }")
+                          .
+                          arg(colorToString(darkTextColor))
+                          .
+                          arg(colorToString(darkDisabledTextColor));
+
+    styleSheetContent.append(tabBarStyle);
+
+    qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
-const QString& GetCurrentThemeStr()
+QString GetCurrentThemeStr()
 {
-    return themesNames.at(currentTheme);
+    DAVA::String name = GlobalEnumMap<eTheme>::Instance()->ToString(GetCurrentTheme());
+    return QString::fromStdString(name);
 }
 
 eTheme GetCurrentTheme()
 {
-    return currentTheme;
+    DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(Themes_local::themeSettingsKey);
+    return static_cast<eTheme>(value.AsInt64());
 }
 
 QColor GetViewLineAlternateColor()
 {
-    return currentTheme == Light ? Qt::lightGray : QColor(0x3F, 0x3F, 0x46);
+    return GetCurrentTheme() == Light ? Qt::lightGray : QColor(0x3F, 0x3F, 0x46);
 }
 
 QColor GetChangedPropertyColor()
 {
-    return currentTheme == Light ? Qt::black : QColor(0xE3, 0xE1, 0x8A);
+    return GetCurrentTheme() == Light ? Qt::black : QColor(0xE3, 0xE1, 0x8A);
 }
 
 QColor GetPrototypeColor()
 {
-    return currentTheme == Light ? QColor(Qt::blue) : QColor("CadetBlue");
+    return GetCurrentTheme() == Light ? QColor(Qt::blue) : QColor("CadetBlue");
 }
 
 QColor GetStyleSheetNodeColor()
 {
-    return currentTheme == Light ? QColor(Qt::darkGreen) : QColor("light green");
+    return GetCurrentTheme() == Light ? QColor(Qt::darkGreen) : QColor("light green");
 }
 
 QColor GetRulerWidgetBackgroungColor()
 {
-    return currentTheme == Light ? lightWindowColor : darkWindowColor;
+    return GetCurrentTheme() == Light ? lightWindowColor : darkWindowColor;
 }
 };

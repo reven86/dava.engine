@@ -1,31 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "FileSystem/Private/PackArchive.h"
 #include "Compression/ZipCompressor.h"
 #include "Compression/LZ4Compressor.h"
@@ -62,23 +34,24 @@ PackArchive::PackArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("error in header of packfile start position for file names incorrect");
     }
-    String& fileNames = packFile.names.sortedNamesLz4hc;
-    fileNames.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
 
-    numBytesRead = file->Read(&fileNames[0], static_cast<uint32>(fileNames.size()));
-    if (numBytesRead != fileNames.size())
+    Vector<uint8>& compressedNamesBuffer = packFile.names.sortedNamesLz4hc;
+    compressedNamesBuffer.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
+
+    numBytesRead = file->Read(compressedNamesBuffer.data(), static_cast<uint32>(compressedNamesBuffer.size()));
+    if (numBytesRead != compressedNamesBuffer.size())
     {
-        throw std::runtime_error("can't read file names from packfile");
+        throw std::runtime_error("Can't read file names from packfile");
     }
 
-    Vector<uint8> compressedNames(begin(fileNames), end(fileNames));
-    Vector<uint8> originalNames;
-    originalNames.resize(packFile.header.namesBlockSizeOriginal);
-    if (!LZ4HCCompressor().Decompress(compressedNames, originalNames))
+    Vector<uint8> originalNamesBuffer;
+    originalNamesBuffer.resize(packFile.header.namesBlockSizeOriginal);
+    if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
     {
         throw std::runtime_error("can't uncompress file names");
     }
-    fileNames.assign(begin(originalNames), end(originalNames));
+
+    String fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
 
     if (headerBlock.startFilesDataBlockPosition != file->GetPos())
     {
@@ -144,7 +117,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
                                  [](const ResourceArchive::FileInfo& first,
                                     const ResourceArchive::FileInfo& second)
                                  {
-                                     return std::strcmp(first.relativeFilePath, second.relativeFilePath) <= 0;
+                                     return std::strcmp(first.relativeFilePath.c_str(), second.relativeFilePath.c_str()) < 0;
                                  });
     if (!result)
     {

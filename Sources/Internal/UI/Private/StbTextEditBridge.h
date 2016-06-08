@@ -1,39 +1,12 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVA_UITEXTFIELDSTBBRIDGE_H__
 #define __DAVA_UITEXTFIELDSTBBRIDGE_H__
 
 #include "Base/BaseTypes.h"
-#include "Render/2D/TextBlock.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
+class TextBox;
 struct StbState;
 
 /**
@@ -94,16 +67,10 @@ public:
         virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
 
         /**
-        * \brief Service function for getting information about lines in text
-        * \return vector of lines information
+        * \brief Service function for getting instance of TextBox from field
+        * \return pointer to TextBox
         */
-        virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
-
-        /**
-        * \brief Service function for getting information of characters sizes
-        * \return vector of characters sizes
-        */
-        virtual const Vector<float32>& GetCharactersSizes() = 0;
+        virtual const TextBox* GetTextBox() = 0;
 
         /**
         * \brief Service function for getting text length
@@ -169,6 +136,11 @@ public:
      * \param[in] point mouse point (x,y) in control's local coordinates
      */
     virtual void Drag(const Vector2& point);
+
+    /**
+     * \brief Clear STB text edit undo stack
+     */
+    virtual void ClearUndoStack();
 
     /**
      * \brief Returns character index of selection start

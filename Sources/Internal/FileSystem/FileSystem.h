@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVAENGINE_FILESYSTEM_H__
 #define __DAVAENGINE_FILESYSTEM_H__
 
@@ -206,7 +178,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+    virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
         \brief Read whole file contents into new buffer. 
@@ -225,6 +197,8 @@ public:
         \returns string with whole file contents
      */
     String ReadFileContents(const FilePath& pathname);
+
+    bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
 
     /**
 		\brief Function to attach ResourceArchive to filesystem
@@ -278,6 +252,11 @@ public:
      \brief Function check if specified path exists on file system
      */
     bool Exists(const FilePath& filePath) const;
+
+    /**
+    \brief Copies one folder into another recursively
+    */
+    bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
 private:
     bool HasLineEnding(File* f);

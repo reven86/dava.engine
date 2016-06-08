@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -240,9 +212,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     return !error;
 }
 
-bool FileSystem::CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
+bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
 {
-    DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
 
     bool ret = true;
@@ -765,7 +736,29 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
     SafeRelease(fp);
     return bytes;
-};
+}
+
+bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
+{
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    if (!fp)
+    {
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    uint32 fileSize = fp->GetSize();
+    buffer.resize(fileSize);
+    uint32 dataRead = fp->Read(buffer.data(), fileSize);
+
+    if (dataRead != fileSize)
+    {
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
 
 void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
@@ -999,5 +992,35 @@ bool FileSystem::Exists(const FilePath& filePath) const
     }
 
     return IsFile(filePath);
+}
+
+bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+{
+    DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+    DVASSERT(dst.GetType() != FilePath::PATH_IN_RESOURCES);
+
+    CreateDirectory(dst, true);
+
+    bool retCode = true;
+    ScopedPtr<FileList> fileList(new FileList(src));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                retCode = retCode && RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            }
+        }
+        else
+        {
+            const FilePath destinationPath = dst + fileList->GetFilename(i);
+            if (!CopyFile(fileList->GetPathname(i), destinationPath, false))
+            {
+                retCode = false;
+            }
+        }
+    }
+    return retCode;
 }
 }

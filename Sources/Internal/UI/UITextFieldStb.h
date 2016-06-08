@@ -1,31 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVA_UITEXTFIELDSTB_H__
 #define __DAVA_UITEXTFIELDSTB_H__
 
@@ -42,6 +14,7 @@ class Font;
 class Color;
 class UIEvent;
 class Vector2;
+class TextBox;
 struct Rect;
 
 // This implementation simulate iOS/Android native controls,
@@ -51,6 +24,8 @@ struct Rect;
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
+    static const uint32 INVALID_POS = uint32(-1);
+
     friend class UITextField;
     TextFieldStbImpl(UITextField* control);
     ~TextFieldStbImpl();
@@ -104,14 +79,16 @@ public:
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
-    const Vector<TextBlock::Line>& GetMultilineInfo() override;
-    const Vector<float32>& GetCharactersSizes() override;
+    const TextBox* GetTextBox() override;
     uint32 GetTextLength() override;
     WideString::value_type GetCharAt(uint32 i) override;
 
 private:
+    void DropLastCursorAndSelection();
+    void CorrectPos(const TextBox* tb, uint32& pos, bool& cursorRight);
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
+    void UpdateOffset(const Rect& visibleRect);
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
@@ -127,7 +104,9 @@ private:
     Vector<Rect> selectionRects;
     Rect cursorRect;
     Vector2 staticTextOffset;
-    void UpdateOffset(const Rect& visibleRect);
+    uint32 lastCursorPos = INVALID_POS;
+    uint32 lastSelStart = INVALID_POS;
+    uint32 lastSelEnd = INVALID_POS;
 };
 
 } // end namespace DAVA

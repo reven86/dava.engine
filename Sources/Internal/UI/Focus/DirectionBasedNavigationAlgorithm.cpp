@@ -1,34 +1,8 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
 #include "DirectionBasedNavigationAlgorithm.h"
 
 #include "UIFocusComponent.h"
+#include "UIFocusGroupComponent.h"
+#include "UINavigationComponent.h"
 #include "FocusHelpers.h"
 
 #include "UI/UIControl.h"
@@ -49,7 +23,7 @@ DirectionBasedNavigationAlgorithm::~DirectionBasedNavigationAlgorithm()
 {
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedControl, FocusHelpers::Direction dir)
+UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir)
 {
     if (focusedControl != nullptr)
     {
@@ -62,7 +36,7 @@ UIControl* DirectionBasedNavigationAlgorithm::GetNextControl(UIControl* focusedC
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const
 {
     UIControl* next = FindNextSpecifiedControl(focusedControl, dir);
     if (next != nullptr)
@@ -73,8 +47,8 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
     UIControl* parent = focusedControl;
     while (parent != nullptr && parent != root.Get())
     {
-        UIFocusComponent* focus = parent->GetComponent<UIFocusComponent>();
-        if (focus != nullptr && (focus->GetPolicy() == UIFocusComponent::FOCUSABLE_GROUP))
+        UIFocusGroupComponent* focusGroup = parent->GetComponent<UIFocusGroupComponent>();
+        if (focusGroup != nullptr)
         {
             UIControl* c = FindNearestControl(focusedControl, parent, dir);
             if (c != nullptr)
@@ -94,16 +68,16 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextControl(UIControl* focused
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl* focusedControl, UINavigationComponent::Direction dir) const
 {
-    UIFocusComponent* focus = focusedControl->GetComponent<UIFocusComponent>();
-    if (focus != nullptr)
+    UINavigationComponent* navigation = focusedControl->GetComponent<UINavigationComponent>();
+    if (navigation != nullptr)
     {
-        const String& controlInDirection = focus->GetNextControlPathInDirection(dir);
+        const String& controlInDirection = navigation->GetNextControlPathInDirection(dir);
         if (!controlInDirection.empty())
         {
             UIControl* next = UIControlHelpers::FindControlByPath(controlInDirection, focusedControl);
-            if (next != nullptr && FocusHelpers::CanFocusControl(next) && next != focusedControl)
+            if (next != nullptr && FocusHelpers::CanFocusControl(next))
             {
                 return next;
             }
@@ -112,29 +86,29 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNextSpecifiedControl(UIControl
     return nullptr;
 }
 
-UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const
+UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const
 {
     UIControl* bestControl = nullptr;
     float32 bestDistSq = 0;
 
-    Rect rect = focusedControl->GetAbsoluteRect();
+    Rect rect = GetRect(focusedControl);
     Vector2 pos = rect.GetCenter();
 
     switch (dir)
     {
-    case FocusHelpers::Direction::UP:
+    case UINavigationComponent::Direction::UP:
         pos.y = rect.y;
         break;
 
-    case FocusHelpers::Direction::DOWN:
+    case UINavigationComponent::Direction::DOWN:
         pos.y = rect.y + rect.dy;
         break;
 
-    case FocusHelpers::Direction::LEFT:
+    case UINavigationComponent::Direction::LEFT:
         pos.x = rect.x;
         break;
 
-    case FocusHelpers::Direction::RIGHT:
+    case UINavigationComponent::Direction::RIGHT:
         pos.x = rect.x + rect.dx;
         break;
 
@@ -167,11 +141,11 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
     return bestControl;
 }
 
-Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UIControl* testControl, FocusHelpers::Direction dir) const
+Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UIControl* testControl, UINavigationComponent::Direction dir) const
 {
-    Rect r = testControl->GetAbsoluteRect();
+    Rect r = GetRect(testControl);
     Vector2 res = r.GetCenter();
-    if (dir == FocusHelpers::Direction::UP || dir == FocusHelpers::Direction::DOWN)
+    if (dir == UINavigationComponent::Direction::UP || dir == UINavigationComponent::Direction::DOWN)
     {
         if (pos.x > r.x + r.dx)
         {
@@ -202,19 +176,19 @@ Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UI
         }
     }
 
-    if (dir == FocusHelpers::Direction::UP)
+    if (dir == UINavigationComponent::Direction::UP)
     {
         res.y = Min(r.y + r.dy, pos.y);
     }
-    else if (dir == FocusHelpers::Direction::DOWN)
+    else if (dir == UINavigationComponent::Direction::DOWN)
     {
         res.y = Max(r.y, pos.y);
     }
-    else if (dir == FocusHelpers::Direction::LEFT)
+    else if (dir == UINavigationComponent::Direction::LEFT)
     {
         res.x = Min(r.x + r.dx, pos.x);
     }
-    else if (dir == FocusHelpers::Direction::RIGHT)
+    else if (dir == UINavigationComponent::Direction::RIGHT)
     {
         res.x = Max(r.x, pos.x);
     }
@@ -222,13 +196,13 @@ Vector2 DirectionBasedNavigationAlgorithm::CalcNearestPos(const Vector2& pos, UI
     return res;
 }
 
-bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedControl, UIControl* control, FocusHelpers::Direction dir) const
+bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedControl, UIControl* control, UINavigationComponent::Direction dir) const
 {
     if (control == focusedControl || !FocusHelpers::CanFocusControl(control))
     {
         return false;
     }
-    Rect rect = focusedControl->GetAbsoluteRect();
+    Rect rect = GetRect(focusedControl);
     Vector2 pos = rect.GetCenter();
     Vector2 srcPos = rect.GetCenter();
 
@@ -239,16 +213,16 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
 
     switch (dir)
     {
-    case FocusHelpers::Direction::UP:
+    case UINavigationComponent::Direction::UP:
         return dy < 0 && Abs(dy) > Abs(dx);
 
-    case FocusHelpers::Direction::DOWN:
+    case UINavigationComponent::Direction::DOWN:
         return dy > 0 && Abs(dy) > Abs(dx);
 
-    case FocusHelpers::Direction::LEFT:
+    case UINavigationComponent::Direction::LEFT:
         return dx < 0 && Abs(dx) > Abs(dy);
 
-    case FocusHelpers::Direction::RIGHT:
+    case UINavigationComponent::Direction::RIGHT:
         return dx > 0 && Abs(dx) > Abs(dy);
 
     default:
@@ -256,5 +230,10 @@ bool DirectionBasedNavigationAlgorithm::CanNavigateToControl(UIControl* focusedC
         break;
     }
     return false;
+}
+
+Rect DirectionBasedNavigationAlgorithm::GetRect(UIControl* control) const
+{
+    return control->GetGeometricData().GetUnrotatedRect();
 }
 }
