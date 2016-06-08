@@ -23,10 +23,6 @@ public:
 
     unsigned size = 0;
     IDirect3DVertexBuffer9* buffer;
-    uint8* mappedData;
-    unsigned isMapped : 1;
-    unsigned updatePending : 1;
-    unsigned recreatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
@@ -37,10 +33,6 @@ RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descripto
 VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
-    , mappedData(nullptr)
-    , isMapped(false)
-    , updatePending(false)
-    , recreatePending(false)
 {
 }
 

@@ -20,11 +20,8 @@ VertexBufferGLES2_t
     void Destroy(bool force_immediate = false);
 
     uint32 size;
-    void* mappedData;
     uint32 uid;
     GLenum usage;
-    uint32 isMapped : 1;
-    uint32 updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferGLES2_t, VertexBuffer::Descriptor)
@@ -36,10 +33,8 @@ RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::De
 
 VertexBufferGLES2_t::VertexBufferGLES2_t()
     : size(0)
-    , mappedData(nullptr)
     , uid(0)
     , usage(USAGE_DEFAULT)
-    , isMapped(false)
 {
 }
 
@@ -190,10 +185,10 @@ void* gles2_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
     if (offset + size <= self->size)
     {
         if (!self->mappedData)
-            self->mappedData = ::malloc(self->size);
+            self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
 
         self->isMapped = true;
-        data = (reinterpret_cast<uint8*>(self->mappedData)) + offset;
+        data = self->mappedData + offset;
     }
 
     return data;

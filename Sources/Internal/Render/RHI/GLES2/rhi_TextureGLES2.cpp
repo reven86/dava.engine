@@ -32,13 +32,11 @@ public:
     unsigned width;
     unsigned height;
     TextureFormat format;
-    void* mappedData;
     uint32 mappedLevel;
     GLenum mappedFace;
     uint32 isCubeMap : 1;
     uint32 isRenderTarget : 1;
     uint32 isRenderBuffer : 1;
-    uint32 isMapped : 1;
 
     struct
     fbo_t
@@ -70,8 +68,6 @@ TextureGLES2_t::TextureGLES2_t()
     , isCubeMap(false)
     , isRenderTarget(false)
     , isRenderBuffer(false)
-    , mappedData(nullptr)
-    , isMapped(false)
     , forceSetSamplerState(true)
 {
 }
@@ -399,7 +395,7 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
     DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
 
-    self->mappedData = ::realloc(self->mappedData, data_sz);
+    self->mappedData = reinterpret_cast<uint8*>(::realloc(self->mappedData, data_sz));
 
     if (self->mappedData)
     {

@@ -1573,12 +1573,21 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 UINT lev = UINT(arg[1]);
                 void* src = (void*)(arg[2]);
                 unsigned sz = unsigned(arg[3]);
-                D3DLOCKED_RECT rc = { 0 };
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                D3DLOCKED_RECT rc = {};
                 HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
                     cmd->retval = tex->UnlockRect(lev);
                 }
                 else
@@ -1622,12 +1631,21 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
                 void* src = (void*)(arg[3]);
                 unsigned sz = unsigned(arg[4]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[5]);
                 D3DLOCKED_RECT rc = { 0 };
                 HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
                     cmd->retval = tex->UnlockRect(face, lev);
                 }
                 else

@@ -24,10 +24,6 @@ public:
 
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
-    uint8* mappedData;
-    unsigned isMapped : 1;
-    unsigned updatePending : 1;
-    unsigned recreatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -40,10 +36,6 @@ RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, 
 IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
-    , mappedData(nullptr)
-    , isMapped(false)
-    , updatePending(false)
-    , recreatePending(false)
 {
 }
 

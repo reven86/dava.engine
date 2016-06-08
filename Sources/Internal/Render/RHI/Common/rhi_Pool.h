@@ -255,9 +255,10 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
-
+        i->recreatePending = true;
         i->Destroy(true);
         i->Create(desc, true);
+        i->recreatePending = false;
         i->MarkNeedRestore();
         ++count;
     }
@@ -290,13 +291,16 @@ ResourceImpl
 {
 public:
     ResourceImpl()
-        : needRestore(false)
+        : isMapped(false)
+        , updatePending(false)
+        , recreatePending(false)
+        , needRestore(false)
     {
     }
 
     bool NeedRestore() const
     {
-        return needRestore.Get();
+        return needRestore;
     }
 
     const DT& CreationDesc() const
@@ -334,9 +338,15 @@ public:
         return ObjectsToRestore.Get();
     }
 
+public:
+    uint8* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
+    uint32 recreatePending : 1;
+    uint32 needRestore : 1;
+
 private:
     DT creationDesc;
-    DAVA::Atomic<bool> needRestore;
     static DAVA::Atomic<uint32> ObjectsToRestore;
 };
 
