@@ -62,7 +62,12 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
     std::unique_ptr<TextureDescriptor> descriptor;
     bool descriptorChanged = false;
 
-    if (false == FileSystem::Instance()->Exists(descriptorPath))
+    if (FileSystem::Instance()->Exists(descriptorPath))
+    {   
+        descriptor.reset(TextureDescriptor::CreateFromFile(descriptorPath));
+    }
+
+    if (!descriptor)
     {
         descriptor.reset(new TextureDescriptor());
         descriptor->pathname = descriptorPath;
@@ -76,9 +81,6 @@ bool CreateOrUpdateDescriptor(const FilePath& texturePath, const KeyedArchive* p
     }
     else
     {
-        descriptor.reset(TextureDescriptor::CreateFromFile(descriptorPath));
-        DVASSERT(descriptor);
-
         if (sourceFormat != descriptor->dataSettings.sourceFileFormat)
         {
             descriptor->dataSettings.sourceFileFormat = sourceFormat;

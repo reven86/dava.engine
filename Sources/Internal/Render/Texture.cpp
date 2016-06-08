@@ -578,17 +578,21 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     rhi::Texture::Descriptor descriptor;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = false;
-    size_t levelCount = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? images->size() : images->size() / 6;
-    descriptor.levelCount = static_cast<uint32>(levelCount);
     descriptor.width = (*images)[0]->width;
     descriptor.height = (*images)[0]->height;
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
-
     descriptor.levelCount = static_cast<uint32>((descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? images->size() / 6 : images->size());
 
+    const uint32 oldLevelCountVerify = descriptor.levelCount;   //to notify about wrong images
     for (Image* img : (*images))
+    {   // kostil for some wrong data
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
+    }
+    if (oldLevelCountVerify != descriptor.levelCount)
+    {
+        Logger::Error("Something wrong with image mipmap levels at %s", texDescriptor->pathname.GetStringValue().c_str());
+    }
 
     DVASSERT(descriptor.format != static_cast<rhi::TextureFormat>(-1)); //unsupported format
 

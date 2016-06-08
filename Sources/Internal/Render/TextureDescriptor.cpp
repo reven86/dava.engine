@@ -895,7 +895,7 @@ bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamil
         }
     }
 
-    return true;
+    return false;
 }
 
 void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath>& pathes) const

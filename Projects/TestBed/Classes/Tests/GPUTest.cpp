@@ -27,12 +27,16 @@ void GPUTest::LoadResources()
         AddControl(spriteBackground);
     }
 
-    ScopedPtr<UIStaticText> textControl(new UIStaticText(Rect(10.0f, 138.0f, 512.f, 30.f)));
-    textControl->SetTextColor(Color::White);
-    textControl->SetFont(font);
-    textControl->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    { //create control to display text with name of GPU, detected by system
+        ScopedPtr<UIStaticText> textControl(new UIStaticText(Rect(10.0f, 148.0f, 512.f, 30.f)));
+        textControl->SetTextColor(Color::White);
+        textControl->SetFont(font);
+        textControl->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 
-    String text = Format("Detected GPU: %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily())));
-    textControl->SetText(StringToWString(text));
-    AddControl(textControl);
+        String text = Format("Detected GPU: %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily())));
+        textControl->SetText(StringToWString(text));
+        AddControl(textControl);
+    }
+
+    SetDebugDraw(true, true);
 }
