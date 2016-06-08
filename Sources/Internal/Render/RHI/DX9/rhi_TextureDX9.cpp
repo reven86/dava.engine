@@ -46,6 +46,20 @@ RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor)
 typedef ResourcePool<TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureDX9Pool;
 RHI_IMPL_POOL(TextureDX9_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
+const TextureFace textureFaces[] =
+{
+  TEXTURE_FACE_POSITIVE_X, TEXTURE_FACE_NEGATIVE_X,
+  TEXTURE_FACE_POSITIVE_Y, TEXTURE_FACE_NEGATIVE_Y,
+  TEXTURE_FACE_POSITIVE_Z, TEXTURE_FACE_NEGATIVE_Z
+};
+
+D3DCUBEMAP_FACES textureFaceToD3DFace[] =
+{
+  D3DCUBEMAP_FACE_POSITIVE_X, D3DCUBEMAP_FACE_NEGATIVE_X,
+  D3DCUBEMAP_FACE_POSITIVE_Y, D3DCUBEMAP_FACE_NEGATIVE_Y,
+  D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z
+};
+
 TextureDX9_t::TextureDX9_t()
     : width(0)
     , height(0)
@@ -140,7 +154,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
             if (desc.isRenderTarget || is_depthbuf)
             {
-                DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&surf9) } };
+                DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(tex9), 0, uint64_t(&surf9) } };
                 ExecDX9(&cmd3, 1, force_immediate);
             }
 
@@ -169,10 +183,8 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
         };
 
         DVASSERT(desc.levelCount * 6 <= countof(desc.initialData));
-        TextureFace face[] = { TEXTURE_FACE_POSITIVE_X, TEXTURE_FACE_NEGATIVE_X, TEXTURE_FACE_POSITIVE_Y, TEXTURE_FACE_NEGATIVE_Y, TEXTURE_FACE_POSITIVE_Z, TEXTURE_FACE_NEGATIVE_Z };
-        D3DCUBEMAP_FACES d3d_face[] = { D3DCUBEMAP_FACE_POSITIVE_X, D3DCUBEMAP_FACE_NEGATIVE_X, D3DCUBEMAP_FACE_POSITIVE_Y, D3DCUBEMAP_FACE_NEGATIVE_Y, D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z };
 
-        for (unsigned f = 0; f != countof(face); ++f)
+        for (unsigned f = 0; f != countof(textureFaces); ++f)
         {
             for (unsigned m = 0; m != desc.levelCount; ++m)
             {
@@ -186,7 +198,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
                     cmd->func = DX9Command::UPDATE_CUBETEXTURE_LEVEL;
                     cmd->arg[0] = uint64_t(&cubetex9);
                     cmd->arg[1] = m;
-                    cmd->arg[2] = d3d_face[f];
+                    cmd->arg[2] = textureFaceToD3DFace[f];
                     cmd->arg[3] = (uint64)(data);
                     cmd->arg[4] = data_sz;
                     cmd->arg[5] = desc.format;
@@ -270,6 +282,13 @@ void TextureDX9_t::Destroy(bool force_immediate)
     rt_tex9 = nullptr;
     width = 0;
     height = 0;
+
+    if (!recreatePending && mappedData)
+    {
+        DVASSERT(!isMapped)
+        ::free(mappedData);
+        mappedData = nullptr;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -297,6 +316,7 @@ static void
 dx9_Texture_Delete(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
+    self->recreatePending = false;
     self->MarkRestored();
     self->Destroy();
     TextureDX9Pool::Free(tex);
@@ -311,6 +331,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     uint32 data_sz = TextureSize(self->format, self->width, self->height, level);
     self->mappedData = reinterpret_cast<uint8*>(::malloc(data_sz));
+    TextureFormat format = self->format;
 
     void* mem = nullptr;
 
@@ -320,39 +341,12 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     if (self->cubetex9)
     {
         DVASSERT(!self->isRenderTarget);
-        D3DCUBEMAP_FACES f;
 
-        switch (face)
-        {
-        case TEXTURE_FACE_POSITIVE_X:
-            f = D3DCUBEMAP_FACE_POSITIVE_X;
-            break;
-        case TEXTURE_FACE_NEGATIVE_X:
-            f = D3DCUBEMAP_FACE_NEGATIVE_X;
-            break;
-        case TEXTURE_FACE_POSITIVE_Y:
-            f = D3DCUBEMAP_FACE_POSITIVE_Y;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Y:
-            f = D3DCUBEMAP_FACE_NEGATIVE_Y;
-            break;
-        case TEXTURE_FACE_POSITIVE_Z:
-            f = D3DCUBEMAP_FACE_POSITIVE_Z;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Z:
-            f = D3DCUBEMAP_FACE_NEGATIVE_Z;
-            break;
-        }
-
-        DX9Command cmd = { DX9Command::LOCK_CUBETEXTURE_RECT, { uint64_t(&(self->cubetex9)), f, level, uint64(&rc), NULL, 0 } };
-
+        D3DCUBEMAP_FACES f = textureFaceToD3DFace[face];
+        DX9Command cmd = { DX9Command::READ_CUBETEXTURE_LEVEL, { uint64_t(&self->cubetex9), level, face, data_sz, format, uint64(self->mappedData) } };
         ExecDX9(&cmd, 1, false);
-        hr = cmd.retval;
-
-        if (SUCCEEDED(hr))
+        if (SUCCEEDED(cmd.retval))
         {
-            mem = rc.pBits;
-
             self->mappedLevel = level;
             self->mappedFace = face;
             self->isMapped = true;
@@ -360,6 +354,8 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     }
     else
     {
+        bool shouldReadData = !self->isRenderTarget;
+
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
@@ -373,8 +369,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
                 if (SUCCEEDED(cmd1.retval))
                 {
-                    DX9Command cmd2 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(self->rt_tex9), 0, uint64_t(&self->rt_surf9) } };
-
+                    DX9Command cmd2 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(self->rt_tex9), 0, uint64_t(&self->rt_surf9) } };
                     ExecDX9(&cmd2, 1, false);
                 }
             }
@@ -382,54 +377,24 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
             if (self->rt_tex9 && self->rt_surf9)
             {
                 DX9Command cmd3 = { DX9Command::GET_RENDERTARGET_DATA, { uint64_t(self->surf9), uint64_t(self->rt_surf9) } };
-
                 ExecDX9(&cmd3, 1, false);
-
-                if (cmd3.retval == D3D_OK)
-                {
-                    DX9Command cmd4 = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), level, uint64(&rc), NULL, 0 } };
-
-                    ExecDX9(&cmd4, 1, false);
-                    hr = cmd4.retval;
-
-                    if (SUCCEEDED(hr))
-                    {
-                        mem = rc.pBits;
-                        self->mappedLevel = level;
-                        self->isMapped = true;
-                    }
-                }
+                shouldReadData = cmd3.retval == D3D_OK;
             }
         }
-        else
+
+        if (shouldReadData)
         {
-            DX9Command cmd = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), level, uint64(&rc), NULL, 0 } };
-
+            DX9Command cmd = { DX9Command::READ_TEXTURE_LEVEL, { uint64_t(&self->tex9), level, data_sz, format, uint64(self->mappedData) } };
             ExecDX9(&cmd, 1, false);
-
             if (SUCCEEDED(cmd.retval))
             {
-                mem = rc.pBits;
                 self->mappedLevel = level;
                 self->isMapped = true;
             }
         }
     }
 
-    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
-    {
-        _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
-    {
-        _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
-    {
-        _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-
-    return mem;
+    return self->mappedData;
 }
 
 //------------------------------------------------------------------------------
@@ -441,58 +406,29 @@ dx9_Texture_Unmap(Handle tex)
 
     DVASSERT(self->isMapped);
 
-    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
-    {
-        _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
-    {
-        _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
-    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
-    {
-        _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
-    }
+    Size2i sz = TextureExtents(Size2i(self->width, self->height), self->mappedLevel);
+    uint64 data_sz = TextureSize(self->format, sz.dx, sz.dy);
+
+    HRESULT hr(0);
 
     if (self->cubetex9)
     {
-        D3DCUBEMAP_FACES f;
-
-        switch (self->mappedFace)
-        {
-        case TEXTURE_FACE_POSITIVE_X:
-            f = D3DCUBEMAP_FACE_POSITIVE_X;
-            break;
-        case TEXTURE_FACE_NEGATIVE_X:
-            f = D3DCUBEMAP_FACE_NEGATIVE_X;
-            break;
-        case TEXTURE_FACE_POSITIVE_Y:
-            f = D3DCUBEMAP_FACE_POSITIVE_Y;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Y:
-            f = D3DCUBEMAP_FACE_NEGATIVE_Y;
-            break;
-        case TEXTURE_FACE_POSITIVE_Z:
-            f = D3DCUBEMAP_FACE_POSITIVE_Z;
-            break;
-        case TEXTURE_FACE_NEGATIVE_Z:
-            f = D3DCUBEMAP_FACE_NEGATIVE_Z;
-            break;
-        }
-
-        DX9Command cmd = { DX9Command::UNLOCK_CUBETEXTURE_RECT, { uint64_t(&(self->cubetex9)), f, self->mappedLevel } };
-
+        D3DCUBEMAP_FACES f = textureFaceToD3DFace[self->mappedFace];
+        DX9Command cmd = { DX9Command::UPDATE_CUBETEXTURE_LEVEL, { uint64_t(&self->cubetex9), self->mappedLevel, f, uint64(self->mappedData), data_sz, self->format } };
         ExecDX9(&cmd, 1, false);
-
-        if (FAILED(cmd.retval))
-            Logger::Error("UnlockRect failed:\n%s\n", D3D9ErrorText(cmd.retval));
+        hr = cmd.retval;
     }
     else
     {
         IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
-        DX9Command cmd = { DX9Command::UNLOCK_TEXTURE_RECT, { uint64_t(&(self->tex9)), self->mappedLevel } };
-
+        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&self->tex9), self->mappedLevel, uint64(self->mappedData), data_sz, self->format } };
         ExecDX9(&cmd, 1, false);
+        hr = cmd.retval;
+    }
+
+    if (hr)
+    {
+        Logger::Error("Failed to update texture (0x%08X) : %s", hr, D3D9ErrorText(hr));
     }
 
     self->isMapped = false;
@@ -501,15 +437,46 @@ dx9_Texture_Unmap(Handle tex)
 
 //------------------------------------------------------------------------------
 
+#define DX9_UPDATE_TEXTURE_USING_MAP 0
+
 static void
 dx9_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
+
+#if (DX9_UPDATE_TEXTURE_USING_MAP)
     void* dst = dx9_Texture_Map(tex, level, face);
     uint32 sz = TextureSize(self->format, self->width, self->height, level);
-
     memcpy(dst, data, sz);
     dx9_Texture_Unmap(tex);
+#else
+    Size2i sz = TextureExtents(Size2i(self->width, self->height), level);
+    uint64 data_sz = TextureSize(self->format, sz.dx, sz.dy);
+
+    HRESULT hr(0);
+
+    if (self->cubetex9)
+    {
+        D3DCUBEMAP_FACES f = textureFaceToD3DFace[face];
+        DX9Command cmd = { DX9Command::UPDATE_CUBETEXTURE_LEVEL, { uint64_t(&self->cubetex9), level, f, uint64(data), data_sz, self->format } };
+        ExecDX9(&cmd, 1, false);
+        hr = cmd.retval;
+    }
+    else
+    {
+        IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
+        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&self->tex9), level, uint64(data), data_sz, self->format } };
+        ExecDX9(&cmd, 1, false);
+        hr = cmd.retval;
+    }
+
+    if (hr)
+    {
+        Logger::Error("Failed to update texture (0x%08X) : %s", hr, D3D9ErrorText(hr));
+    }
+#endif
+
+    self->MarkRestored();
 }
 
 //------------------------------------------------------------------------------

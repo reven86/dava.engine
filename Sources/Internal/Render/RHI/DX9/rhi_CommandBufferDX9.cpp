@@ -1539,7 +1539,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         }
         break;
 
-        case DX9Command::GET_TEXTURE_SURFACE_LEVEl:
+        case DX9Command::GET_TEXTURE_SURFACE_LEVEL:
         {
             cmd->retval = ((IDirect3DTexture9*)(arg[0]))->GetSurfaceLevel(UINT(arg[1]), (IDirect3DSurface9**)(arg[2]));
             CHECK_HR(cmd->retval);
@@ -1603,6 +1603,45 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         }
         break;
 
+        case DX9Command::READ_TEXTURE_LEVEL:
+        {
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                unsigned sz = unsigned(arg[2]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[3]);
+                void* dst = (void*)(arg[4]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
+
+                    cmd->retval = tex->UnlockRect(lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
         case DX9Command::LOCK_CUBETEXTURE_RECT:
         {
             IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
@@ -1645,6 +1684,46 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                         _SwapRB5551(src, rc.pBits, sz);
                     else
                         memcpy(rc.pBits, src, sz);
+
+                    cmd->retval = tex->UnlockRect(face, lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
+        case DX9Command::READ_CUBETEXTURE_LEVEL:
+        {
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
+                unsigned sz = unsigned(arg[3]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                void* dst = (void*)(arg[5]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
 
                     cmd->retval = tex->UnlockRect(face, lev);
                 }
