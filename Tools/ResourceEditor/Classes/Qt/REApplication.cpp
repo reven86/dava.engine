@@ -6,7 +6,9 @@
 
 #include "NgtTools/Common/GlobalContext.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
+#include "Preferences/PreferencesStorage.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include <core_command_system/i_command_manager.hpp>
@@ -76,9 +78,21 @@ void REApplication::OnPostLoadPugins()
 
     componentProvider.reset(new NGTLayer::ComponentProvider(*defManager));
     uiFramework->registerComponentProvider(*componentProvider);
+
+    const char* settingsPath = "ResourceEditorSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    Themes::InitFromQApplication();
+
 }
 
 void REApplication::OnPreUnloadPlugins()
 {
     commandManager->deregisterCommand(ngtCommand->getId());
+}
+
+bool REApplication::OnRequestCloseApp()
+{
+    return mainWindow->CanBeClosed();
 }
