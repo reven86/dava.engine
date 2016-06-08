@@ -55,6 +55,7 @@ private:
     bool isVisible = true;
     CursorType currentCursorType = CursorType::CT_POINTER;
     SigConnectionID focusConnection = SigConnectionID();
+    unsigned webViewID = 0;
 };
 
 } // namespace DAVA
