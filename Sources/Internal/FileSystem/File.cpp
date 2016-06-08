@@ -349,7 +349,11 @@ bool File::GetNextChar(uint8* nextChar)
 
 uint64 File::GetPos() const
 {
+#if defined(__DAVAENGINE_WINDOWS__)
     return static_cast<uint32>(_ftelli64(file));
+#else
+    return static_cast<uint64>(ftello(file));
+#endif
 }
 
 uint64 File::GetSize() const
@@ -376,7 +380,11 @@ bool File::Seek(int64 position, eFileSeek seekType)
         break;
     }
 
+#if defined(__DAVAENGINE_WINDOWS_)
     return 0 == _fseeki64(file, position, realSeekType);
+#else
+    return 0 == fseeko(file, position, realSeekType);
+#endif
 }
 
 bool File::Flush()
