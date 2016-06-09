@@ -103,7 +103,7 @@ def process_files(arg, dirname, names):
 			
 	return
 pathname = os.path.dirname(sys.argv[0])         
-export_script_dir = os.path.abspath(pathname) + "/../../../";
+export_script_dir = os.path.abspath(pathname + "../../../");
 os.path.walk(export_script_dir, process_files, None);
 
 excludeLogFile.close();
