@@ -31,6 +31,7 @@ public:
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
     void Start();
+    bool CloseProject();
 
 private slots:
 
@@ -48,7 +49,6 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
-    bool CloseProject();
     void OnExit();
     void OnNewProject();
 
@@ -56,7 +56,6 @@ private:
     void OpenProject(const QString& path);
 
     bool IsUsingAssetCache() const;
-    bool eventFilter(QObject* object, QEvent* event) override;
     void SetUsingAssetCacheEnabled(bool enabled);
 
     void EnableCacheClient();

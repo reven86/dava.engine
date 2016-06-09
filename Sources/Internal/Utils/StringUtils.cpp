@@ -6,7 +6,9 @@
 
 namespace DAVA
 {
-void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
+namespace StringUtils
+{
+void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
 #if defined(__DAVAENGINE_WINDOWS__) // sizeof(wchar_t) == 2
@@ -16,90 +18,20 @@ void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks,
 #endif
 }
 
-WideString StringUtils::Trim(const WideString& string)
-{
-    WideString::const_iterator it = string.begin();
-    WideString::const_iterator end = string.end();
-    WideString::const_reverse_iterator rit = string.rbegin();
-    while (it != end && IsWhitespace(*it)) ++it;
-    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
-    return WideString(it, rit.base());
-}
-
-WideString StringUtils::TrimLeft(const WideString& string)
-{
-    WideString::const_iterator it = string.begin();
-    WideString::const_iterator end = string.end();
-    while (it != end && IsWhitespace(*it)) ++it;
-    return WideString(it, end);
-}
-
-WideString StringUtils::TrimRight(const WideString& string)
-{
-    WideString::const_reverse_iterator rit = string.rbegin();
-    WideString::const_reverse_iterator rend = string.rend();
-    while (rit != rend && IsWhitespace(*rit)) ++rit;
-    return WideString(rend.base(), rit.base());
-}
-
-String StringUtils::Trim(const String& str)
-{
-    String::size_type pos1 = str.find_first_not_of(" \t");
-    String::size_type pos2 = str.find_last_not_of(" \t");
-
-    if (pos1 == String::npos || pos2 == String::npos)
-    {
-        return String("");
-    }
-
-    return str.substr(pos1, pos2 - pos1 + 1);
-}
-
-String StringUtils::TrimLeft(const String& str)
-{
-    String::size_type pos1 = str.find_first_not_of(" \t");
-    String::size_type pos2 = str.length() - 1;
-
-    if (pos1 == String::npos)
-    {
-        return String("");
-    }
-
-    return str.substr(pos1, pos2 - pos1 + 1);
-}
-
-String StringUtils::TrimRight(const String& str)
-{
-    String::size_type pos1 = 0;
-    String::size_type pos2 = str.find_last_not_of(" \t");
-
-    if (pos2 == String::npos)
-    {
-        return String("");
-    }
-
-    return str.substr(pos1, pos2 - pos1 + 1);
-}
-
-WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -1*/)
+WideString RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -1*/)
 {
     WideString out;
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
     for (; it != end; ++it)
     {
+        if (!IsPrintable(*it))
+        {
+            continue;
+        }
+
         switch (*it)
         {
-        case L'\n':
-        case L'\r':
-        case 0x200B: // Zero-width space
-        case 0x200C: // Zero-width non-joiner
-        case 0x200D: // Zero-width joiner
-        case 0x200E: // Zero-width Left-to-right zero-width character
-        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            // Skip this characters (remove it)
-            break;
         case L'\t':
             if (tabRule < 0)
             {
@@ -124,7 +56,7 @@ WideString StringUtils::RemoveNonPrintable(const WideString& string, const int8 
 bool IsEmoji(int32 sym)
 {
     // ranges of symbol codes with unicode emojies.
-    static Vector<std::pair<DAVA::int32, DAVA::int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
+    static Vector<std::pair<int32, int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
     for (auto range : ranges)
     {
         if (sym >= range.first && sym <= range.second)
@@ -135,9 +67,9 @@ bool IsEmoji(int32 sym)
     return false;
 }
 
-bool StringUtils::RemoveEmoji(WideString& string)
+bool RemoveEmoji(WideString& string)
 {
-    DAVA::WideString ret;
+    WideString ret;
     bool isChanged = false;
 
     auto data = string.data();
@@ -171,5 +103,17 @@ bool StringUtils::RemoveEmoji(WideString& string)
 
     // true means "we removed some emojies".
     return isChanged;
+}
+
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
+{
+    size_t pos = 0;
+    size_t oldSubStringLength = search.length();
+    while ((pos = string.find(search, pos)) != WideString::npos)
+    {
+        string.replace(pos, oldSubStringLength, replacement);
+        pos += 1;
+    }
+}
 }
 }

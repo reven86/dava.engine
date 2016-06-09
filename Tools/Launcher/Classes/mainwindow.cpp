@@ -14,6 +14,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QLabel>
 #include <QVariant>
 #include <QComboBox>
 #include <QSortFilterProxyModel>
@@ -39,8 +40,14 @@ public:
 //expected format of input string: 0.8_2015-02-14_11.20.12_0000,
 //where 0.8 - DAVA version, 2015-02-14 - build date, 11.20.12 - build time and 0000 - build version
 //all blocks can be modified or empty
-bool VersionListComparator(const QString& left, const QString& right)
+bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer)
 {
+    const QString& left = leftVer.id;
+    const QString& right = rightVer.id;
+    if (left == right)
+    {
+        return leftVer.buildNum < rightVer.buildNum;
+    }
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
 
@@ -87,7 +94,6 @@ bool VersionListComparator(const QString& left, const QString& right)
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , appManager(0)
 {
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
@@ -95,14 +101,12 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
-    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
+    connect(ui->action_updateConfiguration, SIGNAL(triggered()), this, SLOT(OnRefreshClicked()));
     connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
-    connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
-    appManager = new ApplicationManager();
-    networkManager = new QNetworkAccessManager(this);
-    newsDownloader = new FileDownloader(networkManager);
+    appManager = new ApplicationManager(this);
+    newsDownloader = new FileDownloader(this);
 
     connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
     connect(newsDownloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
@@ -114,8 +118,6 @@ MainWindow::MainWindow(QWidget* parent)
     filterModel->setSourceModel(listModel);
     ui->listView->setModel(filterModel);
 
-    UpdateURLValue();
-
     //if run this method directly qApp->exec() will be called twice
     QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
 }
@@ -123,30 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     SafeDelete(ui);
-    SafeDelete(appManager);
-    SafeDelete(newsDownloader);
-    SafeDelete(networkManager);
 }
 
-void MainWindow::OnURLClicked()
-{
-    QInputDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-    dialog.setTextValue(appManager->GetLocalConfig()->GetRemoteConfigURL());
-    dialog.setWindowTitle("Config URL");
-    dialog.setLabelText("Input new config URL:");
-    dialog.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    dialog.resize(width() / 2, -1);
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-        appManager->GetLocalConfig()->SetRemoteConfigURL(dialog.textValue());
-        UpdateURLValue();
-
-        OnRefreshClicked();
-    }
-}
 void MainWindow::OnlinkClicked(QUrl url)
 {
     QDesktopServices::openUrl(url);
@@ -198,12 +178,9 @@ void MainWindow::OnInstall(int rowNumber)
 
 void MainWindow::OnRefreshClicked()
 {
-    if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
-        return;
-
     FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
-    ConfigDownloader downloader(appManager, networkManager, this);
+    ConfigDownloader downloader(appManager, this);
     downloader.exec();
 
     RefreshApps();
@@ -323,21 +300,23 @@ void MainWindow::ShowTable(const QString& branchID)
                 states.push_back(state);
             }
         }
-        else
+        Branch* localBranch = localConfig->GetBranch(branchID);
+        if (localBranch)
         {
-            Branch* localBranch = localConfig->GetBranch(branchID);
-            if (localBranch)
+            int appCount = localBranch->GetAppCount();
+            for (int i = 0; i < appCount; ++i)
             {
-                int appCount = localBranch->GetAppCount();
-                ui->tableWidget->setRowCount(appCount);
-                for (int i = 0; i < appCount; ++i)
+                Application* localApp = localBranch->GetApplication(i);
+                if (remoteBranch->GetApplication(localApp->id) != nullptr)
                 {
-                    Application* localApp = localBranch->GetApplication(i);
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
-
-                    states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
+                    continue;
                 }
+                int rowCount = ui->tableWidget->rowCount();
+                ui->tableWidget->setRowCount(rowCount + 1);
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+
+                states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
             }
         }
     }
@@ -383,7 +362,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url, networkManager);
+            SelfUpdater updater(tasks.front().version.url);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)
@@ -395,7 +374,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         if (!tasks.isEmpty())
         {
             //application update
-            UpdateDialog dialog(tasks, appManager, networkManager, this);
+            UpdateDialog dialog(tasks, appManager, this);
             connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
                     appManager, SLOT(OnAppInstalled(QString, QString, AppVersion)));
             dialog.exec();
@@ -415,7 +394,7 @@ void MainWindow::RefreshBranchesList()
         listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
     }
 
-    QVector<QString> favs;
+    QStringList favs;
     QSet<QString> branchIDs;
     if (localConfig)
     {
@@ -458,7 +437,8 @@ void MainWindow::RefreshBranchesList()
 
 QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID)
 {
-    QLabel* item = new QLabel(appManager->GetString(stringID));
+    QString string = appManager->GetString(stringID);
+    QLabel* item = new QLabel(string);
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
     item->setFont(tableFont);
 
@@ -486,18 +466,12 @@ QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app)
     }
     else
     {
-        QList<QString> versions;
-        for (int j = 0; j < versCount; ++j)
-        {
-            versions.push_back(app->GetVersion(j)->id);
-        }
-
-        qSort(versions.begin(), versions.end(), VersionListComparator);
+        qSort(app->versions.begin(), app->versions.end(), VersionListComparator);
 
         QComboBox* comboBox = new QComboBox();
         for (int j = versCount - 1; j >= 0; --j)
         {
-            comboBox->addItem(versions[j]);
+            comboBox->addItem(app->versions[j].id);
         }
         comboBox->view()->setTextElideMode(Qt::ElideLeft);
         comboBox->setFont(tableFont);
@@ -538,9 +512,4 @@ void MainWindow::UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState s
     ButtonsWidget* buttons = dynamic_cast<ButtonsWidget*>(ui->tableWidget->cellWidget(rowNumber, COLUMN_BUTTONS));
     if (buttons)
         buttons->SetButtonsState(state);
-}
-
-void MainWindow::UpdateURLValue()
-{
-    ui->labelRemoteURL->setText(appManager->GetLocalConfig()->GetRemoteConfigURL());
 }

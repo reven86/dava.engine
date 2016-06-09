@@ -21,12 +21,12 @@ public:
     const String& GetCommand() const;
 
     bool Parse(uint32 argc, char* argv[]);
-    void PrintUsage() const;
+    bool Parse(const Vector<String>& commandLine);
+    String GetUsageString() const;
 
 private:
-    bool ParseOption(uint32& argIndex, uint32 argc, char* argv[]);
+    bool ParseOption(size_type& argIndex, const Vector<String>& commandLine);
 
-private:
     struct Option
     {
         void SetValue(const VariantType& value);
