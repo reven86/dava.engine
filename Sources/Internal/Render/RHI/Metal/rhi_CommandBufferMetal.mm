@@ -94,6 +94,7 @@ struct
 CommandMTL_End : public CommandMetalImpl<CommandMTL_End, MTL__END>
 {
     Handle syncObject;
+    bool doCommit;
 };
 
 struct
@@ -393,6 +394,11 @@ CommandBufferMetal_t::Execute()
 
                   sync->is_signaled = true;
                 }];
+            }
+
+            if (((CommandMTL_End*)cmd)->doCommit)
+            {
+                [buf commit];
             }
         }
         break;
@@ -787,6 +793,8 @@ RenderPassMetal_t::Initialize()
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
+        cb->do_commit_on_end = !do_present;
+
         if (do_present)
             pbuf = buf;
     }
@@ -811,6 +819,8 @@ RenderPassMetal_t::Initialize()
             cb->cur_vstream_count = 0;
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
+
+            cb->do_commit_on_end = !do_present;
 
             if (i == 0 && do_present)
                 pbuf = cb->buf;
@@ -1132,6 +1142,7 @@ metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 #else
     CommandMTL_End* cmd = cb->allocCmd<CommandMTL_End>();
     cmd->syncObject = syncObject;
+    cmd->doCommit = cb->do_commit_on_end;
 #endif
 }
 
@@ -1771,6 +1782,9 @@ metal_SyncObject_Delete(Handle obj)
 static bool
 metal_SyncObject_IsSignaled(Handle obj)
 {
+    if (!SyncObjectPool::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectMetal_t* sync = SyncObjectPool::Get(obj);
 
