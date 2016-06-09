@@ -447,9 +447,9 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     }
 #endif
 
-    FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
+    FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
     FileAPI::Stat fileStat;
-    int result = FileAPI::FileStat(path.c_str(), &fileStat);
+    int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
     if (result == 0)
     {
         return (0 != (fileStat.st_mode & S_IFREG));
