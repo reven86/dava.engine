@@ -33,8 +33,6 @@ int ConfigDownloader::exec()
     for (const QString& str : urls)
     {
         requests << networkManager->get(QNetworkRequest(QUrl(str)));
-        bool test = requests.last()->parent() == networkManager;
-        test = test;
     }
     return QDialog::exec();
 }
