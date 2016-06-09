@@ -30,7 +30,6 @@ public slots:
     void OnRefreshClicked();
     void OnListItemClicked(QModelIndex);
     void RefreshApps();
-    void OnURLClicked();
 
     void OnRun(int rowNumber);
     void OnInstall(int rowNumber);
@@ -48,8 +47,6 @@ private:
     void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
 
-    void UpdateURLValue();
-
     void RefreshBranchesList();
     void UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState state);
 
@@ -59,18 +56,17 @@ private:
     QWidget* CreateAppInstalledTableItem(const QString& stringID);
     QWidget* CreateAppAvalibleTableItem(Application* app);
 
-    Ui::MainWindow* ui;
-    ApplicationManager* appManager;
+    Ui::MainWindow* ui = nullptr;
+    ApplicationManager* appManager = nullptr;
 
-    QNetworkAccessManager* networkManager;
-    FileDownloader* newsDownloader;
+    FileDownloader* newsDownloader = nullptr;
 
     QPersistentModelIndex selectedListItem;
     QString selectedBranchID;
 
     QFont tableFont;
-    ListModel* listModel;
-    QSortFilterProxyModel* filterModel;
+    ListModel* listModel = nullptr;
+    QSortFilterProxyModel* filterModel = nullptr;
 };
 
 #endif // MAINWINDOW_H
