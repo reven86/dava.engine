@@ -117,6 +117,8 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         DVASSERT(!isMapped)
         ::free(mappedData);
         mappedData = nullptr;
+        updatePending = false;
+        isMapped = false;
     }
 }
 
@@ -222,13 +224,12 @@ dx9_VertexBuffer_Unmap(Handle vb)
     }
     else
     {
-        self->updatePending = false;
-
         DX9Command cmd = { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&self->buffer), uint64_t(self->mappedData), self->size } };
         ExecDX9(&cmd, 1, true);
 
         ::free(self->mappedData);
         self->mappedData = nullptr;
+        self->updatePending = false;
     }
 }
 
