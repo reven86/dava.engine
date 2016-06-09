@@ -1,9 +1,10 @@
-package.path = package.path .. ";../../../dava.framework/Build/?.lua"
+package.path = package.path .. ";../../../../dava.framework/Build/?.lua"
 require("TupState")
 
 tupState = TupState.New({
-    outputDir = ".output",
-    outputDbName = "testbed"
+    outputDir = "../.output",
+    outputDbName = "testbed",
+    intermediateDir = "../.tmp"
 })
 
 tupState:AddPacks {
@@ -15,22 +16,22 @@ tupState:AddPacks {
         exclusive = true,
         name = "pack1",
         rules = {
-            { "Data",  "%.aaa" }
+            { "",  "%.aaa" }
         },
     },
     {
         exclusive = true,
         name = "pack2",
         rules = {
-            { "Data", "%.sc2" }
+            { "", "%.sc2" }
         },
     },
     { 
          name = "gpupack",
          gpu = true,
          rules = {
-            { "Data", "%.{gpu}" },
-            { "Data", "%.sc3" }
+            { "", "%.{gpu}" },
+            { "", "%.sc3" }
          }
     },
 }

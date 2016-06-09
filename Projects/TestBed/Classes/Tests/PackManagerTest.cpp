@@ -61,7 +61,8 @@ void PackManagerTest::LoadResources()
         throw std::runtime_error("unknown gpu famili");
     }
 
-    if (auto startPos = urlPacksGpu.find("{gpu}") != String::npos)
+    auto startPos = urlPacksGpu.find("{gpu}");
+    if (startPos != String::npos)
     {
         urlPacksGpu.replace(startPos, 5, gpuName);
     }
@@ -141,6 +142,25 @@ void PackManagerTest::LoadResources()
     url->SetDelegate(this);
     url->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(url);
+
+    filePathField = new UITextField(Rect(5, 380, 400, 20));
+    filePathField->SetFont(font);
+    filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/3d/LandscapeTest/landscapetest.sc2"));
+    filePathField->SetDebugDraw(true);
+    filePathField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    filePathField->SetInputEnabled(true);
+    filePathField->GetOrCreateComponent<UIFocusComponent>();
+    filePathField->SetDelegate(this);
+    filePathField->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(filePathField);
+
+    checkFile = new UIButton(Rect(420, 380, 100, 20));
+    checkFile->SetDebugDraw(true);
+    checkFile->SetStateFont(0xFF, font);
+    checkFile->SetStateFontColor(0xFF, Color::White);
+    checkFile->SetStateText(0xFF, L"check file");
+    checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
+    AddControl(checkFile);
 }
 
 void PackManagerTest::UnloadResources()
@@ -154,31 +174,39 @@ void PackManagerTest::UnloadResources()
     SafeRelease(greenControl);
     SafeRelease(description);
     SafeRelease(url);
+    SafeRelease(filePathField);
+    SafeRelease(checkFile);
 
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack, DAVA::PackManager::Pack::Change change)
+void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack)
 {
-    if (change == PackManager::Pack::Change::DownloadProgress)
+    if (pack.state == PackManager::Pack::Status::Mounted)
     {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
+    }
+    else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
+    {
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
+    }
+}
 
-        auto rect = redControl->GetRect();
-        rect.dx = rect.dx * pack.downloadProgress;
-        greenControl->SetRect(rect);
-    }
-    else if (change == PackManager::Pack::Change::State)
-    {
-        if (pack.state == PackManager::Pack::Status::Mounted)
-        {
-            packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
-        }
-        else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
-        {
-            packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
-        }
-    }
+void PackManagerTest::OnPackDownloadChange(const DAVA::PackManager::Pack& pack)
+{
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
+}
+
+void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request)
+{
+    // change total download progress
+    uint64 total = request.GetFullSizeWithDependencies();
+    uint64 current = request.GetDownloadedSize();
+    float32 progress = static_cast<float32>(current) / total;
+
+    auto rect = redControl->GetRect();
+    rect.dx = rect.dx * progress;
+    greenControl->SetRect(rect);
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -203,15 +231,15 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
     String dbFile = sqliteDbFile.GetStringValue();
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
-    FilePath dbPath(dbFile);
 
     // clear and renew all packs state
-    packManager.Initialize(dbPath, folderWithDownloadedPacks, urlPacksCommon, urlPacksGpu);
+    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
     packManager.EnableProcessing();
 
-    packManager.onPackStateChanged.DisconnectAll();
+    packManager.packState.DisconnectAll();
 
-    packManager.onPackStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    packManager.packState.Connect(this, &PackManagerTest::OnPackStateChange);
+    packManager.requestProgress.Connect(this, &PackManagerTest::OnRequestChange);
 
     String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
 
@@ -237,6 +265,24 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
     {
         // TODO fix for uap
         // std::system("python scripts/stop_local_http_server.py");
+    }
+}
+
+void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    DAVA::WideString text = filePathField->GetText();
+    DAVA::String fileName = UTF8Utils::EncodeToUTF8(text);
+
+    FilePath path(fileName);
+
+    File* f = File::Create(path, File::OPEN | File::READ);
+    if (f == nullptr)
+    {
+        packNameLoading->SetText(L"can't load file");
+    }
+    else
+    {
+        packNameLoading->SetText(L"file loaded successfully");
     }
 }
 
