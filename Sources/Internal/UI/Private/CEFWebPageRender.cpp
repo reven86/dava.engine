@@ -5,6 +5,7 @@
 #include "UI/Private/CEFWebPageRender.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
@@ -37,6 +38,10 @@ CEFWebPageRender::CEFWebPageRender()
         }
     };
     focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+
     contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
@@ -45,6 +50,9 @@ CEFWebPageRender::CEFWebPageRender()
 CEFWebPageRender::~CEFWebPageRender()
 {
     Core::Instance()->focusChanged.Disconnect(focusConnection);
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
+
     ShutDown();
 }
 
@@ -193,6 +201,17 @@ void CEFWebPageRender::AppyTexture()
         Texture* texture = contentBackground->GetSprite()->GetTexture();
         uint32 dataSize = static_cast<uint32>(imageData.size());
         texture->TexImage(0, imageWidth, imageHeight, imageData.data(), dataSize, 0);
+    }
+}
+
+void CEFWebPageRender::RestoreTexture()
+{
+    Sprite* sprite = contentBackground->GetSprite();
+    Texture* texture = sprite ? sprite->GetTexture() : nullptr;
+
+    if (texture != nullptr && rhi::NeedRestoreTexture(texture->handle))
+    {
+        rhi::UpdateTexture(texture->handle, imageData.data(), 0);
     }
 }
 

@@ -40,6 +40,7 @@ private:
 
     void PostProcessImage();
     void AppyTexture();
+    void RestoreTexture();
 
     CefCursorHandle GetDefaultCursor();
     void SetCursor(CefCursorHandle cursor);
