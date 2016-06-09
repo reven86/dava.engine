@@ -15,6 +15,10 @@ class CEFDavaResourceHandler : public CefResourceHandler
 public:
     CEFDavaResourceHandler(const FilePath& path);
 
+    static String FilePathToDavaUrl(const FilePath& path);
+    static FilePath DavaUrlToFilePath(const String& url);
+
+private:
     bool ProcessRequest(CefRefPtr<CefRequest> request, CefRefPtr<CefCallback> callback) override;
 
     void GetResponseHeaders(CefRefPtr<CefResponse> response,
@@ -25,7 +29,6 @@ public:
     bool ReadResponse(void* data_out, int bytes_to_read, int& bytes_read,
                       CefRefPtr<CefCallback> callback) override;
 
-private:
     FilePath davaPath;
     RefPtr<class File> file;
 };

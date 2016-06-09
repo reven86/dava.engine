@@ -1,8 +1,11 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
+#include <cef/include/cef_parser.h>
+
 #include "UI/Private/CEFDavaResourceHandler.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -67,14 +70,42 @@ bool CEFDavaResourceHandler::ReadResponse(void* data_out,
     return true;
 }
 
+String CEFDavaResourceHandler::FilePathToDavaUrl(const FilePath& path)
+{
+    Vector<String> tokens;
+    Split(path.GetStringValue(), "/\\", tokens);
+    for (String& token : tokens)
+    {
+        token = CefURIEncode(token, false);
+    }
+
+    String result;
+    Merge(tokens, '/', result);
+
+    if (result.back() != '/' && path.IsDirectoryPathname())
+    {
+        result += '/';
+    }
+
+    return "dava:/" + result;
+}
+
+FilePath CEFDavaResourceHandler::DavaUrlToFilePath(const String& url)
+{
+    int rule = UU_NORMAL | UU_SPACES | UU_URL_SPECIAL_CHARS | UU_CONTROL_CHARS;
+    // path after dava:/
+    return CefURIDecode(url.substr(6), true, static_cast<cef_uri_unescape_rule_t>(rule)).ToString();
+}
+
 CefRefPtr<CefResourceHandler> CEFDavaResourceHandlerFactory::Create(CefRefPtr<CefBrowser> browser,
                                                                     CefRefPtr<CefFrame> frame,
                                                                     const CefString& scheme_name,
                                                                     CefRefPtr<CefRequest> request)
 {
     String url = request->GetURL().ToString();
-    // path after dava:/
-    return new CEFDavaResourceHandler(FilePath(url.substr(6)));
+    FilePath decodedUrl = CEFDavaResourceHandler::DavaUrlToFilePath(url);
+
+    return new CEFDavaResourceHandler(decodedUrl);
 }
 
 } // namespace DAVA

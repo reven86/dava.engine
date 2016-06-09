@@ -1,4 +1,4 @@
-#if defined(ENABLE_CEF_WEBVIEW)
+﻿#if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/cef_browser.h>
 #include <regex>
@@ -8,7 +8,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIWebView.h"
 #include "UI/Private/CEFWebViewControl.h"
-#include "Utils/Utils.h"
+#include "UI/Private/CEFDavaResourceHandler.h"
 
 namespace DAVA
 {
@@ -92,14 +92,14 @@ void CEFWebViewControl::OpenURL(const String& url)
 void CEFWebViewControl::LoadHtmlString(const WideString& htmlString)
 {
     StopLoading();
-    LoadHtml(htmlString, "dava:/~res:/");
+    LoadHtml(htmlString, CEFDavaResourceHandler::FilePathToDavaUrl("~res:/"));
 }
 
 void CEFWebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
     StopLoading();
 
-    String fileUrl = "dava:/" + basePath.GetStringValue();
+    String fileUrl = CEFDavaResourceHandler::FilePathToDavaUrl(basePath);
     LoadHtml(htmlString, fileUrl);
 }
 

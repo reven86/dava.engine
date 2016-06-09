@@ -66,7 +66,7 @@ CEFControllerImpl::CEFControllerImpl()
     CefSettings settings;
     settings.no_sandbox = 1;
     settings.windowless_rendering_enabled = 1;
-    settings.log_severity = LOGSEVERITY_VERBOSE; //LOGSEVERITY_DISABLE;
+    settings.log_severity = LOGSEVERITY_DISABLE;
 
     CefString(&settings.cache_path).FromString(GetCachePath().GetAbsolutePathname());
     CefString(&settings.log_file).FromString(GetLogPath().GetAbsolutePathname());
@@ -86,6 +86,9 @@ CEFControllerImpl::CEFControllerImpl()
     {
         CefRefPtr<CefSchemeHandlerFactory> davaFactory = new CEFDavaResourceHandlerFactory;
         schemeRegistered = CefRegisterSchemeHandlerFactory("dava", "", davaFactory);
+
+        CefRefPtr<CefCookieManager> cookieMan = CefCookieManager::GetGlobalManager(nullptr);
+        cookieMan->SetSupportedSchemes({ "dava" }, nullptr);
     }
 
     if (IsCEFInitializedSuccessfully())

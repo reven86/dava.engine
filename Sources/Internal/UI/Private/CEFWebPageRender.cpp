@@ -7,9 +7,6 @@
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "FileSystem/FileSystem.h"
-#include "Render/Image/ImageSystem.h"
-
 namespace DAVA
 {
 struct CEFColor
@@ -29,8 +26,6 @@ struct CEFColor
     uint8 alpha = 0;
 };
 
-static unsigned webViewCount = 0;
-
 CEFWebPageRender::CEFWebPageRender()
     : contentBackground(new UIControlBackground)
 {
@@ -42,19 +37,15 @@ CEFWebPageRender::CEFWebPageRender()
         }
     };
     focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
-    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     contentBackground->SetColor(Color::White);
-    webViewID = webViewCount++;
+    contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
 CEFWebPageRender::~CEFWebPageRender()
 {
     Core::Instance()->focusChanged.Disconnect(focusConnection);
     ShutDown();
-
-    //String fileName = FileSystem::Instance()->GetCurrentExecutableDirectory().GetAbsolutePathname() + "webview_" + std::to_string(webViewID) + ".png";
-    //FileSystem::Instance()->DeleteFile(fileName);
-    webViewCount--;
 }
 
 void CEFWebPageRender::ClearRenderSurface()
@@ -195,7 +186,6 @@ void CEFWebPageRender::AppyTexture()
         RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
                                                         static_cast<float32>(texture->GetWidth()),
                                                         static_cast<float32>(texture->GetHeight())));
-
         contentBackground->SetSprite(sprite.Get());
     }
     else
@@ -204,10 +194,6 @@ void CEFWebPageRender::AppyTexture()
         uint32 dataSize = static_cast<uint32>(imageData.size());
         texture->TexImage(0, imageWidth, imageHeight, imageData.data(), dataSize, 0);
     }
-
-    RefPtr<Image> img(Image::CreateFromData(imageWidth, imageHeight, FORMAT_RGBA8888, imageData.data()));
-    String fileName = FileSystem::Instance()->GetCurrentExecutableDirectory().GetAbsolutePathname() + "webview_" + std::to_string(webViewID) + ".png";
-    ImageSystem::Save(fileName, img.Get());
 }
 
 void CEFWebPageRender::OnCursorChange(CefRefPtr<CefBrowser> browser,
