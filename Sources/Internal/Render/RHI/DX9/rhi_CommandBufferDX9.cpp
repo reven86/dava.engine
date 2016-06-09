@@ -1302,16 +1302,19 @@ _DX9_ExecuteQueuedCommands()
         _RejectAllFrames();
     }
 
+    std::vector<Handle> pass_h;
+    std::vector<RenderPassDX9_t*> pass;
+
     _DX9_FrameSync.Lock();
     bool shouldExecute = !(_DX9_Frame.empty() || _DX9_ResetPending);
+    if (shouldExecute)
+    {
+        _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
+    }
     _DX9_FrameSync.Unlock();
 
     if (shouldExecute)
     {
-        std::vector<Handle> pass_h;
-        std::vector<RenderPassDX9_t*> pass;
-        _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
-
         for (RenderPassDX9_t* pp : pass)
         {
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)

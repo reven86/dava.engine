@@ -39,7 +39,6 @@ public:
     TextureFace mappedFace;
     void* mappedData = nullptr;
     uint32 isMapped : 1;
-    uint32 updatePending : 1;
     unsigned isRenderTarget : 1;
     unsigned isDepthStencil : 1;
 };
@@ -74,7 +73,6 @@ TextureDX9_t::TextureDX9_t()
     , rt_surf9(nullptr)
     , lastUnit(DAVA::InvalidIndex)
     , isMapped(0)
-    , updatePending(0)
     , isRenderTarget(0)
     , isDepthStencil(0)
 {
@@ -328,7 +326,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
 
     uint32 data_sz = TextureSize(self->format, self->width, self->height, level);
-    self->mappedData = reinterpret_cast<uint8*>(::malloc(data_sz));
+    self->mappedData = ::malloc(data_sz);
     TextureFormat format = self->format;
 
     void* mem = nullptr;
