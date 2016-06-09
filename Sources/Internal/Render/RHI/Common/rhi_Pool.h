@@ -255,10 +255,10 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         DT desc = i->CreationDesc();
-        i->recreatePending = true;
+        i->SetRecreatePending(true);
         i->Destroy(true);
         i->Create(desc, true);
-        i->recreatePending = false;
+        i->SetRecreatePending(false);
         i->MarkNeedRestore();
         ++count;
     }
@@ -290,19 +290,6 @@ class
 ResourceImpl
 {
 public:
-    ResourceImpl()
-        : isMapped(false)
-        , updatePending(false)
-        , recreatePending(false)
-        , needRestore(false)
-    {
-    }
-
-    bool NeedRestore() const
-    {
-        return needRestore;
-    }
-
     const DT& CreationDesc() const
     {
         return creationDesc;
@@ -312,6 +299,11 @@ public:
     {
         creationDesc = desc;
         Memset(&creationDesc.initialData, 0, sizeof(creationDesc.initialData));
+    }
+
+    bool NeedRestore() const
+    {
+        return needRestore;
     }
 
     void MarkNeedRestore()
@@ -333,20 +325,25 @@ public:
         }
     }
 
+    bool RecreatePending() const
+    {
+        return recreatePending;
+    }
+
+    void SetRecreatePending(bool value)
+    {
+        recreatePending = value;
+    }
+
     static uint32 PendingRestoreCount()
     {
         return ObjectsToRestore.Get();
     }
 
-public:
-    uint8* mappedData = nullptr;
-    uint32 isMapped : 1;
-    uint32 updatePending : 1;
-    uint32 recreatePending : 1;
-    uint32 needRestore : 1;
-
 private:
     DT creationDesc;
+    bool needRestore = false;
+    bool recreatePending = false;
     static DAVA::Atomic<uint32> ObjectsToRestore;
 };
 

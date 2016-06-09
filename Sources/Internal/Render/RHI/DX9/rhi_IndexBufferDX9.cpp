@@ -24,6 +24,9 @@ public:
 
     unsigned size;
     IDirect3DIndexBuffer9* buffer;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(IndexBufferDX9_t, IndexBuffer::Descriptor)
@@ -36,6 +39,8 @@ RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, 
 IndexBufferDX9_t::IndexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
+    , isMapped(0)
+    , updatePending(0)
 {
 }
 
@@ -46,7 +51,7 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
     DVASSERT(desc.size);
     bool success = false;
 
-    recreatePending = false;
+    SetRecreatePending(false);
 
     UpdateCreationDesc(desc);
 
@@ -110,7 +115,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         buffer = nullptr;
     }
 
-    if (!recreatePending && mappedData)
+    if (!RecreatePending() && mappedData)
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
@@ -143,7 +148,7 @@ static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
-    self->recreatePending = false;
+    self->SetRecreatePending(false);
     self->MarkRestored();
     self->Destroy();
     IndexBufferDX9Pool::Free(ib);
@@ -193,13 +198,13 @@ dx9_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
 
     if (self->mappedData == nullptr)
     {
-        self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
+        self->mappedData = ::malloc(self->size);
     }
 
     DVASSERT(!self->isMapped);
     self->isMapped = true;
 
-    return self->mappedData + offset;
+    return static_cast<uint8*>(self->mappedData) + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -288,7 +293,7 @@ void ReleaseAll()
     IndexBufferDX9Pool::Lock();
     for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
     {
-        b->recreatePending = true;
+        b->SetRecreatePending(true);
         b->Destroy(true);
     }
     IndexBufferDX9Pool::Unlock();

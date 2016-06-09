@@ -23,6 +23,9 @@ public:
 
     unsigned size = 0;
     IDirect3DVertexBuffer9* buffer;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
 };
 
 RHI_IMPL_RESOURCE(VertexBufferDX9_t, VertexBuffer::Descriptor)
@@ -33,6 +36,8 @@ RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descripto
 VertexBufferDX9_t::VertexBufferDX9_t()
     : size(0)
     , buffer(nullptr)
+    , isMapped(0)
+    , updatePending(0)
 {
 }
 
@@ -43,7 +48,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
     DVASSERT(desc.size);
     bool success = false;
 
-    recreatePending = false;
+    SetRecreatePending(false);
 
     UpdateCreationDesc(desc);
 
@@ -107,7 +112,7 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         buffer = nullptr;
     }
 
-    if (!recreatePending && mappedData)
+    if (!RecreatePending() && mappedData)
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
@@ -142,7 +147,7 @@ static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
-    self->recreatePending = false;
+    self->SetRecreatePending(false);
     self->MarkRestored();
     self->Destroy();
     VertexBufferDX9Pool::Free(vb);
@@ -193,11 +198,11 @@ dx9_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
 
     if (self->mappedData == nullptr)
     {
-        self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
+        self->mappedData = ::malloc(self->size);
     }
     self->isMapped = true;
 
-    return self->mappedData + offset;
+    return static_cast<uint8*>(self->mappedData) + offset;
 }
 
 //------------------------------------------------------------------------------
@@ -288,7 +293,7 @@ void ReleaseAll()
     VertexBufferDX9Pool::Unlock();
     for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
     {
-        b->recreatePending = true;
+        b->SetRecreatePending(true);
         b->Destroy(true);
     }
     VertexBufferDX9Pool::Unlock();
