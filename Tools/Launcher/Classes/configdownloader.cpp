@@ -60,12 +60,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     {
         appManager->ParseRemoteConfigData(reply->readAll());
     }
-    if (!requests.contains(reply))
-    {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, tr("internal error while downloading config"));
-        reject();
-        return;
-    }
+
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();

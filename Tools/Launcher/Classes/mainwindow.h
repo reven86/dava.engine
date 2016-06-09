@@ -34,6 +34,9 @@ public slots:
     void OnInstall(int rowNumber);
     void OnRemove(int rowNumber);
 
+    void OnInstallAll();
+    void OnRemoveAll();
+
     void OnCellClicked(const QPoint& pos);
     void OnCellDoubleClicked(QModelIndex index);
 
