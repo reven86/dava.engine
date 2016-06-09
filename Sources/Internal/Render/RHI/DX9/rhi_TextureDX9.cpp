@@ -270,15 +270,7 @@ void TextureDX9_t::Destroy(bool force_immediate)
       { rt_surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_surf9) } },
       { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_tex9) } }
     };
-
-    for (DAVA::size_type i = 0; i < countof(cmd); ++i)
-    {
-        if (cmd[i].func != DX9Command::NOP)
-        {
-            ExecDX9(cmd, countof(cmd), force_immediate);
-            break;
-        }
-    }
+    ExecDX9(cmd, countof(cmd), force_immediate);
 
     surf9 = nullptr;
     tex9 = nullptr;
@@ -415,7 +407,7 @@ dx9_Texture_Unmap(Handle tex)
     Size2i sz = TextureExtents(Size2i(self->width, self->height), self->mappedLevel);
     uint64 data_sz = TextureSize(self->format, sz.dx, sz.dy);
 
-    HRESULT hr(0);
+    HRESULT hr;
 
     if (self->cubetex9)
     {
@@ -432,7 +424,7 @@ dx9_Texture_Unmap(Handle tex)
         hr = cmd.retval;
     }
 
-    if (hr)
+    if (FAILED(hr))
     {
         Logger::Error("Failed to update texture (0x%08X) : %s", hr, D3D9ErrorText(hr));
     }
