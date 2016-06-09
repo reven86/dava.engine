@@ -1,4 +1,7 @@
 #include "win_gl.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "_gl.h"
 
 void win_gl_reset(const rhi::ResetParam& param)
@@ -8,3 +11,5 @@ void win_gl_reset(const rhi::ResetParam& param)
         wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);
     }
 }
+
+#endif
