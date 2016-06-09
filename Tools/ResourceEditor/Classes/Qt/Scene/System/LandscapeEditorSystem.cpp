@@ -12,7 +12,7 @@ LandscapeEditorSystem::LandscapeEditorSystem(Scene* scene, const DAVA::FilePath&
     , cursorPosition(-100.f, -100.f)
     , prevCursorPos(-1.f, -1.f)
 {
-    cursorTexture = CreateTextureFromPng(cursorPathname);
+    cursorTexture = CreateSingleMipTexture(cursorPathname);
     cursorTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
 
     collisionSystem = ((SceneEditor2*)GetScene())->collisionSystem;

@@ -1,4 +1,4 @@
-﻿#include "DAVAEngine.h"
+#include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
 using namespace DAVA;

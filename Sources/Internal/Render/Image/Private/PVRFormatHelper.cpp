@@ -82,7 +82,7 @@ uint32 GetDataSize(const Vector<Vector<Image*>>& imageSet)
 
 PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
 {
-    static const UnorderedMap<uint64, PixelFormat> mapping =
+    static const UnorderedMap<uint64, PixelFormat, std::hash<uint64>> mapping =
     {
       { ePVRTPF_PVRTCI_2bpp_RGB, FORMAT_PVR2 },
       { ePVRTPF_PVRTCI_2bpp_RGBA, FORMAT_PVR2 },
@@ -120,7 +120,7 @@ PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
 
 uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
 {
-    static const UnorderedMap<PixelFormat, uint64> mapping =
+    static const UnorderedMap<PixelFormat, uint64, std::hash<uint8>> mapping =
     {
       { FORMAT_PVR2, ePVRTPF_PVRTCI_2bpp_RGBA },
       { FORMAT_PVR4, ePVRTPF_PVRTCI_4bpp_RGBA },

@@ -194,8 +194,8 @@ void SaveImageToFile(Image* image, const FilePath& path)
     ImageSystem::Save(path, image);
 }
 
-DAVA::Texture* CreateTextureFromPng(const DAVA::FilePath& pngPathname)
+DAVA::Texture* CreateSingleMipTexture(const DAVA::FilePath& imagePath)
 {
-    DAVA::ScopedPtr<DAVA::Image> pngImage(DAVA::ImageSystem::LoadSingleMip(pngPathname));
-    return Texture::CreateFromData(pngImage, false);
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(imagePath));
+    return Texture::CreateFromData(image, false);
 }

@@ -190,14 +190,12 @@ QtMainWindow::~QtMainWindow()
     TextureBrowser::Instance()->Release();
     MaterialEditor::Instance()->Release();
 
-    DAVA::SafeDelete(ui);
-
     ProjectManager::Instance()->Release();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
 {
-    return ui;
+    return ui.get();
 }
 
 SceneTabWidget* QtMainWindow::GetSceneWidget()
@@ -1357,8 +1355,6 @@ void QtMainWindow::ExportTriggered()
 
         OnReloadTextures(); // need reload textures because they may be re-compressed
     }
-
-    return;
 }
 
 void QtMainWindow::OnImportSpeedTreeXML()
