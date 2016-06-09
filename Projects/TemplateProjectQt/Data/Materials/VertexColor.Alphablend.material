@@ -3,7 +3,7 @@ RenderTechnique:
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Default/materials"
-        UniqueDefines: ["MATERIAL_TEXTURE", "VERTEX_COLOR", "ALPHABLEND"]
+        UniqueDefines: ["VERTEX_COLOR", "ALPHABLEND"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000
