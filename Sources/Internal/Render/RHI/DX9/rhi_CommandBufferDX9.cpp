@@ -2,6 +2,7 @@
 #include "rhi_DX9.h"
 #include "../rhi_Type.h"
 #include "../Common/rhi_RingBuffer.h"
+#include "../Common/rhi_FormatConversion.h"
 #include "../Common/dbg_StatSet.h"
 
 #include "Debug/DVAssert.h"
