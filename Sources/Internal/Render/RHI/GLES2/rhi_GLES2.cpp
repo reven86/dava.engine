@@ -590,6 +590,12 @@ void gles2_Initialize(const InitParam& param)
         if (_GLES2_IsSeamlessCubmapSupported)
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+        if (wglSwapIntervalEXT != nullptr)
+        {
+            wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);
+            DAVA::Logger::Info("GLES2 V-Sync: %s", param.vsyncEnabled ? "ON" : "OFF");
+        }
+
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
         stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");

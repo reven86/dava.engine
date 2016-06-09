@@ -2,6 +2,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include <thread>
 
 #include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
@@ -327,22 +328,16 @@ void CoreWin32Platform::Run()
 
         SystemProcessFrame();
 
-        uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-        int32 sleepMs = 1;
-
         int32 fps = Renderer::GetDesiredFPS();
         if (fps > 0)
         {
-            sleepMs = (1000 / fps) - elapsedTime;
-            if (sleepMs < 1)
+            int32 elapsedTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = (1000 / fps) - elapsedTime;
+            if (sleepMs > 0)
             {
-                sleepMs = 1;
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
             }
         }
-
-        TRACE_BEGIN_EVENT(11, "core", "Sleep");
-        Sleep(sleepMs);
-        TRACE_END_EVENT(11, "core", "Sleep");
 
         if (willQuit)
         {
