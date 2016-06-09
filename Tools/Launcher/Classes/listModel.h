@@ -20,10 +20,12 @@ public:
     };
     static const int DAVA_WIDGET_ROLE = Qt::UserRole + 1;
     ListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
-    void clearItems();
-    void addItem(const QString& dataText, ListItemType type);
+    void ClearItems();
+    void AddItem(const QString& dataText, ListItemType type);
     QVariant data(const QModelIndex& index, int role) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    ListItemType GetType(int row) const;
 
 private:
     struct Item

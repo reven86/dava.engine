@@ -223,7 +223,10 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
     <string>Update configuration</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+R, F5</string>
+    <string>F5, Ctrl+R</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="action_downloadAll">

@@ -8,6 +8,8 @@
 #include "filemanager.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
+#include "listModel.h"
+#include "filterModel.h"
 
 #include <QSet>
 #include <QQueue>
@@ -17,8 +19,6 @@
 #include <QLabel>
 #include <QVariant>
 #include <QComboBox>
-#include <QSortFilterProxyModel>
-#include "listModel.h"
 
 class BranchListComparator
 {
@@ -96,6 +96,7 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->action_updateConfiguration->setShortcuts(QList<QKeySequence>() << QKeySequence("F5") << QKeySequence("Ctrl+R"));
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
 
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
@@ -112,7 +113,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new ListModel(appManager, this);
-    filterModel = new QSortFilterProxyModel(this);
+    filterModel = new FilterModel(this);
     filterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit_search, &QLineEdit::textChanged, filterModel, &QSortFilterProxyModel::setFilterFixedString);
     filterModel->setSourceModel(listModel);
@@ -441,12 +442,12 @@ void MainWindow::RefreshBranchesList()
 {
     ConfigParser* localConfig = appManager->GetLocalConfig();
     ConfigParser* remoteConfig = appManager->GetRemoteConfig();
-    listModel->clearItems();
+    listModel->ClearItems();
 
     if (!localConfig->GetWebpageURL().isEmpty())
     {
-        listModel->addItem(CONFIG_LAUNCHER_WEBPAGE_KEY, ListModel::LIST_ITEM_NEWS);
-        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem(CONFIG_LAUNCHER_WEBPAGE_KEY, ListModel::LIST_ITEM_NEWS);
+        listModel->AddItem("", ListModel::LIST_ITEM_SEPARATOR);
     }
 
     QStringList favs;
@@ -474,19 +475,19 @@ void MainWindow::RefreshBranchesList()
         const QString& branchID = favs[i];
         if (branchesList.contains(branchID))
         {
-            listModel->addItem(branchID, ListModel::LIST_ITEM_FAVORITES);
+            listModel->AddItem(branchID, ListModel::LIST_ITEM_FAVORITES);
             hasFavorite = true;
         }
     }
     if (hasFavorite)
-        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem("", ListModel::LIST_ITEM_SEPARATOR);
 
     //Add Others
     for (int i = 0; i < branchesCount; i++)
     {
         const QString& branchID = branchesList[i];
         if (!favs.contains(branchID))
-            listModel->addItem(branchID, ListModel::LIST_ITEM_BRANCH);
+            listModel->AddItem(branchID, ListModel::LIST_ITEM_BRANCH);
     }
 }
 

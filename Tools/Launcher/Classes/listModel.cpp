@@ -14,7 +14,7 @@ ListModel::ListModel(const ApplicationManager* appManager_, QObject* parent)
     fontFavorites.setBold(true);
 }
 
-void ListModel::clearItems()
+void ListModel::ClearItems()
 {
     if (!items.isEmpty())
     {
@@ -24,7 +24,7 @@ void ListModel::clearItems()
     }
 }
 
-void ListModel::addItem(const QString& dataText, ListItemType type)
+void ListModel::AddItem(const QString& dataText, ListItemType type)
 {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     items.push_back({ appManager->GetString(dataText), dataText, type });
@@ -78,4 +78,19 @@ QVariant ListModel::data(const QModelIndex& index, int role) const
 int ListModel::rowCount(const QModelIndex& parent) const
 {
     return items.size();
+}
+
+Qt::ItemFlags ListModel::flags(const QModelIndex& index) const
+{
+    ListItemType type = items.at(index.row()).type;
+    if (type == LIST_ITEM_SEPARATOR)
+    {
+        return Qt::NoItemFlags;
+    }
+    return QAbstractListModel::flags(index);
+}
+
+ListModel::ListItemType ListModel::GetType(int row) const
+{
+    return items.at(row).type;
 }
