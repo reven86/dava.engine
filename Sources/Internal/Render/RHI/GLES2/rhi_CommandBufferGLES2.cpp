@@ -898,14 +898,19 @@ gles2_SyncObject_IsSignaled(Handle obj)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
 
-    if (!SyncObjectPoolGLES2::IsAlive(obj))
-        return true;
-
     bool signaled = false;
-    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
-    if (sync)
-        signaled = sync->is_signaled;
+    if (SyncObjectPoolGLES2::IsAlive(obj))
+    {
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
+
+        if (sync)
+            signaled = sync->is_signaled;
+    }
+    else
+    {
+        signaled = true;
+    }
 
     return signaled;
 }

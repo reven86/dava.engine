@@ -1782,14 +1782,19 @@ metal_SyncObject_Delete(Handle obj)
 static bool
 metal_SyncObject_IsSignaled(Handle obj)
 {
-    if (!SyncObjectPool::IsAlive(obj))
-        return true;
-
     bool signaled = false;
-    SyncObjectMetal_t* sync = SyncObjectPool::Get(obj);
 
-    if (sync)
-        signaled = sync->is_signaled;
+    if (SyncObjectPool::IsAlive(obj))
+    {
+        SyncObjectMetal_t* sync = SyncObjectPool::Get(obj);
+
+        if (sync)
+            signaled = sync->is_signaled;
+    }
+    else
+    {
+        signaled = true;
+    }
 
     return signaled;
 }
