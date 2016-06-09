@@ -3,15 +3,17 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Concurrency/Mutex.h"
 
-#include "Engine/Private/EngineFwd.h"
-
-#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_WIN32__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "Concurrency/Mutex.h"
+
+#include "Engine/Private/EngineFwd.h"
 #include "Engine/Private/Win32/EventWin32.h"
 
 namespace DAVA

@@ -4,7 +4,9 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_WIN32__)
 
 #include "Engine/Private/EngineFwd.h"
 

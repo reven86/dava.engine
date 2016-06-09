@@ -1,16 +1,19 @@
 #if defined(__DAVAENGINE_COREV2__)
 
+#include "Engine/Private/Win32/WindowWin32.h"
+
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_WIN32__)
+
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Win32/CoreWin32.h"
-#include "Engine/Private/Win32/WindowWin32.h"
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
-
-#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
 
 namespace DAVA
 {

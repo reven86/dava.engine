@@ -1,5 +1,3 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 // Utility header with forward declarations of Engine-related public and private classes
 
 namespace DAVA
@@ -35,5 +33,3 @@ using NativeWindow = WindowQt;
 
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__
