@@ -14,9 +14,12 @@ public:
 
     void Initialize(const FilePath& dbFile_,
                     const FilePath& localPacksDir_,
+                    const FilePath& readOnlyPacksDir_,
                     const String& packUrlCommon,
                     const String& packUrlGpu,
-                    Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal);
+                    Signal<const PackManager::Pack&>& signal,
+                    Signal<const PackManager::Pack&>& signalDownload,
+                    Signal<const PackManager::IRequest&>& signal2);
 
     bool IsProcessingEnabled() const;
 
@@ -34,7 +37,7 @@ public:
 
     PackManager::Pack& GetPack(const String& packName);
 
-    void MountDownloadedPacks();
+    void MountDownloadedPacks(const FilePath&);
 
     void DeletePack(const String& packName);
 
@@ -42,14 +45,18 @@ public:
 
     const FilePath& GetLocalPacksDir() const;
 
-    const String& GetRemotePacksURL() const;
+    const String& GetRemotePacksURL(bool isGpu) const;
 
-    Signal<const PackManager::Pack&, PackManager::Pack::Change>* onPackChange;
+    Signal<const PackManager::Pack&>* onPackChange = nullptr;
+    Signal<const PackManager::Pack&>* packDownload = nullptr;
+    Signal<const PackManager::IRequest&>* onRequestChange = nullptr;
 
 private:
     FilePath dbFile;
     FilePath localPacksDir;
+    FilePath readOnlyPacksDir;
     String packsUrlCommon;
+    String packsUrlGpu;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
@@ -128,8 +135,12 @@ inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
     return localPacksDir;
 }
 
-inline const String& PackManagerImpl::GetRemotePacksURL() const
+inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
 {
+    if (isGpu)
+    {
+        return packsUrlGpu;
+    }
     return packsUrlCommon;
 }
 
