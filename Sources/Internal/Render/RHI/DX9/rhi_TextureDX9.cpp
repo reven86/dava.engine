@@ -37,6 +37,9 @@ public:
     unsigned lastUnit;
     unsigned mappedLevel;
     TextureFace mappedFace;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
     unsigned isRenderTarget : 1;
     unsigned isDepthStencil : 1;
 };
@@ -70,7 +73,10 @@ TextureDX9_t::TextureDX9_t()
     , rt_tex9(nullptr)
     , rt_surf9(nullptr)
     , lastUnit(DAVA::InvalidIndex)
-    , isRenderTarget(false)
+    , isMapped(0)
+    , updatePending(0)
+    , isRenderTarget(0)
+    , isDepthStencil(0)
 {
 }
 
@@ -283,7 +289,7 @@ void TextureDX9_t::Destroy(bool force_immediate)
     width = 0;
     height = 0;
 
-    if (!recreatePending && mappedData)
+    if (!RecreatePending() && mappedData)
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
@@ -316,7 +322,7 @@ static void
 dx9_Texture_Delete(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
-    self->recreatePending = false;
+    self->SetRecreatePending(false);
     self->MarkRestored();
     self->Destroy();
     TextureDX9Pool::Free(tex);
@@ -541,7 +547,7 @@ void ReleaseAll()
     TextureDX9Pool::Lock();
     for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
     {
-        t->recreatePending = true;
+        t->SetRecreatePending(true);
         t->Destroy(true);
     }
     TextureDX9Pool::Unlock();

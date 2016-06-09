@@ -34,6 +34,9 @@ public:
     TextureFormat format;
     uint32 mappedLevel;
     GLenum mappedFace;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
     uint32 isCubeMap : 1;
     uint32 isRenderTarget : 1;
     uint32 isRenderBuffer : 1;
@@ -65,6 +68,8 @@ TextureGLES2_t::TextureGLES2_t()
     , fbo(0)
     , width(0)
     , height(0)
+    , isMapped(0)
+    , updatePending(0)
     , isCubeMap(false)
     , isRenderTarget(false)
     , isRenderBuffer(false)
