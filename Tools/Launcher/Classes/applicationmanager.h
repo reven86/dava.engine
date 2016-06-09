@@ -29,7 +29,7 @@ public:
 
     bool ShouldShowNews();
     void NewsShowed();
-    QString GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExist = true) const;
+    QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
 
 public slots:
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
