@@ -448,13 +448,12 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     }
 #endif
 
-    struct stat s;
-
-    const String& cs = pathToCheck.GetAbsolutePathname();
-    int result = stat(cs.c_str(), &s);
+    FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
+    FileAPI::Stat fileStat;
+    int result = FileAPI::FileStat(path.c_str(), &fileStat);
     if (result == 0)
     {
-        return (0 != (s.st_mode & S_IFREG));
+        return (0 != (fileStat.st_mode & S_IFREG));
     }
     else
     {
