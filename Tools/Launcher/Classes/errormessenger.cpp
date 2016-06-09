@@ -13,7 +13,8 @@ QString errorsMsg[ERROR_COUNT] = {
     "Config parse error",
     "Archive unpacking error",
     "Application is running. Please, close it",
-    "Updating error"
+    "Updating error",
+    "Can not find path"
 };
 
 void ShowErrorMessage(ErrorID id, const QString& addInfo)
