@@ -20,7 +20,7 @@ private:
     mutable RefPtr<File> file;
     PackFormat::PackFile packFile;
     UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData;
-    Vector<ResourceArchive::FileInfo> filesInfoSortedByName;
+    Vector<ResourceArchive::FileInfo> filesInfo;
 };
 
 } // end namespace DAVA

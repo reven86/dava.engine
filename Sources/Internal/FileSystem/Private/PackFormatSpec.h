@@ -11,48 +11,53 @@ struct PackFile
     // 0 to N bytes of files - packed contents
     struct PackedFilesBlock
     {
-    } notUsedReadDirectlyFromFile;
+    } rawBytesOfCompressedFiles;
 
-    // table with info per file in archive (0 to N_files * sizeof(Data))
-    struct FilesDataBlock
+    struct FilesTableBlock
     {
-        struct Data
+        // table with info per file in archive (0 to N_files * sizeof(Data))
+        struct FilesData
         {
-            uint64 startPositionInPackedFilesBlock;
-            uint32 compressed;
-            uint32 original;
-            uint32 hash;
-            Compressor::Type packType;
-            Array<uint8, 8> reserved; // null bytes, leave for future
-        };
-        Vector<Data> files;
-    } filesData;
+            struct Data
+            {
+                uint64 startPosition; // from begin of file
+                uint32 compressedSize;
+                uint32 originalSize;
+                uint32 compressedCrc32;
+                Compressor::Type type;
+                Array<char8, 8> reserved; // null bytes, leave for future
+            };
+            Vector<Data> files;
+        } data;
 
-    // 0 to N bytes (all file names concatenated and '\0' separeted and packed)
-    // order of file names same as in FilesDataBlock
-    struct NamesBlock
-    {
-        Vector<uint8> sortedNamesLz4hc;
-    } names;
+        // 0 to N bytes (all file names concatenated and '\0' separeted and packed)
+        // order of file names same as in FilesData
+        struct Names
+        {
+            Vector<uint8> compressedNames; // lz4hc
+            uint32 compressedCrc32;
+        } names;
+    } filesTable;
 
-    struct HeaderBlock
+    struct FooterBlock
     {
-        // uint64 startNamesBlock = end_of_file - (sizeof(HeaderBlock) + namesBlockSizeOriginal)
-        // uint64 startFilesDataBlock = startNamesBlock - fileTableBlockSize
-        // uint64 startPackedFilesBlockPosition = 0 // begin_of_the_file
-        Array<uint8, 8> reserved; // null bytes (space for future)
-        uint32 namesBlockSizeCompressedLZ4HC;
-        uint32 namesBlockSizeOriginal;
-        uint32 filesTableBlockSize;
-        uint32 filesTableHash;
-        uint32 numFiles;
-        Array<char8, 4> packArchiveMarker;
-    } header;
+        Array<char, 4> reserved; // null bytes (space for future)
+        uint32 infoCrc32;
+        struct Info
+        {
+            uint32 numFiles;
+            uint32 namesSizeCompressed; // lz4hc
+            uint32 namesSizeOriginal;
+            uint32 filesTableSize;
+            uint32 filesTableCrc32; // hash for both FilesData and FileNames if one file change -> hash will change, or if name of file change -> hash will change too
+            Array<char8, 4> packArchiveMarker;
+        } info;
+    } footer;
 }; // end PackFile struct
 
-using FileTableEntry = PackFile::FilesDataBlock::Data;
+using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
-static_assert(sizeof(PackFile::HeaderBlock) == 32, "header block size changed, something bad happened!");
+static_assert(sizeof(PackFile::FooterBlock) == 32, "header block size changed, something bad happened!");
 static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
 
 } // end of PackFormat namespace

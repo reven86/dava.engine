@@ -380,7 +380,7 @@ bool File::Seek(int64 position, eFileSeek seekType)
         break;
     }
 
-#if defined(__DAVAENGINE_WINDOWS_)
+#if defined(__DAVAENGINE_WINDOWS__)
     return 0 == _fseeki64(file, position, realSeekType);
 #else
     return 0 == fseeko(file, position, realSeekType);
