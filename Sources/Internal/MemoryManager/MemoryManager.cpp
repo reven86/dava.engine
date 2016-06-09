@@ -138,6 +138,7 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 
     RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
+    RegisterAllocPoolName(ALLOC_POOL_SQLITE, "sqlite");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -379,7 +380,7 @@ bool IsMemoryAddressAccessible(void* blockStart)
     vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
     vm_size_t size = 0;
     mach_port_t obj;
-    
+
 #if defined(__aarch64__)
     kern_return_t status = vm_region_64(
 #else
@@ -445,6 +446,21 @@ void MemoryManager::Deallocate(void* ptr)
         }
         MallocHook::Free(ptrToFree);
     }
+}
+
+uint32 MemoryManager::MemorySize(void* ptr)
+{
+    if (ptr != nullptr)
+    {
+        MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
+        {
+            return block->allocByApp;
+        }
+    }
+    return static_cast<uint32>(MallocHook::MallocSize(ptr));
 }
 
 void* MemoryManager::InternalAllocate(size_t size)

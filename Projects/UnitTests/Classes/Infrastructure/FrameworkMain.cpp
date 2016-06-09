@@ -1,6 +1,10 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 using namespace DAVA;
 
 void FrameworkDidLaunched()
@@ -25,6 +29,10 @@ void FrameworkDidLaunched()
     
 #else
     KeyedArchive* appOptions = new KeyedArchive();
+
+#if defined(__DAVAENGINE_STEAM__)
+    appOptions->SetUInt32(Steam::appIdPropertyKey, 0);
+#endif
 
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);

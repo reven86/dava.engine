@@ -11,6 +11,7 @@
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/AssertGuard.h"
 #include "NgtTools/Application/NGTApplication.h"
 
 #include <QtGlobal>
@@ -21,6 +22,13 @@ public:
     QEApplication(int argc, char** argv)
         : BaseApplication(argc, argv)
     {
+    }
+
+    int Run()
+    {
+        editorCore.reset(new EditorCore());
+        editorCore->Start();
+        return StartApplication(editorCore->GetMainWindow());
     }
 
 protected:
@@ -41,6 +49,14 @@ protected:
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
     }
+
+    bool OnRequestCloseApp() override
+    {
+        return editorCore->CloseProject();
+    }
+
+private:
+    std::unique_ptr<EditorCore> editorCore;
 };
 
 void InitPVRTexTool()
@@ -65,6 +81,8 @@ int main(int argc, char* argv[])
     int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
+        ToolsAssetGuard::Instance()->Init();
+
         QEApplication a(argc, argv);
         a.LoadPlugins();
 
@@ -72,12 +90,7 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();
-        {
-            EditorCore editorCore;
-
-            editorCore.Start();
-            returnCode = a.StartApplication(editorCore.GetMainWindow());
-        }
+        returnCode = a.Run();
     }
     return returnCode;
 }
