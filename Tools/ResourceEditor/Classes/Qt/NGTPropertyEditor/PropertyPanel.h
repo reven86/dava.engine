@@ -43,8 +43,6 @@ public:
     Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SetObject(const std::vector<DAVA::InspBase*>& object);
 
-
-
 protected:
     void timerEvent(QTimerEvent* e) override;
 

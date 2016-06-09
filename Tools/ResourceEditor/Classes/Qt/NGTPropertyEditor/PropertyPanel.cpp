@@ -55,7 +55,7 @@ void PropertyPanel::Finalize(wgt::IUIApplication& uiApplication)
 
 wgt::ObjectHandle PropertyPanel::GetPropertyTree() const
 {
-    return wgt::ObjectHandleT<wgt::ITreeModel>(model.get());
+    return wgt::ObjectHandleT<wgt::AbstractItemModel>(model.get());
 }
 
 void PropertyPanel::SetPropertyTree(const wgt::ObjectHandle& /*dummyTree*/)
