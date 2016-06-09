@@ -212,9 +212,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     return !error;
 }
 
-bool FileSystem::CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
+bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
 {
-    DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
 
     bool ret = true;
@@ -737,7 +736,29 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
     SafeRelease(fp);
     return bytes;
-};
+}
+
+bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
+{
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    if (!fp)
+    {
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    uint32 fileSize = fp->GetSize();
+    buffer.resize(fileSize);
+    uint32 dataRead = fp->Read(buffer.data(), fileSize);
+
+    if (dataRead != fileSize)
+    {
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
 
 void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
@@ -971,5 +992,35 @@ bool FileSystem::Exists(const FilePath& filePath) const
     }
 
     return IsFile(filePath);
+}
+
+bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+{
+    DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+    DVASSERT(dst.GetType() != FilePath::PATH_IN_RESOURCES);
+
+    CreateDirectory(dst, true);
+
+    bool retCode = true;
+    ScopedPtr<FileList> fileList(new FileList(src));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                retCode = retCode && RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            }
+        }
+        else
+        {
+            const FilePath destinationPath = dst + fileList->GetFilename(i);
+            if (!CopyFile(fileList->GetPathname(i), destinationPath, false))
+            {
+                retCode = false;
+            }
+        }
+    }
+    return retCode;
 }
 }

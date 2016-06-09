@@ -178,7 +178,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+    virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
         \brief Read whole file contents into new buffer. 
@@ -197,6 +197,8 @@ public:
         \returns string with whole file contents
      */
     String ReadFileContents(const FilePath& pathname);
+
+    bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
 
     /**
 		\brief Function to attach ResourceArchive to filesystem
@@ -250,6 +252,11 @@ public:
      \brief Function check if specified path exists on file system
      */
     bool Exists(const FilePath& filePath) const;
+
+    /**
+    \brief Copies one folder into another recursively
+    */
+    bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
 private:
     bool HasLineEnding(File* f);

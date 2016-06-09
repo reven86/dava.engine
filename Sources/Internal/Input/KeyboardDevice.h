@@ -148,6 +148,8 @@ class KeyboardDevice : public BaseObject
 public:
     bool IsKeyPressed(Key key) const; // during frame
     const String& GetKeyName(Key key);
+    const Key GetKeyByName(const String& name);
+
     void ClearAllKeys(); // unpress keys during ALT+TAB or similar events
 private:
     friend class InputSystem;

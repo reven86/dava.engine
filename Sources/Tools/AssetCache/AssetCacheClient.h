@@ -13,9 +13,9 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
     struct Request
     {
         Request() = default;
-        Request(const AssetCache::CacheItemKey& key_, const FilePath& outputFolder_, AssetCache::ePacketID requestID_)
+        Request(const AssetCache::CacheItemKey& key_, AssetCache::CachedItemValue* value_, AssetCache::ePacketID requestID_)
             : key(key_)
-            , outputFolder(outputFolder_)
+            , value(value_)
             , requestID(requestID_)
             , result(AssetCache::Error::CODE_NOT_INITIALIZED)
             , recieved(false)
@@ -25,7 +25,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 
         void Reset()
         {
-            outputFolder = "";
+            value = nullptr;
 
             requestID = AssetCache::PACKET_UNKNOWN;
             result = AssetCache::Error::CODE_NOT_INITIALIZED;
@@ -35,7 +35,7 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
         }
 
         AssetCache::CacheItemKey key;
-        FilePath outputFolder;
+        AssetCache::CachedItemValue* value = nullptr;
 
         AssetCache::ePacketID requestID = AssetCache::PACKET_UNKNOWN;
         AssetCache::Error result = AssetCache::Error::NO_ERRORS;
@@ -67,7 +67,7 @@ public:
     void Disconnect();
 
     AssetCache::Error AddToCacheSynchronously(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value);
-    AssetCache::Error RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, const FilePath& outFolder);
+    AssetCache::Error RequestFromCacheSynchronously(const AssetCache::CacheItemKey& key, AssetCache::CachedItemValue* value);
 
     bool IsConnected() const;
 

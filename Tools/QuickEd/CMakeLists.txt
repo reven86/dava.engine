@@ -80,11 +80,10 @@ set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( LIBRARIES                  NgtTools)
 
-if ( WIN32 AND X64_MODE )
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
-else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
-endif ()
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
+
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
 
 setup_main_executable()
 

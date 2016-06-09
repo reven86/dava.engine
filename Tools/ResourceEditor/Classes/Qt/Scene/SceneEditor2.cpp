@@ -12,6 +12,7 @@
 #include "CommandLine/SceneExporter/SceneExporter.h"
 #include "Tools/LoggerOutput/LoggerErrorHandler.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "QtTools/DavaGLWidget/DavaRenderer.h"
 
 // framework
 #include "Scene3D/Entity.h"
@@ -144,6 +145,7 @@ SceneEditor2::SceneEditor2()
 
 SceneEditor2::~SceneEditor2()
 {
+    RenderContextGuard guard;
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
@@ -151,6 +153,7 @@ SceneEditor2::~SceneEditor2()
 
 DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 {
+    RenderContextGuard guard;
     DAVA::SceneFileV2::eError ret = Scene::LoadScene(path);
     if (ret == DAVA::SceneFileV2::ERROR_NO_ERROR)
     {
@@ -172,6 +175,7 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bool saveForGame /*= false*/)
 {
+    RenderContextGuard guard;
     bool cameraLightState = false;
     if (editorLightSystem != nullptr)
     {
