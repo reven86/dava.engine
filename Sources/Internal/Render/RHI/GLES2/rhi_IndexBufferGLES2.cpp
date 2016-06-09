@@ -25,6 +25,9 @@ public:
     unsigned size;
     GLenum usage;
     unsigned uid;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
     uint32 is_32bit : 1;
     uint32 isUPBuffer : 1;
 };
@@ -39,6 +42,8 @@ RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descr
 IndexBufferGLES2_t::IndexBufferGLES2_t()
     : size(0)
     , uid(0)
+    , isMapped(0)
+    , updatePending(0)
     , is_32bit(false)
     , isUPBuffer(false)
 {
@@ -224,10 +229,10 @@ gles2_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
     if (offset + size <= self->size)
     {
         if (!self->mappedData)
-            self->mappedData = reinterpret_cast<uint8*>(::malloc(self->size));
+            self->mappedData = ::malloc(self->size);
 
         self->isMapped = true;
-        data = self->mappedData + offset;
+        data = static_cast<uint8*>(self->mappedData) + offset;
     }
 
     return data;
