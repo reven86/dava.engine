@@ -15,11 +15,8 @@
 
 namespace DAVA
 {
-class Window;
-
 namespace Private
 {
-class WindowWin32;
 
 class CoreWin32 final
 {

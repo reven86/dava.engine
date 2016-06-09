@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #import "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
@@ -646,3 +648,5 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
     }
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

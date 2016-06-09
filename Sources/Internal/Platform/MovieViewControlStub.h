@@ -3,7 +3,11 @@
 
 #include "Base/Platform.h"
 
-#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_COREV2__) || \
+(!defined(__DAVAENGINE_APPLE__) && \
+ !defined(__DAVAENGINE_ANDROID__) && \
+ !defined(__DAVAENGINE_WIN_UAP__) && \
+ !defined(__DAVAENGINE_WIN32__))
 
 #include "UI/IMovieViewControl.h"
 

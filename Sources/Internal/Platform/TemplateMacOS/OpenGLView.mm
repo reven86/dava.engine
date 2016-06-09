@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
@@ -511,3 +513,5 @@ static int32 oldModifersFlags = 0;
 }
 
 @end
+
+#endif // !__DAVAENGINE_COREV2__

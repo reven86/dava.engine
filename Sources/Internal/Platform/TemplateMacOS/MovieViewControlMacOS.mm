@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Logger/Logger.h"
@@ -364,3 +366,5 @@ void MovieViewControl::OnAppMinimizedRestored(bool minimized)
 }
 
 } // namespace DAVA
+
+#endif // !__DAVAENGINE_COREV2__

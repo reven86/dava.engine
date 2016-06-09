@@ -22,7 +22,7 @@ public:
     Dispatcher& operator=(const Dispatcher&) = delete;
 
     void PostEvent(const DispatcherEvent& e);
-    void ProcessEvents(Function<void(const DispatcherEvent&)>& handler);
+    void ProcessEvents(const Function<void(const DispatcherEvent&)>& handler);
 
 private:
     Mutex mutex;

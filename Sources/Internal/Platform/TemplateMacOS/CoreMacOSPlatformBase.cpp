@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -57,3 +59,4 @@ void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode>& availabl
 }
 
 #endif // #if defined(__DAVAENGINE_MACOS__)
+#endif // !__DAVAENGINE_COREV2__

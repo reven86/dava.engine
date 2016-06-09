@@ -17,7 +17,7 @@ void Dispatcher::PostEvent(const DispatcherEvent& e)
     events.push_back(e);
 }
 
-void Dispatcher::ProcessEvents(Function<void(const DispatcherEvent&)>& handler)
+void Dispatcher::ProcessEvents(const Function<void(const DispatcherEvent&)>& handler)
 {
     Vector<DispatcherEvent> readyEvents;
     {

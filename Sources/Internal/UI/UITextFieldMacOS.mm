@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "UI/UITextFieldMacOS.h"
 
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_TEXTFIELD
@@ -1737,3 +1739,5 @@ doCommandBySelector:(SEL)commandSelector
 @end
 
 #endif //__DAVAENGINE_MACOS__ && !DISABLE_NATIVE_TEXTFIELD
+
+#endif // !__DAVAENGINE_COREV2__

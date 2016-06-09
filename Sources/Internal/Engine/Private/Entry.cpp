@@ -5,7 +5,19 @@
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
-#if defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_QT__) || \
+defined(__DAVAENGINE_MACOS__)
+
+int main(int argc, char* argv[])
+{
+    using namespace DAVA;
+    Vector<String> cmdline = Private::InitializeEngine(argc, argv);
+    int r = GameMain(cmdline);
+    Private::TerminateEngine();
+    return r;
+}
+
+#elif defined(__DAVAENGINE_WIN32__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -20,17 +32,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
     Vector<String> cmdline = Private::InitializeEngine(0, nullptr);
-    int r = GameMain(cmdline);
-    Private::TerminateEngine();
-    return r;
-}
-
-#elif defined(__DAVAENGINE_QT__)
-
-int main(int argc, char* argv[])
-{
-    using namespace DAVA;
-    Vector<String> cmdline = Private::InitializeEngine(argc, argv);
     int r = GameMain(cmdline);
     Private::TerminateEngine();
     return r;
