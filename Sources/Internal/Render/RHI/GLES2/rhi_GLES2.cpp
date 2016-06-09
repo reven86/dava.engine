@@ -366,6 +366,8 @@ gles2_Reset(const ResetParam& param)
     ios_gl_reset(param.window);
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
+#elif defined(__DAVAENGINE_WIN32__)
+    win_gl_reset(param);
 #endif
 }
 
