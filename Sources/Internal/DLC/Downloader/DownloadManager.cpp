@@ -53,16 +53,6 @@ Downloader* DownloadManager::GetDownloader()
     return downloader;
 }
 
-void DownloadManager::SetNotificationCallback(DownloadManager::NotifyFunctor callbackFn)
-{
-    callNotify = callbackFn;
-}
-
-DownloadManager::NotifyFunctor DownloadManager::GetNotificationCallback() const
-{
-    return callNotify;
-}
-
 void DownloadManager::StartProcessingThread()
 {
     // thread should be stopped
@@ -121,10 +111,7 @@ void DownloadManager::Update()
         {
             CallbackData cbData = (*it);
             it = callbackMessagesQueue.erase(it);
-            if (callNotify != nullptr)
-            {
-                callNotify(cbData.id, cbData.status);
-            }
+            downloadTaskStateChanged.Emit(cbData.id, cbData.status);
         }
     }
     callbackMutex.Unlock();
@@ -636,6 +623,7 @@ DownloadError DownloadManager::Download()
         if (DLE_CONTENT_NOT_FOUND == error
             || DLE_CANCELLED == error
             || DLE_FILE_ERROR == error
+            || DLE_NO_RANGE_REQUEST == error
             || DLE_INVALID_RANGE == error)
             break;
 

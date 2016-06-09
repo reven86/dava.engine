@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Functional/Function.h"
+#include "Functional/Signal.h"
 
 #include "DownloaderCommon.h"
 
@@ -16,18 +16,12 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    using NotifyFunctor = Function<void(const uint32&, const DownloadStatus&)>;
-
     DownloadManager() = default;
     virtual ~DownloadManager();
 
     // Downloader for further operations
     void SetDownloader(Downloader* _downloader);
     Downloader* GetDownloader();
-
-    // Callback functor for tasks status reporting
-    void SetNotificationCallback(NotifyFunctor callbackFn);
-    NotifyFunctor GetNotificationCallback() const;
 
     // Checks tasks status and determine current task and handles tasks queues
     void Update();
@@ -90,6 +84,9 @@ public:
     void SetPreferredDownloadThreadsCount(uint8 count);
     void ResetPreferredDownloadThreadsCount();
 
+    // Signal about download task state changing
+    Signal<uint32, DownloadStatus> downloadTaskStateChanged;
+
 private:
     struct CallbackData
     {
@@ -141,7 +138,6 @@ private:
     Downloader* downloader = nullptr;
     const uint8 defaultDownloadThreadsCount = 4;
     uint8 preferredDownloadThreadsCount = defaultDownloadThreadsCount;
-    NotifyFunctor callNotify;
 
     uint64 downloadedTotal = 0;
 };
