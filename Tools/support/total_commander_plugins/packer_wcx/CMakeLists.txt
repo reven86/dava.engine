@@ -4,7 +4,7 @@ project(double_commander_packer_plugin)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(OUT_PREFIX "_win.wcx")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 static -O3")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -static -O3")
 else()
     set(OUT_PREFIX "_mac.wcx")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")

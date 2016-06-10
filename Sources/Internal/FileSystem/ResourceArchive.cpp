@@ -28,16 +28,20 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
     {
         throw std::runtime_error("can't open resource archive: " + fileName);
     }
-    Array<char8, 4> firstBytes;
-    uint32 count = f->Read(firstBytes.data(), static_cast<uint32>(firstBytes.size()));
-    if (count != firstBytes.size())
+    Array<char8, 4> lastFourBytes;
+    if (!f->Seek(-4, File::SEEK_FROM_END))
+    {
+        throw std::runtime_error("can't seek to last 4 bytes DVPK marker");
+    }
+    uint32 count = f->Read(lastFourBytes.data(), static_cast<uint32>(lastFourBytes.size()));
+    if (count != lastFourBytes.size())
     {
         throw std::runtime_error("can't read from resource archive: " + fileName);
     }
 
     f.reset();
 
-    if (PackFormat::FileMarker == firstBytes)
+    if (PackFormat::FileMarker == lastFourBytes)
     {
         impl.reset(new PackArchive(fileName));
     }

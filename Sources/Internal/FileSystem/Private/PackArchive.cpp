@@ -77,9 +77,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
 
     packFile.filesTable.names.compressedNames.resize(packFile.footer.info.namesSizeCompressed);
 
-    char* startFileNames = &tmpBuffer[static_cast<size_t>(startFilesTableBlock)];
-
-    std::copy_n(startFileNames, packFile.footer.info.namesSizeCompressed, reinterpret_cast<char*>(packFile.filesTable.names.compressedNames.data()));
+    std::copy_n(startOfCompressedNames, packFile.footer.info.namesSizeCompressed, reinterpret_cast<char*>(packFile.filesTable.names.compressedNames.data()));
 
     Vector<uint8> originalNamesBuffer;
     originalNamesBuffer.resize(packFile.footer.info.namesSizeOriginal);

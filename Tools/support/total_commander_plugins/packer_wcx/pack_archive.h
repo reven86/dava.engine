@@ -18,6 +18,7 @@ struct FileInfo
     uint32_t originalSize = 0;
     uint32_t compressedSize = 0;
     uint32_t compressionType = 0;
+    uint32_t hash = 0; // crc32
 };
 
 class PackArchive final
@@ -42,5 +43,5 @@ private:
     std::ifstream file;
     PackFormat::PackFile packFile;
     std::unordered_map<std::string, PackFormat::FileTableEntry*> mapFileData;
-    std::vector<FileInfo> filesInfoSortedByName;
+    std::vector<FileInfo> filesInfo;
 };
