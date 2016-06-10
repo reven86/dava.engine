@@ -48,8 +48,8 @@ public:
     uint32 DownloadIntoBuffer(const String& url,
                               void* buffer,
                               uint32 bufSize,
-                              uint64 downloadOffset,
-                              uint64 downloadSize,
+                              uint64 downloadOffset = 0,
+                              uint64 downloadSize = 0,
                               int16 partsCount = -1,
                               int32 timeout = 30,
                               int32 retriesCount = 3);
