@@ -118,7 +118,7 @@ void FileSystemDockWidget::RefreshActions()
         canShow = true;
         canRename = true;
     }
-    ProcessKeyboardActions(QModelIndexList() << index);
+    UpdateActionsWithShortcutsState(QModelIndexList() << index);
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
     showInSystemExplorerAction->setEnabled(canShow);
@@ -321,10 +321,10 @@ void FileSystemDockWidget::OnCustomContextMenuRequested(const QPoint& pos)
 void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItemSelection&)
 {
     const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
-    ProcessKeyboardActions(indexes);
+    UpdateActionsWithShortcutsState(indexes);
 }
 
-void FileSystemDockWidget::ProcessKeyboardActions(const QModelIndexList& indexes)
+void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList& indexes)
 {
     bool canDelete = false;
     bool canOpen = false;
