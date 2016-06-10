@@ -21,6 +21,7 @@ public:
     void LoadPlugins();
     IComponentContext& GetComponentContext();
     int StartApplication(QMainWindow* appMainWindow);
+    int StartApplication();
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;

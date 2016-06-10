@@ -169,11 +169,15 @@ DAVA_TESTCLASS (FileListTest)
 
         //create path and file
         const FilePath cyrillicPath = extPath + cyrillicPathString;
-        fs->CreateDirectoryW(cyrillicPath.GetDirectory());
+        FileSystem::eCreateDirectoryResult result = fs->CreateDirectory(cyrillicPath.GetDirectory());
+        TEST_VERIFY(result == FileSystem::DIRECTORY_CREATED);
+        TEST_VERIFY(fs->IsDirectory(cyrillicPath.GetDirectory()));
+
         RefPtr<File> cyrillicFile(File::Create(cyrillicPath, File::CREATE | File::WRITE));
         TEST_VERIFY(cyrillicFile != nullptr);
         cyrillicFile->WriteString(fileContent);
         cyrillicFile = nullptr;
+        TEST_VERIFY(fs->IsFile(cyrillicPath));
 
         //explore created path
         String upperLevel = cyrillicPath.GetDirectory().GetAbsolutePathname();
