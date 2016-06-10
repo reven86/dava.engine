@@ -21,6 +21,7 @@ protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
     void OnPostLoadPugins() override;
     void OnPreUnloadPlugins() override;
+    bool OnRequestCloseApp() override;
 
 private:
     wgt::ICommandManager* commandManager = nullptr;

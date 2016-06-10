@@ -14,6 +14,7 @@
 
 #include <QMainWindow>
 #include <QFileInfo>
+#include <QApplication>
 
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
@@ -73,6 +74,8 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     DVASSERT(framework != nullptr);
 
     std::unique_ptr<wgt::QtWindow> window(new wgt::QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    wgt::Connection tryCloseSignalConnetion = window->signalTryClose.connect(std::bind(&BaseApplication::OnMainWindowTryClose, this, std::placeholders::_1));
+    wgt::Connection closeSignalConnection = window->signalClose.connect(std::bind(&BaseApplication::OnMainWindowClosed, this));
 
     wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
     DVASSERT(app != nullptr);
@@ -83,6 +86,13 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     window->releaseWindow();
 
     return result;
+}
+
+int BaseApplication::StartApplication()
+{
+    wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
+    DVASSERT(app != nullptr);
+    return app->startApplication();
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const
@@ -97,4 +107,15 @@ DAVA::WideString BaseApplication::GetPluginsFolder() const
 
     return pluginsBasePath_.toStdWString();
 }
+
+void BaseApplication::OnMainWindowTryClose(bool& result)
+{
+    result = OnRequestCloseApp();
+}
+
+void BaseApplication::OnMainWindowClosed()
+{
+    qApp->quit();
+}
+
 } // namespace NGTLayer

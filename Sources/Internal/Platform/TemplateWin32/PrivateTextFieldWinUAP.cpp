@@ -456,7 +456,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
     if (textControl)
     {
-        nativeText = ref new TextBox();
+        nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
         InstallTextEventHandlers();
@@ -577,6 +577,9 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
     {
     case VirtualKey::Back:
         savedCaretPosition += 1;
+        break;
+    case VirtualKey::Tab:
+        args->Handled = true; // To avoid handling tab navigation by windows. We will handle navigation by our focus system.
         break;
     case VirtualKey::Escape:
     {
