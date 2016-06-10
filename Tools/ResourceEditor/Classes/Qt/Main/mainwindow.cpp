@@ -71,6 +71,7 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include "Platform/Qt5/QtLayer.h"
 
@@ -130,6 +131,7 @@ QtMainWindow::QtMainWindow(IComponentContext& ngtContext_, QWidget* parent)
 
     SetupDocks();
     SetupMainMenu();
+    SetupThemeActions();
     SetupToolBars();
     SetupStatusBar();
     SetupActions();
@@ -486,16 +488,6 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             }
         }
     }
-    else if (obj == this)
-    {
-        if (eventType == QEvent::Close)
-        {
-            if (ShouldClose(static_cast<QCloseEvent*>(event)) == false)
-            {
-                event->ignore();
-            }
-        }
-    }
 
     return QMainWindow::eventFilter(obj, event);
 }
@@ -530,6 +522,31 @@ void QtMainWindow::SetupMainMenu()
 
     recentFiles.InitMenuItems();
     recentProjects.InitMenuItems();
+}
+
+void QtMainWindow::SetupThemeActions()
+{
+    QMenu* themesMenu = ui->menuTheme;
+    QActionGroup* actionGroup = new QActionGroup(this);
+    for (const QString& theme : Themes::ThemesNames())
+    {
+        QAction* action = new QAction(theme, themesMenu);
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+        if (theme == Themes::GetCurrentThemeStr())
+        {
+            action->setChecked(true);
+        }
+        themesMenu->addAction(action);
+    }
+    connect(actionGroup, &QActionGroup::triggered, [](QAction* action)
+            {
+                if (action->isChecked())
+                {
+                    Themes::SetCurrentTheme(action->text());
+                    SceneSignals::Instance()->ThemeChanged();
+                }
+            });
 }
 
 void QtMainWindow::SetupToolBars()
@@ -633,7 +650,7 @@ void QtMainWindow::SetupStatusBar()
 
     auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
     {
-        auto* statusBtn = new QToolButton();
+        QToolButton* statusBtn = new QToolButton();
         statusBtn->setDefaultAction(action);
         statusBtn->setAutoRaise(true);
         statusBtn->setMaximumSize(QSize(16, 16));
@@ -2709,7 +2726,7 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
     ui->actionModifySnapToLandscape->setChecked(isSpanToLandscape);
 }
 
-bool QtMainWindow::ShouldClose(QCloseEvent* e)
+bool QtMainWindow::CanBeClosed()
 {
     if (IsAnySceneChanged() == false)
         return true;

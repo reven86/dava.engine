@@ -21,11 +21,11 @@ DAVA_TESTCLASS (FileListTest)
     FileListTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
-        RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
         
     #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
-        RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
     #endif
     }
 
@@ -169,11 +169,15 @@ DAVA_TESTCLASS (FileListTest)
 
         //create path and file
         const FilePath cyrillicPath = extPath + cyrillicPathString;
-        fs->CreateDirectoryW(cyrillicPath.GetDirectory());
+        FileSystem::eCreateDirectoryResult result = fs->CreateDirectory(cyrillicPath.GetDirectory());
+        TEST_VERIFY(result == FileSystem::DIRECTORY_CREATED);
+        TEST_VERIFY(fs->IsDirectory(cyrillicPath.GetDirectory()));
+
         RefPtr<File> cyrillicFile(File::Create(cyrillicPath, File::CREATE | File::WRITE));
         TEST_VERIFY(cyrillicFile != nullptr);
         cyrillicFile->WriteString(fileContent);
         cyrillicFile = nullptr;
+        TEST_VERIFY(fs->IsFile(cyrillicPath));
 
         //explore created path
         String upperLevel = cyrillicPath.GetDirectory().GetAbsolutePathname();
@@ -426,22 +430,5 @@ DAVA_TESTCLASS (FileListTest)
         FileSystem::Instance()->DeleteDirectory(folder1hidden);
 
 #endif //PLATFORMS
-    }
-
-    void RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
-    {
-        DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
-
-        FileSystem::Instance()->CreateDirectory(dst, true);
-        FileSystem::Instance()->CopyDirectory(src, dst);
-
-        ScopedPtr<FileList> fileList(new FileList(src));
-        for (int32 i = 0; i < fileList->GetCount(); ++i)
-        {
-            if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
-            {
-                RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
-            }
-        }
     }
 };
