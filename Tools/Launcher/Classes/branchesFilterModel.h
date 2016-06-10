@@ -2,13 +2,13 @@
 
 #include <QSortFilterProxyModel>
 
-class FilterModel
+class BranchesFilterModel
 : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit FilterModel(QObject* parent = nullptr);
+    explicit BranchesFilterModel(QObject* parent = nullptr);
 
 private:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;

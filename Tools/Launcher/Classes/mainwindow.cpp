@@ -8,8 +8,8 @@
 #include "filemanager.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
-#include "listModel.h"
-#include "filterModel.h"
+#include "branchesListModel.h"
+#include "branchesFilterModel.h"
 
 #include <QSet>
 #include <QQueue>
@@ -112,8 +112,8 @@ MainWindow::MainWindow(QWidget* parent)
     newsDownloader = new FileDownloader(this);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
-    listModel = new ListModel(appManager, this);
-    filterModel = new FilterModel(this);
+    listModel = new BranchesListModel(appManager, this);
+    filterModel = new BranchesFilterModel(this);
     filterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit_search, &QLineEdit::textChanged, filterModel, &QSortFilterProxyModel::setFilterFixedString);
     filterModel->setSourceModel(listModel);
@@ -199,6 +199,7 @@ void MainWindow::OnInstall(int rowNumber)
     AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
     if (version == nullptr)
     {
+        Q_ASSERT(false);
         return;
     }
     QQueue<UpdateTask> tasks;
@@ -259,7 +260,7 @@ void MainWindow::RefreshApps()
 
 void MainWindow::OnListItemClicked(QModelIndex qindex)
 {
-    QVariant var = ui->listView->model()->data(qindex, ListModel::DAVA_WIDGET_ROLE);
+    QVariant var = ui->listView->model()->data(qindex, BranchesListModel::DAVA_WIDGET_ROLE);
     QString dataRole = var.toString();
     if (!dataRole.isEmpty())
     {
@@ -446,8 +447,8 @@ void MainWindow::RefreshBranchesList()
 
     if (!localConfig->GetWebpageURL().isEmpty())
     {
-        listModel->AddItem(CONFIG_LAUNCHER_WEBPAGE_KEY, ListModel::LIST_ITEM_NEWS);
-        listModel->AddItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem(CONFIG_LAUNCHER_WEBPAGE_KEY, BranchesListModel::LIST_ITEM_NEWS);
+        listModel->AddItem("", BranchesListModel::LIST_ITEM_SEPARATOR);
     }
 
     QStringList favs;
@@ -475,19 +476,19 @@ void MainWindow::RefreshBranchesList()
         const QString& branchID = favs[i];
         if (branchesList.contains(branchID))
         {
-            listModel->AddItem(branchID, ListModel::LIST_ITEM_FAVORITES);
+            listModel->AddItem(branchID, BranchesListModel::LIST_ITEM_FAVORITES);
             hasFavorite = true;
         }
     }
     if (hasFavorite)
-        listModel->AddItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem("", BranchesListModel::LIST_ITEM_SEPARATOR);
 
     //Add Others
     for (int i = 0; i < branchesCount; i++)
     {
         const QString& branchID = branchesList[i];
         if (!favs.contains(branchID))
-            listModel->AddItem(branchID, ListModel::LIST_ITEM_BRANCH);
+            listModel->AddItem(branchID, BranchesListModel::LIST_ITEM_BRANCH);
     }
 }
 

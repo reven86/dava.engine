@@ -7,7 +7,7 @@
 
 class ApplicationManager;
 
-class ListModel : public QAbstractListModel
+class BranchesListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
@@ -19,7 +19,7 @@ public:
         LIST_ITEM_SEPARATOR
     };
     static const int DAVA_WIDGET_ROLE = Qt::UserRole + 1;
-    ListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
+    BranchesListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
     void ClearItems();
     void AddItem(const QString& dataText, ListItemType type);
     QVariant data(const QModelIndex& index, int role) const override;
@@ -40,6 +40,6 @@ private:
     const ApplicationManager* appManager;
 };
 
-Q_DECLARE_METATYPE(ListModel::ListItemType);
+Q_DECLARE_METATYPE(BranchesListModel::ListItemType);
 
 #endif // __LIST_MODEL_H__

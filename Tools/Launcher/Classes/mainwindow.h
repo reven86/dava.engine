@@ -10,7 +10,7 @@
 #include <QSet>
 #include <QDebug>
 
-class ListModel;
+class BranchesListModel;
 class QSortFilterProxyModel;
 
 namespace Ui
@@ -70,7 +70,7 @@ private:
     QString selectedBranchID;
 
     QFont tableFont;
-    ListModel* listModel = nullptr;
+    BranchesListModel* listModel = nullptr;
     QSortFilterProxyModel* filterModel = nullptr;
 };
 
