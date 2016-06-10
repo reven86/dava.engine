@@ -143,6 +143,8 @@ const FastName NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_N
 
 const FastName NMaterialFlagName::FLAG_SKINNING = FastName("SKINNING");
 
+const FastName NMaterialFlagName::FLAG_FLOWMAP_SKY = FastName("FLOWMAP_SKY");
+
 const FastName NMaterialFlagName::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterialFlagName::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
 const FastName NMaterialFlagName::FLAG_SETUPLIGHTMAP = FastName("SETUP_LIGHTMAP");

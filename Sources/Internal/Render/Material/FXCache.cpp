@@ -7,6 +7,7 @@
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -69,12 +70,14 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
     if (quality.IsValid()) //quality made as part of fx key
         key.push_back(quality.Index());
 
+    //[METAL_COMPLETE] to be able to switch fx depending on metal/non-metal option
+    key.push_back(QualitySettingsSystem::Instance()->GetAllowMetalFeatures() ? 1 : 0);
+
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
 
     //not found - load new
-    //for
     return LoadFXFromOldTemplate(fxName, defines, key, quality);
 }
 
@@ -104,11 +107,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     const YamlNode* renderTechniqueNode = nullptr;
     if (materialTemplateNode) //multy-quality material
     {
-        /*int32 quality = 0;
-        auto it = defines.find(NMaterialQualityName::QUALITY_FLAG_NAME);
-        if (it != defines.end())
-        quality = it->second;*/
-
         const YamlNode* qualityNode = nullptr;
         if (quality.IsValid())
         {
@@ -373,6 +371,13 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
         else
         {
             shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
+        }
+
+        //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+        if (!QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        {
+            shaderDefines.erase(NMaterialFlagName::FLAG_SPECULAR);
+            shaderDefines.erase(NMaterialFlagName::FLAG_FLOWMAP_SKY);
         }
 
         pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);

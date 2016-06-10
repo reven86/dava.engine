@@ -160,6 +160,8 @@ public:
 
     static const FastName FLAG_SKINNING;
 
+    static const FastName FLAG_FLOWMAP_SKY;
+
     static const FastName FLAG_LIGHTMAPONLY;
     static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
     static const FastName FLAG_SETUPLIGHTMAP;

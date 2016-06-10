@@ -13,6 +13,7 @@
 #include "Render/Texture.h"
 
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -258,7 +259,10 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* re
         }
     }
 
-    const float32* clearColor = static_cast<const float32*>(Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR));
+    const float32* clearColor = Color::Black.color;
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        clearColor = static_cast<const float32*>(Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR));
+
     for (int32 i = 0; i < 4; ++i)
     {
         reflectionPass->GetPassConfig().colorBuffer[0].clearColor[i] = clearColor[i];
@@ -382,6 +386,12 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
+
     BeginRenderPass();
     DrawLayers(currMainCamera);
     EndRenderPass();
@@ -431,6 +441,12 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
 
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
+
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
 
     BeginRenderPass();
     DrawLayers(currMainCamera);

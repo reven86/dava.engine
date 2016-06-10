@@ -121,6 +121,11 @@ public:
     void SetKeepUnusedEntities(bool keep);
     bool GetKeepUnusedEntities();
 
+    //metal preview is set in resource editor for artist to see correct picture
+    void SetMetalPreview(bool preview);
+    bool GetMetalPreview();
+    bool GetAllowMetalFeatures();
+
     void UpdateEntityVisibility(Entity* e);
 
 protected:
@@ -173,6 +178,8 @@ protected:
     bool cutUnusedVertexStreams;
 
     bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
+
+    bool metalPreviewEnabled = false;
 };
 
 inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
@@ -183,6 +190,20 @@ inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
 inline bool QualitySettingsSystem::GetKeepUnusedEntities()
 {
     return keepUnusedQualityEntities;
+}
+
+inline void QualitySettingsSystem::SetMetalPreview(bool preview)
+{
+    metalPreviewEnabled = preview;
+}
+inline bool QualitySettingsSystem::GetMetalPreview()
+{
+    return metalPreviewEnabled;
+}
+inline bool QualitySettingsSystem::GetAllowMetalFeatures()
+{
+    //metal is turned on in 3 cases: preview metal in editor, preview metal in render option or metal renderer backend initialized
+    return metalPreviewEnabled || (Renderer::IsInitialized() && (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PREVIEW_METAL_ON_GL) || (Renderer::GetAPI() == rhi::RHI_METAL)));
 }
 }
 
