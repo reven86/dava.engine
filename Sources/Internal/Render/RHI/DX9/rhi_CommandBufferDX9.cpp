@@ -17,6 +17,7 @@ using DAVA::Logger;
 #include "_dx9.h"
 #include <vector>
 #include <atomic>
+#include <thread>
 
 namespace rhi
 {
@@ -1380,8 +1381,8 @@ _DX9_ExecuteQueuedCommands()
         }
         else
         {
-            Logger::Info("Can't reset now");
-            ::Sleep(100);
+            Logger::Info("Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     else
@@ -1944,6 +1945,7 @@ void ScheduleDeviceReset()
 {
     _DX9_ResetPending = true;
     DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
+    SetEvent(_DX9_FramePreparedEvent);
     CommandBufferDX9::BlockNonRenderThreads();
 }
 
@@ -1953,7 +1955,7 @@ void BlockNonRenderThreads()
 {
     while (_DX9_ResetPending && (DAVA::Thread::GetCurrentId() != _DX9_ThreadId))
     {
-        DAVA::Thread::Sleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
