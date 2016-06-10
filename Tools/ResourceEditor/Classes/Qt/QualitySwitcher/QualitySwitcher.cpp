@@ -421,6 +421,7 @@ void QualitySwitcher::ApplySettings()
         {
             DAVA::Scene* scene = tabWidget->GetTabScene(tab);
             UpdateEntitiesToQuality(scene);
+            scene->foliageSystem->SyncFoliageWithLandscape();
         }
     }
 }

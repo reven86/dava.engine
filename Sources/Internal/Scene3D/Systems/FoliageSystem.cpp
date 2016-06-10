@@ -159,6 +159,8 @@ void FoliageSystem::SyncFoliageWithLandscape()
 
     for (auto foliageEntity : foliageEntities)
     {
+        if (!QualitySettingsSystem::Instance()->IsQualityVisible(foliageEntity))
+            continue;
         Landscape* landscapeRO = GetLandscape(landscapeEntity);
         VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
         vegetationRO->SetHeightmap(landscapeRO->GetHeightmap());
