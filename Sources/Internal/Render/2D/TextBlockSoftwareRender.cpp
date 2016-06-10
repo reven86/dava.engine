@@ -75,7 +75,7 @@ void TextBlockSoftwareRender::Restore()
     if ((tex != nullptr) && rhi::NeedRestoreTexture(tex->handle))
     {
         Vector<int8> buffer(tex->width * tex->height, 0);
-        tex->TexImage(0, tex->width, tex->height, buffer.data(), buffer.size(), Texture::INVALID_CUBEMAP_FACE);
+        tex->TexImage(0, tex->width, tex->height, buffer.data(), static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
     }
 
     textBlock->NeedPrepare();
