@@ -20,6 +20,9 @@
 #include <QVariant>
 #include <QComboBox>
 
+static const QString stateKey = "mainWindow/state";
+static const QString geometryKey = "mainWindow/geometry";
+
 class BranchListComparator
 {
 public:
@@ -121,10 +124,17 @@ MainWindow::MainWindow(QWidget* parent)
 
     //if run this method directly qApp->exec() will be called twice
     QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
+
+    QSettings settings;
+    restoreGeometry(settings.value(geometryKey).toByteArray());
+    restoreState(settings.value(stateKey).toByteArray());
 }
 
 MainWindow::~MainWindow()
 {
+    QSettings settings;
+    settings.setValue(geometryKey, saveGeometry());
+    settings.setValue(stateKey, saveState());
     SafeDelete(ui);
 }
 
