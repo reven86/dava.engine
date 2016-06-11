@@ -326,7 +326,7 @@ void MainWindow::ShowTable(const QString& branchID)
     if (remoteConfig)
     {
         Branch* remoteBranch = remoteConfig->GetBranch(branchID);
-        ui->action_downloadAll->setEnabled(remoteBranch->GetAppCount() != 0);
+        ui->action_downloadAll->setEnabled(remoteBranch != nullptr && remoteBranch->GetAppCount() != 0);
         if (remoteBranch)
         {
             int appCount = remoteBranch->GetAppCount();
