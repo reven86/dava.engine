@@ -23,24 +23,24 @@ public:
     bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
+    IDirect3DBaseTexture9* basetex9 = nullptr;
+    IDirect3DTexture9* tex9 = nullptr;
+    IDirect3DCubeTexture9* cubetex9 = nullptr;
+    IDirect3DSurface9* surf9 = nullptr;
+    IDirect3DTexture9* rt_tex9 = nullptr;
+    IDirect3DSurface9* rt_surf9 = nullptr;
+
     TextureFormat format;
-    unsigned width;
-    unsigned height;
-
-    IDirect3DBaseTexture9* basetex9;
-    IDirect3DTexture9* tex9;
-    IDirect3DCubeTexture9* cubetex9;
-    mutable IDirect3DSurface9* surf9;
-    mutable IDirect3DTexture9* rt_tex9;
-    mutable IDirect3DSurface9* rt_surf9;
-
-    unsigned lastUnit;
-    unsigned mappedLevel;
-    TextureFace mappedFace;
+    uint32 width = 0;
+    uint32 height = 0;
+    uint32 lastUnit = DAVA::InvalidIndex;
+    uint32 mappedLevel = 0;
+    TextureFace mappedFace = TextureFace(-1);
     void* mappedData = nullptr;
+
     uint32 isMapped : 1;
-    unsigned isRenderTarget : 1;
-    unsigned isDepthStencil : 1;
+    uint32 isRenderTarget : 1;
+    uint32 isDepthStencil : 1;
 };
 
 RHI_IMPL_RESOURCE(TextureDX9_t, Texture::Descriptor)
@@ -63,16 +63,7 @@ D3DCUBEMAP_FACES textureFaceToD3DFace[] =
 };
 
 TextureDX9_t::TextureDX9_t()
-    : width(0)
-    , height(0)
-    , basetex9(nullptr)
-    , tex9(nullptr)
-    , cubetex9(nullptr)
-    , surf9(nullptr)
-    , rt_tex9(nullptr)
-    , rt_surf9(nullptr)
-    , lastUnit(DAVA::InvalidIndex)
-    , isMapped(0)
+    : isMapped(0)
     , isRenderTarget(0)
     , isDepthStencil(0)
 {

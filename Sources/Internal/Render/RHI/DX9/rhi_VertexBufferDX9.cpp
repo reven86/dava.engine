@@ -21,9 +21,10 @@ public:
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned size = 0;
-    IDirect3DVertexBuffer9* buffer;
+    uint32 size = 0;
+    IDirect3DVertexBuffer9* buffer = nullptr;
     void* mappedData = nullptr;
+
     uint32 isMapped : 1;
     uint32 updatePending : 1;
 };
@@ -34,9 +35,7 @@ typedef ResourcePool<VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::De
 RHI_IMPL_POOL(VertexBufferDX9_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true);
 
 VertexBufferDX9_t::VertexBufferDX9_t()
-    : size(0)
-    , buffer(nullptr)
-    , isMapped(0)
+    : isMapped(0)
     , updatePending(0)
 {
 }
@@ -118,7 +117,6 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;
-        isMapped = false;
     }
 }
 

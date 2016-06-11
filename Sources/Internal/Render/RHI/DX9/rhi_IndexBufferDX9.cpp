@@ -22,9 +22,10 @@ public:
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned size;
-    IDirect3DIndexBuffer9* buffer;
+    uint32 size = 0;
+    IDirect3DIndexBuffer9* buffer = nullptr;
     void* mappedData = nullptr;
+
     uint32 isMapped : 1;
     uint32 updatePending : 1;
 };
@@ -37,9 +38,7 @@ RHI_IMPL_POOL(IndexBufferDX9_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, 
 //==============================================================================
 
 IndexBufferDX9_t::IndexBufferDX9_t()
-    : size(0)
-    , buffer(nullptr)
-    , isMapped(0)
+    : isMapped(0)
     , updatePending(0)
 {
 }
