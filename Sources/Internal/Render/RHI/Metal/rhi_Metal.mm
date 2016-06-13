@@ -103,7 +103,12 @@ metal_DeviceCaps()
 static bool
 metal_NeedRestoreResources()
 {
-    return false;
+    bool needRestore = TextureMetal::NeedRestoreCount();
+
+    if (needRestore)
+        DAVA::Logger::Debug("NeedRestore %d TEX", TextureMetal::NeedRestoreCount());
+
+    return needRestore;
 }
 
 //------------------------------------------------------------------------------

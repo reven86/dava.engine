@@ -17,6 +17,7 @@ namespace rhi
 
 struct
 TextureMetal_t
+: public ResourceImpl<TextureMetal_t, Texture::Descriptor>
 {
 public:
     TextureMetal_t()
@@ -44,10 +45,12 @@ public:
     uint32 is_mapped : 1;
     uint32 is_renderable : 1;
     uint32 is_cubemap : 1;
+    uint32 need_restoring : 1;
 };
+RHI_IMPL_RESOURCE(TextureMetal_t, Texture::Descriptor);
 
-typedef ResourcePool<TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, false> TextureMetalPool;
-RHI_IMPL_POOL(TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, false);
+typedef ResourcePool<TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureMetalPool;
+RHI_IMPL_POOL(TextureMetal_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 static void
 _CheckAllTextures()
@@ -57,12 +60,19 @@ _CheckAllTextures()
     {
         if ([t->uid setPurgeableState:MTLPurgeableStateKeepCurrent] == MTLPurgeableStateEmpty)
         {
+            if (!t->NeedRestore())
+            {
+                t->MarkNeedRestore();
+                DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", t->width, t->height, int([t->uid setPurgeableState:MTLPurgeableStateKeepCurrent]));
+            }
+            /*
             if (first)
             {
                 DAVA::Logger::Info("--");
                 first = false;
             }
             DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", t->width, t->height, int([t->uid setPurgeableState:MTLPurgeableStateKeepCurrent]));
+*/
         }
     }
 }
@@ -326,6 +336,8 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
         DAVA::Logger::Debug("failed to create tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
     }
 
+    tex->need_restoring = texDesc.needRestore;
+
     //_CheckAllTextures();
     return handle;
 }
@@ -359,6 +371,7 @@ metal_Texture_Delete(Handle tex)
             self->uid2 = nil;
         }
 
+        self->MarkRestored();
         TextureMetalPool::Free(tex);
     }
     else
@@ -478,12 +491,13 @@ metal_Texture_Unmap(Handle tex)
     {
         [self->uid replaceRegion:rgn mipmapLevel:self->mappedLevel withBytes:self->mappedData bytesPerRow:stride];
     }
-    //-    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
 
     self->is_mapped = false;
     ::free(self->mappedData);
     self->mappedData = nullptr;
     //-    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+    self->MarkRestored();
 }
 
 //------------------------------------------------------------------------------
@@ -543,6 +557,19 @@ void metal_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
             [self->uid replaceRegion:rgn mipmapLevel:level withBytes:data bytesPerRow:stride];
         }
     }
+
+    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+    self->MarkRestored();
+}
+
+//------------------------------------------------------------------------------
+
+static bool
+metal_Texture_NeedRestore(Handle tex)
+{
+    TextureMetal_t* self = TextureMetalPool::Get(tex);
+
+    return self->NeedRestore();
 }
 
 //------------------------------------------------------------------------------
@@ -561,6 +588,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Map = &metal_Texture_Map;
     dispatch->impl_Texture_Unmap = &metal_Texture_Unmap;
     dispatch->impl_Texture_Update = &metal_Texture_Update;
+    dispatch->impl_Texture_NeedRestore = &metal_Texture_NeedRestore;
 }
 
 void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce)
@@ -568,6 +596,19 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
+//_CheckAllTextures();
+#if 1
+    if (self->need_restoring
+        && [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent] == MTLPurgeableStateEmpty
+        )
+    {
+        if (!self->NeedRestore())
+        {
+            self->MarkNeedRestore();
+            DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", self->width, self->height, int([self->uid setPurgeableState:MTLPurgeableStateKeepCurrent]));
+        }
+    }
+#endif
 }
 
 void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce)
@@ -592,6 +633,12 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 
     desc.depthAttachment.texture = self->uid;
     desc.stencilAttachment.texture = self->uid2;
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return TextureMetalPool::PendingRestoreCount();
 }
 
 } // namespace TextureMetal

@@ -206,6 +206,16 @@ metal_IndexBuffer_Unmap(Handle ib)
 
 //------------------------------------------------------------------------------
 
+static bool
+metal_IndexBuffer_NeedRestore(Handle ib)
+{
+    //    IndexBuffer_t* self = IndexBufferMetalPool::Get( ib );
+    //    return self->NeedRestore();
+    return false;
+}
+
+//------------------------------------------------------------------------------
+
 namespace IndexBufferMetal
 {
 void Init(uint32 maxCount)
@@ -220,6 +230,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_IndexBuffer_Update = &metal_IndexBuffer_Update;
     dispatch->impl_IndexBuffer_Map = &metal_IndexBuffer_Map;
     dispatch->impl_IndexBuffer_Unmap = &metal_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_NeedRestore = &metal_IndexBuffer_NeedRestore;
 }
 
 id<MTLBuffer>

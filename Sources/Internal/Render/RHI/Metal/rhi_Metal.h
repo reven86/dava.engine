@@ -91,6 +91,7 @@ namespace TextureMetal
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
+unsigned NeedRestoreCount();
 }
 namespace SamplerStateMetal
 {

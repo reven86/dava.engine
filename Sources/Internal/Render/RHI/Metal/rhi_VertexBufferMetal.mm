@@ -167,6 +167,16 @@ metal_VertexBuffer_Unmap(Handle vb)
     //    self->data = nullptr;
 }
 
+//------------------------------------------------------------------------------
+
+static bool
+metal_VertexBuffer_NeedRestore(Handle vb)
+{
+    //    VertexBuffer_t* self = VertexBufferMetalPool::Get( vb );
+    //    return self->NeedRestore();
+    return false;
+}
+
 namespace VertexBufferMetal
 {
 void Init(uint32 maxCount)
@@ -181,6 +191,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_VertexBuffer_Update = &metal_VertexBuffer_Update;
     dispatch->impl_VertexBuffer_Map = &metal_VertexBuffer_Map;
     dispatch->impl_VertexBuffer_Unmap = &metal_VertexBuffer_Unmap;
+    dispatch->impl_VertexBuffer_NeedRestore = &metal_VertexBuffer_NeedRestore;
 }
 
 id<MTLBuffer>
