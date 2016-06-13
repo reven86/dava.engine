@@ -9,14 +9,13 @@ class FileDownloader : public QObject
     Q_OBJECT
 
 public:
-    explicit FileDownloader(QNetworkAccessManager* accessManager);
-    ~FileDownloader();
+    explicit FileDownloader(QObject* parent = nullptr);
 
 signals:
     void Finished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 public slots:
-    void Download(QUrl url);
+    void Download(const QUrl& url);
     void Cancel();
 
 private slots:
@@ -24,10 +23,10 @@ private slots:
     void DownloadFinished();
 
 private:
-    QNetworkAccessManager* networkManager;
-    QNetworkReply* currentDownload;
+    QNetworkAccessManager* networkManager = nullptr;
+    QNetworkReply* currentDownload = nullptr;
 
-    int lastErrorCode;
+    int lastErrorCode = 0;
     QString lastErrorDesc;
 };
 

@@ -862,8 +862,6 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 
-    bool need_drawable = passConf.colorBuffer[0].texture == InvalidHandle;
-
     if (_Metal_NewFramePending)
     {
         MTL_TRACE("--- next-frame");
@@ -874,14 +872,16 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         _Metal_NewFramePending = false;
     }
 
-    if (need_drawable && !_Metal_Frame.back().drawable)
+    bool need_drawable = passConf.colorBuffer[0].texture == InvalidHandle && !_Metal_Frame.back().drawable;
+
+    if (need_drawable)
     {
         @autoreleasepool
         {
             _Metal_Frame.back().drawable = [_Metal_Layer nextDrawable];
             [_Metal_Frame.back().drawable retain];
-            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
             _Metal_DefFrameBuf = _Metal_Frame.back().drawable.texture;
+            MTL_TRACE(" next.drawable= %p %i %s", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount], NSStringFromClass([_Metal_Frame.back().drawable class]).UTF8String);
         }
 
         if (!_Metal_Frame.back().drawable)
