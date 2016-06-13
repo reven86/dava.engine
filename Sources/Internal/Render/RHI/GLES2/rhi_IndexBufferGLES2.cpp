@@ -17,26 +17,18 @@ IndexBufferGLES2_t
 : public ResourceImpl<IndexBufferGLES2_t, IndexBuffer::Descriptor>
 {
 public:
-    IndexBufferGLES2_t()
-        : size(0)
-        , mappedData(nullptr)
-        , uid(0)
-        , is_32bit(false)
-        , isMapped(false)
-        , isUPBuffer(false)
-    {
-    }
+    IndexBufferGLES2_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
     unsigned size;
-    void* mappedData;
     GLenum usage;
     unsigned uid;
-    uint32 is_32bit : 1;
+    void* mappedData = nullptr;
     uint32 isMapped : 1;
     uint32 updatePending : 1;
+    uint32 is_32bit : 1;
     uint32 isUPBuffer : 1;
 };
 
@@ -44,6 +36,18 @@ RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor)
 
 typedef ResourcePool<IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true, 3072);
+
+//------------------------------------------------------------------------------
+
+IndexBufferGLES2_t::IndexBufferGLES2_t()
+    : size(0)
+    , uid(0)
+    , isMapped(0)
+    , updatePending(0)
+    , is_32bit(false)
+    , isUPBuffer(false)
+{
+}
 
 //------------------------------------------------------------------------------
 
@@ -73,7 +77,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
         GLuint b = 0;
         if (isUPBuffer)
         {
-            mappedData = ::malloc(desc.size);
+            mappedData = reinterpret_cast<uint8*>(::malloc(desc.size));
 
             if (desc.initialData)
                 memcpy(mappedData, desc.initialData, desc.size);
@@ -132,8 +136,6 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
     {
         GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
-
-        uid = 0;
     }
 
     if (mappedData)
@@ -143,6 +145,7 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
     }
 
     size = 0;
+    uid = 0;
 }
 
 //==============================================================================
