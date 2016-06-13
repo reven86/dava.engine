@@ -121,7 +121,7 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
 
             std::ofstream out(outputName, std::ios_base::binary);
             out.write(reinterpret_cast<const char*>(data.data()), data.size());
-    }
+        }
     }
     return 0;
 }
