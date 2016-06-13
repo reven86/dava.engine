@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "_gl.h"
+#include "../rhi_Public.h"
 
 void win_gl_reset(const rhi::ResetParam& param)
 {

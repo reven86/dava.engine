@@ -323,7 +323,6 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     void* mem = nullptr;
 
     D3DLOCKED_RECT rc = {};
-    HRESULT hr;
 
     if (self->cubetex9)
     {
