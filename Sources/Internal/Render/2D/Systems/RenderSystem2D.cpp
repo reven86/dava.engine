@@ -141,9 +141,9 @@ void RenderSystem2D::BeginFrame()
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
     renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
-    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    renderPass2DConfig.colorBuffer[0].loadAction = mainTargetDescriptor.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment;
+    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment ? mainTargetDescriptor.depthAttachment : rhi::DefaultDepthBuffer;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
@@ -194,10 +194,12 @@ const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTarge
 {
     return IsRenderTargetPass() ? renderPassTargetDescriptor : mainTargetDescriptor;
 }
+
 const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetMainTargetDescriptor()
 {
     return mainTargetDescriptor;
 }
+
 void RenderSystem2D::SetMainTargetDescriptor(const RenderSystem2D::RenderTargetPassDescriptor& descriptor)
 {
     mainTargetDescriptor = descriptor;
