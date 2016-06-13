@@ -69,14 +69,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
             collectedFiles.push_back(collectedFile);
         }
     }
-
-    if (fileOrDirAdded == false) // add empty folder to preserve file tree hierarchy as-is
-    {
-        CollectedFile collectedFile;
-        collectedFile.absPath = FilePath();
-        collectedFile.archivePath = dirArchivePath;
-        collectedFiles.push_back(collectedFile);
-    }
 }
 
 bool WriteHeaderBlock(File* outputFile, const PackFormat::PackFile::FooterBlock& footer)
