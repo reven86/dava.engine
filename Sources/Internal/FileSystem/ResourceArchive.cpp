@@ -105,7 +105,7 @@ bool ResourceArchive::UnpackToFolder(const FilePath& dir) const
             Logger::Error("can't open file: %s", filePath.GetStringValue().c_str());
             return false;
         }
-        uint32 bytesInFile = file->Write(content.data(), static_cast<size_t>(content.size()));
+        uint32 bytesInFile = file->Write(content.data(), static_cast<uint32>(content.size()));
         if (bytesInFile != content.size())
         {
             Logger::Error("can't write file: %s", res.relativeFilePath.c_str());

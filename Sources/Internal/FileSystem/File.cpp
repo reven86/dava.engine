@@ -213,7 +213,7 @@ uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
-    return fread(pointerToData, 1, static_cast<size_t>(dataSize), file);
+    return static_cast<uint32>(fread(pointerToData, 1, static_cast<size_t>(dataSize), file));
 }
 
 uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
