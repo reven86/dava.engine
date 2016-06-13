@@ -235,16 +235,16 @@ DAVA_TESTCLASS (FileSystemTest)
         if (!f2 || !f2)
             return;
 
-        uint32 size = f1->GetSize();
+        uint64 size = f1->GetSize();
         TEST_VERIFY(size == f2->GetSize());
 
-        char8* buf1 = new char8[size];
-        char8* buf2 = new char8[size];
+        char8* buf1 = new char8[static_cast<size_t>(size)];
+        char8* buf2 = new char8[static_cast<size_t>(size)];
 
         do
         {
-            uint32 res1 = f1->ReadLine(buf1, size);
-            uint32 res2 = f2->ReadLine(buf2, size);
+            uint32 res1 = f1->ReadLine(buf1, static_cast<uint32>(size));
+            uint32 res2 = f2->ReadLine(buf2, static_cast<uint32>(size));
             TEST_VERIFY(res1 == res2);
             TEST_VERIFY(!Memcmp(buf1, buf2, res1));
 
@@ -261,12 +261,12 @@ DAVA_TESTCLASS (FileSystemTest)
         f1 = File::Create(fileInAssets, File::OPEN | File::READ);
         f2 = File::Create(copyTo, File::OPEN | File::READ);
 
-        int32 seekPos = f1->GetSize() + 10;
+        int64 seekPos = f1->GetSize() + 10;
         TEST_VERIFY(f1->Seek(seekPos, File::SEEK_FROM_START));
         TEST_VERIFY(f2->Seek(seekPos, File::SEEK_FROM_START));
 
-        uint32 pos1 = f1->GetPos();
-        uint32 pos2 = f2->GetPos();
+        uint64 pos1 = f1->GetPos();
+        uint64 pos2 = f2->GetPos();
 
         TEST_VERIFY(f1->IsEof() == false);
         TEST_VERIFY(f2->IsEof() == false);

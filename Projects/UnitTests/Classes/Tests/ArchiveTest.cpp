@@ -12,19 +12,19 @@ DAVA_TESTCLASS (ArchiveTest)
     DAVA_TEST (TestDavaArchive)
     {
         Vector<ResourceArchive::FileInfo> infos{
-            ResourceArchive::FileInfo{ "Folder1/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder1/file2.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder1/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file1", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file2.txt", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder1/file3.doc", 0, 0, 0, Compressor::Type::None },
 
-            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file1.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file2", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file2.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1.txt", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file2", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file2.txt", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, 0, Compressor::Type::None },
 
-            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, 0, Compressor::Type::None },
+            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, 0, Compressor::Type::None },
         };
 
         FilePath baseDir("~res:/TestData/FileListTest/");
@@ -55,12 +55,12 @@ DAVA_TESTCLASS (ArchiveTest)
                     ScopedPtr<File> file(File::Create(fileOnHDD, File::OPEN | File::READ));
                     TEST_VERIFY(file);
 
-                    uint32 fileSize = file->GetSize();
+                    uint64 fileSize = file->GetSize();
 
                     TEST_VERIFY(fileSize == fileContentFromArchive.size());
 
-                    Vector<uint8> fileContentFromHDD(file->GetSize(), 0);
-                    uint32 readBytes = file->Read(fileContentFromHDD.data(), file->GetSize());
+                    Vector<uint8> fileContentFromHDD(static_cast<size_t>(file->GetSize()), 0);
+                    uint32 readBytes = file->Read(fileContentFromHDD.data(), static_cast<uint32>(file->GetSize()));
                     TEST_VERIFY(readBytes == fileContentFromArchive.size());
 
                     TEST_VERIFY(fileContentFromArchive == fileContentFromHDD);
@@ -92,11 +92,11 @@ DAVA_TESTCLASS (ArchiveTest)
 
                 ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
 
-                uint32 fileSize = file->GetSize();
+                uint64 fileSize = file->GetSize();
 
-                Vector<uint8> fileFromHDD(fileSize, 0);
+                Vector<uint8> fileFromHDD(static_cast<size_t>(fileSize), 0);
 
-                file->Read(fileFromHDD.data(), fileSize);
+                file->Read(fileFromHDD.data(), static_cast<uint32>(fileSize));
 
                 TEST_VERIFY(fileFromHDD == fileFromArchive);
             }

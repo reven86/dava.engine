@@ -127,7 +127,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 TEST_VERIFY(file);
                 if (file)
                 {
-                    String fileContent(file->GetSize(), '\0');
+                    String fileContent(static_cast<size_t>(file->GetSize()), '\0');
                     file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
 
                     uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));

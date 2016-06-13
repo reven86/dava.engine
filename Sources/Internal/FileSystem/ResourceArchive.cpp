@@ -57,7 +57,7 @@ ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalS
     : relativeFilePath(relativePath_)
     , originalSize(originalSize_)
     , compressedSize(compressedSize_)
-    , hash(hash_)
+    , crc32(hash_)
     , compressionType(compressionType_)
 {
 }

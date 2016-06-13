@@ -132,7 +132,7 @@ DAVA_TESTCLASS (LoadImageTest)
             TEST_VERIFY(loadedMip->height == expectedMipHeight);
             TEST_VERIFY(loadedMip->width == expectedMipWidth);
 
-            uint32 sampleSize = 0;
+            uint64 sampleSize = 0;
             uint8* sampleData = nullptr;
             FilePath sampleMipPath(Format("~res:/TestData/LoadImageTest/dxt1_mip%u.dat", i));
             sampleData = FileSystem::Instance()->ReadFileContents(sampleMipPath, sampleSize);

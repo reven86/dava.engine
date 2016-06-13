@@ -25,7 +25,7 @@ DAVA_TESTCLASS (LoggerFileTest)
             {
                 ScopedPtr<File> log(File::Create(logFilePath, File::OPEN | File::READ));
                 TEST_VERIFY(log);
-                uint32 size = log->GetSize();
+                uint64 size = log->GetSize();
                 // log could have any size from last session
                 TEST_VERIFY(logCutSize < size);
             }
@@ -36,7 +36,7 @@ DAVA_TESTCLASS (LoggerFileTest)
             {
                 ScopedPtr<File> log(File::Create(logFilePath, File::OPEN | File::READ));
                 TEST_VERIFY(log);
-                uint32 size = log->GetSize();
+                uint64 size = log->GetSize();
                 // current session should start from last logCutSize bytes of prev session.
                 TEST_VERIFY(logCutSize >= size);
             }

@@ -22,7 +22,7 @@ public:
         String relativeFilePath;
         uint32 originalSize = 0;
         uint32 compressedSize = 0;
-        uint32 hash = 0;
+        uint32 crc32 = 0;
         Compressor::Type compressionType = Compressor::Type::None;
     };
 

@@ -120,7 +120,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
                       info.relativeFilePath = fileNameLoc;
                       info.originalSize = fileEntry.originalSize;
                       info.compressedSize = fileEntry.compressedSize;
-                      info.hash = fileEntry.compressedCrc32;
+                      info.crc32 = fileEntry.compressedCrc32;
                       info.compressionType = fileEntry.type;
 
                       filesInfo.push_back(info);
