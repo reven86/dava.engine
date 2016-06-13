@@ -11,7 +11,6 @@ DAVA_TESTCLASS (ArchiveTest)
 {
     DAVA_TEST (TestDavaArchive)
     {
-
         FilePath baseDir("~res:/TestData/FileListTest/");
 
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
