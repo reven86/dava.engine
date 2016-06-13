@@ -1,5 +1,3 @@
-#pragma once
-
 #if defined(ENABLE_CEF_WEBVIEW)
 
 #include "UI/Private/CEFWebPageRender.h"
