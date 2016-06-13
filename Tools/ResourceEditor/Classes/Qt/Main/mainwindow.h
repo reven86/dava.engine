@@ -26,7 +26,10 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
-namespace wgt { class IComponentContext; }
+namespace wgt
+{
+class IComponentContext;
+}
 #if defined(UVR_NOT_IMPLEMENTED)
 class PropertyPanel;
 #endif

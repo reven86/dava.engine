@@ -21,12 +21,9 @@ namespace wgt
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
-namespace wgt
-{
 PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
-}
 }
 
 } // namespace wgt

@@ -21,9 +21,12 @@ class InspInfo;
 class SceneEditor2;
 class SelectableGroup;
 
-namespace wgt { class ReflectedPropertyModel; }
+namespace wgt
+{
+class ReflectedPropertyModel;
+}
 
-class PropertyPanel: public QObject, public wgt::IViewEventListener, public EntityInjectDataExtension::Delegate
+class PropertyPanel : public QObject, public wgt::IViewEventListener, public EntityInjectDataExtension::Delegate
 {
     PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT

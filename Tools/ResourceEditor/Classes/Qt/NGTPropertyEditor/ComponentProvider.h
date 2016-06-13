@@ -30,7 +30,10 @@
 
 #include "core_ui_framework/i_component_provider.hpp"
 
-namespace wgt { class IDefinitionManager; }
+namespace wgt
+{
+class IDefinitionManager;
+}
 
 namespace NGTLayer
 {

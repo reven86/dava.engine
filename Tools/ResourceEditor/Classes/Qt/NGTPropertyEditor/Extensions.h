@@ -64,7 +64,7 @@ class EntityMergeValueExtension : public wgt::MergeValuesExtension
 {
 public:
     wgt::RefPropertyItem* lookUpItem(const std::shared_ptr<const wgt::PropertyNode>& node, const std::vector<std::unique_ptr<wgt::RefPropertyItem>>& items,
-        wgt::IDefinitionManager& definitionManager) const override;
+                                     wgt::IDefinitionManager& definitionManager) const override;
 };
 
 class AddCustomPropertyWidget : public QWidget
