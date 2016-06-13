@@ -256,7 +256,7 @@ public:
         {
             TMap* map = object.GetPtr<TMap>();
 
-            TMap::iterator iter = map->find(key.Cast<K>());
+            typename TMap::iterator iter = map->find(key.Cast<K>());
             if (iter != map->end())
             {
                 T* valuePtr = &(iter->second);
@@ -361,7 +361,7 @@ public:
         Ref::FieldsList ret;
         TSet* set = object.GetPtr<TSet>();
 
-        for (TSet::iterator iter = set->begin(); iter != set->end(); ++iter)
+        for (typename TSet::iterator iter = set->begin(); iter != set->end(); ++iter)
         {
             const T* valuePtr = &(*iter);
 

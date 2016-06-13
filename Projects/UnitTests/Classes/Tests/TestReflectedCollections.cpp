@@ -121,7 +121,9 @@ DAVA_TESTCLASS (TestReflectedCollections)
         DAVA::ReflectedObject object = field.valueRef.GetValueObject();
         for (TIter i = startExpected; i != endExpected; ++i)
         {
-            TEST_VERIFY(i->first == structure->GetField(object, i->first).valueRef.GetValue().Cast<int>());
+            DAVA::Ref::Field field = structure->GetField(object, i->first);
+            int v = field.valueRef.GetValue().Cast<int>();
+            TEST_VERIFY(i->first == v);
         }
 
         TEST_VERIFY(structure->AddField(object, int(5), int(5)));
@@ -145,7 +147,9 @@ DAVA_TESTCLASS (TestReflectedCollections)
         DAVA::ReflectedObject object = field.valueRef.GetValueObject();
         for (TIter i = startExpected; i != endExpected; ++i)
         {
-            TEST_VERIFY((*i) == structure->GetField(object, *i).valueRef.GetValue().Cast<int>());
+            DAVA::Ref::Field field = structure->GetField(object, *i);
+            int v = field.valueRef.GetValue().Cast<int>();
+            TEST_VERIFY((*i) == v);
         }
 
         TEST_VERIFY(structure->AddField(object, DAVA::Any(), int(5)));
@@ -161,7 +165,7 @@ DAVA_TESTCLASS (TestReflectedCollections)
         TEST_VERIFY(structure->RemoveField(object, int(5)));
         TEST_VERIFY(!structure->RemoveField(object, int(5)));
 
-        Ref::Field f = structure->GetField(object, int(6));
+        DAVA::Ref::Field f = structure->GetField(object, int(6));
         TEST_VERIFY(f.valueRef.IsReadonly());
         TEST_VERIFY(!f.valueRef.SetValue(int(10)));
         f.key.Set(int(10));
