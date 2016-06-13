@@ -6,11 +6,9 @@
 class GameCore : public DAVA::ApplicationCore
 {
 public:
-    GameCore();
-    ~GameCore() override;
-
-    void OnAppStarted() override;
-    void OnAppFinished() override;
+    void OnAppStarted() override
+    {
+    }
 };
 
 #endif // __GAMECORE_H__

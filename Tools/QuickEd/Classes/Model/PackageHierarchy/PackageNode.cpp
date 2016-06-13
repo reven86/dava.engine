@@ -304,7 +304,9 @@ void PackageNode::RemoveControl(ControlNode* node, ControlsContainerNode* from)
         listener->ControlWasRemoved(node, from);
 
     if (from->GetControl() != nullptr)
-        RefreshControlStylesAndLayout(node);
+    {
+        RefreshControlStylesAndLayout(static_cast<ControlNode*>(from));
+    }
 }
 
 void PackageNode::InsertStyle(StyleSheetNode* node, StyleSheetsNode* dest, DAVA::int32 index)
