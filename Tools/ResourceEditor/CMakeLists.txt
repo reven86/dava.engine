@@ -36,6 +36,10 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+if (UVR_DEV)
+    add_definitions (-DUVR_NOT_IMPLEMENTED )
+endif()
+
 # Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
 # into DavaFramework project
 find_package( NgtTools REQUIRED )

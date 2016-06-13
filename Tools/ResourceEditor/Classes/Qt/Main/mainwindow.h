@@ -22,7 +22,9 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 namespace wgt { class IComponentContext; }
+#if defined(UVR_NOT_IMPLEMENTED)
 class PropertyPanel;
+#endif
 
 class DeviceListController;
 class SpritesPackerModule;
@@ -284,7 +286,9 @@ private:
     RecentMenuItems recentProjects;
 
     wgt::IComponentContext& ngtContext;
+#if defined(UVR_NOT_IMPLEMENTED)
     std::unique_ptr<PropertyPanel> propertyPanel;
+#endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
