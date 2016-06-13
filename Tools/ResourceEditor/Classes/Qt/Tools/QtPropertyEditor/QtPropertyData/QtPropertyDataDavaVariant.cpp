@@ -19,6 +19,7 @@
 #include <QLineEdit>
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QStyledItemDelegate>
 
 #define FLOAT_PRINTF_FORMAT1 "% .7f"
 #define FLOAT_PRINTF_FORMAT2 "% .7f; % .7f"
@@ -1174,6 +1175,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget* parent) c
     if (allowedValues.size() > 0)
     {
         allowedWidget = new QComboBox(parent);
+        allowedWidget->setItemDelegate(new QStyledItemDelegate(allowedWidget));
 
         for (int i = 0; i < allowedValues.size(); ++i)
         {

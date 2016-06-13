@@ -11,6 +11,7 @@
 namespace DAVA
 {
 class UIWebView;
+class UIControlBackground;
 class IUIWebViewDelegate
 {
 public:
@@ -37,6 +38,7 @@ public:
 };
 
 class FilePath;
+class UIGeometricData;
 
 // Common interface for Web View Controls for different platforms.
 class IWebViewControl
@@ -112,7 +114,13 @@ public:
     virtual void WillDraw()
     {
     }
+    virtual void Draw(const UIGeometricData& geometricData)
+    {
+    }
     virtual void DidDraw()
+    {
+    }
+    virtual void Input(class UIEvent* currentInput)
     {
     }
 

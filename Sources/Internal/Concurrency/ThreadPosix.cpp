@@ -65,6 +65,15 @@ void Thread::KillNative()
     }
 }
 
+void Thread::SetCurrentThreadName(const String& str)
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    pthread_setname_np(pthread_self(), str.c_str());
+#elif defined(__DAVAENGINE_APPLE__)
+    pthread_setname_np(str.c_str());
+#endif
+}
+
 void* PthreadMain(void* param)
 {
 #if defined(__DAVAENGINE_APPLE__)
@@ -75,12 +84,10 @@ void* PthreadMain(void* param)
     JNI::AttachCurrentThreadToJVM();
 #endif
 
-    Thread* t = static_cast<Thread*>(param);    
+    Thread* t = static_cast<Thread*>(param);
+    Thread::SetCurrentThreadName(t->name);
 #if defined(__DAVAENGINE_ANDROID__)
-    pthread_setname_np(t->handle, t->name.c_str());
     t->system_handle = gettid();
-#elif defined(__DAVAENGINE_APPLE__)
-    pthread_setname_np(t->name.c_str());
 #endif
 
     Thread::ThreadFunction(param);
