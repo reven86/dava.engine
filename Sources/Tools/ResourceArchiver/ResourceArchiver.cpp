@@ -352,7 +352,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                               throw std::runtime_error("Can't read contents of " + collectedFile.absPath.GetAbsolutePathname());
                           }
 
-                          bool useCompressedBuffer = (compressionType != Compressor::Type::None);
+                          bool useCompressedBuffer = (compressionType != Compressor::Type::None && !origFileBuffer.empty());
                           if (useCompressedBuffer)
                           {
                               if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
@@ -389,6 +389,8 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                                        deviceName.c_str(), date.c_str(), time.c_str(),
                                        collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,
                                        GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.type)), fileEntry.compressedCrc32);
+
+                          compressedFileBuffer.clear();
                       });
     }
     catch (std::exception& ex)

@@ -32,7 +32,7 @@ DAVA_TESTCLASS (ArchiveTest)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 
         {
-            PackArchive archive("~res:/TestData/ArchiveTest/archive.pak");
+            PackArchive archive("~res:/TestData/ArchiveTest/archive.dvpk");
 
             for (auto& info : infos)
             {
