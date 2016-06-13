@@ -186,6 +186,18 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         windowedMode.height = options->GetInt32("height");
         windowedMode.bpp = options->GetInt32("bpp");
 
+        int32 yShift = ::GetSystemMetrics(SM_CYSIZE) + ::GetSystemMetrics(SM_CXPADDEDBORDER) * 2;
+        int32 xShift = ::GetSystemMetrics(SM_CXPADDEDBORDER) * 2;
+        //check windowed sizes
+        if (windowedMode.width > DeviceInfo::GetScreenInfo().width - xShift)
+        {
+            windowedMode.width = DeviceInfo::GetScreenInfo().width - xShift;
+        }
+        if (windowedMode.height > DeviceInfo::GetScreenInfo().height - yShift)
+        {
+            windowedMode.height = DeviceInfo::GetScreenInfo().height - yShift;
+        }
+
         // get values from config in case if they are available
         fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
         fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
