@@ -5,6 +5,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Debug/Stats.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {

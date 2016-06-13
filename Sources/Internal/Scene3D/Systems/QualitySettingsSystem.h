@@ -5,6 +5,7 @@
 #include "Base/FastNameMap.h"
 #include "Math/Vector.h"
 #include "Scene3D/Systems/ParticlesQualitySettings.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
