@@ -82,11 +82,6 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
                                     "Compression/ZipCompressor.cpp"
-                                    "UI/Private/CEFController.cpp"
-                                    "UI/Private/CEFWebViewControl.cpp"
-                                    "UI/Private/CEFWebViewControlProxy.cpp"
-                                    "UI/Private/CEFWebPageRender.cpp"
-                                    "UI/Private/CEFDavaResourceHandler.cpp"
                                     "Platform/Steam.cpp"
                                     "DataStorage/Steam/DataStorageSteam.cpp" )
 
@@ -119,8 +114,6 @@ set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )
 set( DEFINITIONS_PRIVATE_ANDROID    -D__ANDROID__ )
 set( DEFINITIONS_PRIVATE_WINUAP     -DSQLITE_OS_WINRT=1 )
 
-set( DEPLOY_TO_BIN_WIN              ${DAVA_TOOLS_BIN_DIR}/cef/* )
-
 if( DAVA_DISABLE_AUTOTESTS  )
     list( APPEND DEFINITIONS -DDISABLE_AUTOTESTS )
 endif()
@@ -128,10 +121,6 @@ endif()
 if ( STEAM_SDK_FOUND )#tmp
     list( APPEND INCLUDES ${STEAM_SDK_HEADERS} )
     list( APPEND DEFINITIONS -D__DAVAENGINE_STEAM__ )
-endif ()
-
-if ( ENABLE_CEF )
-    list( APPEND DEFINITIONS -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
 endif ()
 
 if( DAVA_USE_RENDERSTATS )
