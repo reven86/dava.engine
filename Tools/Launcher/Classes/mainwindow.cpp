@@ -20,8 +20,8 @@
 #include <QVariant>
 #include <QComboBox>
 
-static const QString stateKey = "mainWindow/state";
-static const QString geometryKey = "mainWindow/geometry";
+static const QString stateKey = "mainWindow_state";
+static const QString geometryKey = "mainWindow_geometry";
 
 class BranchListComparator
 {
