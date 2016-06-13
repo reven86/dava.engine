@@ -1,13 +1,12 @@
-#ifndef __QTTOOLS_REFLECTIONBRIDGE_H__
-#define __QTTOOLS_REFLECTIONBRIDGE_H__
+#pragma once
 
-#include "core_reflection/interfaces/i_class_definition.hpp"
-#include "core_reflection/reflected_object.hpp"
-#include "core_reflection/metadata/meta_types.hpp"
-#include "core_reflection/base_property.hpp"
-#include "core_reflection/type_class_definition.hpp"
+#include <core_reflection/interfaces/i_class_definition.hpp>
+#include <core_reflection/reflected_object.hpp>
+#include <core_reflection/metadata/meta_types.hpp>
+#include <core_reflection/base_property.hpp>
+#include <core_reflection/type_class_definition.hpp>
 
-#include "core_variant/variant.hpp"
+#include <core_variant/variant.hpp>
 
 #include "Base/BaseTypes.h"
 #include "Base/Introspection.h"
@@ -66,5 +65,3 @@ private:
 void RegisterType(wgt::IDefinitionManager& mng, const DAVA::InspInfo* inspInfo);
 wgt::ObjectHandle CreateObjectHandle(wgt::IDefinitionManager& defMng, const DAVA::InspInfo* fieldInsp, void* field);
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_REFLECTIONBRIDGE_H__

@@ -1,8 +1,7 @@
 #pragma once
 
+#include <core_variant/collection.hpp>
 #include "Base/BaseTypes.h"
-
-#include "core_variant/collection.hpp"
 
 namespace DAVA
 {

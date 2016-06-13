@@ -1,8 +1,7 @@
-#ifndef __QTTOOLS_NGTCMDLINEPARSER_H__
-#define __QTTOOLS_NGTCMDLINEPARSER_H__
+#pragma once
 
-#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
-#include "core_dependency_system/i_interface.hpp"
+#include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
+#include <core_dependency_system/i_interface.hpp>
 
 namespace NGTLayer
 {
@@ -25,5 +24,3 @@ private:
     char** m_argv;
 };
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTCMDLINEPARSER_H__

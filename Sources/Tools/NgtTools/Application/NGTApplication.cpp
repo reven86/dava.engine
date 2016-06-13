@@ -21,9 +21,12 @@ namespace wgt
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
+namespace wgt
+{
 PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
+}
 }
 
 } // namespace wgt
@@ -87,6 +90,13 @@ int BaseApplication::StartApplication(QMainWindow* appMainWindow)
     window->releaseWindow();
 
     return result;
+}
+
+int BaseApplication::StartApplication()
+{
+    wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
+    DVASSERT(app != nullptr);
+    return app->startApplication();
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const

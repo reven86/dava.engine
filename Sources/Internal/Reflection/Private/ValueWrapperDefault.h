@@ -27,7 +27,7 @@ public:
     {
         Any ret;
 
-        T* ptr = object.GetPtr<T>();
+        const T* ptr = object.GetPtr<const T>();
         ret.Set(*ptr);
 
         return ret;

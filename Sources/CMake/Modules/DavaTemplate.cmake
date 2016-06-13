@@ -48,6 +48,8 @@ load_property( PROPERTY_LIST
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+        DEPLOY_TO_BIN
+        DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
     )
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
@@ -644,9 +646,16 @@ endif()
 ###
 
 if( DEPLOY )
-   message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
-   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
 
+    if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
+        file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+        foreach( ITEM ${RESOURCES_LIST} )
+            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
+        endforeach()
+    endif()
+    
    append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
 
     if( WIN32 )
@@ -659,10 +668,6 @@ if( DEPLOY )
             )
 
         endif()
-
-		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )

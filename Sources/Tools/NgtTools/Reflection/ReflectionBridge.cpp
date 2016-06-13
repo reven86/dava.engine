@@ -6,9 +6,9 @@
 #include "Utils/Utils.h"
 #include "Math/AABBox3.h"
 
-#include "wg_types/vector2.hpp"
-#include "wg_types/vector3.hpp"
-#include "wg_types/vector4.hpp"
+#include <wg_types/vector2.hpp>
+#include <wg_types/vector3.hpp>
+#include <wg_types/vector4.hpp>
 
 namespace NGTLayer
 {

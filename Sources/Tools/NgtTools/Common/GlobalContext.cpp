@@ -1,6 +1,6 @@
 #include "GlobalContext.h"
 
-#include "core_common/platform_env.hpp"
+#include <core_common/platform_env.hpp>
 
 namespace NGTLayer
 {

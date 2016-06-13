@@ -12,7 +12,7 @@
 
 #include "Debug/DVAssert.h"
 
-#include "core_reflection/i_definition_manager.hpp"
+#include <core_reflection/i_definition_manager.hpp>
 
 namespace NGTLayer
 {

@@ -126,7 +126,8 @@ def process_files(arg, dirname, names):
 			
 	return
 
-export_script_dir = os.getcwd();
+pathname = os.path.dirname(__file__);
+export_script_dir = os.path.abspath(pathname + "/../../");
 os.path.walk(export_script_dir, visit_directory, None);
 os.path.walk(export_script_dir, process_files, None);
 

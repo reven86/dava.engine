@@ -12,9 +12,9 @@
 
 #include "Debug/DVAssert.h"
 
-#include "wg_types/vector2.hpp"
-#include "wg_types/vector3.hpp"
-#include "wg_types/vector4.hpp"
+#include <wg_types/vector2.hpp>
+#include <wg_types/vector3.hpp>
+#include <wg_types/vector4.hpp>
 
 namespace NGTLayer
 {
