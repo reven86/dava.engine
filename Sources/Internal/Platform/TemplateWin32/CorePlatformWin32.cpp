@@ -179,6 +179,18 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
         ZeroMemory(&dmi, sizeof(dmi));
     }
+    // calculate window area
+    RECT workArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+    int32 workWigth = workArea.right - workArea.left;
+    int32 workHeight = workArea.bottom - workArea.top;
+    // calculate border
+    RECT borderRect = { 0, 0, 0, 0 };
+    AdjustWindowRect(&borderRect, style, 0);
+    int32 borderWigth = borderRect.right - borderRect.left;
+    int32 borderHeight = borderRect.bottom - borderRect.top;
+    int32 maxWigth = workWigth - borderWigth;
+    int32 maxHeight = workHeight - borderHeight;
 
     if (options)
     {
@@ -186,16 +198,14 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         windowedMode.height = options->GetInt32("height");
         windowedMode.bpp = options->GetInt32("bpp");
 
-        int32 yShift = ::GetSystemMetrics(SM_CYSIZE) + ::GetSystemMetrics(SM_CXPADDEDBORDER) * 2;
-        int32 xShift = ::GetSystemMetrics(SM_CXPADDEDBORDER) * 2;
         //check windowed sizes
-        if (windowedMode.width > DeviceInfo::GetScreenInfo().width - xShift)
+        if (windowedMode.width > maxWigth)
         {
-            windowedMode.width = DeviceInfo::GetScreenInfo().width - xShift;
+            windowedMode.width = maxWigth;
         }
-        if (windowedMode.height > DeviceInfo::GetScreenInfo().height - yShift)
+        if (windowedMode.height > maxHeight)
         {
-            windowedMode.height = DeviceInfo::GetScreenInfo().height - yShift;
+            windowedMode.height = maxHeight;
         }
 
         // get values from config in case if they are available
@@ -229,8 +239,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         realWidth = clientSize.right - clientSize.left;
         realHeight = clientSize.bottom - clientSize.top;
 
-        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-        windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+        windowLeft = (workWigth - realWidth) / 2 + workArea.left;
+        windowTop = (workHeight - realHeight) / 2 + workArea.top;
 
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
     }
