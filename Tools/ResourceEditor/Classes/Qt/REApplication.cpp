@@ -24,7 +24,7 @@ REApplication::~REApplication() = default;
 
 void REApplication::Run()
 {
-    IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
     {
         historyPanel->setClearButtonVisible(false);
@@ -63,7 +63,7 @@ void REApplication::OnPostLoadPugins()
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
 
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
 

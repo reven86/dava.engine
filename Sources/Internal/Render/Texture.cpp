@@ -922,21 +922,31 @@ void Texture::RestoreRenderResource()
 
     const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
     FilePath::ePathType pathType = relativePathname.GetType();
-    if (pathType == FilePath::PATH_IN_FILESYSTEM ||
-        pathType == FilePath::PATH_IN_RESOURCES ||
-        pathType == FilePath::PATH_IN_DOCUMENTS)
+
+    bool shouldMakePink = isPink || (pathType == FilePath::PATH_EMPTY);
+
+    if ((pathType == FilePath::PATH_IN_FILESYSTEM) || (pathType == FilePath::PATH_IN_RESOURCES) || (pathType == FilePath::PATH_IN_DOCUMENTS))
     {
         eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
         LoadImages(gpuForLoading, &images);
+        if (images.empty())
+        {
+            String absolutePath = relativePathname.GetAbsolutePathname();
+            Logger::Error("Unable to restore texture from file: %s", absolutePath.c_str());
+            shouldMakePink = true;
+        }
     }
-    else if (isPink || (pathType == FilePath::PATH_EMPTY))
+
+    if (shouldMakePink)
     {
+        DVASSERT(images.empty());
+
         if (texDescriptor->IsCubeMap())
         {
             for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
             {
                 Image* img = Image::Create(width, height, FORMAT_RGBA8888);
-                img->MakePink(false);
+                img->MakePink(true);
                 img->cubeFaceID = i;
                 img->mipmapLevel = 0;
                 images.push_back(img);
@@ -945,7 +955,7 @@ void Texture::RestoreRenderResource()
         else
         {
             Image* img = Image::Create(width, height, FORMAT_RGBA8888);
-            img->MakePink(false);
+            img->MakePink(true);
             images.push_back(img);
         }
     }
@@ -1070,7 +1080,7 @@ void Texture::SetPathname(const FilePath& path)
 
     textureMapMutex.Lock();
     textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
-    texDescriptor->pathname = path;
+    texDescriptor->OverridePathName(path);
     if (!texDescriptor->pathname.IsEmpty())
     {
         DVASSERT(textureMap.find(FILEPATH_MAP_KEY(texDescriptor->pathname)) == textureMap.end());
