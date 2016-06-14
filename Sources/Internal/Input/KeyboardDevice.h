@@ -4,7 +4,7 @@
 #include "Base/BaseObject.h"
 
 /**
-	\defgroup inputsystem	Input System
+    \defgroup inputsystem    Input System
 */
 namespace DAVA
 {
@@ -148,6 +148,8 @@ class KeyboardDevice : public BaseObject
 public:
     bool IsKeyPressed(Key key) const; // during frame
     const String& GetKeyName(Key key);
+    const Key GetKeyByName(const String& name);
+
     void ClearAllKeys(); // unpress keys during ALT+TAB or similar events
 private:
     friend class InputSystem;
@@ -159,6 +161,9 @@ private:
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif
+#if defined(ENABLE_CEF_WEBVIEW)
+    friend class CEFWebViewControl;
+#endif
     ~KeyboardDevice();
     KeyboardDevice();
 
@@ -166,6 +171,9 @@ private:
 public:
 #endif
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+#if defined(ENABLE_CEF_WEBVIEW)
+    uint32 GetSystemKeyForDavaKey(Key key) const;
+#endif
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
 #ifdef __DAVAENGINE_MACOS__
@@ -179,6 +187,7 @@ private:
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
+    mutable Array<uint32, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> backCodeTranslator;
     Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
 

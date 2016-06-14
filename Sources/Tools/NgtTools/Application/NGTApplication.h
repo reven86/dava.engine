@@ -7,6 +7,8 @@
 #include <core_generic_plugin_manager/generic_plugin_manager.hpp>
 #include <core_generic_plugin/interfaces/i_component_context.hpp>
 
+#include <core_ui_framework/i_window.hpp>
+
 class QMainWindow;
 namespace NGTLayer
 {
@@ -17,8 +19,9 @@ public:
     virtual ~BaseApplication();
 
     void LoadPlugins();
-    IComponentContext& GetComponentContext();
+    wgt::IComponentContext& GetComponentContext();
     int StartApplication(QMainWindow* appMainWindow);
+    int StartApplication();
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
@@ -29,11 +32,18 @@ protected:
     {
     }
 
-private:
-    DAVA::WideString GetPluginsFolder() const;
+    virtual bool OnRequestCloseApp()
+    {
+        return true;
+    }
 
 private:
-    GenericPluginManager pluginManager;
+    DAVA::WideString GetPluginsFolder() const;
+    void OnMainWindowTryClose(bool& result);
+    void OnMainWindowClosed();
+
+private:
+    wgt::GenericPluginManager pluginManager;
     NGTCmdLineParser commandLineParser;
 };
 } // namespace NGTLayer

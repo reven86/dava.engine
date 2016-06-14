@@ -14,25 +14,15 @@ struct
 VertexBufferGLES2_t
 : public ResourceImpl<VertexBufferGLES2_t, VertexBuffer::Descriptor>
 {
-    VertexBufferGLES2_t()
-        : size(0)
-        , mappedData(nullptr)
-        , uid(0)
-        , usage(USAGE_DEFAULT)
-        , isMapped(false)
-    {
-    }
-    ~VertexBufferGLES2_t()
-    {
-    }
+    VertexBufferGLES2_t();
 
     bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
     uint32 size;
-    void* mappedData;
     uint32 uid;
     GLenum usage;
+    void* mappedData = nullptr;
     uint32 isMapped : 1;
     uint32 updatePending : 1;
 };
@@ -41,6 +31,17 @@ RHI_IMPL_RESOURCE(VertexBufferGLES2_t, VertexBuffer::Descriptor)
 
 typedef ResourcePool<VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true> VertexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(VertexBufferGLES2_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, true, 3072);
+
+//------------------------------------------------------------------------------
+
+VertexBufferGLES2_t::VertexBufferGLES2_t()
+    : size(0)
+    , uid(0)
+    , usage(USAGE_DEFAULT)
+    , isMapped(0)
+    , updatePending(0)
+{
+}
 
 //------------------------------------------------------------------------------
 
@@ -106,8 +107,11 @@ bool VertexBufferGLES2_t::Create(const VertexBuffer::Descriptor& desc, bool forc
 
 void VertexBufferGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
-    ExecGL(&cmd, 1, force_immediate);
+    if (uid)
+    {
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
+        ExecGL(&cmd, 1, force_immediate);
+    }
 
     if (mappedData)
     {
@@ -189,7 +193,7 @@ void* gles2_VertexBuffer_Map(Handle vb, uint32 offset, uint32 size)
             self->mappedData = ::malloc(self->size);
 
         self->isMapped = true;
-        data = (reinterpret_cast<uint8*>(self->mappedData)) + offset;
+        data = static_cast<uint8*>(self->mappedData) + offset;
     }
 
     return data;
