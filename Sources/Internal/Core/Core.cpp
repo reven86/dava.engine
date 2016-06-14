@@ -319,8 +319,6 @@ void Core::ReleaseSingletons()
 #endif
 
     LocalNotificationController::Instance()->Release();
-    DownloadManager::Instance()->Release();
-    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -338,6 +336,9 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
+
+    packManager.reset();
+    DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
