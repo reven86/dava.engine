@@ -16,7 +16,7 @@
 #define CONFIG_BRANCHES_KEY "branches"
 
 #define CONFIG_LAUNCHER_VERSION_KEY "version"
-#define CONFIG_LAUNCHER_WEBPAGE_KEY "webpage"
+#define CONFIG_LAUNCHER_WEBPAGE_KEY "News"
 #define CONFIG_LAUNCHER_NEWSID_KEY "newsID"
 #define CONFIG_LAUNCHER_FAVORITES_KEY "favorites"
 

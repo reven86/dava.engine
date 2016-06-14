@@ -239,11 +239,12 @@ void UpdateDialog::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAcce
     {
         return;
     }
-    currentDownload->deleteLater();
-    currentDownload = nullptr;
 
     if (accessible == QNetworkAccessManager::NotAccessible)
     {
+        currentDownload->deleteLater();
+        currentDownload = nullptr;
+
         UpdateLastLogValue("Download Fail!");
         BreakLog();
 
