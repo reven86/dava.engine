@@ -41,6 +41,8 @@ struct TypeSelector<sizeof(LONGLONG)>
     using Type = LONGLONG;
 };
 
+void DVMemBarrier();
+
 //atomic increment overloads
 inline CHAR AtomicIncrement(volatile CHAR* value)
 {
@@ -127,7 +129,7 @@ template <typename T>
 T Atomic<T>::Get() const DAVA_NOEXCEPT
 {
     T val = value;
-    MemoryBarrier();
+    Detail::DVMemBarrier();
     return val;
 }
 
