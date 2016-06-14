@@ -71,10 +71,16 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
 
     // FSM variables
     fsmAutoReady = false;
+
+    DownloadManager* dm = DownloadManager::Instance();
+    taskStateChangedSignalId = dm->downloadTaskStateChanged.Connect(Function<void(uint32, DownloadStatus)>(this, &DLC::OnDownloadTaskStateChanged));
 }
 
 DLC::~DLC()
 {
+    DownloadManager* dm = DownloadManager::Instance();
+    dm->downloadTaskStateChanged.Disconnect(taskStateChangedSignalId);
+
     DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }
 
@@ -440,7 +446,31 @@ void DLC::FSM(DLCEvent event)
     }
 }
 
-// start downloading remove DLC version
+void DLC::OnDownloadTaskStateChanged(uint32 id, DownloadStatus status)
+{
+    if (id == dlcContext.remoteVerDownloadId)
+    {
+        StepCheckInfoFinish(id, status);
+    }
+    else if (id == dlcContext.remoteFullSizeDownloadId)
+    {
+        // This task implicitly handled in StepCheckPatchFinish after finishing dlcContext.remoteLiteSizeDownloadId
+    }
+    else if (id == dlcContext.remoteLiteSizeDownloadId)
+    {
+        StepCheckPatchFinish(id, status);
+    }
+    else if (id == dlcContext.remoteMetaDownloadId)
+    {
+        StepCheckMetaFinish(id, status);
+    }
+    else if (id == dlcContext.remotePatchDownloadId)
+    {
+        StepDownloadPatchFinish(id, status);
+    }
+}
+
+// start downloading remote DLC version
 void DLC::StepCheckInfoBegin()
 {
     // write current dlcState into state-file
@@ -459,12 +489,12 @@ void DLC::StepCheckInfoBegin()
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteVerDownloadId = dm->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
 }
 
 // downloading DLC version file finished. need to read removeVersion
-void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckInfoFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteVerDownloadId)
     {
@@ -536,12 +566,12 @@ void DLC::StepCheckPatchBegin()
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckPatchBegin] Retrieving full-patch size from: %s", dlcContext.remotePatchLiteUrl.c_str());
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckPatchBegin] Retrieving lite-patch size from: %s", dlcContext.remotePatchFullUrl.c_str());
 
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckPatchFinish));
-    dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
-    dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteFullSizeDownloadId = dm->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
+    dlcContext.remoteLiteSizeDownloadId = dm->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
 }
 
-void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckPatchFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteLiteSizeDownloadId)
     {
@@ -616,11 +646,12 @@ void DLC::StepCheckMetaBegin()
     Logger::InfoToFile(logsFilePath, "[DLC::StepCheckMetaBegin] Downloading game-meta\n\tfrom: %s\n\tto :%s", dlcContext.remoteMetaUrl.c_str(), dlcContext.remoteMetaStorePath.GetAbsolutePathname().c_str());
 
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckMetaFinish));
-    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
+
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteMetaDownloadId = dm->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
 }
 
-void DLC::StepCheckMetaFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckMetaFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteMetaDownloadId)
     {
@@ -719,12 +750,12 @@ void DLC::StepDownloadPatchBegin()
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
 
-    // start download and notify about download status into StepDownloadPatchFinish
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
-    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+    // start download, notifications are handled in StepDownloadPatchFinish
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
 }
 
-void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remotePatchDownloadId)
     {
@@ -955,7 +986,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         // if we don't do that - we have Empty Patch Error if patching was finished in background and application was closed
         // because in that case StepPatchFinish losts and at application restart DLC follows to patching state.
         File* patchFile = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
-        int32 patchSizeAfterPatching = static_cast<uint32>(patchFile->GetSize());
+        int32 patchSizeAfterPatching = patchFile->GetSize();
         SafeRelease(patchFile);
 
         if (0 == patchSizeAfterPatching)
