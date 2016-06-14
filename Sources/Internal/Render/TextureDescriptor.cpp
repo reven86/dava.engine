@@ -426,8 +426,10 @@ namespace DescriptorFileOperation
 {
 void WriteCompression12(File* file, const TextureDescriptor::Compression& compression)
 {
-    file->Write(&compression.imageFormat);
-    file->Write(&compression.format);
+    uint8 imageFormat = static_cast<uint8>(compression.imageFormat);
+    uint8 format = static_cast<uint8>(compression.format);
+    file->Write(&imageFormat);
+    file->Write(&format);
     file->Write(&compression.compressToWidth);
     file->Write(&compression.compressToHeight);
     file->Write(&compression.sourceFileCrc);
@@ -435,12 +437,16 @@ void WriteCompression12(File* file, const TextureDescriptor::Compression& compre
 }
 void ReadCompression12(File* file, TextureDescriptor::Compression& compression)
 {
-    file->Read(&compression.imageFormat);
-    file->Read(&compression.format);
+    uint8 imageFormat = IMAGE_FORMAT_UNKNOWN;
+    uint8 format = FORMAT_INVALID;
+    file->Read(&imageFormat);
+    file->Read(&format);
     file->Read(&compression.compressToWidth);
     file->Read(&compression.compressToHeight);
     file->Read(&compression.sourceFileCrc);
     file->Read(&compression.convertedFileCrc);
+    compression.imageFormat = static_cast<uint32>(imageFormat);
+    compression.format = static_cast<int32>(format);
 }
 
 String ReadStringDeprecated(File* file)
