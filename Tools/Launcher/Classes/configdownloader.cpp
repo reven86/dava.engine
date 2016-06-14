@@ -25,10 +25,10 @@ int ConfigDownloader::exec()
 {
     aborted = false;
     appManager->GetRemoteConfig()->Clear();
-    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher" //version, url, news
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=seo_list" //stirngs
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches&filter=os:" + platformString // favorites
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds&filter=os:" + platformString //all builds
+    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher" //version, url, news
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list" //stirngs
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString // favorites
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString //all builds
     ;
     for (const QString& str : urls)
     {
