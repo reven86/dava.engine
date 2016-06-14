@@ -571,8 +571,19 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 {
     if (minWindowWidth > 0.0f && minWindowHeight > 0.0f)
     {
-        minmaxInfo->ptMinTrackSize.x = static_cast<LONG>(minWindowWidth);
-        minmaxInfo->ptMinTrackSize.y = static_cast<LONG>(minWindowHeight);
+        DWORD style = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_STYLE));
+        DWORD exStyle = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_EXSTYLE));
+
+        RECT rc = {
+            0, 0,
+            static_cast<LONG>(minWindowWidth),
+            static_cast<LONG>(minWindowHeight)
+        };
+        // dava.engine's clients expect minimum window size for client area not window frame
+        AdjustWindowRectEx(&rc, style, FALSE, exStyle);
+
+        minmaxInfo->ptMinTrackSize.x = rc.right - rc.left;
+        minmaxInfo->ptMinTrackSize.y = rc.bottom - rc.top;
     }
 }
 
