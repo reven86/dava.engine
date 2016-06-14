@@ -1,24 +1,43 @@
-#include "Platform/Qt5/QtLayer.h"
 #include "Core/Core.h"
 
-#include <QApplication>
-#include "MainWindow.h"
+#include "Platform/Qt5/QtLayer.h"
+
+#include "FrameworkMain.h"
+#include "Application.h"
+#include "GLView.h"
+
+#include "NgtTools/Common/GlobalContext.h"
+#include <core_ui_framework/i_ui_framework.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_ui_framework/i_window.hpp>
+#include <core_ui_framework/i_view.hpp>
 
 int main(int argc, char* argv[])
 {
-#if defined(__DAVAENGINE_MACOS__)
+    //helper class which connect Qt openGL and DAVA framework together
+    DAVA::QtLayer qtLayer;
+
+    //DAVA Framework require to launch Core first
     DAVA::Core::Run(argc, argv);
-#elif defined(__DAVAENGINE_WIN32__)
-    DAVA::Core::Run(argc, argv);
-#else
-    static_assert(!"Wrong platform");
-#endif
-    new DAVA::QtLayer();
 
-    QApplication a(argc, argv);
+    int retCode = 0;
+    {
+        //our application wrapper. Here it only load plugins
+        Application a(argc, argv);
+        a.LoadPlugins();
 
-    MainWindow w;
-    w.show();
+        IUIFramework* framework = Context::queryInterface<IUIFramework>();
 
-    return QApplication::exec();
+        IUIApplication* app = Context::queryInterface<IUIApplication>();
+        DVASSERT(app != nullptr);
+
+        std::unique_ptr<IWindow> window = framework->createWindow(":/MainWindow.ui", IUIFramework::ResourceType::File);
+        app->addWindow(*window);
+
+        GLView glView;
+        app->addView(glView);
+        window->show();
+        retCode = app->startApplication();
+    }
+    return retCode;
 }

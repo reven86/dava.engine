@@ -215,15 +215,15 @@ dx11_Texture_Create(const Texture::Descriptor& desc)
 
                 if (desc.format == TEXTURE_FORMAT_R8G8B8A8)
                 {
-                    _SwapRB8(desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
+                    _SwapRB8(desc.initialData[m], desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
                 }
                 else if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
                 {
-                    _SwapRB4(desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
+                    _SwapRB4(desc.initialData[m], desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
                 }
                 else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
                 {
-                    _SwapRB5551(desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
+                    _SwapRB5551(desc.initialData[m], desc.initialData[m], TextureSize(desc.format, desc.width, desc.height, m));
                 }
 
                 useInitialData = true;
@@ -395,15 +395,15 @@ dx11_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
-        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+        _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
     return self->mappedData;
@@ -436,15 +436,15 @@ dx11_Texture_Unmap(Handle tex)
     {
         if (self->format == TEXTURE_FORMAT_R8G8B8A8)
         {
-            _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+            _SwapRB8(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
         }
         else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
         {
-            _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+            _SwapRB4(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
         }
         else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
         {
-            _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+            _SwapRB5551(self->mappedData, self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
         }
 
         uint32 rc_i = 0;

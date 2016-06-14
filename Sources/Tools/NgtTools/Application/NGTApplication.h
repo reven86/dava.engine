@@ -19,8 +19,9 @@ public:
     virtual ~BaseApplication();
 
     void LoadPlugins();
-    IComponentContext& GetComponentContext();
+    wgt::IComponentContext& GetComponentContext();
     int StartApplication(QMainWindow* appMainWindow);
+    int StartApplication();
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
@@ -42,7 +43,7 @@ private:
     void OnMainWindowClosed();
 
 private:
-    GenericPluginManager pluginManager;
+    wgt::GenericPluginManager pluginManager;
     NGTCmdLineParser commandLineParser;
 };
 } // namespace NGTLayer

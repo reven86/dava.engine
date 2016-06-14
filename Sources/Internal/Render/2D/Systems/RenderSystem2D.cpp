@@ -1016,6 +1016,12 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
 
         if (sprite->flags & Sprite::EST_SCALE)
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] * scaleX + x) - frameVertices[frame][0] * scaleX - x;
+                y += AlignToY(frameVertices[frame][1] * scaleY + y) - frameVertices[frame][1] * scaleY - y;
+            }
+
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
                 const Vector2& point = sprite->clipPolygon->GetPoints()[i];
@@ -1024,6 +1030,12 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         }
         else
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] + x) - frameVertices[frame][0] - x;
+                y += AlignToY(frameVertices[frame][1] + y) - frameVertices[frame][1] - y;
+            }
+
             Vector2 pos(x, y);
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
@@ -1054,25 +1066,6 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         }
     }
 
-    if (sprite->clipPolygon)
-    {
-        PushClip();
-        Rect clipRect;
-        if (sprite->flags & Sprite::EST_SCALE)
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x * state->scale.x;
-            float32 coordY = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) * state->scale.x + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) * state->scale.y + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) * state->scale.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) * state->scale.y);
-        }
-        else
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x;
-            float32 coordY = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
-        }
-        IntersectClipRect(clipRect);
-    }
-
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
@@ -1096,11 +1089,6 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         batch.indexPointer = spriteClippedIndecex.data();
     }
     PushBatch(batch);
-
-    if (sprite->clipPolygon)
-    {
-        PopClip();
-    }
 }
 
 void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color)
