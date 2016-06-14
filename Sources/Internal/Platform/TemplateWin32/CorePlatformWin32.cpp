@@ -982,9 +982,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     case WM_ACTIVATE_POSTED:
     {
         ApplicationCore* appCore = core->GetApplicationCore();
-        WORD loWord = LOWORD(wParam);
-        WORD hiWord = HIWORD(wParam);
-        if (!loWord || hiWord)
+
+        int32 activationType = LOWORD(wParam);
+        bool isMinimized = HIWORD(wParam) != 0;
+        if (activationType == WA_INACTIVE)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
             Core::Instance()->FocusLost();
@@ -1004,6 +1005,13 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         }
         else
         {
+            if (isMinimized)
+            {
+                // Force set keyboard focus if window is activated from minimized state
+                // See WM_ACTIVATE on MSDN: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646274(v=vs.85).aspx
+                SetFocus(hWnd);
+            }
+
             Logger::FrameworkDebug("[PlatformWin32] activate application");
 
             //We need to activate high-resolution timer
