@@ -37,6 +37,7 @@ void EndFrame();
 void Clear();
 
 void SetPageSize(uint32 size);
+uint32 GetPageSize();
 }
 }
 

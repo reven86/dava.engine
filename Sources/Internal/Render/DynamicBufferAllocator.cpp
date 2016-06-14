@@ -8,7 +8,7 @@ namespace DynamicBufferAllocator
 {
 namespace //for private members
 {
-uint32 pageSize = DEFAULT_PAGE_SIZE;
+uint32 actualPageSize = DEFAULT_PAGE_SIZE;
 
 template <class HBuffer>
 class BufferProxy
@@ -92,34 +92,43 @@ struct BufferAllocator
     {
         DVASSERT(size);
 
-        uint32 requiredSize = (size * count);
-        if (requiredSize > pageSize)
-        {
-            count = pageSize / size;
-            requiredSize = size * count;
-        }
-
+        uint32 requiredSize = size * count;
         uint32 base = ((currentlyUsedSize + size - 1) / size);
         uint32 offset = base * size;
-        //cant fit - start new
+
+        // cant fit - start new
         if ((!currentlyMappedBuffer) || ((offset + requiredSize) > currentlyMappedBuffer->allocatedSize))
         {
-            if (currentlyMappedBuffer) //unmap it
+            if (currentlyMappedBuffer) // unmap it
             {
                 buffersToUnmap.push_back(currentlyMappedBuffer);
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
-            if (freeBuffers.size())
+
+            // find first free buffer with capacity not less than actual page size
+            auto bufferInfoIterator = std::find_if(freeBuffers.begin(), freeBuffers.end(), [](BufferInfo* info)
+                                                   {
+                                                       return info->allocatedSize >= actualPageSize;
+                                                   });
+
+            // and create new one, if such buffer could not be found
+            if (bufferInfoIterator == freeBuffers.end())
             {
-                currentlyMappedBuffer = *freeBuffers.begin();
-                freeBuffers.pop_front();
+                currentlyMappedBuffer = new BufferInfo();
+                currentlyMappedBuffer->allocatedSize = actualPageSize;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(actualPageSize);
             }
             else
             {
-                currentlyMappedBuffer = new BufferInfo();
-                currentlyMappedBuffer->allocatedSize = pageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
+                currentlyMappedBuffer = *bufferInfoIterator;
+                freeBuffers.erase(bufferInfoIterator);
             }
+
+            if (requiredSize > currentlyMappedBuffer->allocatedSize)
+            {
+                count = currentlyMappedBuffer->allocatedSize / size;
+            }
+
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
             offset = 0;
@@ -199,9 +208,9 @@ private:
     BufferInfo* currentlyMappedBuffer = nullptr;
     uint8* currentlyMappedData = nullptr;
     uint32 currentlyUsedSize = 0;
-    List<BufferInfo*> freeBuffers;
-    List<BufferInfo*> usedBuffers;
-    List<BufferInfo*> buffersToUnmap;
+    Vector<BufferInfo*> freeBuffers;
+    Vector<BufferInfo*> usedBuffers;
+    Vector<BufferInfo*> buffersToUnmap;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
@@ -304,12 +313,15 @@ void Clear()
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
+
 void SetPageSize(uint32 size)
 {
-    pageSize = size;
+    actualPageSize = size;
+}
 
-    vertexBufferAllocator.Clear();
-    indexBufferAllocator.Clear();
+uint32 GetPageSize()
+{
+    return actualPageSize;
 }
 }
 }
