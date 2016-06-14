@@ -545,6 +545,7 @@ void Core::SystemAppFinished()
 {
     Logger::Info("Core::SystemAppFinished in");
 
+    systemAppFinished.Emit();
     if (core != nullptr)
     {
         #if TRACER_ENABLED
@@ -676,6 +677,7 @@ void Core::SystemProcessFrame()
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        updated.Emit(frameDelta);
         core->Update(frameDelta);
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
 

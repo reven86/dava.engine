@@ -131,6 +131,8 @@ public:
     void Save(const FilePath& filePathname) const;
     void Export(const FilePath& filePathname, eGPUFamily forGPU) const;
 
+    void OverridePathName(const FilePath& filename);
+
     bool IsCompressedTextureActual(eGPUFamily forGPU) const;
     bool HasCompressionFor(eGPUFamily forGPU) const;
     bool UpdateCrcForFormat(eGPUFamily forGPU) const;

@@ -19,7 +19,7 @@ public:
     virtual ~BaseApplication();
 
     void LoadPlugins();
-    IComponentContext& GetComponentContext();
+    wgt::IComponentContext& GetComponentContext();
     int StartApplication(QMainWindow* appMainWindow);
     int StartApplication();
 
@@ -43,7 +43,7 @@ private:
     void OnMainWindowClosed();
 
 private:
-    GenericPluginManager pluginManager;
+    wgt::GenericPluginManager pluginManager;
     NGTCmdLineParser commandLineParser;
 };
 } // namespace NGTLayer

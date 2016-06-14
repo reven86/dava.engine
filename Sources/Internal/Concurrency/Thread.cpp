@@ -10,6 +10,7 @@
 namespace DAVA
 {
 Thread::Id Thread::mainThreadId;
+const char* Thread::davaMainThreadName = "DAVA Engine Main Thread";
 
 ConcurrentObject<Set<Thread*>>& GetThreadList()
 {
@@ -20,6 +21,7 @@ ConcurrentObject<Set<Thread*>>& GetThreadList()
 void Thread::InitMainThread()
 {
     mainThreadId = GetCurrentId();
+    Thread::SetCurrentThreadName(davaMainThreadName);
 }
 
 bool Thread::IsMainThread()

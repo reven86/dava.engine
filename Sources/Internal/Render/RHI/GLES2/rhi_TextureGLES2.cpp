@@ -32,13 +32,14 @@ public:
     unsigned width;
     unsigned height;
     TextureFormat format;
-    void* mappedData;
     uint32 mappedLevel;
     GLenum mappedFace;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
     uint32 isCubeMap : 1;
     uint32 isRenderTarget : 1;
     uint32 isRenderBuffer : 1;
-    uint32 isMapped : 1;
 
     struct
     fbo_t
@@ -67,11 +68,11 @@ TextureGLES2_t::TextureGLES2_t()
     , fbo(0)
     , width(0)
     , height(0)
+    , isMapped(0)
+    , updatePending(0)
     , isCubeMap(false)
     , isRenderTarget(false)
     , isRenderBuffer(false)
-    , mappedData(nullptr)
-    , isMapped(false)
     , forceSetSamplerState(true)
 {
 }
@@ -210,9 +211,9 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                             cmd->arg[10] = compressed;
 
                             if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(data, data_sz);
+                                _FlipRGBA4_ABGR4(data, data, data_sz);
                             else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(data, data_sz);
+                                _RGBA5551toABGR1555(data, data, data_sz);
 
                             ++cmd2_cnt;
                         }
@@ -399,7 +400,7 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
     DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
 
-    self->mappedData = ::realloc(self->mappedData, data_sz);
+    self->mappedData = reinterpret_cast<uint8*>(::realloc(self->mappedData, data_sz));
 
     if (self->mappedData)
     {
@@ -453,11 +454,11 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, data_sz);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, data_sz);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _ABGR1555toRGBA5551(self->mappedData, data_sz);
+        _ABGR1555toRGBA5551(self->mappedData, self->mappedData, data_sz);
     }
 
     return data;
@@ -481,11 +482,11 @@ gles2_Texture_Unmap(Handle tex)
     DVASSERT(self->isMapped);
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, textureDataSize);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, textureDataSize);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _RGBA5551toABGR1555(self->mappedData, textureDataSize);
+        _RGBA5551toABGR1555(self->mappedData, self->mappedData, textureDataSize);
     }
 
     GLenum ttarget = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;

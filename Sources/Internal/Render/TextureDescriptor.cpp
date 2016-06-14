@@ -458,6 +458,13 @@ String ReadStringDeprecated(File* file)
     file->Read(extStr.data(), length);
     return String(extStr.data(), length);
 }
+
+}
+
+void TextureDescriptor::OverridePathName(const FilePath& filename)
+{
+    pathname = filename;
+    dataSettings.sourceFileExtension = filename.GetExtension();
 }
 
 void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eGPUFamily forGPU) const

@@ -59,19 +59,16 @@ void Thread::Start()
     }
 }
 
-unsigned __stdcall ThreadFunc(void* param)
+void Thread::SetCurrentThreadName(const String& str)
 {
-#if defined(__DAVAENGINE_DEBUG__)
     /*
-     inside that ifdef we set thread name through raising speciefic exception.
-     https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-     */
-
-    Thread* t = static_cast<Thread*>(param);
+        inside that ifdef we set thread name through raising speciefic exception.
+        https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+    */
 
     THREADNAME_INFO info;
     info.dwType = 0x1000;
-    info.szName = t->name.c_str();
+    info.szName = str.c_str();
     info.dwThreadID = ::GetCurrentThreadId();
     info.dwFlags = 0;
 
@@ -82,7 +79,12 @@ unsigned __stdcall ThreadFunc(void* param)
     __except (EXCEPTION_CONTINUE_EXECUTION)
     {
     }
-#endif
+}
+
+unsigned __stdcall ThreadFunc(void* param)
+{
+    Thread* t = static_cast<Thread*>(param);
+    Thread::SetCurrentThreadName(t->name);
 
     Thread::ThreadFunction(param);
     return 0;
