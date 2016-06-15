@@ -9,7 +9,10 @@
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Private/OsX/WindowOsX.h"
 #else
-#error "PlatformWindow is not implemented yet"
+#if defined(__DAVAENGINE_COREV2__)
+// Do not emit error when building with old core implementation
+#error "PlatformWindow is not implemented"
+#endif
 #endif
 
 #endif // __DAVAENGINE_COREV2__

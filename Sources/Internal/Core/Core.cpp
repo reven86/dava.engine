@@ -977,4 +977,4 @@ PackManager& Core::GetPackManager()
 
 } // namespace DAVA
 
-#endif !__DAVAENGINE_COREV2__
+#endif //!__DAVAENGINE_COREV2__

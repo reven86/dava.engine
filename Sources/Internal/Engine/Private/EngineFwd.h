@@ -34,7 +34,10 @@ using PlatformCore = CoreOsX;
 class WindowOsX;
 using NativeWindow = WindowOsX;
 #else
+#if defined(__DAVAENGINE_COREV2__)
+// Do not emit error when building with old core implementation 
 #error "Platform is not implemented"
+#endif
 #endif
 
 } // namespace Private

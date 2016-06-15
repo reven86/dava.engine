@@ -1,6 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Public/AppContext.h"
+#include "Job/JobManager.h"
 
 namespace DAVA
 {

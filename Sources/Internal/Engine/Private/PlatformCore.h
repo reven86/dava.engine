@@ -9,7 +9,10 @@
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Private/OsX/CoreOsX.h"
 #else
-#error "PlatformCore is not implemented yet"
+#if defined(__DAVAENGINE_COREV2__)
+// Do not emit error when building with old core implementation
+#error "PlatformCore is not implemented"
+#endif
 #endif
 
 #endif // __DAVAENGINE_COREV2__
