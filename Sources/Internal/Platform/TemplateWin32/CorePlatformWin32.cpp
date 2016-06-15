@@ -183,14 +183,14 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // calculate window area
     RECT workArea;
     SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
-    int32 workWigth = workArea.right - workArea.left;
+    int32 workWidth = workArea.right - workArea.left;
     int32 workHeight = workArea.bottom - workArea.top;
     // calculate border
     RECT borderRect = { 0, 0, 0, 0 };
     AdjustWindowRect(&borderRect, style, 0);
-    int32 borderWigth = borderRect.right - borderRect.left;
+    int32 borderWidth = borderRect.right - borderRect.left;
     int32 borderHeight = borderRect.bottom - borderRect.top;
-    int32 maxWigth = workWigth - borderWigth;
+    int32 maxWidth = workWidth - borderWidth;
     int32 maxHeight = workHeight - borderHeight;
 
     if (options)
@@ -200,9 +200,9 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         windowedMode.bpp = options->GetInt32("bpp");
 
         //check windowed sizes
-        if (windowedMode.width > maxWigth)
+        if (windowedMode.width > maxWidth)
         {
-            windowedMode.width = maxWigth;
+            windowedMode.width = maxWidth;
         }
         if (windowedMode.height > maxHeight)
         {
@@ -240,7 +240,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         realWidth = clientSize.right - clientSize.left;
         realHeight = clientSize.bottom - clientSize.top;
 
-        windowLeft = (workWigth - realWidth) / 2 + workArea.left;
+        windowLeft = (workWidth - realWidth) / 2 + workArea.left;
         windowTop = (workHeight - realHeight) / 2 + workArea.top;
 
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
