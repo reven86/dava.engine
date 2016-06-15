@@ -986,7 +986,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         // if we don't do that - we have Empty Patch Error if patching was finished in background and application was closed
         // because in that case StepPatchFinish losts and at application restart DLC follows to patching state.
         File* patchFile = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
-        int32 patchSizeAfterPatching = patchFile->GetSize();
+        int32 patchSizeAfterPatching = static_cast<int32>(patchFile->GetSize());
         SafeRelease(patchFile);
 
         if (0 == patchSizeAfterPatching)
