@@ -1,5 +1,8 @@
 #include "processwrapper.h"
 #include "filesystemhelper.h"
+
+#include "QtTools/Utils/Utils.h"
+
 #include <QProgressDialog>
 #include <QTimer>
 #include <QRegularExpression>
@@ -72,25 +75,7 @@ void ProcessWrapper::OpenFolderInExplorer(const QString& folder)
         return;
     }
     QString path = fileInfo.canonicalFilePath();
-#ifdef Q_OS_MAC
-    QStringList args;
-    args << "-e";
-    args << "tell application \"Finder\"";
-    args << "-e";
-    args << "activate";
-    args << "-e";
-    args << "select POSIX file \"" + path + "\"";
-    args << "-e";
-    args << "end tell";
-    QProcess::startDetached("osascript", args);
-#endif
-#ifdef Q_OS_WIN
-    QString param;
-    param = QLatin1String("/select,");
-    param += QDir::toNativeSeparators(path);
-    QString command = QString("explorer") + " " + param;
-    QProcess::startDetached(command);
-#endif
+    ShowFileInExplorer(path);
 }
 
 void ProcessWrapper::BlockingStopAllTasks()

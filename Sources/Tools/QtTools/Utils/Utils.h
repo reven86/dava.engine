@@ -18,3 +18,5 @@ extern QPixmap CreateIconFromColor(const QColor& color);
 extern DAVA::Color QColorToColor(const QColor& qtColor);
 
 extern QColor ColorToQColor(const DAVA::Color& davaColor);
+
+void ShowFileInExplorer(const QString& path);
