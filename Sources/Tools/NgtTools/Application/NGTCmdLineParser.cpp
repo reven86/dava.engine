@@ -83,7 +83,7 @@ std::wstring NGTCmdLineParser::getParamStrW(const char* arg) const
 
 void NGTCmdLineParser::addParam(std::string&& key, std::string&& value)
 {
-    additionalParams.emplace_back(std::move(key), std::move(value));
+    additionalParams.emplace(std::move(key), std::move(value));
 }
 
 } // namespace NGTLayer

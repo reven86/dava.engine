@@ -3,6 +3,8 @@
 #include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
 #include <core_dependency_system/i_interface.hpp>
 
+#include <map>
+
 namespace NGTLayer
 {
 class NGTCmdLineParser
@@ -25,6 +27,6 @@ private:
     int m_argc;
     char** m_argv;
 
-    std::vector<std::pair<std::string, std::string>> additionalParams;
+    std::map<std::string, std::string> additionalParams;
 };
 } // namespace NGTLayer
