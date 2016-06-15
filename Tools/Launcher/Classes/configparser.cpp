@@ -270,7 +270,7 @@ ConfigParser::ConfigParser()
 
 void ConfigParser::Clear()
 {
-    launcherVersion.clear();
+    launcherVersion = LAUNCHER_VER;
     launcherURL.clear();
     webPageURL.clear();
     remoteConfigURL.clear();

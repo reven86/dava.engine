@@ -61,8 +61,11 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     localConfig.SaveToFile(localConfigFilePath);
 }
 
-QString ApplicationManager::GetApplicationDirectory(const QString& branchID, const QString& appID, bool mustExists) const
+QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
 {
+    QRegularExpression spaceRegex("\\s+");
+    branchID.replace(spaceRegex, "");
+    appID.replace(spaceRegex, "");
     QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
     if (QFile::exists(runPath))
     {

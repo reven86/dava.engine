@@ -33,11 +33,23 @@ protected:
     /**
      \brief Main downloading operation. Should call SaveData to store data.
      \param[in] url - destination file Url
+     \param[in] downloadOffset - offset to download from, used together with contentSize parameter
+     \param[in] downloadSize - size in bytes to download starting from downloadOffset; if downloadSize is zero then download full content
      \param[in] savePath - path to save location of remote file
      \param[in] partsCount - quantity of download threads
      \param[in] timeout - operation timeout
      */
-    DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout) override;
+    DownloadError Download(const String& url, uint64 downloadOffset, uint64 downloadSize, const FilePath& savePath, uint8 partsCount, int32 timeout) override;
+
+    DownloadError DownloadIntoBuffer(const String& url,
+                                     uint64 downloadOffset,
+                                     uint64 downloadSize,
+                                     void* buffer,
+                                     uint32 bufSize,
+                                     uint8 partsCount,
+                                     int32 timeout,
+                                     uint32* nread) override;
+
     /**
      \brief Sets maximum allowed download speed. -1 means unlimited.
      \param[in] limit - speed limit in bytes per second.
