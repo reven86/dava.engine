@@ -187,20 +187,22 @@ protected:
 
     void FSM(DLCEvent event);
 
+    void OnDownloadTaskStateChanged(uint32 id, DownloadStatus status);
+
     void StepCheckInfoBegin();
-    void StepCheckInfoFinish(const uint32& id, const DownloadStatus& status);
+    void StepCheckInfoFinish(uint32 id, DownloadStatus status);
     void StepCheckInfoCancel();
 
     void StepCheckPatchBegin();
-    void StepCheckPatchFinish(const uint32& id, const DownloadStatus& status);
+    void StepCheckPatchFinish(uint32 id, DownloadStatus status);
     void StepCheckPatchCancel();
 
     void StepCheckMetaBegin();
-    void StepCheckMetaFinish(const uint32& id, const DownloadStatus& status);
+    void StepCheckMetaFinish(uint32 id, DownloadStatus status);
     void StepCheckMetaCancel();
 
     void StepDownloadPatchBegin();
-    void StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status);
+    void StepDownloadPatchFinish(uint32 id, DownloadStatus status);
     void StepDownloadPatchCancel();
 
     void StepPatchBegin();
@@ -217,6 +219,8 @@ protected:
     bool WriteUint32(const FilePath& path, uint32 value);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
+
+    size_t taskStateChangedSignalId = 0;
 };
 }
 

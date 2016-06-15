@@ -321,8 +321,6 @@ void Core::ReleaseSingletons()
 #endif
 
     LocalNotificationController::Instance()->Release();
-    DownloadManager::Instance()->Release();
-    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -340,6 +338,9 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
+
+    packManager.reset();
+    DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -547,6 +548,7 @@ void Core::SystemAppFinished()
 {
     Logger::Info("Core::SystemAppFinished in");
 
+    systemAppFinished.Emit();
     if (core != nullptr)
     {
         #if TRACER_ENABLED
@@ -678,6 +680,7 @@ void Core::SystemProcessFrame()
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        updated.Emit(frameDelta);
         core->Update(frameDelta);
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
 

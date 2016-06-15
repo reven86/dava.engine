@@ -4,6 +4,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include <thread>
 
 #include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
@@ -329,22 +330,16 @@ void CoreWin32Platform::Run()
 
         SystemProcessFrame();
 
-        uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-        int32 sleepMs = 1;
-
         int32 fps = Renderer::GetDesiredFPS();
         if (fps > 0)
         {
-            sleepMs = (1000 / fps) - elapsedTime;
-            if (sleepMs < 1)
+            int32 elapsedTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = (1000 / fps) - elapsedTime;
+            if (sleepMs > 0)
             {
-                sleepMs = 1;
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
             }
         }
-
-        TRACE_BEGIN_EVENT(11, "core", "Sleep");
-        Sleep(sleepMs);
-        TRACE_END_EVENT(11, "core", "Sleep");
 
         if (willQuit)
         {
@@ -577,8 +572,19 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 {
     if (minWindowWidth > 0.0f && minWindowHeight > 0.0f)
     {
-        minmaxInfo->ptMinTrackSize.x = static_cast<LONG>(minWindowWidth);
-        minmaxInfo->ptMinTrackSize.y = static_cast<LONG>(minWindowHeight);
+        DWORD style = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_STYLE));
+        DWORD exStyle = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_EXSTYLE));
+
+        RECT rc = {
+            0, 0,
+            static_cast<LONG>(minWindowWidth),
+            static_cast<LONG>(minWindowHeight)
+        };
+        // dava.engine's clients expect minimum window size for client area not window frame
+        AdjustWindowRectEx(&rc, style, FALSE, exStyle);
+
+        minmaxInfo->ptMinTrackSize.x = rc.right - rc.left;
+        minmaxInfo->ptMinTrackSize.y = rc.bottom - rc.top;
     }
 }
 
@@ -870,7 +876,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
-
         keyboard.OnKeyUnpressed(ev.key);
         // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
         return 0;
@@ -922,6 +927,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
         }
+        ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
@@ -988,9 +994,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     case WM_ACTIVATE_POSTED:
     {
         ApplicationCore* appCore = core->GetApplicationCore();
-        WORD loWord = LOWORD(wParam);
-        WORD hiWord = HIWORD(wParam);
-        if (!loWord || hiWord)
+
+        int32 activationType = LOWORD(wParam);
+        bool isMinimized = HIWORD(wParam) != 0;
+        if (activationType == WA_INACTIVE)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
             Core::Instance()->FocusLost();
@@ -1010,6 +1017,13 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         }
         else
         {
+            if (isMinimized)
+            {
+                // Force set keyboard focus if window is activated from minimized state
+                // See WM_ACTIVATE on MSDN: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646274(v=vs.85).aspx
+                SetFocus(hWnd);
+            }
+
             Logger::FrameworkDebug("[PlatformWin32] activate application");
 
             //We need to activate high-resolution timer

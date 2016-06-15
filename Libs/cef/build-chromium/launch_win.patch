@@ -1,0 +1,30 @@
+
+---
+ base/process/launch_win.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git launch_win.cc launch_win.cc
+index 54b0667..c6ce7ff 100644
+--- launch_win.cc
++++ launch_win.cc
+@@ -96,7 +96,7 @@ bool GetAppOutputInternal(const StringPiece16& cl,
+                      &writable_command_line_string[0],
+                      NULL, NULL,
+                      TRUE,  // Handles are inherited.
+-                     0, NULL, NULL, &start_info, &temp_process_info)) {
++                     CREATE_NO_WINDOW, NULL, NULL, &start_info, &temp_process_info)) {
+     NOTREACHED() << "Failed to start process";
+     return false;
+   }
+@@ -279,6 +279,8 @@ Process LaunchProcess(const string16& cmdline,
+   if (options.force_breakaway_from_job_)
+     flags |= CREATE_BREAKAWAY_FROM_JOB;
+ 
++  flags |= CREATE_NO_WINDOW;
++
+   PROCESS_INFORMATION temp_process_info = {};
+ 
+   string16 writable_cmdline(cmdline);
+-- 
+1.9.5.msysgit.0
+

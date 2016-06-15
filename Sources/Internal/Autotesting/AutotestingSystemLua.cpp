@@ -334,7 +334,7 @@ void AutotestingSystemLua::Update(float32 timeElapsed)
 
 float32 AutotestingSystemLua::GetTimeElapsed()
 {
-    return SystemTimer::FrameDelta();
+    return SystemTimer::RealFrameDelta();
 }
 
 void AutotestingSystemLua::OnError(const String& errorMessage)

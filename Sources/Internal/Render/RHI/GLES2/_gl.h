@@ -11,6 +11,8 @@
     
     #define GetGLErrorString gluErrorString
 
+    #include "win_gl.h"
+
 #elif defined(__DAVAENGINE_MACOS__)
 
     #include <Carbon/Carbon.h>

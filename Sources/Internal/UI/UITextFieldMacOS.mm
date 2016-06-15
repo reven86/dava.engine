@@ -1694,7 +1694,7 @@ doCommandBySelector:(SEL)commandSelector
     {
         return true;
     }
-    return (delegate->text->ctrl->davaText == UIControlSystem::Instance()->GetFocusedControl()) && delegate->text->ctrl->davaText->IsEditing();
+    return (delegate->text->ctrl->davaText == DAVA::UIControlSystem::Instance()->GetFocusedControl()) && delegate->text->ctrl->davaText->IsEditing();
 }
 
 - (void)mouseUp:(NSEvent*)theEvent
