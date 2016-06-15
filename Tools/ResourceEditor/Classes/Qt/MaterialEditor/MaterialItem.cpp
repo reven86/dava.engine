@@ -1,36 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <QSet>
 #include <QPainter>
 #include <QImage>
 #include <QDebug>
+#include <QPalette>
 #include <QApplication>
 
 #include "MaterialItem.h"
@@ -77,6 +49,38 @@ QVariant MaterialItem::data(int role) const
         const_cast<MaterialItem*>(this)->requestPreview();
         ret = QStandardItem::data(role);
         break;
+    case Qt::BackgroundRole:
+    {
+        if (GetFlag(MaterialItem::IS_MARK_FOR_DELETE))
+        {
+            ret = QBrush(QColor(255, 0, 0, 20));
+        }
+        else if (GetMaterial()->GetConfigCount() > 1)
+        {
+            ret = QBrush(QColor(0, 0, 255, 40));
+        }
+    }
+    break;
+    case Qt::ForegroundRole:
+    {
+        ret = QStandardItem::data(role);
+        if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+        {
+            ret = QVariant::fromValue(qApp->palette().brush(QPalette::Highlight));
+        }
+    }
+    break;
+    case Qt::FontRole:
+    {
+        ret = QStandardItem::data(role);
+        if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
+        {
+            QFont font = ret.value<QFont>();
+            font.setBold(true);
+            ret = font;
+        }
+    }
+    break;
     default:
         ret = QStandardItem::data(role);
         break;

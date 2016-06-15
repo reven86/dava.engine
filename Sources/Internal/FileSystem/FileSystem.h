@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_FILESYSTEM_H__
 #define __DAVAENGINE_FILESYSTEM_H__
 
@@ -34,16 +5,13 @@
 #include "Base/Singleton.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/ResourceArchive.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/ZipFile.h"
-#endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
  */
 namespace DAVA
 {
-class ResourceArchive;
 /**
 	\ingroup filesystem
 	\brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
@@ -90,6 +58,14 @@ public:
 	*/
     virtual uint32 DeleteDirectoryFiles(const FilePath& path, bool isRecursive = false);
 
+    /*
+        \brief Enumerate all files in specific directory
+        \param[in] path full path to the directory you want to enumerate
+        \param[in] isRecursive if true go into child directories and enumarate files there also, true by default
+        \returns list of files
+    */
+    virtual Vector<FilePath> EnumerateFilesInDirectory(const FilePath& path, bool isRecursive = true);
+
     enum eCreateDirectoryResult
     {
         DIRECTORY_CANT_CREATE = 0,
@@ -98,7 +74,8 @@ public:
     };
     /**
 		\brief Function to create directory at filePath you've requested
-		\param[in] filepath where you want to create a directory
+		\param[in] filePath where you want to create a directory
+        \param[in] isRecursive create requiried 
 		\returns true if directory created successfully
 	 */
     virtual eCreateDirectoryResult CreateDirectory(const FilePath& filePath, bool isRecursive = false);
@@ -209,7 +186,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+    virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
         \brief Read whole file contents into new buffer. 
@@ -229,13 +206,24 @@ public:
      */
     String ReadFileContents(const FilePath& pathname);
 
+    bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
+
     /**
 		\brief Function to attach ResourceArchive to filesystem
 	
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
+
+        can throw std::runtime_exception in case of error
 	*/
-    virtual void AttachArchive(const String& archiveName, const String& attachPath);
+    virtual void Mount(const FilePath& archiveName, const String& attachPath);
+
+    /**
+    \brief Function to detach ResourceArchive from filesystem
+
+    \param[in] archiveName pathname or local filename of archive we want to attach
+    */
+    virtual void Unmount(const FilePath& arhiveName);
 
     /**
 	 \brief Invokes the command processor to execute a command
@@ -273,6 +261,11 @@ public:
      */
     bool Exists(const FilePath& filePath) const;
 
+    /**
+    \brief Copies one folder into another recursively
+    */
+    bool RecursiveCopy(const FilePath& src, const FilePath& dst);
+
 private:
     bool HasLineEnding(File* f);
 
@@ -283,8 +276,17 @@ private:
 
     struct ResourceArchiveItem
     {
-        ResourceArchive* archive;
+        ResourceArchiveItem() = default;
+        ResourceArchiveItem(ResourceArchiveItem&& other)
+            : archive(std::move(other.archive))
+            , attachPath(std::move(other.attachPath))
+            , archiveFilePath(std::move(other.archiveFilePath))
+        {
+        }
+
+        std::unique_ptr<ResourceArchive> archive;
         String attachPath;
+        FilePath archiveFilePath;
     };
 
     List<ResourceArchiveItem> resourceArchiveList;
@@ -292,8 +294,6 @@ private:
 
     friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-    friend class ZipFile;
-
 public:
     void Init();
 

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UI_BUTTON_H__
 #define __DAVAENGINE_UI_BUTTON_H__
 
@@ -61,9 +32,9 @@ public:
      */
     UIButton(const Rect& rect = Rect());
 
-    virtual void SetRect(const Rect& rect);
+    void SetRect(const Rect& rect) override;
 
-    virtual void SetSize(const Vector2& newSize);
+    void SetSize(const Vector2& newSize) override;
 
     /**
      \brief Returns Sprite used for draw requested state in the UIControlBackground object.
@@ -176,12 +147,12 @@ public:
     /**
      \brief This method is invalid for the UIButton. Don't try to call this method.
      */
-    virtual void SetBackground(UIControlBackground* newBg);
+    void SetBackground(UIControlBackground* newBg) override;
     /**
      \brief Returns UIControlBackground object actual for the current button state.
      \returns background used currently for draw.
      */
-    virtual UIControlBackground* GetBackground() const;
+    UIControlBackground* GetBackground() const override;
 
     /**
      \brief Sets background what will be used for draw of the requested states.
@@ -285,17 +256,14 @@ public:
      */
     virtual void SetStateTextControl(int32 state, UIStaticText* textControl);
 
-    virtual void Input(UIEvent* currentInput);
+    void Input(UIEvent* currentInput) override;
 
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
-    virtual void Draw(const UIGeometricData& geometricData);
+    void SystemDraw(const UIGeometricData& geometricData) override; // Internal method used by ControlSystem
+    void Draw(const UIGeometricData& geometricData) override;
 
-    virtual void SetParentColor(const Color& parentColor);
-    virtual UIButton* Clone();
-    virtual void CopyDataFrom(UIControl* srcControl);
-
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
+    void SetParentColor(const Color& parentColor) override;
+    UIButton* Clone() override;
+    void CopyDataFrom(UIControl* srcControl) override;
 
     /**
      \brief Creates the background for the UIButton for particular state and caches it.
@@ -374,22 +342,22 @@ private:
     void UpdateStateTextControlSize();
 
 public:
-    virtual int32 GetBackgroundComponentsCount() const;
-    virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
-    virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
-    virtual void SetBackgroundComponent(int32 index, UIControlBackground* bg);
-    virtual String GetBackgroundComponentName(int32 index) const;
+    int32 GetBackgroundComponentsCount() const override;
+    UIControlBackground* GetBackgroundComponent(int32 index) const override;
+    UIControlBackground* CreateBackgroundComponent(int32 index) const override;
+    void SetBackgroundComponent(int32 index, UIControlBackground* bg) override;
+    String GetBackgroundComponentName(int32 index) const override;
 
-    virtual int32 GetInternalControlsCount() const;
-    virtual UIControl* GetInternalControl(int32 index) const;
-    virtual UIControl* CreateInternalControl(int32 index) const;
-    virtual void SetInternalControl(int32 index, UIControl* control);
-    virtual String GetInternalControlName(int32 index) const;
-    virtual String GetInternalControlDescriptions() const;
+    int32 GetInternalControlsCount() const override;
+    UIControl* GetInternalControl(int32 index) const override;
+    UIControl* CreateInternalControl(int32 index) const override;
+    void SetInternalControl(int32 index, UIControl* control) override;
+    String GetInternalControlName(int32 index) const override;
+    String GetInternalControlDescriptions() const override;
 
     INTROSPECTION_EXTEND(UIButton, UIControl,
                          nullptr
-                         );
+                         )
 };
 };
 

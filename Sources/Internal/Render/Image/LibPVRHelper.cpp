@@ -1,36 +1,7 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/Platform.h"
 
 #include "Render/Texture.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
@@ -89,8 +60,6 @@ bool IsCompressedFormat(PixelFormat format)
     default:
         return false;
     }
-
-    return false;
 }
 }
 
@@ -103,7 +72,7 @@ PVRFile::PVRFile()
 
 PVRFile::~PVRFile()
 {
-    uint32 count = (uint32)metaDatablocks.size();
+    uint32 count = uint32(metaDatablocks.size());
     for (uint32 i = 0; i < count; ++i)
     {
         metaDatablocks[i]->Data = nullptr; //it is stored at this->metaData
@@ -119,14 +88,19 @@ PVRFile::~PVRFile()
 const uint32 PVRTEX3_METADATAIDENT = 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_PVR, // image format type
+      "PVR", // image format name
+      { ".pvr" }, // image format extension
+      {}) // supported pixel formats
 {
-    name.assign("PVR");
-    supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
+bool LibPVRHelper::CanProcessFile(const ScopedPtr<File>& file) const
 {
     bool isPvrFile = false;
+
+    DVASSERT(file);
 
     file->Seek(0, File::SEEK_FROM_START);
     PVRFile* pvrFile = ReadFile(file, false, false);
@@ -139,19 +113,13 @@ bool LibPVRHelper::CanProcessFile(DAVA::File* file) const
     return isPvrFile;
 }
 
-eErrorCode LibPVRHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 fromMipmap) const
+eErrorCode LibPVRHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
-    PVRFile* pvrFile = ReadFile(infile, true, true);
-    if (pvrFile != nullptr)
+    if (LoadImages(infile, imageSet, loadingParams))
     {
-        bool loaded = LoadImages(pvrFile, imageSet, fromMipmap);
-        delete pvrFile;
-
-        if (loaded)
-        {
-            return eErrorCode::SUCCESS;
-        }
+        return eErrorCode::SUCCESS;
     }
+
     return eErrorCode::ERROR_READ_FAIL;
 }
 
@@ -169,7 +137,7 @@ eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo LibPVRHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
     ImageInfo info;
 
@@ -181,6 +149,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
         info.format = GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
+        info.faceCount = pvrFile->header.u32NumFaces;
 
         delete pvrFile;
     }
@@ -226,10 +195,10 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     crcMetaData->Data = pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET;
     pvrFile->metaDatablocks.push_back(crcMetaData);
 
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
-    *((uint32*)(pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = CRC32::ForFile(filePathname);
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_FOURCC_OFFSET)) = crcMetaData->DevFOURCC;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_KEY_OFFSET)) = crcMetaData->u32Key;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_DATASIZE_OFFSET)) = crcMetaData->u32DataSize;
+    *(reinterpret_cast<uint32*>(pvrFile->metaData + oldMetaDataSize + METADATA_DATA_OFFSET)) = CRC32::ForFile(filePathname);
 
     bool written = false;
 
@@ -391,16 +360,30 @@ PVRFile* LibPVRHelper::ReadFile(File* file, bool readMetaData /*= false*/, bool 
     return pvrFile;
 }
 
-bool LibPVRHelper::LoadImages(const PVRFile* pvrFile, Vector<Image*>& imageSet, int32 fromMipMap)
+bool LibPVRHelper::LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams)
 {
+    PVRFile* pvrFile = ReadFile(infile, true, true);
+    SCOPE_EXIT
+    {
+        DAVA::SafeDelete(pvrFile);
+    };
+
     if (nullptr == pvrFile || pvrFile->compressedData == NULL)
     {
         return false;
     }
 
-    const uint32& mipmapLevelCount = pvrFile->header.u32MIPMapCount;
+    PixelFormat pxFormat = GetTextureFormat(pvrFile->header);
+    if (pvrFile->header.u32Height != pvrFile->header.u32Width && (pxFormat == FORMAT_PVR2 || pxFormat == FORMAT_PVR4))
+    {
+        Logger::Error("[LibPVRHelper::LoadImages]: Non-square textures with %s compression are unsupported. Failed to load : %s",
+                      GlobalEnumMap<PixelFormat>::Instance()->ToString(pxFormat),
+                      infile->GetFilename().GetAbsolutePathname().c_str());
+        return false;
+    }
 
-    fromMipMap = Min(fromMipMap, (int32)(mipmapLevelCount - 1));
+    uint32 mipmapLevelCount = pvrFile->header.u32MIPMapCount;
+    uint32 fromMipMap = ImageSystem::GetBaseMipmap({ pvrFile->header.u32Width, pvrFile->header.u32Height, Min(loadingParams.baseMipmap, mipmapLevelCount - 1) }, loadingParams);
 
     bool loadAllPvrData = true;
     for (uint32 i = fromMipMap; i < mipmapLevelCount; ++i)
@@ -453,8 +436,8 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         uint32 u32HeaderSize = PVRTEX3_HEADERSIZE;
         if (swapBytes)
         {
-            u32HeaderSize = Min(u32HeaderSize, (uint32)PVRTByteSwap32(header->u32Version));
-            uint8* headerData = (uint8*)&header->u32Version;
+            u32HeaderSize = Min(u32HeaderSize, PVRTByteSwap32(header->u32Version));
+            uint8* headerData = reinterpret_cast<uint8*>(&header->u32Version);
             for (uint32 i = 0; i < u32HeaderSize; i += sizeof(uint32))
             {
                 PVRTByteSwap(headerData + i, sizeof(uint32));
@@ -462,7 +445,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         }
 
         //Get a pointer to the header.
-        PVRHeaderV2* sLegacyTextureHeader = (PVRHeaderV2*)header;
+        PVRHeaderV2* sLegacyTextureHeader = reinterpret_cast<PVRHeaderV2*>(header);
 
         //We only really need the channel type.
         uint64 tempFormat;
@@ -471,7 +454,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
 
         //Map the enum to get the channel type.
         EPVRTVariableType u32CurrentChannelType = ePVRTVarTypeUnsignedByte;
-        MapLegacyTextureEnumToNewFormat((PVRTPixelType)(sLegacyTextureHeader->dwpfFlags & 0xff), tempFormat, tempColourSpace, u32CurrentChannelType, tempIsPreMult);
+        MapLegacyTextureEnumToNewFormat(PVRTPixelType(sLegacyTextureHeader->dwpfFlags & 0xff), tempFormat, tempColourSpace, u32CurrentChannelType, tempIsPreMult);
         header->u32ChannelType = u32CurrentChannelType;
     }
     else if (swapBytes)
@@ -487,7 +470,7 @@ void LibPVRHelper::PrepareHeader(PVRHeaderV3* header, const bool swapBytes)
         header->u32NumSurfaces = PVRTByteSwap32(header->u32NumSurfaces);
         header->u32Version = PVRTByteSwap32(header->u32Version);
         header->u32Width = PVRTByteSwap32(header->u32Width);
-        PVRTByteSwap((uint8*)&header->u64PixelFormat, sizeof(uint64));
+        PVRTByteSwap(reinterpret_cast<uint8*>(&header->u64PixelFormat), sizeof(uint64));
     }
 }
 
@@ -552,17 +535,17 @@ void LibPVRHelper::ReadMetaData(File* file, PVRFile* pvrFile, const bool swapByt
     {
         MetaDataBlock* block = new MetaDataBlock();
 
-        uint32 fourCC = *(uint32*)metaDataPtr;
+        uint32 fourCC = *reinterpret_cast<uint32*>(metaDataPtr);
         block->DevFOURCC = (swapBytes) ? PVRTByteSwap32(fourCC) : fourCC;
 
         metaDataPtr += sizeof(uint32);
 
-        uint32 dataKey = *(uint32*)metaDataPtr;
+        uint32 dataKey = *reinterpret_cast<uint32*>(metaDataPtr);
         block->u32Key = (swapBytes) ? PVRTByteSwap32(dataKey) : dataKey;
 
         metaDataPtr += sizeof(uint32);
 
-        uint32 dataSize = *(uint32*)metaDataPtr;
+        uint32 dataSize = *reinterpret_cast<uint32*>(metaDataPtr);
         block->u32DataSize = (swapBytes) ? PVRTByteSwap32(dataSize) : dataSize;
 
         metaDataPtr += sizeof(uint32);
@@ -635,7 +618,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile* pvrFile, const uint32 fileMipM
 //Setup temporary variables.
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
-            uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
+            uint8* pTempCompData = reinterpret_cast<uint8*>(pTextureData) + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif
             if ((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
@@ -794,7 +777,7 @@ bool LibPVRHelper::GetCRCFromMetaData(const PVRFile* pvrFile, uint32* outputCRC)
         const MetaDataBlock* block = pvrFile->metaDatablocks[i];
         if (block->u32Key == METADATA_CRC_KEY)
         {
-            *outputCRC = *((uint32*)block->Data);
+            *outputCRC = *(reinterpret_cast<uint32*>(block->Data));
 
             crcRead = true;
             break;
@@ -991,7 +974,7 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     return (uint32)(uiDataSize / 8) * numsurfs * numfaces;
 
 #else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
-    PVRTextureHeaderV3* header = (PVRTextureHeaderV3*)&textureHeader;
+    PVRTextureHeaderV3* header = reinterpret_cast<PVRTextureHeaderV3*>(&textureHeader);
     return PVRTGetTextureDataSize(*header, mipLevel, allSurfaces, allFaces);
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
@@ -2276,7 +2259,7 @@ void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint
 const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeader)
 {
     uint64 pixelFormat = textureHeader.u64PixelFormat;
-    EPVRTVariableType ChannelType = (EPVRTVariableType)textureHeader.u32ChannelType;
+    EPVRTVariableType ChannelType = EPVRTVariableType(textureHeader.u32ChannelType);
 
     //Get the last 32 bits of the pixel format.
     uint64 PixelFormatPartHigh = pixelFormat & PVRTEX_PFHIGHMASK;
@@ -2371,6 +2354,11 @@ const PixelFormat LibPVRHelper::GetCompressedFormat(const uint64 pixelFormat)
 
     return FORMAT_INVALID;
 }
+    
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 
 const PixelFormat LibPVRHelper::GetFloatTypeFormat(const uint64 pixelFormat)
 {
@@ -2527,13 +2515,17 @@ PVRHeaderV3 LibPVRHelper::CreateDecompressedHeader(const PVRHeaderV3& compressed
 
     return decompressedHeader;
 }
+   
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 bool LibPVRHelper::CopyToImage(Image* image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3& header, const uint8* pvrData)
 {
     if (AllocateImageData(image, mipMapLevel, header))
     {
         //Setup temporary variables.
-        uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
+        const uint8* data = pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
 
         if (image->format == FORMAT_RGBA4444)
         {
@@ -2567,5 +2559,23 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image* image, uint32 mipMapLevel, con
     }
 
     return true;
+}
+
+bool LibPVRHelper::CanCompressAndDecompress(PixelFormat format)
+{
+    // todo: implement direct compress/decompress for pvr formats
+    return false;
+}
+
+bool LibPVRHelper::DecompressToRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Decompressing from PVR is not implemented yet");
+    return false;
+}
+
+bool LibPVRHelper::CompressFromRGBA(const Image* image, Image* dstImage)
+{
+    DVASSERT_MSG(false, "Compressing to PVR is not implemented yet");
+    return false;
 }
 };

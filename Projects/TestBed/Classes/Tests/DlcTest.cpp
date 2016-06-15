@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DlcTest.h"
 #include "Base/GlobalEnum.h"
 #include "Database/MongodbClient.h"
@@ -34,6 +5,7 @@
 #include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationProgress.h"
 #include "Utils/StringUtils.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -47,18 +19,35 @@
 #define DLC_MONGO_TEST_DB "dlc"
 #define DLC_MONGO_TEST_COLLECTION "test.exit"
 
-const DAVA::String gameVer = "2.5.0"; // "dlcdevtest";
-
+namespace
+{
 #if defined(__DAVAENGINE_IPHONE__)
-//const DAVA::String url = "http://by1-builddlc-01/DLC_Blitz";
-const DAVA::String url = "http://dl.wargaming.net/wotblitz/dlc/";
+const DAVA::String localServerUrl = "http://by1-builddlc-01/DLC_Blitz";
 #else
-const DAVA::String url = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz";
-//const DAVA::String url = "http://dl.wargaming.net/wotblitz/dlc/";
+const DAVA::String localServerUrl = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz";
 #endif
+
+const DAVA::String cdnServerUrl = "http://dl-wotblitz.wargaming.net/dlc/";
+
+const float32 WIDTH = 500.f;
+const float32 LEFT_COLUMN_X = 10.f;
+const float32 SPACE = 5.f;
+const float32 BUTTON_H = 40.f;
+const float32 BUTTON_W = (WIDTH - SPACE) / 2;
+const float32 HALF_BUTTON_W = (BUTTON_W - SPACE) / 2;
+
+const float32 RIGHT_COLUMN_X = LEFT_COLUMN_X + (WIDTH - SPACE) / 2 + SPACE;
+
+const float32 VERSION_LINE_Y = 100.f;
+const float32 SERVER_Y = VERSION_LINE_Y + BUTTON_H + SPACE;
+const float32 SPEED_THREAD_Y = SERVER_Y + BUTTON_H + SPACE;
+const float32 INFO_Y = SPEED_THREAD_Y + BUTTON_H + SPACE;
+const float32 START_CANCEL_Y = INFO_Y + BUTTON_H + 6 * SPACE;
+}
 
 DlcTest::DlcTest()
     : BaseScreen("DlcTest")
+    , options(new KeyedArchive)
     , dlc(nullptr)
 {
 }
@@ -66,6 +55,8 @@ DlcTest::DlcTest()
 void DlcTest::LoadResources()
 {
     BaseScreen::LoadResources();
+
+    options->LoadFromYamlFile(optionsPath);
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     Font* fontSmall = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -99,54 +90,143 @@ void DlcTest::LoadResources()
     destinationDir = "~doc:/Resources/";
 #endif
 
-    WideString infoStr = L"DLCWorkingDir: ";
-    infoStr += StringToWString(workingDir.GetAbsolutePathname());
-    infoStr += L"\nResourcesDir: ";
-    infoStr += StringToWString(destinationDir.GetAbsolutePathname());
-    infoStr += L"\nURL: ";
-    infoStr += StringToWString(url);
-    infoStr += L"\nGameVer: ";
-    infoStr += StringToWString(gameVer);
-
-    UIStaticText* infoText = new UIStaticText(Rect(10.0f, 10.0f, 500.f, 190.f));
+    infoText = new UIStaticText(Rect(LEFT_COLUMN_X, LEFT_COLUMN_X, WIDTH, BUTTON_H * 5));
     infoText->SetTextColor(Color::White);
     infoText->SetFont(fontSmall);
     infoText->SetMultiline(true);
     infoText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    infoText->SetText(infoStr);
     AddControl(infoText);
 
-    staticText = new UIStaticText(Rect(10.0f, 200.f, 400.f, 50.f));
+    UIStaticText* ver = new UIStaticText(Rect(LEFT_COLUMN_X, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
+    ver->SetTextColor(Color::White);
+    ver->SetFont(font);
+    ver->SetMultiline(false);
+    ver->SetTextAlign(ALIGN_LEFT);
+    ver->SetText(L"Game Veision :");
+    AddControl(ver);
+    SafeRelease(ver);
+
+    gameVersionIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W + SPACE, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
+    gameVersionIn->SetDebugDraw(true);
+    String gameVer = options->GetString(gameVersion, defaultGameVersion);
+    gameVersionIn->SetText(StringToWString(gameVer));
+    gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
+    gameVersionIn->SetDelegate(this);
+    AddControl(gameVersionIn);
+
+    //=========================
+
+    UIButton* setDlInternalServerButton = new UIButton(Rect(LEFT_COLUMN_X, SERVER_Y, BUTTON_W, BUTTON_H));
+    setDlInternalServerButton->SetStateFont(0xFF, font);
+    setDlInternalServerButton->SetStateFontColor(0xFF, Color::White);
+    setDlInternalServerButton->SetStateText(0xFF, L"Set internal server");
+    setDlInternalServerButton->SetDebugDraw(true);
+    setDlInternalServerButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetInternalDlServer));
+    AddControl(setDlInternalServerButton);
+    SafeRelease(setDlInternalServerButton);
+
+    UIButton* setDlexternalServerButton = new UIButton(Rect(RIGHT_COLUMN_X, SERVER_Y, BUTTON_W, BUTTON_H));
+    setDlexternalServerButton->SetStateFont(0xFF, font);
+    setDlexternalServerButton->SetStateFontColor(0xFF, Color::White);
+    setDlexternalServerButton->SetStateText(0xFF, L"Set external server");
+    setDlexternalServerButton->SetDebugDraw(true);
+    setDlexternalServerButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetExternalDlServer));
+    AddControl(setDlexternalServerButton);
+    SafeRelease(setDlexternalServerButton);
+
+    //=========================
+
+    UIButton* setDlSpeed = new UIButton(Rect(LEFT_COLUMN_X, SPEED_THREAD_Y, HALF_BUTTON_W, BUTTON_H));
+    setDlSpeed->SetStateFont(0xFF, font);
+    setDlSpeed->SetStateFontColor(0xFF, Color::White);
+    setDlSpeed->SetStateText(0xFF, L"Set spd");
+    setDlSpeed->SetDebugDraw(true);
+    setDlSpeed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetSpeed));
+    AddControl(setDlSpeed);
+    SafeRelease(setDlSpeed);
+
+    dlSpeedIn = new UITextField(Rect(LEFT_COLUMN_X + HALF_BUTTON_W + SPACE, SPEED_THREAD_Y, HALF_BUTTON_W, BUTTON_H));
+    dlSpeedIn->SetDebugDraw(true);
+
+    uint64 spd = options->GetUInt64(downloadSpeed, 0);
+    String spdStr(Format("%lld", spd));
+    dlSpeedIn->SetText(StringToWString(spdStr));
+    dlSpeedIn->GetOrCreateComponent<UIFocusComponent>();
+    dlSpeedIn->SetDelegate(this);
+    AddControl(dlSpeedIn);
+
+    //=========================
+
+    UIButton* decDlThreadsButton = new UIButton(Rect(RIGHT_COLUMN_X, SPEED_THREAD_Y, HALF_BUTTON_W, BUTTON_H));
+    decDlThreadsButton->SetStateFont(0xFF, font);
+    decDlThreadsButton->SetStateFontColor(0xFF, Color::White);
+    decDlThreadsButton->SetStateText(0xFF, L"-1 thr");
+    decDlThreadsButton->SetDebugDraw(true);
+    decDlThreadsButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::DecDlThreads));
+    AddControl(decDlThreadsButton);
+    SafeRelease(decDlThreadsButton);
+
+    UIButton* incDlThreadsButton = new UIButton(Rect(RIGHT_COLUMN_X + HALF_BUTTON_W + SPACE, SPEED_THREAD_Y, HALF_BUTTON_W, BUTTON_H));
+    incDlThreadsButton->SetStateFont(0xFF, font);
+    incDlThreadsButton->SetStateFontColor(0xFF, Color::White);
+    incDlThreadsButton->SetStateText(0xFF, L"+1 thr");
+    incDlThreadsButton->SetDebugDraw(true);
+    incDlThreadsButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::IncDlThreads));
+    AddControl(incDlThreadsButton);
+    SafeRelease(incDlThreadsButton);
+
+    //=========================
+
+    staticText = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y, WIDTH - 2 * BUTTON_H, BUTTON_H));
     staticText->SetFont(font);
     staticText->SetTextColor(Color::White);
     staticText->SetDebugDraw(true);
-    staticText->SetText(L"Starting DLC...");
+    staticText->SetText(L"Press Start ...");
     AddControl(staticText);
 
-    progressControl = new UIControl(Rect(10.0f, 260.0f, 400.0f, 5.0f));
+    progressControl = new UIControl(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H, WIDTH - 2 * BUTTON_H, SPACE));
     progressControl->SetDebugDraw(true);
     AddControl(progressControl);
 
-    animControl = new UIControl(Rect(470.0f, 235.0f, 50.f, 50.f));
+    progressStatistics = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H + SPACE + SPACE, WIDTH - SPACE - BUTTON_H, SPACE));
+    progressStatistics->SetText(L"0 / 0");
+    progressStatistics->SetFont(fontSmall);
+    progressStatistics->SetTextColor(Color::White);
+    AddControl(progressStatistics);
+
+    animControl = new UIControl(Rect(LEFT_COLUMN_X + WIDTH - SPACE - BUTTON_H, INFO_Y + BUTTON_H, BUTTON_H, BUTTON_H));
     animControl->SetDebugDraw(true);
-    animControl->SetPivotPoint(Vector2(25.0f, 25.0f));
+    animControl->SetPivotPoint(Vector2(BUTTON_H / 2, BUTTON_H / 2));
     AddControl(animControl);
 
-    returnButton = new UIButton(Rect(10.0f, 400.f, 500.f, 50.f));
-    returnButton->SetStateFont(0xFF, font);
-    returnButton->SetStateFontColor(0xFF, Color::White);
-    returnButton->SetStateText(0xFF, L"Cancel operation");
-    returnButton->SetDebugDraw(true);
-    returnButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Cancel));
-    AddControl(returnButton);
+    //=========================
 
-    restartButton = new UIButton(Rect(10.0f, 300.f, 500.f, 50.f));
+    UIButton* startButton = new UIButton(Rect(LEFT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
+    startButton->SetStateFont(0xFF, font);
+    startButton->SetStateFontColor(0xFF, Color::White);
+    startButton->SetStateText(0xFF, L"Start download");
+    startButton->SetDebugDraw(true);
+    startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Start));
+    AddControl(startButton);
+    SafeRelease(startButton);
+
+    UIButton* cancelButton = new UIButton(Rect(RIGHT_COLUMN_X, START_CANCEL_Y, BUTTON_W, BUTTON_H));
+    cancelButton->SetStateFont(0xFF, font);
+    cancelButton->SetStateFontColor(0xFF, Color::White);
+    cancelButton->SetStateText(0xFF, L"Cancel download");
+    cancelButton->SetDebugDraw(true);
+    cancelButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Cancel));
+    AddControl(cancelButton);
+    SafeRelease(cancelButton);
+
+    UIButton* restartButton = new UIButton(Rect(LEFT_COLUMN_X, START_CANCEL_Y + BUTTON_H + SPACE, WIDTH, BUTTON_H));
     restartButton->SetStateFont(0xFF, font);
     restartButton->SetStateFontColor(0xFF, Color::White);
     restartButton->SetStateText(0xFF, L"Restart DLC");
     restartButton->SetDebugDraw(true);
     restartButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Restart));
     AddControl(restartButton);
+    SafeRelease(restartButton);
 
     DAVA::FilePath::AddResourcesFolder(destinationDir);
 
@@ -154,9 +234,11 @@ void DlcTest::LoadResources()
     crashTest.Init(workingDir, destinationDir);
 #endif
 
-    DAVA::FileSystem::Instance()->CreateDirectory(workingDir);
-    DAVA::FileSystem::Instance()->CreateDirectory(destinationDir);
-    dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVer, destinationDir + "/version/resources.txt");
+    FileSystem::Instance()->CreateDirectory(workingDir);
+    FileSystem::Instance()->CreateDirectory(destinationDir);
+    String url = options->GetString(currentDownloadUrl, localServerUrl);
+    String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
+    dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
 
     lastDLCState = dlc->GetState();
 
@@ -164,18 +246,45 @@ void DlcTest::LoadResources()
     SafeRelease(fontSmall);
 }
 
+void DlcTest::UpdateInfoStr()
+{
+    infoStr = L"DLCWorkingDir: ";
+    infoStr += StringToWString(workingDir.GetAbsolutePathname());
+    infoStr += L"\nResourcesDir: ";
+    infoStr += StringToWString(destinationDir.GetAbsolutePathname());
+    infoStr += L"\nURL: ";
+    DAVA::String url = options->GetString(currentDownloadUrl, localServerUrl);
+    infoStr += StringToWString(url);
+    infoStr += L"\nDownloading threads count: ";
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
+    infoStr += StringToWString(Format("%d", currentThreadsCount));
+    infoStr += StringToWString(Format("\nSpeedLimit %d", 0));
+
+    if (nullptr != infoText)
+    {
+        infoText->SetText(infoStr);
+    }
+}
+
 void DlcTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
 
+    options->SaveToYamlFile(optionsPath);
+    DownloadManager::Instance()->SetDownloadSpeedLimit(0);
+
+    SafeRelease(dlSpeedIn);
+    SafeRelease(gameVersionIn);
+    SafeRelease(infoText);
     SafeRelease(staticText);
+    SafeRelease(progressStatistics);
     SafeRelease(animControl);
+    dlc->Cancel();
     SafeDelete(dlc);
 }
 
-void DlcTest::WillAppear()
+void DlcTest::OnActive()
 {
-    dlc->Start();
 }
 
 void DlcTest::Update(float32 timeElapsed)
@@ -185,6 +294,15 @@ void DlcTest::Update(float32 timeElapsed)
     lastUpdateTime += timeElapsed;
     if (lastUpdateTime > 0.05f)
     {
+        UpdateInfoStr();
+
+        uint64 cur = 0;
+        uint64 total = 0;
+        dlc->GetProgress(cur, total);
+        DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
+        String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
+        progressStatistics->SetText(StringToWString(statText));
+
         // update animation
         angle += 0.10f;
         lastUpdateTime = 0;
@@ -212,6 +330,7 @@ void DlcTest::Update(float32 timeElapsed)
                 uint64 total = 0;
 
                 dlc->GetProgress(cur, total);
+
                 if (total > 0)
                 {
                     w = cur * r.dx / total;
@@ -291,6 +410,64 @@ void DlcTest::Draw(const UIGeometricData& geometricData)
 {
 }
 
+void DlcTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText)
+{
+    if (gameVersionIn == textField)
+    {
+        options->SetString(gameVersion, WStringToString(newText));
+    }
+
+    if (dlSpeedIn == textField)
+    {
+        uint64 speedLimit = std::atoi(WStringToString(newText).c_str());
+        options->SetUInt64(downloadSpeed, speedLimit);
+    }
+}
+
+void DlcTest::SetExternalDlServer(BaseObject* obj, void* data, void* callerData)
+{
+    options->SetString(currentDownloadUrl, cdnServerUrl);
+}
+
+void DlcTest::SetInternalDlServer(BaseObject* obj, void* data, void* callerData)
+{
+    options->SetString(currentDownloadUrl, localServerUrl);
+}
+
+void DlcTest::SetSpeed(BaseObject* obj, void* data, void* callerData)
+{
+    uint64 currentDlSpeed = options->GetUInt64(downloadSpeed, 0);
+    DownloadManager::Instance()->SetDownloadSpeedLimit(currentDlSpeed * 10);
+}
+
+void DlcTest::IncDlThreads(BaseObject* obj, void* data, void* callerData)
+{
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(++currentThreadsCount);
+    options->SetUInt32(downloadThreadsCount, currentThreadsCount);
+}
+
+void DlcTest::DecDlThreads(BaseObject* obj, void* data, void* callerData)
+{
+    uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
+
+    --currentThreadsCount;
+    if (0 == currentThreadsCount)
+        currentThreadsCount = 1;
+
+    DownloadManager::Instance()->SetPreferredDownloadThreadsCount(currentThreadsCount);
+
+    options->SetUInt32(downloadThreadsCount, currentThreadsCount);
+}
+
+void DlcTest::Start(BaseObject* obj, void* data, void* callerData)
+{
+    staticText->SetText(L"Starting DLC...");
+    options->SaveToYamlFile(optionsPath);
+
+    dlc->Start();
+}
+
 void DlcTest::Cancel(BaseObject* obj, void* data, void* callerData)
 {
     staticText->SetText(L"Cancelling DLC...");
@@ -314,13 +491,16 @@ void DlcTest::Restart(BaseObject* obj, void* data, void* callerData)
 
         SafeDelete(dlc);
 
-        DAVA::FileSystem::Instance()->CreateDirectory(workingDir);
-        DAVA::FileSystem::Instance()->CreateDirectory(destinationDir);
-        dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVer, destinationDir + "/version/resources.txt");
+        FileSystem::Instance()->CreateDirectory(workingDir);
+        FileSystem::Instance()->CreateDirectory(destinationDir);
+
+        String url = options->GetString(currentDownloadUrl, localServerUrl);
+        String gameVersionToDl = options->GetString(gameVersion, defaultGameVersion);
+        dlc = new DLC(url, sourceDir, destinationDir, workingDir, gameVersionToDl, destinationDir + "/version/resources.txt");
 
         lastDLCState = dlc->GetState();
 
-        dlc->Start();
+        Start(obj, data, callerData);
         isRestarting = false;
     }
 }

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "CreatePlaneLODCommandHelper.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Settings/SettingsManager.h"
@@ -288,7 +259,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
     renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
     renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-    renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
+    renderPassConfig.priority = PRIORITY_SERVICE_3D;
     renderPassConfig.viewport = viewport;
     renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
     memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
@@ -359,9 +330,10 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
 {
     auto entity = lodComponent->GetEntity();
 
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, textures,
-                                         SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+    SceneHelper::TextureCollector collector;
+    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, collector);
+    DAVA::TexturesMap& textures = collector.GetTextures();
+
     for (auto& tex : textures)
     {
         tex.second->ReloadAs(targetGPU);
@@ -381,8 +353,6 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
-
-    auto sourceEntity = lodComponent->GetEntity();
 
     DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
     SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());

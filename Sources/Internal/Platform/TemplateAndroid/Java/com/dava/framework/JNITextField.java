@@ -841,6 +841,7 @@ public class JNITextField {
                             } else // No any focused text fields -> show
                                 // keyboard physically
                             {
+                                lastClosedTextField = NO_ACTIVE_TEXTFIELD;
                                 InputMethodManager imm = (InputMethodManager) JNIActivity
                                         .GetActivity().getSystemService(
                                                 Context.INPUT_METHOD_SERVICE);
@@ -950,12 +951,13 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 final EditText editText = GetTextField(id);
+                textFields.remove(id);
+                
                 editText.clearFocus(); // Clear focus before destroying to try
                                        // to close keyboard
                 ViewGroup parent = (ViewGroup) editText.getParent();
                 if (parent != null)
                     parent.removeView(editText);
-                textFields.remove(id);
             }
         });
     }

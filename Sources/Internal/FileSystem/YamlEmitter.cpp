@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "YamlEmitter.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
@@ -112,7 +83,7 @@ DAVA::YamlEmitter::YamlEmitter()
 bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* node, uint32 attr)
 {
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
-    if ((File*)outFile == NULL)
+    if (!outFile)
     {
         Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
         return false;
@@ -157,27 +128,31 @@ bool YamlEmitter::Emit(const YamlNode* node, File* outFile)
             break;
     } while (0);
 
-    if (YAML_NO_ERROR != emitter.error)
+    switch (emitter.error)
     {
-        switch (emitter.error)
-        {
-        case YAML_MEMORY_ERROR:
-            Logger::Error("[YamlEmitter::Emit] Memory error: Not enough memory for emitting");
-            break;
+    case YAML_NO_ERROR:
+        break;
 
-        case YAML_WRITER_ERROR:
-            Logger::Error("[YamlEmitter::Emit] Writer error: %s", emitter.problem);
-            break;
+    case YAML_MEMORY_ERROR:
+        Logger::Error("[YamlEmitter::Emit] Memory error: Not enough memory for emitting");
+        break;
 
-        case YAML_EMITTER_ERROR:
-            Logger::Error("[YamlEmitter::Emit] Emitter error: %s", emitter.problem);
-            break;
+    case YAML_WRITER_ERROR:
+        Logger::Error("[YamlEmitter::Emit] Writer error: %s", emitter.problem);
+        break;
 
-        default:
-            /* Couldn't happen. */
-            Logger::Error("[YamlEmitter::Emit] Internal error\n");
-            break;
-        }
+    case YAML_EMITTER_ERROR:
+        Logger::Error("[YamlEmitter::Emit] Emitter error: %s", emitter.problem);
+        break;
+
+    case YAML_READER_ERROR:
+    case YAML_SCANNER_ERROR:
+    case YAML_PARSER_ERROR:
+    case YAML_COMPOSER_ERROR:
+    default:
+        /* Couldn't happen. */
+        Logger::Error("[YamlEmitter::Emit] Internal error\n");
+        break;
     }
 
     DVVERIFY(yaml_emitter_flush(&emitter));
@@ -273,7 +248,7 @@ bool YamlEmitter::EmitDocumentEnd(yaml_emitter_t* emitter)
 bool YamlEmitter::EmitSequenceStart(yaml_emitter_t* emitter, int32 sequenceStyle)
 {
     yaml_event_t event;
-    if (!yaml_sequence_start_event_initialize(&event, NULL, NULL, 0, (yaml_sequence_style_t)sequenceStyle) ||
+    if (!yaml_sequence_start_event_initialize(&event, NULL, NULL, 0, static_cast<yaml_sequence_style_t>(sequenceStyle)) ||
         !yaml_emitter_emit(emitter, &event))
         return false;
 
@@ -293,7 +268,7 @@ bool YamlEmitter::EmitSequenceEnd(yaml_emitter_t* emitter)
 bool YamlEmitter::EmitMappingStart(yaml_emitter_t* emitter, int32 mappingStyle)
 {
     yaml_event_t event;
-    if (!yaml_mapping_start_event_initialize(&event, NULL, NULL, 0, (yaml_mapping_style_t)mappingStyle) ||
+    if (!yaml_mapping_start_event_initialize(&event, NULL, NULL, 0, static_cast<yaml_mapping_style_t>(mappingStyle)) ||
         !yaml_emitter_emit(emitter, &event))
         return false;
 
@@ -313,7 +288,10 @@ bool YamlEmitter::EmitMappingEnd(yaml_emitter_t* emitter)
 bool YamlEmitter::EmitScalar(yaml_emitter_t* emitter, const String& value, int32 scalarStyle)
 {
     yaml_event_t event;
-    if (!yaml_scalar_event_initialize(&event, NULL, (yaml_char_t*)YAML_DEFAULT_SCALAR_TAG, (yaml_char_t*)value.c_str(), -1, 1, 1, (yaml_scalar_style_t)scalarStyle) ||
+
+    const yaml_char_t* tag = reinterpret_cast<const yaml_char_t*>(YAML_DEFAULT_SCALAR_TAG);
+    const yaml_char_t* data = reinterpret_cast<const yaml_char_t*>(value.c_str());
+    if (!yaml_scalar_event_initialize(&event, NULL, const_cast<yaml_char_t*>(tag), const_cast<yaml_char_t*>(data), -1, 1, 1, static_cast<yaml_scalar_style_t>(scalarStyle)) ||
         !yaml_emitter_emit(emitter, &event))
         return false;
 

@@ -1,36 +1,7 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "yaml/yaml.h"
 
@@ -40,7 +11,7 @@ bool YamlParser::Parse(const String& data)
 {
     YamlDataHolder dataHolder;
     dataHolder.fileSize = static_cast<uint32>(data.size());
-    dataHolder.data = (uint8*)data.c_str();
+    dataHolder.data = const_cast<uint8*>(reinterpret_cast<const uint8*>(data.c_str()));
     dataHolder.dataOffset = 0;
 
     return Parse(&dataHolder);
@@ -105,7 +76,7 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
         case YAML_SCALAR_EVENT:
         {
-            String scalarValue = (const char*)event.data.scalar.value;
+            String scalarValue = reinterpret_cast<const char*>(event.data.scalar.value);
 
             if (objectStack.empty())
             {
@@ -207,6 +178,10 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
             objectStack.pop();
         }
         break;
+
+        case YAML_NO_EVENT:
+        case YAML_STREAM_END_EVENT:
+        case YAML_STREAM_START_EVENT:
         default:
             break;
         };

@@ -1,45 +1,16 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef _ANDROID_LAYER_
 #define _ANDROID_LAYER_
 
 #include "AndroidLayer.h"
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Input/AccelerometerAndroid.h"
 #include "AndroidDelegate.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
-#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "UI/Private/Android/WebViewControlAndroid.h"
 #include "Debug/DVAssertMessage.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
@@ -48,7 +19,6 @@
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
-#include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -82,7 +52,7 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv
 JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock);
 
 //JNISurfaceView
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject allInputs);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
@@ -114,7 +84,6 @@ jfieldID gInputEventTidField;
 jfieldID gInputEventXField;
 jfieldID gInputEventYField;
 jfieldID gInputEventTimeField;
-jfieldID gInputEventTapCountField;
 
 AndroidDelegate* androidDelegate = nullptr;
 ANativeWindow* nativeWindow = nullptr;
@@ -226,7 +195,6 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
-    gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
     DAVA::Logger::Info("finish OnCreateApplication");
 }
@@ -365,8 +333,8 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
                                                            gInputEventXField);
     event.point.y = event.physPoint.y = env->GetFloatField(input,
                                                            gInputEventYField);
-    event.tapCount = env->GetIntField(input, gInputEventTapCountField);
-    event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+    // timestamp in seconds, JNIEnv retern in milliseconds
+    event.timestamp = env->GetDoubleField(input, gInputEventTimeField) / 1000.0;
     event.phase = GetPhase(action, source);
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
@@ -388,24 +356,20 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
 // CALLED FROM JNIGLSurfaceView
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject javaActiveInputs, jobject javaAllInputs)
+void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject javaAllInputs)
 {
     if (core)
     {
-        DAVA::Vector<DAVA::UIEvent> activeInputs;
         DAVA::Vector<DAVA::UIEvent> allInputs;
 
         int allInputsCount = gArrayListSizeMethod(javaAllInputs);
-        int activeInputsCount = gArrayListSizeMethod(javaActiveInputs);
-
-        int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
+        int inputsCount = allInputsCount;
 
         for (int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
         {
             int groupEndIndex = groupStartIndex + groupSize;
 
             allInputs.clear();
-            activeInputs.clear();
 
             for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
             {
@@ -418,17 +382,8 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
 
                     env->DeleteLocalRef(jInput);
                 }
-                if (touchIndex < activeInputsCount)
-                {
-                    jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
-
-                    DAVA::UIEvent event = android_details::CreateUIEventFromJavaEvent(env, jInput, action, source);
-                    activeInputs.push_back(event);
-
-                    env->DeleteLocalRef(jInput);
-                }
             }
-            core->OnInput(action, source, activeInputs, allInputs);
+            core->OnInput(allInputs);
         }
     }
 }

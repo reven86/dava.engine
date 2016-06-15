@@ -1,39 +1,13 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UITextFieldHolder.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "UI/UITextFieldiPhone.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Utils/NSStringUtils.h"
+#include "Utils/StringUtils.h"
 
+#include <algorithm>
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 @implementation UITextFieldHolder
@@ -106,7 +80,11 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+        }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
         }
     }
 }
@@ -127,7 +105,11 @@
     {
         if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
         {
-            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField);
+        }
+        if (!cppTextField->IsEditing())
+        {
+            cppTextField->StartEdit();
         }
     }
 }
@@ -158,74 +140,57 @@
 
 - (BOOL)textField:(UITextField*)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string
 {
-    if (cppTextField && (cppTextField->GetDelegate() != 0))
+    DAVA::int32 maxLength = -1;
+    if (nullptr != cppTextField)
     {
-        // Check length limits.
-        BOOL needIgnoreDelegateResult = FALSE;
-        int maxLength = cppTextField->GetMaxLength();
-        if (maxLength >= 0)
-        {
-            NSString* newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
-            NSInteger newLength = [newString length]; // Length in UTF32 charactres
-            if (newLength > maxLength)
-            {
-                NSUInteger charsToInsert = 0;
-                if (range.length == 0)
-                {
-                    // charactres count independent from encoding and bytes per each charracter
-                    NSUInteger curLength = [[textCtrl valueForKey:@"text"] length];
-                    // Inserting without replace.
-                    if (maxLength >= (NSInteger)curLength)
-                    {
-                        charsToInsert = maxLength - (NSInteger)curLength;
-                    }
-                    else
-                    {
-                        charsToInsert = 0;
-                    }
-                }
-                else
-                {
-                    // Inserting with replace.
-                    charsToInsert = range.length;
-                }
-
-                if (0 < charsToInsert)
-                {
-                    // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
-                    // back for decrease string length in UTF32 code points
-                    NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
-                    char buffer[byteCount];
-                    NSUInteger usedBufferCount;
-                    [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
-                    string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
-                    DVASSERT(string && "Error on convert utf32 to NSString");
-
-                    NSString* currentText = [textCtrl valueForKey:@"text"];
-                    NSString* newText = [currentText stringByReplacingCharactersInRange:range withString:string];
-                    [textCtrl setValue:newText forKey:@"text"];
-                    needIgnoreDelegateResult = TRUE;
-                }
-                else
-                {
-                    return FALSE;
-                }
-            }
-        }
-
-        // Length check OK, continue with the delegate.
-        DAVA::WideString repString;
-        const char* cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
-        if (cstr) //cause strlen(nullptr) will crash
-        {
-            DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
-        }
-
-        BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, (DAVA::int32)range.location, (DAVA::int32)range.length, repString);
-        return needIgnoreDelegateResult ? FALSE : delegateResult;
+        maxLength = cppTextField->GetMaxLength();
     }
 
-    return YES;
+    BOOL applyChanges = YES;
+    // Get string after changing
+    NSString* origString = [textCtrl valueForKey:@"text"];
+    NSString* replStr = string;
+
+    if ([replStr length] > 0)
+    {
+        applyChanges = !DAVA::NSStringModified(range, origString, maxLength, &replStr);
+        if (!applyChanges)
+        {
+            // remove all changes for undoMansger
+            NSUndoManager* undoManager = [textField_ undoManager];
+            [undoManager removeAllActions];
+        }
+    }
+    // if we revert insert text
+    if (range.location + range.length > [origString length])
+    {
+        range.length = [origString length] - range.location;
+        applyChanges = NO;
+    }
+
+    BOOL clientApply = NO;
+    if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
+    {
+        if (range.length > 0 || [replStr length] > 0)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
+            clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(range.location), static_cast<DAVA::int32>(range.length), clientString);
+        }
+        if (!clientApply)
+        {
+            return NO;
+        }
+    }
+    if (!applyChanges)
+    {
+        NSString* newString = [origString stringByReplacingCharactersInRange:range withString:replStr];
+        [textCtrl setValue:newString forKey:@"text"];
+        UITextPosition* caret = textField_.beginningOfDocument;
+        caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
+        UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
+        [textField_ setSelectedTextRange:rangeCaret];
+    }
+    return applyChanges;
 }
 
 - (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString*)string
@@ -602,22 +567,16 @@
 
 - (void)keyboardWillHide:(NSNotification*)notification
 {
-    if (cppTextField && cppTextField->GetDelegate())
+    if (cppTextField)
     {
-        cppTextField->GetDelegate()->OnKeyboardHidden();
+        cppTextField->OnKeyboardHidden();
+        cppTextField->StopEdit();
     }
 }
 
 - (void)keyboardDidShow:(NSNotification*)notification
 {
     if (nullptr == cppTextField)
-    {
-        return;
-    }
-
-    auto* delegate = cppTextField->GetDelegate();
-
-    if (nullptr == delegate)
     {
         return;
     }
@@ -638,7 +597,7 @@
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
     keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
-    delegate->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
+    cppTextField->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

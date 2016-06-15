@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_POLYGONGROUP_H__
 #define __DAVAENGINE_POLYGONGROUP_H__
 
@@ -177,7 +148,7 @@ public:
     void BuildBuffers();
     void RestoreBuffers();
 
-    void Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext);
+    void Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext) override;
     void LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams);
 
     rhi::HVertexBuffer vertexBuffer;
@@ -202,77 +173,77 @@ public:
 
                          //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
                          //        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
-                         );
+                         )
 };
 
 // Static Mesh Implementation
 
 inline void PolygonGroup::SetCoord(int32 i, const Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)vertexArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(vertexArray) + i * vertexStride);
     *v = _v;
     aabbox.AddPoint(_v);
 }
 
 inline void PolygonGroup::SetNormal(int32 i, const Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)normalArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(normalArray) + i * vertexStride);
     *v = _v;
     (*v).Normalize();
 }
 
 inline void PolygonGroup::SetTangent(int32 i, const Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)tangentArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(tangentArray) + i * vertexStride);
     *v = _v;
 }
 
 inline void PolygonGroup::SetBinormal(int32 i, const Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)binormalArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(binormalArray) + i * vertexStride);
     *v = _v;
 }
 
 inline void PolygonGroup::SetColor(int32 i, const uint32& _c)
 {
-    uint32* c = (uint32*)((uint8*)colorArray + i * vertexStride);
+    uint32* c = reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(colorArray) + i * vertexStride);
     *c = _c;
 }
 
 inline void PolygonGroup::SetTexcoord(int32 ti, int32 i, const Vector2& _t)
 {
-    Vector2* t = (Vector2*)((uint8*)textureCoordArray[ti] + i * vertexStride);
+    Vector2* t = reinterpret_cast<Vector2*>(reinterpret_cast<uint8*>(textureCoordArray[ti]) + i * vertexStride);
     *t = _t;
 }
 
 inline void PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3& _t)
 {
-    Vector3* t = (Vector3*)((uint8*)cubeTextureCoordArray[ti] + i * vertexStride);
+    Vector3* t = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(cubeTextureCoordArray[ti]) + i * vertexStride);
     *t = _t;
 }
 
 inline void PolygonGroup::SetPivot(int32 i, const Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)pivotArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(pivotArray) + i * vertexStride);
     *v = _v;
 }
 
 inline void PolygonGroup::SetFlexibility(int32 i, const float32& _v)
 {
-    float32* v = (float32*)((uint8*)flexArray + i * vertexStride);
+    float32* v = reinterpret_cast<float32*>(reinterpret_cast<uint8*>(flexArray) + i * vertexStride);
     *v = _v;
 }
 
 inline void PolygonGroup::SetAngle(int32 i, const Vector2& _v)
 {
-    Vector2* v = (Vector2*)((uint8*)angleArray + i * vertexStride);
+    Vector2* v = reinterpret_cast<Vector2*>(reinterpret_cast<uint8*>(angleArray) + i * vertexStride);
     *v = _v;
 }
 
 inline void PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
+    *reinterpret_cast<float32*>(reinterpret_cast<uint8*>(jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
     //	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
     //	t[jointIndex] = boneIndexValue;
 }
@@ -280,7 +251,7 @@ inline void PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 bo
 inline void PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);
+    *reinterpret_cast<float32*>(reinterpret_cast<uint8*>(jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);
     //    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
     //	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
@@ -307,67 +278,67 @@ inline int32 PolygonGroup::GetFormat()
 
 inline void PolygonGroup::GetCoord(int32 i, Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)vertexArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(vertexArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetNormal(int32 i, Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)normalArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(normalArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetTangent(int32 i, Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)tangentArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(tangentArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetBinormal(int32 i, Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)binormalArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(binormalArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetColor(int32 i, uint32& _c)
 {
-    uint32* c = (uint32*)((uint8*)colorArray + i * vertexStride);
+    uint32* c = reinterpret_cast<uint32*>(reinterpret_cast<uint8*>(colorArray) + i * vertexStride);
     _c = *c;
 }
 
 inline void PolygonGroup::GetTexcoord(int32 ti, int32 i, Vector2& _t)
 {
-    Vector2* t = (Vector2*)((uint8*)textureCoordArray[ti] + i * vertexStride);
+    Vector2* t = reinterpret_cast<Vector2*>(reinterpret_cast<uint8*>(textureCoordArray[ti]) + i * vertexStride);
     _t = *t;
 }
 
 inline void PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3& _t)
 {
-    Vector3* t = (Vector3*)((uint8*)cubeTextureCoordArray[ti] + i * vertexStride);
+    Vector3* t = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(cubeTextureCoordArray[ti]) + i * vertexStride);
     _t = *t;
 }
 
 inline void PolygonGroup::GetPivot(int32 i, Vector3& _v)
 {
-    Vector3* v = (Vector3*)((uint8*)pivotArray + i * vertexStride);
+    Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(pivotArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetFlexibility(int32 i, float32& _v)
 {
-    float32* v = (float32*)((uint8*)flexArray + i * vertexStride);
+    float32* v = reinterpret_cast<float32*>(reinterpret_cast<uint8*>(flexArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetAngle(int32 i, Vector2& _v)
 {
-    Vector2* v = (Vector2*)((uint8*)angleArray + i * vertexStride);
+    Vector2* v = reinterpret_cast<Vector2*>(reinterpret_cast<uint8*>(angleArray) + i * vertexStride);
     _v = *v;
 }
 
 inline void PolygonGroup::GetIndex(int32 i, int32& index)
 {
-    index = (uint16)indexArray[i];
+    index = uint16(indexArray[i]);
 }
 
 inline int32 PolygonGroup::GetVertexCount()

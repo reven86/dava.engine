@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Platform/Process.h"
 #include "FileSystem/FilePath.h"
 
@@ -135,7 +106,7 @@ bool Process::Run(bool showWindow)
         SECURITY_ATTRIBUTES saAttr;
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
         saAttr.bInheritHandle = TRUE;
-        saAttr.lpSecurityDescriptor = NULL;
+        saAttr.lpSecurityDescriptor = nullptr;
 
         if (::CreatePipe(&childProcOut[READ], &childProcOut[WRITE], &saAttr, 0))
         {
@@ -191,36 +162,36 @@ bool Process::Run(bool showWindow)
 
 #if defined(UNICODE)
 
-        wchar_t* execPathW = NULL;
+        wchar_t* execPathW = nullptr;
         size_t execPathWLength = 0;
-        wchar_t* execArgsW = NULL;
+        wchar_t* execArgsW = nullptr;
         size_t execArgsWLength = 0;
 
         //VI: TODO: UNICODE: Use framework methods to convert to Unicode once it will be ready.
         ConvertToWideChar(runArgsFlat, &execArgsW, &execArgsWLength);
 
-        bSuccess = CreateProcess(NULL,
+        bSuccess = CreateProcess(nullptr,
                                  execArgsW, // command line
-                                 NULL, // process security attributes
-                                 NULL, // primary thread security attributes
+                                 nullptr, // process security attributes
+                                 nullptr, // primary thread security attributes
                                  TRUE, // handles are inherited
                                  (showWindow) ? 0 : CREATE_NO_WINDOW, // creation flags
-                                 NULL, // use parent's environment
-                                 NULL, // use parent's current directory
+                                 nullptr, // use parent's environment
+                                 nullptr, // use parent's current directory
                                  &siStartInfo, // STARTUPINFO pointer
                                  &piProcInfo); // receives PROCESS_INFORMATION
 
         SafeDeleteArray(execArgsW);
 
 #else
-        bSuccess = CreateProcess(NULL,
+        bSuccess = CreateProcess(nullptr,
                                  runArgsFlat.c_str(), // command line
-                                 NULL, // process security attributes
-                                 NULL, // primary thread security attributes
+                                 nullptr, // process security attributes
+                                 nullptr, // primary thread security attributes
                                  TRUE, // handles are inherited
                                  (showWindow) ? 0 : CREATE_NO_WINDOW, , // creation flags
-                                 NULL, // use parent's environment
-                                 NULL, // use parent's current directory
+                                 nullptr, // use parent's environment
+                                 nullptr, // use parent's current directory
                                  &siStartInfo, // STARTUPINFO pointer
                                  &piProcInfo); // receives PROCESS_INFORMATION
 
@@ -261,11 +232,11 @@ void Process::Wait()
         DWORD bytesRead = 0;
         BOOL readResult = FALSE;
 
-        readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, NULL);
+        readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, nullptr);
         while (bytesRead > 0 && readResult != FALSE)
         {
             output.append(readBuf, bytesRead);
-            readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, NULL);
+            readResult = ReadFile(childProcOut[READ], readBuf, BUF_SIZE, &bytesRead, nullptr);
         }
     }
 
@@ -287,10 +258,10 @@ void Process::Wait()
 
 void Process::ConvertToWideChar(const String& str, wchar_t** outStr, size_t* outLength)
 {
-    *outStr = NULL;
+    *outStr = nullptr;
     *outLength = 0;
 
-    *outLength = mbstowcs(NULL, str.c_str(), str.size()) + 1;
+    *outLength = mbstowcs(nullptr, str.c_str(), str.size()) + 1;
 
     if (*outLength > 0)
     {
@@ -331,7 +302,7 @@ bool Process::Run(bool showWindow)
         execArgs.push_back(&(*it)[0]);
     }
 
-    execArgs.push_back(NULL);
+    execArgs.push_back(nullptr);
 
     pid = fork();
 
@@ -351,7 +322,6 @@ bool Process::Run(bool showWindow)
         int execResult = execv(execPath.c_str(), &execArgs[0]);
         DVASSERT(execResult >= 0);
         _exit(0); //if we got here - there's a problem
-        break;
     }
 
     case -1: //error

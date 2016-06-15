@@ -1,33 +1,7 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (IN gCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
+#include "UI/Layouts/UIAnchorComponent.h"
 #include "EditorSystems/HUDControls.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -49,11 +23,26 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
     return area;
 }
 
-HUDContainer::HUDContainer(UIControl* container)
-    : ControlContainer(HUDAreaInfo::NO_AREA)
-    , control(container)
+void ControlContainer::SetSystemVisible(bool visible)
 {
-    SetName("HudContainer of " + container->GetName());
+    systemVisible = visible;
+}
+
+bool ControlContainer::GetSystemVisible() const
+{
+    return systemVisible;
+}
+
+HUDContainer::HUDContainer(EditorSystemsManager* systemsManager_, ControlNode* node_)
+    : ControlContainer(HUDAreaInfo::NO_AREA)
+    , node(node_)
+    , systemsManager(systemsManager_)
+{
+    DVASSERT(nullptr != node);
+    SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
+    control = node->GetControl();
+    visibleProperty = node->GetRootProperty()->GetVisibleProperty();
+    DVASSERT(nullptr != control && nullptr != visibleProperty);
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -64,45 +53,72 @@ void HUDContainer::AddChild(ControlContainer* container)
 
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
 {
-    const Rect& ur = gd.GetUnrotatedRect();
-    SetPivot(control->GetPivot());
-    SetRect(ur);
-    SetAngle(gd.angle);
-    bool valid_ = control->GetVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
-    SetValid(valid_);
-    if (valid)
+    bool contolIsInValidState = systemVisible && gd.size.dx >= 0.0f && gd.size.dy >= 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool containerVisible = contolIsInValidState && visibleProperty->GetVisibleInEditor();
+    if (containerVisible)
     {
+        PackageBaseNode* parent = node->GetParent();
+        while (containerVisible && nullptr != parent)
+        {
+            ControlNode* parentControlNode = dynamic_cast<ControlNode*>(parent);
+            if (parentControlNode == nullptr)
+            {
+                break;
+            }
+            containerVisible &= parentControlNode->GetRootProperty()->GetVisibleProperty()->GetVisibleInEditor();
+            parent = parent->GetParent();
+        }
+    }
+    SetVisibilityFlag(containerVisible);
+    if (containerVisible)
+    {
+        const DAVA::Vector2& minimumSize = systemsManager->minimumSize;
+        DAVA::Vector2 actualSize(gd.size * gd.scale);
+        DAVA::UIGeometricData changedGD = gd;
+        bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
+        if (controlIsMoveOnly)
+        {
+            changedGD.position -= ::Rotate((minimumSize - actualSize) / 2.0f, changedGD.angle);
+            changedGD.size = minimumSize / gd.scale;
+        }
+
+        Rect ur(changedGD.position - ::Rotate(changedGD.pivotPoint, changedGD.angle) * changedGD.scale, changedGD.size * changedGD.scale);
+        SetRect(ur);
+
+        SetAngle(changedGD.angle);
+
         for (auto child : childs)
         {
-            child->InitFromGD(gd);
+            auto area = child->GetArea();
+            bool childVisible = child->GetSystemVisible() && changedGD.scale.x > 0.0f && changedGD.scale.y > 0.0f;
+            if (area != HUDAreaInfo::FRAME_AREA)
+            {
+                childVisible &= !controlIsMoveOnly;
+            }
+            child->SetVisibilityFlag(childVisible);
+            if (childVisible)
+            {
+                child->InitFromGD(changedGD);
+            }
         }
     }
 }
 
-void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
+void HUDContainer::SystemDraw(const UIGeometricData& gd)
 {
-    InitFromGD(control->GetGeometricData());
-    UIControl::SystemDraw(geometricData);
+    auto controlGD = control->GetGeometricData();
+    InitFromGD(controlGD);
+    UIControl::SystemDraw(gd);
 }
 
-void HUDContainer::SetValid(bool arg)
+FrameControl::FrameControl()
+    : ControlContainer(HUDAreaInfo::FRAME_AREA)
 {
-    valid = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
-void HUDContainer::SetVisibleInSystems(bool arg)
-{
-    visibleInSystems = arg;
-    SetVisible(valid && visibleInSystems);
-}
-
-void FrameControl::Init()
-{
+    SetName(FastName("Frame Control"));
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
-        ScopedPtr<UIControl> control(new UIControl());
-        control->SetName("border of " + GetName());
+        ScopedPtr<UIControl> control(CreateFrameBorderControl(i));
+        control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
@@ -110,92 +126,76 @@ void FrameControl::Init()
     }
 }
 
-void FrameControl::InitFromGD(const UIGeometricData& geometricData)
+void FrameControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
-    SetRect(rect);
-
-    auto& children = GetChildren();
-    DVASSERT(children.size() == BORDERS_COUNT);
-    auto chilrenIt = children.begin();
-    for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
-    {
-        Rect borderRect = CreateFrameBorderRect(i, rect);
-        (*chilrenIt)->SetRect(borderRect);
-    }
+    SetRect(Rect(Vector2(0.0f, 0.0f), gd.size * gd.scale));
 }
 
-FrameControl::FrameControl()
-    : ControlContainer(HUDAreaInfo::FRAME_AREA)
+UIControl* FrameControl::CreateFrameBorderControl(uint32 border)
 {
-    SetName("Frame Control");
-}
-
-Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
-{
+    UIControl* control = new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f));
+    UIAnchorComponent* anchor = control->GetOrCreateComponent<UIAnchorComponent>();
+    anchor->SetLeftAnchorEnabled(true);
+    anchor->SetRightAnchorEnabled(true);
+    anchor->SetTopAnchorEnabled(true);
+    anchor->SetBottomAnchorEnabled(true);
     switch (border)
     {
     case BORDER_TOP:
-        return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+        anchor->SetBottomAnchorEnabled(false);
+        break;
     case BORDER_BOTTOM:
-        return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+        anchor->SetTopAnchorEnabled(false);
+        break;
     case BORDER_LEFT:
-        return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+        anchor->SetRightAnchorEnabled(false);
+        break;
     case BORDER_RIGHT:
-        return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+        anchor->SetLeftAnchorEnabled(false);
+        break;
     default:
         DVASSERT("!impossible value for frame control position");
-        return Rect();
     }
+    return control;
 }
 
 FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
     : ControlContainer(area_)
 {
-    SetName("Frame Rect Control");
+    SetName(FastName("Frame Rect Control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void FrameRectControl::InitFromGD(const UIGeometricData& geometricData)
+void FrameRectControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), FRAME_RECT_SIZE);
-    rect.SetCenter(GetPos(geometricData));
-
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
+    rect.SetCenter(GetPos(gd));
     SetRect(rect);
 }
 
-Vector2 FrameRectControl::GetPos(const UIGeometricData& geometricData) const
+Vector2 FrameRectControl::GetPos(const UIGeometricData& gd) const
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    Vector2 retVal = rect.GetPosition();
+    Rect rect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
     switch (area)
     {
     case HUDAreaInfo::TOP_LEFT_AREA:
-        return retVal;
+        return Vector2(0.0f, 0.0f);
     case HUDAreaInfo::TOP_CENTER_AREA:
-        return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        return Vector2(rect.dx / 2.0f, 0.0f);
     case HUDAreaInfo::TOP_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, 0.0f);
+        return Vector2(rect.dx, 0.0f);
     case HUDAreaInfo::CENTER_LEFT_AREA:
-        return retVal + Vector2(0, rect.dy / 2.0f);
+        return Vector2(0, rect.dy / 2.0f);
     case HUDAreaInfo::CENTER_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        return Vector2(rect.dx, rect.dy / 2.0f);
     case HUDAreaInfo::BOTTOM_LEFT_AREA:
-        return retVal + Vector2(0, rect.dy);
+        return Vector2(0, rect.dy);
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
-        return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        return Vector2(rect.dx / 2.0f, rect.dy);
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-        return retVal + Vector2(rect.dx, rect.dy);
+        return Vector2(rect.dx, rect.dy);
     default:
         DVASSERT(!"wrong area passed to hud control");
         return Vector2(0.0f, 0.0f);
@@ -205,71 +205,54 @@ Vector2 FrameRectControl::GetPos(const UIGeometricData& geometricData) const
 PivotPointControl::PivotPointControl()
     : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
 {
-    SetName("pivot point control");
+    SetName(FastName("pivot point control"));
     background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void PivotPointControl::InitFromGD(const UIGeometricData& geometricData)
+void PivotPointControl::InitFromGD(const UIGeometricData& gd)
 {
     Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
-    const Rect& controlRect = geometricData.GetUnrotatedRect();
-    rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
-
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
+    rect.SetCenter(gd.pivotPoint * gd.scale);
     SetRect(rect);
 }
 
 RotateControl::RotateControl()
     : ControlContainer(HUDAreaInfo::ROTATE_AREA)
 {
-    SetName("rotate control");
+    SetName(FastName("rotate control"));
     background->SetSprite("~res:/Gfx/HUDControls/Rotate", 0);
     background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
 
-void RotateControl::InitFromGD(const UIGeometricData& geometricData)
+void RotateControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
-    Rect controlRect = geometricData.GetUnrotatedRect();
-    rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
+    Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
+    Rect controlRect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
 
-    UIControl* parent = GetParent();
-    DVASSERT(parent != nullptr);
-    Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
-    rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
+    const int margin = 5;
+    rect.SetCenter(Vector2(controlRect.dx / 2.0f, controlRect.GetPosition().y - ROTATE_CONTROL_SIZE.y - margin));
+
     SetRect(rect);
 }
 
-SelectionRect::SelectionRect()
+void SetupHUDMagnetLineControl(UIControl* control)
 {
-    SetName("Selection Rect");
+    control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    control->GetBackground()->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
 }
 
-void SelectionRect::Draw(const UIGeometricData& geometricData)
+void SetupHUDMagnetRectControl(UIControl* parentControl)
 {
-    Rect rect = geometricData.GetUnrotatedRect();
-    rect.SetPosition(Vector2());
-    auto& children = GetChildren();
-    DVASSERT(children.size() == BORDERS_COUNT);
-    auto chilrenIt = children.begin();
-    for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
+    const int bordersCount = 4;
+    for (int i = 0; i < bordersCount; ++i)
     {
-        Rect borderRect = CreateFrameBorderRect(i, rect);
-        (*chilrenIt)->SetRect(borderRect);
+        ScopedPtr<UIControl> control(FrameControl::CreateFrameBorderControl(i));
+        SetupHUDMagnetLineControl(control);
+        control->SetName(FastName(String("border of magnet rect")));
+        parentControl->AddControl(control);
     }
-    UIControl::Draw(geometricData);
-}
-
-MagnetLine::MagnetLine()
-{
-    SetName("Magnet Line");
-    SetDebugDraw(true);
-    //background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
-    //background->SetDrawType(UIControlBackground::DRAW_TILED);
 }

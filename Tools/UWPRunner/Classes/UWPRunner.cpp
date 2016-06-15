@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
+#include <iostream>
 #include <QFile>
 #include <QXmlStreamReader>
 
@@ -36,7 +8,8 @@
 #include "Network/NetConfig.h"
 #include "Network/Services/LogConsumer.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
-#include "TeamcityOutput/TeamCityTestsOutput.h"
+#include "Logger/TeamCityTestsOutput.h"
+#include "Utils/Utils.h"
 
 #include "AppxBundleHelper.h"
 #include "ArchiveExtraction.h"
@@ -117,6 +90,11 @@ void UWPRunner::Run()
     Run(runner);
 }
 
+bool UWPRunner::IsSucceed()
+{
+    return succeed;
+}
+
 void UWPRunner::Run(Runner& runner)
 {
     //installing and starting application
@@ -132,6 +110,7 @@ void UWPRunner::Run(Runner& runner)
 
     if (options.installOnly)
     {
+        succeed = true;
         return;
     }
 
@@ -163,6 +142,7 @@ void UWPRunner::WaitApp()
 
         if (logConsumer.IsChannelOpen())
         {
+            succeed = true;
             watchDogTimer = 0;
         }
         else
@@ -177,6 +157,11 @@ void UWPRunner::WaitApp()
 
         Thread::Sleep(sleepTimeMS);
     } while (!logConsumer.IsSessionEnded());
+
+    if (succeed && options.isDavaApplication)
+    {
+        succeed = davaApplicationTerminated;
+    }
 }
 
 void UWPRunner::ProcessPackageOptions()
@@ -299,44 +284,44 @@ void UWPRunner::UnInitializeNetwork()
 
 bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 {
-    const String desiredAddr = UAPNetworkHelper::UAP_IP_ADDRESS;
+    const WideString desiredAddr = StringToWString(UAPNetworkHelper::UAP_IP_ADDRESS);
     const DWORD desiredPort = UAPNetworkHelper::UAP_MOBILE_TCP_PORT;
     bool changed = false;
 
-    String address = key.QueryString("DestinationAddress");
+    WideString address = key.QueryString(L"DestinationAddress");
     if (address != desiredAddr)
     {
-        if (!key.SetValue("DestinationAddress", desiredAddr))
+        if (!key.SetValue(L"DestinationAddress", desiredAddr))
         {
             RUNNER_EXCEPTION("Unable to set DestinationAddress");
         }
         changed = true;
     }
 
-    DWORD port = key.QueryDWORD("DestinationPort");
+    DWORD port = key.QueryDWORD(L"DestinationPort");
     if (port != desiredPort)
     {
-        if (!key.SetValue("DestinationPort", desiredPort))
+        if (!key.SetValue(L"DestinationPort", desiredPort))
         {
             RUNNER_EXCEPTION("Unable to set DestinationPort");
         }
         changed = true;
     }
 
-    address = key.QueryString("LocalAddress");
+    address = key.QueryString(L"LocalAddress");
     if (address != desiredAddr)
     {
-        if (!key.SetValue("LocalAddress", desiredAddr))
+        if (!key.SetValue(L"LocalAddress", desiredAddr))
         {
             RUNNER_EXCEPTION("Unable to set LocalAddress");
         }
         changed = true;
     }
 
-    port = key.QueryDWORD("LocalPort");
+    port = key.QueryDWORD(L"LocalPort");
     if (port != desiredPort)
     {
-        if (!key.SetValue("LocalPort", desiredPort))
+        if (!key.SetValue(L"LocalPort", desiredPort))
         {
             RUNNER_EXCEPTION("Unable to set LocalPort");
         }
@@ -349,7 +334,7 @@ bool UWPRunner::UpdateIpOverUsbConfig(RegKey& key)
 bool UWPRunner::RestartIpOverUsb()
 {
     //open service
-    SvcHelper service("IpOverUsbSvc");
+    SvcHelper service(L"IpOverUsbSvc");
     if (!service.IsInstalled())
     {
         RUNNER_EXCEPTION("Can't open IpOverUsb service");
@@ -375,7 +360,7 @@ bool UWPRunner::ConfigureIpOverUsb()
     bool needRestart = false;
 
     //open or create key
-    RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
+    RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     if (!key.IsExist())
     {
         RUNNER_EXCEPTION("Can't open or create key");
@@ -392,13 +377,8 @@ bool UWPRunner::ConfigureIpOverUsb()
     return true;
 }
 
-void UWPRunner::NetLogOutput(const String& logString)
+void SplitLoggerMessage(const String& logString, String& logLevel, String& message)
 {
-    //incoming string is formatted in style "[ip:port] date time message"
-    //extract only message text
-    String logLevel;
-    String message;
-
     size_t spaces = 0;
     for (auto i : logString)
     {
@@ -416,6 +396,29 @@ void UWPRunner::NetLogOutput(const String& logString)
             message += i;
         }
     }
+}
+
+void TeamcityTestOutputFunc(const char* logLevelStr, const char* messageStr)
+{
+    Logger* logger = Logger::Instance();
+    Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevelStr);
+
+    if (ll != Logger::LEVEL__DISABLE)
+    {
+        TeamcityTestsOutput testOutput;
+        testOutput.Output(ll, messageStr);
+    }
+}
+
+void UWPRunner::NetLogOutput(const String& logString)
+{
+    const char* davaAppTermString = "Core::SystemAppFinished";
+
+    //incoming string is formatted in style "[ip:port] date time message"
+    //extract only message text
+    String logLevel;
+    String message;
+    SplitLoggerMessage(logString, logLevel, message);
 
     if (logLevel.empty())
     {
@@ -423,27 +426,44 @@ void UWPRunner::NetLogOutput(const String& logString)
     }
 
     //remove first space
-    logLevel = logLevel.substr(1);
-    message = message.substr(1);
+    const char* logLevelStr = logLevel.c_str() + 1;
+    const char* messageStr = message.c_str() + 1;
 
     if (options.useTeamCityTestOutput)
     {
-        Logger* logger = Logger::Instance();
-        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
-
-        if (ll != Logger::LEVEL__DISABLE)
-        {
-            TeamcityTestsOutput testOutput;
-            testOutput.Output(ll, message.c_str());
-        }
+        TeamcityTestOutputFunc(logLevelStr, messageStr);
     }
-    else
+    else if (!options.useTeamCityTestOutput || !options.outputFile.empty())
     {
-        printf("[%s] %s", logLevel.c_str(), message.c_str());
+        StringStream ss;
+        ss << "[" << logLevelStr << "] " << messageStr;
         if (message.back() != '\n' || message.back() != '\r')
         {
-            printf("\n");
+            ss << "\n";
         }
+
+        std::cout << ss.str();
+
+        if (!options.outputFile.empty())
+        {
+            if (!outputFile)
+            {
+                FileSystem::Instance()->DeleteFile(options.outputFile);
+                uint32 attributes = File::WRITE;
+                outputFile.Set(File::Create(options.outputFile, attributes));
+            }
+
+            if (outputFile)
+            {
+                outputFile->WriteString(ss.str(), false);
+                outputFile->Flush();
+            }
+        }
+    }
+
+    if (message.find(davaAppTermString) != String::npos)
+    {
+        davaApplicationTerminated = true;
     }
 }
 

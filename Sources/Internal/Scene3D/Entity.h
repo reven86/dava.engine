@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_SCENENODE_H__
 #define __DAVAENGINE_SCENENODE_H__
 
@@ -47,7 +18,6 @@
 namespace DAVA
 {
 class Scene;
-class SceneNodeAnimation;
 class SceneNodeAnimationKey;
 class SceneFileV2;
 class DataNode;
@@ -59,7 +29,7 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
 
 protected:
     virtual ~Entity();
@@ -204,7 +174,7 @@ public:
 
     // properties
     void SetVisible(const bool& isVisible);
-    inline const bool GetVisible();
+    bool GetVisible();
     inline Entity* GetParent();
     DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
     DAVA_DEPRECATED(inline bool GetUpdatable(void));
@@ -275,23 +245,15 @@ public:
     inline uint32 GetIndexInParent()
     {
         return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK;
-    };
+    }
     inline void SetIndexInParent(uint32 index)
     {
         flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION;
-    };
+    }
     void SetSceneID(uint32 sceneId);
     uint32 GetSceneID() const;
 
-    // animations
-    // 	void ExecuteAnimation(SceneNodeAnimation * animation);
-    // 	void DetachAnimation(SceneNodeAnimation * animation);
-    // 	virtual void StopAllAnimations(bool recursive = true);
-
     virtual Entity* Clone(Entity* dstNode = NULL);
-
-    // Do not use variables
-    //std::deque<SceneNodeAnimation *> nodeAnimations;
 
     // Do we need enum, or we can use virtual functions?
     enum
@@ -437,10 +399,11 @@ public:
                          MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-                         );
+                         COLLECTION(components, "components", I_VIEW)
+                         )
 };
 
-inline const bool Entity::GetVisible()
+inline bool Entity::GetVisible()
 {
     return (flags & NODE_VISIBLE) != 0;
 }
@@ -526,18 +489,14 @@ void Entity::GetChildNodes(Container<T, A>& container)
 template <template <typename, typename> class Container, class A>
 void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type)
 {
-    Vector<Entity*>::const_iterator end = children.end();
-    for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+    for (auto& child : children)
     {
-        Entity* entity = *t;
-        if (entity)
+        if (child->GetComponentCount(type) > 0)
         {
-            Component* component = entity->GetComponent(type);
-            if (component)
-                container.push_back(entity);
+            container.push_back(child);
         }
 
-        entity->GetChildEntitiesWithComponent(container, type);
+        child->GetChildEntitiesWithComponent(container, type);
     }
 }
 
@@ -553,7 +512,7 @@ inline Entity* Entity::GetChild(int32 index) const
 
 inline int32 Entity::GetChildrenCount() const
 {
-    return (int32)children.size();
+    return static_cast<int32>(children.size());
 }
 
 inline uint32 Entity::GetComponentCount() const

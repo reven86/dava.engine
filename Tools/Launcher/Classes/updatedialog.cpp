@@ -1,37 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "updatedialog.h"
 #include "ui_updatedialog.h"
 #include "filemanager.h"
 #include "applicationmanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
@@ -46,15 +17,7 @@ namespace UpdateDialog_local
 class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
 {
 public:
-    UpdateDialogZipFunctor(const QString& progressMessage_
-                           ,
-                           const QString& finishMessage_
-                           ,
-                           const QString& errorMessage_
-                           ,
-                           UpdateDialog* dialog_
-                           ,
-                           QProgressBar* progressBar_)
+    UpdateDialogZipFunctor(const QString& progressMessage_, const QString& finishMessage_, const QString& errorMessage_, UpdateDialog* dialog_, QProgressBar* progressBar_)
         : progressMessage(progressMessage_)
         , finishMessage(finishMessage_)
         , errorMessage(errorMessage_)
@@ -85,7 +48,7 @@ private:
     void OnError(const ZipError& zipError) override
     {
         Q_ASSERT(zipError.error != ZipError::NO_ERRORS);
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_UNPACK, zipError.error, zipError.GetErrorString());
         dialog->UpdateLastLogValue(errorMessage);
         dialog->BreakLog();
     }
@@ -99,10 +62,10 @@ private:
 };
 }
 
-UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QNetworkAccessManager* accessManager, QWidget* parent)
+UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManager* _appManager, QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
     , ui(new Ui::UpdateDialog)
-    , networkManager(accessManager)
+    , networkManager(new QNetworkAccessManager(this))
     , tasks(taskQueue)
     , appManager(_appManager)
 {
@@ -110,11 +73,10 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
 #ifdef Q_OS_MAC
     //https://bugreports.qt.io/browse/QTBUG-51120
     ui->progressBar_downloading->setTextVisible(true);
-    ui->progressBar_testing->setTextVisible(true);
     ui->progressBar_unpacking->setTextVisible(true);
 #endif //Q_OS_MAC
-
-    connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(OnCancelClicked()));
+    connect(networkManager, &QNetworkAccessManager::networkAccessibleChanged, this, &UpdateDialog::OnNetworkAccessibleChanged);
+    connect(ui->cancelButton, &QPushButton::clicked, this, &UpdateDialog::OnCancelClicked);
 
     tasksCount = tasks.size();
 
@@ -125,11 +87,10 @@ UpdateDialog::~UpdateDialog() = default;
 
 void UpdateDialog::OnCancelClicked()
 {
-    if (currentDownload)
+    if (currentDownload != nullptr)
         currentDownload->abort();
-    outputFile.close();
 
-    FileManager::Instance()->ClearTempDirectory();
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     close();
 }
@@ -146,7 +107,6 @@ void UpdateDialog::StartNextTask()
     if (!tasks.isEmpty())
     {
         ui->progressBar_downloading->setValue(0);
-        ui->progressBar_testing->setValue(0);
         ui->progressBar_unpacking->setValue(0);
 
         setWindowTitle(QString("Updating in progress... (%1/%2)").arg(tasksCount - tasks.size() + 1).arg(tasksCount));
@@ -175,15 +135,8 @@ void UpdateDialog::StartNextTask()
         }
         else
         {
-            const QString& archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
-
-            outputFile.setFileName(archiveFilepath);
-            outputFile.open(QFile::WriteOnly);
             currentDownload = networkManager->get(QNetworkRequest(QUrl(task.version.url)));
-
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-            connect(currentDownload, SIGNAL(readyRead()), this, SLOT(DownloadReadyRead()));
-            connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
             connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
             AddTopLogValue(QString("%1 - %2:")
@@ -200,15 +153,6 @@ void UpdateDialog::StartNextTask()
     }
 }
 
-void UpdateDialog::NetworkError(QNetworkReply::NetworkError code)
-{
-    lastErrorDesrc = currentDownload->errorString();
-    lastErrorCode = code;
-
-    currentDownload->deleteLater();
-    currentDownload = nullptr;
-}
-
 void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal)
@@ -222,80 +166,102 @@ void UpdateDialog::DownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
 void UpdateDialog::DownloadFinished()
 {
+    if (currentDownload == nullptr)
+    {
+        return;
+    }
+    QByteArray readedData = currentDownload->readAll();
+    QNetworkReply::NetworkError error = currentDownload->error();
+    QString errorString = currentDownload->errorString();
+
+    currentDownload->deleteLater();
+    currentDownload = nullptr;
+
+    if (error == QNetworkReply::OperationCanceledError)
+    {
+        return;
+    }
+    else if (error != QNetworkReply::NoError)
+    {
+        UpdateLastLogValue("Download Fail!");
+        BreakLog();
+
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
+        return;
+    }
+
+    const QString& archiveFilepath = FileManager::GetTempDownloadFilePath();
+    QFile outputFile;
+    outputFile.setFileName(archiveFilepath);
+    outputFile.open(QFile::WriteOnly);
+    outputFile.write(readedData);
+
     QString filePath = outputFile.fileName();
     outputFile.close();
 
     const UpdateTask& task = tasks.head();
 
-    if (currentDownload)
+    QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, false);
+    QString runPath = appDir + task.version.runPath;
+    while (ProcessHelper::IsProcessRuning(runPath))
+        ErrorMessenger::ShowRetryDlg(false);
+
+    FileManager::DeleteDirectory(appDir);
+
+    UpdateLastLogValue(tr("Download Complete!"));
+
+    AddLogValue(tr("Unpacking archive..."));
+
+    ui->cancelButton->setEnabled(false);
+    ZipUtils::CompressedFilesAndSizes files;
+    if (ListArchive(filePath, files)
+        && UnpackArchive(filePath, appDir, files))
     {
-        currentDownload->deleteLater();
-        currentDownload = nullptr;
-
-        QString appDir = FileManager::Instance()->GetApplicationFolder(task.branchID, task.appID);
-
-        QString runPath = appDir + task.version.runPath;
-        while (ProcessHelper::IsProcessRuning(runPath))
-            ErrorMessanger::Instance()->ShowRetryDlg(false);
-
-        FileManager::Instance()->DeleteDirectory(appDir);
-
-        UpdateLastLogValue(tr("Download Complete!"));
-
-        AddLogValue(tr("Checking archive..."));
-
-        ui->cancelButton->setEnabled(false);
-        ZipUtils::CompressedFilesAndSizes files;
-        if (ListArchive(filePath, files)
-            && TestArchive(filePath, files)
-            && UnpackArchive(filePath, appDir, files))
-        {
-            emit AppInstalled(task.branchID, task.appID, task.version);
-            UpdateLastLogValue("Unpack Complete!");
-            CompleteLog();
-        }
-        else
-        {
-            UpdateLastLogValue("Unpack Fail!");
-            BreakLog();
-        }
-        ui->cancelButton->setEnabled(true);
-        FileManager::Instance()->ClearTempDirectory();
+        emit AppInstalled(task.branchID, task.appID, task.version);
+        UpdateLastLogValue("Unpack Complete!");
+        CompleteLog();
     }
-    else if (lastErrorCode != QNetworkReply::OperationCanceledError)
+    else
     {
-        UpdateLastLogValue("Download Fail!");
+        UpdateLastLogValue("Unpack Fail!");
         BreakLog();
-
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_NETWORK, lastErrorCode, lastErrorDesrc);
     }
+    ui->cancelButton->setEnabled(true);
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+
     tasks.dequeue();
     StartNextTask();
 }
 
-bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
+void UpdateDialog::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
 {
-    UpdateDialog_local::UpdateDialogZipFunctor functor("", "", tr("Archive not found or damaged!"), this, nullptr);
-    return ZipUtils::GetFileList(archivePath, files, functor);
+    if (currentDownload == nullptr)
+    {
+        return;
+    }
+
+    if (accessible == QNetworkAccessManager::NotAccessible)
+    {
+        currentDownload->deleteLater();
+        currentDownload = nullptr;
+
+        UpdateLastLogValue("Download Fail!");
+        BreakLog();
+
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, -1, tr("Network is unaccessible"));
+    }
 }
 
-bool UpdateDialog::TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files)
+bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
 {
-    UpdateLastLogValue(tr("Checking archive..."));
-    UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Checking archive..."), tr("Archive checked!"), tr("Archive not found or damaged!"), this, ui->progressBar_testing);
-    return ZipUtils::TestZipArchive(archivePath, files, functor);
+    UpdateDialog_local::UpdateDialogZipFunctor functor("Retreiveing archive info...", "Unpacking archive...", tr("Archive not found or damaged!"), this, nullptr);
+    return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
 bool UpdateDialog::UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files)
 {
-    AddLogValue(tr("Unpacking archive..."));
     UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
     return ZipUtils::UnpackZipArchive(archivePath, outDir, files, functor);
-}
-
-void UpdateDialog::DownloadReadyRead()
-{
-    outputFile.write(currentDownload->readAll());
 }
 
 void UpdateDialog::AddTopLogValue(const QString& log)

@@ -1,34 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/TheoraPlayer.h"
-#include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
@@ -78,10 +48,14 @@ TheoraPlayer::~TheoraPlayer()
 
 int32 TheoraPlayer::BufferData()
 {
-    char* buffer = ogg_sync_buffer(&theoraData->syncState, 4096);
-    int32 bytes = file->Read(buffer, 4096);
-    ogg_sync_wrote(&theoraData->syncState, bytes);
-    return bytes;
+    if (file)
+    {
+        char* buffer = ogg_sync_buffer(&theoraData->syncState, 512 * 4096);
+        int32 bytes = file->Read(buffer, 512 * 4096);
+        ogg_sync_wrote(&theoraData->syncState, bytes);
+        return bytes;
+    }
+    return 0;
 }
 
 void TheoraPlayer::ReleaseData()
@@ -119,6 +93,9 @@ void TheoraPlayer::OpenFile(const FilePath& path)
     filePath = path;
 
     file = File::Create(path, File::OPEN | File::READ);
+    if (!file)
+        return;
+
     ogg_sync_init(&theoraData->syncState);
     th_info_init(&theoraData->thInfo);
     th_comment_init(&theoraData->thComment);
@@ -226,7 +203,7 @@ void TheoraPlayer::OpenFile(const FilePath& path)
 
     repeatFilePos = file->GetPos();
 
-    frameTime = (float32)(theoraData->thInfo.fps_denominator) / (float32)(theoraData->thInfo.fps_numerator);
+    frameTime = static_cast<float32>(theoraData->thInfo.fps_denominator) / static_cast<float32>(theoraData->thInfo.fps_numerator);
 
     isPlaying = true;
 }
@@ -286,7 +263,7 @@ void TheoraPlayer::Update(float32 timeElapsed)
 
             if (th_decode_packetin(theoraData->thCtx, &theoraData->packet, &theoraData->videoBufGranulePos) == 0)
             {
-                if ((videoBufTime = (float32)th_granule_time(theoraData->thCtx, theoraData->videoBufGranulePos)) >= videoTime)
+                if ((videoBufTime = static_cast<float32>(th_granule_time(theoraData->thCtx, theoraData->videoBufGranulePos))) >= videoTime)
                     isVideoBufReady = true;
                 else
                     pp_inc = (pp_level > 0) ? -1 : 0;
@@ -332,9 +309,9 @@ void TheoraPlayer::Update(float32 timeElapsed)
                     const unsigned char U = *(theoraData->yuvBuffer[1].data + uShift + j / 2);
                     const unsigned char V = *(theoraData->yuvBuffer[2].data + vShift + j / 2);
 
-                    frameBuffer[index] = (uint8)Clamp(Y + 1.371f * (V - 128), 0.f, 255.f);
-                    frameBuffer[index + 1] = (uint8)Clamp(Y - 0.698f * (V - 128) - 0.336f * (U - 128), 0.f, 255.f);
-                    frameBuffer[index + 2] = (uint8)Clamp(Y + 1.732f * (U - 128), 0.f, 255.f);
+                    frameBuffer[index] = static_cast<uint8>(Clamp(Y + 1.371f * (V - 128), 0.f, 255.f));
+                    frameBuffer[index + 1] = static_cast<uint8>(Clamp(Y - 0.698f * (V - 128) - 0.336f * (U - 128), 0.f, 255.f));
+                    frameBuffer[index + 2] = static_cast<uint8>(Clamp(Y + 1.732f * (U - 128), 0.f, 255.f));
                     frameBuffer[index + 3] = 255;
                 }
                 else
@@ -347,7 +324,7 @@ void TheoraPlayer::Update(float32 timeElapsed)
         if (!ret)
         {
             Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, frameBuffer, frameBufferW, frameBufferH, false);
-            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, (float32)tex->width, (float32)tex->height);
+            Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, static_cast<float32>(tex->width), static_cast<float32>(tex->height));
             spr->ConvertToVirtualSize();
 
             SafeRelease(tex);
@@ -373,28 +350,6 @@ void TheoraPlayer::Update(float32 timeElapsed)
     {
         ReleaseData();
         OpenFile(filePath);
-    }
-}
-
-void TheoraPlayer::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-    const YamlNode* fileNode = node->Get("file");
-
-    if (fileNode)
-        OpenFile(fileNode->AsString());
-
-    const YamlNode* rectNode = node->Get("rect");
-
-    if (rectNode)
-    {
-        Rect rect = rectNode->AsRect();
-        if (rect.dx == -1)
-            rect.dx = (float32)theoraData->thInfo.pic_width;
-        if (rect.dy == -1)
-            rect.dy = (float32)theoraData->thInfo.pic_height;
-
-        SetRect(rect);
     }
 }
 

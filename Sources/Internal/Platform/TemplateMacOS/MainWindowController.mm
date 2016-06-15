@@ -1,39 +1,13 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #import "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/Steam.h"
 
 #import <AppKit/NSApplication.h>
 #import "Platform/TemplateMacOS/HelperAppDelegate.h"
+
+using namespace DAVA;
 
 @interface DavaApp : NSApplication
 @end
@@ -124,7 +98,7 @@
     if (focusedCtrl != nullptr && focusedCtrl == focusedAfterCtrl)
     {
         DAVA::UITextField* tf = dynamic_cast<DAVA::UITextField*>(focusedCtrl);
-        if (tf)
+        if (tf && tf->IsEditing())
         {
             if (theEvent.type == NSKeyDown || theEvent.type == NSKeyUp)
             {
@@ -166,9 +140,16 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
     // window controller used from app delegate
     [appDelegate setWindowController:mainWindowController];
 
-    [[DavaApp sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+    [[DavaApp sharedApplication] setDelegate:static_cast<id<NSApplicationDelegate>>(appDelegate)];
 
-    int retVal = NSApplicationMain(argc, (const char**)argv);
+    // NSApplicationMain expects const char*[]
+    const char* argvForNSApplicationMain[argc];
+    for (int i = 0; i < argc; ++i)
+    {
+        argvForNSApplicationMain[i] = argv[i];
+    }
+    int retVal = NSApplicationMain(argc, argvForNSApplicationMain);
+
     // This method never returns, so release code transfered to termination message
     // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
     // core->ReleaseSingletons() is called from there
@@ -237,6 +218,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 }
 }
 
+@synthesize willQuit;
+
 - (id)init
 {
     self = [super init];
@@ -247,6 +230,9 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         mainWindow = nil;
         animationTimer = nil;
         core = 0;
+        assertionID = kIOPMNullAssertionID;
+        willQuit = false;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(OnKeyUpDuringCMDHold:)
                                                      name:@"DavaKeyUp"
@@ -255,20 +241,56 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
                                                  selector:@selector(OnKeyDuringTextFieldInFocus:)
                                                      name:@"DavaKey"
                                                    object:nil];
+
+        [self allowDisplaySleep:false];
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [self allowDisplaySleep:true];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
 
+- (void)allowDisplaySleep:(bool)sleep
+{
+    bool displaySleepAllowed = assertionID == kIOPMNullAssertionID;
+    if (sleep == displaySleepAllowed)
+    {
+        return;
+    }
+
+    IOReturn result;
+
+    if (sleep)
+    {
+        result = IOPMAssertionRelease(assertionID);
+        assertionID = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("DAVA display sleeping preventing"),
+                                             &assertionID);
+    }
+
+    if (result != kIOReturnSuccess)
+    {
+        DVASSERT_MSG(false, "IOPM Assertion manipulation failed");
+        return;
+    }
+}
+
 - (void)createWindows
 {
     FrameworkDidLaunched();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Init();
+#endif
 
     core = Core::GetApplicationCore();
 
@@ -312,8 +334,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         Core::Instance()->SetWindowMinimumSize(minWidth, minHeight);
     }
 
-    Core::Instance()->SetNativeView(openGLView);
-
     // start animation
     currFPS = Renderer::GetDesiredFPS();
     [self startAnimationTimer];
@@ -328,32 +348,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
         [self setFullScreen:true];
     }
 
-    // OS X application has no way to detect when she is no longer in control,
-    // specifically when Mission Control is active or when user invoked Show Desktop (F11 key).
-    // And application has no chance to release mouse capture.
-
-    // Install mouse hook which determines whether Mission Control, Launchpad is active
-    // and temporary turns off mouse pinning
-    // https://developer.apple.com/library/mac/documentation/Carbon/Reference/QuartzEventServicesRef/index.html
-    CFMachPortRef portRef = CGEventTapCreate(kCGAnnotatedSessionEventTap,
-                                             kCGTailAppendEventTap,
-                                             kCGEventTapOptionListenOnly,
-                                             NSAnyEventMask,
-                                             &EventTapCallback,
-                                             nullptr);
-
-    if (portRef != nullptr)
-    {
-        CFRunLoopSourceRef loopSourceRef = CFMachPortCreateRunLoopSource(nullptr, portRef, 0);
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), loopSourceRef, kCFRunLoopDefaultMode);
-        CFRelease(portRef);
-        CFRelease(loopSourceRef);
-    }
-    else
-    {
-        Logger::Error("[CoreMacOSPlatform] failed to install mouse hook");
-    }
-
     NSSize windowSize = [openGLView frame].size;
     float32 backingScale = Core::Instance()->GetScreenScaleFactor();
 
@@ -362,13 +356,8 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     CGLEnable([[openGLView openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
     CGLUpdateContext([[openGLView openGLContext] CGLContextObj]);
 
-    rhi::InitParam& rendererParams = Core::Instance()->rendererParams;
-    rendererParams.window = mainWindowController->openGLView;
-    rendererParams.width = backingSize[0];
-    rendererParams.height = backingSize[1];
-
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
+    float32 scale = DeviceInfo::GetScreenInfo().scale;
+    Core::Instance()->InitWindowSize(openGLView, windowSize.width, windowSize.height, scale, scale);
 }
 
 - (void)setMinimumWindowSize:(float32)width height:(float32)height
@@ -431,12 +420,12 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)OnKeyUpDuringCMDHold:(NSNotification*)notification
 {
-    [self keyUp:(NSEvent*)[notification object]];
+    [self keyUp:static_cast<NSEvent*>([notification object])];
 }
 
 - (void)OnKeyDuringTextFieldInFocus:(NSNotification*)notification
 {
-    NSEvent* theEvent = (NSEvent*)[notification object];
+    NSEvent* theEvent = static_cast<NSEvent*>([notification object]);
 
     if (theEvent.type == NSKeyDown)
     {
@@ -520,10 +509,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 {
 }
 
-- (void)mouseExited:(NSEvent*)theEvent
-{
-}
-
 - (void)rightMouseDown:(NSEvent*)theEvent
 {
     [openGLView rightMouseDown:theEvent];
@@ -574,7 +559,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
 - (void)animationTimerFired:(NSTimer*)timer
 {
-    [openGLView setNeedsDisplay:YES];
+    if (willQuit)
+        return;
+
+    DAVA::Core::Instance()->SystemProcessFrame();
 
     if (currFPS != Renderer::GetDesiredFPS())
     {
@@ -584,36 +572,10 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
     }
 }
 
-static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* refcon)
-{
-    static bool restorePinning = false;
-    static int64_t myPid = static_cast<int64_t>(getpid());
-
-    int64_t targetPid = CGEventGetIntegerValueField(event, kCGEventTargetUnixProcessID);
-    if (targetPid != myPid)
-    {
-        // Turn off mouse cature if event target is not our application and
-        // current capture mode is pinning
-        InputSystem::eMouseCaptureMode captureMode = InputSystem::Instance()->GetMouseCaptureMode();
-        if (InputSystem::eMouseCaptureMode::PINING == captureMode)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::OFF);
-            restorePinning = true;
-        }
-    }
-    else
-    {
-        if (restorePinning)
-        {
-            InputSystem::Instance()->SetMouseCaptureMode(InputSystem::eMouseCaptureMode::PINING);
-            restorePinning = false;
-        }
-    }
-    return event;
-}
-
 - (void)OnSuspend
 {
+    [self allowDisplaySleep:true];
+
     if (core)
     {
         core->OnSuspend();
@@ -626,6 +588,8 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 - (void)OnResume
 {
+    [self allowDisplaySleep:false];
+
     if (core)
     {
         core->OnResume();
@@ -664,7 +628,7 @@ bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 
 void CoreMacOSPlatform::Quit()
 {
-    mainWindowController->openGLView.willQuit = true;
+    mainWindowController->willQuit = true;
     [[NSApplication sharedApplication] terminate:nil];
 }
 
@@ -678,6 +642,7 @@ void CoreMacOSPlatform::SetScreenScaleMultiplier(float32 multiplier)
         //Directly call [openGLView reshape] doesn't help, as an other similar 'tricks'
         [mainWindowController->mainWindow setContentView:nil];
         [mainWindowController->mainWindow setContentView:mainWindowController->openGLView];
+        [mainWindowController->mainWindow makeFirstResponder:mainWindowController->openGLView];
     }
 }
 };

@@ -7,7 +7,6 @@ include( CMake-common )
 
 find_package( QT5           REQUIRED )
 find_package( DavaFramework REQUIRED )
-find_package( DavaTools     REQUIRED )
 
 if ( NOT WIN32 OR WINDOWS_UAP )
     message( FATAL_ERROR "This util can be built only on Windows Desktop platform" )
@@ -25,7 +24,6 @@ add_definitions(
 -D_CRT_SECURE_NO_DEPRECATE
 -DDAVA_QT
 -DDAVA_FMOD
--D_DISABLE_IMAGE_MAGICK
 )
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
@@ -48,8 +46,9 @@ generate_source_groups_project( SRC_ROOT "Classes" )
 list ( APPEND UNIFIED_IGNORE_LIST "Classes/Qt/corecon/corecon.cpp" )
 
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
-set( LIBRARIES            ${QT_LIBRARIES} runtimeobject.lib XmlLite.lib wsclient.lib )
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+set( LIBRARIES            ${QT_LIBRARIES} runtimeobject.lib XmlLite.lib wsclient.lib shlwapi.lib )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()
 

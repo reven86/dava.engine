@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_COLORF_H__
 #define __DAVAENGINE_COLORF_H__
 
@@ -124,7 +95,7 @@ inline Color::Color(uint32 rgba)
     for (int i = 0; i < 4; i++)
     {
         uint32 intVal = ((rgba >> (8 * i)) & 0xff);
-        color[3 - i] = (float32)intVal / 255.0f;
+        color[3 - i] = intVal / 255.0f;
     }
 }
 
@@ -176,19 +147,19 @@ inline const Color& Color::operator/=(float32 f)
 //! Comparison operators
 inline bool Color::operator==(const Color& _v) const
 {
-    return ((r == _v.r) && (g == _v.g) && (b == _v.b) && (a == _v.a));
+    return (Memcmp(color, _v.color, sizeof(Color)) == 0);
 }
 inline bool Color::operator!=(const Color& _v) const
 {
-    return ((r != _v.r) || (g != _v.g) || (b != _v.b) || (a != _v.a));
+    return (Memcmp(color, _v.color, sizeof(Color)) != 0);
 }
 
 inline uint32 Color::GetRGBA() const
 {
-    return (((uint32)(a * 255.f)) << 24)
-    | (((uint32)(b * 255.f)) << 16)
-    | (((uint32)(g * 255.f)) << 8)
-    | ((uint32)(r * 255.f));
+    return (static_cast<uint32>(a * 255.f) << 24)
+    | (static_cast<uint32>(b * 255.f) << 16)
+    | (static_cast<uint32>(g * 255.f) << 8)
+    | (static_cast<uint32>(r * 255.f));
 }
 
 //! operators

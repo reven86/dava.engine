@@ -1,38 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef __DATA_DOWNLOAD_MANAGER_H__
-#define __DATA_DOWNLOAD_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Functional/Function.h"
+#include "Functional/Signal.h"
 
 #include "DownloaderCommon.h"
 
@@ -46,25 +16,43 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    using NotifyFunctor = Function<void(const uint32&, const DownloadStatus&)>;
-
-public:
-    DownloadManager();
+    DownloadManager() = default;
     virtual ~DownloadManager();
 
     // Downloader for further operations
     void SetDownloader(Downloader* _downloader);
     Downloader* GetDownloader();
 
-    // Callback functor for tasks status reporting
-    void SetNotificationCallback(NotifyFunctor callbackFn);
-    NotifyFunctor GetNotificationCallback() const;
-
     // Checks tasks status and determine current task and handles tasks queues
     void Update();
 
-    // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode = RESUMED, const uint8 partsCount = 4, int32 timeout = 30, int32 retriesCount = 3);
+    // Schedule download content or get content size (indicated by downloadMode)
+    uint32 Download(const String& srcUrl,
+                    const FilePath& storeToFilePath,
+                    DownloadType downloadMode = RESUMED,
+                    int16 partsCount = -1,
+                    int32 timeout = 30,
+                    int32 retriesCount = 3,
+                    uint64 downloadOffset = 0,
+                    uint64 downloadSize = 0);
+    // Handy method to download file part
+    uint32 DownloadRange(const String& srcUrl,
+                         const FilePath& storeToFilePath,
+                         uint64 downloadOffset,
+                         uint64 downloadSize,
+                         DownloadType downloadMode = RESUMED,
+                         int16 partsCount = -1,
+                         int32 timeout = 30,
+                         int32 retriesCount = 3);
+    // Schedule download content into memory buffer
+    uint32 DownloadIntoBuffer(const String& url,
+                              void* buffer,
+                              uint32 bufSize,
+                              uint64 downloadOffset = 0,
+                              uint64 downloadSize = 0,
+                              int16 partsCount = -1,
+                              int32 timeout = 30,
+                              int32 retriesCount = 3);
 
     // Retry finished download
     void Retry(const uint32& taskId);
@@ -90,8 +78,14 @@ public:
     bool GetProgress(const uint32& taskId, uint64& progress);
     bool GetError(const uint32& taskId, DownloadError& error);
     bool GetFileErrno(const uint32& taskId, int32& fileErrno);
+    bool GetBuffer(uint32 taskId, void*& buffer, uint32& nread);
     DownloadStatistics GetStatistics();
-    void SetDownloadSpeedLimit(const uint64 limit);
+    void SetDownloadSpeedLimit(uint64 limit);
+    void SetPreferredDownloadThreadsCount(uint8 count);
+    void ResetPreferredDownloadThreadsCount();
+
+    // Signal about download task state changing
+    Signal<uint32, DownloadStatus> downloadTaskStateChanged;
 
 private:
     struct CallbackData
@@ -102,7 +96,6 @@ private:
         DownloadStatus status;
     };
 
-private:
     void SetTaskStatus(DownloadTaskDescription* task, const DownloadStatus& status);
 
     void StartProcessingThread();
@@ -122,6 +115,7 @@ private:
 
     DownloadError Download();
     DownloadError TryDownload();
+    DownloadError TryDownloadIntoBuffer();
     void Interrupt();
     bool IsInterrupting();
     void MakeFullDownload();
@@ -129,9 +123,8 @@ private:
     void ResetRetriesCount();
     void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
-private:
-    Thread* thisThread;
-    bool isThreadStarted;
+    Thread* thisThread = nullptr;
+    bool isThreadStarted = false;
 
     Deque<DownloadTaskDescription*> pendingTaskQueue;
     Deque<DownloadTaskDescription*> doneTaskQueue;
@@ -139,14 +132,13 @@ private:
     Deque<CallbackData> callbackMessagesQueue;
     Mutex callbackMutex;
 
-    DownloadTaskDescription* currentTask;
+    DownloadTaskDescription* currentTask = nullptr;
     static Mutex currentTaskMutex;
 
-    Downloader* downloader;
-    NotifyFunctor callNotify;
+    Downloader* downloader = nullptr;
+    const uint8 defaultDownloadThreadsCount = 4;
+    uint8 preferredDownloadThreadsCount = defaultDownloadThreadsCount;
 
-    uint64 downloadedTotal;
+    uint64 downloadedTotal = 0;
 };
 }
-
-#endif

@@ -1,39 +1,11 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_RingBuffer.h"
     #include "../rhi_ShaderCache.h"
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
@@ -143,7 +115,7 @@ VDeclDX9::Get(const VertexLayout& layout, bool force_immediate)
             if (layout.ElementSemantics(i) == VS_PAD)
                 continue;
 
-            elem[elemCount].Stream = 0;
+            elem[elemCount].Stream = layout.ElementStreamIndex(i);
             elem[elemCount].Offset = (WORD)(layout.ElementOffset(i));
             elem[elemCount].Method = D3DDECLMETHOD_DEFAULT;
             elem[elemCount].UsageIndex = layout.ElementSemanticsIndex(i);
@@ -293,11 +265,13 @@ public:
         bool Construct(const void* code, unsigned code_sz, const VertexLayout& vdecl);
         Handle CreateConstBuffer(unsigned buf_i);
         void SetToRHI(uint32 layoutUID, bool force_immediate = false);
+        void SetupVertexStreams(uint32 layoutUID, unsigned instCount);
 
         struct
         vdecl_t
         {
             uint32 layoutUID;
+            VertexLayout layout;
             IDirect3DVertexDeclaration9* vdecl;
         };
 
@@ -502,7 +476,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
         void* code = shader->GetBufferPointer();
         DX9Command cmd = { DX9Command::CREATE_VERTEX_SHADER, { uint64_t((const DWORD*)code), uint64_t(&vs9) } };
 
-        ExecDX9(&cmd, 1);
+        ExecDX9(&cmd, 1, false);
 
         if (SUCCEEDED(cmd.retval))
         {
@@ -611,6 +585,7 @@ void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool force_im
     if (SUCCEEDED(hr))
     {
         IDirect3DVertexDeclaration9* vd = vdecl9;
+        const VertexLayout* vl = &vertexLayout;
 
         if (layoutUID != VertexLayout::InvalidUID)
         {
@@ -621,6 +596,7 @@ void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool force_im
                 if (i->layoutUID == layoutUID)
                 {
                     vd = i->vdecl;
+                    vl = &(i->layout);
                     do_add = false;
                     break;
                 }
@@ -644,9 +620,11 @@ layout.Dump();
 */
                     info.vdecl = VDeclDX9::Get(layout, force_immediate);
                     info.layoutUID = layoutUID;
+                    info.layout = layout;
 
                     altVdecl9.push_back(info);
                     vd = info.vdecl;
+                    vl = &(altVdecl9.back().layout);
                 }
                 else
                 {
@@ -661,12 +639,61 @@ layout.Dump();
 
         hr = _D3D9_Device->SetVertexDeclaration(vd);
 
+        for (unsigned s = 0; s != vl->StreamCount(); ++s)
+        {
+            switch (vl->StreamFrequency(s))
+            {
+            case VDF_PER_VERTEX:
+                _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INDEXEDDATA | 1);
+                break;
+            case VDF_PER_INSTANCE:
+                _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INSTANCEDATA | 1);
+                break;
+            }
+        }
+
         if (FAILED(hr))
             Logger::Error("SetVertexDeclaration failed:\n%s\n", D3D9ErrorText(hr));
     }
     else
     {
         Logger::Error("SetVertexShader failed:\n%s\n", D3D9ErrorText(hr));
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void
+PipelineStateDX9_t::VertexProgDX9::SetupVertexStreams(uint32 layoutUID, unsigned instCount)
+{
+    const VertexLayout* vl = &vertexLayout;
+
+    if (layoutUID != VertexLayout::InvalidUID)
+    {
+        bool do_add = true;
+
+        for (std::vector<vdecl_t>::iterator i = altVdecl9.begin(), i_end = altVdecl9.end(); i != i_end; ++i)
+        {
+            if (i->layoutUID == layoutUID)
+            {
+                vl = &(i->layout);
+                break;
+            }
+        }
+    }
+    // DO NOT try to add alt.vdecl here
+
+    for (unsigned s = 0; s != vl->StreamCount(); ++s)
+    {
+        switch (vl->StreamFrequency(s))
+        {
+        case VDF_PER_VERTEX:
+            _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INDEXEDDATA | instCount);
+            break;
+        case VDF_PER_INSTANCE:
+            _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INSTANCEDATA | 1);
+            break;
+        }
     }
 }
 
@@ -694,7 +721,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
         void* code = shader->GetBufferPointer();
         DX9Command cmd = { DX9Command::CREATE_PIXEL_SHADER, { uint64_t((const DWORD*)code), uint64_t(&ps9) } };
 
-        ExecDX9(&cmd, 1);
+        ExecDX9(&cmd, 1, false);
 
         if (SUCCEEDED(cmd.retval))
         {
@@ -821,8 +848,8 @@ dx9_PipelineState_Create(const PipelineState::Descriptor& desc)
     ps->vprog.uid = desc.vprogUid;
     ps->fprog.uid = desc.fprogUid;
 
-    vprog_valid = ps->vprog.Construct((const char*)(&vprog_bin[0]), vprog_bin.size(), desc.vertexLayout);
-    fprog_valid = ps->fprog.Construct((const char*)(&fprog_bin[0]), fprog_bin.size());
+    vprog_valid = ps->vprog.Construct((const char*)(&vprog_bin[0]), static_cast<unsigned>(vprog_bin.size()), desc.vertexLayout);
+    fprog_valid = ps->fprog.Construct((const char*)(&fprog_bin[0]), static_cast<unsigned>(fprog_bin.size()));
 
     if (vprog_valid && fprog_valid)
     {
@@ -952,12 +979,22 @@ void SetToRHI(Handle ps, uint32 layoutUID)
 
 //------------------------------------------------------------------------------
 
-unsigned
-VertexLayoutStride(Handle ps)
+void
+SetupVertexStreams(Handle ps, uint32 layoutUID, uint32 instCount)
 {
     PipelineStateDX9_t* ps9 = PipelineStateDX9Pool::Get(ps);
 
-    return ps9->vprog.vertexLayout.Stride();
+    ps9->vprog.SetupVertexStreams(layoutUID, instCount);
+}
+
+//------------------------------------------------------------------------------
+
+unsigned
+VertexLayoutStride(Handle ps, uint32 stream)
+{
+    PipelineStateDX9_t* ps9 = PipelineStateDX9Pool::Get(ps);
+
+    return ps9->vprog.vertexLayout.Stride(stream);
 }
 
 } // namespace PipelineStateDX9

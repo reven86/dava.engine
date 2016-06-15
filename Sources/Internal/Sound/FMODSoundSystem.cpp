@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifdef DAVA_FMOD
 
 #include "Sound/SoundSystem.h"
@@ -36,6 +7,7 @@
 #include "Sound/FMODUtils.h"
 #include "Sound/FMODFileSoundEvent.h"
 #include "Sound/FMODSoundEvent.h"
+#include "Sound/FMODSoundStream.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Debug/Stats.h"
@@ -175,6 +147,18 @@ bool SoundSystem::IsDebugModeOn() const
     return debugLevel != FMOD_DEBUG_LEVEL_NONE;
 }
 
+SoundStream* SoundSystem::CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount)
+{
+    FMODSoundStream* fmodStream = new FMODSoundStream(streamDelegate, channelsCount);
+    bool isInited = fmodStream->Init(fmodSystem);
+    if (!isInited)
+    {
+        SafeDelete(fmodStream);
+    }
+
+    return fmodStream;
+}
+
 SoundEvent* SoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
     SoundEvent* event = new FMODSoundEvent(eventName);
@@ -215,7 +199,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
 {
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
+        const FMODFileSoundEvent* sound = static_cast<const FMODFileSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTFILE);
 
         toArchive->SetUInt32("flags", sound->flags);
@@ -224,7 +208,7 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
+        const FMODSoundEvent* sound = static_cast<const FMODSoundEvent*>(sEvent);
         toArchive->SetFastName("EventType", SEREALIZE_EVENTTYPE_EVENTSYSTEM);
 
         toArchive->SetFastName("eventName", sound->eventName);
@@ -281,12 +265,12 @@ SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
     SoundEvent* clonedSound = 0;
     if (IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
     {
-        FMODFileSoundEvent* sound = (FMODFileSoundEvent*)sEvent;
+        const FMODFileSoundEvent* sound = static_cast<const FMODFileSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventFromFile(sound->fileName, FindGroupByEvent(sound), sound->flags, sound->priority);
     }
     else if (IsPointerToExactClass<FMODSoundEvent>(sEvent))
     {
-        FMODSoundEvent* sound = (FMODSoundEvent*)sEvent;
+        const FMODSoundEvent* sound = static_cast<const FMODSoundEvent*>(sEvent);
         clonedSound = CreateSoundEventByID(sound->eventName, FindGroupByEvent(sound));
     }
 #ifdef __DAVAENGINE_IPHONE__
@@ -514,7 +498,7 @@ void SoundSystem::SetListenerPosition(const Vector3& position)
 {
     if (fmodEventSystem)
     {
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)(&position), 0, 0, 0));
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&position), 0, 0, 0));
     }
 }
 
@@ -531,7 +515,7 @@ void SoundSystem::SetListenerOrientation(const Vector3& forward, const Vector3& 
         DVASSERT(upNorm.SquareLength() > EPSILON);
         DVASSERT(left.SquareLength() > EPSILON);
 
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
+        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, reinterpret_cast<FMOD_VECTOR*>(&forwardNorm), reinterpret_cast<FMOD_VECTOR*>(&upNorm)));
     }
 }
 
@@ -612,7 +596,7 @@ void SoundSystem::PreloadFMODEventGroupData(const String& groupName)
     FMOD::EventGroup* eventGroup = nullptr;
     FMOD_VERIFY(fmodEventSystem->getGroup(groupName.c_str(), true, &eventGroup));
     if (eventGroup)
-        FMOD_VERIFY(eventGroup->loadEventData());
+        FMOD_VERIFY(eventGroup->loadEventData(FMOD_EVENT_RESOURCE_STREAMS_AND_SAMPLES, FMOD_EVENT_NONBLOCKING));
 }
 
 void SoundSystem::ReleaseFMODEventGroupData(const String& groupName)
@@ -701,11 +685,10 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
 {
     soundGroupsMutex.Lock();
 
-    for (uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
+    for (size_t i = 0; i < soundGroups.size();)
     {
         Vector<SoundEvent*>& events = soundGroups[i].events;
-        uint32 eventsCount = static_cast<uint32>(events.size());
-        for (uint32 k = 0; k < eventsCount; k++)
+        for (size_t k = 0, eventsSize = events.size(); k < eventsSize; k++)
         {
             if (events[k] == event)
             {
@@ -714,10 +697,13 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
             }
         }
 
-        if (!events.size())
+        if (events.empty())
         {
             RemoveExchangingWithLast(soundGroups, i);
-            --i;
+        }
+        else
+        {
+            ++i;
         }
     }
 
@@ -753,7 +739,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char* name, int unicode
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, unsigned int sizebytes, unsigned int* bytesread, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     (*bytesread) = file->Read(buffer, sizebytes);
 
     return FMOD_OK;
@@ -761,7 +747,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void* handle, void* buffer, u
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int pos, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     file->Seek(pos, File::SEEK_FROM_START);
 
     return FMOD_OK;
@@ -769,7 +755,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void* handle, unsigned int po
 
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata)
 {
-    File* file = (File*)handle;
+    File* file = static_cast<File*>(handle);
     SafeRelease(file);
 
     return FMOD_OK;

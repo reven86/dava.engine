@@ -3,9 +3,11 @@ import sys
 import os
 import subprocess
 import argparse
+import platform
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument( 'cmake_command' )
 parser.add_argument( 'path_prj' )
 parser.add_argument( 'cur_vers' )
 parser.add_argument( 'dir_list', nargs='+' )
@@ -22,9 +24,8 @@ print 'VersionsCheck ------ '
 print 'CURRENT_VERSIONS ', CURRENT_VERSIONS
 print 'LAST_VERSIONS    ', LAST_VERSIONS
 
-
 if ( CURRENT_VERSIONS != LAST_VERSIONS ) :
+    cmake_program = args.cmake_command
     print 'Update cmake project !!!!', args.path_prj 
-    os.popen( 'cmake ' + args.path_prj )
-
-
+    call_string = [cmake_program, args.path_prj]
+    subprocess.check_output(call_string)

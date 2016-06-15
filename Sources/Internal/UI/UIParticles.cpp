@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/UIParticles.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -80,7 +51,7 @@ UIParticles::~UIParticles()
     }
 }
 
-void UIParticles::WillAppear()
+void UIParticles::OnActive()
 {
     updateTime = 0.0f;
 }
@@ -233,7 +204,7 @@ void UIParticles::Draw(const UIGeometricData& geometricData)
     system->Process(updateTime);
     updateTime = 0.0f;
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, (pointer_size)&Vector3::Zero);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, reinterpret_cast<pointer_size>(&Vector3::Zero));
     effect->effectRenderObject->PrepareToRender(defaultCamera);
     effect->effectRenderObject->BindDynamicParameters(defaultCamera);
 
@@ -272,7 +243,7 @@ void UIParticles::LoadEffect(const FilePath& path)
 
     ScopedPtr<SceneArchive> archive(sceneFile->LoadSceneArchive(path));
     ParticleEffectComponent* newEffect = nullptr;
-    if ((SceneArchive*)archive != nullptr && !archive->children.empty())
+    if (static_cast<SceneArchive*>(archive) != nullptr && !archive->children.empty())
     {
         ScopedPtr<Entity> entity(new Entity());
         SerializationContext serializationContext;
@@ -285,7 +256,7 @@ void UIParticles::LoadEffect(const FilePath& path)
         ParticleEffectComponent* effSrc = GetEffectComponent(entity);
         if (effSrc)
         {
-            newEffect = (ParticleEffectComponent*)effSrc->Clone(NULL);
+            newEffect = static_cast<ParticleEffectComponent*>(effSrc->Clone(nullptr));
         }
     }
 
@@ -347,30 +318,6 @@ bool UIParticles::IsAutostart() const
     return isAutostart;
 }
 
-YamlNode* UIParticles::SaveToYamlNode(UIYamlLoader* loader)
-{
-    ScopedPtr<UIParticles> baseControl(new UIParticles());
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    if (baseControl->GetEffectPath() != effectPath)
-    {
-        node->Set("effectPath", effectPath.GetFrameworkPath());
-    }
-
-    if (baseControl->IsAutostart() != isAutostart)
-    {
-        node->Set("autoStart", isAutostart);
-    }
-
-    if (baseControl->GetStartDelay() != startDelay)
-    {
-        node->Set("startDelay", startDelay);
-    }
-
-    return node;
-}
-
 UIParticles* UIParticles::Clone()
 {
     UIParticles* particles = new UIParticles(GetRect());
@@ -381,35 +328,11 @@ UIParticles* UIParticles::Clone()
 void UIParticles::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIParticles* src = (UIParticles*)srcControl;
+    UIParticles* src = static_cast<UIParticles*>(srcControl);
 
     SetEffectPath(src->GetEffectPath());
     SetStartDelay(src->GetStartDelay());
     SetAutostart(src->IsAutostart());
-}
-
-void UIParticles::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* effectPathNode = node->Get("effectPath");
-    const YamlNode* autoStartNode = node->Get("autoStart");
-    const YamlNode* startDelayNode = node->Get("startDelay");
-
-    if (effectPathNode)
-    {
-        SetEffectPath(effectPathNode->AsString());
-    }
-
-    if (startDelayNode)
-    {
-        SetStartDelay(startDelayNode->AsFloat());
-    }
-
-    if (autoStartNode)
-    {
-        SetAutostart(autoStartNode->AsBool());
-    }
 }
 
 void UIParticles::HandleAutostart()
@@ -432,7 +355,7 @@ void UIParticles::SetStartDelay(float32 value)
 
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {
-    if (IsOnScreen())
+    if (IsVisible())
     {
         delayedActionTime += timeElapsed;
         if (delayedActionTime >= startDelay)

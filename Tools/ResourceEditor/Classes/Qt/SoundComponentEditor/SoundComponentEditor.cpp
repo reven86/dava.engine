@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "SoundComponentEditor.h"
 #include "FMODSoundBrowser.h"
 #include "ui_soundcomponenteditor.h"
@@ -113,14 +84,14 @@ void SoundComponentEditor::OnAutoTrigger(bool checked)
 {
     if (selectedEventIndex != -1)
     {
-        uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
+        DAVA::uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
         if (checked)
         {
-            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags | SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags | DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
         }
         else
         {
-            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags & ~SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags & ~DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
         }
     }
 }
@@ -154,7 +125,7 @@ void SoundComponentEditor::FillEventParamsFrame()
     if (selectedEventIndex == -1)
         return;
 
-    SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
+    DAVA::SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
 
     ui->eventNameLabel->setText(QString(soundEvent->GetEventName().c_str()));
 
@@ -162,7 +133,7 @@ void SoundComponentEditor::FillEventParamsFrame()
     ui->stopButton->setDisabled(false);
     ui->autoTriggerCheckBox->setDisabled(false);
 
-    ui->autoTriggerCheckBox->setChecked((component->GetSoundEventFlags(selectedEventIndex) & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) > 0);
+    ui->autoTriggerCheckBox->setChecked((component->GetSoundEventFlags(selectedEventIndex) & DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) > 0);
 
     DAVA::Vector<DAVA::SoundEvent::SoundEventParameterInfo> params;
     soundEvent->GetEventParametersInfo(params);
@@ -172,7 +143,7 @@ void SoundComponentEditor::FillEventParamsFrame()
         DAVA::SoundEvent::SoundEventParameterInfo& param = params[i];
         if (param.name != "(distance)" && param.name != "(event angle)" && param.name != "(listener angle)")
         {
-            float32 currentParamValue = soundEvent->GetParameterValue(FastName(param.name));
+            DAVA::float32 currentParamValue = soundEvent->GetParameterValue(DAVA::FastName(param.name));
             AddSliderWidget(param, currentParamValue);
         }
     }
@@ -198,9 +169,9 @@ void SoundComponentEditor::OnAddEvent()
         if (browser->exec() == QDialog::Accepted)
         {
             DAVA::String selectedEventName = browser->GetSelectSoundEvent();
-            DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(FastName(selectedEventName), DAVA::FastName("FX"));
+            DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName(selectedEventName), DAVA::FastName("FX"));
 
-            scene->Exec(new AddSoundEventCommand(component->GetEntity(), sEvent));
+            scene->Exec(Command2::Create<AddSoundEventCommand>(component->GetEntity(), sEvent));
 
             selectedEventIndex = component->GetEventsCount() - 1;
 
@@ -215,7 +186,7 @@ void SoundComponentEditor::OnRemoveEvent()
 {
     if (selectedEventIndex != -1 && component)
     {
-        scene->Exec(new RemoveSoundEventCommand(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
+        scene->Exec(Command2::Create<RemoveSoundEventCommand>(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
     }
 
     OnEventSelected(0);
@@ -251,7 +222,7 @@ void SoundComponentEditor::OnSliderMoved(int value)
         component->GetSoundEvent(selectedEventIndex)->SetParameterValue(DAVA::FastName(paramName), newParamValue);
 }
 
-void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, float32 currentParamValue)
+void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo& param, DAVA::float32 currentParamValue)
 {
     QGridLayout* layout = dynamic_cast<QGridLayout*>(ui->paramsFrame->layout());
 

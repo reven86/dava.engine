@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/BaseTypes.h"
 #include "TextureListDelegate.h"
 #include "TextureListModel.h"
@@ -44,7 +15,7 @@
 #include "Main/QtUtils.h"
 
 #include "Project/ProjectManager.h"
-#include "Preset/Preset.h"
+#include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
@@ -141,16 +112,7 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
     {
         DAVA::Texture* curTexture = curModel->getTexture(index);
 
-        QString texturePath = curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str();
-        QString textureName = QFileInfo(texturePath).fileName();
-        QSize textureDimension = QSize();
-        QString textureDataSize = 0;
-
-        if (nullptr != curTexture)
-        {
-            textureDimension = QSize(curTexture->width, curTexture->height);
-            textureDataSize = QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
-        }
+        QString textureName = QString::fromStdString(curTextureDescriptor->GetSourceTexturePathname().GetFilename());
 
         painter->save();
         painter->setClipRect(option.rect);
@@ -158,13 +120,16 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
         // draw border
         QRect borderRect = option.rect;
         borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-        if (curModel->isHighlited(index))
-        {
-            // draw highlight
-            painter->setBrush(option.palette.toolTipBase());
-        }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);
+
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            painter->setBrush(option.palette.highlight());
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
         const QList<QImage>& images = TextureCache::Instance()->getThumbnail(curTextureDescriptor);
         if (images.size() > 0 &&
@@ -186,34 +151,30 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
         // draw formats info
         int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
+        if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
+        {
+            // draw highlight
+            painter->setPen(option.palette.highlight().color());
+        }
+        else
+        {
+            painter->setPen(option.palette.text().color());
+        }
+
         // draw text info
         {
             QRectF textRect = option.rect;
             textRect.adjust(TEXTURE_PREVIEW_SIZE, option.decorationSize.height() / 2, -infoLen, 0);
 
             QFont origFont = painter->font();
-            painter->setPen(option.palette.text().color());
             painter->setFont(nameFont);
             painter->drawText(textRect, textureName);
 
             painter->setFont(origFont);
-            painter->setPen(INFO_TEXT_COLOR);
             textRect.adjust(0, nameFontMetrics.height(), 0, 0);
 
             QString infoText = CreateInfoString(index);
             painter->drawText(textRect, infoText);
-        }
-
-        // draw selected item
-        if (option.state & QStyle::State_Selected)
-        {
-            QBrush br = option.palette.highlight();
-            QColor cl = br.color();
-            cl.setAlpha(SELECTION_COLOR_ALPHA);
-            br.setColor(cl);
-            painter->setBrush(br);
-            painter->setPen(SELECTION_BORDER_COLOR);
-            painter->drawRect(borderRect);
         }
 
         painter->restore();
@@ -265,7 +226,18 @@ QString TextureListDelegate::CreateInfoString(const QModelIndex& index) const
             QString infoText;
             char dimen[64];
 
-            sprintf(dimen, "Size: %dx%d", curTexture->width, curTexture->height);
+            QSize textureDimension;
+            if (curTexture->IsPinkPlaceholder())
+            {
+                DAVA::ImageInfo imgInfo = DAVA::ImageSystem::GetImageInfo(curTextureDescriptor->GetSourceTexturePathname());
+                textureDimension = QSize(imgInfo.width, imgInfo.height);
+            }
+            else
+            {
+                textureDimension = QSize(curTexture->width, curTexture->height);
+            }
+
+            sprintf(dimen, "Size: %dx%d", textureDimension.width(), textureDimension.height());
             infoText += dimen;
             infoText += "\nData size: ";
             infoText += QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
@@ -296,13 +268,16 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         // draw border
         QRect borderRect = option.rect;
         borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-        if (curModel->isHighlited(index))
-        {
-            // draw highlight
-            painter->setBrush(QBrush(QColor(255, 255, 200)));
-        }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);
+
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            painter->setBrush(option.palette.highlight());
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
         // draw preview
         QRect previewRect = borderRect;
@@ -317,20 +292,18 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         // draw text
         QRectF textRect = option.rect;
         textRect.adjust(TEXTURE_PREVIEW_SIZE_SMALL, (option.rect.height() - option.fontMetrics.height()) / 2, -infoLen, 0);
-        painter->setPen(option.palette.text().color());
-        painter->drawText(textRect, curModel->data(index).toString());
 
-        // draw selected item
-        if (option.state & QStyle::State_Selected)
+        if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
         {
-            QBrush br = option.palette.highlight();
-            QColor cl = br.color();
-            cl.setAlpha(SELECTION_COLOR_ALPHA);
-            br.setColor(cl);
-            painter->setBrush(br);
-            painter->setPen(SELECTION_BORDER_COLOR);
-            painter->drawRect(borderRect);
+            // draw highlight
+            painter->setPen(option.palette.highlight().color());
         }
+        else
+        {
+            painter->setPen(option.palette.text().color());
+        }
+
+        painter->drawText(textRect, curModel->data(index).toString());
 
         painter->restore();
     }
@@ -451,7 +424,7 @@ void TextureListDelegate::onLoadPreset()
         return;
     }
 
-    bool loaded = Preset::LoadPresetForTexture(lastSelectedTextureDescriptor);
+    bool loaded = Preset::DialogLoadPresetForTexture(lastSelectedTextureDescriptor);
     if (loaded)
     {
         emit textureDescriptorChanged(lastSelectedTextureDescriptor);
@@ -467,7 +440,7 @@ void TextureListDelegate::onSavePreset()
         return;
     }
 
-    Preset::SavePresetForTexture(lastSelectedTextureDescriptor);
+    Preset::DialogSavePresetForTexture(lastSelectedTextureDescriptor);
 
     lastSelectedTextureDescriptor = nullptr;
 }

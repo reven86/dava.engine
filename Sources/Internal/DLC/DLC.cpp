@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DLC.h"
 #include "Job/JobManager.h"
 #include "Patcher/PatchFile.h"
@@ -87,6 +58,7 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     dlcContext.appliedPatchCount = 0;
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastErrno = 0;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
@@ -95,12 +67,20 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
     ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
+    logsFilePath = workingDir + "DlcLog.txt";
+
     // FSM variables
     fsmAutoReady = false;
+
+    DownloadManager* dm = DownloadManager::Instance();
+    taskStateChangedSignalId = dm->downloadTaskStateChanged.Connect(Function<void(uint32, DownloadStatus)>(this, &DLC::OnDownloadTaskStateChanged));
 }
 
 DLC::~DLC()
 {
+    DownloadManager* dm = DownloadManager::Instance();
+    dm->downloadTaskStateChanged.Disconnect(taskStateChangedSignalId);
+
     DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }
 
@@ -157,6 +137,11 @@ int32 DLC::GetLastErrno() const
     return dlcContext.lastErrno;
 }
 
+PatchFileReader::PatchingErrorDetails DLC::GetLastErrorInfo() const
+{
+    return dlcContext.lastPatchingErrorDetails;
+}
+
 PatchFileReader::PatchError DLC::GetPatchError() const
 {
     return dlcContext.patchingError;
@@ -165,6 +150,11 @@ PatchFileReader::PatchError DLC::GetPatchError() const
 FilePath DLC::GetMetaStorePath() const
 {
     return dlcContext.remoteMetaStorePath;
+}
+
+void DLC::SetLogFileName(const FilePath& customLogFileName)
+{
+    logsFilePath = customLogFileName;
 }
 
 void DLC::PostEvent(DLCEvent event)
@@ -388,14 +378,14 @@ void DLC::FSM(DLCEvent event)
 
     if (!eventHandled)
     {
-        Logger::Error("Unhanded event %d in state %d\n", event, dlcState);
+        Logger::ErrorToFile(logsFilePath, "[DLC::FSM] Unhanded event %d in state %d\n", event, dlcState);
         DVASSERT(false);
     }
 
     // what should we do, when state changed
     if (oldState != dlcState)
     {
-        Logger::Info("DLC: Changing state %d->%d", oldState, dlcState);
+        Logger::InfoToFile(logsFilePath, "[DLC::FSM] Changing state %d->%d", oldState, dlcState);
 
         switch (dlcState)
         {
@@ -439,7 +429,7 @@ void DLC::FSM(DLCEvent event)
                 StepPatchCancel();
                 break;
             default:
-                Logger::Error("Unhanded state %d canceling\n", oldState);
+                Logger::ErrorToFile(logsFilePath, "[DLC::FSM] Unhanded state %d canceling\n", oldState);
                 DVASSERT(false);
                 break;
             }
@@ -456,13 +446,38 @@ void DLC::FSM(DLCEvent event)
     }
 }
 
-// start downloading remove DLC version
+void DLC::OnDownloadTaskStateChanged(uint32 id, DownloadStatus status)
+{
+    if (id == dlcContext.remoteVerDownloadId)
+    {
+        StepCheckInfoFinish(id, status);
+    }
+    else if (id == dlcContext.remoteFullSizeDownloadId)
+    {
+        // This task implicitly handled in StepCheckPatchFinish after finishing dlcContext.remoteLiteSizeDownloadId
+    }
+    else if (id == dlcContext.remoteLiteSizeDownloadId)
+    {
+        StepCheckPatchFinish(id, status);
+    }
+    else if (id == dlcContext.remoteMetaDownloadId)
+    {
+        StepCheckMetaFinish(id, status);
+    }
+    else if (id == dlcContext.remotePatchDownloadId)
+    {
+        StepDownloadPatchFinish(id, status);
+    }
+}
+
+// start downloading remote DLC version
 void DLC::StepCheckInfoBegin()
 {
     // write current dlcState into state-file
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
         dlcContext.lastErrno = errno;
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Can't write dlcState %d to stateInfoStorePath = %s", dlcState, dlcContext.stateInfoStorePath.GetAbsolutePathname().c_str());
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -472,14 +487,14 @@ void DLC::StepCheckInfoBegin()
         ReadUint32(dlcContext.localVerStorePath, dlcContext.localVer);
     }
 
-    Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
+    Logger::InfoToFile(logsFilePath, "[DLC::StepCheckInfoBegin] Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteVerDownloadId = dm->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
 }
 
 // downloading DLC version file finished. need to read removeVersion
-void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckInfoFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteVerDownloadId)
     {
@@ -497,26 +512,30 @@ void DLC::StepCheckInfoFinish(const uint32& id, const DownloadStatus& status)
                 else
                 {
                     dlcContext.lastErrno = errno;
+                    Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't read remoteVer from %s", dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
                     PostError(DE_READ_ERROR);
                 }
             }
             else
             {
-                Logger::FrameworkDebug("DLC: error %d", downloadError);
+                Logger::FrameworkDebugToFile(logsFilePath, "DLC: error %d", downloadError);
                 if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
                 {
                     // connection problem
+                    Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't connect to remote host.");
                     PostError(DE_CONNECT_ERROR);
                 }
                 else if (DLE_FILE_ERROR == downloadError)
                 {
                     // writing file problem
                     dlcContext.lastErrno = errno;
+                    Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Can't write to info file.");
                     PostError(DE_WRITE_ERROR);
                 }
                 else
                 {
                     // some other unexpected error during check process
+                    Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckInfoFinish] Unexpected error.");
                     PostError(DE_CHECK_ERROR);
                 }
             }
@@ -544,15 +563,15 @@ void DLC::StepCheckPatchBegin()
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
-    Logger::Info("DLC: Retrieving full-patch size from: %s", dlcContext.remotePatchLiteUrl.c_str());
-    Logger::Info("DLC: Retrieving lite-patch size from: %s", dlcContext.remotePatchFullUrl.c_str());
+    Logger::InfoToFile(logsFilePath, "[DLC::StepCheckPatchBegin] Retrieving full-patch size from: %s", dlcContext.remotePatchLiteUrl.c_str());
+    Logger::InfoToFile(logsFilePath, "[DLC::StepCheckPatchBegin] Retrieving lite-patch size from: %s", dlcContext.remotePatchFullUrl.c_str());
 
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckPatchFinish));
-    dlcContext.remoteFullSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
-    dlcContext.remoteLiteSizeDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteFullSizeDownloadId = dm->Download(dlcContext.remotePatchFullUrl, dlcContext.remotePatchStorePath, GET_SIZE); // full size should be first
+    dlcContext.remoteLiteSizeDownloadId = dm->Download(dlcContext.remotePatchLiteUrl, dlcContext.remotePatchStorePath, GET_SIZE); // lite size should be last
 }
 
-void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckPatchFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteLiteSizeDownloadId)
     {
@@ -593,12 +612,14 @@ void DLC::StepCheckPatchFinish(const uint32& id, const DownloadStatus& status)
                     if (DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
                     {
                         // connection problem
+                        Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Can't connect.");
                         PostError(DE_CONNECT_ERROR);
                     }
                     else if (DLE_FILE_ERROR == downloadErrorFull)
                     {
                         // writing file problem
                         dlcContext.lastErrno = errno;
+                        Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Can't write patch to %s.", dlcContext.remotePatchUrl.c_str());
                         PostError(DE_WRITE_ERROR);
                     }
                     else
@@ -622,14 +643,15 @@ void DLC::StepCheckMetaBegin()
 {
     dlcContext.remoteMetaUrl = dlcContext.remotePatchUrl + ".meta";
 
-    Logger::Info("DLC: Downloading game-meta\n\tfrom: %s\n\tto :%s", dlcContext.remoteMetaUrl.c_str(), dlcContext.remoteMetaStorePath.GetAbsolutePathname().c_str());
+    Logger::InfoToFile(logsFilePath, "[DLC::StepCheckMetaBegin] Downloading game-meta\n\tfrom: %s\n\tto :%s", dlcContext.remoteMetaUrl.c_str(), dlcContext.remoteMetaStorePath.GetAbsolutePathname().c_str());
 
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckMetaFinish));
-    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
+
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remoteMetaDownloadId = dm->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
 }
 
-void DLC::StepCheckMetaFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepCheckMetaFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remoteMetaDownloadId)
     {
@@ -641,12 +663,14 @@ void DLC::StepCheckMetaFinish(const uint32& id, const DownloadStatus& status)
             if (DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
             {
                 // connection problem
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't connect do download Meta.");
                 PostError(DE_CONNECT_ERROR);
             }
             else if (DLE_FILE_ERROR == downloadError)
             {
                 // writing file problem
                 dlcContext.lastErrno = errno;
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckMetaFinish] Can't save Meta.");
                 PostError(DE_WRITE_ERROR);
             }
             else
@@ -670,6 +694,7 @@ void DLC::StepDownloadPatchBegin()
     if (!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
         dlcContext.lastErrno = errno;
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Can't save dlcState info file.");
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -723,14 +748,14 @@ void DLC::StepDownloadPatchBegin()
         }
     }
 
-    Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
+    Logger::InfoToFile(logsFilePath, "[DLC::StepDownloadPatchBegin] Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
 
-    // start download and notify about download status into StepDownloadPatchFinish
-    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
-    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+    // start download, notifications are handled in StepDownloadPatchFinish
+    DownloadManager* dm = DownloadManager::Instance();
+    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
 }
 
-void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status)
+void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)
 {
     if (id == dlcContext.remotePatchDownloadId)
     {
@@ -742,6 +767,7 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             switch (downloadError)
             {
             case DAVA::DLE_NO_ERROR:
+                Logger::InfoToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Downloaded succesfully.");
                 //we want to have this switch from DS_DOWNLOADING to DS_PATCHING when app is in background,
                 //that's why we call FSM() directly instead of using job in PostEvent()
                 FSM(EVENT_DOWNLOAD_OK);
@@ -750,17 +776,20 @@ void DLC::StepDownloadPatchFinish(const uint32& id, const DownloadStatus& status
             case DAVA::DLE_COULDNT_RESOLVE_HOST:
             case DAVA::DLE_COULDNT_CONNECT:
                 // connection problem
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Connection error at patch downloading.");
                 PostError(DE_CONNECT_ERROR);
                 break;
 
             case DAVA::DLE_FILE_ERROR:
                 // writing file problem
                 DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Can't write patch. File error %d", dlcContext.lastErrno);
                 PostError(DE_WRITE_ERROR);
                 break;
 
             default:
                 // some other unexpected error during download process
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Unexpected download error.");
                 PostError(DE_DOWNLOAD_ERROR);
                 break;
             }
@@ -782,14 +811,16 @@ void DLC::StepPatchBegin()
         return;
     }
 
-    dlcContext.patchingError = PatchFileReader::ERROR_NO;
     dlcContext.lastErrno = 0;
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
     dlcContext.patchInProgress = true;
     dlcContext.appliedPatchCount = 0;
     dlcContext.totalPatchCount = 0;
 
     // read number of available patches
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
+    patchReader.SetLogsFilePath(logsFilePath);
     if (patchReader.ReadFirst())
     {
         do
@@ -799,7 +830,7 @@ void DLC::StepPatchBegin()
         while (patchReader.ReadNext());
     }
 
-    Logger::Info("DLC: Patching, %d files to patch", dlcContext.totalPatchCount);
+    Logger::InfoToFile(logsFilePath, "[DLC::StepPatchBegin] Patching, %d files to patch", dlcContext.totalPatchCount);
     patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
     patchingThread->Start();
 }
@@ -833,10 +864,12 @@ void DLC::StepPatchFinish()
     default:
         if (!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
         {
+            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch.");
             PostError(DE_PATCH_ERROR_FULL);
         }
         else
         {
+            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply lite patch.");
             PostError(DE_PATCH_ERROR_LITE);
         }
         break;
@@ -844,7 +877,7 @@ void DLC::StepPatchFinish()
 
     if (errors)
     {
-        Logger::Error("DLC: Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastErrno);
+        Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastErrno);
     }
 }
 
@@ -856,8 +889,9 @@ void DLC::StepPatchCancel()
 
 void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
-    PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
+    PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);
+    Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;
 
@@ -928,8 +962,10 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
                    });
 
     // check if no errors occurred during patching
-    dlcContext.lastErrno = patchReader.GetErrno();
-    dlcContext.patchingError = patchReader.GetLastError();
+    dlcContext.lastErrno = patchReader.GetFileError();
+    dlcContext.patchingError = patchReader.GetError();
+    dlcContext.lastPatchingErrorDetails = patchReader.GetLastErrorDetails();
+
     if (dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
         DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
@@ -942,6 +978,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         {
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.lastPatchingErrorDetails = PatchFileReader::PatchingErrorDetails();
             dlcContext.lastErrno = errno;
         }
 
@@ -964,7 +1001,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 
 void DLC::StepClean()
 {
-    Logger::Info("DLC: Cleaning");
+    Logger::InfoToFile(logsFilePath, "[DLC::StepClean] Cleaning");
 
     FileSystem::Instance()->DeleteFile(dlcContext.downloadInfoStorePath);
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
@@ -981,7 +1018,7 @@ void DLC::StepDone()
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
     }
 
-    Logger::Info("DLC: Done!");
+    Logger::InfoToFile(logsFilePath, "[DLC::StepDone] Done!");
 }
 
 bool DLC::ReadUint32(const FilePath& path, uint32& value)

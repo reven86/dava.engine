@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS__)
 
@@ -38,6 +9,7 @@ namespace DAVA
 
 #include <windows.h>
 #include <process.h>
+
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push, 8)
@@ -56,45 +28,47 @@ void Thread::Init()
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
-    if (handle)
+    if (handle != nullptr)
     {
+        Join();
         CloseHandle(handle);
-        handle = NULL;
+        handle = nullptr;
     }
 }
 
 void Thread::Start()
 {
-    Retain();
     DVASSERT(STATE_CREATED == state);
 
-    auto hdl = _beginthreadex
-    (
-    0, // Security attributes
-    static_cast<DWORD>(stackSize),
-    ThreadFunc,
-    this,
-    0,
-    0);
+    uintptr_t x = _beginthreadex(nullptr,
+                                 static_cast<DWORD>(stackSize),
+                                 &ThreadFunc,
+                                 this,
+                                 0,
+                                 nullptr);
 
-    handle = reinterpret_cast<HANDLE>(hdl);
-    state = STATE_RUNNING;
+    if (x != 0)
+    {
+        handle = reinterpret_cast<HANDLE>(x);
+        isJoinable.Set(true);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Logger::Error("Thread::Start failed to create thread: errno=%d", errno);
+    }
 }
 
-unsigned __stdcall ThreadFunc(void* param)
-{	
-#if defined(__DAVAENGINE_DEBUG__)
+void Thread::SetCurrentThreadName(const String& str)
+{
     /*
-     inside that ifdef we set thread name through raising speciefic exception.
-     https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
-     */
-
-    Thread* t = static_cast<Thread*>(param);
+        inside that ifdef we set thread name through raising speciefic exception.
+        https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+    */
 
     THREADNAME_INFO info;
     info.dwType = 0x1000;
-    info.szName = t->name.c_str();
+    info.szName = str.c_str();
     info.dwThreadID = ::GetCurrentThreadId();
     info.dwFlags = 0;
 
@@ -105,7 +79,12 @@ unsigned __stdcall ThreadFunc(void* param)
     __except (EXCEPTION_CONTINUE_EXECUTION)
     {
     }
-#endif
+}
+
+unsigned __stdcall ThreadFunc(void* param)
+{
+    Thread* t = static_cast<Thread*>(param);
+    Thread::SetCurrentThreadName(t->name);
 
     Thread::ThreadFunction(param);
     return 0;
@@ -113,9 +92,12 @@ unsigned __stdcall ThreadFunc(void* param)
 
 void Thread::Join()
 {
-    if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
+    if (isJoinable.CompareAndSwap(true, false))
     {
-        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
+        if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
+        {
+            DAVA::Logger::Error("Thread::Join failed in WaitForSingleObjectEx: error=%u", GetLastError());
+        }
     }
 }
 
@@ -124,8 +106,11 @@ void Thread::KillNative()
 #if defined(__DAVAENGINE_WIN_UAP__)
     DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
 #else
-    TerminateThread(handle, 0);
-    handle = nullptr;
+    if (TerminateThread(handle, 0))
+    {
+        CloseHandle(handle);
+        handle = nullptr;
+    }
 #endif
 }
 

@@ -1,36 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __COMMAND_ID_H__
 #define __COMMAND_ID_H__
 
-enum CommandID
+#include "Base/BaseTypes.h"
+
+enum CommandID : DAVA::int32
 {
     CMDID_UNKNOWN = -1,
     CMDID_BATCH = 0,
@@ -42,7 +15,6 @@ enum CommandID
     CMDID_ENTITY_CHANGE_PARENT,
     CMDID_ENTITY_LOCK,
     CMDID_PARTICLE_EMITTER_MOVE,
-    CMDID_PARTICLE_EMITTER_REMOVE,
     CMDID_PARTICLE_LAYER_REMOVE,
     CMDID_PARTICLE_LAYER_MOVE,
     CMDID_PARTICLE_FORCE_REMOVE,
@@ -63,18 +35,14 @@ enum CommandID
     CMDID_CUSTOM_COLORS_DISABLE,
     CMDID_CUSTOM_COLORS_MODIFY,
     CMDID_VISIBILITY_TOOL_ENABLE,
-    CMDID_VISIBILITY_TOOL_DISABLE,
     CMDID_VISIBILITY_TOOL_SET_POINT,
     CMDID_VISIBILITY_TOOL_SET_AREA,
     CMDID_HEIGHTMAP_EDITOR_ENABLE,
-    CMDID_HEIGHTMAP_EDITOR_DISABLE,
     CMDID_HEIGHTMAP_MODIFY,
     CMDID_TILEMASK_EDITOR_ENABLE,
-    CMDID_TILEMASK_EDITOR_DISABLE,
     CMDID_TILEMASK_MODIFY,
     CMDID_SET_TILE_COLOR,
     CMDID_RULER_TOOL_ENABLE,
-    CMDID_RULER_TOOL_DISABLE,
     CMDID_NOT_PASSABLE_TERRAIN_ENABLE,
     CMDID_NOT_PASSABLE_TERRAIN_DISABLE,
 
@@ -124,6 +92,10 @@ enum CommandID
     CMDID_MATERIAL_SWITCH_PARENT,
     CMDID_MATERIAL_GLOBAL_SET,
     CMDID_MATERIAL_REMOVE_TEXTURE,
+    CMDID_MATERIAL_REMOVE_CONFIG,
+    CMDID_MATERIAL_CREATE_CONFIG,
+    CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
+    CMDID_MATERIAL_CHANGE_CONFIG_NAME,
 
     CMDID_REBUILD_TANGENT_SPACE,
     CMDID_DELETE_RENDER_BATCH,

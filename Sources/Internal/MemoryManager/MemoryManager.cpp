@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/BaseTypes.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -36,10 +7,13 @@
 #if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_APPLE__)
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#if defined(__DAVAENGINE_MACOS__)
+#include <mach/mach_vm.h>
+#endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <unwind.h>
 #include <dlfcn.h>
@@ -164,6 +138,7 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_RHI_RESOURCE_POOL, "rhi res pool");
 
     RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
+    RegisterAllocPoolName(ALLOC_POOL_SQLITE, "sqlite");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -195,6 +170,18 @@ void MemoryManager::Update()
     if (updateCallback != nullptr)
     {
         updateCallback();
+    }
+}
+
+void MemoryManager::Finish()
+{
+    if (symbolCollectorThread != nullptr)
+    {
+        symbolCollectorThread->Cancel();
+        symbolCollectorCondVar.NotifyAll();
+        symbolCollectorThread->Join();
+        symbolCollectorThread->Release();
+        symbolCollectorThread = nullptr;
     }
 }
 
@@ -351,13 +338,82 @@ void* MemoryManager::Reallocate(void* ptr, size_t newSize)
     }
 }
 
+bool IsMemoryAddressAccessible(void* blockStart)
+{
+// Sometimes memory allocations bypass memory manager, but memory freeing goes through memory manager.
+// System can allocate such a memory block at the very beginning of heap, and memory manager should
+// verify whether memory block is accessible (to prevent segmentation fault) to make check if block is
+// tracked by memory manager
+
+// Such behavior for now is observed only on OS X and iOS
+#if defined(__DAVAENGINE_MACOS__)
+    mach_vm_address_t addr = reinterpret_cast<mach_vm_address_t>(blockStart);
+    mach_vm_size_t size = 0;
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+    mach_port_t obj;
+    kern_return_t status = mach_vm_region(mach_task_self(),
+                                          &addr,
+                                          &size,
+                                          VM_REGION_BASIC_INFO_64,
+                                          reinterpret_cast<vm_region_info_t>(&info),
+                                          &count,
+                                          &obj);
+    if (0 == status &&
+        addr <= reinterpret_cast<mach_vm_address_t>(blockStart) &&
+        (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
+    {
+        return true;
+    }
+    return false;
+#elif defined(__DAVAENGINE_IPHONE__)
+// https://sourceforge.net/p/predef/wiki/Architectures/
+#if defined(__aarch64__)
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
+#else
+    vm_region_basic_info_data_t info;
+    mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT;
+    vm_region_flavor_t flavor = VM_REGION_BASIC_INFO;
+#endif
+    vm_address_t addr = reinterpret_cast<vm_address_t>(blockStart);
+    vm_size_t size = 0;
+    mach_port_t obj;
+
+#if defined(__aarch64__)
+    kern_return_t status = vm_region_64(
+#else
+    kern_return_t status = vm_region(
+#endif
+    mach_task_self(),
+    &addr,
+    &size,
+    flavor,
+    reinterpret_cast<vm_region_info_t>(&info),
+    &count,
+    &obj);
+    if (0 == status &&
+        addr <= reinterpret_cast<vm_address_t>(blockStart) &&
+        (info.protection & (VM_PROT_READ | VM_PROT_WRITE)) == (VM_PROT_READ | VM_PROT_WRITE))
+    {
+        return true;
+    }
+    return false;
+#else
+    return true;
+#endif
+}
+
 void MemoryManager::Deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
         void* ptrToFree = nullptr;
         MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
-        if (BLOCK_MARK == block->mark)
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
         {
             {
                 LockType lock(allocMutex);
@@ -390,6 +446,21 @@ void MemoryManager::Deallocate(void* ptr)
         }
         MallocHook::Free(ptrToFree);
     }
+}
+
+uint32 MemoryManager::MemorySize(void* ptr)
+{
+    if (ptr != nullptr)
+    {
+        MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+
+        bool isAccessible = IsMemoryAddressAccessible(block);
+        if (isAccessible && BLOCK_MARK == block->mark)
+        {
+            return block->allocByApp;
+        }
+    }
+    return static_cast<uint32>(MallocHook::MallocSize(ptr));
 }
 
 void* MemoryManager::InternalAllocate(size_t size)
@@ -443,7 +514,7 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
 #elif defined(__DAVAENGINE_APPLE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
-    if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size))
+    if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &size))
     {
         return static_cast<uint32>(info.resident_size);
     }
@@ -1018,7 +1089,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
     // to give some job to symbol collector
     Backtrace* bktraceBuf = new Backtrace[BUF_CAPACITY];
 
-    for (;;)
+    while (!symbolCollectorThread->IsCancelling())
     {
         {
             UniqueLock<Mutex> lock(symbolCollectorMutex);
@@ -1040,7 +1111,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
             }
         }
 
-        for (size_t i = 0; i < nplaced; ++i)
+        for (size_t i = 0; i < nplaced && !symbolCollectorThread->IsCancelling(); ++i)
         {
             ObtainBacktraceSymbols(&bktraceBuf[i]);
 

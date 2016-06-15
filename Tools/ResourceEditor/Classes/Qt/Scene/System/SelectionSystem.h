@@ -1,38 +1,11 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __SCENE_SELECTION_SYSTEM_H__
 #define __SCENE_SELECTION_SYSTEM_H__
 
-#include "Scene/EntityGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
+#include "Commands2/Base/Command2.h"
+#include "Scene/SelectableGroup.h"
+
+#include "SystemDelegates.h"
 
 // framework
 #include "Entity/SceneSystem.h"
@@ -44,6 +17,9 @@
 
 class SceneCollisionSystem;
 class HoodSystem;
+class EntityModificationSystem;
+class Command2;
+class SceneEditor2;
 
 enum SelectionSystemDrawMode
 {
@@ -63,28 +39,30 @@ class SceneSelectionSystem : public DAVA::SceneSystem
     static const DAVA::uint64 ALL_COMPONENTS_MASK = 0xFFFFFFFFFFFFFFFF;
 
 public:
-    SceneSelectionSystem(DAVA::Scene* scene, SceneCollisionSystem* collSys, HoodSystem* hoodSys);
+    SceneSelectionSystem(SceneEditor2* editor);
     ~SceneSelectionSystem();
 
-    void SetSelection(const EntityGroup& newSelection);
+    void AddObjectToSelection(Selectable::Object* entity);
+    void AddGroupToSelection(const SelectableGroup& entities);
 
-    void AddEntityToSelection(DAVA::Entity* entity);
-    void AddSelection(const EntityGroup& entities);
-
-    void ExcludeEntityFromSelection(DAVA::Entity* entity);
-    void ExcludeSelection(const EntityGroup& entities);
+    void ExcludeEntityFromSelection(Selectable::Object* entity);
+    void ExcludeSelection(const SelectableGroup& entities);
 
     void Clear();
 
     bool IsEntitySelectable(DAVA::Entity* entity) const;
 
-    const EntityGroup& GetSelection() const;
+    /*
+	 * SetSelection could remove not selectable items from provided group
+	 */
+    void SetSelection(SelectableGroup& newSelection);
+    const SelectableGroup& GetSelection() const;
 
     size_t GetSelectionCount() const;
     DAVA::Entity* GetFirstSelectionEntity() const;
 
-    void SetPivotPoint(ST_PivotPoint pp);
-    ST_PivotPoint GetPivotPoint() const;
+    void SetPivotPoint(Selectable::TransformPivot pp);
+    Selectable::TransformPivot GetPivotPoint() const;
 
     void ResetSelectionComponentMask();
     void SetSelectionComponentMask(DAVA::uint64 mask);
@@ -95,8 +73,8 @@ public:
 
     void SetLocked(bool lock) override;
 
-    DAVA::AABBox3 GetUntransformedBoundingBox(DAVA::Entity* entity) const;
-    DAVA::AABBox3 GetTransformedBoundingBox(const EntityGroup& group) const;
+    DAVA::AABBox3 GetUntransformedBoundingBox(Selectable::Object* entity) const;
+    DAVA::AABBox3 GetTransformedBoundingBox(const SelectableGroup& group) const;
 
     void ForceEmitSignals();
 
@@ -107,18 +85,24 @@ public:
 
     void Input(DAVA::UIEvent* event) override;
 
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
+
     void Activate() override;
     void Deactivate() override;
 
-    bool IsEntitySelected(DAVA::Entity* entity);
-    bool IsEntitySelectedHierarchically(DAVA::Entity* entity);
+    void EnableSystem(bool enabled);
+    bool IsSystemEnabled() const;
 
     void Draw();
     void CancelSelection();
 
+    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+
 private:
-    void ImmediateEvent(DAVA::Entity* entity, DAVA::uint32 event);
-    DAVA::AABBox3 GetTransformedBoundingBox(DAVA::Entity* entity, const DAVA::Matrix4& transform) const;
+    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
+    DAVA::AABBox3 GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const;
 
     void UpdateHoodPos() const;
 
@@ -126,16 +110,16 @@ private:
 
     void PerformSelectionInCurrentBox();
 
-    void ProcessSelectedGroup(const EntityGroup::EntityVector&);
+    void ProcessSelectedGroup(const SelectableGroup::CollectionType&);
 
     void UpdateGroupSelectionMode();
 
-    void UpdateSelectionGroup(const EntityGroup& newSelection);
+    void UpdateSelectionGroup(const SelectableGroup& newSelection);
     void FinishSelection();
 
-    void ExcludeSingleItem(DAVA::Entity*);
+    void ExcludeSingleItem(Selectable::Object* object);
 
-    void DrawItem(DAVA::Entity* item, const DAVA::AABBox3& bbox, DAVA::int32 drawMode,
+    void DrawItem(const DAVA::AABBox3& bbox, const DAVA::Matrix4& transform, DAVA::int32 drawMode,
                   DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType,
                   const DAVA::Color& color);
 
@@ -149,20 +133,24 @@ private:
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
     HoodSystem* hoodSystem = nullptr;
-    EntityGroup curSelections;
-    EntityGroup curDeselections;
-    EntityGroup lastGroupSelection;
-    EntityGroup objectsToSelect;
+    EntityModificationSystem* modificationSystem = nullptr;
+    SelectableGroup currentSelection;
+    SelectableGroup recentlySelectedEntities;
+    SelectableGroup lastGroupSelection;
+    SelectableGroup objectsToSelect;
+    DAVA::List<DAVA::Entity*> entitiesForSelection;
     DAVA::Vector2 selectionStartPoint;
     DAVA::Vector2 selectionEndPoint;
     DAVA::uint64 componentMaskForSelection = ALL_COMPONENTS_MASK;
-    ST_PivotPoint curPivotPoint = ST_PIVOT_COMMON_CENTER;
+    DAVA::Vector<SceneSelectionSystemDelegate*> selectionDelegates;
+    Selectable::TransformPivot curPivotPoint = Selectable::TransformPivot::CommonCenter;
     GroupSelectionMode groupSelectionMode = GroupSelectionMode::Replace;
     bool selectionAllowed = true;
     bool applyOnPhaseEnd = false;
     bool invalidSelectionBoxes = false;
     bool selectionHasChanges = false;
     bool selecting = false;
+    bool systemIsEnabled = false;
 };
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()

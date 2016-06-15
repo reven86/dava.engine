@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_FTFONT_H__
 #define __DAVAENGINE_FTFONT_H__
 
@@ -68,12 +39,12 @@ public:
     /**
 		\brief Clone font.
 	*/
-    FTFont* Clone() const;
+    FTFont* Clone() const override;
 
     /**
 		\brief Tests if two fonts are the same.
 	*/
-    virtual bool IsEqual(const Font* font) const;
+    bool IsEqual(const Font* font) const override;
 
     /**
 		\brief Get string metrics.
@@ -81,20 +52,20 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
 		\returns StringMetrics structure
 	 */
-    virtual StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = NULL) const;
+    StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = NULL) const override;
 
     /**
 		\brief Get height of highest symbol in font.
 		\returns height in pixels
 	*/
-    virtual uint32 GetFontHeight() const;
+    uint32 GetFontHeight() const override;
 
     /**
 		\brief Checks if symbol is present in font.
 		\param[in] ch - tested symbol
 		\returns true if symbol is available, false otherwise
 	*/
-    virtual bool IsCharAvaliable(char16 ch) const;
+    bool IsCharAvaliable(char16 ch) const override;
 
     /**
 		\brief Draw string to memory buffer
@@ -111,7 +82,7 @@ public:
 	*/
     virtual StringMetrics DrawStringToBuffer(void* buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded = false);
 
-    virtual bool IsTextSupportsSoftwareRendering() const
+    bool IsTextSupportsSoftwareRendering() const override
     {
         return true;
     };
@@ -119,7 +90,7 @@ public:
     //We need to return font path
     const FilePath& GetFontPath() const;
     // Put font properties into YamlNode
-    virtual YamlNode* SaveToYamlNode() const;
+    YamlNode* SaveToYamlNode() const override;
 
     void SetAscendScale(float32 ascend) override;
     float32 GetAscendScale() const override;
@@ -128,7 +99,7 @@ public:
 
 protected:
     // Get the raw hash string (identical for identical fonts).
-    virtual String GetRawHashString();
+    String GetRawHashString() override;
 
 private:
     FTFont(FTInternalFont* internalFont);

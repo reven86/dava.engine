@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_INTROSPECTION_H__
 #define __DAVAENGINE_INTROSPECTION_H__
 
@@ -105,6 +76,8 @@ public:
     {
         MembersRelease();
     }
+
+    InspInfo(const InspInfo&) = delete;
 
     const FastName& Name() const
     {
@@ -225,8 +198,12 @@ public:
     };
 
     InspInfoDynamic()
-        : memberDynamic(NULL){};
-    virtual ~InspInfoDynamic(){};
+        : memberDynamic(NULL)
+    {
+    }
+    virtual ~InspInfoDynamic()
+    {
+    }
 
     virtual DynamicData Prepare(void* object, int filter = 0) const = 0;
     virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
@@ -235,14 +212,14 @@ public:
     virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName& member) const
     {
         return VariantType();
-    };
+    }
     virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName& member) const = 0;
     virtual void MemberValueSet(const DynamicData& ddata, const FastName& member, const VariantType& value) = 0;
 
     const InspMemberDynamic* GetMember() const
     {
         return memberDynamic;
-    };
+    }
 
 protected:
     const InspMemberDynamic* memberDynamic;
@@ -255,11 +232,11 @@ protected:
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(#_type, data, sizeof(data) / sizeof(data[0])); \
+		static DAVA::InspInfo info(#_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
         return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
@@ -270,18 +247,18 @@ protected:
 	{ \
 		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
-		static DAVA::InspInfo info = DAVA::InspInfo(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
+		static DAVA::InspInfo info(_base_type::TypeInfo(), #_type, data, sizeof(data) / sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
 		return &info; \
 	} \
-	virtual const DAVA::InspInfo* GetTypeInfo() const \
+    const DAVA::InspInfo* GetTypeInfo() const override \
 	{ \
 		return _type::TypeInfo(); \
 	}
 
 // Определение обычного члена интроспекции. Доступ к нему осуществляется непосредственно.
 #define MEMBER(_name, _desc, _flags) \
-	new DAVA::InspMember(#_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	new DAVA::InspMember(#_name, _desc, reinterpret_cast<size_t>(&((static_cast<ObjectT*>(nullptr))->_name)), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
@@ -289,10 +266,10 @@ protected:
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
-	DAVA::CreateInspColl(&((ObjectT*)0)->_name, #_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	DAVA::CreateInspColl(&static_cast<ObjectT*>(nullptr)->_name, #_name, _desc, reinterpret_cast<size_t>(&static_cast<ObjectT*>(nullptr)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, (ptrdiff_t)((intptr_t) & ((ObjectT*)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, DAVA::MetaInfo::Instance<void*>(), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__

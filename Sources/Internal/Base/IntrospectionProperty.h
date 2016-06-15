@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_INTROSPECTION_PROPERTY_H__
 #define __DAVAENGINE_INTROSPECTION_PROPERTY_H__
 
@@ -82,14 +53,14 @@ public:
 
     virtual VariantType Value(void* object) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V realValue = (realObj->*getter)();
         return VariantType::LoadData(&realValue, DAVA::MetaInfo::Instance<V>());
     }
 
     virtual void SetValue(void* object, const VariantType& val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V realValue;
         VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
         (realObj->*setter)(realValue);
@@ -97,18 +68,19 @@ public:
 
     virtual void SetValueRaw(void* object, void* val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         (realObj->*setter)(*static_cast<V*>(val));
     }
 
     virtual void* Pointer(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
+
     virtual void* Data(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
 
 protected:
     const GetterPtr getter;
@@ -133,14 +105,14 @@ public:
 
     virtual VariantType Value(void* object) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V& realValue = (realObj->*getter)();
         return VariantType::LoadData(&realValue, DAVA::MetaInfo::Instance<V>());
     }
 
     virtual void SetValue(void* object, const VariantType& val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V realValue;
         VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
         (realObj->*setter)(realValue);
@@ -148,18 +120,19 @@ public:
 
     virtual void SetValueRaw(void* object, void* val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         (realObj->*setter)(*static_cast<V*>(val));
     }
 
     virtual void* Pointer(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
+
     virtual void* Data(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
 
 protected:
     const GetterPtr getter;
@@ -184,14 +157,14 @@ public:
 
     virtual VariantType Value(void* object) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V* realValue = (realObj->*getter)();
         return VariantType::LoadData(&realValue, DAVA::MetaInfo::Instance<V>());
     }
 
     virtual void SetValue(void* object, const VariantType& val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V* realValue;
         VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
         (realObj->*setter)(realValue);
@@ -199,24 +172,25 @@ public:
 
     virtual void SetValueRaw(void* object, void* val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         (realObj->*setter)(static_cast<V*>(val));
     }
 
     virtual void* Pointer(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
+
     virtual void* Data(void* object) const
     {
         if (type->IsPointer())
         {
-            T* realObj = (T*)object;
+            T* realObj = static_cast<T*>(object);
             return (realObj->*getter)();
         }
 
-        return NULL;
-    };
+        return nullptr;
+    }
 
 protected:
     const GetterPtr getter;
@@ -241,14 +215,14 @@ public:
 
     virtual VariantType Value(void* object) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V realValue = (realObj->*getter)();
         return VariantType::LoadData(&realValue, DAVA::MetaInfo::Instance<V>());
     }
 
     virtual void SetValue(void* object, const VariantType& val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         V realValue;
         VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
         (realObj->*setter)(realValue);
@@ -256,18 +230,19 @@ public:
 
     virtual void SetValueRaw(void* object, void* val) const
     {
-        T* realObj = (T*)object;
+        T* realObj = static_cast<T*>(object);
         (realObj->*setter)(*static_cast<V*>(val));
     }
 
     virtual void* Pointer(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
+
     virtual void* Data(void* object) const
     {
-        return NULL;
-    };
+        return nullptr;
+    }
 
 protected:
     const GetterPtr getter;
@@ -279,7 +254,7 @@ protected:
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV (TT::*_g)(), void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV (TT::*)() const)_g, _s, _flags);
+    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV (TT::*)() const>(_g), _s, _flags);
 }
 
 template <typename TT, typename VV>
@@ -291,87 +266,87 @@ DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV (TT
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV (TT::*_g)(), void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV (TT::*)() const)_g, _s, _flags);
+    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV (TT::*)() const>(_g), _s, _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV (TT::*_g)() const, void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV (TT::*)() const)_g, _s, _flags);
+    return new InspProp<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV (TT::*)() const>(_g), _s, _flags);
 }
 
 // ret ref
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV& (TT::*_g)(), void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV & (TT::*)() const)_g, _s, _flags);
+    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV& (TT::*)() const>(_g), _s, _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV& (TT::*_g)() const, void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV & (TT::*)() const)_g, _s, _flags);
+    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV& (TT::*)() const>(_g), _s, _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV& (TT::*_g)(), void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV & (TT::*)() const)_g, _s, _flags);
+    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV& (TT::*)() const>(_g), _s, _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV& (TT::*_g)() const, void (TT::*_s)(const VV&), int _flags)
 {
-    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), (VV & (TT::*)() const)_g, _s, _flags);
+    return new InspPropReturnRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), reinterpret_cast<VV& (TT::*)() const>(_g), _s, _flags);
 }
 
 // param pointer
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV* (TT::*_g)(), void (TT::*_s)(const VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV* (TT::*_g)() const, void (TT::*_s)(const VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV* (TT::*_g)(), void (TT::*_s)(const VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV* (TT::*_g)() const, void (TT::*_s)(const VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV* (TT::*_g)(), void (TT::*_s)(VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, VV* (TT::*_g)() const, void (TT::*_s)(VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV* (TT::*_g)(), void (TT::*_s)(VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 template <typename TT, typename VV>
 DAVA::InspMember* CreateIspProp(const char* _name, const InspDesc& _desc, const VV* (TT::*_g)() const, void (TT::*_s)(VV*), int _flags)
 {
-    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), (VV * (TT::*)())_g, (void (TT::*)(VV*))_s, _flags);
+    return new InspPropParamRef<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV*>(), reinterpret_cast<VV* (TT::*)()>(_g), reinterpret_cast<void (TT::*)(VV*)>(_s), _flags);
 }
 
 // param simple

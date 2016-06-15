@@ -1,41 +1,14 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_BASETYPES_H__
 #define __DAVAENGINE_BASETYPES_H__
 
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
+#include "Base/DllApi.h"
 
 #include <array>
 #include <memory>
 #include <string>
+#include <cstring>
 #include <list>
 #include <map>
 #include <vector>
@@ -70,6 +43,7 @@ using int64 = int64_t;
 
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
 using pointer_size = uintptr_t;
+using size_type = size_t;
 
 using char8 = char;
 using char16 = wchar_t;
@@ -161,6 +135,12 @@ template <typename Key,
           typename KeyEqual = std::equal_to<Key>>
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
+template <typename Key,
+          typename T,
+          typename Hash = std::hash<Key>,
+          typename KeyEqual = std::equal_to<Key>>
+using UnorderedMultiMap = std::unordered_multimap<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
+
 template <size_t Bits>
 using Bitset = std::bitset<Bits>;
 
@@ -216,10 +196,10 @@ inline T Clamp(T val, T a, T b)
 #define Snprintf snprintf
 #endif
 
-#define Memcmp memcmp
-#define Memcpy memcpy
-#define Memset memset
-#define Memmove memmove
+#define Memcmp std::memcmp
+#define Memcpy std::memcpy
+#define Memset std::memset
+#define Memmove std::memmove
 
 template <class TYPE>
 void SafeDelete(TYPE*& d)

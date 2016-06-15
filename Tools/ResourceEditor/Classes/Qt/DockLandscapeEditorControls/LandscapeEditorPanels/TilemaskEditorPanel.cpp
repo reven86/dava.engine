@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "TilemaskEditorPanel.h"
 #include "../../Scene/SceneSignals.h"
 #include "../../Scene/SceneEditor2.h"
@@ -169,7 +140,7 @@ void TilemaskEditorPanel::InitUI()
 
 void TilemaskEditorPanel::ConnectToSignals()
 {
-    connect(SceneSignals::Instance(), SIGNAL(TilemaskEditorToggled(SceneEditor2*)),
+    connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)),
             this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
@@ -178,8 +149,7 @@ void TilemaskEditorPanel::ConnectToSignals()
     connect(sliderWidgetStrength, SIGNAL(ValueChanged(int)), this, SLOT(SetStrength(int)));
     connect(comboBrushImage, SIGNAL(currentIndexChanged(int)), this, SLOT(SetToolImage(int)));
     connect(tileTexturePreviewWidget, SIGNAL(SelectionChanged(int)), this, SLOT(SetDrawTexture(int)));
-    connect(tileTexturePreviewWidget, SIGNAL(TileColorChanged(int32, Color)),
-            this, SLOT(OnTileColorChanged(int32, Color)));
+    connect(tileTexturePreviewWidget, &TileTexturePreviewWidget::TileColorChanged, this, &TilemaskEditorPanel::OnTileColorChanged);
 
     connect(radioDraw, SIGNAL(clicked()), this, SLOT(SetNormalDrawing()));
     connect(radioCopyPaste, SIGNAL(clicked()), this, SLOT(SetCopyPaste()));
@@ -187,15 +157,15 @@ void TilemaskEditorPanel::ConnectToSignals()
 
 void TilemaskEditorPanel::StoreState()
 {
-    KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    DAVA::KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
     customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN,
-                               (int32)sliderWidgetBrushSize->GetRangeMin());
+                               static_cast<DAVA::int32>(sliderWidgetBrushSize->GetRangeMin()));
     customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MAX,
-                               (int32)sliderWidgetBrushSize->GetRangeMax());
+                               static_cast<DAVA::int32>(sliderWidgetBrushSize->GetRangeMax()));
     customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MIN,
-                               (int32)sliderWidgetStrength->GetRangeMin());
+                               static_cast<DAVA::int32>(sliderWidgetStrength->GetRangeMin()));
     customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MAX,
-                               (int32)sliderWidgetStrength->GetRangeMax());
+                               static_cast<DAVA::int32>(sliderWidgetStrength->GetRangeMax()));
 }
 
 void TilemaskEditorPanel::RestoreState()
@@ -203,17 +173,17 @@ void TilemaskEditorPanel::RestoreState()
     SceneEditor2* sceneEditor = GetActiveScene();
 
     bool enabled = sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled();
-    int32 brushSize = BrushSizeSystemToUI(sceneEditor->tilemaskEditorSystem->GetBrushSize());
-    int32 strength = StrengthSystemToUI(sceneEditor->tilemaskEditorSystem->GetStrength());
-    uint32 tileTexture = sceneEditor->tilemaskEditorSystem->GetTileTextureIndex();
-    int32 toolImage = sceneEditor->tilemaskEditorSystem->GetToolImage();
+    DAVA::int32 brushSize = BrushSizeSystemToUI(sceneEditor->tilemaskEditorSystem->GetBrushSize());
+    DAVA::int32 strength = StrengthSystemToUI(sceneEditor->tilemaskEditorSystem->GetStrength());
+    DAVA::uint32 tileTexture = sceneEditor->tilemaskEditorSystem->GetTileTextureIndex();
+    DAVA::int32 toolImage = sceneEditor->tilemaskEditorSystem->GetToolImage();
 
-    int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
-    int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
-    int32 strRangeMin = DEF_STRENGTH_MIN_VALUE;
-    int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
+    DAVA::int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
+    DAVA::int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
+    DAVA::int32 strRangeMin = DEF_STRENGTH_MIN_VALUE;
+    DAVA::int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
 
-    KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
+    DAVA::KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
     if (customProperties)
     {
         brushRangeMin = customProperties->GetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN, DEF_BRUSH_MIN_SIZE);
@@ -257,13 +227,13 @@ void TilemaskEditorPanel::InitBrushImages()
     iconSize = iconSize.expandedTo(QSize(32, 32));
     comboBrushImage->setIconSize(iconSize);
 
-    FilePath toolsPath(ResourceEditor::TILEMASK_EDITOR_TOOLS_PATH);
+    DAVA::FilePath toolsPath(ResourceEditor::TILEMASK_EDITOR_TOOLS_PATH);
 
-    ScopedPtr<FileList> fileList(new FileList(toolsPath));
-    for (int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
+    DAVA::ScopedPtr<DAVA::FileList> fileList(new DAVA::FileList(toolsPath));
+    for (DAVA::int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
     {
         auto pathname = fileList->GetPathname(iFile);
-        if (TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
+        if (DAVA::TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
         {
             QIcon toolIcon(QPixmap::fromImage(ImageTools::FromDavaImage(pathname)));
 
@@ -273,26 +243,26 @@ void TilemaskEditorPanel::InitBrushImages()
     }
 }
 
-void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a)
+void TilemaskEditorPanel::SplitImageToChannels(DAVA::Image* image, DAVA::Image*& r, DAVA::Image*& g, DAVA::Image*& b, DAVA::Image*& a)
 {
-    DVASSERT(image->GetPixelFormat() == FORMAT_RGBA8888);
+    DVASSERT(image->GetPixelFormat() == DAVA::FORMAT_RGBA8888);
 
-    const int32 CHANNELS_COUNT = 4;
+    const DAVA::int32 CHANNELS_COUNT = 4;
 
-    uint32 width = image->GetWidth();
-    uint32 height = image->GetHeight();
-    int32 size = width * height;
+    DAVA::uint32 width = image->GetWidth();
+    DAVA::uint32 height = image->GetHeight();
+    DAVA::int32 size = width * height;
 
-    Image* images[CHANNELS_COUNT];
-    for (int32 i = 0; i < CHANNELS_COUNT; ++i)
+    DAVA::Image* images[CHANNELS_COUNT];
+    for (DAVA::int32 i = 0; i < CHANNELS_COUNT; ++i)
     {
-        images[i] = Image::Create(width, height, FORMAT_RGBA8888);
+        images[i] = DAVA::Image::Create(width, height, DAVA::FORMAT_RGBA8888);
     }
 
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-    for (int32 i = 0; i < size; ++i)
+    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    for (DAVA::int32 i = 0; i < size; ++i)
     {
-        int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSize;
 
         images[0]->data[offset] = image->data[offset];
         images[0]->data[offset + 1] = image->data[offset];
@@ -330,13 +300,13 @@ void TilemaskEditorPanel::UpdateTileTextures()
     QSize iconSize = QSize(TileTexturePreviewWidget::TEXTURE_PREVIEW_WIDTH,
                            TileTexturePreviewWidget::TEXTURE_PREVIEW_HEIGHT);
 
-    int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
-    Image** images = new Image*[count];
+    DAVA::int32 count = static_cast<DAVA::int32>(sceneEditor->tilemaskEditorSystem->GetTileTextureCount());
+    DAVA::Image** images = new DAVA::Image*[count];
 
-    FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
+    DAVA::FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
 
-    Vector<Image*> imgs;
-    ImageSystem::Instance()->Load(tileTexturePath, imgs);
+    DAVA::Vector<DAVA::Image*> imgs;
+    DAVA::ImageSystem::Load(tileTexturePath, imgs);
     DVASSERT(imgs.size() == 1);
 
     imgs[0]->ResizeCanvas(iconSize.width(), iconSize.height());
@@ -346,13 +316,13 @@ void TilemaskEditorPanel::UpdateTileTextures()
 
     tileTexturePreviewWidget->SetMode(TileTexturePreviewWidget::MODE_WITH_COLORS);
 
-    for (int32 i = 0; i < count; ++i)
+    for (DAVA::int32 i = 0; i < count; ++i)
     {
-        Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
+        DAVA::Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
 
         tileTexturePreviewWidget->AddTexture(images[i], color);
 
-        SafeRelease(images[i]);
+        DAVA::SafeRelease(images[i]);
     }
 
     SafeDelete(images);
@@ -369,7 +339,7 @@ void TilemaskEditorPanel::SetToolImage(int imageIndex)
 
     if (!s.isEmpty())
     {
-        FilePath fp(s.toStdString());
+        DAVA::FilePath fp(s.toStdString());
         GetActiveScene()->tilemaskEditorSystem->SetToolImage(fp, imageIndex);
     }
 }
@@ -386,30 +356,30 @@ void TilemaskEditorPanel::SetDrawTexture(int textureIndex)
 
 // these functions are designed to convert values from sliders in ui
 // to the values suitable for tilemask editor system
-int32 TilemaskEditorPanel::BrushSizeUIToSystem(int32 uiValue)
+DAVA::int32 TilemaskEditorPanel::BrushSizeUIToSystem(DAVA::int32 uiValue)
 {
-    int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    DAVA::int32 systemValue = uiValue * ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
     return systemValue;
 }
 
-int32 TilemaskEditorPanel::BrushSizeSystemToUI(int32 systemValue)
+DAVA::int32 TilemaskEditorPanel::BrushSizeSystemToUI(DAVA::int32 systemValue)
 {
-    int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
+    DAVA::int32 uiValue = systemValue / ResourceEditor::LANDSCAPE_BRUSH_SIZE_UI_TO_SYSTEM_COEF;
     return uiValue;
 }
 
-float32 TilemaskEditorPanel::StrengthUIToSystem(int32 uiValue)
+DAVA::float32 TilemaskEditorPanel::StrengthUIToSystem(DAVA::int32 uiValue)
 {
     // strength in tilemask editor is the real number in the range [0 .. 0.5]
     // (by default, upper bound could be different)
-    float32 max = 2.0 * DEF_STRENGTH_MAX_VALUE;
-    float32 systemValue = uiValue / max;
+    DAVA::float32 max = 2.0 * DEF_STRENGTH_MAX_VALUE;
+    DAVA::float32 systemValue = uiValue / max;
     return systemValue;
 }
 
-int32 TilemaskEditorPanel::StrengthSystemToUI(float32 systemValue)
+DAVA::int32 TilemaskEditorPanel::StrengthSystemToUI(DAVA::float32 systemValue)
 {
-    int32 uiValue = (int32)(systemValue * 2.f * DEF_STRENGTH_MAX_VALUE);
+    DAVA::int32 uiValue = static_cast<DAVA::int32>(systemValue * 2.f * DEF_STRENGTH_MAX_VALUE);
     return uiValue;
 }
 // end of convert functions ==========================
@@ -552,7 +522,7 @@ void TilemaskEditorPanel::DecreaseStrengthLarge()
 
 void TilemaskEditorPanel::PrevTexture()
 {
-    int32 curIndex = tileTexturePreviewWidget->GetSelectedTexture();
+    DAVA::int32 curIndex = tileTexturePreviewWidget->GetSelectedTexture();
     if (curIndex)
     {
         tileTexturePreviewWidget->SetSelectedTexture(curIndex - 1);
@@ -563,8 +533,8 @@ void TilemaskEditorPanel::NextTexture()
 {
     SceneEditor2* sceneEditor = GetActiveScene();
 
-    int32 curIndex = tileTexturePreviewWidget->GetSelectedTexture();
-    if (curIndex < (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount() - 1)
+    DAVA::int32 curIndex = tileTexturePreviewWidget->GetSelectedTexture();
+    if (curIndex < static_cast<DAVA::int32>(sceneEditor->tilemaskEditorSystem->GetTileTextureCount()) - 1)
     {
         tileTexturePreviewWidget->SetSelectedTexture(curIndex + 1);
     }
@@ -572,7 +542,7 @@ void TilemaskEditorPanel::NextTexture()
 
 void TilemaskEditorPanel::PrevTool()
 {
-    int32 curIndex = comboBrushImage->currentIndex();
+    DAVA::int32 curIndex = comboBrushImage->currentIndex();
     if (curIndex)
     {
         comboBrushImage->setCurrentIndex(curIndex - 1);
@@ -581,14 +551,14 @@ void TilemaskEditorPanel::PrevTool()
 
 void TilemaskEditorPanel::NextTool()
 {
-    int32 curIndex = comboBrushImage->currentIndex();
+    DAVA::int32 curIndex = comboBrushImage->currentIndex();
     if (curIndex < comboBrushImage->count() - 1)
     {
         comboBrushImage->setCurrentIndex(curIndex + 1);
     }
 }
 
-void TilemaskEditorPanel::OnTileColorChanged(int32 tileNumber, Color color)
+void TilemaskEditorPanel::OnTileColorChanged(DAVA::int32 tileNumber, DAVA::Color color)
 {
     SceneEditor2* sceneEditor = GetActiveScene();
     sceneEditor->tilemaskEditorSystem->SetTileColor(tileNumber, color);
@@ -596,18 +566,20 @@ void TilemaskEditorPanel::OnTileColorChanged(int32 tileNumber, Color color)
 
 void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-    if (scene != GetActiveScene() || !GetEditorEnabled() || command->GetId() != CMDID_SET_TILE_COLOR)
+    SceneEditor2* sceneEditor = GetActiveScene();
+    if (scene != sceneEditor || !GetEditorEnabled())
     {
         return;
     }
 
-    SceneEditor2* sceneEditor = GetActiveScene();
-    int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
-
-    for (int32 i = 0; i < count; ++i)
+    if (command->MatchCommandID(CMDID_SET_TILE_COLOR))
     {
-        Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
-        tileTexturePreviewWidget->UpdateColor(i, color);
+        DAVA::uint32 count = sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
+        for (DAVA::uint32 i = 0; i < count; ++i)
+        {
+            DAVA::Color color = sceneEditor->tilemaskEditorSystem->GetTileColor(i);
+            tileTexturePreviewWidget->UpdateColor(i, color);
+        }
     }
 }
 

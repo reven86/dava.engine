@@ -1,37 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "MaterialModel.h"
 #include "MaterialItem.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Scene/EntityGroup.h"
+#include "Scene/SelectableGroup.h"
 
 #include "Main/QtUtils.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -44,6 +15,8 @@
 #include "TextureBrowser/TextureInfo.h"
 
 #include "Settings/SettingsManager.h"
+
+#include "QtTools/Utils/Utils.h"
 
 #include <QPainter>
 
@@ -72,34 +45,7 @@ QVariant MaterialModel::data(const QModelIndex& index, int role) const
 
     if (index.column() == 0)
     {
-        MaterialItem* item = itemFromIndex(index);
-        DVASSERT(item);
-
-        switch (role)
-        {
-        case Qt::BackgroundRole:
-        {
-            if (item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE))
-            {
-                ret = QBrush(QColor(255, 0, 0, 20));
-            }
-        }
-        break;
-        case Qt::FontRole:
-        {
-            ret = QStandardItemModel::data(index, role);
-            if (item->GetFlag(MaterialItem::IS_PART_OF_SELECTION))
-            {
-                QFont font = ret.value<QFont>();
-                font.setBold(true);
-                ret = font;
-            }
-        }
-        break;
-        default:
-            ret = QStandardItemModel::data(index, role);
-            break;
-        }
+        ret = QStandardItemModel::data(index, role);
     }
     // LOD
     else if (index.isValid() && index.column() < columnCount())
@@ -213,7 +159,7 @@ DAVA::NMaterial* MaterialModel::GetGlobalMaterial() const
     return ret;
 }
 
-void MaterialModel::SetSelection(const EntityGroup* group)
+void MaterialModel::SetSelection(const SelectableGroup* group)
 {
     QStandardItem* root = invisibleRootItem();
     for (int i = 0; i < root->rowCount(); ++i)
@@ -240,7 +186,7 @@ void MaterialModel::SetSelection(const EntityGroup* group)
     }
 }
 
-bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* group)
+bool MaterialModel::SetItemSelection(MaterialItem* item, const SelectableGroup* group)
 {
     if (group == nullptr)
     {
@@ -252,7 +198,7 @@ bool MaterialModel::SetItemSelection(MaterialItem* item, const EntityGroup* grou
     DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
 
     entity = curScene->selectionSystem->GetSelectableEntity(entity);
-    bool shouldSelect = group->ContainsEntity(entity);
+    bool shouldSelect = group->ContainsObject(entity);
     item->SetFlag(MaterialItem::IS_PART_OF_SELECTION, shouldSelect);
 
     return shouldSelect;
@@ -264,7 +210,7 @@ void MaterialModel::Sync()
     {
         DAVA::NMaterial* globalMaterial = GetGlobalMaterial();
         const DAVA::Set<DAVA::NMaterial*>& sceneMaterials = curScene->materialSystem->GetTopParents();
-        Map<NMaterial*, bool> processedList;
+        DAVA::Map<DAVA::NMaterial*, bool> processedList;
 
         // init processed list
         for (auto it : sceneMaterials)
@@ -322,7 +268,7 @@ void MaterialModel::Sync()
             }
         }
 
-        const EntityGroup& selection = curScene->selectionSystem->GetSelection();
+        const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
         SetSelection(&selection);
     }
 }
@@ -330,9 +276,9 @@ void MaterialModel::Sync()
 void MaterialModel::Sync(MaterialItem* item)
 {
     DAVA::NMaterial* material = item->GetMaterial();
-    const Vector<NMaterial*>& materialChildren = material->GetChildren();
+    const DAVA::Vector<DAVA::NMaterial*>& materialChildren = material->GetChildren();
 
-    Map<NMaterial*, bool> processedList;
+    DAVA::Map<DAVA::NMaterial*, bool> processedList;
 
     // init processed list
     for (auto it : materialChildren)
@@ -481,26 +427,21 @@ bool MaterialModel::dropMimeData(const QMimeData* data, Qt::DropAction action, i
         MaterialItem* targetMaterialItem = itemFromIndex(targetIndex);
         DAVA::NMaterial* targetMaterial = targetMaterialItem->GetMaterial();
 
-        if (materials.size() > 1)
-        {
-            curScene->BeginBatch("Change materials parent");
-        }
+        DAVA::uint32 count = materials.size();
+        curScene->BeginBatch("Change materials parent", count);
 
         // change parent material
         // NOTE: model synchronization will be done in OnCommandExecuted handler
-        for (int i = 0; i < materials.size(); ++i)
+        for (DAVA::uint32 i = 0; i < count; ++i)
         {
             MaterialItem* sourceMaterialItem = itemFromIndex(GetIndex(materials[i]));
             if (NULL != sourceMaterialItem)
             {
-                curScene->Exec(new MaterialSwitchParentCommand(materials[i], targetMaterial));
+                curScene->Exec(Command2::Create<MaterialSwitchParentCommand>(materials[i], targetMaterial));
             }
         }
 
-        if (materials.size() > 1)
-        {
-            curScene->EndBatch();
-        }
+        curScene->EndBatch();
     }
 
     return true;
@@ -524,7 +465,7 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData* data, Qt::DropAction acti
     if (targetMaterial == NULL)
         return false;
 
-    NMaterial* globalMaterial = curScene->GetGlobalMaterial();
+    DAVA::NMaterial* globalMaterial = curScene->GetGlobalMaterial();
     if (targetMaterial == globalMaterial)
         return false;
 
@@ -532,8 +473,8 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData* data, Qt::DropAction acti
     // we need check this situation and ban it
     for (int i = 0; i < materials.size(); ++i)
     {
-        NMaterial* material = materials[i];
-        NMaterial* materialParent = material->GetParent();
+        DAVA::NMaterial* material = materials[i];
+        DAVA::NMaterial* materialParent = material->GetParent();
         DVASSERT(materialParent != nullptr && materialParent != globalMaterial);
         if (material == targetMaterial)
             return false;

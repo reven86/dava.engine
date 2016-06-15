@@ -1,39 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/UIList.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
-#include "FileSystem/YamlNode.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
 namespace DAVA
@@ -72,7 +41,6 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
 void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
-    SetFocusEnabled(false);
     clipContents = true;
     Rect r = GetRect();
     r.x = 0;
@@ -87,7 +55,6 @@ void UIList::InitAfterYaml()
 
     scrollContainer = new UIControl(r);
     AddControl(scrollContainer);
-    scrollContainer->SetFocusEnabled(false);
 
     oldPos = 0;
     newPos = 0;
@@ -183,7 +150,7 @@ void UIList::ScrollToElement(int32 index)
 
 void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = (UIList::eListOrientation)_orientation;
+    orientation = static_cast<UIList::eListOrientation>(_orientation);
 }
 
 float32 UIList::GetScrollPosition()
@@ -388,7 +355,7 @@ void UIList::Update(float32 timeElapsed)
         UIListCell* fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i > ind)
             {
@@ -439,7 +406,7 @@ void UIList::Update(float32 timeElapsed)
         fc = NULL;
         for (it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = (UIListCell*)(*it);
+            UIListCell* lc = static_cast<UIListCell*>(*it);
             int32 i = lc->GetIndex();
             if (i < ind)
             {
@@ -603,12 +570,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
         {
             mainTouch = -1;
             lockTouch = false;
-            SetFocusEnabled(true);
-            scrollContainer->SetFocusEnabled(true);
-            bool retVal = UIControl::SystemInput(currentInput);
-            SetFocusEnabled(false);
-            scrollContainer->SetFocusEnabled(false);
-            return retVal;
+            return UIControl::SystemInput(currentInput);
         }
     }
 
@@ -619,7 +581,7 @@ void UIList::OnSelectEvent(BaseObject* pCaller, void* pUserData, void* callerDat
 {
     if (delegate)
     {
-        delegate->OnCellSelected(this, (UIListCell*)pCaller);
+        delegate->OnCellSelected(this, static_cast<UIListCell*>(pCaller));
     }
 }
 
@@ -732,37 +694,10 @@ void UIList::SetBorderMoveModifer(float newValue)
     scroll->SetBorderMoveModifer(newValue);
 }
 
-void UIList::SystemWillAppear()
+void UIList::OnActive()
 {
-    UIControl::SystemWillAppear();
+    UIControl::OnActive();
     Refresh();
-}
-
-void UIList::LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "ORIENTATION_VERTICAL")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "ORIENTATION_HORIZONTAL")
-            orientation = ORIENTATION_HORIZONTAL;
-        else
-        {
-            DVASSERT(0 && "Orientation constant is wrong");
-        }
-    }
-    // Load aggregator path
-    const YamlNode* aggregatorPathNode = node->Get("aggregatorPath");
-    if (aggregatorPathNode)
-    {
-        aggregatorPath = aggregatorPathNode->AsString();
-    }
-
-    // TODO
-    InitAfterYaml();
 }
 
 UIList* UIList::Clone()
@@ -775,7 +710,7 @@ UIList* UIList::Clone()
 void UIList::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIList* t = (UIList*)srcControl;
+    UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
     aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
@@ -789,43 +724,6 @@ const FilePath& UIList::GetAggregatorPath()
 void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
 {
     this->aggregatorPath = aggregatorPath;
-}
-
-YamlNode* UIList::SaveToYamlNode(UIYamlLoader* loader)
-{
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-    //Temp variables
-    String stringValue;
-
-    //Orientation
-    eListOrientation orient = (eListOrientation)GetOrientation();
-    switch (orient)
-    {
-    case ORIENTATION_VERTICAL:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    case ORIENTATION_HORIZONTAL:
-        stringValue = "ORIENTATION_HORIZONTAL";
-        break;
-    default:
-        stringValue = "ORIENTATION_VERTICAL";
-        break;
-    }
-    node->Set("orientation", stringValue);
-
-    if (delegate)
-    {
-        // Set aggregator path from current List delegate
-        delegate->SaveToYaml(this, node);
-    }
-
-    // Save aggregator path only if it is not empty
-    if (!aggregatorPath.IsEmpty())
-    {
-        node->Set("aggregatorPath", aggregatorPath.GetFrameworkPath());
-    }
-
-    return node;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)

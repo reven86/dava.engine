@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAEngine.h"
 #include "Functional/Signal.h"
 #include "UnitTests/UnitTests.h"
@@ -168,13 +140,32 @@ struct C : public M, virtual public V, virtual public A
     }
 };
 
+struct MindChangingClass
+{
+    MindChangingClass(Signal<>& sig)
+        : signal(sig)
+    {
+        id = signal.Connect([this] { Tick(); });
+    }
+
+    void Tick()
+    {
+        count++;
+        signal.Disconnect(id);
+    }
+
+    uint32 count = 0;
+    Signal<>& signal;
+    SigConnectionID id;
+};
+
 // =======================================================================================================================================
 // =======================================================================================================================================
 // =======================================================================================================================================
 
-DAVA_TESTCLASS(FunctionBindSignalTest)
+DAVA_TESTCLASS (FunctionBindSignalTest)
 {
-    DAVA_TEST(TestFunction)
+    DAVA_TEST (TestFunction)
     {
         // ==================================================================================
         // common functions testing
@@ -351,7 +342,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(bound_f3_3(30, 20, 10, &aa) == aa.classFn3(10, 20, 30));
     }
 
-    DAVA_TEST(TestFunctionExtended)
+    DAVA_TEST (TestFunctionExtended)
     {
         B b;
         A* a_pt = nullptr;
@@ -376,7 +367,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(cla0(&b, a_pt) == b.exClassFn(a_pt));
         TEST_VERIFY(cla1(&b, a_pt) == b.exClassFn1(a_pt));
         TEST_VERIFY(cla2(&b, &a_pt) == b.exClassFn2(&a_pt));
-        TEST_VERIFY(cla3(&b, (const A**)&a_pt) == b.exClassFn3((const A**)&a_pt));
+        TEST_VERIFY(cla3(&b, const_cast<const A**>(&a_pt)) == b.exClassFn3(const_cast<const A**>(&a_pt)));
     }
 
     class TestObjA : public TrackedObject
@@ -410,7 +401,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
     {
     };
 
-    DAVA_TEST(TestSignals)
+    DAVA_TEST (TestSignals)
     {
         // ==================================================================================
         // signals
@@ -518,6 +509,21 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             // so "res" should be equal to the "v" value
             sig.Emit(res, w);
             TEST_VERIFY(res == v);
+        }
+
+        // check disconnection correctness during signal emission
+        {
+            Signal<> signal;
+            MindChangingClass mco(signal);
+            TEST_VERIFY(mco.count == 0);
+
+            // increment count in signal handler
+            signal.Emit();
+            TEST_VERIFY(mco.count == 1);
+
+            // second emission, mco is not connected to the signal, count isn't changed
+            signal.Emit();
+            TEST_VERIFY(mco.count == 1);
         }
     }
 };

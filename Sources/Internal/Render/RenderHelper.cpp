@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderPassNames.h"
@@ -210,9 +182,9 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
         return;
     }
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, (pointer_size)viewMatrix);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, (pointer_size)projectionMatrix);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, reinterpret_cast<pointer_size>(viewMatrix));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, reinterpret_cast<pointer_size>(projectionMatrix));
 
     RenderStruct currentRenderStruct = AllocateRenderStruct(packetList);
     if (!currentRenderStruct.valid)
@@ -287,7 +259,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_CIRCLE:
         {
-            const uint32 pointCount = (uint32)(command.params[11]);
+            const uint32 pointCount = static_cast<uint32>(command.params[11]);
             const Vector3 center(command.params.data() + 4), direction(command.params.data() + 7);
             const float32 radius = command.params[10];
             FillCircleVBuffer(commandVBufferPtr, center, direction, radius, pointCount, nativePrimitiveColor);
@@ -545,7 +517,7 @@ void RenderHelper::DrawBSpline(BezierSpline3* bSpline, int segments, float ts, f
     pts.points.reserve(segments);
     for (int k = 0; k < segments; ++k)
     {
-        pts.AddPoint(bSpline->Evaluate(0, ts + (te - ts) * ((float)k / (float)(segments - 1))));
+        pts.AddPoint(bSpline->Evaluate(0, ts + (te - ts) * (static_cast<float32>(k) / (segments - 1))));
     }
     DrawPolygon(pts, color, drawType);
 }
@@ -557,8 +529,9 @@ void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect& d
     for (int k = 0; k < segmentsCount; ++k)
     {
         Vector3 v;
-        v.x = destRect.x + ((float)k / (float)(segmentsCount - 1)) * destRect.dx;
-        v.y = destRect.y + func(((float)k / (float)(segmentsCount - 1))) * destRect.dy;
+        float32 fk = static_cast<float32>(k);
+        v.x = destRect.x + (fk / (segmentsCount - 1)) * destRect.dx;
+        v.y = destRect.y + func((fk / (segmentsCount - 1))) * destRect.dy;
         v.z = 0.0f;
         pts.AddPoint(v);
     }
@@ -679,7 +652,7 @@ void RenderHelper::FillCircleVBuffer(ColoredVertex* buffer, const Vector3& cente
     const Vector3 ortho = Abs(direction.x) < Abs(direction.y) ? direction.CrossProduct(Vector3(1.f, 0.f, 0.f)) : direction.CrossProduct(Vector3(0.f, 1.f, 0.f));
 
     Matrix4 rotationMx;
-    float32 angleDelta = PI_2 / (float32)pointCount;
+    float32 angleDelta = PI_2 / pointCount;
     for (uint32 i = 0; i < pointCount; ++i)
     {
         rotationMx.CreateRotation(direction, angleDelta * i);
@@ -740,23 +713,21 @@ void RenderHelper::FillPolygonIndecies(uint16* buffer, uint16 baseIndex, uint32 
     }
 }
 
-void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport)
+void RenderHelper::CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture depthBuffer, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport)
 {
     rhi::RenderPassConfig clearPassConfig;
     clearPassConfig.priority = passPriority;
-    clearPassConfig.colorBuffer[0].texture = targetHandle;
+    clearPassConfig.colorBuffer[0].texture = colorBuffer;
     clearPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
     clearPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
     clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
     clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
     clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    clearPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
+    clearPassConfig.depthStencilBuffer.texture = depthBuffer;
     clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     clearPassConfig.viewport = viewport;
-    clearPassConfig.PerfQueryIndex0 = PERFQUERY__CLEAR_PASS_T0;
-    clearPassConfig.PerfQueryIndex1 = PERFQUERY__CLEAR_PASS_T1;
 
     rhi::HPacketList emptyPacketList;
     rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);

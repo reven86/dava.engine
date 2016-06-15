@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "TexturePacker/ResourcePacker2D.h"
@@ -36,7 +7,9 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "Logger/TeamcityOutput.h"
+
+#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -130,18 +103,31 @@ void ProcessRecourcePacker()
         }
     }
 
+    AssetCacheClient cacheClient(true);
+    bool shouldDisconnect = false;
     if (CommandLineParser::CommandIsFound(String("-useCache")))
     {
         Logger::FrameworkDebug("Using asset cache");
-        String ip = CommandLineParser::GetCommandParam("-ip");
-        String port = CommandLineParser::GetCommandParam("-p");
-        String timeout = CommandLineParser::GetCommandParam("-t");
-        resourcePacker.SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
+
+        String ipStr = CommandLineParser::GetCommandParam("-ip");
+        String portStr = CommandLineParser::GetCommandParam("-p");
+        String timeoutStr = CommandLineParser::GetCommandParam("-t");
+
+        AssetCacheClient::ConnectionParams params;
+        params.ip = (ipStr.empty() ? AssetCache::GetLocalHost() : ipStr);
+        params.port = (portStr.empty()) ? AssetCache::ASSET_SERVER_PORT : atoi(portStr.c_str());
+        params.timeoutms = (timeoutStr.empty() ? 1000 : atoi(timeoutStr.c_str()) * 1000); //in ms
+
+        AssetCache::Error connected = cacheClient.ConnectSynchronously(params);
+        if (connected == AssetCache::Error::NO_ERRORS)
+        {
+            shouldDisconnect = true;
+            resourcePacker.SetCacheClient(&cacheClient, "Resource Packer. Repack Sprites");
+        }
     }
     else
     {
         Logger::FrameworkDebug("Asset cache will not be used");
-        resourcePacker.ClearCacheClientTool();
     }
 
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
@@ -152,8 +138,14 @@ void ProcessRecourcePacker()
     {
         resourcePacker.PackResources(exportForGPU);
     }
+
+    if (shouldDisconnect)
+    {
+        cacheClient.Disconnect();
+    }
+
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
-    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
+    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", static_cast<float64>(elapsedTime) / 1000.0);
 }
 
 void FrameworkDidLaunched()

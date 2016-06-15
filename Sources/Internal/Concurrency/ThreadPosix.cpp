@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/Platform.h"
 #if !defined(__DAVAENGINE_WINDOWS__)
 
@@ -70,13 +41,12 @@ void Thread::Init()
     sigemptyset(&cancelThreadAction.sa_mask);
     cancelThreadAction.sa_flags = 0;
     cancelThreadAction.sa_handler = thread_exit_handler;
-    sigaction(SIGRTMIN, &cancelThreadAction, NULL);
+    sigaction(SIGRTMIN, &cancelThreadAction, nullptr);
 #endif
 }
 
 void Thread::Shutdown()
 {
-    DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     Join();
 }
 
@@ -95,6 +65,15 @@ void Thread::KillNative()
     }
 }
 
+void Thread::SetCurrentThreadName(const String& str)
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    pthread_setname_np(pthread_self(), str.c_str());
+#elif defined(__DAVAENGINE_APPLE__)
+    pthread_setname_np(str.c_str());
+#endif
+}
+
 void* PthreadMain(void* param)
 {
 #if defined(__DAVAENGINE_APPLE__)
@@ -105,12 +84,10 @@ void* PthreadMain(void* param)
     JNI::AttachCurrentThreadToJVM();
 #endif
 
-    Thread* t = static_cast<Thread*>(param);    
+    Thread* t = static_cast<Thread*>(param);
+    Thread::SetCurrentThreadName(t->name);
 #if defined(__DAVAENGINE_ANDROID__)
-    pthread_setname_np(t->handle, t->name.c_str());
     t->system_handle = gettid();
-#elif defined(__DAVAENGINE_APPLE__)
-    pthread_setname_np(t->name.c_str());
 #endif
 
     Thread::ThreadFunction(param);
@@ -128,22 +105,33 @@ void* PthreadMain(void* param)
 void Thread::Start()
 {
     DVASSERT(STATE_CREATED == state);
-    Retain();
 
     pthread_attr_t attr{};
     pthread_attr_init(&attr);
     if (stackSize != 0)
         pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, (void*)this);
-    state = STATE_RUNNING;
+    int err = pthread_create(&handle, &attr, PthreadMain, this);
+    if (0 == err)
+    {
+        isJoinable.Set(true);
+        state.CompareAndSwap(STATE_CREATED, STATE_RUNNING);
+    }
+    else
+    {
+        Memset(&handle, 0, sizeof(handle));
+        Logger::Error("Thread::Start failed to create thread: error=%d", err);
+    }
 
     pthread_attr_destroy(&attr);
 }
 
 void Thread::Join()
 {
-    pthread_join(handle, NULL);
+    if (isJoinable.CompareAndSwap(true, false))
+    {
+        pthread_join(handle, nullptr);
+    }
 }
 
 Thread::Id Thread::GetCurrentId()
@@ -155,11 +143,13 @@ Thread::Id Thread::GetCurrentId()
 
 bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
 {
-    thread_affinity_policy_data_t policy = { int(proc_n) };
+    thread_affinity_policy_data_t policy_data = { int(proc_n) };
+    thread_policy_t policy = reinterpret_cast<thread_policy_t>(&policy_data);
     thread_port_t mach_thread = pthread_mach_thread_np(thread);
+
     auto res = thread_policy_set(mach_thread,
                                  THREAD_AFFINITY_POLICY,
-                                 (thread_policy_t)&policy, 1);
+                                 policy, 1);
     return res == KERN_SUCCESS;
 }
 

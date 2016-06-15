@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -39,9 +11,46 @@
 #include "Base/GlobalEnum.h"
 #include "winsock2.h"
 #include "Iphlpapi.h"
+#include "TimeZones.h"
+
+#include <VersionHelpers.h>
 
 namespace DAVA
 {
+namespace RegistryReader
+{
+const WideString oemRegistryPath(L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\OEMInformation");
+const WideString infoRegistryPath(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+const WideString manufacturer(L"Manufacturer");
+const WideString model(L"Model");
+const WideString currentOSVersion(L"CurrentVersion");
+const WideString currentBuildNumber(L"CurrentBuildNumber");
+const WideString currentBuild(L"CurrentBuild");
+const WideString operationSystemName(L"ProductName");
+
+String GetStringForKey(const WideString& path, const WideString& key)
+{
+    WideString val;
+
+    HKEY hKey;
+    LONG openRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, path.c_str(), 0, KEY_READ, &hKey);
+    if (ERROR_SUCCESS == openRes)
+    {
+        WCHAR szBuffer[512];
+        DWORD dwBufferSize = sizeof(szBuffer);
+        ULONG error;
+        error = RegQueryValueExW(hKey, key.c_str(), 0, NULL, reinterpret_cast<LPBYTE>(szBuffer), &dwBufferSize);
+        if (ERROR_SUCCESS == error)
+        {
+            val = szBuffer;
+        }
+    }
+
+    String ret = WStringToString(val);
+    return ret;
+}
+}
+
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
@@ -58,32 +67,71 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    return "Not yet implemented";
+    String currentOSVersion = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentOSVersion);
+    String currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuildNumber);
+    if ("" == currentBuildNumber)
+    {
+        currentBuildNumber = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::currentBuild);
+    }
+    String operationSystemName = RegistryReader::GetStringForKey(RegistryReader::infoRegistryPath, RegistryReader::operationSystemName);
+
+    String version = currentOSVersion + "." + currentBuildNumber;
+
+    return version;
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    return "Not yet implemented";
+    String manufacturer = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::manufacturer);
+    return manufacturer;
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return "Not yet implemented";
+    String model = RegistryReader::GetStringForKey(RegistryReader::oemRegistryPath, RegistryReader::model);
+    return model;
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return "Not yet implemented";
+    WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
+    int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
+    String locale;
+    if (0 != size)
+    {
+        locale = WStringToString(localeBuffer);
+    }
+    return locale;
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    return "Not yet implemented";
+    GEOID myGEO = GetUserGeoID(GEOCLASS_NATION);
+    int sizeOfBuffer = GetGeoInfo(myGEO, GEO_ISO2, NULL, 0, 0);
+    if (0 == sizeOfBuffer)
+    {
+        return "";
+    }
+
+    WCHAR* buffer = new WCHAR[sizeOfBuffer];
+    int result = GetGeoInfo(myGEO, GEO_ISO2, buffer, sizeOfBuffer, 0);
+    DVASSERT(0 != result);
+    String country = WStringToString(buffer);
+    delete[] buffer;
+
+    return country;
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    return "Not yet implemented";
+    /*don't remove that code please. it is needed for the nex task*/
+    DYNAMIC_TIME_ZONE_INFORMATION timeZoneInformation;
+    DWORD ret = GetDynamicTimeZoneInformation(&timeZoneInformation);
+
+    String generalName = TimeZoneHelper::GetGeneralNameByStdName(timeZoneInformation.TimeZoneKeyName);
+    DVASSERT_MSG(!generalName.empty(), Format("No &s timezone found! Check time zones map", generalName.c_str()).c_str());
+
+    return generalName;
 }
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
@@ -201,7 +249,7 @@ String DeviceInfoPrivate::GetUDID()
     MD5::ForData(reinterpret_cast<const uint8*>(res.c_str()), static_cast<uint32>(res.size()), md5Digest);
 
     String digest(MD5::MD5Digest::DIGEST_SIZE * 2 + 1, '\0');
-    MD5::HashToChar(md5Digest, const_cast<char8*>(digest.data()), digest.size());
+    MD5::HashToChar(md5Digest, const_cast<char8*>(digest.data()), static_cast<uint32>(digest.size()));
     return digest;
 }
 
@@ -222,7 +270,7 @@ WideString DeviceInfoPrivate::GetName()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_INVALID;
+    return GPU_DX11;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "BaseAddEntityDialog.h"
 #include "ui_BaseAddEntityDialog.h"
 #include "Qt/Main/QtUtils.h"
@@ -106,24 +77,24 @@ QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void* object, const D
     return propData;
 }
 
-QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName)
+QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* archive_, const DAVA::String& key_, const DAVA::String& rowName)
 {
-    QtPropertyData* propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), _archive, _key);
+    QtPropertyData* propData = new QtPropertyKeyedArchiveMember(DAVA::FastName(rowName), archive_, key_);
     propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
     return propData;
 }
 
-QtPropertyData* BaseAddEntityDialog::AddMetaObject(void* _object, const DAVA::MetaInfo* _meta, const String& rowName)
+QtPropertyData* BaseAddEntityDialog::AddMetaObject(void* object_, const DAVA::MetaInfo* meta_, const DAVA::String& rowName)
 {
-    QtPropertyData* propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), _object, _meta);
+    QtPropertyData* propData = new QtPropertyDataMetaObject(DAVA::FastName(rowName), object_, meta_);
     propEditor->AppendProperty(std::unique_ptr<QtPropertyData>(propData));
     return propData;
 }
 
-void BaseAddEntityDialog::SetEntity(DAVA::Entity* _entity)
+void BaseAddEntityDialog::SetEntity(DAVA::Entity* entity_)
 {
     SafeRelease(entity);
-    entity = SafeRetain(_entity);
+    entity = SafeRetain(entity_);
 }
 
 void BaseAddEntityDialog::AddButton(QWidget* widget, eButtonAlign orientation)
@@ -141,7 +112,7 @@ void BaseAddEntityDialog::AddButton(QWidget* widget, eButtonAlign orientation)
     }
 }
 
-void BaseAddEntityDialog::AddButton(QWidget* widget, int32 position)
+void BaseAddEntityDialog::AddButton(QWidget* widget, DAVA::int32 position)
 {
     ui->lowerLayOut->insertWidget(position, widget);
 }
@@ -209,15 +180,13 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 
 void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
 {
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+
     QtPropertyData* data = propEditor->GetProperty(index);
-    Command2* command = (Command2*)data->CreateLastCommand();
-    if (NULL != command)
+    Command2::Pointer command = data->CreateLastCommand();
+    if (command && nullptr != curScene)
     {
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if (NULL != curScene)
-        {
-            curScene->Exec(command);
-        }
+        curScene->Exec(std::move(command));
     }
 }
 

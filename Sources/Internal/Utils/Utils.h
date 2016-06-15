@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UTILS_H__
 #define __DAVAENGINE_UTILS_H__
 
@@ -48,7 +19,6 @@ namespace DAVA
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length);
 
 WideString WcharToWString(const wchar_t* s);
-bool IsEqual(const WideString& s1, const WideString& s2);
 
 bool IsDrawThread();
 
@@ -106,7 +76,7 @@ inline String WStringToString(const WideString& s)
     String temp(len, ' ');
     //std::copy(s.begin(), s.end(), temp.begin());
     for (size_t i = 0; i < len; ++i)
-        temp[i] = (char)s[i];
+        temp[i] = static_cast<char>(s[i]);
     return temp;
 }
 
@@ -125,15 +95,16 @@ inline String RTStringToString(Platform::String ^ s)
 template <class T>
 bool FindAndRemoveExchangingWithLast(Vector<T>& array, const T& object)
 {
-    uint32 size = (uint32)array.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = array.size();
+    for (size_t k = 0; k < size; ++k)
+    {
         if (array[k] == object)
         {
             array[k] = array[size - 1];
             array.pop_back();
             return true;
         }
-
+    }
     return false;
 }
 
@@ -207,6 +178,9 @@ T WaitAsync(Windows::Foundation::IAsyncOperation<T> ^ async_operation)
     return concurrency::create_task(async_operation).get();
 }
 #endif
+#ifdef __DAVAENGINE_WIN32__
+Vector<String> GetCommandLineArgs();
+#endif // __DAVAENGINE_WIN32__
 };
 
 #endif // __DAVAENGINE_UTILS_H__

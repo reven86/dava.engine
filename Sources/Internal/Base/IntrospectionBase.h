@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_INTROSPECTION_BASE_H__
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
@@ -46,17 +17,14 @@ struct MetaInfo;
 // абстрактный базовый класс для интроспекции
 class InspBase
 {
-protected:
-    virtual ~InspBase()
-    {
-    }
-
 public:
-    InspBase()
-    {
-    }
+    InspBase();
+
     // Возвращает интроспекцию класса
     virtual const InspInfo* GetTypeInfo() const = 0;
+
+protected:
+    virtual ~InspBase();
 };
 
 struct InspDesc
@@ -68,21 +36,16 @@ struct InspDesc
         T_FLAGS,
     };
 
-    const char* text;
-    const EnumMap* enumMap;
-    int type;
+    const char* text = "";
+    const EnumMap* enumMap = nullptr;
+    Type type = T_UNDEFINED;
 
     InspDesc()
-        : text("")
-        , enumMap(nullptr)
-        , type(T_UNDEFINED)
     {
     }
 
     InspDesc(const char* _text)
         : text(_text)
-        , enumMap(nullptr)
-        , type(T_UNDEFINED)
     {
     }
 
@@ -110,7 +73,7 @@ class InspMember
 
 public:
     InspMember(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0);
-    virtual ~InspMember(){};
+    virtual ~InspMember() = default;
 
     // Имя члена интроспекции, соответствует имени члена класса
     const FastName& Name() const;
@@ -149,6 +112,7 @@ public:
     //
     virtual void* Data(void* object) const;
 
+    virtual VariantType::eVariantType ValueType() const;
     // Возвращает вариант данных члена интроспекции. Имлементация варианта должна поддерживать
     // создание из данных, определяемыт мета-типом данного члена интроспекции.
     virtual VariantType Value(void* object) const;
@@ -162,6 +126,8 @@ public:
     virtual const InspColl* Collection() const;
 
     virtual const InspMemberDynamic* Dynamic() const;
+
+    const InspInfo* GetParentInsp() const;
 
     int Flags() const;
 
@@ -182,10 +148,7 @@ class InspColl : public InspMember
 public:
     using Iterator = void*;
 
-    InspColl(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0)
-        : InspMember(_name, _desc, _offset, _type, _flags)
-    {
-    }
+    InspColl(const char* _name, const InspDesc& _desc, const size_t _offset, const MetaInfo* _type, int _flags = 0);
 
     virtual MetaInfo* CollectionType() const = 0;
     virtual MetaInfo* ItemType() const = 0;
@@ -194,7 +157,7 @@ public:
     virtual Iterator Next(Iterator i) const = 0;
     virtual void Finish(Iterator i) const = 0;
     virtual void ItemValueGet(Iterator i, void* itemDst) const = 0;
-    virtual void ItemValueSet(Iterator i, void* itemSrc) = 0;
+    virtual void ItemValueSet(Iterator i, void* itemSrc) const = 0;
     virtual void* ItemPointer(Iterator i) const = 0;
     virtual void* ItemData(Iterator i) const = 0;
     virtual MetaInfo* ItemKeyType() const = 0;
@@ -240,7 +203,7 @@ protected:
     // Компилятор сможет вывести типы для класса Helper только в том случае если &U::GetTypeInfo соответствует
     // указателю на функцию GetTypeInfo, являющуюся членом класса TestBase
     template <typename U>
-    static no Check(U*, Helper<const InspInfo* (TestBase::*)(), &U::GetTypeInfo>* = 0);
+    static no Check(U*, Helper<const InspInfo* (TestBase::*)(), &U::GetTypeInfo>* = nullptr);
 
     // В случае когда вывод типов невозможен для первой функции, будет вызвана эта. Это произойдет только тогда,
     // когда Т содержит свою функцию GetTypeInfo, а следовательно содержит интроспекцию
@@ -249,7 +212,7 @@ protected:
 public:
     // Статическая переменна, значение которой будет равно true в случае,
     // когда тип Т содержит интроспекцию
-    static const bool result = (sizeof(yes) == sizeof(Check((Test*)(0))));
+    static const bool result = (sizeof(yes) == sizeof(Check(static_cast<Test*>(nullptr))));
 };
 
 // Параметризированные имплементации HasIntrospection для базовых типов
@@ -398,7 +361,7 @@ typename EnableIf<!HasInsp<T>::result, const InspInfo*>::type GetIntrospection(c
 template <typename T>
 const InspInfo* GetIntrospectionByObject(void* object)
 {
-    const T* t = (const T*)object;
+    const T* t = static_cast<const T*>(object);
     return GetIntrospection(t);
 }
 

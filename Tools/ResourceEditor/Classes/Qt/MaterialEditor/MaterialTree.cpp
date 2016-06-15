@@ -1,38 +1,13 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "MaterialTree.h"
 #include "MaterialFilterModel.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/Base/CommandBatch.h"
+#include "Entity/Component.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
@@ -51,7 +26,7 @@ MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
 
     QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), this, SLOT(OnStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
@@ -111,9 +86,9 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
-                curScene->selectionSystem->AddEntityToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                curScene->selectionSystem->AddObjectToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
-            const Vector<NMaterial*>& children = material->GetChildren();
+            const DAVA::Vector<DAVA::NMaterial*>& children = material->GetChildren();
             for (auto child : children)
             {
                 fn(child);
@@ -127,7 +102,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
             fn(material);
         }
 
-        QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
+        LookAtSelection(curScene);
     }
 }
 
@@ -224,22 +199,51 @@ void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row
 
 void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
+    if (command == nullptr)
+    {
+        return;
+    }
+
     if (QtMainWindow::Instance()->GetCurrentScene() == scene)
     {
-        const int commandID = command->GetId();
-        switch (commandID)
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-        case CMDID_INSP_MEMBER_MODIFY:
             treeModel->invalidate();
-            break;
-        case CMDID_DELETE_RENDER_BATCH:
-        case CMDID_CLONE_LAST_BATCH:
-        case CMDID_CONVERT_TO_SHADOW:
-        case CMDID_MATERIAL_SWITCH_PARENT:
+        }
+        else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
+                                            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
+        {
             Update();
-            break;
-        default:
-            break;
+        }
+        else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+        {
+            auto ProcessRemoveCommand = [this](const Command2* command, bool redo)
+            {
+                const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                DVASSERT(removeCommand->GetComponent() != nullptr);
+                if (removeCommand->GetComponent()->GetType() == DAVA::Component::RENDER_COMPONENT)
+                {
+                    Update();
+                }
+            };
+
+            if (command->GetId() == CMDID_BATCH)
+            {
+                const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+                const DAVA::uint32 count = batch->Size();
+                for (DAVA::uint32 i = 0; i < count; ++i)
+                {
+                    const Command2* cmd = batch->GetCommand(i);
+                    if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
+                    {
+                        ProcessRemoveCommand(cmd, redo);
+                    }
+                }
+            }
+            else
+            {
+                ProcessRemoveCommand(command, redo);
+            }
         }
     }
 }
@@ -249,7 +253,7 @@ void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     treeModel->Sync();
 }
 
-void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     if (QtMainWindow::Instance()->GetCurrentScene() == scene)
     {

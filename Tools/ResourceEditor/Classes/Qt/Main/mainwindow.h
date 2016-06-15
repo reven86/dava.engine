@@ -1,50 +1,23 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+#pragma once
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+#include "ui_mainwindow.h"
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+#include "Classes/Qt/Main/ModificationWidget.h"
+#include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Main/RecentMenuItems.h"
+#include "Classes/Beast/BeastProxy.h"
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "DAVAEngine.h"
 
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QPointer>
 
-#include "ui_mainwindow.h"
-#include "ModificationWidget.h"
-#include "Tools/QtWaitDialog/QtWaitDialog.h"
-
-#include "DAVAEngine.h"
-
-#include "Scene/SceneEditor2.h"
-#include "Tools/QtPosSaver/QtPosSaver.h"
-#include "Main/RecentMenuItems.h"
-
-#include "Beast/BeastProxy.h"
+namespace wgt
+{
+class IComponentContext;
+}
 
 class AddSwitchEntityDialog;
 class Request;
@@ -52,13 +25,10 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-
+class PropertyPanel;
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow
-: public QMainWindow
-  ,
-  public DAVA::Singleton<QtMainWindow>
+class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
     Q_OBJECT
 
@@ -70,7 +40,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(QWidget* parent = 0);
+    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -94,6 +64,8 @@ public:
 
     void EnableGlobalTimeout(bool enable);
 
+    bool CanBeClosed();
+
     // qt actions slots
 public slots:
     void OnProjectOpen();
@@ -108,6 +80,7 @@ public slots:
     void OnRecentProjectsTriggered(QAction* recentAction);
     void ExportMenuTriggered(QAction* exportAsAction);
     void OnImportSpeedTreeXML();
+    void RemoveSelection();
 
     void OnUndo();
     void OnRedo();
@@ -211,12 +184,14 @@ public slots:
     void SetupTitle();
 
     void RestartParticleEffects();
+    bool SetVisibilityToolEnabledIfPossible(bool);
+    void SetLandscapeInstancingEnabled(bool);
 
 protected:
-    virtual bool eventFilter(QObject* object, QEvent* event);
-    void closeEvent(QCloseEvent* e);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void SetupMainMenu();
+    void SetupThemeActions();
     void SetupToolBars();
     void SetupStatusBar();
     void SetupDocks();
@@ -230,6 +205,7 @@ protected:
     bool IsAnySceneChanged();
 
     void DiableUIForFutureUsing();
+    void SynchronizeStateWithUI();
 
     bool SelectCustomColorsTexturePath();
 
@@ -245,10 +221,11 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
+    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
-    void SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected);
+    void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void OnGlobalInvalidateTimeout();
     void EditorLightEnabled(bool enabled);
@@ -283,7 +260,6 @@ private:
     void UpdateWayEditor(const Command2* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
-    void LoadUndoRedoState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
     void LoadEditorLightState(SceneEditor2* scene);
     void LoadGPUFormat();
@@ -296,7 +272,6 @@ private:
 
     // Landscape editor specific
     // TODO: remove later -->
-    bool IsTilemaskModificationCommand(const Command2* cmd);
     bool LoadAppropriateTextureFormat();
     bool IsSavingAllowed();
     // <--
@@ -310,12 +285,14 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
+    wgt::IComponentContext& ngtContext;
+    std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
     struct EmitterDescriptor
     {
-        EmitterDescriptor(ParticleEmitter* _emitter, ParticleLayer* layer, FilePath path, String name)
+        EmitterDescriptor(DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* layer, DAVA::FilePath path, DAVA::String name)
             : emitter(_emitter)
             , ownerLayer(layer)
             , yamlPath(path)
@@ -323,14 +300,11 @@ private:
         {
         }
 
-        ParticleEmitter* emitter = nullptr;
-        ParticleLayer* ownerLayer = nullptr;
-        FilePath yamlPath;
-        String entityName;
+        DAVA::ParticleEmitter* emitter = nullptr;
+        DAVA::ParticleLayer* ownerLayer = nullptr;
+        DAVA::FilePath yamlPath;
+        DAVA::String entityName;
     };
 
-    void CollectEmittersForSave(ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const String& entityName) const;
+    void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };
-
-
-#endif // MAINWINDOW_H

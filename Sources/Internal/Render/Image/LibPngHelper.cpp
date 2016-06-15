@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -91,27 +62,31 @@ void abort_(const char* s, ...)
 }
 
 LibPngHelper::LibPngHelper()
+    : ImageFormatInterface(
+      IMAGE_FORMAT_PNG, // image format type
+      "PNG", // image format name
+      { ".png" }, // image format extension
+      { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 }) // supported pixel formats
 {
-    name.assign("PNG");
-    supportedExtensions.push_back(".png");
-    supportedFormats = { { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 } };
 }
 
-bool LibPngHelper::CanProcessFile(File* infile) const
+bool LibPngHelper::CanProcessFile(const ScopedPtr<File>& infile) const
 {
-    if (nullptr == infile)
+    if (infile)
+    {
+        unsigned char sig[8];
+        infile->Read(sig, 8);
+        bool retValue = (0 != png_check_sig(sig, 8));
+        infile->Seek(0, File::SEEK_FROM_START);
+        return retValue;
+    }
+    else
     {
         return false;
     }
-
-    unsigned char sig[8];
-    infile->Read(sig, 8);
-    bool retValue = (0 != png_check_sig(sig, 8));
-    infile->Seek(0, File::SEEK_FROM_START);
-    return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, int32 baseMipMap) const
+eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
@@ -165,12 +140,12 @@ eErrorCode LibPngHelper::WriteFile(const FilePath& fileName, const Vector<Image*
         bytes_for_color = 2;
     }
 
-    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    png_bytep* row_pointers = static_cast<png_bytep*>(malloc(sizeof(png_bytep) * height));
 
     for (int y = 0; y < height; y++)
     {
         // row_pointers[y] = (png_byte*) &data[y * width * 4];
-        row_pointers[y] = (png_byte*)&imageData[y * width * bytes_for_color];
+        row_pointers[y] = reinterpret_cast<png_byte*>(&imageData[y * width * bytes_for_color]);
     }
 
     // create file
@@ -283,16 +258,16 @@ eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-ImageInfo LibPngHelper::GetImageInfo(File* infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) const
 {
-    if (nullptr == infile)
+    if (!infile)
     {
         return ImageInfo();
     }
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
-    if (!png_check_sig((unsigned char*)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return ImageInfo();
     }
@@ -306,7 +281,7 @@ ImageInfo LibPngHelper::GetImageInfo(File* infile) const
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return ImageInfo();
     }
 
@@ -421,6 +396,7 @@ ImageInfo LibPngHelper::GetImageInfo(File* infile) const
 
     info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
     return info;
 }
 
@@ -428,10 +404,10 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
 {
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
 
-    if (!png_check_sig((unsigned char*)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -447,7 +423,7 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
     info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp) nullptr, (png_infopp) nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
@@ -527,7 +503,7 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
     image->data = new uint8[image->dataSize];
 
     png_bytepp row_pointers = nullptr;
-    row_pointers = (png_bytepp)malloc(height * sizeof(png_bytep));
+    row_pointers = static_cast<png_bytepp>(malloc(height * sizeof(png_bytep)));
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);

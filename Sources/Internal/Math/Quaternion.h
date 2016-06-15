@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_QUATERNION_H__
 #define __DAVAENGINE_QUATERNION_H__
 
@@ -392,8 +363,8 @@ inline void Quaternion::Construct(const Vector3& axis, float32 angle)
     axisR.Normalize();
 
     float32 halfAngle = 0.5f * angle;
-    float32 sin = (float32)sinf(halfAngle);
-    w = (float32)cosf(halfAngle);
+    float32 sin = sinf(halfAngle);
+    w = cosf(halfAngle);
     x = sin * axisR.x;
     y = sin * axisR.y;
     z = sin * axisR.z;
@@ -508,15 +479,15 @@ inline void Quaternion::Construct(const Matrix4& matrix)
 
 inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 {
-    float vl = (float)sqrt(x * x + y * y + z * z);
+    float vl = sqrtf(x * x + y * y + z * z);
     if (vl > 0.01f)
     {
         float ivl = 1.0f / vl;
         axis = Vector3(x * ivl, y * ivl, z * ivl);
         if (w < 0)
-            angle = 2.0f * (float)atan2(-vl, -w); //-PI,0
+            angle = 2.0f * atan2f(-vl, -w); //-PI,0
         else
-            angle = 2.0f * (float)atan2(vl, w); //0,PI
+            angle = 2.0f * atan2f(vl, w); //0,PI
     }
     else
     {
@@ -528,11 +499,11 @@ inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 //! Comparison operators
 inline bool Quaternion::operator==(const Quaternion& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z) && (w == _v.w));
+    return (Memcmp(data, _v.data, sizeof(Quaternion)) == 0);
 }
 inline bool Quaternion::operator!=(const Quaternion& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
+    return (Memcmp(data, _v.data, sizeof(Quaternion)) != 0);
 }
 
 inline Quaternion Quaternion::MakeRotation(const Vector3& euler)

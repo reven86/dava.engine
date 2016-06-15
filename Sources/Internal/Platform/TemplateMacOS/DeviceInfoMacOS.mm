@@ -1,30 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
 #import "Platform/Reachability.h"
 
 #ifdef __DAVAENGINE_MACOS__
@@ -39,6 +12,7 @@
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
+#import <Foundation/NSProcessInfo.h>
 #import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
@@ -49,12 +23,12 @@ namespace DAVA
 String GetSysCtlByName(const String& param)
 {
     size_t len = 0;
-    sysctlbyname(param.c_str(), NULL, &len, NULL, 0);
+    sysctlbyname(param.c_str(), nullptr, &len, nullptr, 0);
 
     if (len)
     {
         char model[len];
-        sysctlbyname(param.c_str(), model, &len, NULL, 0);
+        sysctlbyname(param.c_str(), model, &len, nullptr, 0);
         NSString* model_ns = [NSString stringWithUTF8String:model];
         return String([model_ns UTF8String]);
     }
@@ -78,11 +52,14 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    SInt32 versionMajor = 0, versionMinor = 0, versionBugFix = 0;
-    Gestalt(gestaltSystemVersionMajor, &versionMajor);
-    Gestalt(gestaltSystemVersionMinor, &versionMinor);
-    Gestalt(gestaltSystemVersionBugFix, &versionBugFix);
-    NSString* systemVersion = [NSString stringWithFormat:@"%d.%d.%d", versionMajor, versionMinor, versionBugFix];
+    NSOperatingSystemVersion sysVersion;
+    NSProcessInfo* procInfo = [NSProcessInfo processInfo];
+    sysVersion = procInfo.operatingSystemVersion;
+
+    NSString* systemVersion =
+    [NSString stringWithFormat:@"%ld.%ld.%ld", sysVersion.majorVersion,
+                               sysVersion.minorVersion,
+                               sysVersion.patchVersion];
 
     return String([systemVersion UTF8String]);
 }
@@ -147,7 +124,7 @@ WideString DeviceInfoPrivate::GetName()
     NSStringEncoding pEncode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
     NSData* pSData = [deviceName dataUsingEncoding:pEncode];
 
-    return WideString((wchar_t*)[pSData bytes], [pSData length] / sizeof(wchar_t));
+    return WideString(reinterpret_cast<const wchar_t*>([pSData bytes]), [pSData length] / sizeof(wchar_t));
 }
 
 // Not impletemted yet
@@ -180,7 +157,7 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    return GPU_POWERVR_IOS;
+    return GPU_DX11;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()

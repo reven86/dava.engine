@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __SCENE_EDITOR_PROXY_H__
 #define __SCENE_EDITOR_PROXY_H__
 
@@ -36,7 +7,6 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -68,13 +38,15 @@ class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
+class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
+class CommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {
 public:
-    enum LandscapeTools
+    enum LandscapeTools : DAVA::uint32
     {
         LANDSCAPE_TOOL_CUSTOM_COLOR = 1 << 0,
         LANDSCAPE_TOOL_HEIGHTMAP_EDITOR = 1 << 1,
@@ -82,11 +54,13 @@ public:
         LANDSCAPE_TOOL_RULER = 1 << 3,
         LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN = 1 << 4,
 
-        LANDSCAPE_TOOLS_ALL = 0x7FFFFFFF
+        LANDSCAPE_TOOLS_ALL = LANDSCAPE_TOOL_CUSTOM_COLOR | LANDSCAPE_TOOL_HEIGHTMAP_EDITOR | LANDSCAPE_TOOL_TILEMAP_EDITOR |
+        LANDSCAPE_TOOL_RULER |
+        LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN
     };
 
     SceneEditor2();
-    ~SceneEditor2();
+    ~SceneEditor2() override;
 
     // editor systems
     SceneCameraSystem* cameraSystem;
@@ -107,22 +81,23 @@ public:
     DebugDrawSystem* debugDrawSystem;
     BeastSystem* beastSystem;
     OwnersSignatureSystem* ownersSignatureSystem;
-    StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
+    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
     EditorMaterialSystem* materialSystem;
-    EditorLODSystem* editorLODSystem;
+    EditorLODSystem* editorLODSystem = nullptr;
+    EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
 
-    DAVA::WASDControllerSystem* wasdSystem;
-    DAVA::RotationControllerSystem* rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
+    DAVA::RotationControllerSystem* rotationSystem = nullptr;
+    DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
     WayEditSystem* wayEditSystem;
     PathSystem* pathSystem;
 
     // save/load
-    bool Load(const DAVA::FilePath& path);
-    virtual SceneFileV2::eError Save(const DAVA::FilePath& pathname, bool saveForGame = false);
-    SceneFileV2::eError Save();
+    DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
+    DAVA::SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
+    DAVA::SceneFileV2::eError SaveScene();
     bool Export(const DAVA::eGPUFamily newGPU);
 
     const DAVA::FilePath& GetScenePath();
@@ -135,12 +110,13 @@ public:
     void Undo();
     void Redo();
 
-    void BeginBatch(const DAVA::String& text);
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
-    bool IsBatchStarted() const;
 
-    void Exec(Command2* command);
-    void ClearCommands(int commandId);
+    void ActivateCommandStack();
+    void Exec(Command2::Pointer&& command);
+    void RemoveCommands(DAVA::int32 commandId);
+
     void ClearAllCommands();
     const CommandStack* GetCommandStack() const;
 
@@ -154,7 +130,7 @@ public:
     bool IsHUDVisible() const;
 
     // DAVA events
-    virtual void Update(float timeElapsed);
+    void Update(float timeElapsed) override;
 
     // this function should be called each time UI3Dview changes its position
     // viewport rect is used to calc. ray from camera to any 2d point on this viewport
@@ -163,43 +139,47 @@ public:
     //Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
     void AddEditorEntity(Entity* editorEntity);
 
-    const RenderStats& GetRenderStats() const;
+    const DAVA::RenderStats& GetRenderStats() const;
 
-    void DisableTools(int32 toolFlags, bool saveChanges = true);
-    bool IsToolsEnabled(int32 toolFlags);
-    int32 GetEnabledTools();
+    void EnableToolsInstantly(DAVA::int32 toolFlags);
+    void DisableToolsInstantly(DAVA::int32 toolFlags, bool saveChanges = true);
+    bool IsToolsEnabled(DAVA::int32 toolFlags);
+    DAVA::int32 GetEnabledTools();
 
     SceneEditor2* CreateCopyForExport(); //Need to prevent changes of original scene
-    Entity* Clone(Entity* dstNode /* = NULL */) override;
+    DAVA::Entity* Clone(DAVA::Entity* dstNode /* = NULL */) override;
 
     void Activate() override;
     void Deactivate() override;
 
-    uint32 GetFramesCount() const;
+    void EnableEditorSystems();
+
+    DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
 
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
     INTROSPECTION(SceneEditor2,
-                  MEMBER(cameraSystem, "CameraSystem", I_VIEW | I_EDIT)
-                  MEMBER(collisionSystem, "Collision System", I_VIEW | I_EDIT)
-                  MEMBER(selectionSystem, "Selection System", I_VIEW | I_EDIT)
-                  MEMBER(gridSystem, "GridSystem", I_VIEW | I_EDIT)
-                  MEMBER(materialSystem, "Material System", I_VIEW | I_EDIT)
+                  MEMBER(cameraSystem, "CameraSystem", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(collisionSystem, "Collision System", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(selectionSystem, "Selection System", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(gridSystem, "GridSystem", DAVA::I_VIEW | DAVA::I_EDIT)
+                  MEMBER(materialSystem, "Material System", DAVA::I_VIEW | DAVA::I_EDIT)
                   )
 
 protected:
-    bool isLoaded;
-    bool isHUDVisible;
+    bool isLoaded = false;
+    bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack commandStack;
-    RenderStats renderStats;
+    std::unique_ptr<CommandStack> commandStack;
+    DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    virtual void EditorCommandProcess(const Command2* command, bool redo);
-    virtual void Draw();
+    void EditorCommandProcess(const Command2* command, bool redo);
+
+    void Draw() override;
 
     void ExtractEditorEntities();
     void InjectEditorEntities();
@@ -210,22 +190,29 @@ protected:
 
     void Setup3DDrawing();
 
-    uint32 framesCount = 0;
+    DAVA::uint32 framesCount = 0;
 
 private:
     friend struct EditorCommandNotify;
 
-    struct EditorCommandNotify : public CommandNotify
+    class EditorCommandNotify : public CommandNotify
     {
-        SceneEditor2* editor;
-
+    public:
         EditorCommandNotify(SceneEditor2* _editor);
-        virtual void Notify(const Command2* command, bool redo);
-        virtual void CleanChanged(bool clean);
+        void Notify(const Command2* command, bool redo) override;
+        void CleanChanged(bool clean) override;
+        void UndoRedoStateChanged() override;
+
+    private:
+        SceneEditor2* editor = nullptr;
     };
 };
 
 Q_DECLARE_METATYPE(SceneEditor2*)
 
+void LookAtSelection(SceneEditor2* scene);
+void RemoveSelection(SceneEditor2* scene);
+void LockTransform(SceneEditor2* scene);
+void UnlockTransform(SceneEditor2* scene);
 
 #endif // __SCENE_EDITOR_PROXY_H__

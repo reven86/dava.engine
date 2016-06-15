@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
@@ -59,7 +30,7 @@ void SpeedTreeObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
 
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = uint32(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         RenderBatch* rb = renderBatchArray[k].renderBatch;
@@ -107,7 +78,7 @@ void SpeedTreeObject::BindDynamicParameters(Camera* camera)
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
 {
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = uint32(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         int32 flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? 0 : 1;
@@ -135,7 +106,7 @@ RenderObject* SpeedTreeObject::Clone(RenderObject* newObject)
 
     RenderObject::Clone(newObject);
 
-    SpeedTreeObject* treeObject = (SpeedTreeObject*)newObject;
+    SpeedTreeObject* treeObject = static_cast<SpeedTreeObject*>(newObject);
     treeObject->SetSphericalHarmonics(GetSphericalHarmonics());
     treeObject->SetLightSmoothing(GetLightSmoothing());
 
@@ -150,7 +121,7 @@ void SpeedTreeObject::Save(KeyedArchive* archive, SerializationContext* serializ
     if (shCount)
     {
         archive->SetInt32("sto.SHBasisCount", shCount);
-        archive->SetByteArray("sto.SHCoeff", (uint8*)&sphericalHarmonics[0], sizeof(Vector3) * shCount);
+        archive->SetByteArray("sto.SHCoeff", reinterpret_cast<uint8*>(&sphericalHarmonics[0]), sizeof(Vector3) * shCount);
     }
 
     archive->SetFloat("sto.lightSmoothing", lightSmoothing);
@@ -161,14 +132,14 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
     RenderObject::Load(archive, serializationContext);
 
     int32 shCount = archive->GetInt32("sto.SHBasisCount");
-    Vector3* sphericalArray = (Vector3*)archive->GetByteArray("sto.SHCoeff");
+    const Vector3* sphericalArray = reinterpret_cast<const Vector3*>(archive->GetByteArray("sto.SHCoeff"));
     if (sphericalArray && shCount)
         sphericalHarmonics.assign(sphericalArray, sphericalArray + shCount);
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
 
     //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manualy (and save it) to reduce material prebuild count
-    uint32 size = (uint32)renderBatchArray.size();
+    uint32 size = uint32(renderBatchArray.size());
     for (uint32 k = 0; k < size; ++k)
     {
         NMaterial* material = renderBatchArray[k].renderBatch->GetMaterial();

@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../rhi_Public.h"
+#include "../rhi_Public.h"
     #include "rhi_Private.h"
     #include "rhi_Pool.h"
 
@@ -83,8 +55,13 @@ SamplerState_t
     int refCount;
 };
 
+static DAVA::Mutex _TextureSetInfoMutex;
 static std::vector<TextureSetInfo> _TextureSetInfo;
+
+static DAVA::Mutex _DepthStencilStateInfoMutex;
 static std::vector<DepthStencilState_t> _DepthStencilStateInfo;
+
+static DAVA::Mutex _SamplerStateInfoMutex;
 static std::vector<SamplerState_t> _SamplerStateInfo;
 
 struct ScheduledDeleteResource
@@ -450,6 +427,7 @@ AcquireTextureSet(const TextureSetDescriptor& desc)
 {
     HTextureSet handle;
 
+    DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
     for (std::vector<TextureSetInfo>::const_iterator i = _TextureSetInfo.begin(), i_end = _TextureSetInfo.end(); i != i_end; ++i)
     {
         if (i->desc.fragmentTextureCount == desc.fragmentTextureCount && i->desc.vertexTextureCount == desc.vertexTextureCount && memcmp(i->desc.fragmentTexture, desc.fragmentTexture, desc.fragmentTextureCount * sizeof(Handle)) == 0 && memcmp(i->desc.vertexTexture, desc.vertexTexture, desc.vertexTextureCount * sizeof(Handle)) == 0)
@@ -515,6 +493,7 @@ void ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
             else
                 AddSheduletDeleteResource(tsh, RESOURCE_TEXTURE_SET);
 
+            DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
             for (std::vector<TextureSetInfo>::iterator i = _TextureSetInfo.begin(), i_end = _TextureSetInfo.end(); i != i_end; ++i)
             {
                 if (i->handle == tsh)
@@ -531,6 +510,7 @@ void ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
 
 void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle)
 {
+    DAVA::LockGuard<DAVA::Mutex> lock(_TextureSetInfoMutex);
     for (std::vector<TextureSetInfo>::iterator s = _TextureSetInfo.begin(), s_end = _TextureSetInfo.end(); s != s_end; ++s)
     {
         // update texture-set itself
@@ -572,7 +552,7 @@ HDepthStencilState
 AcquireDepthStencilState(const DepthStencilState::Descriptor& desc)
 {
     Handle ds = InvalidHandle;
-
+    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
     for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
     {
         if (memcmp(&(i->desc), &desc, sizeof(DepthStencilState::Descriptor)) == 0)
@@ -605,6 +585,7 @@ CopyDepthStencilState(HDepthStencilState ds)
 {
     HDepthStencilState handle;
 
+    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
     for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
     {
         if (i->state == ds)
@@ -622,6 +603,7 @@ CopyDepthStencilState(HDepthStencilState ds)
 
 void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate)
 {
+    DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
     for (std::vector<DepthStencilState_t>::iterator i = _DepthStencilStateInfo.begin(), i_end = _DepthStencilStateInfo.end(); i != i_end; ++i)
     {
         if (i->state == ds)
@@ -647,6 +629,7 @@ AcquireSamplerState(const SamplerState::Descriptor& desc)
 {
     Handle ss = InvalidHandle;
 
+    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
     for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
     {
         if (memcmp(&(i->desc), &desc, sizeof(SamplerState::Descriptor)) == 0)
@@ -679,6 +662,7 @@ CopySamplerState(HSamplerState ss)
 {
     Handle handle = InvalidHandle;
 
+    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
     for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
     {
         if (i->state == ss)
@@ -696,6 +680,7 @@ CopySamplerState(HSamplerState ss)
 
 void ReleaseSamplerState(HSamplerState ss, bool forceImmediate)
 {
+    DAVA::LockGuard<DAVA::Mutex> lock(_SamplerStateInfoMutex);
     for (std::vector<SamplerState_t>::iterator i = _SamplerStateInfo.begin(), i_end = _SamplerStateInfo.end(); i != i_end; ++i)
     {
         if (i->state == ss)
@@ -865,13 +850,6 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
     {
         Handle dsState = (p->depthStencilState != rhi::InvalidHandle) ? p->depthStencilState : pl->defDepthStencilState;
         Handle sState = (p->samplerState != rhi::InvalidHandle) ? p->samplerState : pl->defSamplerState;
-
-        #if 0
-        if (p->debugMarker)
-        {
-            ///            rhi::CommandBuffer::SetMarker( cmdBuf, p->debugMarker );
-        }
-        #endif
 
         if (p->renderPipelineState != pl->curPipelineState || p->vertexLayoutUID != pl->curVertexLayout)
         {

@@ -1,208 +1,235 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "applicationmanager.h"
 #include "filemanager.h"
-#include "errormessanger.h"
+#include "errormessenger.h"
 #include "processhelper.h"
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
 
 ApplicationManager::ApplicationManager(QObject* parent)
-    :
-    QObject(parent)
-    ,
-    localConfig(0)
-    ,
-    remoteConfig(0)
+    : QObject(parent)
 {
-    localConfigFilePath = FileManager::Instance()->GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
+    localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     LoadLocalConfig(localConfigFilePath);
-}
-
-ApplicationManager::~ApplicationManager()
-{
-    SafeDelete(localConfig);
-    SafeDelete(remoteConfig);
 }
 
 void ApplicationManager::LoadLocalConfig(const QString& configPath)
 {
     QFile configFile(configPath);
-    if (configFile.open(QFile::ReadWrite))
+    if (!configFile.exists())
+    {
+        return;
+    }
+    localConfig.Clear();
+    if (configFile.open(QFile::ReadOnly))
     {
         QByteArray data = configFile.readAll();
         configFile.close();
-        localConfig = new ConfigParser(data);
+        localConfig.Parse(data);
+        localConfig.UpdateApplicationsNames();
     }
     else
     {
-        ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_DOC_ACCESS);
-        localConfig = new ConfigParser(QByteArray());
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_DOC_ACCESS);
+    }
+    //kostil
+    Branch* branch = localConfig.GetBranch("ST");
+    if (branch != nullptr)
+    {
+        branch->id = "Stable";
+    }
+    branch = localConfig.GetBranch("BLITZTOSTABLE");
+    if (branch != nullptr)
+    {
+        branch->id = "Blitz To Stable";
     }
 }
 
 void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
 {
-    if (data.size())
+    if (data.isEmpty())
     {
-        SafeDelete(remoteConfig);
-        remoteConfig = new ConfigParser(data);
+        return;
+    }
+    remoteConfig.Parse(data);
+    QString webPageUrl = remoteConfig.GetWebpageURL();
+    if (!webPageUrl.isEmpty())
+    {
+        localConfig.SetWebpageURL(webPageUrl);
+    }
+    localConfig.CopyStringsAndFavsFromConfig(remoteConfig);
+    localConfig.SaveToFile(localConfigFilePath);
+}
 
-        QString webPageUrl = remoteConfig->GetWebpageURL();
-        if (!webPageUrl.isEmpty())
+QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
+{
+    QRegularExpression spaceRegex("\\s+");
+    branchID.replace(spaceRegex, "");
+    appID.replace(spaceRegex, "");
+    QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
+    if (QFile::exists(runPath))
+    {
+        return runPath;
+    }
+    QList<QString> branchKeys = localConfig.GetStrings().keys(branchID);
+    branchKeys.append(branchID);
+    for (const QString& branchKey : branchKeys)
+    {
+        QList<QString> appKeys = localConfig.GetStrings().keys(appID);
+        appKeys.append(appID);
+        for (const QString& appKey : appKeys)
         {
-            localConfig->SetWebpageURL(webPageUrl);
+            QString newRunPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            if (QFile::exists(newRunPath))
+            {
+                return newRunPath;
+            }
         }
-        localConfig->CopyStringsAndFavsFromConfig(*remoteConfig);
-        localConfig->SaveToYamlFile(localConfigFilePath);
+    }
+    if (mustExists)
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application %1 in branch %2 not exists!").arg(appID).arg(branchID));
+        return "";
+    }
+    else
+    {
+        FileManager::MakeDirectory(runPath);
+        return runPath;
     }
 }
 
 bool ApplicationManager::ShouldShowNews()
 {
-    return remoteConfig && remoteConfig->GetNewsID() != localConfig->GetNewsID();
+    return remoteConfig.GetNewsID() != localConfig.GetNewsID();
 }
 
 void ApplicationManager::NewsShowed()
 {
-    if (remoteConfig)
-        localConfig->SetLastNewsID(remoteConfig->GetNewsID());
+    localConfig.SetLastNewsID(remoteConfig.GetNewsID());
 }
 
 void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
 {
     //check self-update
-    if (remoteConfig && remoteConfig->GetLauncherVersion() != localConfig->GetLauncherVersion())
+    if (remoteConfig.GetLauncherVersion() != localConfig.GetLauncherVersion())
     {
         AppVersion version;
-        version.id = remoteConfig->GetLauncherVersion();
-        version.url = remoteConfig->GetLauncherURL();
+        version.id = remoteConfig.GetLauncherVersion();
+        version.url = remoteConfig.GetLauncherURL();
         tasks.push_back(UpdateTask("", "", version, true));
 
         return;
     }
 
     //check applications update
-    if (remoteConfig)
+    int branchCount = remoteConfig.GetBranchCount();
+    for (int i = 0; i < branchCount; ++i)
     {
-        int branchCount = remoteConfig->GetBranchCount();
-        for (int i = 0; i < branchCount; ++i)
+        Branch* branch = remoteConfig.GetBranch(i);
+        if (!localConfig.GetBranch(branch->id))
+            continue;
+
+        int appCount = branch->GetAppCount();
+        for (int j = 0; j < appCount; ++j)
         {
-            Branch* branch = remoteConfig->GetBranch(i);
-            if (!localConfig->GetBranch(branch->id))
+            Application* app = branch->GetApplication(j);
+            if (!localConfig.GetApplication(branch->id, app->id))
                 continue;
 
-            int appCount = branch->GetAppCount();
-            for (int j = 0; j < appCount; ++j)
+            if (app->GetVerionsCount() == 1)
             {
-                Application* app = branch->GetApplication(j);
-                if (!localConfig->GetApplication(branch->id, app->id))
-                    continue;
-
-                if (app->GetVerionsCount() == 1)
-                {
-                    AppVersion* appVersion = app->GetVersion(0);
-                    Application* localApp = localConfig->GetApplication(branch->id, app->id);
-                    if (localApp->GetVersion(0)->id != appVersion->id)
-                        tasks.push_back(UpdateTask(branch->id, app->id, *appVersion));
-                }
+                AppVersion* appVersion = app->GetVersion(0);
+                Application* localApp = localConfig.GetApplication(branch->id, app->id);
+                AppVersion* localAppVersion = localApp->GetVersion(0);
+                if (localAppVersion->id != appVersion->id)
+                    tasks.push_back(UpdateTask(branch->id, app->id, *appVersion));
             }
         }
+    }
 
-        int localBranchCount = localConfig->GetBranchCount();
-        for (int i = 0; i < localBranchCount; ++i)
-        {
-            Branch* branch = localConfig->GetBranch(i);
-            if (!remoteConfig->GetBranch(branch->id))
-                tasks.push_back(UpdateTask(branch->id, "", AppVersion(), false, true));
-        }
+    int localBranchCount = localConfig.GetBranchCount();
+    for (int i = 0; i < localBranchCount; ++i)
+    {
+        Branch* branch = localConfig.GetBranch(i);
+        if (!remoteConfig.GetBranch(branch->id))
+            tasks.push_back(UpdateTask(branch->id, "", AppVersion(), false, true));
     }
 }
 
 void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version)
 {
-    localConfig->InsertApplication(branchID, appID, version);
-    localConfig->SaveToYamlFile(localConfigFilePath);
+    localConfig.InsertApplication(branchID, appID, version);
+    localConfig.SaveToFile(localConfigFilePath);
 }
 
 QString ApplicationManager::GetString(const QString& stringID) const
 {
     QString string = stringID;
-    if (remoteConfig)
-        string = remoteConfig->GetString(stringID);
-    if (localConfig && string == stringID)
-        string = localConfig->GetString(stringID);
+    string = remoteConfig.GetString(stringID);
+    if (string == stringID)
+        string = localConfig.GetString(stringID);
     return string;
 }
 
 ConfigParser* ApplicationManager::GetRemoteConfig()
 {
-    return remoteConfig;
+    return &remoteConfig;
 }
 
 ConfigParser* ApplicationManager::GetLocalConfig()
 {
-    return localConfig;
+    return &localConfig;
 }
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    AppVersion* version = localConfig->GetAppVersion(branchID, appID, versionID);
+    AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, appID) + version->runPath;
-        if (!ProcessHelper::IsProcessRuning(runPath))
-            ProcessHelper::RunProcess(runPath);
+        QString runPath = GetApplicationDirectory(branchID, appID);
+        if (runPath.isEmpty())
+        {
+            return;
+        }
+        runPath += version->runPath;
+        if (!QFile::exists(runPath))
+        {
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
+        }
         else
-            ErrorMessanger::Instance()->ShowNotificationDlg("Application is already launched.");
+        {
+            if (!ProcessHelper::IsProcessRuning(runPath))
+                ProcessHelper::RunProcess(runPath);
+            else
+                ErrorMessenger::ShowNotificationDlg("Application is already launched.");
+        }
     }
 }
 
 bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    AppVersion* version = localConfig->GetAppVersion(branchID, appID, versionID);
+    AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
     if (version)
     {
-        QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, appID) + version->runPath;
-        while (ProcessHelper::IsProcessRuning(runPath))
+        QString runPath = GetApplicationDirectory(branchID, appID, false) + version->runPath;
+        if (!runPath.isEmpty())
         {
-            int result = ErrorMessanger::Instance()->ShowRetryDlg(true);
-            if (result == QMessageBox::Cancel)
-                return false;
+            while (ProcessHelper::IsProcessRuning(runPath))
+            {
+                int result = ErrorMessenger::ShowRetryDlg(true);
+                if (result == QMessageBox::Cancel)
+                    return false;
+            }
         }
 
-        QString appPath = FileManager::Instance()->GetApplicationFolder(branchID, appID);
-        FileManager::Instance()->DeleteDirectory(appPath);
-        localConfig->RemoveApplication(branchID, appID, versionID);
-        localConfig->SaveToYamlFile(localConfigFilePath);
+        QString appPath = GetApplicationDirectory(branchID, appID);
+        if (appPath.isEmpty())
+        {
+            return true;
+        }
+        FileManager::DeleteDirectory(appPath);
+        localConfig.RemoveApplication(branchID, appID, versionID);
+        localConfig.SaveToFile(localConfigFilePath);
 
         return true;
     }
@@ -211,7 +238,7 @@ bool ApplicationManager::RemoveApplication(const QString& branchID, const QStrin
 
 bool ApplicationManager::RemoveBranch(const QString& branchID)
 {
-    Branch* branch = localConfig->GetBranch(branchID);
+    Branch* branch = localConfig.GetBranch(branchID);
     if (!branch)
         return false;
 
@@ -223,20 +250,24 @@ bool ApplicationManager::RemoveBranch(const QString& branchID)
         for (int j = 0; j < versionCount; ++j)
         {
             AppVersion* version = app->GetVersion(j);
-            QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, app->id) + version->runPath;
+            QString runPath = GetApplicationDirectory(branchID, app->id) + version->runPath;
+            if (runPath.isEmpty())
+            {
+                return false;
+            }
             while (ProcessHelper::IsProcessRuning(runPath))
             {
-                int result = ErrorMessanger::Instance()->ShowRetryDlg(true);
+                int result = ErrorMessenger::ShowRetryDlg(true);
                 if (result == QMessageBox::Cancel)
                     return false;
             }
         }
     }
 
-    QString branchPath = FileManager::Instance()->GetBranchFolder(branchID);
-    FileManager::Instance()->DeleteDirectory(branchPath);
-    localConfig->RemoveBranch(branch->id);
-    localConfig->SaveToYamlFile(localConfigFilePath);
+    QString branchPath = FileManager::GetBranchDirectory(branchID);
+    FileManager::DeleteDirectory(branchPath);
+    localConfig.RemoveBranch(branch->id);
+    localConfig.SaveToFile(localConfigFilePath);
 
     return true;
 }

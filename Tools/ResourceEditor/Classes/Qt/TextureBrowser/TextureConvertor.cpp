@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <QPainter>
 #include <QProcess>
 #include <QTextOption>
@@ -152,8 +123,9 @@ int TextureConvertor::Reconvert(DAVA::Scene* scene, eTextureConvertMode convertM
     if (NULL != scene)
     {
         // get list of all scenes textures
-        DAVA::TexturesMap allTextures;
-        SceneHelper::EnumerateSceneTextures(scene, allTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+        SceneHelper::TextureCollector collector;
+        SceneHelper::EnumerateSceneTextures(scene, collector);
+        DAVA::TexturesMap& allTextures = collector.GetTextures();
 
         // add jobs to convert every texture
         if (allTextures.size() > 0)
@@ -170,7 +142,7 @@ int TextureConvertor::Reconvert(DAVA::Scene* scene, eTextureConvertMode convertM
                     DVASSERT(descriptor->compression);
                     for (int gpu = 0; gpu < DAVA::GPU_DEVICE_COUNT; ++gpu)
                     {
-                        if (!GPUFamilyDescriptor::IsFormatSupported((eGPUFamily)gpu, (PixelFormat)descriptor->compression[gpu].format))
+                        if (!DAVA::GPUFamilyDescriptor::IsFormatSupported(static_cast<DAVA::eGPUFamily>(gpu), static_cast<DAVA::PixelFormat>(descriptor->compression[gpu].format)))
                         {
                             continue;
                         }
@@ -282,7 +254,7 @@ void TextureConvertor::jobRunNextConvert()
         curJobConverted = jobStackConverted.pop();
         if (NULL != curJobConverted)
         {
-            TextureDescriptor* desc = (TextureDescriptor*)curJobConverted->descriptor;
+            const DAVA::TextureDescriptor* desc = curJobConverted->descriptor;
 
             QFuture<TextureInfo> f = QtConcurrent::run(this, &TextureConvertor::GetConvertedThread, curJobConverted);
             convertedWatcher.setFuture(f);
@@ -393,7 +365,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem* item)
 
     if (NULL != item && NULL != item->descriptor)
     {
-        TextureDescriptor* descriptor = (TextureDescriptor*)item->descriptor;
+        const DAVA::TextureDescriptor* descriptor = item->descriptor;
 
         DAVA::uint32 fileSize = 0;
         if (descriptor->IsCubeMap())
@@ -435,7 +407,7 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem* item)
 
     if (NULL != item && NULL != item->descriptor)
     {
-        TextureDescriptor* descriptor = (TextureDescriptor*)item->descriptor;
+        const DAVA::TextureDescriptor* descriptor = item->descriptor;
 
         DAVA::uint32 fileSize = 0;
         if (descriptor->IsCubeMap())
@@ -495,11 +467,11 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
         {
             DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
 
-            ImageFormat compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
-            if (compressedFormat == IMAGE_FORMAT_PVR || compressedFormat == IMAGE_FORMAT_DDS)
+            DAVA::ImageFormat compressedFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
+            if (compressedFormat == DAVA::IMAGE_FORMAT_PVR || compressedFormat == DAVA::IMAGE_FORMAT_DDS)
             {
                 DAVA::Logger::FrameworkDebug("Starting %s conversion (%s), id %d..., (%s)",
-                                             (compressedFormat == IMAGE_FORMAT_PVR ? "PVR" : "DDS"),
+                                             (compressedFormat == DAVA::IMAGE_FORMAT_PVR ? "PVR" : "DDS"),
                                              GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format),
                                              item->id,
                                              descriptor->pathname.GetAbsolutePathname().c_str());
@@ -554,7 +526,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
     }
     else
     {
-        int stubImageCount = Texture::CUBE_FACE_COUNT;
+        int stubImageCount = DAVA::Texture::CUBE_FACE_COUNT;
         if (NULL != item)
         {
             DAVA::TextureDescriptor* descriptor = (DAVA::TextureDescriptor*)item->descriptor;
@@ -581,7 +553,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
                                                            eTextureConvertMode convertMode)
 {
     DAVA::Vector<DAVA::Image*> resultImages;
-    DAVA::FilePath outputPath = TextureConverter::GetOutputPath(*descriptor, gpu);
+    DAVA::FilePath outputPath = DAVA::TextureConverter::GetOutputPath(*descriptor, gpu);
     if (!outputPath.IsEmpty())
     {
         bool convert = false;
@@ -612,11 +584,11 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
         if (convert)
         {
             DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-            outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true, (TextureConverter::eConvertQuality)quality.AsInt32());
+            outputPath = DAVA::TextureConverter::ConvertTexture(*descriptor, gpu, true, static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32()));
         }
 
-        Vector<DAVA::Image*> davaImages;
-        DAVA::ImageSystem::Instance()->Load(outputPath, davaImages);
+        DAVA::Vector<DAVA::Image*> davaImages;
+        DAVA::ImageSystem::Load(outputPath, davaImages);
 
         if (davaImages.size() > 0)
         {
@@ -640,9 +612,9 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
                     }
                 }
 
-                if (resultImages.size() < Texture::CUBE_FACE_COUNT)
+                if (resultImages.size() < DAVA::Texture::CUBE_FACE_COUNT)
                 {
-                    int imagesToAdd = Texture::CUBE_FACE_COUNT - resultImages.size();
+                    int imagesToAdd = DAVA::Texture::CUBE_FACE_COUNT - resultImages.size();
                     for (int i = 0; i < imagesToAdd; ++i)
                     {
                         resultImages.push_back(NULL);
@@ -654,7 +626,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
         }
         else
         {
-            int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_COUNT : 1;
+            int stubImageCount = (descriptor->IsCubeMap()) ? DAVA::Texture::CUBE_FACE_COUNT : 1;
             for (int i = 0; i < stubImageCount; ++i)
             {
                 resultImages.push_back(NULL);

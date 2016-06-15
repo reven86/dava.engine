@@ -1,33 +1,6 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Tests/KeyboardTest.h"
 #include <Input/InputCallback.h>
+#include <UI/Focus/UIFocusComponent.h>
 
 using namespace DAVA;
 
@@ -71,7 +44,7 @@ public:
         InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
     }
 
-    bool SystemInput(UIEvent* currentInput) override
+    bool SystemProcessInput(UIEvent* currentInput) override
     {
         bool result = false;
         if (currentInput->phase == UIEvent::Phase::GESTURE)
@@ -117,7 +90,7 @@ public:
 private:
     void UpdateGamepadElement(String name, bool isVisible)
     {
-        gamepadButtons[name]->SetVisible(isVisible);
+        gamepadButtons[name]->SetVisibilityFlag(isVisible);
     }
     void UpdateGamepadStickX(String name, float axisValue)
     {
@@ -236,6 +209,8 @@ private:
 
     bool OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         if (currentInput->device == UIEvent::Device::KEYBOARD)
         {
             ++numKeyboardEvents;
@@ -357,15 +332,15 @@ private:
             break;
         case UIEvent::Phase::KEY_DOWN:
             ++numKeyDown;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
-            lastKey = UTF8Utils::EncodeToWideString(KeyboardDevice::GetKeyName(currentInput->key));
+            lastKey = UTF8Utils::EncodeToWideString(keyboard.GetKeyName(currentInput->key));
             break;
         default:
             break;
@@ -447,8 +422,8 @@ void KeyboardTest::LoadResources()
     customText->SetDebugDraw(true);
     customText->SetTextColor(Color::White);
     customText->SetFont(font);
-    customText->SetFocusEnabled(true);
-    customText->SetAlign(ALIGN_LEFT | ALIGN_TOP);
+    customText->GetOrCreateComponent<UIFocusComponent>();
+    customText->SetSpriteAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetMultiline(true);
     customText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
@@ -461,8 +436,6 @@ void KeyboardTest::LoadResources()
     resetButton->SetStateText(0xFF, L"Reset");
     resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &KeyboardTest::OnResetClick));
     AddControl(resetButton);
-
-    UIControlSystem::Instance()->SetFocusedControl(customText, true);
 
     for (auto& touch : touches)
     {
@@ -507,7 +480,7 @@ void KeyboardTest::LoadResources()
         img->SetSprite(path, 0);
         gamepadButtons[buttonOrAxisName] = img;
         AddControl(img);
-        img->SetVisible(false);
+        img->SetVisibilityFlag(false);
     }
 }
 

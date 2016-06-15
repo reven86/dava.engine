@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
@@ -41,7 +12,7 @@
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
-#include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/EditorStatisticsSystem.h"
 #include "Main/mainwindow.h"
 
 #include <QHeaderView>
@@ -57,15 +28,15 @@ using namespace DAVA;
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     : QtPropertyEditor(parent)
     , treeStateHelper(this, curModel)
-    , activeScene(NULL)
-    , landscape(NULL)
-    , isUpToDate(false)
 {
     // global scene manager signals
-    connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), SLOT(SceneActivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), SLOT(SceneStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)), SLOT(SceneSelectionChanged(SceneEditor2*, const EntityGroup*, const EntityGroup*)));
+    SceneSignals* signalDispatcher = SceneSignals::Instance();
+    connect(signalDispatcher, &SceneSignals::Activated, this, &SceneInfo::SceneActivated);
+    connect(signalDispatcher, &SceneSignals::Deactivated, this, &SceneInfo::SceneDeactivated);
+    connect(signalDispatcher, &SceneSignals::StructureChanged, this, &SceneInfo::SceneStructureChanged);
+    connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
+    connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
+    connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -85,14 +56,6 @@ SceneInfo::~SceneInfo()
 {
     VariantType v(header()->sectionSize(0));
     posSaver.SaveValue("splitPos", v);
-}
-
-void SceneInfo::LODInfo::AddTriangles(int32 index, int32 count)
-{
-    if (index == -1)
-        trianglesOnObjects += count;
-    else
-        trianglesOnLod[index] += count;
 }
 
 void SceneInfo::InitializeInfo()
@@ -237,38 +200,72 @@ void SceneInfo::RefreshLODInfoInFrame()
 {
     QtPropertyData* header = GetInfoHeader("LOD in Frame");
 
-    uint32 lodTriangles = 0;
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    EditorStatisticsSystem* statisticsSystem = GetCurrentEditorStatisticsSystem();
+    if (statisticsSystem != nullptr)
     {
-        SetChild(Format("Objects LOD%d Triangles", i).c_str(), lodInfoInFrame.trianglesOnLod[i], header);
+        const auto& triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_ALL_SCENE, false);
 
-        lodTriangles += lodInfoInFrame.trianglesOnLod[i];
+        uint32 lodTriangles = 0;
+        for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            SetChild(Format("Objects LOD%d Triangles", i).c_str(), triangles[i + 1], header);
+            lodTriangles += triangles[i + 1];
+        }
+
+        int32 landTriangles = (landscape) ? landscape->GetDrawIndices() : 0;
+        landTriangles /= 3;
+        SetChild("All LOD Triangles", lodTriangles, header);
+        SetChild("Objects without LOD Triangles", triangles[0], header);
+        SetChild("Landscape Triangles", landTriangles, header);
+        SetChild("All Triangles", triangles[0] + landTriangles + lodTriangles, header);
     }
+    else
+    {
+        for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            SetChild(Format("Objects LOD%d Triangles", i).c_str(), 0, header);
+        }
 
-    int32 landTriangles = (landscape) ? landscape->GetDrawIndices() : 0;
-    landTriangles /= 3;
-    SetChild("All LOD Triangles", lodTriangles, header);
-    SetChild("Objects without LOD Triangles", lodInfoInFrame.trianglesOnObjects, header);
-    SetChild("Landscape Triangles", landTriangles, header);
-    SetChild("All Triangles", lodInfoInFrame.trianglesOnObjects + landTriangles + lodTriangles, header);
+        SetChild("All LOD Triangles", 0, header);
+        SetChild("Objects without LOD Triangles", 0, header);
+        SetChild("Landscape Triangles", 0, header);
+        SetChild("All Triangles", 0, header);
+    }
 }
 
 void SceneInfo::RefreshLODInfoForSelection()
 {
     QtPropertyData* header = GetInfoHeader("LOD Info for Selected Entities");
 
-    uint32 lodTriangles = 0;
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    EditorStatisticsSystem* statisticsSystem = GetCurrentEditorStatisticsSystem();
+    if (statisticsSystem != nullptr)
     {
-        SetChild(Format("Objects LOD%d Triangles", i).c_str(), lodInfoSelection.trianglesOnLod[i], header);
+        const auto& triangles = statisticsSystem->GetTriangles(eEditorMode::MODE_SELECTION, true);
 
-        lodTriangles += lodInfoSelection.trianglesOnLod[i];
+        uint32 lodTriangles = 0;
+        for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            SetChild(Format("Objects LOD%d Triangles", i).c_str(), triangles[i + 1], header);
+            lodTriangles += triangles[i + 1];
+        }
+
+        SetChild("All LOD Triangles", lodTriangles, header);
+
+        SetChild("Objects without LOD Triangles", triangles[0], header);
+        SetChild("All Triangles", triangles[0] + lodTriangles, header);
     }
+    else
+    {
+        for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            SetChild(Format("Objects LOD%d Triangles", i).c_str(), 0, header);
+        }
 
-    SetChild("All LOD Triangles", lodTriangles, header);
+        SetChild("All LOD Triangles", 0, header);
 
-    SetChild("Objects without LOD Triangles", lodInfoSelection.trianglesOnObjects, header);
-    SetChild("All Triangles", lodInfoSelection.trianglesOnObjects + lodTriangles, header);
+        SetChild("Objects without LOD Triangles", 0, header);
+        SetChild("All Triangles", 0, header);
+    }
 }
 
 uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
@@ -314,23 +311,19 @@ void SceneInfo::CollectSceneData(SceneEditor2* scene)
     {
         scene->GetChildNodes(nodesAtScene);
 
-        SceneHelper::EnumerateSceneTextures(activeScene, sceneTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-        sceneTexturesSize = CalculateTextureSize(sceneTextures);
+        SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
+        SceneHelper::EnumerateSceneTextures(activeScene, collector);
+        sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
-
-        CollectLODDataInFrame();
     }
 }
 
 void SceneInfo::ClearData()
 {
     nodesAtScene.clear();
-    sceneTextures.clear();
     particleTextures.clear();
-
-    lodInfoInFrame.Clear();
 
     ClearSelectionData();
 
@@ -344,7 +337,6 @@ void SceneInfo::ClearData()
 
 void SceneInfo::ClearSelectionData()
 {
-    lodInfoSelection.Clear();
     selectedRenderObjects.clear();
 }
 
@@ -362,7 +354,7 @@ void SceneInfo::CollectParticlesData()
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
             ++emittersCount;
-            Vector<ParticleLayer*>& layers = effect->GetEmitter(i)->layers;
+            Vector<ParticleLayer*>& layers = effect->GetEmitterInstance(i)->GetEmitter()->layers;
             for (uint32 lay = 0; lay < layers.size(); ++lay)
             {
                 Sprite* spr = layers[lay]->sprite;
@@ -381,78 +373,6 @@ void SceneInfo::CollectParticlesData()
     }
 
     spritesCount = (uint32)sprites.size();
-}
-
-void SceneInfo::CollectLODDataInFrame()
-{
-    lodInfoInFrame.Clear();
-    lodInfoSelection.Clear();
-
-    if (!activeScene || !activeScene->renderSystem || !activeScene->renderSystem->IsRenderHierarchyInitialized() || !activeScene->GetCurrentCamera())
-        return;
-
-    visibilityArray.clear();
-    activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
-
-    uint32 size = (uint32)visibilityArray.size();
-    for (uint32 ro = 0; ro < size; ++ro)
-    {
-        RenderObject* renderObject = visibilityArray[ro];
-        uint32 batchCount = renderObject->GetActiveRenderBatchCount();
-        int32 indexCount = 0;
-        for (uint32 i = 0; i < batchCount; ++i)
-        {
-            RenderBatch* rb = renderObject->GetActiveRenderBatch(i);
-            PolygonGroup* pg = rb->GetPolygonGroup();
-            if (pg != nullptr)
-            {
-                indexCount += pg->GetIndexCount();
-            }
-        }
-        int32 currLodIndex = renderObject->GetLodIndex();
-        int32 polygonCount = indexCount / 3;
-        lodInfoInFrame.AddTriangles(currLodIndex, polygonCount);
-
-        if (selectedRenderObjects.find(renderObject) != selectedRenderObjects.end())
-        {
-            lodInfoSelection.AddTriangles(currLodIndex, polygonCount);
-        }
-    }
-}
-
-void SceneInfo::CollectLODDataInScene()
-{
-    lodInfoInFrame.Clear();
-    if (!activeScene)
-        return;
-
-    CollectLODDataInEntityRecursive(activeScene);
-    lodInfoInFrame.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene, true);
-}
-
-void SceneInfo::CollectLODDataInEntityRecursive(DAVA::Entity* entity)
-{
-    DAVA::LodComponent* lod = GetLodComponent(entity);
-
-    if (lod)
-    {
-        EditorLODSystem::AddTrianglesInfo(lodInfoInFrame.trianglesOnLod, lod, true);
-    }
-
-    DAVA::int32 count = entity->GetChildrenCount();
-    for (DAVA::int32 i = 0; i < count; ++i)
-    {
-        CollectLODDataInEntityRecursive(entity->GetChild(i));
-    }
-}
-
-void SceneInfo::CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent*>& lods, LODInfo& info)
-{
-    uint32 count = (uint32)lods.size();
-    for (uint32 i = 0; i < count; ++i)
-    {
-        EditorLODSystem::AddTrianglesInfo(info.trianglesOnLod, lods[i], false);
-    }
 }
 
 DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity* entity, bool onlyVisibleBatches)
@@ -498,7 +418,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    headerData->SetBackground(QBrush(QColor(Qt::lightGray)));
+    headerData->SetBackground(palette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -518,6 +438,7 @@ void SceneInfo::AddChild(const QString& key, QtPropertyData* parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
+    propData->SetBackground(palette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -526,6 +447,7 @@ void SceneInfo::AddChild(const QString& key, const QString& toolTip, QtPropertyD
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
     propData->SetToolTip(toolTip);
+    propData->SetBackground(palette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -592,8 +514,6 @@ void SceneInfo::UpdateInfoByTimer()
         return;
 
     Refresh3DDrawInfo();
-
-    CollectLODDataInFrame();
     RefreshLODInfoInFrame();
     RefreshLODInfoForSelection();
 
@@ -657,44 +577,70 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const EntityGroup* selected, const EntityGroup* deselected)
+void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     ClearSelectionData();
 
     CollectSelectedRenderObjects(selected);
 
-    CollectLODDataInFrame();
     RefreshLODInfoForSelection();
 
     CollectSpeedTreeLeafsSquare(selected);
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::CollectSelectedRenderObjects(const EntityGroup* selected)
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool /*isRedo*/)
 {
-    for (const auto& item : selected->GetContent())
+    switch (command->GetId())
     {
-        CollectSelectedRenderObjectsRecursivly(item.first);
+    case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
+    case CMDID_MATERIAL_CREATE_CONFIG:
+    case CMDID_MATERIAL_REMOVE_TEXTURE:
+    case CMDID_INSP_MEMBER_MODIFY:
+    case CMDID_INSP_DYNAMIC_MODIFY:
+        RefreshAllData(scene);
+        break;
+    default:
+        break;
+    }
+}
+
+void SceneInfo::OnThemeChanged()
+{
+    InitializeInfo();
+}
+
+void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)
+{
+    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
+    {
+        CollectSelectedRenderObjectsRecursivly(entity);
     }
 }
 
 void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
 {
+    DVASSERT(entity != nullptr);
+
     RenderObject* renderObject = GetRenderObject(entity);
     if (renderObject)
+    {
         selectedRenderObjects.insert(renderObject);
+    }
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
+    {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
+    }
 }
 
-void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup* forGroup)
+void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
 {
     speedTreeLeafInfo.clear();
 
-    for (const auto& item : forGroup->GetContent())
+    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
     {
-        RenderObject* ro = GetRenderObject(item.first);
+        RenderObject* ro = GetRenderObject(entity);
         if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }
@@ -755,9 +701,9 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* 
 
 void SceneInfo::TexturesReloaded()
 {
-    sceneTextures.clear();
-    SceneHelper::EnumerateSceneTextures(activeScene, sceneTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-    sceneTexturesSize = CalculateTextureSize(sceneTextures);
+    SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
+    SceneHelper::EnumerateSceneTextures(activeScene, collector);
+    sceneTexturesSize = CalculateTextureSize(collector.GetTextures());
 
     RefreshSceneGeneralInfo();
 }
@@ -973,4 +919,17 @@ void SceneInfo::RefreshLayersSection()
             SetChild(queriesNames[i].c_str(), str.c_str(), header);
         }
     }
+}
+
+EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
+{
+    DVASSERT(QtMainWindow::Instance());
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    if (scene != nullptr)
+    {
+        return scene->editorStatisticsSystem;
+    }
+
+    return nullptr;
 }

@@ -1,31 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DynamicBufferAllocator.h"
 #include "Render/RenderCallbacks.h"
 #include "Functional/Function.h"
@@ -61,7 +33,7 @@ public:
     }
     static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size)
     {
-        return (uint8*)rhi::MapVertexBuffer(handle, offset, size);
+        return reinterpret_cast<uint8*>(rhi::MapVertexBuffer(handle, offset, size));
     }
     static void UnmapBuffer(rhi::HVertexBuffer handle)
     {
@@ -86,7 +58,7 @@ public:
     }
     static uint8* MapBuffer(rhi::HIndexBuffer handle, uint32 offset, uint32 size)
     {
-        return (uint8*)rhi::MapIndexBuffer(handle, offset, size);
+        return reinterpret_cast<uint8*>(rhi::MapIndexBuffer(handle, offset, size));
     }
     static void UnmapBuffer(rhi::HIndexBuffer handle)
     {
@@ -249,7 +221,7 @@ AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 AllocResultIB AllocateIndexBuffer(uint32 indexCount)
 {
     BufferAllocator<rhi::HIndexBuffer>::BufferAllocateResult result = indexBufferAllocator.AllocateData(2, indexCount);
-    return AllocResultIB{ result.buffer, (uint16*)result.data, result.base, result.count };
+    return AllocResultIB{ result.buffer, reinterpret_cast<uint16*>(result.data), result.base, result.count };
 }
 
 const uint32 VERTICES_PER_QUAD = 4;

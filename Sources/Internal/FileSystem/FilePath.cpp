@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
@@ -39,7 +11,7 @@
 
 namespace DAVA
 {
-List<FilePath> FilePath::resourceFolders;
+Vector<FilePath> FilePath::resourceFolders;
 
 void FilePath::SetBundleName(const FilePath& newBundlePath)
 {
@@ -53,9 +25,11 @@ void FilePath::SetBundleName(const FilePath& newBundlePath)
     virtualBundlePath.pathType = PATH_IN_RESOURCES;
 
     if (!resourceFolders.empty())
-        resourceFolders.pop_front();
+    {
+        resourceFolders.erase(begin(resourceFolders));
+    }
 
-    resourceFolders.push_front(virtualBundlePath);
+    resourceFolders.insert(begin(resourceFolders), virtualBundlePath);
 }
 
 const FilePath& FilePath::GetBundleName()
@@ -83,24 +57,37 @@ void FilePath::AddTopResourcesFolder(const FilePath& folder)
 
     FilePath resPath = folder;
     resPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.push_front(resPath);
+    resourceFolders.insert(begin(resourceFolders), resPath);
 }
 
 void FilePath::RemoveResourcesFolder(const FilePath& folder)
 {
-    for (List<FilePath>::iterator it = resourceFolders.begin(); it != resourceFolders.end(); ++it)
+    auto it = std::remove(begin(resourceFolders), end(resourceFolders), folder);
+    if (it != end(resourceFolders))
     {
-        if (folder == *it)
-        {
-            resourceFolders.erase(it);
-            return;
-        }
+        resourceFolders.erase(it);
     }
+}
+
+const Vector<FilePath>& FilePath::GetResFolders()
+{
+    return resourceFolders;
 }
 
 const List<FilePath>& FilePath::GetResourcesFolders()
 {
-    return resourceFolders;
+    // for backward compatibility use list values
+    static List<FilePath> list;
+
+    if (list.size() != resourceFolders.size() ||
+        !std::equal(begin(resourceFolders), end(resourceFolders), begin(list)))
+    {
+        list.clear();
+
+        std::copy(begin(resourceFolders), end(resourceFolders), std::back_inserter(list));
+    }
+
+    return list;
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -124,10 +111,15 @@ void FilePath::InitializeBundleName()
 {
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
     FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    SetBundleName(execDirectory);
+    SetBundleName(execDirectory + "Data/");
+
     if (workingDirectory != execDirectory)
     {
-        AddResourcesFolder(workingDirectory);
+        FilePath dataDirPath(workingDirectory + "Data/");
+        if (FileSystem::Instance()->Exists(dataDirPath))
+        {
+            AddResourcesFolder(dataDirPath);
+        }
     }
 
 #if defined(__DAVAENGINE_WIN_UAP__) && defined(DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION)
@@ -171,18 +163,13 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(localResourcesPath));
-    FilePath zipDataPath;
-    zipDataPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.push_back(zipDataPath);
-#else
-    SetBundleName(FilePath());
+    SetBundleName(FilePath("/mnt/sdcard/DavaProject/Data/"));
 #endif
 }
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-FilePath FilePath::FilepathInDocuments(const char* relativePathname)
+FilePath FilePath::FilepathInDocuments(const char8* relativePathname)
 {
     FilePath path(FileSystem::Instance()->GetCurrentDocumentsDirectory() + relativePathname);
     path.pathType = PATH_IN_DOCUMENTS;
@@ -204,7 +191,7 @@ bool FilePath::ContainPath(const FilePath& basePath, const String& partPath)
     return basePath.GetAbsolutePathname().find(partPath) != std::string::npos;
 }
 
-bool FilePath::ContainPath(const FilePath& basePath, const char* partPath)
+bool FilePath::ContainPath(const FilePath& basePath, const char8* partPath)
 {
     return ContainPath(basePath, String(partPath));
 }
@@ -225,17 +212,21 @@ FilePath::FilePath(const FilePath& path)
     absolutePathname = path.absolutePathname;
 }
 
-FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
-: pathType(path.pathType)
-  ,
-  absolutePathname(std::move(path.absolutePathname))
+FilePath::FilePath(FilePath&& path)
+    : pathType(path.pathType)
+    , absolutePathname(std::move(path.absolutePathname))
 {
     path.pathType = PATH_EMPTY;
 }
 
-FilePath::FilePath(const char* sourcePath)
+FilePath::FilePath(const char8* sourcePath)
 {
     Initialize(String(sourcePath));
+}
+
+FilePath::FilePath(const char16* sourcePath)
+{
+    Initialize(WideString(sourcePath));
 }
 
 FilePath::FilePath(const String& pathname)
@@ -243,25 +234,29 @@ FilePath::FilePath(const String& pathname)
     Initialize(pathname);
 }
 
-FilePath::FilePath(const char* directory, const String& filename)
+FilePath::FilePath(const WideString& pathname)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
+    Initialize(pathname);
+}
 
-    directoryPath.MakeDirectoryPathname();
-
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+FilePath::FilePath(const char8* directory, const String& filename)
+{
+    InitializeWithDirectoryAndName(String(directory), filename);
 }
 
 FilePath::FilePath(const String& directory, const String& filename)
 {
-    FilePath directoryPath(directory);
-    DVASSERT(!directoryPath.IsEmpty());
-    directoryPath.MakeDirectoryPathname();
+    InitializeWithDirectoryAndName(directory, filename);
+}
 
-    pathType = directoryPath.pathType;
-    absolutePathname = AddPath(directoryPath, filename);
+FilePath::FilePath(const char16* directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(WideString(directory), filename);
+}
+
+FilePath::FilePath(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(directory, filename);
 }
 
 FilePath::FilePath(const FilePath& directory, const String& filename)
@@ -270,6 +265,29 @@ FilePath::FilePath(const FilePath& directory, const String& filename)
 
     pathType = directory.pathType;
     absolutePathname = AddPath(directory, filename);
+}
+
+FilePath::FilePath(const FilePath& directory, const WideString& filename)
+{
+    DVASSERT(directory.IsDirectoryPathname());
+
+    pathType = directory.pathType;
+    absolutePathname = AddPath(directory, UTF8Utils::EncodeToUTF8(filename));
+}
+
+void FilePath::InitializeWithDirectoryAndName(const String& directory, const String& filename)
+{
+    FilePath directoryPath(directory);
+    DVASSERT(!directoryPath.IsEmpty());
+    directoryPath.MakeDirectoryPathname();
+
+    pathType = directoryPath.pathType;
+    absolutePathname = AddPath(directoryPath, filename);
+}
+
+void FilePath::InitializeWithDirectoryAndName(const WideString& directory, const WideString& filename)
+{
+    InitializeWithDirectoryAndName(UTF8Utils::EncodeToUTF8(directory), UTF8Utils::EncodeToUTF8(filename));
 }
 
 void FilePath::Initialize(const String& _pathname)
@@ -290,10 +308,6 @@ void FilePath::Initialize(const String& _pathname)
     else if (pathType == PATH_IN_RESOURCES)
     {
         absolutePathname = pathname;
-#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
-        if (0 == pathname.find("~zip:"))
-            absolutePathname = "Data" + absolutePathname.substr(5);
-#endif
     }
     else if (pathType == PATH_IN_DOCUMENTS)
     {
@@ -333,6 +347,11 @@ void FilePath::Initialize(const String& _pathname)
     }
 }
 
+void FilePath::Initialize(const WideString& _pathname)
+{
+    Initialize(UTF8Utils::EncodeToUTF8(_pathname));
+}
+
 FilePath::~FilePath()
 {
 }
@@ -356,7 +375,8 @@ FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 
 FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
-    return FilePath(UTF8Utils::EncodeToUTF8(path));
+    String name = UTF8Utils::EncodeToUTF8(path);
+    return FilePath(name);
 }
 
 #else
@@ -375,28 +395,25 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 
 String FilePath::ResolveResourcesPath() const
 {
-    String::size_type find = absolutePathname.find("~res:");
-    if (find != String::npos)
+    const char* absStr = absolutePathname.c_str();
+    if (0 == strncmp(absStr, "~res:/", 6))
     {
-        String relativePathname = "Data" + absolutePathname.substr(5);
+        String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
-        if (resourceFolders.size() == 1) // optimization to avoid call path.Exists()
+        for (auto reverseIt = resourceFolders.rbegin(); reverseIt != resourceFolders.rend(); ++reverseIt)
         {
-            path = resourceFolders.front().absolutePathname + relativePathname;
-            return path.absolutePathname;
-        }
-        else
-        {
-            for (auto iter = resourceFolders.rbegin(); iter != resourceFolders.rend(); ++iter)
+            path = reverseIt->absolutePathname + relativePathname;
+            if (FileSystem::Instance()->Exists(path))
             {
-                path = iter->absolutePathname + relativePathname;
-                if (FileSystem::Instance()->Exists(path))
-                {
-                    return path.absolutePathname;
-                }
+                return path.absolutePathname;
             }
         }
+        // if we can't find full path to file from any resource folder return relative path
+        // for example if we on android in APK path may contains "assets/Data"
+        // so we just add Data/ and inside c++ code append "assets/" in Java
+        // code don't add "assets/"
+        return "Data/" + relativePathname;
     }
 
     return absolutePathname;
@@ -410,7 +427,7 @@ FilePath& FilePath::operator=(const FilePath& path)
     return *this;
 }
 
-FilePath& FilePath::operator=(FilePath&& path) DAVA_NOEXCEPT
+FilePath& FilePath::operator=(FilePath&& path)
 {
     absolutePathname = std::move(path.absolutePathname);
     pathType = path.pathType;
@@ -540,7 +557,7 @@ String FilePath::GetRelativePathname(const String& forDirectory) const
     return GetRelativePathname(FilePath(forDirectory));
 }
 
-String FilePath::GetRelativePathname(const char* forDirectory) const
+String FilePath::GetRelativePathname(const char8* forDirectory) const
 {
     if (forDirectory == NULL)
         return String();
@@ -708,11 +725,11 @@ String FilePath::NormalizePathname(const String& pathname)
     Split(path, "/", tokens);
 
     //TODO: correctly process situation ../../folders/filename
-    for (int32 i = 0; i < (int32)tokens.size(); ++i)
+    for (size_t i = 0; i < tokens.size(); ++i)
     {
         if (String(".") == tokens[i])
         {
-            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            for (size_t k = i + 1; k < tokens.size(); ++k)
             {
                 tokens[k - 1] = tokens[k];
             }
@@ -721,7 +738,7 @@ String FilePath::NormalizePathname(const String& pathname)
         }
         else if ((1 <= i) && (String("..") == tokens[i] && String("..") != tokens[i - 1]))
         {
-            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            for (size_t k = i + 1; k < tokens.size(); ++k)
             {
                 tokens[k - 2] = tokens[k];
             }
@@ -735,16 +752,18 @@ String FilePath::NormalizePathname(const String& pathname)
     if ('/' == path[0])
         result = "/";
 
-    for (int32 k = 0; k < (int32)tokens.size(); ++k)
+    for (size_t k = 0; k < tokens.size(); ++k)
     {
         result += tokens[k];
-        if (k + 1 != (int32)tokens.size())
+        if (k + 1 != tokens.size())
             result += String("/");
     }
 
     //process last /
-    if (('/' == path[path.length() - 1]) && (path.length() != 1))
+    if (('/' == path.back()) && (!result.empty()))
+    {
         result += String("/");
+    }
 
     return result;
 }

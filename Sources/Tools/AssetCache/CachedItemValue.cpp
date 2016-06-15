@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "AssetCache/CachedItemValue.h"
 #include "Base/Data.h"
 #include "FileSystem/KeyedArchive.h"
@@ -40,6 +12,8 @@ namespace AssetCache
 {
 CachedItemValue::CachedItemValue(const CachedItemValue& right)
     : dataContainer(right.dataContainer)
+    , description(right.description)
+    , validationDetails(right.validationDetails)
     , size(right.size)
     , isFetched(right.isFetched)
 {
@@ -47,6 +21,8 @@ CachedItemValue::CachedItemValue(const CachedItemValue& right)
 
 CachedItemValue::CachedItemValue(CachedItemValue&& right)
     : dataContainer(std::move(right.dataContainer))
+    , description(std::move(right.description))
+    , validationDetails(std::move(right.validationDetails))
     , size(right.size)
     , isFetched(right.isFetched)
 {
@@ -63,13 +39,19 @@ CachedItemValue::~CachedItemValue()
     else
     {
         DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type& data)
-                             { return IsDataLoaded(data.second) == false;
+                             {
+                                 return IsDataLoaded(data.second) == false;
                              }));
     }
 
     dataContainer.clear();
     size = 0;
     isFetched = false;
+}
+
+void CachedItemValue::Add(const FilePath& pathname)
+{
+    Add(pathname.GetFilename(), LoadFile(pathname));
 }
 
 void CachedItemValue::Add(const String& name, ValueData data)
@@ -106,6 +88,16 @@ void CachedItemValue::Serialize(KeyedArchive* archieve, bool serializeData) cons
 
         ++index;
     }
+
+    //Description
+    archieve->SetString("Description.machineName", description.machineName);
+    archieve->SetString("Description.creationDate", description.creationDate);
+    archieve->SetString("Description.addingChain", description.addingChain);
+    archieve->SetString("Description.receivingChain", description.receivingChain);
+    archieve->SetString("Description.comment", description.comment);
+    //Validation
+    archieve->SetUInt32("ValidationDetails.filesCount", validationDetails.filesCount);
+    archieve->SetUInt64("ValidationDetails.filesDataSize", validationDetails.filesDataSize);
 }
 
 void CachedItemValue::Deserialize(KeyedArchive* archieve)
@@ -115,6 +107,7 @@ void CachedItemValue::Deserialize(KeyedArchive* archieve)
     DVASSERT(isFetched == false);
 
     size = archieve->GetUInt64("size");
+    uint64 fetchedSize = 0;
 
     auto count = archieve->GetUInt32("data_count");
     for (uint32 i = 0; i < count; ++i)
@@ -130,10 +123,28 @@ void CachedItemValue::Deserialize(KeyedArchive* archieve)
 
             data.get()->resize(size);
             Memcpy(data.get()->data(), archieve->GetByteArray(key), size);
+
+            fetchedSize += size;
         }
 
         dataContainer[name] = data;
     }
+
+    if (isFetched && fetchedSize != size)
+    {
+        Logger::Error("[%s] Fetched size %llu differs from stored %llu", __FUNCTION__, fetchedSize, size);
+        size = fetchedSize;
+    }
+
+    //Description
+    description.machineName = archieve->GetString("Description.machineName");
+    description.creationDate = archieve->GetString("Description.creationDate");
+    description.addingChain = archieve->GetString("Description.addingChain");
+    description.receivingChain = archieve->GetString("Description.receivingChain");
+    description.comment = archieve->GetString("Description.comment");
+    //Validation
+    validationDetails.filesCount = archieve->GetUInt32("ValidationDetails.filesCount");
+    validationDetails.filesDataSize = archieve->GetUInt64("ValidationDetails.filesDataSize");
 }
 
 bool CachedItemValue::Serialize(File* buffer) const
@@ -168,6 +179,24 @@ bool CachedItemValue::Serialize(File* buffer) const
             return false;
     }
 
+    //Description
+    if (buffer->WriteString(description.machineName) == false)
+        return false;
+    if (buffer->WriteString(description.creationDate) == false)
+        return false;
+    if (buffer->WriteString(description.addingChain) == false)
+        return false;
+    if (buffer->WriteString(description.receivingChain) == false)
+        return false;
+    if (buffer->WriteString(description.comment) == false)
+        return false;
+
+    //Validation
+    if (buffer->Write(&validationDetails.filesCount) != sizeof(validationDetails.filesCount))
+        return false;
+    if (buffer->Write(&validationDetails.filesDataSize) != sizeof(validationDetails.filesDataSize))
+        return false;
+
     return true;
 }
 
@@ -184,6 +213,7 @@ bool CachedItemValue::Deserialize(File* file)
     if (file->Read(&count) != sizeof(count))
         return false;
 
+    uint64 fetchedSize = 0;
     for (; count > 0; --count)
     {
         String name;
@@ -202,22 +232,48 @@ bool CachedItemValue::Deserialize(File* file)
             data->resize(datasize);
             if (file->Read(data->data(), datasize) != datasize)
                 return false;
+
+            fetchedSize += datasize;
         }
 
         dataContainer[name] = data;
     }
+
+    if (isFetched && fetchedSize != size)
+    {
+        Logger::Error("[%s] Fetched size %llu differs from stored %llu", __FUNCTION__, fetchedSize, size);
+        size = fetchedSize;
+    }
+
+    //Description
+    if (file->ReadString(description.machineName) == false)
+        return false;
+    if (file->ReadString(description.creationDate) == false)
+        return false;
+    if (file->ReadString(description.addingChain) == false)
+        return false;
+    if (file->ReadString(description.receivingChain) == false)
+        return false;
+    if (file->ReadString(description.comment) == false)
+        return false;
+
+    //Validation
+    if (file->Read(&validationDetails.filesCount) != sizeof(validationDetails.filesCount))
+        return false;
+    if (file->Read(&validationDetails.filesDataSize) != sizeof(validationDetails.filesDataSize))
+        return false;
 
     return true;
 }
 
 bool CachedItemValue::operator==(const CachedItemValue& right) const
 {
-    if ((isFetched == right.isFetched) && (size == right.size) && (dataContainer.size() == right.dataContainer.size()))
+    if ((isFetched == right.isFetched) && (size == right.size) && (dataContainer.size() == right.dataContainer.size()) && (validationDetails == right.validationDetails) && (description == right.description))
     {
         return std::equal(dataContainer.cbegin(), dataContainer.cend(), right.dataContainer.cbegin(),
                           [](const ValueDataContainer::value_type& left, const ValueDataContainer::value_type& right) -> bool
                           {
-            return left.first == right.first;
+                              return left.first == right.first;
                           });
     }
 
@@ -231,10 +287,13 @@ CachedItemValue& CachedItemValue::operator=(const CachedItemValue& right)
         if (isFetched)
             Free();
 
+        dataContainer = right.dataContainer;
+
+        validationDetails = right.validationDetails;
+        description = right.description;
+
         isFetched = right.isFetched;
         size = right.size;
-
-        dataContainer = right.dataContainer;
     }
 
     return (*this);
@@ -245,6 +304,9 @@ CachedItemValue& CachedItemValue::operator=(CachedItemValue&& right)
     if (this != &right)
     {
         dataContainer = std::move(right.dataContainer);
+
+        validationDetails = std::move(right.validationDetails);
+        description = std::move(right.description);
 
         isFetched = right.isFetched;
         size = right.size;
@@ -286,7 +348,7 @@ void CachedItemValue::Free()
     }
 }
 
-void CachedItemValue::Export(const FilePath& folder) const
+void CachedItemValue::ExportToFolder(const FilePath& folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
 
@@ -317,6 +379,42 @@ void CachedItemValue::Export(const FilePath& folder) const
     }
 }
 
+size_type CachedItemValue::GetItemCount() const
+{
+    return dataContainer.size();
+}
+
+bool CachedItemValue::ExportToFile(const FilePath& exportToPath) const
+{
+    if (GetItemCount() != 1)
+    {
+        Logger::Error("Item count is %u, expected is 1", GetItemCount());
+        return false;
+    }
+
+    const String& itemName = dataContainer.begin()->first;
+    const CachedItemValue::ValueData& itemData = dataContainer.begin()->second;
+    if (IsDataLoaded(itemData) == false)
+    {
+        Logger::Warning("File(%s) is not loaded", itemName.c_str());
+        return false;
+    }
+
+    ScopedPtr<File> file(File::Create(exportToPath, File::CREATE | File::WRITE));
+    if (file)
+    {
+        uint32 itemSize = static_cast<uint32>(itemData->size());
+        uint32 written = file->Write(itemData->data(), itemSize);
+        DVASSERT(written == itemSize);
+        return true;
+    }
+    else
+    {
+        Logger::Error("Cannot create file %s", exportToPath.GetStringValue().c_str());
+        return false;
+    }
+}
+
 CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
 {
     ValueData data = std::make_shared<Vector<uint8>>();
@@ -336,6 +434,24 @@ CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
     }
 
     return data;
+}
+
+bool CachedItemValue::IsValid() const
+{
+    if (isFetched)
+    {
+        return (validationDetails.filesCount == static_cast<uint32>(dataContainer.size())) && (validationDetails.filesDataSize == size);
+    }
+
+    return (validationDetails.filesCount == static_cast<uint32>(dataContainer.size()));
+}
+
+void CachedItemValue::UpdateValidationData()
+{
+    DVASSERT(isFetched == true);
+
+    validationDetails.filesCount = static_cast<uint32>(dataContainer.size());
+    validationDetails.filesDataSize = size;
 }
 
 } // end of namespace AssetCache

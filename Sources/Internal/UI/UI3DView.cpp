@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "Render/RenderHelper.h"
@@ -45,11 +16,8 @@ UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
     , drawToFrameBuffer(false)
-    , needUpdateFrameBuffer(false)
-    , frameBuffer(nullptr)
     , fbScaleFactor(1.f)
     , fbRenderSize()
-    , fbTexSize()
     , registeredInUIControlSystem(false)
 {
 }
@@ -73,7 +41,6 @@ void UI3DView::SetScene(Scene* _scene)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
-        needUpdateFrameBuffer = true;
     }
 }
 
@@ -98,8 +65,17 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     if (!scene)
         return;
 
+    RenderSystem2D::Instance()->Flush();
+
+    rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+    const RenderSystem2D::RenderTargetPassDescriptor& currentTarget = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
+
     Rect viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+
+    if (currentTarget.transformVirtualToPhysical)
+        viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+    else
+        viewportRc = viewportRect;
 
     if (drawToFrameBuffer)
     {
@@ -108,18 +84,36 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         viewportRc.y = 0.f;
         viewportRc.dx *= fbScaleFactor;
         viewportRc.dy *= fbScaleFactor;
+
+        PrepareFrameBuffer();
+
+        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
+        config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
+        config.colorBuffer[0].texture = frameBuffer->handle;
+        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
+        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     }
     else
     {
-        viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-        RenderSystem2D::Instance()->Flush();
+        if (currentTarget.transformVirtualToPhysical)
+            viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+
+        config.colorBuffer[0].texture = currentTarget.colorAttachment;
+        config.depthStencilBuffer.texture = currentTarget.depthAttachment;
+        config.priority = currentTarget.priority + basePriority;
+        config.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     }
 
     bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
     if (uiDrawQueryWasOpen)
         FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
-    PrepareFrameBufferIfNeed();
     scene->SetMainPassViewport(viewportRc);
     scene->Draw();
 
@@ -143,7 +137,6 @@ void UI3DView::SetSize(const DAVA::Vector2& newSize)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
-        needUpdateFrameBuffer = true;
     }
 }
 
@@ -163,10 +156,6 @@ void UI3DView::CopyDataFrom(UIControl* srcControl)
     fbScaleFactor = srcView->fbScaleFactor;
     fbRenderSize = srcView->fbRenderSize;
     fbTexSize = srcView->fbTexSize;
-    needUpdateFrameBuffer = srcView->needUpdateFrameBuffer;
-
-    // Create FBO on first draw if need
-    needUpdateFrameBuffer = true;
 }
 
 void UI3DView::Input(UIEvent* currentInput)
@@ -181,55 +170,35 @@ void UI3DView::Input(UIEvent* currentInput)
 
 void UI3DView::SetDrawToFrameBuffer(bool enable)
 {
-    if (drawToFrameBuffer != enable)
+    drawToFrameBuffer = enable;
+
+    if (!enable)
     {
-        drawToFrameBuffer = enable;
-        needUpdateFrameBuffer = true;
+        SafeRelease(frameBuffer);
     }
 }
 
 void UI3DView::SetFrameBufferScaleFactor(float32 scale)
 {
-    if (!FLOAT_EQUAL(scale, fbScaleFactor))
-    {
-        fbScaleFactor = scale;
-        needUpdateFrameBuffer = true;
-    }
+    fbScaleFactor = scale;
 }
 
 void UI3DView::PrepareFrameBuffer()
 {
     DVASSERT(scene);
 
-    if (drawToFrameBuffer)
+    fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
+
+    if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
     {
-        fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
-
-        if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
-        {
-            SafeRelease(frameBuffer);
-            frameBuffer = Texture::CreateFBO((int32)fbRenderSize.dx, (int32)fbRenderSize.dy, FORMAT_RGBA8888, true);
-        }
-
-        Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));
-
-        fbTexSize = fbRenderSize / fbSize;
-
-        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
-        config.colorBuffer[0].texture = frameBuffer->handle;
-        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
-        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
-    }
-    else if (frameBuffer != nullptr)
-    {
-        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
-        config.colorBuffer[0].texture = rhi::InvalidHandle;
-        config.depthStencilBuffer.texture = rhi::InvalidHandle;
         SafeRelease(frameBuffer);
+        int32 dx = static_cast<int32>(fbRenderSize.dx);
+        int32 dy = static_cast<int32>(fbRenderSize.dy);
+        frameBuffer = Texture::CreateFBO(dx, dy, FORMAT_RGBA8888, true);
     }
+
+    Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));
+
+    fbTexSize = fbRenderSize / fbSize;
 }
 }

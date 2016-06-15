@@ -3,5 +3,15 @@
         <file>Icons/wand.png</file>
         <file>Icons/reset.png</file>
         <file>Icons/clear.png</file>
+        <file>Icons/close-16.png</file>
+        <file>Icons/close-10.png</file>
+        <file>Icons/checked-checkbox.png</file>
+        <file>Icons/unchecked-checkbox.png</file>
+        <file>Icons/light-downarrow.png</file>
+        <file>Icons/light-uparrow.png</file>
+        <file>Icons/light-leftarrow.png</file>
+        <file>Icons/light-rightarrow.png</file>
+        <file>LightTheme.qss</file>
+        <file>DarkTheme.qss</file>
     </qresource>
 </RCC>

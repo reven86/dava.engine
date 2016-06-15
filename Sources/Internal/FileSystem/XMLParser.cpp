@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/XMLParser.h"
 
 
@@ -102,7 +73,7 @@ bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDele
     saxHandler.endElement = XMLParser::EndElement;
     saxHandler.characters = XMLParser::Characters;
 
-    int32 retCode = xmlSAXUserParseMemory(&saxHandler, (void*)delegateptr, (char*)bytes, length);
+    int32 retCode = xmlSAXUserParseMemory(&saxHandler, reinterpret_cast<void*>(delegateptr), reinterpret_cast<const char*>(bytes), length);
     //		Logger::FrameworkDebug("[XMLParser::ParseBytes] retCode = %d", retCode);
     if (0 <= retCode)
     {
@@ -116,7 +87,7 @@ bool XMLParser::ParseBytes(const unsigned char* bytes, int length, XMLParserDele
 void XMLParser::StartDocument(void* user_data)
 {
     //		Logger::FrameworkDebug("[XMLParser::StartDocument] user_data = %p", user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
     }
@@ -124,7 +95,7 @@ void XMLParser::StartDocument(void* user_data)
 void XMLParser::EndDocument(void* user_data)
 {
     //		Logger::FrameworkDebug("[XMLParser::EndDocument] user_data = %p", user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
     }
@@ -133,11 +104,11 @@ void XMLParser::EndDocument(void* user_data)
 void XMLParser::Characters(void* user_data, const xmlChar* ch, int len)
 {
     //		Logger::FrameworkDebug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
         //char *content = new char[len + 1];
-        String s((char*)ch, len);
+        String s(reinterpret_cast<const char*>(ch), len);
 
         // 			delegateptr->OnFoundCharacters(content);
         delegateptr->OnFoundCharacters(s);
@@ -149,7 +120,7 @@ void XMLParser::Characters(void* user_data, const xmlChar* ch, int len)
 void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar** attrs)
 {
     //		Logger::FrameworkDebug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
         Map<String, String> attributes;
@@ -161,8 +132,8 @@ void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar
             int32 i = 0;
             while (attrs[i])
             {
-                char* str = (attrs[i + 1]) ? (char*)attrs[i + 1] : (char*)"";
-                attributes[(char*)attrs[i]] = str;
+                const char* str = (attrs[i + 1]) ? reinterpret_cast<const char*>(attrs[i + 1]) : "";
+                attributes[reinterpret_cast<const char*>(attrs[i])] = str;
 
                 //					Logger::FrameworkDebug("[XMLParser::StartElement] %s = %s", attrs[i], str);
 
@@ -172,17 +143,17 @@ void XMLParser::StartElement(void* user_data, const xmlChar* name, const xmlChar
             //				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
         }
 
-        delegateptr->OnElementStarted((char*)name, "", "", attributes);
+        delegateptr->OnElementStarted(reinterpret_cast<const char*>(name), "", "", attributes);
     }
 }
 
 void XMLParser::EndElement(void* user_data, const xmlChar* name)
 {
     //		Logger::FrameworkDebug("[XMLParser::EndElement] %s", name);
-    XMLParserDelegate* delegateptr = (XMLParserDelegate*)user_data;
+    XMLParserDelegate* delegateptr = reinterpret_cast<XMLParserDelegate*>(user_data);
     if (delegateptr)
     {
-        delegateptr->OnElementEnded((char*)name, "", "");
+        delegateptr->OnElementEnded(reinterpret_cast<const char*>(name), "", "");
     }
 }
 

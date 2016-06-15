@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
 #define __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
 
@@ -96,16 +67,17 @@ public:
     VegetationRenderObject();
     virtual ~VegetationRenderObject();
 
-    RenderObject* Clone(RenderObject* newObject);
-    virtual void Save(KeyedArchive* archive, SerializationContext* serializationContext);
-    virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
+    RenderObject* Clone(RenderObject* newObject) override;
+    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    virtual void PrepareToRender(Camera* camera);
-    virtual void RecalcBoundingBox();
+    void BindDynamicParameters(Camera* camera) override;
+    void PrepareToRender(Camera* camera) override;
+    void RecalcBoundingBox() override;
 
     void CollectMetrics(VegetationMetrics& metrics);
     void DebugDrawVisibleNodes(RenderHelper* drawer);
-    virtual void GetDataNodes(Set<DataNode*>& dataNodes);
+    void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
     inline void SetHeightmap(Heightmap* _heightmap);
     inline Heightmap* GetHeightmap() const;
@@ -230,10 +202,10 @@ private:
     Heightmap* heightmap;
     Vector3 worldSize;
     Vector<Vector2> unitWorldSize;
-    Vector2 heightmapScale;
     Vector2 heightmapToVegetationMapScale;
     uint16 halfWidth;
     uint16 halfHeight;
+    float32 heightmapSize;
 
     //Vector<float32> shaderScaleDensityUniforms;
 
@@ -316,13 +288,12 @@ inline uint32 VegetationRenderObject::MapToResolution(float32 squareDistance)
 {
     uint32 resolutionId = 0;
 
-    size_t rangesCount = resolutionRanges.size();
-    for (size_t i = 0; i < rangesCount; ++i)
+    for (size_t i = 0, rangesCount = resolutionRanges.size(); i < rangesCount; ++i)
     {
         if (squareDistance > resolutionRanges[i].x &&
             squareDistance <= resolutionRanges[i].y)
         {
-            resolutionId = (uint32)i;
+            resolutionId = static_cast<uint32>(i);
             break;
         }
     }
@@ -368,6 +339,7 @@ inline void VegetationRenderObject::SetHeightmap(Heightmap* _heightmap)
 
         if (heightmap)
         {
+            heightmapSize = static_cast<float32>(heightmap->Size());
             InitHeightTextureFromHeightmap(heightmap);
         }
 
@@ -420,7 +392,8 @@ inline void VegetationRenderObject::SetLightmapAndGenerateDensityMap(const FileP
 
 inline void VegetationRenderObject::SetClusterLimit(const uint32& maxClusters)
 {
-    Vector4 tmpVec((float32)maxClusters, (float32)maxClusters, (float32)maxClusters, (float32)maxClusters);
+    float32 maxClustersf = float32(maxClusters);
+    Vector4 tmpVec(maxClustersf, maxClustersf, maxClustersf, maxClustersf);
     SetLayerClusterLimit(tmpVec);
 }
 
@@ -565,7 +538,7 @@ inline void VegetationRenderObject::SetLayerClusterLimit(const Vector4& maxClust
     size_t layerCount = layerParams.size();
     for (size_t i = 0; i < layerCount; ++i)
     {
-        layerParams[i].maxClusterCount = Clamp((uint32)Abs(maxClusters.data[i]), (uint32)1, (uint32)0x00000FFF);
+        layerParams[i].maxClusterCount = Clamp(uint32(Abs(maxClusters.data[i])), 1U, uint32(0x00000FFF));
     }
 
     UpdateVegetationSetup();
@@ -573,10 +546,10 @@ inline void VegetationRenderObject::SetLayerClusterLimit(const Vector4& maxClust
 
 inline Vector4 VegetationRenderObject::GetLayerClusterLimit() const
 {
-    return Vector4((float32)layerParams[0].maxClusterCount,
-                   (float32)layerParams[1].maxClusterCount,
-                   (float32)layerParams[2].maxClusterCount,
-                   (float32)layerParams[3].maxClusterCount);
+    return Vector4(float32(layerParams[0].maxClusterCount),
+                   float32(layerParams[1].maxClusterCount),
+                   float32(layerParams[2].maxClusterCount),
+                   float32(layerParams[3].maxClusterCount));
 }
 
 inline void VegetationRenderObject::SetScaleVariation(const Vector4& scaleVariation)

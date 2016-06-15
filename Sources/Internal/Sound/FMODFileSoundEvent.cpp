@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifdef DAVA_FMOD
 
 #include "Sound/FMODFileSoundEvent.h"
@@ -151,7 +122,7 @@ bool FMODFileSoundEvent::Trigger()
         FMOD_VERIFY(fmodInstance->setChannelGroup(fmodInstanceGroup));
 
         if (flags & SOUND_EVENT_CREATE_3D)
-            FMOD_VERIFY(fmodInstance->set3DAttributes((FMOD_VECTOR*)&position, 0));
+            FMOD_VERIFY(fmodInstance->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0));
 
         FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
         FMOD_VERIFY(fmodInstance->setPaused(false));
@@ -183,7 +154,7 @@ void FMODFileSoundEvent::UpdateInstancesPosition()
         {
             FMOD::Channel* inst = 0;
             FMOD_VERIFY(fmodInstanceGroup->getChannel(i, &inst));
-            FMOD_VERIFY(inst->set3DAttributes((FMOD_VECTOR*)&position, 0));
+            FMOD_VERIFY(inst->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0));
         }
     }
 }
@@ -251,11 +222,11 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
 {
     if (type == FMOD_CHANNEL_CALLBACKTYPE_END)
     {
-        FMOD::Channel* cppchannel = (FMOD::Channel*)channel;
+        FMOD::Channel* cppchannel = reinterpret_cast<FMOD::Channel*>(channel);
         if (cppchannel)
         {
             FMODFileSoundEvent* sound = 0;
-            FMOD_VERIFY(cppchannel->getUserData((void**)&sound));
+            FMOD_VERIFY(cppchannel->getUserData(reinterpret_cast<void**>(&sound)));
             if (sound)
             {
                 sound->PerformEvent(EVENT_END);

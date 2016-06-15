@@ -1,40 +1,18 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Focus/FocusHelpers.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
+
+extern void CreateTextField(DAVA::UITextField*);
+extern void ReleaseTextField();
+extern void OpenKeyboard();
+extern void CloseKeyboard();
 
 JniTextField::JniTextField(uint32_t id)
     : jniTextField("com/dava/framework/JNITextField")
@@ -72,6 +50,10 @@ JniTextField::JniTextField(uint32_t id)
 void JniTextField::Create(Rect controlRect)
 {
     Rect rect = JNI::V2I(controlRect);
+
+    rect.dx = std::max(0.0f, rect.dx);
+    rect.dy = std::max(0.0f, rect.dy);
+
     create(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -83,6 +65,10 @@ void JniTextField::Destroy()
 void JniTextField::UpdateRect(const Rect& controlRect)
 {
     Rect rect = JNI::V2I(controlRect);
+
+    rect.dx = std::max(0.0f, rect.dx);
+    rect.dy = std::max(0.0f, rect.dy);
+
     updateRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
@@ -207,6 +193,7 @@ void JniTextField::SetMultiline(bool value)
 
 uint32_t TextFieldPlatformImpl::sId = 0;
 DAVA::UnorderedMap<uint32_t, TextFieldPlatformImpl*> TextFieldPlatformImpl::controls;
+static DAVA::Mutex controlsSync;
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
 {
@@ -216,13 +203,17 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
     jniTextField = std::make_shared<JniTextField>(id);
     jniTextField->Create(rect);
 
+    DAVA::LockGuard<Mutex> guard(controlsSync);
     controls[id] = this;
 }
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
-    controls.erase(id);
     jniTextField->Destroy();
+    textField = nullptr;
+
+    DAVA::LockGuard<Mutex> guard(controlsSync);
+    controls.erase(id);
 }
 
 void TextFieldPlatformImpl::OpenKeyboard()
@@ -456,6 +447,7 @@ void TextFieldPlatformImpl::TextFieldShouldReturn(uint32_t id)
 
 TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 {
+    DAVA::LockGuard<Mutex> guard(controlsSync);
     auto iter = controls.find(id);
     if (iter != controls.end())
         return iter->second;
@@ -465,9 +457,7 @@ TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(const Rect& rect)
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardShown(rect);
+    textField->OnKeyboardShown(rect);
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
@@ -480,9 +470,7 @@ void TextFieldPlatformImpl::TextFieldKeyboardShown(uint32_t id, const Rect& rect
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden()
 {
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardHidden();
+    textField->OnKeyboardHidden();
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardHidden(uint32_t id)
@@ -499,16 +487,17 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(bool hasFocus)
     {
         if (hasFocus)
         {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField && FocusHelpers::CanFocusControl(textField))
             {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField);
             }
+            textField->StartEdit();
         }
         else
         {
             if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
             {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
+                textField->StopEdit();
             }
         }
     }
@@ -536,9 +525,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
             // convert on the same memory
             uint32 pitch = width * 4;
             uint8* imageData = reinterpret_cast<uint8*>(rawPixels);
-            ImageConvert::ConvertImageDirect(FORMAT_BGRA8888,
-                                             FORMAT_RGBA8888, imageData, width, height, pitch, imageData,
-                                             width, height, pitch);
+            ImageConvert::SwapRedBlueChannels(FORMAT_RGBA8888, imageData, width, height, pitch);
 
             Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, imageData, width, height, false);
             SCOPE_EXIT

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_RENDER_BASE_H__
 #define __DAVAENGINE_RENDER_BASE_H__
 
@@ -48,6 +19,16 @@ enum eBlending
     BLENDING_STRONG_MULTIPLICATIVE
 };
 
+enum eGradientBlendMode
+{
+    GRADIENT_MULTIPLY = 0,
+    GRADIENT_BLEND,
+    GRADIENT_ADD,
+    GRADIENT_SCREEN,
+    GRADIENT_OVERLAY,
+    GRADIENT_BLEND_MODE_COUNT
+};
+
 enum ImageQuality : uint8
 {
     MIN_IMAGE_QUALITY = 0,
@@ -64,6 +45,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_TGA,
     IMAGE_FORMAT_WEBP,
+    IMAGE_FORMAT_PSD,
     IMAGE_FORMAT_COUNT,
     IMAGE_FORMAT_UNKNOWN = 127
 };
@@ -157,16 +139,14 @@ extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
 enum eDefaultPassPriority
 {
-    PRIORITY_MAIN_2D = 10,
-    PRIORITY_MAIN_3D = 20,
+    PRIORITY_MAIN_2D = 00,
+    PRIORITY_MAIN_3D = 10,
+    PRIORITY_CLEAR = 15,
+    PRIORITY_SERVICE_3D = 20,
+    PRIORITY_SCREENSHOT = 50,
+    PRIORITY_SCREENSHOT_2D = PRIORITY_SCREENSHOT, //legacy
 
-    PRIORITY_CLEAR = 25,
-
-    PRIORITY_SERVICE_3D = 30,
-    PRIORITY_SERVICE_2D = 40,
-
-    PRIORITY_SCREENSHOT_2D = 50,
-    PRIORITY_SCREENSHOT_3D = 60
+    PRIORITY_SERVICE_2D = 1000 //service 2d is most commonly used for system's draw to texture etc.
 };
 
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them

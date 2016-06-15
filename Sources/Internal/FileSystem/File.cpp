@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
@@ -34,6 +5,9 @@
 #include "FileSystem/FileAPIHelper.h"
 
 #include "Utils/StringFormat.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -60,45 +34,100 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    return FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
-    for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
-         ai != fileSystem->resourceArchiveList.end(); ++ai)
+
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
     {
-        FileSystem::ResourceArchiveItem& item = *ai;
+        String relative = filename.GetRelativePathname("~res:/");
 
-        String filenamecpp = filename.GetAbsolutePathname();
+        // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
+        // from DB with all files, then check if such pack mounted and from
+        // mountedPackIndex find by name archive with file or skip to next step
 
-        String::size_type pos = filenamecpp.find(item.attachPath);
-        if (pos == 0)
+        Vector<uint8> contentAndSize;
+        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
         {
-            String relfilename = filenamecpp.substr(item.attachPath.length());
-            int32 size = item.archive->LoadResource(relfilename, 0);
-            if (size == -1)
+            if (item.archive->LoadFile(relative, contentAndSize))
             {
-                return 0;
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
-
-            uint8* buffer = new uint8[size];
-            item.archive->LoadResource(relfilename, buffer);
-            DynamicMemoryFile* file = DynamicMemoryFile::Create(buffer, size, attributes);
-            SafeDeleteArray(buffer);
-            return file;
         }
-    }
-
-    bool isDirectory = FileSystem::Instance()->IsDirectory(filename);
-    if (isDirectory)
-    {
-        return NULL;
     }
 
     return PureCreate(filename, attributes);
 }
+
+#ifdef __DAVAENGINE_ANDROID__
+
+static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
+{
+    int index = zip_name_locate(package, path.c_str(), 0);
+    if (-1 == index)
+    {
+        return nullptr;
+    }
+
+    struct zip_stat stat;
+
+    int32 error = zip_stat_index(package, index, 0, &stat);
+    if (-1 == error)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't get file info: %s", path.c_str());
+        return nullptr;
+    }
+
+    zip_file* file = zip_fopen_index(package, index, 0);
+    if (nullptr == file)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
+        return nullptr;
+    }
+    SCOPE_EXIT
+    {
+        zip_fclose(file);
+    };
+
+    DVASSERT(stat.size >= 0);
+
+    Vector<uint8> data(stat.size, 0);
+
+    if (zip_fread(file, &data[0], stat.size) != stat.size)
+    {
+        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
+
+        return nullptr;
+    }
+
+    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
+}
+
+static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
+{
+    static Mutex mutex;
+
+    LockGuard<Mutex> guard(mutex);
+
+    AssetsManager* assetsManager = AssetsManager::Instance();
+    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+
+    zip* package = assetsManager->GetApplicationPackage();
+    if (nullptr == package)
+    {
+        DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
+        return nullptr;
+    }
+    // TODO in future remove ugly HACK with prefix path
+    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
+    return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
+}
+
+#endif // __DAVAENGINE_ANDROID__
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
@@ -118,7 +147,14 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         }
 
         if (!file)
-            return NULL;
+        {
+#ifdef __DAVAENGINE_ANDROID__
+            File* fromAPK = CreateFromAPK(filePath, attributes);
+            return fromAPK; // simpler debugging on android
+#else
+            return nullptr;
+#endif
+        }
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
@@ -127,13 +163,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
         if (!file)
-            return NULL;
+            return nullptr;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)
-            return NULL;
+            return nullptr;
         fseek(file, 0, SEEK_END);
         size = static_cast<uint32>(ftell(file));
     }
@@ -161,7 +197,7 @@ uint32 File::Write(const void* pointerToData, uint32 dataSize)
 #endif
 
     //! Do not change order fread return not bytes -- items
-    uint32 lSize = (uint32)fwrite(pointerToData, 1, dataSize, file);
+    uint32 lSize = static_cast<uint32>(fwrite(pointerToData, 1, dataSize, file));
 
 #if defined(__DAVAENGINE_ANDROID__)
     //for Android value returned by 'fwrite()' is incorrect in case of full disk, that's why we calculate 'lSize' using 'GetPos()'
@@ -177,7 +213,7 @@ uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
-    return (uint32)fread(pointerToData, 1, dataSize, file);
+    return static_cast<uint32>(fread(pointerToData, 1, dataSize, file));
 }
 
 uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
@@ -239,7 +275,7 @@ uint32 File::ReadLine(void* pointerToData, uint32 bufferSize)
 
     if (bufferSize > 0)
     {
-        uint8* inPtr = (uint8*)pointerToData;
+        uint8* inPtr = reinterpret_cast<uint8*>(pointerToData);
         while (!IsEof() && bufferSize > 1)
         {
             uint8 nextChar;
@@ -256,7 +292,7 @@ uint32 File::ReadLine(void* pointerToData, uint32 bufferSize)
         }
         *inPtr = 0;
         inPtr++;
-        ret = (uint32)(inPtr - (uint8*)pointerToData);
+        ret = static_cast<uint32>(inPtr - reinterpret_cast<uint8*>(pointerToData));
     }
 
     return ret;
@@ -321,7 +357,7 @@ uint32 File::GetSize() const
     return size;
 }
 
-bool File::Seek(int32 position, uint32 seekType)
+bool File::Seek(int32 position, eFileSeek seekType)
 {
     int realSeekType = 0;
     switch (seekType)
@@ -368,13 +404,13 @@ bool File::WriteString(const String& strtowrite, bool shouldNullBeWritten)
 {
     const char* str = strtowrite.c_str();
     uint32 null = (shouldNullBeWritten) ? (1) : (0);
-    return (Write((void*)str, (uint32)(strtowrite.length() + null)) == strtowrite.length() + null);
+    return (Write(str, static_cast<uint32>(strtowrite.length() + null)) == strtowrite.length() + null);
 }
 
 bool File::WriteNonTerminatedString(const String& strtowrite)
 {
     const char* str = strtowrite.c_str();
-    return (Write((void*)str, (uint32)(strtowrite.length())) == strtowrite.length());
+    return (Write(str, static_cast<uint32>(strtowrite.length())) == strtowrite.length());
 }
 
 bool File::WriteLine(const String& string)
@@ -382,8 +418,8 @@ bool File::WriteLine(const String& string)
     uint32 written = 0;
     const char* str = string.c_str();
     const char* endLine = "\r\n";
-    uint32 endLength = (uint32)strlen(endLine);
-    uint32 strLength = (uint32)string.length();
+    uint32 endLength = static_cast<uint32>(strlen(endLine));
+    uint32 strLength = static_cast<uint32>(string.length());
 
     written += Write(str, strLength);
     written += Write(endLine, endLength);

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
@@ -224,7 +195,7 @@ void Sprite::InitFromFile(File* file)
     int32 width, height;
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d %d", &width, &height);
-    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
+    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
 
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d", &frameCount);
@@ -248,10 +219,10 @@ void Sprite::InitFromFile(File* file)
         sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
         frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
 
-        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)xOff, (float32)yOff, (float32)dx, (float32)dy), resourceSizeIndex);
+        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
 
-        rectsAndOffsets[i][0] = (float32)x;
-        rectsAndOffsets[i][1] = (float32)y;
+        rectsAndOffsets[i][0] = float32(x);
+        rectsAndOffsets[i][1] = float32(y);
         rectsAndOffsets[i][2] = rect.dx;
         rectsAndOffsets[i][3] = rect.dy;
         rectsAndOffsets[i][4] = rect.x;
@@ -285,14 +256,14 @@ void Sprite::InitFromFile(File* file)
         dx += x;
         dy += y;
 
-        texCoords[i][0] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][1] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][2] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][3] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][4] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][5] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][6] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][7] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][0] = (x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][1] = (y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][2] = (dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][3] = (y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][4] = (x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][5] = (dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][6] = (dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][7] = (dy - yof) / textures[frameTextureIndex[i]]->height;
     }
     defaultPivotPoint.x = 0;
     defaultPivotPoint.y = 0;
@@ -335,13 +306,13 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
 
-    ScopedPtr<Image> squareImage(ImageSystem::Instance()->EnsurePowerOf2Image(image));
+    ScopedPtr<Image> squareImage(ImageSystem::EnsurePowerOf2Image(image));
     ScopedPtr<Texture> texture(Texture::CreateFromData(squareImage, false));
 
     Sprite* sprite = nullptr;
     if (texture)
     {
-        Vector2 sprSize((float32)width, (float32)height);
+        Vector2 sprSize((float32(width)), (float32(height)));
         if (inVirtualSpace)
         {
             sprSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(sprSize);
@@ -365,11 +336,11 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
         return nullptr;
     }
 
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    ScopedPtr<File> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
     DVASSERT(file);
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(file, images);
+    ImageSystem::Load(file, images);
     if (images.size() == 0)
     {
         return nullptr;
@@ -407,7 +378,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     }
 
     Vector<Image*> images;
-    ImageSystem::Instance()->Load(path, images);
+    ImageSystem::Load(path, images);
     if (images.size() == 0)
     {
         return nullptr;
@@ -428,7 +399,7 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
 {
     Clear();
 
-    Vector2 offset((float32)xOffset, (float32)yOffset);
+    Vector2 offset((float32(xOffset)), (float32(yOffset)));
     size = Vector2(sprWidth, sprHeight);
     if (!contentScaleIncluded)
     {
@@ -472,8 +443,8 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
         float32 x, y, dx, dy, xOff, yOff;
         x = offset.x;
         y = offset.y;
-        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : (float32)targetWidth;
-        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : (float32)targetHeight;
+        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
+        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
         xOff = 0;
         yOff = 0;
 
@@ -696,7 +667,7 @@ void Sprite::PrepareForNewSize()
 
     String pathname = relativePathname.GetAbsolutePathname();
 
-    int pos = (int)pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()));
+    int32 pos = int32(pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex())));
     String scaledName = pathname.substr(0, pos) + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()).length());
 
     Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());

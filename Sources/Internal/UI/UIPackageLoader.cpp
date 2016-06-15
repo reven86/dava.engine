@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
@@ -34,7 +5,6 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
-#include "UI/UIYamlLoader.h"
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
@@ -42,12 +12,14 @@
 #include "UI/UIPackage.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
 {
 UIPackageLoader::UIPackageLoader()
 {
+    version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
         legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
@@ -112,7 +84,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     }
 
     int32 packageVersion = versionNode->AsInt();
-    if (packageVersion < MIN_SUPPORTED_VERSION || CURRENT_VERSION < packageVersion)
+    if (packageVersion < MIN_SUPPORTED_VERSION || UIPackage::CURRENT_VERSION < packageVersion)
     {
         return false;
     }
@@ -122,7 +94,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     const YamlNode* importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
-        int32 count = (int32)importedPackagesNode->GetCount();
+        int32 count = static_cast<int32>(importedPackagesNode->GetCount());
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
@@ -138,7 +110,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
     const YamlNode* controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
-        int32 count = (int32)controlsNode->GetCount();
+        int32 count = static_cast<int32>(controlsNode->GetCount());
         for (int32 i = 0; i < count; i++)
         {
             const YamlNode* node = controlsNode->Get(i);
@@ -245,7 +217,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
                                     {
                                         int32 transitionFunctionType = Interpolation::LINEAR;
                                         GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
-                                        property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                        property.transitionFunction = static_cast<Interpolation::FuncType>(transitionFunctionType);
                                     }
                                 }
                             }
@@ -324,13 +296,15 @@ void UIPackageLoader::LoadControl(const YamlNode* node, bool root, AbstractUIPac
     if (control)
     {
         if (nameNode)
-            control->SetName(nameNode->AsString());
+        {
+            control->SetName(nameNode->AsFastName());
+        }
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(control, node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);
 
-        if (version == VERSION_WITH_LEGACY_ALIGNS)
+        if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
             ProcessLegacyAligns(control, node, builder);
         }
@@ -371,7 +345,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
-    for (auto& nodeDescr : components)
+    for (ComponentNode& nodeDescr : components)
     {
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
@@ -380,7 +354,35 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember* member = insp->Member(j);
-                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name().c_str());
+                VariantType res;
+                if (version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                {
+                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && member->Name() == FastName("orientation"))
+                    {
+                        const YamlNode* valueNode = nodeDescr.node->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            if (valueNode->AsString() == "Horizontal")
+                            {
+                                res.SetInt32(UILinearLayoutComponent::LEFT_TO_RIGHT);
+                            }
+                            else if (valueNode->AsString() == "Vertical")
+                            {
+                                res.SetInt32(UILinearLayoutComponent::TOP_DOWN);
+                            }
+                            else
+                            {
+                                DVASSERT(false);
+                            }
+                        }
+                    }
+                }
+
+                if (res.GetType() == VariantType::TYPE_NONE)
+                {
+                    res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name().c_str());
+                }
+
                 builder->ProcessProperty(member, res);
             }
         }
@@ -481,7 +483,24 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl* control, const Yam
                 const InspMember* member = insp->Member(j);
                 VariantType res;
                 if (componentNode)
-                    res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                {
+                    if (version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                    {
+                        const YamlNode* valueNode = componentNode->Get(member->Name().c_str());
+                        if (valueNode)
+                        {
+                            if (member->Name() == FastName("spriteModification"))
+                            {
+                                res.SetInt32(valueNode->AsInt32());
+                            }
+                        }
+                    }
+
+                    if (res.GetType() == VariantType::TYPE_NONE)
+                    {
+                        res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name().c_str());
+                    }
+                }
                 builder->ProcessProperty(member, res);
             }
         }

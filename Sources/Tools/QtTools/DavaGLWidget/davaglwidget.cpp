@@ -1,33 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAEngine.h"
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "DavaRenderer.h"
@@ -45,7 +16,7 @@
 
 namespace
 {
-    const QSize cMinSize = QSize( 180, 180 );
+const QSize cMinSize = QSize(180, 180);
 }
 
 DavaGLView::DavaGLView()
@@ -57,48 +28,48 @@ DavaGLView::DavaGLView()
     setKeyboardGrabEnabled(true);
     setMouseGrabEnabled(true);
 
-    setMinimumSize( cMinSize );
+    setMinimumSize(cMinSize);
 }
 
 bool DavaGLView::event(QEvent* event)
 {
-    switch ( event->type() )
+    switch (event->type())
     {
     // Drag-n-drop
     case QEvent::DragEnter:
-        {
-            auto e = static_cast<QDragEnterEvent *>( event );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-        }
+    {
+        auto e = static_cast<QDragEnterEvent*>(event);
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+    }
+    break;
+    case QEvent::DragMove:
+    {
+        auto e = static_cast<QDragMoveEvent*>(event);
+        handleDragMoveEvent(e);
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+        return QWindow::event(event);
+    }
+    break;
+    case QEvent::DragLeave:
         break;
-        case QEvent::DragMove:
-        {
-            auto e = static_cast<QDragMoveEvent *>( event );
-            handleDragMoveEvent( e );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-            return QWindow::event(event);
-        }
-        break;
-        case QEvent::DragLeave:
-            break;
-        case QEvent::Drop:
-        {
-            auto e = static_cast<QDropEvent *>( event );
-            emit OnDrop( e->mimeData() );
-            e->setDropAction( Qt::LinkAction );
-            e->accept();
-        }
+    case QEvent::Drop:
+    {
+        auto e = static_cast<QDropEvent*>(event);
+        emit OnDrop(e->mimeData());
+        e->setDropAction(Qt::LinkAction);
+        e->accept();
+    }
+    break;
+
+    // Focus
+    case QEvent::FocusOut:
+        controlMapper->releaseKeyboard();
         break;
 
-        // Focus
-        case QEvent::FocusOut:
-            controlMapper->releaseKeyboard();
-            break;
-
-        default:
-            break;
+    default:
+        break;
     }
 
     return QQuickWindow::event(event);
@@ -137,13 +108,13 @@ void DavaGLView::mouseDoubleClickEvent(QMouseEvent* e)
 
 void DavaGLView::wheelEvent(QWheelEvent* e)
 {
-    if ( e->phase() != Qt::ScrollUpdate )
+    if (e->phase() != Qt::ScrollUpdate)
     {
         return;
     }
 
     controlMapper->wheelEvent(e);
-    if ( e->orientation() == Qt::Vertical )
+    if (e->orientation() == Qt::Vertical)
     {
         emit mouseScrolled(e->angleDelta().y());
     }
@@ -155,7 +126,7 @@ void DavaGLView::handleDragMoveEvent(QDragMoveEvent* e)
 }
 
 ///=======================
-DavaGLWidget::DavaGLWidget(QWidget *parent)
+DavaGLWidget::DavaGLWidget(QWidget* parent)
     : QWidget(parent)
 {
 //configure Qt Scene Graph to single thread mode
@@ -189,7 +160,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::OnResize);
     connect(davaGLView, &QWindow::screenChanged, this, &DavaGLWidget::ScreenChanged);
-    connect(davaGLView, &QQuickWindow::beforeSynchronizing, this, &DavaGLWidget::OnSync, Qt::DirectConnection);
+    connect(davaGLView, &QQuickWindow::beforeRendering, this, &DavaGLWidget::OnPaint, Qt::DirectConnection);
     connect(davaGLView, &QQuickWindow::sceneGraphInvalidated, this, &DavaGLWidget::OnCleanup);
     connect(davaGLView, &DavaGLView::mouseScrolled, this, &DavaGLWidget::mouseScrolled);
     connect(davaGLView, &DavaGLView::OnDrop, this, &DavaGLWidget::OnDrop);
@@ -203,26 +174,41 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container->setFocusPolicy(Qt::NoFocus);
 
     layout->addWidget(container);
-    
+
 #if defined(Q_OS_MAC)
-    DAVA::Core::Instance()->SetNativeView((void*)davaGLView->winId());
+    DAVA::Core::Instance()->SetNativeView(reinterpret_cast<void*>(davaGLView->winId()));
 #endif //Q_OS_MAC
 }
 
 void DavaGLWidget::MakeInvisible()
 {
-    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );    // Remove border
-    setAttribute( Qt::WA_TransparentForMouseEvents );   // Rethrow mouse events
-    setAttribute( Qt::WA_ShowWithoutActivating );       // Do not get focus
-    setWindowOpacity( 0.0 );
-    setFixedSize( 1, 1 );
-    setEnabled( false );
-    move( 0, 0 );
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool); // Remove border
+    setAttribute(Qt::WA_TransparentForMouseEvents); // Rethrow mouse events
+    setAttribute(Qt::WA_ShowWithoutActivating); // Do not get focus
+    setWindowOpacity(0.0);
+    setFixedSize(1, 1);
+    setEnabled(false);
+    move(0, 0);
 }
 
 QQuickWindow* DavaGLWidget::GetGLView()
 {
     return davaGLView;
+}
+
+QCursor DavaGLWidget::GetCursor() const
+{
+    return davaGLView->cursor();
+}
+
+void DavaGLWidget::SetCursor(const QCursor& cursor)
+{
+    davaGLView->setCursor(cursor);
+}
+
+void DavaGLWidget::UnsetCursor()
+{
+    davaGLView->unsetCursor();
 }
 
 void DavaGLWidget::OnResize()
@@ -253,18 +239,21 @@ void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
 }
 } //unnamed namespace
 
-void DavaGLWidget::OnSync()
+void DavaGLWidget::OnPaint()
 {
-    if (nullptr == renderer)
+    if (renderer == nullptr)
     {
         DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
 
-        renderer = new DavaRenderer();
-        OnResize();
-        connect(davaGLView, &QQuickWindow::beforeRendering, renderer, &DavaRenderer::paint, Qt::DirectConnection);
+        renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
         emit Initialized();
+        OnResize();
     }
+
+    renderer->paint();
+    davaGLView->resetOpenGLState();
 }
+
 void DavaGLWidget::resizeEvent(QResizeEvent*)
 {
     if (nullptr != renderer)
@@ -275,5 +264,5 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 
 void DavaGLWidget::OnCleanup()
 {
-    DAVA::SafeDelete(renderer);
+    delete renderer;
 }

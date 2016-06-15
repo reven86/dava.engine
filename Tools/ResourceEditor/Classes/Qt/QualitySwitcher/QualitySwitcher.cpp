@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Main/mainwindow.h"
 #include "QualitySwitcher.h"
 #include "Project/ProjectManager.h"
@@ -43,10 +14,8 @@
 QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 
 QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
-    : QDialog(parent, Qt::Dialog)
+    : QDialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint) //https://bugreports.qt.io/browse/QTBUG-34767
 {
-    int mainRow = 0;
-    int height = 10;
     const int spacing = 5;
     const int minColumnW = 150;
 
@@ -138,13 +107,13 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         QComboBox* comboQuality = new QComboBox(particlesGroup);
         comboQuality->setObjectName("ParticlesQualityCombo");
 
-        const ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        const DAVA::ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
         bool qualityAvailable = particlesSettings.GetQualitiesCount() > 0;
 
-        FastName currentQualityName = particlesSettings.GetCurrentQuality();
+        DAVA::FastName currentQualityName = particlesSettings.GetCurrentQuality();
         for (size_t i = 0, size = particlesSettings.GetQualitiesCount(); i < size; ++i)
         {
-            FastName qualityName = particlesSettings.GetQualityName(i);
+            DAVA::FastName qualityName = particlesSettings.GetQualityName(i);
             comboQuality->addItem(qualityName.c_str());
 
             if (qualityName == currentQualityName)
@@ -163,7 +132,7 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         editTagsCloud->setObjectName("ParticlesTagsCloudEdit");
 
         QString tagsCloudText;
-        for (const FastName& tag : particlesSettings.GetTagsCloud())
+        for (const DAVA::FastName& tag : particlesSettings.GetTagsCloud())
         {
             if (!tagsCloudText.isEmpty())
             {
@@ -189,15 +158,15 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         optionsGroup->setTitle("Options");
         optionsGroup->setLayout(optionsLayout);
 
-        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
-        for (int32 i = 0; i < optionsCount; ++i)
+        DAVA::int32 optionsCount = DAVA::QualitySettingsSystem::Instance()->GetOptionsCount();
+        for (DAVA::int32 i = 0; i < optionsCount; ++i)
         {
-            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+            DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
 
             QLabel* labOp = new QLabel(QString(optionName.c_str()) + ":", materialsGroup);
             QCheckBox* checkOp = new QCheckBox(materialsGroup);
             checkOp->setObjectName(QString(optionName.c_str()) + "CheckBox");
-            checkOp->setChecked(QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
+            checkOp->setChecked(DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
             checkOp->setProperty("qualityOptionName", QVariant(optionName.c_str()));
 
             QObject::connect(checkOp, SIGNAL(clicked(bool)), this, SLOT(OnOptionClick(bool)));
@@ -278,7 +247,7 @@ void QualitySwitcher::ApplyMa()
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity* e)
 {
     DAVA::QualitySettingsSystem::Instance()->UpdateEntityVisibility(e);
-    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    for (DAVA::int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
     {
         UpdateEntitiesToQuality(e->GetChild(i));
     }
@@ -288,7 +257,7 @@ void QualitySwitcher::UpdateParticlesToQuality()
 {
     SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     SceneSignals* sceneSignals = SceneSignals::Instance();
-    for (int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+    for (DAVA::int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
     {
         SceneEditor2* scene = tabWidget->GetTabScene(tab);
         ReloadEntityEmitters(scene);
@@ -298,13 +267,13 @@ void QualitySwitcher::UpdateParticlesToQuality()
 
 void QualitySwitcher::ReloadEntityEmitters(DAVA::Entity* e)
 {
-    ParticleEffectComponent* comp = GetEffectComponent(e);
+    DAVA::ParticleEffectComponent* comp = GetEffectComponent(e);
     if (comp)
     {
         comp->ReloadEmitters();
     }
 
-    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    for (DAVA::int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
     {
         ReloadEntityEmitters(e->GetChild(i));
     }
@@ -352,7 +321,7 @@ void QualitySwitcher::ApplySettings()
                     SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
                     for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
                     {
-                        Scene* scene = tabWidget->GetTabScene(tab);
+                        DAVA::Scene* scene = tabWidget->GetTabScene(tab);
                         UpdateEntitiesToQuality(scene);
                     }
 
@@ -364,7 +333,7 @@ void QualitySwitcher::ApplySettings()
 
     //particles
     {
-        ParticlesQualitySettings& particlesSettings = QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
+        DAVA::ParticlesQualitySettings& particlesSettings = DAVA::QualitySettingsSystem::Instance()->GetParticlesQualitySettings();
         if (particlesSettings.GetQualitiesCount() > 0)
         {
             bool settingsChanged = false;
@@ -382,13 +351,13 @@ void QualitySwitcher::ApplySettings()
             QLineEdit* edit = findChild<QLineEdit*>("ParticlesTagsCloudEdit");
             if (nullptr != edit)
             {
-                Vector<String> tags;
-                Split(edit->text().toStdString(), " ", tags);
+                DAVA::Vector<DAVA::String> tags;
+                DAVA::Split(edit->text().toStdString(), " ", tags);
 
-                Set<FastName> newTagsCloud;
-                for (const String& tag : tags)
+                DAVA::Set<DAVA::FastName> newTagsCloud;
+                for (const DAVA::String& tag : tags)
                 {
-                    newTagsCloud.insert(FastName(tag));
+                    newTagsCloud.insert(DAVA::FastName(tag));
                 }
 
                 if (particlesSettings.GetTagsCloud() != newTagsCloud)
@@ -408,20 +377,20 @@ void QualitySwitcher::ApplySettings()
 
     // options
     {
-        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
-        for (int32 i = 0; i < optionsCount; ++i)
+        DAVA::int32 optionsCount = DAVA::QualitySettingsSystem::Instance()->GetOptionsCount();
+        for (DAVA::int32 i = 0; i < optionsCount; ++i)
         {
-            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+            DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
             QCheckBox* checkBox = findChild<QCheckBox*>(QString(optionName.c_str()) + "CheckBox");
             if (nullptr != checkBox)
             {
-                FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
-                QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
+                DAVA::FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
+                DAVA::QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
 
                 SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
                 for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
                 {
-                    Scene* scene = tabWidget->GetTabScene(tab);
+                    DAVA::Scene* scene = tabWidget->GetTabScene(tab);
                     UpdateEntitiesToQuality(scene);
                 }
             }
@@ -429,7 +398,7 @@ void QualitySwitcher::ApplySettings()
     }
 }
 
-QDialog* QualitySwitcher::GetDialog()
+void QualitySwitcher::ShowDialog()
 {
     if (switcherDialog == nullptr)
     {
@@ -442,7 +411,9 @@ QDialog* QualitySwitcher::GetDialog()
 
         switcherDialog->show();
     }
-    return switcherDialog;
+
+    switcherDialog->raise();
+    switcherDialog->activateWindow();
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)

@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -70,15 +42,9 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    for (List<ResourceArchiveItem>::iterator ai = resourceArchiveList.begin();
-         ai != resourceArchiveList.end(); ++ai)
-    {
-        ResourceArchiveItem& item = *ai;
-        SafeRelease(item.archive);
-    }
     resourceArchiveList.clear();
 
-    // All locked files should be explicitely unlocked before closing the app.
+    // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
 }
 
@@ -246,9 +212,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     return !error;
 }
 
-bool FileSystem::CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
+bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
 {
-    DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
 
     bool ret = true;
@@ -355,23 +320,36 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     return fileCount;
 }
 
+Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, bool isRecursive)
+{
+    ScopedPtr<FileList> fileList(new FileList(path));
+    Vector<FilePath> result;
+
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsNavigationDirectory(i))
+        {
+            continue;
+        }
+        else if (fileList->IsDirectory(i))
+        {
+            if (isRecursive)
+            {
+                Vector<FilePath> subDirList = EnumerateFilesInDirectory(fileList->GetPathname(i));
+                std::move(subDirList.begin(), subDirList.end(), std::back_inserter(result));
+            }
+        }
+        else
+        {
+            result.push_back(fileList->GetPathname(i));
+        }
+    }
+
+    return result;
+}
+
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
-#if defined(__DAVAENGINE_ANDROID__)
-    if (frameworkPath.GetType() == FilePath::PATH_IN_RESOURCES &&
-        frameworkPath.GetAbsolutePathname().size() &&
-        frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
-    {
-#ifdef USE_LOCAL_RESOURCES
-        File* res = File::CreateFromSystemPath(frameworkPath, attributes);
-        if (!res)
-            res = ZipFile::CreateFromZip(frameworkPath, attributes);
-        return res;
-#else
-        return ZipFile::CreateFromAPK(frameworkPath, attributes);
-#endif
-    }
-#endif //#if defined(__DAVAENGINE_ANDROID__)
     return File::CreateFromSystemPath(frameworkPath, attributes);
 }
 
@@ -404,7 +382,9 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #if defined(__DAVAENGINE_WINDOWS__)
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetModuleFileNameW(nullptr, tempDir.data(), MAX_PATH);
-    currentExecuteDirectory = FilePath::FromNativeString(tempDir.data()).GetDirectory();
+    const wchar_t* data = tempDir.data();
+    FilePath path = FilePath::FromNativeString(data);
+    currentExecuteDirectory = path.GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     Array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
@@ -428,24 +408,66 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     return (chdir(newWorkingDirectory.GetAbsolutePathname().c_str()) == 0);
-#endif //PLATFORMS
+#elif //PLATFORMS
+
     return false;
+#endif
 }
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
+        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    {
+        const String& str = pathToCheck.GetStringValue();
+        auto start = str.find("~res:/");
+        String relative;
+        if (start == 0)
+        {
+            relative = str.substr(6);
+        }
+
+        if (!relative.empty())
+        {
+            for (auto& archive : resourceArchiveList)
+            {
+                if (archive.archive->HasFile(relative))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
 #if defined(__DAVAENGINE_ANDROID__)
     const String& path = pathToCheck.GetAbsolutePathname();
     if (IsAPKPath(path))
     {
-        return (fileSet.find(path) != fileSet.end());
+        return fileSet.find(path) != end(fileSet);
     }
 #endif
-    FileAPI::Stat s;
-    FilePath::NativeStringType pathStr = pathToCheck.GetNativeAbsolutePathname();
-    if (FileAPI::FileStat(pathStr.c_str(), &s) == 0)
+
+    FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
+    FileAPI::Stat fileStat;
+    int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
+    if (result == 0)
     {
-        return (0 != (s.st_mode & S_IFREG));
+        return (0 != (fileStat.st_mode & S_IFREG));
+    }
+    else
+    {
+        switch (errno)
+        {
+        case ENOENT:
+            // file not found
+            break;
+        case EINVAL:
+            Logger::Error("Invalid parameter to stat.");
+            break;
+        default:
+            /* Should never be reached. */
+            Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
+        }
     }
 
     return false;
@@ -699,7 +721,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
     String fileContents;
-    RefPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
     if (!fp)
     {
         Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
@@ -741,22 +763,48 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
     SafeRelease(fp);
     return bytes;
-};
+}
 
-void FileSystem::AttachArchive(const String& archiveName, const String& attachPath)
+bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
 {
-    ResourceArchive* resourceArchive = new ResourceArchive();
-
-    if (!resourceArchive->Open(archiveName))
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    if (!fp)
     {
-        SafeRelease(resourceArchive);
-        resourceArchive = NULL;
-        return;
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
     }
+
+    uint32 fileSize = fp->GetSize();
+    buffer.resize(fileSize);
+    uint32 dataRead = fp->Read(buffer.data(), fileSize);
+
+    if (dataRead != fileSize)
+    {
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
+{
+    DVASSERT(!attachPath.empty());
+
     ResourceArchiveItem item;
     item.attachPath = attachPath;
-    item.archive = resourceArchive;
-    resourceArchiveList.push_back(item);
+    item.archive.reset(new ResourceArchive(archiveName));
+    item.archiveFilePath = archiveName;
+
+    resourceArchiveList.push_back(std::move(item));
+}
+
+void FileSystem::Unmount(const FilePath& arhiveName)
+{
+    resourceArchiveList.remove_if([arhiveName](const ResourceArchiveItem& item) -> bool
+                                  {
+                                      return item.archiveFilePath == arhiveName;
+                                  });
 }
 
 int32 FileSystem::Spawn(const String& command)
@@ -812,11 +860,8 @@ bool FileSystem::IsAPKPath(const String& path) const
 
 void FileSystem::Init()
 {
-#ifdef USE_LOCAL_RESOURCES
-    YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
-#else
     YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
-#endif
+
     if (parser)
     {
         const YamlNode* node = parser->GetRootNode();
@@ -974,5 +1019,35 @@ bool FileSystem::Exists(const FilePath& filePath) const
     }
 
     return IsFile(filePath);
+}
+
+bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+{
+    DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+    DVASSERT(dst.GetType() != FilePath::PATH_IN_RESOURCES);
+
+    CreateDirectory(dst, true);
+
+    bool retCode = true;
+    ScopedPtr<FileList> fileList(new FileList(src));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                retCode = retCode && RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            }
+        }
+        else
+        {
+            const FilePath destinationPath = dst + fileList->GetFilename(i);
+            if (!CopyFile(fileList->GetPathname(i), destinationPath, false))
+            {
+                retCode = false;
+            }
+        }
+    }
+    return retCode;
 }
 }

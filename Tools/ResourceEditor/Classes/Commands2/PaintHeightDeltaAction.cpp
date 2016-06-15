@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Commands2/PaintHeightDeltaAction.h"
 #include "Qt/Settings/SettingsManager.h"
 
@@ -56,50 +27,21 @@ PaintHeightDeltaAction::~PaintHeightDeltaAction()
 
 void PaintHeightDeltaAction::Redo()
 {
-    DAVA::Image* croppedHeightmap = CropHeightmapToPow2(heightmap);
+    DAVA::uint32 hmSize = DAVA::uint32(heightmap->Size());
+    DVASSERT(DAVA::IsPowerOf2(hmSize));
+    DAVA::Image* heightmapImage = DAVA::Image::CreateFromData(hmSize, hmSize, DAVA::FORMAT_A16, (DAVA::uint8*)heightmap->Data());
 
-    imageWidth = DAVA::Max(croppedHeightmap->width, imageWidth);
-    imageHeight = DAVA::Max(croppedHeightmap->height, imageHeight);
+    imageWidth = DAVA::Max(hmSize, imageWidth);
+    imageHeight = DAVA::Max(hmSize, imageHeight);
 
     DAVA::Image* imageDelta = CreateHeightDeltaImage(imageWidth, imageHeight);
 
-    PrepareDeltaImage(croppedHeightmap, imageDelta);
+    PrepareDeltaImage(heightmapImage, imageDelta);
 
     SaveDeltaImage(imagePath, imageDelta);
 
-    SafeRelease(croppedHeightmap);
+    SafeRelease(heightmapImage);
     SafeRelease(imageDelta);
-}
-
-DAVA::Image* PaintHeightDeltaAction::CropHeightmapToPow2(DAVA::Heightmap* srcHeightmap)
-{
-    //VI: see VegetationObject for details
-
-    DAVA::Image* originalImage = DAVA::Image::CreateFromData(srcHeightmap->Size(),
-                                                             srcHeightmap->Size(),
-                                                             DAVA::FORMAT_A16,
-                                                             (DAVA::uint8*)srcHeightmap->Data());
-
-    DAVA::int32 pow2Size = srcHeightmap->Size();
-    if (!DAVA::IsPowerOf2(srcHeightmap->Size()))
-    {
-        DAVA::EnsurePowerOf2(pow2Size);
-
-        if (pow2Size > srcHeightmap->Size())
-        {
-            pow2Size = pow2Size >> 1;
-        }
-    }
-
-    if (pow2Size != heightmap->Size())
-    {
-        DAVA::Image* croppedImage = DAVA::Image::CopyImageRegion(originalImage, pow2Size, pow2Size);
-        SafeRelease(originalImage);
-
-        originalImage = croppedImage;
-    }
-
-    return originalImage;
 }
 
 DAVA::Image* PaintHeightDeltaAction::CreateHeightDeltaImage(DAVA::uint32 width, DAVA::uint32 height)
@@ -154,7 +96,7 @@ void PaintHeightDeltaAction::PrepareDeltaImage(DAVA::Image* heightmapImage,
     DVASSERT(widthPixelRatio > 0.0f);
     DVASSERT(heightPixelRatio > 0.0f);
 
-    DAVA::int32 colorCount = colors.size();
+    DAVA::int32 colorCount = static_cast<DAVA::int32>(colors.size());
 
     DVASSERT(colorCount >= 2);
 
@@ -217,5 +159,5 @@ void PaintHeightDeltaAction::MarkDeltaRegion(DAVA::uint32 x,
 void PaintHeightDeltaAction::SaveDeltaImage(const DAVA::FilePath& targetPath,
                                             DAVA::Image* deltaImage)
 {
-    DAVA::ImageSystem::Instance()->Save(targetPath, deltaImage);
+    DAVA::ImageSystem::Save(targetPath, deltaImage);
 }

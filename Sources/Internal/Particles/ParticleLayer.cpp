@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 #include "Utils/StringFormat.h"
@@ -60,7 +31,7 @@ enum eBlendMode
 
     BLEND_MODE_COUNT,
 };
-const String BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
+const char* BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
 {
   "BLEND_NONE",
   "BLEND_ZERO",
@@ -80,7 +51,7 @@ eBlendMode GetBlendModeByName(const String& blendStr)
 {
     for (uint32 i = 0; i < BLEND_MODE_COUNT; i++)
         if (blendStr == BLEND_MODE_NAMES[i])
-            return (eBlendMode)i;
+            return static_cast<eBlendMode>(i);
 
     return BLEND_MODE_COUNT;
 }
@@ -195,7 +166,7 @@ ParticleLayer* ParticleLayer::Clone()
     // Copy the forces.
     dstLayer->CleanupForces();
     dstLayer->forces.reserve(forces.size());
-    for (int32 f = 0; f < (int32)forces.size(); ++f)
+    for (size_t f = 0; f < forces.size(); ++f)
     {
         ParticleForce* clonedForce = this->forces[f]->Clone();
         dstLayer->AddForce(clonedForce);
@@ -275,7 +246,7 @@ ParticleLayer* ParticleLayer::Clone()
 
 bool ParticleLayer::IsLodActive(int32 lod)
 {
-    if ((lod >= 0) && (lod < (int32)activeLODS.size()))
+    if ((lod >= 0) && (lod < static_cast<int32>(activeLODS.size())))
         return activeLODS[lod];
 
     return false;
@@ -283,7 +254,7 @@ bool ParticleLayer::IsLodActive(int32 lod)
 
 void ParticleLayer::SetLodActive(int32 lod, bool active)
 {
-    if ((lod >= 0) && (lod < (int32)activeLODS.size()))
+    if ((lod >= 0) && (lod < static_cast<int32>(activeLODS.size())))
         activeLODS[lod] = active;
 }
 
@@ -410,7 +381,7 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
     const YamlNode* degradeNode = node->Get("degradeStrategy");
     if (degradeNode)
     {
-        degradeStrategy = (eDegradeStrategy)(degradeNode->AsInt());
+        degradeStrategy = static_cast<eDegradeStrategy>(degradeNode->AsInt());
     }
 
     const YamlNode* nameNode = node->Get("name");
@@ -451,8 +422,8 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
     if (lodsNode)
     {
         const Vector<YamlNode*>& vec = lodsNode->AsVector();
-        for (uint32 i = 0; i < (uint32)vec.size(); ++i)
-            SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
+        for (size_t i = 0; i < vec.size(); ++i)
+            SetLodActive(static_cast<int32>(i), (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
     }
 
     colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(node->Get("colorOverLife"));
@@ -618,7 +589,7 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
 
     const YamlNode* blendingNode = node->Get("blending");
     if (blendingNode)
-        blending = (eBlending)blendingNode->AsInt();
+        blending = static_cast<eBlending>(blendingNode->AsInt());
     const YamlNode* fogNode = node->Get("enableFog");
     if (fogNode)
     {
@@ -694,7 +665,14 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
         innerEmitter = new ParticleEmitter();
         // Since Inner Emitter path is stored as Relative, convert it to absolute when loading.
         innerEmitterPath = FilePath(configPath.GetDirectory(), innerEmitterPathNode->AsString());
-        innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+        if (innerEmitterPath == configPath) // prevent recursion
+        {
+            Logger::Error("Atempt to load inner emitter from super emitter's config will cause recursion");
+        }
+        else
+        {
+            innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+        }
     }
     if (format == 0) //update old stuff
     {
@@ -741,7 +719,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "layerType",
                                                                  LayerTypeToString(type, "particles"));
 
-    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", (int32)degradeStrategy);
+    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", static_cast<int32>(degradeStrategy));
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", isLong);
 
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<Vector2>(layerNode, "pivotPoint", layerPivotPoint);
@@ -809,7 +787,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
 
     YamlNode* lodsNode = new YamlNode(YamlNode::TYPE_ARRAY);
     for (int32 i = 0; i < 4; i++)
-        lodsNode->Add((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
+        lodsNode->Add(static_cast<int32>(activeLODS[i])); //as for now AddValueToArray has no bool type - force it to int
     layerNode->SetNodeToMap("activeLODS", lodsNode);
 
     if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitter)
@@ -826,7 +804,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath& configPath, YamlNode* parentN
 
 void ParticleLayer::SaveForcesToYamlNode(YamlNode* layerNode)
 {
-    int32 forceCount = (int32) this->forces.size();
+    int32 forceCount = static_cast<int32>(this->forces.size());
     if (forceCount == 0)
     {
         // No forces to write.
@@ -868,7 +846,7 @@ void ParticleLayer::GetModifableLines(List<ModifiablePropertyLineBase*>& modifia
     PropertyLineHelper::AddIfModifiable(angleVariation.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(animSpeedOverLife.Get(), modifiables);
 
-    int32 forceCount = (int32) this->forces.size();
+    int32 forceCount = static_cast<int32>(this->forces.size());
     for (int32 i = 0; i < forceCount; i++)
     {
         forces[i]->GetModifableLines(modifiables);
@@ -900,7 +878,7 @@ void ParticleLayer::RemoveForce(ParticleForce* force)
 
 void ParticleLayer::RemoveForce(int32 forceIndex)
 {
-    if (forceIndex <= (int32) this->forces.size())
+    if (forceIndex <= static_cast<int32>(this->forces.size()))
     {
         SafeRelease(this->forces[forceIndex]);
         this->forces.erase(this->forces.begin() + forceIndex);

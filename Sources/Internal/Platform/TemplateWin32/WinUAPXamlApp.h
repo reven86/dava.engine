@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 // clang-format off
 
 #ifndef __DAVAENGINE_WINUAPFRAME_H__
@@ -45,12 +17,14 @@
 #include "Input/InputSystem.h"
 #include "Functional/Signal.h"
 
+#include "Platform/DeviceInfo.h"
+
 namespace DAVA
 {
 
+class Thread;
 class CorePlatformWinUAP;
 class DispatcherWinUAP;
-class DeferredScreenMetricEvents;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -73,21 +47,14 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
-    Windows::Foundation::Size GetCurrentScreenSize();
-
-    bool GetCursorVisible();
-    bool SetCursorVisible(bool isVisible);
 
     bool IsPhoneApiDetected();
-    void ResetScreen();
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
     Signal<::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^> pushNotificationSignal; //TODO: add implementation for all platform, before remove this
-    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
-    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
     void SetWindowMinimumSize(float32 width, float32 height);
     Vector2 GetWindowMinimumSize() const;
@@ -101,6 +68,7 @@ public:
     void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
     void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
+    void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -117,15 +85,15 @@ private:
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
-    // Swap chain panel state change handlers
-    void MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY);
+    // Size and scale changing handlers
+    void OnCoreWindowSizeChanged(::Windows::UI::Core::CoreWindow^ coreWindow, ::Windows::UI::Core::WindowSizeChangedEventArgs^ arg);
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs^ arg);
+    void OnSwapChainPanelCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ obj);
 
     // Mouse and touch handlers
     void OnSwapChainPanelPointerPressed(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerReleased(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerMoved(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
-    void OnSwapChainPanelPointerEntered(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
-    void OnSwapChainPanelPointerExited(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
     void OnSwapChainPanelPointerWheel(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args);
 
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
@@ -142,6 +110,7 @@ private:
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
 
+    DeviceInfo::ScreenInfo ObtainScreenInfo();
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -149,22 +118,17 @@ private:
     void SetDisplayOrientations();
     void LoadWindowMinimumSizeSettings();
 
-    void ResetRender();
-
-    void InitCoordinatesSystem();
-    void ReInitCoordinatesSystem();
-
     void PrepareScreenSize();
-    void UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
-    void SetPreferredSize(float32 width, float32 height);
     void EmitPushNotification(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args);
     void AllowDisplaySleep(bool sleep);
     void SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device type);
     void SendBackKeyEvents();
 
 private:
+    Windows::UI::Xaml::Input::PointerRoutedEventArgs ^pressedEventArgs = nullptr;
+
     CorePlatformWinUAP* core = nullptr;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -175,7 +139,12 @@ private:
     Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
     Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
-    bool mainLoopThreadStarted = false;
+    float32 minWindowWidth = 0.0f;
+    float32 minWindowHeight = 0.0f;
+
+    Windows::UI::Input::PointerPoint ^ mousePointer = nullptr;
+
+    Thread* mainLoopThread = nullptr;
 
     volatile bool quitFlag = false;
 
@@ -186,7 +155,6 @@ private:
     bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
-    bool isWindowFocused = false;
     bool isWindowClosed = false;
     bool isFullscreen = false;
     bool isRenderCreated = false;
@@ -197,7 +165,6 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonsState;
@@ -216,15 +183,8 @@ private:
 
     void SetMouseButtonState(UIEvent::MouseButton button, bool value);
 
-    float32 viewScaleX = 1.f;
-    float32 viewScaleY = 1.f;
-    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
-    int32 physicalWidth = static_cast<int32>(viewWidth * viewScaleX);
-    int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
-
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-    std::unique_ptr<DeferredScreenMetricEvents> deferredSizeScaleEvents;
+
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button
@@ -267,16 +227,6 @@ inline void WinUAPXamlApp::SetQuitFlag()
 inline bool WinUAPXamlApp::IsPhoneApiDetected()
 {
     return isPhoneApiDetected;
-}
-
-inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
-{
-    return mouseCaptureMode;
-}
-
-inline bool WinUAPXamlApp::GetCursorVisible()
-{
-    return isMouseCursorShown;
 }
 
 }   // namespace DAVA

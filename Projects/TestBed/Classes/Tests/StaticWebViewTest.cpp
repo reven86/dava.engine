@@ -1,36 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Tests/StaticWebViewTest.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/Utils.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 namespace
 {
@@ -45,7 +17,7 @@ const String htmlCuteCats =
 "      }"
 "    </script>"
 "  </head>"
-"  <body>"
+"  <body text='red'>"
 "      <h1>Cute cats picture</h1><br/>"
 "      <br/>"
 "      <img src='cute-cat-picture.jpg'/>"
@@ -101,24 +73,28 @@ void StaticWebViewTest::LoadResources()
     webviewDelegate = new MyWebViewDelegate;
 
     webView1 = new UIWebView(Rect(5, 5, 400, 300));
-    webView1->SetVisible(true);
+    webView1->SetVisibilityFlag(true);
     webView1->SetRenderToTexture(true);
     webView1->SetDebugDraw(true);
     webView1->SetDelegate(webviewDelegate);
     webView1->OpenURL("http://en.cppreference.com/");
+    webView1->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView1);
 
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
-    webView2->SetVisible(true);
+    webView2->SetVisibilityFlag(true);
     webView2->SetDebugDraw(true);
     webView2->OpenFromBuffer(htmlCuteCats, "~res:/TestData/TransparentWebViewTest/");
+    webView2->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView2);
 
     webView3 = new UIWebView(Rect(820, 70, 400, 300));
-    webView3->SetVisible(true);
+    webView3->SetVisibilityFlag(true);
     webView3->SetRenderToTexture(true);
     webView3->SetDebugDraw(true);
     webView3->LoadHtmlString(htmlString);
+    webView3->GetOrCreateComponent<UIFocusComponent>();
+
     AddControl(webView3);
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -286,14 +262,14 @@ void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)
 
 void StaticWebViewTest::OnButtonVisible(BaseObject*, void*, void*)
 {
-    webView1->SetVisible(true);
-    webView2->SetVisible(true);
-    webView3->SetVisible(true);
+    webView1->SetVisibilityFlag(true);
+    webView2->SetVisibilityFlag(true);
+    webView3->SetVisibilityFlag(true);
 }
 
 void StaticWebViewTest::OnButtonHide(BaseObject*, void*, void*)
 {
-    webView1->SetVisible(false);
-    webView2->SetVisible(false);
-    webView3->SetVisible(false);
+    webView1->SetVisibilityFlag(false);
+    webView2->SetVisibilityFlag(false);
+    webView3->SetVisibilityFlag(false);
 }

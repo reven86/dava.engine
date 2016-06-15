@@ -1,40 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
-#include "FileSystem/Logger.h"
-#include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
-static const String UIJOYPAD_STICK_NAME = "stick";
+static const FastName UIJOYPAD_STICK_NAME("stick");
 
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)
@@ -132,8 +102,8 @@ const Vector2& UIJoypad::GetDigitalPosition()
     float32 xSign = v.x >= 0.0f ? digitalSense : -digitalSense;
     float32 ySign = v.y >= 0.0f ? digitalSense : -digitalSense;
 
-    digitalVector.x = 0.0f + (int32)(v.x + xSign);
-    digitalVector.y = 0.0f + (int32)(v.y + ySign);
+    digitalVector.x = v.x + xSign;
+    digitalVector.y = v.y + ySign;
 
     //Logger::Info("Digital joy pos x = %f, y = %f", digitalVector.x, digitalVector.y);
 
@@ -327,63 +297,6 @@ void UIJoypad::InputCancelled(UIEvent* currentInput)
         needRecalcAnalog = true;
         needRecalcDigital = true;
     }
-}
-
-void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode* node, DAVA::UIYamlLoader* loader)
-{
-    UIControl::LoadFromYamlNode(node, loader);
-
-    const YamlNode* stickSpriteNode = node->Get("stickSprite");
-    const YamlNode* stickFrameNode = node->Get("stickFrame");
-    const YamlNode* deadAreaSizeNode = node->Get("deadAreaSize");
-    const YamlNode* digitalSenseNode = node->Get("digitalSense");
-
-    if (stickSpriteNode)
-    {
-        int32 spriteFrame = 0;
-        if (stickFrameNode)
-        {
-            spriteFrame = stickFrameNode->AsInt32();
-        }
-
-        SetStickSprite(stickSpriteNode->AsString(), spriteFrame);
-    }
-
-    if (deadAreaSizeNode)
-    {
-        SetDeadAreaSize(deadAreaSizeNode->AsFloat());
-    }
-
-    if (digitalSenseNode)
-    {
-        SetDigitalSense(digitalSenseNode->AsFloat());
-    }
-}
-
-YamlNode* UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader* loader)
-{
-    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
-
-    YamlNode* node = UIControl::SaveToYamlNode(loader);
-
-    // Sprite
-    if (stick && stick->GetSprite())
-    {
-        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
-        node->Set("stickFrame", stick->GetFrame());
-    }
-
-    if (baseControl->GetDeadAreaSize() != GetDeadAreaSize())
-    {
-        node->Set("deadAreaSize", GetDeadAreaSize());
-    }
-
-    if (baseControl->GetDigitalSense() != GetDigitalSense())
-    {
-        node->Set("digitalSense", GetDigitalSense());
-    }
-
-    return node;
 }
 
 float32 UIJoypad::GetDeadAreaSize() const

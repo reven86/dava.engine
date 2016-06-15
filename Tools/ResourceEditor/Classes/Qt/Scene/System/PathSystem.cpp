@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PathSystem.h"
 
 #include "Scene3D/Components/Waypoint/PathComponent.h"
@@ -35,6 +6,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/Entity.h"
@@ -68,7 +40,7 @@ const DAVA::Array<DAVA::Color, 16> PathColorPallete =
     DAVA::Color(0xffffffff),
     DAVA::Color(0xffff00ff) } };
 
-const String PATH_COLOR_PROP_NAME = "pathColor";
+const DAVA::String PATH_COLOR_PROP_NAME = "pathColor";
 }
 
 PathSystem::PathSystem(DAVA::Scene* scene)
@@ -89,8 +61,8 @@ PathSystem::~PathSystem()
 
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
-    sceneEditor->BeginBatch("Add path at scene");
-    sceneEditor->Exec(new EntityAddCommand(entity, sceneEditor));
+    sceneEditor->BeginBatch("Add path at scene", 1);
+    sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)
         ExpandPathEntity(entity);
@@ -108,10 +80,10 @@ void PathSystem::AddEntity(DAVA::Entity* entity)
     }
 
     // extract color data from custom properties for old scenes
-    PathComponent* pc = GetPathComponent(entity);
-    if (pc && pc->GetColor() == Color())
+    DAVA::PathComponent* pc = GetPathComponent(entity);
+    if (pc && pc->GetColor() == DAVA::Color())
     {
-        KeyedArchive* props = GetCustomPropertiesArchieve(entity);
+        DAVA::KeyedArchive* props = GetCustomPropertiesArchieve(entity);
         if (props && props->IsKeyExists(PathSystemInternal::PATH_COLOR_PROP_NAME))
         {
             pc->SetColor(DAVA::Color(props->GetVector4(PathSystemInternal::PATH_COLOR_PROP_NAME)));
@@ -181,7 +153,7 @@ void PathSystem::DrawInEditableMode()
 {
     for (DAVA::Entity* path : pathes)
     {
-        PathComponent* pc = GetPathComponent(path);
+        DAVA::PathComponent* pc = GetPathComponent(path);
         if (!path->GetVisible() || !pc)
         {
             continue;
@@ -195,7 +167,7 @@ void PathSystem::DrawInEditableMode()
             const DAVA::uint32 edgesCount = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
             if (edgesCount)
             {
-                Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
+                DAVA::Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
                 startPosition.z += WAYPOINTS_DRAW_LIFTING;
                 for (DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
@@ -203,7 +175,7 @@ void PathSystem::DrawInEditableMode()
                     DAVA::Entity* nextEntity = edge->GetNextEntity();
                     if (nextEntity && nextEntity->GetParent())
                     {
-                        Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
+                        DAVA::Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
                         finishPosition.z += WAYPOINTS_DRAW_LIFTING;
                         DrawArrow(startPosition, finishPosition, pc->GetColor());
                     }
@@ -217,26 +189,26 @@ void PathSystem::DrawInViewOnlyMode()
 {
     const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
 
-    for (const auto& item : selection.GetContent())
+    for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
-        DAVA::Entity* path = item.first;
-        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(path);
-        if (path->GetVisible() == false || !pathComponent)
+        DAVA::PathComponent* pathComponent = DAVA::GetPathComponent(entity);
+        if (entity->GetVisible() == false || !pathComponent)
         {
             continue;
         }
 
-        const Vector<PathComponent::Waypoint*>& waypoints = pathComponent->GetPoints();
+        const DAVA::Vector<DAVA::PathComponent::Waypoint*>& waypoints = pathComponent->GetPoints();
         for (auto waypoint : waypoints)
         {
-            Vector3 startPosition = waypoint->position;
+            DAVA::Vector3 startPosition = waypoint->position;
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
+            const auto& transform = entity->GetWorldTransform();
             bool isStarting = waypoint->IsStarting();
 
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, transform, DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
 
             //draw edges
             if (!waypoint->edges.empty())
@@ -244,32 +216,31 @@ void PathSystem::DrawInViewOnlyMode()
                 startPosition.z += WAYPOINTS_DRAW_LIFTING;
                 for (auto edge : waypoint->edges)
                 {
-                    Vector3 finishPosition = edge->destination->position;
+                    DAVA::Vector3 finishPosition = edge->destination->position;
                     finishPosition.z += WAYPOINTS_DRAW_LIFTING;
-                    DrawArrow(startPosition * path->GetWorldTransform(), finishPosition * path->GetWorldTransform(), pathComponent->GetColor());
+                    DrawArrow(startPosition * transform, finishPosition * transform, pathComponent->GetColor());
                 }
             }
         }
     }
 }
 
-void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const Color& color)
+void PathSystem::DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color)
 {
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, Min((finish - start).Length() / 4.f, 4.f), ClampToUnityRange(color), RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(start, finish, DAVA::Min((finish - start).Length() / 4.f, 4.f), DAVA::ClampToUnityRange(color), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (currentSelection != selection)
     {
         currentSelection.Clear();
         currentSelection.Join(selection);
 
-        for (const auto& item : currentSelection.GetContent())
+        for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
         {
-            DAVA::Entity* entity = item.first;
-            if (entity->GetComponent(Component::PATH_COMPONENT))
+            if (entity->GetComponent(DAVA::Component::PATH_COMPONENT) != nullptr)
             {
                 currentPath = entity;
                 break;
@@ -286,45 +257,65 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    const int commandId = command->GetId();
-    if (CMDID_INSP_MEMBER_MODIFY == commandId)
+    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (String("name") == cmd->member->Name().c_str())
-        {
-            const DAVA::uint32 count = pathes.size();
-            for (DAVA::uint32 p = 0; p < count; ++p)
+        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
+        isEditingEnabled = redo;
+    }
+    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
+    {
+        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
+        isEditingEnabled = !redo;
+    }
+
+    if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+    {
+        auto ProcessInspCommand = [this](const InspMemberModifyCommand* inspCommand, bool redo) {
+            static const DAVA::FastName NAME("name");
+            if (NAME == inspCommand->member->Name())
             {
-                const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
-
-                if (cmd->object == pc)
+                const DAVA::uint32 count = pathes.size();
+                for (DAVA::uint32 p = 0; p < count; ++p)
                 {
-                    FastName newPathName = (redo) ? cmd->newValue.AsFastName() : cmd->oldValue.AsFastName();
-                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName() : cmd->newValue.AsFastName();
-
-                    const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
-                    for (DAVA::uint32 c = 0; c < childrenCount; ++c)
+                    const DAVA::PathComponent* pc = DAVA::GetPathComponent(pathes[p]);
+                    if (inspCommand->object == pc)
                     {
-                        DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+                        DAVA::FastName newPathName = (redo) ? inspCommand->newValue.AsFastName() : inspCommand->oldValue.AsFastName();
+                        DAVA::FastName oldPathName = (redo) ? inspCommand->oldValue.AsFastName() : inspCommand->newValue.AsFastName();
 
-                        if (wp && wp->GetPathName() == oldPathName)
+                        const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
+                        for (DAVA::uint32 c = 0; c < childrenCount; ++c)
                         {
-                            wp->SetPathName(newPathName);
+                            DAVA::WaypointComponent* wp = GetWaypointComponent(pathes[p]->GetChild(c));
+                            if (wp && wp->GetPathName() == oldPathName)
+                            {
+                                wp->SetPathName(newPathName);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
+                }
+            }
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::uint32 count = batch->Size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                const Command2* cmd = batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+                {
+                    ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(cmd), redo);
                 }
             }
         }
-    }
-    else if (commandId == CMDID_ENABLE_WAYEDIT)
-    {
-        isEditingEnabled = redo;
-    }
-    else if (commandId == CMDID_DISABLE_WAYEDIT)
-    {
-        isEditingEnabled = !redo;
+        else
+        {
+            ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(command), redo);
+        }
     }
 }
 
@@ -367,8 +358,8 @@ void PathSystem::EnablePathEdit(bool enable)
 {
     if (enable)
     {
-        sceneEditor->BeginBatch("Enable waypoints edit");
-        sceneEditor->Exec(new EnableWayEditCommand);
+        sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(Command2::Create<EnableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -379,8 +370,8 @@ void PathSystem::EnablePathEdit(bool enable)
     }
     else
     {
-        sceneEditor->BeginBatch("Disable waypoints edit");
-        sceneEditor->Exec(new DisableWayEditCommand);
+        sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
+        sceneEditor->Exec(Command2::Create<DisableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -394,28 +385,35 @@ void PathSystem::EnablePathEdit(bool enable)
 void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+
+    sceneEditor->BeginBatch("Expand path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new ExpandPathCommand(pathComponent));
+        sceneEditor->Exec(Command2::Create<ExpandPathCommand>(pathComponent));
     }
+
+    sceneEditor->EndBatch();
 }
 
 void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
 {
     DAVA::uint32 pathComponentCount = pathEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    sceneEditor->BeginBatch("Collapse path components", pathComponentCount);
     for (DAVA::uint32 i = 0; i < pathComponentCount; ++i)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(new CollapsePathCommand(pathComponent));
+        sceneEditor->Exec(Command2::Create<CollapsePathCommand>(pathComponent));
     }
+
+    sceneEditor->EndBatch();
 }
 
 DAVA::PathComponent* PathSystem::CreatePathComponent()
 {
-    DAVA::PathComponent* pc = new PathComponent();
+    DAVA::PathComponent* pc = new DAVA::PathComponent();
     pc->SetName(GeneratePathName());
     pc->SetColor(GetNextPathColor());
     return pc;

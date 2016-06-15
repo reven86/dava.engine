@@ -1,48 +1,22 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
-
-#include <QDir>
-#include <QApplication>
-#include <QMessageBox>
 
 #include "Project.h"
 #include "EditorFontSystem.h"
-#include "UI/UIPackageLoader.h"
-#include "Model/EditorUIPackageBuilder.h"
-#include "Model/LegacyEditorUIPackageLoader.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Helpers/ResourcesManageHelper.h"
 
+#include <QDir>
+#include <QApplication>
+#include <QMessageBox>
+#include <QFileDialog>
+
 using namespace DAVA;
+
+REGISTER_PREFERENCES_ON_START(Project,
+                              PREF_ARG("projectsHistory", DAVA::String()),
+                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
+                              )
 
 Project::Project(QObject* parent)
     : QObject(parent)
@@ -50,12 +24,6 @@ Project::Project(QObject* parent)
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
-    legacyData = new LegacyControlData();
-}
-
-Project::~Project()
-{
-    SafeRelease(legacyData);
 }
 
 bool Project::Open(const QString& path)
@@ -65,12 +33,24 @@ bool Project::Open(const QString& path)
     return result;
 }
 
+void Project::Close()
+{
+    FilePath::RemoveResourcesFolder(projectPath + "Data/");
+
+    SetProjectName("");
+    SetProjectPath("");
+    SetIsOpen(false);
+}
+
 bool Project::OpenInternal(const QString& path)
 {
     // Attempt to create a project
-    YamlParser* parser = YamlParser::Create(path.toStdString());
-    if (nullptr == parser)
+    ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
+    if (!parser)
+    {
         return false;
+    }
+
     QFileInfo fileInfo(path);
     if (!fileInfo.exists())
     {
@@ -78,155 +58,133 @@ bool Project::OpenInternal(const QString& path)
     }
     SetProjectName(fileInfo.fileName());
 
-    YamlNode* projectRoot = parser->GetRootNode();
-    if (nullptr == projectRoot)
+    editorLocalizationSystem->Cleanup();
+
+    QDir projectDir = fileInfo.absoluteDir();
+    if (!projectDir.mkpath("." + GetScreensRelativePath()))
     {
-        SafeRelease(parser);
         return false;
     }
 
-    FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
     SetProjectPath(fileInfo.absolutePath());
-    projectPath.MakeDirectoryPathname();
 
-    const auto& resFolders = FilePath::GetResourcesFolders();
-    const auto& searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
-
-    if (searchIt == resFolders.end())
+    YamlNode* projectRoot = parser->GetRootNode();
+    if (nullptr != projectRoot)
     {
-        FilePath::AddResourcesFolder(projectPath);
-    }
+        const YamlNode* fontNode = projectRoot->Get("font");
 
-    const YamlNode* fontNode = projectRoot->Get("font");
-
-    // Get font node
-    if (nullptr != fontNode)
-    {
-        // Get default font node
-        const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-        if (nullptr != defaultFontPath)
+        // Get font node
+        if (nullptr != fontNode)
         {
-            FilePath localizationFontsPath(defaultFontPath->AsString());
-            if (FileSystem::Instance()->Exists(localizationFontsPath))
+            // Get default font node
+            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
+            if (nullptr != defaultFontPath)
             {
-                editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                FilePath localizationFontsPath(defaultFontPath->AsString());
+                if (FileSystem::Instance()->Exists(localizationFontsPath))
+                {
+                    editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
+                }
             }
         }
-    }
 
-    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
-    {
-        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
-    }
-
-    editorFontSystem->LoadLocalizedFonts();
-
-    const YamlNode* platforms = projectRoot->Get("platforms");
-    for (uint32 i = 0; i < platforms->GetCount(); i++)
-    {
-        const String& platformName = platforms->GetItemKeyName(i);
-        if (platformName.empty())
-            continue;
-        const YamlNode* platform = platforms->Get(platformName);
-        float platformWidth = platform->Get("width")->AsFloat();
-        float platformHeight = platform->Get("height")->AsFloat();
-
-        const YamlNode* screens = platform->Get("screens");
-        for (int j = 0; j < (int32)screens->GetCount(); j++)
+        if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
         {
-            const String& screenName = screens->Get(j)->AsString();
-            LegacyControlData::Data data;
-            data.name = screenName;
-            data.isAggregator = false;
-            data.size = Vector2(platformWidth, platformHeight);
-            String key = "~res:/UI/" + platformName + "/" + screenName + ".yaml";
-            legacyData->Put(key, data);
+            editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
         }
 
-        const YamlNode* aggregators = platform->Get("aggregators");
-        for (int j = 0; j < (int32)aggregators->GetCount(); j++)
+        editorFontSystem->LoadLocalizedFonts();
+
+        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
+        const YamlNode* localeNode = projectRoot->Get("Locale");
+        if (localizationPathNode != nullptr && localeNode != nullptr)
         {
-            String aggregatorName = aggregators->GetItemKeyName(j);
-            const YamlNode* aggregator = aggregators->Get(j);
-            float aggregatorWidth = aggregator->Get("width")->AsFloat();
-            float aggregatorHeight = aggregator->Get("height")->AsFloat();
+            FilePath localePath = localizationPathNode->AsString();
+            QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
+            QDir localePathDir(absPath);
+            editorLocalizationSystem->SetDirectory(localePathDir);
 
-            LegacyControlData::Data data;
-            data.name = aggregatorName;
-            data.isAggregator = false;
-            data.size = Vector2(aggregatorWidth, aggregatorHeight);
-            String key = "~res:/UI/" + platformName + "/" + aggregatorName + ".yaml";
-            legacyData->Put(key, data);
+            QString currentLocale = QString::fromStdString(localeNode->AsString());
+            editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
         }
-
-        if (i == 0)
-        {
-            const YamlNode* localizationPathNode = platform->Get("LocalizationPath");
-            const YamlNode* localeNode = platform->Get("Locale");
-            if (localizationPathNode && localeNode)
-            {
-                FilePath localePath = localizationPathNode->AsString();
-                QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-                QDir localePathDir(absPath);
-                editorLocalizationSystem->SetDirectory(localePathDir);
-
-                QString currentLocale = QString::fromStdString(localeNode->AsString());
-                editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-            }
-        }
-    }
-
-    SafeRelease(parser);
-
-    return true;
-}
-
-bool Project::CheckAndUnlockProject(const QString& projectPath)
-{
-    if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
-    {
-        // Nothing to unlock.
-        return true;
-    }
-
-    if (QMessageBox::question(qApp->activeWindow(), tr("File is locked!"), tr("The project file %1 is locked by other user. Do you want to unlock it?").arg(projectPath)) == QMessageBox::No)
-    {
-        return false;
-    }
-
-    // Check whether it is possible to unlock project file.
-    if (!FileSystem::Instance()->LockFile(projectPath.toStdString(), false))
-    {
-        QMessageBox::critical(qApp->activeWindow(), tr("Unable to unlock project file!"),
-                              tr("Unable to unlock project file %1. Please check whether the project is opened in another QuickEd and close it, if yes.").arg(projectPath));
-        return false;
     }
 
     return true;
 }
 
-RefPtr<PackageNode> Project::OpenPackage(const FilePath& packagePath)
+bool Project::CanOpenProject(const QString& projectPath) const
 {
-    EditorUIPackageBuilder builder;
-
-    bool packageLoaded = UIPackageLoader().LoadPackage(packagePath, &builder);
-    if (!packageLoaded)
-        packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(packagePath, &builder);
-
-    if (packageLoaded)
-        return builder.BuildPackage();
-
-    return RefPtr<PackageNode>();
+    if (projectPath.isEmpty())
+    {
+        return false; //this is not performace fix. QDir return true for empty path
+    }
+    QFileInfo fileInfo(projectPath);
+    return fileInfo.exists() && fileInfo.isFile();
 }
 
-bool Project::SavePackage(PackageNode* package)
+EditorFontSystem* Project::GetEditorFontSystem() const
 {
-    YamlPackageSerializer serializer;
-    serializer.SerializePackage(package);
-    serializer.WriteToFile(package->GetPath());
-    return true;
+    return editorFontSystem;
+}
+
+EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+{
+    return editorLocalizationSystem;
+}
+
+const QString& Project::GetScreensRelativePath()
+{
+    static const QString relativePath("/Data/UI");
+    return relativePath;
+}
+
+const QString& Project::GetProjectFileName()
+{
+    static const QString projectFile("ui.uieditor");
+    return projectFile;
+}
+
+QString Project::CreateNewProject(Result* result /*=nullptr*/)
+{
+    if (result == nullptr)
+    {
+        Result dummy; //code cleaner
+        result = &dummy;
+    }
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
+    {
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
+    }
+    bool needOverwriteProjectFile = true;
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = GetProjectFileName();
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        if (QMessageBox::Yes == QMessageBox::question(qApp->activeWindow(), tr("Project file exists!"), tr("Project file %1 exists! Open this project?").arg(fullProjectFilePath)))
+        {
+            return fullProjectFilePath;
+        }
+
+        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
+        return "";
+    }
+    QFile projectFile(fullProjectFilePath);
+    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
+        return "";
+    }
+    if (!projectDir.mkpath(projectDir.canonicalPath() + GetScreensRelativePath()))
+    {
+        *result = Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        return "";
+    }
+    return fullProjectFilePath;
 }
 
 bool Project::IsOpen() const
@@ -244,6 +202,15 @@ void Project::SetIsOpen(bool arg)
     if (arg)
     {
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
+        QString newProjectPath = GetProjectPath() + GetProjectName();
+        QStringList projectsPathes = GetProjectsHistory();
+        projectsPathes.removeAll(newProjectPath);
+        projectsPathes += newProjectPath;
+        while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
+        {
+            projectsPathes.removeFirst();
+        }
+        projectsHistory = projectsPathes.join('\n').toStdString();
     }
     emit IsOpenChanged(arg);
 }
@@ -258,11 +225,26 @@ QString Project::GetProjectName() const
     return projectName;
 }
 
+QStringList Project::GetProjectsHistory() const
+{
+    QString history = QString::fromStdString(projectsHistory);
+    return history.split("\n", QString::SkipEmptyParts);
+}
+
 void Project::SetProjectPath(QString arg)
 {
     if (GetProjectPath() != arg)
     {
+        if (!projectPath.IsEmpty())
+        {
+            FilePath::RemoveResourcesFolder(projectPath + "Data/");
+        }
         projectPath = arg.toStdString().c_str();
+        if (!projectPath.IsEmpty())
+        {
+            projectPath.MakeDirectoryPathname();
+            FilePath::AddResourcesFolder(projectPath + "Data/");
+        }
         emit ProjectPathChanged(arg);
     }
 }

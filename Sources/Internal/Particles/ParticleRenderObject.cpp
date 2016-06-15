@@ -1,47 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ParticleRenderObject.h"
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 
 namespace DAVA
 {
-//camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
-static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(), Vector3(),
-                                       Vector3(0, 1, 0), Vector3(0, 0, 1),
-                                       Vector3(1, 0, 0), Vector3(0, 0, 1),
-                                       Vector3(0, 1, 0), Vector3(1, 0, 0) };
-
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
     : effectData(effect)
     , sortingOffset(15)
@@ -91,6 +53,15 @@ void ParticleRenderObject::SetSortingOffset(uint32 offset)
 
 void ParticleRenderObject::PrepareRenderData(Camera* camera)
 {
+    //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
+    static Vector3 basisVectors[7 * 2] = { Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(), Vector3(),
+                                           Vector3(0, 1, 0), Vector3(0, 0, 1),
+                                           Vector3(1, 0, 0), Vector3(0, 0, 1),
+                                           Vector3(0, 1, 0), Vector3(1, 0, 0) };
+
     activeRenderBatchArray.clear();
     currRenderBatchId = 0;
 
@@ -143,14 +114,14 @@ void ParticleRenderObject::PrepareRenderData(Camera* camera)
 			currRenderGroup->enableFrameBlend = currGroup.layer->enableFrameBlend;
 			currRenderGroup->renderBatch->SetMaterial(currMaterial);*/
 
-            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection);
+            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection, basisVectors);
             itGroupStart = itGroupCurr;
             particlesInGroup = 0;
         }
         particlesInGroup += CalculateParticleCount(*itGroupCurr);
     }
     if (itGroupStart != effectData->groups.end())
-        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
+        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection, basisVectors);
 }
 int32 ParticleRenderObject::CalculateParticleCount(const ParticleGroup& group)
 {
@@ -206,7 +177,7 @@ void ParticleRenderObject::AppendRenderBatch(NMaterial* material, uint32 particl
     currRenderBatchId++;
 }
 
-void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection)
+void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection, Vector3* basisVectors)
 {
     if (!particlesCount)
         return; //hmmm?
@@ -268,10 +239,10 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                 }
 
                 ParticleVertex* verts[4];
-                verts[0] = (ParticleVertex*)currpos;
-                verts[1] = (ParticleVertex*)(currpos + vertexStride);
-                verts[2] = (ParticleVertex*)(currpos + 2 * vertexStride);
-                verts[3] = (ParticleVertex*)(currpos + 3 * vertexStride);
+                verts[0] = reinterpret_cast<ParticleVertex*>(currpos);
+                verts[1] = reinterpret_cast<ParticleVertex*>(currpos + vertexStride);
+                verts[2] = reinterpret_cast<ParticleVertex*>(currpos + 2 * vertexStride);
+                verts[3] = reinterpret_cast<ParticleVertex*>(currpos + 3 * vertexStride);
 
                 Vector3 ex = basisVectors[basises[i] * 2];
                 Vector3 ey = basisVectors[basises[i] * 2 + 1];
@@ -344,7 +315,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
 void ParticleRenderObject::BindDynamicParameters(Camera* camera)
 {
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
 }
 
 } //namespace

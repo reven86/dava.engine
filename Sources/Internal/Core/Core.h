@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_CORE_H__
 #define __DAVAENGINE_CORE_H__
 
@@ -37,6 +8,7 @@
 #include "Core/DisplayMode.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Functional/Signal.h"
 
 /**
 	\defgroup core Core
@@ -52,6 +24,8 @@ using AppHandle = struct android_app*;
 #else
 using AppHandle = uint32;
 #endif
+
+class PackManager;
 
 /**
 	\ingroup core
@@ -135,7 +109,6 @@ public:
     const Vector<String>& GetCommandLine();
     bool IsConsoleMode();
 
-public:
     void SetOptions(KeyedArchive* archiveOfOptions);
     KeyedArchive* GetOptions();
 
@@ -165,9 +138,9 @@ public:
     virtual DisplayMode FindBestMode(const DisplayMode& requestedMode);
 
     /**
-		\brief Get current display mode. This function return resolution of the current display mode enabled on the first (main) monitor
+		\brief Get current size nativeView(it's virtual size, not physical!). Now is only for Win32, WinUAP, MacOS.
 	*/
-    virtual DisplayMode GetCurrentDisplayMode();
+    Vector2 GetWindowSize();
 
     /**
 		\brief Quit from application & release all subsystems
@@ -262,18 +235,32 @@ public:
 
     void EnableConsoleMode();
 
+    // InitWindowSize, WindowSizeChanged deprecated methods
+    void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+
+    bool IsFocused();
     rhi::InitParam rendererParams;
+    Signal<bool> focusChanged;
+    Signal<> systemAppFinished;
+    Signal<float32> updated;
+
+    PackManager& GetPackManager();
 
 protected:
-    int32 screenOrientation;
+    eScreenOrientation screenOrientation;
 
     void SetCommandLine(int argc, char* argv[]);
     void SetCommandLine(Vector<String>&& args);
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
+    // ApplyWindowSize deprecated method
+    void ApplyWindowSize();
+
     KeyedArchive* options;
 
+    bool isFocused = false;
     bool isActive;
 
     uint32 globalFrameIndex;
@@ -282,7 +269,21 @@ private:
 
     Vector<String> commandLine;
     bool isConsoleMode;
-    void* nativeView;
+
+    struct ScreenMetrics
+    {
+        void* nativeView = nullptr;
+        float32 width = 0.f;
+        float32 height = 0.f;
+        float32 userScale = 0.f;
+        float32 scaleX = 0.f;
+        float32 scaleY = 0.f;
+        bool screenMetricsModified = false;
+        bool initialized = false;
+    };
+    ScreenMetrics screenMetrics;
+
+    std::unique_ptr<PackManager> packManager;
 };
 
 inline bool Core::IsActive()

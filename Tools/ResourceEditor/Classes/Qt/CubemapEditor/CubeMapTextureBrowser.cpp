@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "CubemapEditor/CubeMapTextureBrowser.h"
 #include "CubemapEditor/CubemapEditorDialog.h"
 #include "CubemapEditor/CubemapUtils.h"
@@ -47,12 +18,9 @@
 const int FACE_IMAGE_SIZE = 64;
 
 CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget* parent)
-    :
-    QDialog(parent)
-    ,
-    cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE))
-    ,
-    ui(new Ui::CubeMapTextureBrowser)
+    : QDialog(parent)
+    , cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE))
+    , ui(new Ui::CubeMapTextureBrowser)
 {
     scene = currentScene;
 
@@ -62,8 +30,8 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 
     ConnectSignals();
 
-    FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
-                                                            ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
+    DAVA::FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastProjDir",
+                                                                  ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname());
 
     ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
     ReloadTextures(projectPath.GetAbsolutePathname());
@@ -107,7 +75,7 @@ void CubeMapTextureBrowser::ReloadTextures(const DAVA::String& rootPath)
     if (filesList.size() > 0)
     {
         DAVA::Vector<CubeListItemDelegate::ListItemInfo> cubemapList;
-        FilePath fp = rootPath;
+        DAVA::FilePath fp = rootPath;
         for (int i = 0; i < filesList.size(); ++i)
         {
             QString str = filesList.at(i);
@@ -169,8 +137,8 @@ void CubeMapTextureBrowser::ReloadTexturesFromUI(QString& path)
 
     ui->textRootPath->setText(path);
 
-    FilePath projectPath = path.toStdString();
-    SettingsManager::SetValue(Settings::Internal_CubemapLastProjDir, VariantType(projectPath));
+    DAVA::FilePath projectPath = path.toStdString();
+    SettingsManager::SetValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(projectPath));
 
     ReloadTextures(path.toStdString());
 }
@@ -215,7 +183,7 @@ void CubeMapTextureBrowser::OnCreateCubemapClicked()
     if (!fileName.isNull())
     {
         CubemapEditorDialog dlg(this);
-        FilePath fp = fileName.toStdString();
+        DAVA::FilePath fp = fileName.toStdString();
 
         DAVA::FilePath rootPath = fp.GetDirectory();
         dlg.InitForCreating(fp, rootPath);
@@ -241,7 +209,7 @@ void CubeMapTextureBrowser::OnEditCubemap(const QModelIndex& index)
     QListWidgetItem* item = ui->listTextures->item(index.row());
 
     DAVA::FilePath rootPath = ui->textRootPath->text().toStdString();
-    FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
+    DAVA::FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
     dlg.InitForEditing(fp, rootPath);
     dlg.exec();
 
@@ -308,8 +276,8 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 
             if (checkedState)
             {
-                FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
-                if (FileSystem::Instance()->Exists(fp))
+                DAVA::FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
+                if (DAVA::FileSystem::Instance()->Exists(fp))
                 {
                     DAVA::Vector<DAVA::FilePath> faceNames;
                     CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
@@ -318,7 +286,7 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
                         if (faceNames[faceIndex].IsEmpty())
                             continue;
 
-                        FilePath hackTex = faceNames[faceIndex];
+                        DAVA::FilePath hackTex = faceNames[faceIndex];
                         hackTex.ReplaceExtension(".tex");
 
                         QFile::remove(hackTex.GetAbsolutePathname().c_str());
@@ -382,7 +350,7 @@ bool CubeMapTextureBrowser::ValidateTextureAndFillThumbnails(DAVA::FilePath& fp,
         }
 
         if (faceImage.width() != faceImage.height() || //file must be square and be power of 2
-            !IsPowerOf2(faceImage.width()))
+            !DAVA::IsPowerOf2(faceImage.width()))
         {
             result = false;
         }

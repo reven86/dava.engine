@@ -9,14 +9,12 @@ import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
-import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -24,7 +22,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
-	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
+	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
@@ -51,26 +49,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
 	private volatile boolean mEventQueueReady = true;
 
-	public int lastDoubleActionIdx = -1;
-	
-	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNISurfaceView surfaceView;
-		
-		DoubleTapListener(JNISurfaceView view) {
-			this.surfaceView = view;
-		}
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			lastDoubleActionIdx = e.getActionIndex();
-			
-			surfaceView.queueEvent(new InputRunnable(e, 2));
-			return true;
-		}
-	}
-	
-	GestureDetector doubleTapDetector = null;
-
 	public JNISurfaceView(Context context) 
 	{
 		super(context);
@@ -87,8 +65,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	{
 		getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		
-		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
-
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
@@ -196,7 +172,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			int tid;
 			float x;
 			float y;
-			int tapCount;
 			double time;
 
 			InputEvent(int tid, float x, float y, double time)
@@ -204,16 +179,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				this.tid = tid;
 				this.x = x;
 				this.y = y;
-				this.tapCount = 1;
-				this.time = time;
-			}
-			
-			InputEvent(int tid, float x, float y, int tapCount, double time)
-			{
-				this.tid = tid;
-				this.x = x;
-				this.y = y;
-				this.tapCount = tapCount;
 				this.time = time;
 			}
 		}
@@ -229,7 +194,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			return pointerId + 1;
 		}
 
-		public InputRunnable(final android.view.MotionEvent event, final int tapCount) {
+		public InputRunnable(final android.view.MotionEvent event) {
 			allEvents = new ArrayList<InputEvent>();
 
 			action = event.getActionMasked();
@@ -246,7 +211,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					for (int i = 0; i < pointerCount; i++) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
 							InputEvent ev = new InputEvent(gamepadAxises[a],
-									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount,
+									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0,
 									event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
@@ -257,7 +222,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				for (int i = 0; i < pointerCount; i++) {
 					for (int a = 0; a < gamepadAxises.length; ++a) {
 						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
-								tapCount, event.getEventTime());
+								event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -273,13 +238,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 						pointerId = event.getPointerId(i);
 						if (isMultitouchEnabled) {
 							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
-									tapCount, event.getEventTime());
+									event.getEventTime());
 							allEvents.add(ev);
 						}
 					}
 				} else {
 					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
-							event.getY(actionIndex), tapCount, event.getEventTime());
+							event.getY(actionIndex), event.getEventTime());
 					allEvents.add(ev);
 				}
 			} else
@@ -307,7 +272,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			}
 			else if(allEvents.size() != 0) 
 			{
-				nativeOnInput(action, source, groupSize, allEvents, allEvents);
+				nativeOnInput(action, source, groupSize, allEvents);
 			}
 		}
     }
@@ -361,9 +326,10 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
-    		return super.onKeyDown(keyCode, event);
-    	else
-    		return true;
+    	{
+    		return super.onKeyDown(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override
@@ -375,29 +341,24 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	
     	queueEvent(new KeyInputRunnable(keyCode, false));
     	
-    	return super.onKeyUp(keyCode, event);
+    	if (event.isSystem())
+    	{
+    		return super.onKeyUp(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override
     public boolean onTouchEvent(MotionEvent event) 
     {
-        boolean isDoubleTap = doubleTapDetector.onTouchEvent(event);
-        if (lastDoubleActionIdx >= 0 &&
-        	lastDoubleActionIdx == event.getActionIndex() &&
-        	event.getAction() == MotionEvent.ACTION_UP) {
-        	lastDoubleActionIdx = -1;
-        	queueEvent(new InputRunnable(event, 2));
-        	isDoubleTap = true;
-        }
-        if (!isDoubleTap)
-            queueEvent(new InputRunnable(event, 1));
+        queueEvent(new InputRunnable(event));
         return true;
     }
     
     @Override
     public boolean onGenericMotionEvent(MotionEvent event)
     {
-    	queueEvent(new InputRunnable(event, 1));
+    	queueEvent(new InputRunnable(event));
     	return true;
     }
     
@@ -503,7 +464,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             }
         }
 
-        JNIActivity.GetActivity().isSurfaceReady = true;
+		JNIActivity.isSurfaceReady = true;
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
@@ -527,7 +488,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
 		WaitQueuedEvents();
 
-		JNIActivity.GetActivity().isSurfaceReady = false;
+		JNIActivity.isSurfaceReady = false;
 
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");

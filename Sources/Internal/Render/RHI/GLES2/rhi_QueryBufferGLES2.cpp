@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -104,10 +76,10 @@ gles2_QueryBuffer_Delete(Handle handle)
             if (id)
             {
                 #if defined(__DAVAENGINE_IPHONE__)
-                glDeleteQueriesEXT(1, &id);
+                GL_CALL(glDeleteQueriesEXT(1, &id));
 		#elif defined(__DAVAENGINE_ANDROID__)
                 #else
-                glDeleteQueries(1, &id);
+                GL_CALL(glDeleteQueries(1, &id));
                 #endif
             }
         }
@@ -129,10 +101,10 @@ gles2_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
         GLuint result = 0;
 
         #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result);
+        GL_CALL(glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result));
 	#elif defined(__DAVAENGINE_ANDROID__)
         #else
-        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result);
+        GL_CALL(glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result));
         #endif
 
         ready = result == GL_TRUE;
@@ -152,10 +124,10 @@ gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
         GLuint result = 0;
 
         #if defined(__DAVAENGINE_IPHONE__)
-        glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result);
+        GL_CALL(glGetQueryObjectuivEXT(buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result));
 		#elif defined(__DAVAENGINE_ANDROID__)
         #else
-        glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT, &result);
+        GL_CALL(glGetQueryObjectuiv(buf->query[objectIndex], GL_QUERY_RESULT, &result));
         #endif
 
         value = result;
@@ -186,10 +158,10 @@ void BeginQuery(Handle handle, uint32 objectIndex)
         if (!q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glGenQueriesEXT(1, &q);
+            GL_CALL(glGenQueriesEXT(1, &q));
 	    #elif defined(__DAVAENGINE_ANDROID__)
             #else
-            glGenQueries(1, &q);
+            GL_CALL(glGenQueries(1, &q));
             #endif
 
             buf->query[objectIndex] = q;
@@ -198,12 +170,12 @@ void BeginQuery(Handle handle, uint32 objectIndex)
         if (q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q);
+            GL_CALL(glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, q));
 	        #elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
-            glBeginQuery(GL_SAMPLES_PASSED, q);
+            GL_CALL(glBeginQuery(GL_SAMPLES_PASSED, q));
             #else
-            glBeginQuery(GL_ANY_SAMPLES_PASSED, q);
+            GL_CALL(glBeginQuery(GL_ANY_SAMPLES_PASSED, q));
             #endif
         }
     }
@@ -220,12 +192,12 @@ void EndQuery(Handle handle, uint32 objectIndex)
         if (q)
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+            GL_CALL(glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT));
 			#elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
-            glEndQuery(GL_SAMPLES_PASSED);
+            GL_CALL(glEndQuery(GL_SAMPLES_PASSED));
             #else
-            glEndQuery(GL_ANY_SAMPLES_PASSED);
+            GL_CALL(glEndQuery(GL_ANY_SAMPLES_PASSED));
             #endif
         }
     }

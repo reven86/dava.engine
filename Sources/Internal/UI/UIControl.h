@@ -1,32 +1,3 @@
-﻿/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UI_CONTROL_H__
 #define __DAVAENGINE_UI_CONTROL_H__
 
@@ -185,20 +156,16 @@ private:
         Methods call sequence:
         When the control adds to the hierarchy:
 
-            -if hierarchy is allready on the screen SystemWillAppear() will be called. SystemWillAppear()
-                calls WillAppear() for the control and then calls SystemWillAppear() for all control children.
+            -if hierarchy is allready on the screen SystemActive() will be called after adding control to hierarhy. SystemActive()
+                calls OnActive() for the control and then calls SystemActive() for all control children.
 
-            -when the control adding to the hierarchy is done SystemDidAppear() and DidAppear() calls at the same way.
-
-            -if hierarchy is not on the screen all methods would be called only when the hierarcy parent
+            -if hierarchy is not on the screen methods would be called only when the hierarcy parent
                 be placed to the screen.
 
         When the control removes from hierarchy:
 
-            -SystemWillDisappear() will be called. SystemWillDisappear()
-                calls WillDisappear() for the control and then calls SystemWillDisappear() for all control children.
-
-            -when the control is removed from the hierarchy SystemDidDisappear() and DidDisappear() calls at the same way.
+            -SystemInactive() will be called. SystemInactive()
+                calls OnInactive() for the control and then calls SystemInactive() for all control children.
 
         Every frame:
 
@@ -227,8 +194,8 @@ private:
      */
 class UIControl : public AnimatedObject
 {
+    friend class UIInputSystem;
     friend class UIControlSystem;
-    friend class UIScreenTransition;
 
 public:
     /**
@@ -242,8 +209,9 @@ public:
         STATE_DISABLED = 1 << 3, //!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
         STATE_SELECTED = 1 << 4, //!<Just a state for base control, nothing more.
         STATE_HOVER = 1 << 5, //!<This bit is rise then mouse is over the control.
+        STATE_FOCUSED = 1 << 6, //!<Control under focus and will receive keyboard input. Additional this state can be used for setting visual style of control.
 
-        STATE_COUNT = 6
+        STATE_COUNT = 7
     };
 
     static const char* STATE_NAMES[STATE_COUNT];
@@ -271,8 +239,6 @@ public:
         DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
         DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
-
-    friend class ControlSystem;
 
 public:
     /**
@@ -529,7 +495,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
      */
-    inline bool GetVisible() const;
+    inline bool GetVisibilityFlag() const;
 
     /**
      \brief Sets contol recursive visibility.
@@ -537,7 +503,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \param[in] isVisible new control visibility.
      */
-    virtual void SetVisible(bool isVisible);
+    virtual void SetVisibilityFlag(bool isVisible);
 
     /**
      \brief Returns control input processing ability.
@@ -556,21 +522,6 @@ public:
      \param[in] hierarchic use true if you want to all control children change input ability.
      */
     virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
-
-    /**
-     \brief Returns control focusing ability.
-     Be ware! Base control can be focused by default.
-     \returns true if control can be focused.
-     */
-    inline bool GetFocusEnabled() const;
-
-    /**
-     \brief Sets contol focusing ability.
-     If focus possibility is disabled control can't be focused. Disable focusing for scroll
-     controls (like UIScrollView, UIScrollList, etc.)
-     \param[in] isEnabled is control can be focused?
-     */
-    virtual void SetFocusEnabled(bool isEnabled);
 
     /**
      \brief Returns control enabling state.
@@ -665,20 +616,26 @@ public:
      \param[in] hierarchic use true if you want to all control children change multi nput support state.
      */
     virtual void SetMultiInput(bool isMultiInput, bool hierarchic = true);
-
     /**
+    \brief Children will be sorted with predicate.
+    Function uses stable sort, sets layout dirty flag and invalidates iteration.
+    \param[in] predicate sorting predicate. All predicates for std::list<>::sort are allowed for this function too.
+    */
+    template <class T>
+    inline void SortChildren(const T& predicate);
+    /*
      \brief Sets the contol name.
         Later you can find control by this name.
      \param[in] _name new control name.
      */
-    void SetName(const String& _name);
+    void SetName(const String& name_);
+    void SetName(const FastName& name_);
 
     /**
      \brief Returns current name of the control.
      \returns control name.
      */
-    inline const String& GetName() const;
-    inline const FastName& GetFastName() const;
+    inline const FastName& GetName() const;
 
     /**
      \brief Sets the contol tag.
@@ -699,11 +656,19 @@ public:
      \returns first control with given name.
      */
     UIControl* FindByName(const String& name, bool recursive = true) const;
+    UIControl* FindByName(const FastName& name, bool recursive = true) const;
 
-    UIControl* FindByPath(const String& path) const;
+    const UIControl* FindByPath(const String& path) const;
+    UIControl* FindByPath(const String& path);
 
     template <class C>
     C FindByPath(const String& path) const
+    {
+        return DynamicTypeCheck<C>(FindByPath(path));
+    }
+
+    template <class C>
+    C FindByPath(const String& path)
     {
         return DynamicTypeCheck<C>(FindByPath(path));
     }
@@ -977,67 +942,6 @@ public:
 
 public:
     /**
-     \brief Called before control will be added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void WillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Can be overrided for control additioanl functionality implementation.
-        By default this method is empty.
-     */
-    virtual void DidDisappear();
-    /**
-     \brief Called before control will be added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillAppear();
-    /**
-     \brief Called before control will be removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemWillDisappear();
-    /**
-     \brief Called when control added to view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidAppear();
-    /**
-     \brief Called when control removed from the view hierarchy.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     */
-    virtual void SystemDidDisappear();
-
-    /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void SystemScreenSizeDidChanged(const Rect& newFullScreenRect);
-    /**
-     \brief Called when screen size is changed.
-        This method called for the currently active screen when the screen size is changed. Or called after WillAppear() for the other screens.
-     \param[in] newFullScreenSize New full screen size in virtual coordinates.
-        Rect may be larger when the virtual screen size. Rect x and y position may be smaller when 0.
-     */
-    virtual void ScreenSizeDidChanged(const Rect& newFullScreenRect);
-
-    /**
      \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
      \param[in] timeElapsed Current frame time delta.
@@ -1144,20 +1048,37 @@ public:
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
 protected:
-    virtual void SystemWillBecomeVisible();
-    virtual void SystemWillBecomeInvisible();
+    enum class eViewState : int32
+    {
+        INACTIVE,
+        ACTIVE,
+        VISIBLE,
+    };
 
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    virtual void SystemVisible();
+    virtual void SystemInvisible();
+
+    virtual void OnVisible();
+    virtual void OnInvisible();
+
+    virtual void SystemActive();
+    virtual void SystemInactive();
+
+    virtual void OnActive();
+    virtual void OnInactive();
+
+    virtual void SystemScreenSizeChanged(const Rect& newFullScreenRect);
+    virtual void OnScreenSizeChanged(const Rect& newFullScreenRect);
+
+    void InvokeActive(eViewState parentViewState);
+    void InvokeInactive();
+
+    void InvokeVisible(eViewState parentViewState);
+    void InvokeInvisible();
+
+    void ChangeViewState(eViewState newViewState);
 
 public:
-    //TODO: Борода напиши дескрипшн.
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    /**
-     \brief Save the control to YAML node and return it.
-     */
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-
     /**
      \brief Called when this control and his children are loaded.
      */
@@ -1167,13 +1088,13 @@ public:
      \brief Returns control in hierarchy status.
      \returns True if control in view hierarchy for now.
      */
-    bool InViewHierarchy() const;
+    bool IsActive() const;
 
     /**
      \brief Returns control on screen status.
      \returns True if control visible now.
      */
-    bool IsOnScreen() const;
+    bool IsVisible() const;
     /**
      \brief Returns point status realtive to control .
      \param[in] point Point to check.
@@ -1182,17 +1103,17 @@ public:
      */
     virtual bool IsPointInside(const Vector2& point, bool expandWithFocus = false) const;
 
-    virtual bool IsLostFocusAllowed(UIControl* newFocus);
-
-    virtual void SystemOnFocusLost(UIControl* newFocus);
+    virtual void SystemOnFocusLost();
 
     virtual void SystemOnFocused();
 
-    virtual void OnFocusLost(UIControl* newFocus);
+    virtual void OnFocusLost();
 
     virtual void OnFocused();
 
-    virtual void OnAllAnimationsFinished();
+    virtual void OnTouchOutsideFocus();
+
+    void OnAllAnimationsFinished() override;
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
@@ -1208,12 +1129,11 @@ public:
     static void DumpControls(bool onlyOrphans);
 
 private:
-    String name;
-    FastName fastName;
+    FastName name;
     Vector2 pivot; //!<control pivot. Top left control corner by default.
-protected:
+
     UIControl* parent;
-    List<UIControl*> childs;
+    List<UIControl*> children;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1264,10 +1184,6 @@ protected:
 
     virtual ~UIControl();
 
-    // Set the preferred node type. Needed for saving controls to Yaml while taking
-    // custom controls into account.
-    void SetPreferredNodeType(YamlNode* node, const String& nodeTypeName);
-
     void RegisterInputProcessor();
     void RegisterInputProcessors(int32 processorsCount);
     void UnregisterInputProcessor();
@@ -1277,9 +1193,9 @@ protected:
     void DrawPivotPoint(const Rect& drawRect);
 
 private:
-    int32 tag;
+    int32 tag = 0;
+    eViewState viewState = eViewState::INACTIVE;
     bool inputEnabled : 1;
-    bool focusEnabled : 1;
 
     /* Components */
 public:
@@ -1355,6 +1271,7 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
+    UIControl* GetParentWithContext() const;
 
 private:
     UIStyleSheetClassSet classes;
@@ -1367,8 +1284,6 @@ private:
     /* Styles */
 
 public:
-    void SystemNotifyVisibilityChanged();
-
     virtual int32 GetBackgroundComponentsCount() const;
     virtual UIControlBackground* GetBackgroundComponent(int32 index) const;
     virtual UIControlBackground* CreateBackgroundComponent(int32 index) const;
@@ -1389,6 +1304,7 @@ public:
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
     inline void SetSelectedNotHierarchic(bool enabled);
+    inline void SetExclusiveInputNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
@@ -1400,11 +1316,12 @@ public:
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("visible", "Visible", GetVisibilityFlag, SetVisibilityFlag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("exclusiveInput", "Exclusive Input", GetExclusiveInput, SetExclusiveInputNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
@@ -1453,14 +1370,9 @@ float32 UIControl::GetAngleInDegrees() const
     return RadToDeg(angle);
 }
 
-const String& UIControl::GetName() const
+const FastName& UIControl::GetName() const
 {
     return name;
-}
-
-const FastName& UIControl::GetFastName() const
-{
-    return fastName;
 }
 
 int32 UIControl::GetTag() const
@@ -1473,7 +1385,7 @@ Rect UIControl::GetRect() const
     return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetVisible() const
+bool UIControl::GetVisibilityFlag() const
 {
     return visible;
 }
@@ -1481,11 +1393,6 @@ bool UIControl::GetVisible() const
 bool UIControl::GetInputEnabled() const
 {
     return inputEnabled;
-}
-
-bool UIControl::GetFocusEnabled() const
-{
-    return focusEnabled;
 }
 
 bool UIControl::GetClipContents() const
@@ -1501,6 +1408,15 @@ bool UIControl::GetExclusiveInput() const
 bool UIControl::GetMultiInput() const
 {
     return multiInput;
+}
+
+template <class T>
+inline void UIControl::SortChildren(const T& predicate)
+{
+    children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
+
+    isIteratorCorrupted = true;
+    SetLayoutDirty();
 }
 
 int32 UIControl::GetState() const
@@ -1521,6 +1437,11 @@ void UIControl::SetEnabledNotHierarchic(bool enabled)
 void UIControl::SetSelectedNotHierarchic(bool selected)
 {
     SetSelected(selected, false);
+}
+
+void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
+{
+    SetExclusiveInput(enabled, false);
 }
 
 bool UIControl::GetNoInput() const

@@ -1,34 +1,5 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Animation/AnimationManager.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Debug/Stats.h"
 #include "Job/JobManager.h"
 #include "Render/Renderer.h"
@@ -203,11 +174,8 @@ void AnimationManager::Update(float32 timeElapsed)
         return;
 
     // update animations first
-    uint32 size = (uint32)animations.size();
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
-
         if (animation->state & Animation::STATE_IN_PROGRESS)
         {
             if (!(animation->state & Animation::STATE_PAUSED))
@@ -218,8 +186,11 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     // process all finish callbacks
-    size = (uint32)animations.size();
-    for (uint32 k = 0; k < size; ++k)
+    // someone could change animations list on Stop action
+    // it produces crash, so we keep that implementation until
+    // external code produces crashes here.
+    size_t size = animations.size();
+    for (size_t k = 0; k < size; ++k)
     {
         Animation* animation = animations[k];
 
@@ -230,11 +201,8 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //check all animation and process all callbacks on delete
-    size = (uint32)animations.size();
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
-
         if (animation->state & Animation::STATE_DELETE_ME)
         {
             if (!(animation->state & Animation::STATE_FINISHED))
@@ -251,10 +219,8 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //we need physically remove animations only after process all callbacks
-    size = (uint32)animations.size();
-    for (uint32 k = 0; k < size; ++k)
+    for (Animation* animation : animations)
     {
-        Animation* animation = animations[k];
         if (animation->state & Animation::STATE_DELETE_ME)
         {
             releaseCandidates.push_back(animation);
@@ -262,10 +228,9 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //remove all release candidates animations
-    auto endIt = releaseCandidates.end();
-    for (auto it = releaseCandidates.begin(); it != endIt; ++it)
+    for (Animation* releaseAnimation : releaseCandidates)
     {
-        SafeRelease(*it);
+        SafeRelease(releaseAnimation);
     }
     releaseCandidates.clear();
 }
@@ -277,7 +242,7 @@ void AnimationManager::DumpState()
     Logger::FrameworkDebug("============================================================");
     Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", animations.size());
 
-    for (int k = 0; k < (int)animations.size(); ++k)
+    for (int k = 0, end = static_cast<int>(animations.size()); k < end; ++k)
     {
         Animation* animation = animations[k];
 

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DATA_CURL_DOWNLOADER_H__
 #define __DATA_CURL_DOWNLOADER_H__
 
@@ -62,11 +33,23 @@ protected:
     /**
      \brief Main downloading operation. Should call SaveData to store data.
      \param[in] url - destination file Url
+     \param[in] downloadOffset - offset to download from, used together with contentSize parameter
+     \param[in] downloadSize - size in bytes to download starting from downloadOffset; if downloadSize is zero then download full content
      \param[in] savePath - path to save location of remote file
      \param[in] partsCount - quantity of download threads
      \param[in] timeout - operation timeout
      */
-    DownloadError Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout) override;
+    DownloadError Download(const String& url, uint64 downloadOffset, uint64 downloadSize, const FilePath& savePath, uint8 partsCount, int32 timeout) override;
+
+    DownloadError DownloadIntoBuffer(const String& url,
+                                     uint64 downloadOffset,
+                                     uint64 downloadSize,
+                                     void* buffer,
+                                     uint32 bufSize,
+                                     uint8 partsCount,
+                                     int32 timeout,
+                                     uint32* nread) override;
+
     /**
      \brief Sets maximum allowed download speed. -1 means unlimited.
      \param[in] limit - speed limit in bytes per second.

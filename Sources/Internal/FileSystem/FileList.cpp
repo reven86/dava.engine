@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FileSystem/FileList.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
@@ -106,23 +77,32 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
         {
             entry.path = path + namelist[n]->d_name;
             entry.name = namelist[n]->d_name;
-            entry.size = 0;
 
 #if defined(__DAVAENGINE_MACOS__)
+            struct stat entry_stat;
+            stat(entry.path.GetAbsolutePathname().c_str(), &entry_stat);
+
             if (DT_LNK == namelist[n]->d_type)
             {
-                struct stat link_stat;
-                if (0 == stat(entry.path.GetAbsolutePathname().c_str(), &link_stat))
-                {
-                    entry.isDirectory = (S_IFDIR == ((link_stat.st_mode) & S_IFMT));
-                }
+                entry.isDirectory = (S_IFDIR == ((entry_stat.st_mode) & S_IFMT));
             }
             else
-#endif
             {
                 entry.isDirectory = (DT_DIR == namelist[n]->d_type);
             }
-            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+            entry.size = entry_stat.st_size;
+
+#elif defined(__DAVAENGINE_IPHONE__)
+            entry.isDirectory = (DT_DIR == namelist[n]->d_type);
+            entry.size = 0;
+#endif
+
+            if (entry.name != "." && entry.name != "..")
+            {
+                entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            }
+
             if (entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
@@ -183,7 +163,7 @@ FileList::~FileList()
 
 int32 FileList::GetCount() const
 {
-    return (int32)fileList.size();
+    return static_cast<int32>(fileList.size());
 }
 
 int32 FileList::GetFileCount() const
@@ -198,25 +178,25 @@ int32 FileList::GetDirectoryCount() const
 
 const FilePath& FileList::GetPathname(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].path;
 }
 
 const String& FileList::GetFilename(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].name;
 }
 
 bool FileList::IsDirectory(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].isDirectory;
 }
 
 bool FileList::IsNavigationDirectory(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     //bool isDir = fileList[index].isDirectory;
     //if (isDir)
     //{
@@ -230,24 +210,15 @@ bool FileList::IsNavigationDirectory(int32 index) const
 
 bool FileList::IsHidden(int32 index) const
 {
-    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
     return fileList[index].isHidden;
 }
 
-//bool FileList::FileEntry::operator< (const FileList::FileEntry &other)
-//{
-//    if (!isDirectory && other.isDirectory)
-//    {
-//        return true;
-//    }
-//
-//    if (name < other.name)
-//    {
-//        return true;
-//    }
-//
-//    return false;
-//}
+uint32 FileList::GetFileSize(uint32 index) const
+{
+    DVASSERT(index < static_cast<uint32>(fileList.size()));
+    return fileList[index].size;
+}
 
 void FileList::Sort()
 {

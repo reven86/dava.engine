@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/BaseTypes.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
@@ -56,9 +27,9 @@ struct DeviceScreenInfo
 enum eIOS_DPI
 {
     IPHONE_3_IPAD_MINI = 163,
-    IPHONE_4_5_6_IPAD_MINI2_MINI3 = 326,
+    IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
     IPAD_1_2 = 132,
-    IPAD_3_4_AIR_AIR2 = 264,
+    IPAD_3_4_AIR_AIR2_PRO = 264,
     IPHONE_6_PLUS = 401,
     IPHONE_6_PLUS_ZOOM = 461,
 };
@@ -66,14 +37,15 @@ enum eIOS_DPI
 const static DeviceScreenInfo devicesInfoList[] =
 {
   DeviceScreenInfo(320, IPHONE_3_IPAD_MINI, ""),
-  DeviceScreenInfo(640, IPHONE_4_5_6_IPAD_MINI2_MINI3, ""),
-  DeviceScreenInfo(750, IPHONE_4_5_6_IPAD_MINI2_MINI3, ""),
+  DeviceScreenInfo(640, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, ""),
+  DeviceScreenInfo(750, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, ""),
   DeviceScreenInfo(768, IPAD_1_2, ""),
   DeviceScreenInfo(768, IPHONE_3_IPAD_MINI, "mini"),
   DeviceScreenInfo(1080, IPHONE_6_PLUS, ""),
   DeviceScreenInfo(1242, IPHONE_6_PLUS_ZOOM, ""),
-  DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2, ""),
-  DeviceScreenInfo(1536, IPHONE_4_5_6_IPAD_MINI2_MINI3, "mini")
+  DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2_PRO, ""),
+  DeviceScreenInfo(1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini"),
+  DeviceScreenInfo(2048, IPAD_3_4_AIR_AIR2_PRO, "")
 };
 
 uint32 GetDPIInfoListByDimension(uint32 minDimension, List<const DeviceScreenInfo*>& outputList)

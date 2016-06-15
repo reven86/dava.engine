@@ -1,7 +1,8 @@
 SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
-TIMECLICK = 0.5 -- time for simple action
+TIMECLICK = 0.2 -- time for simple action
+DOUBLETAP_DELAY = 0.005 --time between two taps
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -197,6 +198,9 @@ function GetParameter(name, default)
 end
 
 function MakeScreenshot()
+    while autotestingSystem:GetIsScreenShotSaving() do
+        coroutine.yield()
+    end
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name
@@ -392,7 +396,24 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
+    if not control then
+        Log("Control " .. controlName .. " not found")
+        return false
+    end
+    if not (control:GetVisibilityFlag() and control:IsVisible()) then
+        Log("Control " .. controlName .. " is not visible")
+        return false
+    end
+    if not IsOnScreen(controlName, background) then
+        Log("Control " .. controlName .. " is not on screen")
+        return false
+    end
+    return true
+end
+
+local function __IsVisibleNoLog(controlName, background)
+    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
@@ -426,7 +447,6 @@ function IsReady(controlName, waitTime)
         return false
     end
     if not IsVisible(controlName) then
-        Log("Control " .. controlName .. " is not visible.")
         return false
     end
     if not IsCenterOnScreen(controlName) then
@@ -502,6 +522,31 @@ function WaitControl(name, time)
     return result
 end
 
+function WaitControls(controls, waitAll, waitTime)
+    waitTime = waitTime or TIMEOUT
+    if waitAll == nil then
+        waitAll = true
+    end
+    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
+    local find_controls_lua = function(controls, waitAll)
+        local loadedControls = 0
+        for _, control in pairs(controls)do
+            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
+                if not waitAll then
+                   return true
+                end
+                loadedControls = loadedControls + 1
+            end
+        end
+        return table.getn(controls) == loadedControls
+    end
+    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    if not result then
+        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+    end
+    return result
+end
+
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
@@ -516,7 +561,7 @@ end
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local result = WaitUntil(waitTime, IsVisible, name)
+    local result = WaitUntil(waitTime, __IsVisibleNoLog, name)
 	if not result then
         Log("Control not found " .. name, "DEBUG")
     end
@@ -550,6 +595,18 @@ function ClearField(field)
     SetText(field, "")
     ClickControl(field)
     KeyPress(2)
+end
+
+function FastSelectControl(name, waitTime)
+    Log('Scroll to contorol '.. name .. ' through API')
+    local waitTime = waitTime or SMALL_TIMEOUT
+    if not WaitControl(name, waitTime) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    autotestingSystem:ScrollToControl(name)
+    Yield()
+    return ClickControl(name)
 end
 
 function SelectItemInList(listName, item)
@@ -696,12 +753,10 @@ end
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
-function TouchDownPosition(pos, touchId, tapCount)
-    local tapCount = tapCount or 1
+function TouchDownPosition(pos, touchId)
     local touchId = touchId or 1
     local position = Vector.Vector2(pos.x, pos.y)
-    autotestingSystem:TouchDown(position, touchId, tapCount)
-    Yield()
+    autotestingSystem:TouchDown(position, touchId)
 end
 
 function TouchDown(x, y, touchId)
@@ -715,18 +770,18 @@ function TouchUp(touchId)
     autotestingSystem:TouchUp(touchId)
 end
 
-function ClickPosition(position, waitTime, touchId, tapCount)
-    TouchDownPosition(position, touchId, tapCount)
+function ClickPosition(position, waitTime, touchId)
+    Wait(waitTime)
+    TouchDownPosition(position, touchId)
     Wait(waitTime)
     TouchUp(touchId)
-    Wait(waitTime)
 end
 
 function Click(x, y, waitTime, touchId)
     local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
-    ClickPosition(position, touchId, waitTime)
+    ClickPosition(position, waitTime, touchId)
 end
 
 function KeyPress(key, control)
@@ -738,24 +793,25 @@ function KeyPress(key, control)
 end
 
 function ClickControl(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false
 end
 
 function DoubleClick(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId, 2)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
         return true
     end
     return false

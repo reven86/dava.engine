@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UI_LIST_H__
 #define __DAVAENGINE_UI_LIST_H__
 
@@ -62,6 +33,10 @@ class UIList;
  */
 class UIListDelegate
 {
+public:
+    virtual ~UIListDelegate() = default;
+
+private:
     friend class UIList;
 
     /**
@@ -202,9 +177,9 @@ public:
 
     void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
 
-    virtual void SetRect(const Rect& rect);
+    void SetRect(const Rect& rect) override;
 
-    virtual void SetSize(const Vector2& newSize);
+    void SetSize(const Vector2& newSize) override;
 
     void SetOrientation(int32 orientation);
     inline int32 GetOrientation() const
@@ -216,20 +191,17 @@ public:
 
     UIListCell* GetReusableCell(const String& cellIdentifier); //returns cell from the cells cache, if returns 0 you need to create the new one
 
-    virtual void SystemWillAppear(); // Internal method used by ControlSystem
+    void OnActive() override;
 
-    virtual void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader);
-    virtual YamlNode* SaveToYamlNode(UIYamlLoader* loader);
-
-    virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 TotalAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 ViewPosition(UIScrollBar* forScrollBar);
-    virtual void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition);
+    float32 VisibleAreaSize(UIScrollBar* forScrollBar) override;
+    float32 TotalAreaSize(UIScrollBar* forScrollBar) override;
+    float32 ViewPosition(UIScrollBar* forScrollBar) override;
+    void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) override;
 
     UIList* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual const String GetDelegateControlPath(const UIControl* rootControl) const;
+    const String GetDelegateControlPath(const UIControl* rootControl) const override;
 
     bool GetNeedRefresh();
 
@@ -239,10 +211,10 @@ protected:
 
     void FullRefresh();
 
-    virtual void Update(float32 timeElapsed);
+    void Update(float32 timeElapsed) override;
 
-    virtual void Input(UIEvent* currentInput);
-    virtual bool SystemInput(UIEvent* currentInput); // Internal method used by ControlSystem
+    void Input(UIEvent* currentInput) override;
+    bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
 
     Vector<UIListCell*>* GetStoreVector(const String& cellIdentifier);
     void AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 index);

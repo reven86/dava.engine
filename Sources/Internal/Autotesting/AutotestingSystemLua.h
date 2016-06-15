@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_AUTOTESTING_SYSTEM_LUA_H__
 #define __DAVAENGINE_AUTOTESTING_SYSTEM_LUA_H__
 
@@ -102,14 +73,14 @@ public:
 
     // autotesting api
     UIControl* GetScreen();
-    UIControl* FindControl(const String& path);
-    UIControl* FindControl(const String& path, UIControl* screen);
-    UIControl* FindControlOnPopUp(const String& path);
-    UIControl* FindControl(UIControl* srcControl, const String& controlName);
-    UIControl* FindControl(UIControl* srcControl, int32 index);
-    UIControl* FindControl(UIList* srcList, int32 index);
+    UIControl* FindControl(const String& path) const;
+    UIControl* FindControl(const String& path, UIControl* screen) const;
+    UIControl* FindControlOnPopUp(const String& path) const;
+    UIControl* FindControl(UIControl* srcControl, const String& controlName) const;
+    UIControl* FindControl(UIControl* srcControl, int32 index) const;
+    UIControl* FindControl(UIList* srcList, int32 index) const;
 
-    bool IsCenterInside(UIControl* parent, UIControl* child);
+    bool IsCenterInside(UIControl* parent, UIControl* child) const;
     bool IsSelected(UIControl* control) const;
 
     bool IsListHorisontal(UIControl* control);
@@ -119,9 +90,11 @@ public:
     Vector2 GetContainerScrollPosition(UIControl* control);
     Vector2 GetMaxContainerOffsetSize(UIControl* control);
 
-    void TouchDown(const Vector2& point, int32 touchId, int32 tapCount);
+    void TouchDown(const Vector2& point, int32 touchId);
     void TouchMove(const Vector2& point, int32 touchId);
     void TouchUp(int32 touchId);
+
+    void ScrollToControl(const String& path) const;
 
     // Keyboard action
     void KeyPress(int32 keyChar);
@@ -154,10 +127,11 @@ public:
     String GetTestParameter(const String& device);
 
     String MakeScreenshot();
+    bool GetIsScreenShotSaving() const;
 
 protected:
 #if !defined(SWIG)
-    inline void ParsePath(const String& path, Vector<String>& parsedPath);
+    inline void ParsePath(const String& path, Vector<String>& parsedPath) const;
 
     bool LoadScript(const String& luaScript);
     bool LoadScriptFromFile(const FilePath& luaFilePath);

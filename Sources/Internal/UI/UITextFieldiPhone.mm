@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
@@ -39,7 +10,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/TemplateiOS/WebViewControliOS.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
@@ -341,6 +312,11 @@ void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffse
 
     nativeRect = CGRectIntegral(nativeRect);
     nativeRect.origin.x += xOffset;
+
+    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
+    nativeRect.size.width = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.width);
+    nativeRect.size.height = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.height);
+
     textFieldHolder->textCtrl.frame = nativeRect;
 }
 
@@ -385,7 +361,11 @@ void TextFieldPlatformImpl::GetText(WideString& string) const
     DVASSERT(nullptr != textInField);
 
     const char* cstr = [textInField cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+    DVASSERT_MSG(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
+    if (nullptr != cstr)
+    {
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+    }
 }
 
 void TextFieldPlatformImpl::SetIsPassword(bool isPassword)

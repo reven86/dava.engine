@@ -1,18 +1,21 @@
 #include "LogWidget.h"
+#include "LogModel.h"
+#include "LogFilterModel.h"
+#include "LogDelegate.h"
+
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Debug/DVAssert.h"
+#include "Base/GlobalEnum.h"
+
+PUSH_QT_WARNING_SUPRESSOR
+#include "ui_LogWidget.h"
 #include <QDebug>
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QThread>
-
-#include "LogModel.h"
-#include "LogFilterModel.h"
-#include "LogDelegate.h"
-#include "Base/GlobalEnum.h"
-#include "Debug/DVAssert.h"
-#include "ui_LogWidget.h"
-
-#include "QtTools/WidgetHelpers/SharedIcon.h"
+POP_QT_WARNING_SUPRESSOR
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
@@ -32,7 +35,7 @@ LogWidget::LogWidget(QWidget* parent)
     ui->log->setModel(logFilterModel);
     ui->log->installEventFilter(this);
     ui->log->setUniformItemSizes(true);
-    LogDelegate *logDelegate = new LogDelegate(ui->log);
+    LogDelegate* logDelegate = new LogDelegate(ui->log);
     FillFiltersCombo();
     connect(logDelegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
     connect(logDelegate, &LogDelegate::clearRequest, logModel, &LogModel::Clear);
@@ -101,7 +104,7 @@ void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const QByteArray& msg)
 
 void LogWidget::FillFiltersCombo()
 {
-    const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
+    const auto& logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
     for (size_t i = 0; i < logMap->GetCount(); ++i)
     {
         int value;
@@ -133,15 +136,15 @@ bool LogWidget::eventFilter(QObject* watched, QEvent* event)
         switch (event->type())
         {
         case QEvent::KeyPress:
+        {
+            QKeyEvent* ke = static_cast<QKeyEvent*>(event);
+            if (ke->matches(QKeySequence::Copy))
             {
-                QKeyEvent* ke = static_cast<QKeyEvent *>(event);
-                if (ke->matches(QKeySequence::Copy))
-                {
-                    OnCopy();
-                    return true;
-                }
+                OnCopy();
+                return true;
             }
-            break;
+        }
+        break;
 
         default:
             break;
@@ -156,9 +159,9 @@ void LogWidget::OnCopy()
     const QModelIndexList& selection = ui->log->selectionModel()->selectedIndexes();
     const int n = selection.size();
     if (n == 0)
-        return ;
+        return;
 
-    QMap< int, QModelIndex > sortedSelection;
+    QMap<int, QModelIndex> sortedSelection;
     for (int i = 0; i < n; i++)
     {
         const QModelIndex& index = selection[i];
@@ -190,7 +193,7 @@ void LogWidget::UpdateScroll()
     ui->log->scrollToBottom();
 }
 
-void LogWidget::OnItemClicked(const QModelIndex &index)
+void LogWidget::OnItemClicked(const QModelIndex& index)
 {
-   emit ItemClicked(logFilterModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+    emit ItemClicked(logFilterModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
 };

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <QApplication>
 #include <QDebug>
 
@@ -70,7 +41,6 @@ const auto wheelAdjust = 0.002;
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
-    , debugCamerasCreated(false)
     , curSceneCamera(nullptr)
     , animateToNewPos(false)
     , animateToNewPosTime(0)
@@ -157,7 +127,7 @@ DAVA::uint32 SceneCameraSystem::GetActiveSpeedIndex()
 
 void SceneCameraSystem::SetMoveSpeedArrayIndex(DAVA::uint32 index)
 {
-    DVASSERT(index < 4);
+    DVASSERT(index < 4u);
     activeSpeedIndex = index;
 }
 
@@ -212,8 +182,8 @@ void SceneCameraSystem::LookAt(const DAVA::AABBox3& box)
         DAVA::Vector3 dir = targ - pos;
         dir.Normalize();
 
-        float32 boxSize = ((box.max - box.min).Length());
-        const Vector3 c = box.GetCenter();
+        DAVA::float32 boxSize = ((box.max - box.min).Length());
+        const DAVA::Vector3 c = box.GetCenter();
 
         pos = c - (dir * (boxSize + curSceneCamera->GetZNear() * 1.5f));
         targ = c;
@@ -247,12 +217,12 @@ void SceneCameraSystem::Process(float timeElapsed)
     //TODO: set move speed
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-    WASDControllerSystem* wasdSystem = scene->wasdSystem;
+    DAVA::WASDControllerSystem* wasdSystem = scene->wasdSystem;
     if (wasdSystem)
     {
         wasdSystem->SetMoveSpeed((animateToNewPos) ? 0 : GetMoveSpeed());
     }
-    RotationControllerSystem* rotationSystem = scene->rotationSystem;
+    DAVA::RotationControllerSystem* rotationSystem = scene->rotationSystem;
     if (rotationSystem)
     {
         rotationSystem->SetRotationSpeeed((animateToNewPos) ? 0 : 0.15f);
@@ -265,11 +235,6 @@ void SceneCameraSystem::Process(float timeElapsed)
     }
     //TODO: set move speed
 
-    if (!debugCamerasCreated)
-    {
-        CreateDebugCameras();
-    }
-
     if (nullptr != scene)
     {
         DAVA::Camera* camera = scene->GetDrawCamera();
@@ -281,13 +246,12 @@ void SceneCameraSystem::Process(float timeElapsed)
             if (nullptr != curSceneCamera)
             {
                 SceneCollisionSystem* collSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-                collSystem->UpdateCollisionObject(GetEntityFromCamera(curSceneCamera));
+                collSystem->UpdateCollisionObject(Selectable(GetEntityFromCamera(curSceneCamera)));
             }
 
             // remember current scene camera
             SafeRelease(curSceneCamera);
-            curSceneCamera = camera;
-            SafeRetain(curSceneCamera);
+            curSceneCamera = SafeRetain(camera);
 
             // Recalc camera aspect
             RecalcCameraAspect();
@@ -302,7 +266,7 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
 {
     switch (event->phase)
     {
-    case UIEvent::Phase::KEY_DOWN:
+    case DAVA::UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput(event);
         break;
     default:
@@ -313,16 +277,16 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
 void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
 {
     const auto isModificatorPressed =
-    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LCTRL) ||
-    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LALT) ||
-    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LSHIFT);
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::LCTRL) ||
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::LALT) ||
+    DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::LSHIFT);
     if (isModificatorPressed)
         return;
 
     switch (event->key)
     {
-    case Key::ADD:
-    case Key::EQUALS:
+    case DAVA::Key::ADD:
+    case DAVA::Key::EQUALS:
     {
         auto entity = GetEntityWithEditorCamera();
         auto snapComponent = GetSnapToLandscapeControllerComponent(entity);
@@ -334,8 +298,8 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
         }
     }
     break;
-    case Key::SUBTRACT:
-    case Key::MINUS:
+    case DAVA::Key::SUBTRACT:
+    case DAVA::Key::MINUS:
     {
         auto entity = GetEntityWithEditorCamera();
         auto snapComponent = GetSnapToLandscapeControllerComponent(entity);
@@ -348,20 +312,20 @@ void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)
     }
     break;
 
-    case Key::KEY_T:
-        MoveTo(Vector3(0, 0, 200), Vector3(1, 0, 0));
+    case DAVA::Key::KEY_T:
+        MoveTo(DAVA::Vector3(0, 0, 200), DAVA::Vector3(1, 0, 0));
         break;
 
-    case Key::KEY_1:
+    case DAVA::Key::KEY_1:
         SetMoveSpeedArrayIndex(0);
         break;
-    case Key::KEY_2:
+    case DAVA::Key::KEY_2:
         SetMoveSpeedArrayIndex(1);
         break;
-    case Key::KEY_3:
+    case DAVA::Key::KEY_3:
         SetMoveSpeedArrayIndex(2);
         break;
-    case Key::KEY_4:
+    case DAVA::Key::KEY_4:
         SetMoveSpeedArrayIndex(3);
         break;
 
@@ -379,48 +343,35 @@ void SceneCameraSystem::Draw()
 
         if (nullptr != collSystem)
         {
-            DAVA::Set<DAVA::Entity*>::iterator it = sceneCameras.begin();
-            for (; it != sceneCameras.end(); ++it)
+            for (auto& entity : sceneCameras)
             {
-                DAVA::Entity* entity = *it;
+                DVASSERT(entity != nullptr);
                 DAVA::Camera* camera = GetCamera(entity);
-
-                if (nullptr != entity && nullptr != camera && camera != curSceneCamera)
+                if (nullptr != camera && camera != curSceneCamera)
                 {
-                    AABBox3 worldBox;
-                    AABBox3 collBox = collSystem->GetBoundingBox(*it);
-                    Matrix4 transform;
+                    DAVA::AABBox3 worldBox;
+                    DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
 
+                    DAVA::Matrix4 transform;
                     transform.Identity();
                     transform.SetTranslationVector(camera->GetPosition());
                     collBox.GetTransformedBox(transform, worldBox);
-                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
+                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
                 }
             }
         }
     }
 }
 
-void SceneCameraSystem::ProcessCommand(const Command2* command, bool redo)
-{
-}
-
 void SceneCameraSystem::AddEntity(DAVA::Entity* entity)
 {
-    DAVA::Camera* camera = GetCamera(entity);
-    if (nullptr != camera)
-    {
-        sceneCameras.insert(entity);
-    }
+    DVASSERT(GetCamera(entity) != nullptr);
+    sceneCameras.push_back(entity);
 }
 
 void SceneCameraSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    DAVA::Set<DAVA::Entity*>::iterator it = sceneCameras.find(entity);
-    if (it != sceneCameras.end())
-    {
-        sceneCameras.erase(it);
-    }
+    FindAndRemoveExchangingWithLast(sceneCameras, entity);
 }
 
 void SceneCameraSystem::CreateDebugCameras()
@@ -431,7 +382,7 @@ void SceneCameraSystem::CreateDebugCameras()
     // there already can be other cameras in scene
     if (nullptr != scene)
     {
-        DAVA::Camera* topCamera = new DAVA::Camera();
+        DAVA::ScopedPtr<DAVA::Camera> topCamera(new DAVA::Camera());
         topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
         topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
         topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
@@ -441,7 +392,7 @@ void SceneCameraSystem::CreateDebugCameras()
         topCamera->SetupPerspective(cameraFov, 320.0f / 480.0f, cameraNear, cameraFar);
         topCamera->SetAspect(1.0f);
 
-        DAVA::Entity* topCameraEntity = new DAVA::Entity();
+        DAVA::ScopedPtr<DAVA::Entity> topCameraEntity(new DAVA::Entity());
         topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
         topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
@@ -462,10 +413,6 @@ void SceneCameraSystem::CreateDebugCameras()
         }
 
         scene->AddCamera(topCamera);
-
-        SafeRelease(topCamera);
-
-        debugCamerasCreated = true;
     }
 }
 
@@ -533,9 +480,9 @@ void SceneCameraSystem::UpdateDistanceToCamera()
 {
     SceneEditor2* sc = (SceneEditor2*)GetScene();
 
-    Vector3 center = sc->selectionSystem->GetSelection().GetCommonBbox().GetCenter();
+    DAVA::Vector3 center = sc->selectionSystem->GetSelection().GetIntegralBoundingBox().GetCenter();
 
-    const Camera* cam = GetScene()->GetCurrentCamera();
+    const DAVA::Camera* cam = GetScene()->GetCurrentCamera();
     if (cam)
     {
         distanceToCamera = (cam->GetPosition() - center).Length();
@@ -553,22 +500,15 @@ DAVA::float32 SceneCameraSystem::GetDistanceToCamera() const
 
 DAVA::Entity* SceneCameraSystem::GetEntityFromCamera(DAVA::Camera* c) const
 {
-    DAVA::Entity* ret = nullptr;
-
-    DAVA::Set<DAVA::Entity*>::iterator it = sceneCameras.begin();
-    for (; it != sceneCameras.end(); ++it)
+    for (auto& entity : sceneCameras)
     {
-        DAVA::Entity* entity = *it;
-        DAVA::Camera* camera = GetCamera(entity);
-
-        if (camera == c)
+        if (GetCamera(entity) == c)
         {
-            ret = entity;
-            break;
+            return entity;
         }
     }
 
-    return ret;
+    return nullptr;
 }
 
 void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2& point, DAVA::float32 maxRayLen, DAVA::Vector3& outPointFrom, DAVA::Vector3& outPointTo) const
@@ -593,11 +533,11 @@ void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2& point, DAVA::float3
 
 DAVA::Entity* SceneCameraSystem::GetEntityWithEditorCamera() const
 {
-    int32 cameraCount = GetScene()->GetCameraCount();
-    for (int32 i = 0; i < cameraCount; ++i)
+    DAVA::int32 cameraCount = GetScene()->GetCameraCount();
+    for (DAVA::int32 i = 0; i < cameraCount; ++i)
     {
-        Camera* c = GetScene()->GetCamera(i);
-        Entity* e = GetEntityFromCamera(c);
+        DAVA::Camera* c = GetScene()->GetCamera(i);
+        DAVA::Entity* e = GetEntityFromCamera(c);
         if (e && e->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
         {
             return e;
@@ -609,28 +549,28 @@ DAVA::Entity* SceneCameraSystem::GetEntityWithEditorCamera() const
 
 bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 {
-    Entity* entity = GetEntityWithEditorCamera();
+    DAVA::Entity* entity = GetEntityWithEditorCamera();
     if (!entity)
         return false;
 
     SceneEditor2* scene = static_cast<SceneEditor2*>(GetScene());
 
-    SnapToLandscapeControllerComponent* snapComponent = GetSnapToLandscapeControllerComponent(entity);
+    DAVA::SnapToLandscapeControllerComponent* snapComponent = GetSnapToLandscapeControllerComponent(entity);
     if (snap)
     {
         if (!snapComponent)
         {
-            float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+            DAVA::float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
 
-            snapComponent = static_cast<SnapToLandscapeControllerComponent*>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+            snapComponent = static_cast<DAVA::SnapToLandscapeControllerComponent*>(DAVA::Component::CreateByType(DAVA::Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            scene->Exec(new AddComponentCommand(entity, snapComponent));
+            scene->Exec(Command2::Create<AddComponentCommand>(entity, snapComponent));
         }
     }
     else if (snapComponent)
     {
-        scene->Exec(new RemoveComponentCommand(entity, snapComponent));
+        scene->Exec(Command2::Create<RemoveComponentCommand>(entity, snapComponent));
     }
 
     return true;
@@ -638,7 +578,7 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 
 bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
 {
-    Entity* entity = GetEntityWithEditorCamera();
+    DAVA::Entity* entity = GetEntityWithEditorCamera();
     return (GetSnapToLandscapeControllerComponent(entity) != nullptr);
 }
 
@@ -648,7 +588,7 @@ void SceneCameraSystem::MoveToSelection()
     if (sceneEditor == nullptr)
         return;
 
-    const EntityGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
         LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
@@ -664,4 +604,9 @@ void SceneCameraSystem::MoveToStep(int ofs)
     const auto target = dest + direction;
 
     MoveTo(dest, target);
+}
+
+void SceneCameraSystem::EnableSystem()
+{
+    CreateDebugCameras();
 }

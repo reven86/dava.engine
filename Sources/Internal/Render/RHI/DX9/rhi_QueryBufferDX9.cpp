@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_dx9.h"
@@ -88,15 +60,14 @@ dx9_QueryBuffer_Delete(Handle handle)
     if (buf)
     {
         std::vector<DX9Command> cmd;
+        cmd.reserve(buf->query.size());
 
-        for (std::vector<IDirect3DQuery9 *>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
+        for (IDirect3DQuery9* q : buf->query)
         {
-            DX9Command c = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
-
-            cmd.push_back(c);
+            cmd.push_back({ DX9Command::RELEASE, { uint64_t(&q) } });
         }
 
-        ExecDX9(&cmd[0], cmd.size());
+        ExecDX9(cmd.data(), static_cast<uint32>(cmd.size()), false);
         buf->query.clear();
     }
 
@@ -128,7 +99,7 @@ dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
             DWORD val;
             DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
 
-            ExecDX9(&cmd, 1);
+            ExecDX9(&cmd, 1, false);
 
             if (SUCCEEDED(cmd.retval))
             {
@@ -155,7 +126,7 @@ dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
             DWORD val = 0;
             DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
 
-            ExecDX9(&cmd, 1);
+            ExecDX9(&cmd, 1, false);
 
             if (cmd.retval == S_OK)
             {

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_SCENE_H__
 #define __DAVAENGINE_SCENE_H__
 
@@ -49,14 +20,11 @@ namespace DAVA
 
 class Texture;
 class StaticMesh;
-class AnimatedMesh;
-class SceneNodeAnimationList;
 class DataNode;
 class ShadowVolumeNode;
 class Light;
 class ShadowRect;
 class QuadTree;
-class MeshInstanceNode;
 class Component;
 class SceneSystem;
 class RenderSystem;
@@ -71,7 +39,6 @@ class LightUpdateSystem;
 class SwitchSystem;
 class SoundUpdateSystem;
 class ActionUpdateSystem;
-class MaterialSystem;
 class StaticOcclusionSystem;
 class StaticOcclusionDebugDrawSystem;
 class SpeedTreeUpdateSystem;
@@ -80,6 +47,7 @@ class WindSystem;
 class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
+class LandscapeSystem;
 
 class UIEvent;
 
@@ -127,7 +95,7 @@ public:
         SCENE_SYSTEM_ACTION_UPDATE_FLAG = 1 << 9,
 
         SCENE_SYSTEM_STATIC_OCCLUSION_FLAG = 1 << 11,
-        //        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
+        SCENE_SYSTEM_LANDSCAPE_FLAG = 1 << 12,
         SCENE_SYSTEM_FOLIAGE_FLAG = 1 << 13,
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG = 1 << 15,
@@ -164,7 +132,7 @@ public:
      */
     void UnregisterComponent(Entity* entity, Component* component);
 
-    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = NULL);
+    virtual void AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem* insertBeforeSceneForProcess = nullptr);
     virtual void RemoveSystem(SceneSystem* sceneSystem);
 
     //virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
@@ -194,24 +162,20 @@ public:
     AnimationSystem* animationSystem;
     StaticOcclusionDebugDrawSystem* staticOcclusionDebugDrawSystem;
     SkeletonSystem* skeletonSystem;
+    LandscapeSystem* landscapeSystem;
 
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
-    virtual Scene* GetScene();
+    Scene* GetScene() override;
 
-    void AddAnimatedMesh(AnimatedMesh* mesh);
-    void RemoveAnimatedMesh(AnimatedMesh* mesh);
-    AnimatedMesh* GetAnimatedMesh(int32 index);
-    inline int32 GetAnimatedMeshCount();
-
-    virtual void HandleEvent(Observable* observable); //Handle RenderOptions
+    void HandleEvent(Observable* observable) override; //Handle RenderOptions
 
     //virtual void StopAllAnimations(bool recursive = true);
 
-    virtual void Update(float timeElapsed);
-    virtual void Draw();
-    virtual void SceneDidLoaded();
+    virtual void Update(float32 timeElapsed);
+    void Draw() override;
+    void SceneDidLoaded() override;
 
     virtual void SetupTestLighting();
 
@@ -240,8 +204,8 @@ public:
     RenderSystem* GetRenderSystem() const;
     AnimationSystem* GetAnimationSystem() const;
 
-    SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
-    SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
+    virtual SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
+    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 
@@ -279,11 +243,9 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
-    Vector<AnimatedMesh*> animatedMeshes;
     Vector<Camera*> cameras;
 
     NMaterial* sceneGlobalMaterial;
-    void ImportShadowColor(Entity* rootNode);
 
     Camera* mainCamera;
     Camera* drawCamera;
@@ -293,14 +255,9 @@ protected:
     friend class Entity;
 };
 
-int32 Scene::GetAnimatedMeshCount()
-{
-    return (int32)animatedMeshes.size();
-}
-
 int32 Scene::GetCameraCount()
 {
-    return (int32)cameras.size();
+    return static_cast<int32>(cameras.size());
 }
 };
 

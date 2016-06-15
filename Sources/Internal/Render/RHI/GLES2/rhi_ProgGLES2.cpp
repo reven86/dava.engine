@@ -1,38 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "rhi_ProgGLES2.h"
+#include "rhi_ProgGLES2.h"
     #include "../Common/rhi_Private.h"
     #include "../Common/dbg_StatSet.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_RingBuffer.h"
 
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "Debug/Profiler.h"
 
@@ -165,7 +137,7 @@ bool ProgGLES2::Construct(const char* srcCode)
         {
             Logger::Error("%sprog-compile failed:", (type == PROG_VERTEX) ? "v" : "f");
             Logger::Error(info);
-            DumpShaderTextGLES2(srcCode, strlen(srcCode));
+            DumpShaderTextGLES2(srcCode, static_cast<unsigned>(strlen(srcCode)));
         }
 
         memset(cbufLastBoundData, 0, sizeof(cbufLastBoundData));
@@ -189,13 +161,14 @@ void ProgGLES2::GetProgParams(unsigned progUid)
     {
         char name[32];
         sprintf(name, "%s_Buffer%u_Block", (type == PROG_VERTEX) ? "VP" : "FP", i);
-        GLuint loc = glGetUniformBlockIndex(progUid, name);
+        GLuint loc;
+        GL_CALL(loc = glGetUniformBlockIndex(progUid, name));
 
         if (loc != GL_INVALID_INDEX)
         {
             GLint sz;
 
-            glGetActiveUniformBlockiv(progUid, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &sz);
+            GL_CALL(glGetActiveUniformBlockiv(progUid, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &sz));
             GL_CALL(glUniformBlockBinding(progUid, loc, loc));
 
             cbuf[i].location = loc;
@@ -323,7 +296,8 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
         ConstBuf* cb = ConstBufGLES2Pool::Get(handle);
 
-        if (!cb->Construct(prog, (void**)(&(cbufLastBoundData[bufIndex])), cbuf[bufIndex].location, cbuf[bufIndex].count))
+        void** data = const_cast<void**>(&cbufLastBoundData[bufIndex]);
+        if (!cb->Construct(prog, data, cbuf[bufIndex].location, cbuf[bufIndex].count))
         {
             ConstBufGLES2Pool::Free(handle);
             handle = InvalidHandle;
@@ -342,7 +316,7 @@ void ProgGLES2::SetupTextureUnits(unsigned baseUnit) const
         if (texunitLoc[i] != -1)
         {
             //{SCOPED_NAMED_TIMING("gl-Uniform1i")}
-            glUniform1i(texunitLoc[i], baseUnit + i);
+            GL_CALL(glUniform1i(texunitLoc[i], baseUnit + i));
         }
     }
 }
@@ -354,9 +328,9 @@ bool ProgGLES2::ConstBuf::Construct(uint32 prog, void** lastBoundData, unsigned 
     bool success = true;
 
     glProg = prog;
-    location = (uint16)loc;
-    count = (uint16)cnt;
-    data = (float*)(::malloc(cnt * 4 * sizeof(float)));
+    location = static_cast<uint16>(loc);
+    count = static_cast<uint16>(cnt);
+    data = reinterpret_cast<float*>(::malloc(cnt * 4 * sizeof(float)));
     inst = nullptr;
     lastInst = lastBoundData;
     *lastInst = nullptr;
@@ -539,8 +513,9 @@ void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
     if (instData != *lastInst)
     {
         //SCOPED_NAMED_TIMING("gl-Uniform4fv");
-        GL_CALL(glUniform4fv(location, count, (GLfloat*)instData));
-        *lastInst = (void*)(instData);
+        GLfloat* data = reinterpret_cast<GLfloat*>(const_cast<void*>(instData));
+        GL_CALL(glUniform4fv(location, count, data));
+        *lastInst = const_cast<void*>(instData);
     }
 
     StatSet::IncStat(stat_SET_CB, 1);

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "configparser.h"
@@ -36,15 +7,21 @@
 #include "defines.h"
 #include "filemanager.h"
 #include "configdownloader.h"
+#include "errormessenger.h"
+#include "branchesListModel.h"
+#include "branchesFilterModel.h"
+
 #include <QSet>
 #include <QQueue>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QLabel>
 #include <QVariant>
 #include <QComboBox>
-#include <QSortFilterProxyModel>
-#include "listModel.h"
+
+static const QString stateKey = "mainWindow_state";
+static const QString geometryKey = "mainWindow_geometry";
 
 class BranchListComparator
 {
@@ -66,8 +43,14 @@ public:
 //expected format of input string: 0.8_2015-02-14_11.20.12_0000,
 //where 0.8 - DAVA version, 2015-02-14 - build date, 11.20.12 - build time and 0000 - build version
 //all blocks can be modified or empty
-bool VersionListComparator(const QString& left, const QString& right)
+bool VersionListComparator(const AppVersion& leftVer, const AppVersion& rightVer)
 {
+    const QString& left = leftVer.id;
+    const QString& right = rightVer.id;
+    if (left == right)
+    {
+        return leftVer.buildNum < rightVer.buildNum;
+    }
     QStringList leftList = left.split('_', QString::SkipEmptyParts);
     QStringList rightList = right.split('_', QString::SkipEmptyParts);
 
@@ -112,70 +95,49 @@ bool VersionListComparator(const QString& left, const QString& right)
 };
 
 MainWindow::MainWindow(QWidget* parent)
-    :
-    QMainWindow(parent)
-    ,
-    ui(new Ui::MainWindow)
-    ,
-    appManager(0)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->action_updateConfiguration->setShortcuts(QList<QKeySequence>() << QKeySequence("F5") << QKeySequence("Ctrl+R"));
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
 
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
-    connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
-    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
+    connect(ui->textBrowser, &QTextBrowser::anchorClicked, this, &MainWindow::OnlinkClicked);
+    connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::OnRefreshClicked);
+    connect(ui->action_downloadAll, &QAction::triggered, this, &MainWindow::OnInstallAll);
+    connect(ui->action_removeAll, &QAction::triggered, this, &MainWindow::OnRemoveAll);
     connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
-    connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
-    appManager = new ApplicationManager();
-    networkManager = new QNetworkAccessManager(this);
-    newsDownloader = new FileDownloader(networkManager);
+    appManager = new ApplicationManager(this);
+    newsDownloader = new FileDownloader(this);
 
-    connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
-    connect(newsDownloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
-            this, SLOT(NewsDownloadFinished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)));
-    listModel = new ListModel(appManager, this);
-    filterModel = new QSortFilterProxyModel(this);
+    connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
+    listModel = new BranchesListModel(appManager, this);
+    filterModel = new BranchesFilterModel(this);
     filterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit_search, &QLineEdit::textChanged, filterModel, &QSortFilterProxyModel::setFilterFixedString);
     filterModel->setSourceModel(listModel);
     ui->listView->setModel(filterModel);
 
-    UpdateURLValue();
+    //if run this method directly qApp->exec() will be called twice
+    QMetaObject::invokeMethod(this, "OnRefreshClicked", Qt::QueuedConnection);
 
-    OnRefreshClicked();
+    QSettings settings;
+    restoreGeometry(settings.value(geometryKey).toByteArray());
+    restoreState(settings.value(stateKey).toByteArray());
 }
 
 MainWindow::~MainWindow()
 {
+    QSettings settings;
+    settings.setValue(geometryKey, saveGeometry());
+    settings.setValue(stateKey, saveState());
     SafeDelete(ui);
-    SafeDelete(appManager);
-    SafeDelete(newsDownloader);
-    SafeDelete(networkManager);
 }
 
-void MainWindow::OnURLClicked()
-{
-    QInputDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-    dialog.setTextValue(appManager->GetLocalConfig()->GetRemoteConfigURL());
-    dialog.setWindowTitle("Config URL");
-    dialog.setLabelText("Input new config URL:");
-    dialog.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    dialog.resize(width() / 2, -1);
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-        appManager->GetLocalConfig()->SetRemoteConfigURL(dialog.textValue());
-        UpdateURLValue();
-
-        OnRefreshClicked();
-    }
-}
 void MainWindow::OnlinkClicked(QUrl url)
 {
     QDesktopServices::openUrl(url);
@@ -195,6 +157,69 @@ void MainWindow::OnRun(int rowNumber)
         appManager->RunApplication(selectedBranchID, appID, insVersionID);
 }
 
+void MainWindow::OnInstallAll()
+{
+    QQueue<UpdateTask> tasks;
+    ConfigParser* remoteConfig = appManager->GetRemoteConfig();
+    for (int i = 0, count = ui->tableWidget->rowCount(); i < count; ++i)
+    {
+        QString appID, insVersionID, avVersionID;
+        GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
+        AppVersion* version = remoteConfig->GetAppVersion(selectedBranchID, appID, avVersionID);
+        if (version != nullptr)
+        {
+            tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+        }
+    }
+
+    if (!tasks.isEmpty())
+    {
+        ShowUpdateDialog(tasks);
+    }
+    ShowTable(selectedBranchID);
+}
+
+void MainWindow::OnRemoveAll()
+{
+    QMessageBox msbox(QMessageBox::Information, tr("Remove all installed applications"),
+                      tr("Are you sure you want to remove all installed applications in branch %1?").arg(selectedBranchID),
+                      QMessageBox::Yes | QMessageBox::No);
+    if (msbox.exec() == QMessageBox::No)
+    {
+        return;
+    }
+    QQueue<UpdateTask> tasks;
+    for (int i = 0, count = ui->tableWidget->rowCount(); i < count; ++i)
+    {
+        QString appID, insVersionID, avVersionID;
+        GetTableApplicationIDs(i, appID, insVersionID, avVersionID);
+        if (!appID.isEmpty() && !insVersionID.isEmpty())
+        {
+            appManager->RemoveApplication(selectedBranchID, appID, insVersionID);
+        }
+    }
+    ShowTable(selectedBranchID);
+}
+
+void MainWindow::OnInstall(int rowNumber)
+{
+    QString appID, insVersionID, avVersionID;
+    GetTableApplicationIDs(rowNumber, appID, insVersionID, avVersionID);
+
+    AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
+    if (version == nullptr)
+    {
+        Q_ASSERT(false);
+        return;
+    }
+    QQueue<UpdateTask> tasks;
+    tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
+
+    ShowUpdateDialog(tasks);
+
+    ShowTable(selectedBranchID);
+}
+
 void MainWindow::OnRemove(int rowNumber)
 {
     QString appID, insVersionID, avVersionID;
@@ -211,39 +236,28 @@ void MainWindow::OnRemove(int rowNumber)
     }
 }
 
-void MainWindow::OnInstall(int rowNumber)
-{
-    QString appID, insVersionID, avVersionID;
-    GetTableApplicationIDs(rowNumber, appID, insVersionID, avVersionID);
-
-    AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
-    QQueue<UpdateTask> tasks;
-    tasks.push_back(UpdateTask(selectedBranchID, appID, *version));
-
-    ShowUpdateDialog(tasks);
-
-    ShowTable(selectedBranchID);
-}
-
 void MainWindow::OnRefreshClicked()
 {
-    if (appManager->GetLocalConfig()->GetRemoteConfigURL().isEmpty())
-        return;
+    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
-    FileManager::Instance()->ClearTempDirectory();
-
-    ConfigDownloader downloader(appManager, networkManager, this);
-    downloader.exec();
+    ConfigDownloader downloader(appManager, this);
+    if (downloader.exec() == QDialog::Accepted)
+    {
+        CheckUpdates();
+    }
 
     RefreshApps();
 }
 
-void MainWindow::RefreshApps()
+void MainWindow::CheckUpdates()
 {
     QQueue<UpdateTask> tasks;
     appManager->CheckUpdates(tasks);
     ShowUpdateDialog(tasks);
+}
 
+void MainWindow::RefreshApps()
+{
     RefreshBranchesList();
 
     if (appManager->ShouldShowNews())
@@ -256,7 +270,7 @@ void MainWindow::RefreshApps()
 
 void MainWindow::OnListItemClicked(QModelIndex qindex)
 {
-    QVariant var = ui->listView->model()->data(qindex, ListModel::DAVA_WIDGET_ROLE);
+    QVariant var = ui->listView->model()->data(qindex, BranchesListModel::DAVA_WIDGET_ROLE);
     QString dataRole = var.toString();
     if (!dataRole.isEmpty())
     {
@@ -296,6 +310,8 @@ void MainWindow::ShowTable(const QString& branchID)
 {
     if (branchID == CONFIG_LAUNCHER_WEBPAGE_KEY || branchID.isEmpty())
     {
+        ui->action_removeAll->setEnabled(false);
+        ui->action_downloadAll->setEnabled(false);
         ShowWebpage();
         return;
     }
@@ -310,6 +326,7 @@ void MainWindow::ShowTable(const QString& branchID)
     if (remoteConfig)
     {
         Branch* remoteBranch = remoteConfig->GetBranch(branchID);
+        ui->action_downloadAll->setEnabled(remoteBranch != nullptr && remoteBranch->GetAppCount() != 0);
         if (remoteBranch)
         {
             int appCount = remoteBranch->GetAppCount();
@@ -352,21 +369,23 @@ void MainWindow::ShowTable(const QString& branchID)
                 states.push_back(state);
             }
         }
-        else
+        Branch* localBranch = localConfig->GetBranch(branchID);
+        if (localBranch)
         {
-            Branch* localBranch = localConfig->GetBranch(branchID);
-            if (localBranch)
+            int appCount = localBranch->GetAppCount();
+            for (int i = 0; i < appCount; ++i)
             {
-                int appCount = localBranch->GetAppCount();
-                ui->tableWidget->setRowCount(appCount);
-                for (int i = 0; i < appCount; ++i)
+                Application* localApp = localBranch->GetApplication(i);
+                if (remoteBranch != nullptr && remoteBranch->GetApplication(localApp->id) != nullptr)
                 {
-                    Application* localApp = localBranch->GetApplication(i);
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
-                    ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
-
-                    states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
+                    continue;
                 }
+                int rowCount = ui->tableWidget->rowCount();
+                ui->tableWidget->setRowCount(rowCount + 1);
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+
+                states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
             }
         }
     }
@@ -387,8 +406,7 @@ void MainWindow::ShowTable(const QString& branchID)
             }
         }
     }
-    else
-        return;
+    ui->action_removeAll->setEnabled(ui->tableWidget->rowCount() != 0);
 
     for (int i = 0; i < ui->tableWidget->rowCount(); ++i)
     {
@@ -412,20 +430,20 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url, networkManager);
+            SelfUpdater updater(tasks.front().version.url);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)
+            {
                 return;
-
+            }
             tasks.dequeue();
         }
         if (!tasks.isEmpty())
         {
             //application update
-            UpdateDialog dialog(tasks, appManager, networkManager, this);
-            connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
-                    appManager, SLOT(OnAppInstalled(QString, QString, AppVersion)));
+            UpdateDialog dialog(tasks, appManager, this);
+            connect(&dialog, &UpdateDialog::AppInstalled, appManager, &ApplicationManager::OnAppInstalled);
             dialog.exec();
         }
     }
@@ -435,15 +453,15 @@ void MainWindow::RefreshBranchesList()
 {
     ConfigParser* localConfig = appManager->GetLocalConfig();
     ConfigParser* remoteConfig = appManager->GetRemoteConfig();
-    listModel->clearItems();
+    listModel->ClearItems();
 
     if (!localConfig->GetWebpageURL().isEmpty())
     {
-        listModel->addItem(CONFIG_LAUNCHER_WEBPAGE_KEY, ListModel::LIST_ITEM_NEWS);
-        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem(CONFIG_LAUNCHER_WEBPAGE_KEY, BranchesListModel::LIST_ITEM_NEWS);
+        listModel->AddItem("", BranchesListModel::LIST_ITEM_SEPARATOR);
     }
 
-    QVector<QString> favs;
+    QStringList favs;
     QSet<QString> branchIDs;
     if (localConfig)
     {
@@ -468,25 +486,26 @@ void MainWindow::RefreshBranchesList()
         const QString& branchID = favs[i];
         if (branchesList.contains(branchID))
         {
-            listModel->addItem(branchID, ListModel::LIST_ITEM_FAVORITES);
+            listModel->AddItem(branchID, BranchesListModel::LIST_ITEM_FAVORITES);
             hasFavorite = true;
         }
     }
     if (hasFavorite)
-        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
+        listModel->AddItem("", BranchesListModel::LIST_ITEM_SEPARATOR);
 
     //Add Others
     for (int i = 0; i < branchesCount; i++)
     {
         const QString& branchID = branchesList[i];
         if (!favs.contains(branchID))
-            listModel->addItem(branchID, ListModel::LIST_ITEM_BRANCH);
+            listModel->AddItem(branchID, BranchesListModel::LIST_ITEM_BRANCH);
     }
 }
 
 QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID)
 {
-    QLabel* item = new QLabel(appManager->GetString(stringID));
+    QString string = appManager->GetString(stringID);
+    QLabel* item = new QLabel(string);
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
     item->setFont(tableFont);
 
@@ -500,7 +519,7 @@ QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID)
     item->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     item->setContextMenuPolicy(Qt::CustomContextMenu);
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
-    connect(item, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(OnCellClicked(QPoint)));
+    connect(item, &QLabel::customContextMenuRequested, this, &MainWindow::OnCellClicked);
 
     return item;
 }
@@ -514,18 +533,12 @@ QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app)
     }
     else
     {
-        QList<QString> versions;
-        for (int j = 0; j < versCount; ++j)
-        {
-            versions.push_back(app->GetVersion(j)->id);
-        }
-
-        qSort(versions.begin(), versions.end(), VersionListComparator);
+        qSort(app->versions.begin(), app->versions.end(), VersionListComparator);
 
         QComboBox* comboBox = new QComboBox();
         for (int j = versCount - 1; j >= 0; --j)
         {
-            comboBox->addItem(versions[j]);
+            comboBox->addItem(app->versions[j].id);
         }
         comboBox->view()->setTextElideMode(Qt::ElideLeft);
         comboBox->setFont(tableFont);
@@ -566,9 +579,4 @@ void MainWindow::UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState s
     ButtonsWidget* buttons = dynamic_cast<ButtonsWidget*>(ui->tableWidget->cellWidget(rowNumber, COLUMN_BUTTONS));
     if (buttons)
         buttons->SetButtonsState(state);
-}
-
-void MainWindow::UpdateURLValue()
-{
-    ui->labelRemoteURL->setText(appManager->GetLocalConfig()->GetRemoteConfigURL());
 }

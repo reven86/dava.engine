@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UI/UIFileSystemDialog.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
@@ -66,13 +37,13 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     fileListView = new UIList(Rect(border, border + cellH, size.x - border * 2.0f, size.y - cellH * 3.0f - border * 3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);
     fileListView->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    fileListView->GetBackground()->SetColor(Color(0.25, 0.25, 0.25, 0.25));
+    fileListView->GetBackground()->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
     AddControl(fileListView);
 
     lastSelectionTime = 0;
 
     Font* f = FTFont::Create(fontPath);
-    f->SetSize((float32)(int32(cellH * 2.0f) / 3));
+    f->SetSize(static_cast<float32>(int32(cellH * 2.0f) / 3));
 
     title = new UIStaticText(Rect(border, halfBorder, size.x - border * 2.0f, cellH));
     title->SetFont(f);
@@ -85,7 +56,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     workingPath = new UIStaticText(Rect(border, halfBorder + fileListView->size.y + fileListView->relativePosition.y, size.x - border * 2.0f, cellH));
     workingPath->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     workingPath->SetFont(f);
-    workingPath->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    workingPath->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     workingPath->SetFittingOption(TextBlock::FITTING_REDUCE);
     workingPath->SetText(L"c:");
     AddControl(workingPath);
@@ -104,7 +75,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     positiveButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::ButtonPressed));
     AddControl(positiveButton);
 
-    negativeButton = new UIButton(Rect((float32)positiveButton->relativePosition.x - buttonW - border, positiveButton->relativePosition.y, buttonW, cellH));
+    negativeButton = new UIButton(Rect(static_cast<float32>(positiveButton->relativePosition.x) - buttonW - border, positiveButton->relativePosition.y, buttonW, cellH));
     negativeButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     negativeButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.6f, 0.5f, 0.5f, 0.5f));
     negativeButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -275,7 +246,7 @@ void UIFileSystemDialog::SetCurrentDir(const FilePath& newDirPath, bool rebuildH
 
     // enable/disable navigation buttons
     historyBackwardButton->SetDisabled(0 == historyPosition, false);
-    historyForwardButton->SetDisabled(historyPosition == (int32)foldersHistory.size() - 1, false);
+    historyForwardButton->SetDisabled(historyPosition == static_cast<int32>(foldersHistory.size()) - 1, false);
 
     //    Logger::Info("Setting path: %s", currentDir.c_str());
     //    Logger::Info("Setting file: %s", selectedFile.c_str());
@@ -470,22 +441,22 @@ UIListCell* UIFileSystemDialog::CellAtIndex(UIList* forList, int32 index)
     UIListCell* c = forList->GetReusableCell("File cell"); //try to get cell from the reusable cells store
     if (!c)
     { //if cell of requested type isn't find in the store create new cell
-        c = new UIListCell(Rect(0, 0, (float32)forList->size.x, (float32)cellH), "File cell");
-        UIStaticText* text = new UIStaticText(Rect(0, 0, (float32)forList->size.x, (float32)cellH));
+        c = new UIListCell(Rect(0, 0, static_cast<float32>(forList->size.x), static_cast<float32>(cellH)), "File cell");
+        UIStaticText* text = new UIStaticText(Rect(0, 0, static_cast<float32>(forList->size.x), static_cast<float32>(cellH)));
         c->AddControl(text);
-        text->SetName("CellText");
+        text->SetName(FastName("CellText"));
         text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
         text->SetFittingOption(TextBlock::FITTING_REDUCE);
-        text->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
+        text->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
 
         Font* f = FTFont::Create(fontPath);
-        f->SetSize((float32)cellH * 2 / 3);
+        f->SetSize(static_cast<float32>(cellH) * 2 / 3);
         text->SetFont(f);
         text->SetTextColor(Color(1.f, 1.f, 1.f, 1.f));
         SafeRelease(f);
         c->GetBackground()->SetColor(Color(0.75, 0.75, 0.75, 0.5));
     }
-    UIStaticText* t = (UIStaticText*)c->FindByName("CellText");
+    UIStaticText* t = static_cast<UIStaticText*>(c->FindByName("CellText"));
     if (fileUnits[index].type == FUNIT_FILE)
     {
         t->SetText(StringToWString(fileUnits[index].name));
@@ -572,7 +543,7 @@ void UIFileSystemDialog::HistoryButtonPressed(BaseObject* obj, void* data, void*
     }
     else if (obj == historyForwardButton)
     {
-        if (historyPosition < (int32)foldersHistory.size() - 1)
+        if (historyPosition < static_cast<int32>(foldersHistory.size()) - 1)
         {
             SetCurrentDir(foldersHistory[historyPosition + 1]);
         }
@@ -594,7 +565,7 @@ void UIFileSystemDialog::CreateHistoryForPath(const FilePath& pathToFile)
     Vector<String> folders;
     Split(absPath.substr(pos), "/", folders);
 
-    for (int32 iFolder = 0; iFolder < (int32)folders.size(); ++iFolder)
+    for (int32 iFolder = 0; iFolder < static_cast<int32>(folders.size()); ++iFolder)
     {
         FilePath f = foldersHistory[iFolder] + folders[iFolder];
         f.MakeDirectoryPathname();

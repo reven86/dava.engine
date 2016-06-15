@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 #define __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 
@@ -63,7 +34,8 @@ public:
 
         if (nullptr != object)
         {
-            size = static_cast<int>(((CollectionT*)object)->size());
+            CollectionT* collection = static_cast<CollectionT*>(object);
+            size = static_cast<int>(collection->size());
         }
 
         return size;
@@ -75,7 +47,7 @@ public:
 
         if (nullptr != object)
         {
-            CollectionT* collection = (CollectionT*)object;
+            CollectionT* collection = static_cast<CollectionT*>(object);
 
             typename CollectionT::iterator begin = collection->begin();
             typename CollectionT::iterator end = collection->end();
@@ -86,7 +58,7 @@ public:
                 pos->curPos = begin;
                 pos->endPos = end;
 
-                i = (Iterator)pos;
+                i = static_cast<Iterator>(pos);
             }
         }
 
@@ -95,7 +67,7 @@ public:
 
     Iterator Next(Iterator i) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
 
         if (nullptr != pos)
         {
@@ -113,7 +85,7 @@ public:
 
     void Finish(Iterator i) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
             delete pos;
@@ -122,20 +94,20 @@ public:
 
     void ItemValueGet(Iterator i, void* itemDst) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
-            T* dstT = (T*)itemDst;
+            T* dstT = static_cast<T*>(itemDst);
             *dstT = *(pos->curPos);
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
-            T* srcT = (T*)itemSrc;
+            T* srcT = static_cast<T*>(itemSrc);
             *(pos->curPos) = *srcT;
         }
     }
@@ -143,7 +115,7 @@ public:
     void* ItemPointer(Iterator i) const
     {
         void* p = nullptr;
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
 
         if (nullptr != pos)
         {
@@ -157,7 +129,7 @@ public:
     {
         if (ItemType()->IsPointer())
         {
-            return *((void**)ItemPointer(i));
+            return *(static_cast<void**>(ItemPointer(i)));
         }
         else
         {
@@ -220,7 +192,8 @@ public:
 
         if (nullptr != object)
         {
-            size = ((CollectionT*)object)->size();
+            CollectionT* collection = static_cast<CollectionT*>(object);
+            size = collection->size();
         }
 
         return size;
@@ -232,7 +205,7 @@ public:
 
         if (nullptr != object)
         {
-            CollectionT* collection = (CollectionT*)object;
+            CollectionT* collection = static_cast<CollectionT*>(object);
 
             typename CollectionT::iterator begin = collection->begin();
             typename CollectionT::iterator end = collection->end();
@@ -243,7 +216,7 @@ public:
                 pos->curPos = begin;
                 pos->endPos = end;
 
-                i = (Iterator)pos;
+                i = static_cast<Iterator>(pos);
             }
         }
 
@@ -252,7 +225,7 @@ public:
 
     Iterator Next(Iterator i) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
 
         if (nullptr != pos)
         {
@@ -270,7 +243,7 @@ public:
 
     void Finish(Iterator i) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
             delete pos;
@@ -279,20 +252,20 @@ public:
 
     void ItemValueGet(Iterator i, void* itemDst) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
-            V* dstT = (V*)itemDst;
+            V* dstT = static_cast<V*>(itemDst);
             *dstT = pos->curPos->second;
         }
     }
 
-    void ItemValueSet(Iterator i, void* itemSrc)
+    void ItemValueSet(Iterator i, void* itemSrc) const
     {
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
         if (nullptr != pos)
         {
-            V* srcT = (V*)itemSrc;
+            V* srcT = static_cast<V*>(itemSrc);
             pos->curPos->second = *srcT;
         }
     }
@@ -300,7 +273,7 @@ public:
     void* ItemPointer(Iterator i) const
     {
         void* p = nullptr;
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
 
         if (nullptr != pos)
         {
@@ -319,7 +292,7 @@ public:
     {
         if (ItemType()->IsPointer())
         {
-            return *((void**)ItemPointer(i));
+            return *(static_cast<void**>(ItemPointer(i)));
         }
         else
         {
@@ -335,7 +308,7 @@ public:
     const void* ItemKeyPointer(Iterator i) const
     {
         const void* p = nullptr;
-        CollectionPos* pos = (CollectionPos*)i;
+        CollectionPos* pos = static_cast<CollectionPos*>(i);
 
         if (nullptr != pos)
         {
@@ -349,7 +322,7 @@ public:
     {
         if (ItemKeyType()->IsPointer())
         {
-            return *((const void**)ItemKeyPointer(i));
+            return *(static_cast<const void**>(ItemKeyPointer(i)));
         }
         else
         {

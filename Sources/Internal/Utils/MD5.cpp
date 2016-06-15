@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Utils/MD5.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
@@ -106,16 +77,17 @@ void MD5::ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecur
 {
     MD5 md5;
     md5.Init();
-    MD5::RecursiveDirectoryMD5(pathName, md5, isRecursive, includeHidden);
+    MD5::CalculateDirectoryMD5(pathName, md5, isRecursive, includeHidden);
     md5.Final();
 
     digest = md5.GetDigest();
 }
 
-void MD5::RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden)
+void MD5::CalculateDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden)
 {
     ScopedPtr<FileList> fileList(new FileList(pathName, includeHidden));
     fileList->Sort();
+
     for (int i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsHidden(i) && !includeHidden)
@@ -132,7 +104,7 @@ void MD5::RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecur
                     String name = fileList->GetPathname(i).GetLastDirectoryName();
                     md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
 
-                    RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
+                    CalculateDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
                 }
             }
         }
@@ -244,36 +216,36 @@ static unsigned char PADDING[64] = {
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */
 #define FF(a, b, c, d, x, s, ac) \
-  {(a) += F((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += F((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define GG(a, b, c, d, x, s, ac) \
-  {(a) += G((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += G((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define HH(a, b, c, d, x, s, ac) \
-  {(a) += H((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += H((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 #define II(a, b, c, d, x, s, ac) \
-  {(a) += I((b), (c), (d)) + (x) + (uint32)(ac); \
+  {(a) += I((b), (c), (d)) + (x) + static_cast<uint32>(ac); \
    (a) = ROTATE_LEFT((a), (s)); \
    (a) += (b); \
   }
 
 void MD5::Init()
 {
-    this->i[0] = this->i[1] = (uint32)0;
+    this->i[0] = this->i[1] = 0;
 
     /* Load magic initialization constants.
    */
-    this->buf[0] = (uint32)0x67452301;
-    this->buf[1] = (uint32)0xefcdab89;
-    this->buf[2] = (uint32)0x98badcfe;
-    this->buf[3] = (uint32)0x10325476;
+    this->buf[0] = 0x67452301;
+    this->buf[1] = 0xefcdab89;
+    this->buf[2] = 0x98badcfe;
+    this->buf[3] = 0x10325476;
 }
 
 void MD5::Update(const uint8* inBuf, uint32 inLen)
@@ -283,13 +255,13 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
     unsigned int i, ii;
 
     /* compute number of bytes mod 64 */
-    mdi = (int)((this->i[0] >> 3) & 0x3F);
+    mdi = static_cast<int>((this->i[0] >> 3) & 0x3F);
 
     /* update number of bits */
-    if ((this->i[0] + ((uint32)inLen << 3)) < this->i[0])
+    if ((this->i[0] + (inLen << 3)) < this->i[0])
         this->i[1]++;
-    this->i[0] += ((uint32)inLen << 3);
-    this->i[1] += ((uint32)inLen >> 29);
+    this->i[0] += (inLen << 3);
+    this->i[1] += (inLen >> 29);
 
     while (inLen--)
     {
@@ -300,10 +272,10 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
         if (mdi == 0x40)
         {
             for (i = 0, ii = 0; i < 16; i++, ii += 4)
-                in[i] = (((uint32) this->in[ii + 3]) << 24) |
-                (((uint32) this->in[ii + 2]) << 16) |
-                (((uint32) this->in[ii + 1]) << 8) |
-                ((uint32) this->in[ii]);
+                in[i] = ((static_cast<uint32>(this->in[ii + 3])) << 24) |
+                ((static_cast<uint32>(this->in[ii + 2])) << 16) |
+                ((static_cast<uint32>(this->in[ii + 1])) << 8) |
+                (static_cast<uint32>(this->in[ii]));
             Transform(this->buf, in);
             mdi = 0;
         }
@@ -322,7 +294,7 @@ void MD5::Final()
     in[15] = this->i[1];
 
     /* compute number of bytes mod 64 */
-    mdi = (int)((this->i[0] >> 3) & 0x3F);
+    mdi = static_cast<int>((this->i[0] >> 3) & 0x3F);
 
     /* pad out to 56 mod 64 */
     padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
@@ -330,22 +302,22 @@ void MD5::Final()
 
     /* append length in bits and transform */
     for (i = 0, ii = 0; i < 14; i++, ii += 4)
-        in[i] = (((uint32) this->in[ii + 3]) << 24) |
-        (((uint32) this->in[ii + 2]) << 16) |
-        (((uint32) this->in[ii + 1]) << 8) |
-        ((uint32) this->in[ii]);
+        in[i] = ((static_cast<uint32>(this->in[ii + 3])) << 24) |
+        ((static_cast<uint32>(this->in[ii + 2]) << 16)) |
+        ((static_cast<uint32>(this->in[ii + 1]) << 8)) |
+        (static_cast<uint32>(this->in[ii]));
     Transform(this->buf, in);
 
     /* store buffer in digest */
     for (i = 0, ii = 0; i < 4; i++, ii += 4)
     {
-        this->digest.digest[ii] = (unsigned char)(this->buf[i] & 0xFF);
+        this->digest.digest[ii] = static_cast<unsigned char>(this->buf[i] & 0xFF);
         this->digest.digest[ii + 1] =
-        (unsigned char)((this->buf[i] >> 8) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 8) & 0xFF);
         this->digest.digest[ii + 2] =
-        (unsigned char)((this->buf[i] >> 16) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 16) & 0xFF);
         this->digest.digest[ii + 3] =
-        (unsigned char)((this->buf[i] >> 24) & 0xFF);
+        static_cast<unsigned char>((this->buf[i] >> 24) & 0xFF);
     }
 }
 

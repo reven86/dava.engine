@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "../SceneEditor2.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
@@ -37,6 +8,7 @@
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
@@ -44,19 +16,19 @@
 
 #include "Scene/SceneHelper.h"
 
-LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
+LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
 {
 }
 
 LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 {
-    SafeRelease(baseLandscape);
-    SafeRelease(landscapeProxy);
-    SafeRelease(heightmapProxy);
-    SafeRelease(customColorsProxy);
-    SafeRelease(rulerToolProxy);
-    SafeDelete(notPassableTerrainProxy);
+    DAVA::SafeRelease(baseLandscape);
+    DAVA::SafeRelease(landscapeProxy);
+    DAVA::SafeRelease(heightmapProxy);
+    DAVA::SafeRelease(customColorsProxy);
+    DAVA::SafeRelease(rulerToolProxy);
+    DAVA::SafeDelete(notPassableTerrainProxy);
 }
 
 LandscapeProxy* LandscapeEditorDrawSystem::GetLandscapeProxy()
@@ -156,7 +128,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
         return enableCustomDrawError;
     }
 
-    Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
+    DAVA::Rect2i updateRect = DAVA::Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
     notPassableTerrainProxy->SetEnabled(true);
     notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 
@@ -165,17 +137,18 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
-void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
+bool LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 {
     if (!notPassableTerrainProxy || !notPassableTerrainProxy->IsEnabled())
     {
-        return;
+        return false;
     }
 
     notPassableTerrainProxy->SetEnabled(false);
     landscapeProxy->SetToolTexture(nullptr, false);
 
     DisableCustomDraw();
+    return true;
 }
 
 void LandscapeEditorDrawSystem::EnableCursor()
@@ -188,12 +161,12 @@ void LandscapeEditorDrawSystem::DisableCursor()
     landscapeProxy->CursorDisable();
 }
 
-void LandscapeEditorDrawSystem::SetCursorTexture(Texture* cursorTexture)
+void LandscapeEditorDrawSystem::SetCursorTexture(DAVA::Texture* cursorTexture)
 {
     landscapeProxy->SetCursorTexture(cursorTexture);
 }
 
-void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
+void LandscapeEditorDrawSystem::SetCursorSize(DAVA::float32 cursorSize)
 {
     if (landscapeProxy)
     {
@@ -201,7 +174,7 @@ void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
     }
 }
 
-void LandscapeEditorDrawSystem::SetCursorPosition(const Vector2& cursorPos)
+void LandscapeEditorDrawSystem::SetCursorPosition(const DAVA::Vector2& cursorPos)
 {
     if (landscapeProxy)
     {
@@ -213,8 +186,9 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 {
     if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
     {
-        const Rect& changedRect = heightmapProxy->GetChangedRect();
-        Rect2i updateRect = Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy);
+        const DAVA::Rect& changedRect = heightmapProxy->GetChangedRect();
+        DAVA::Rect2i updateRect(static_cast<DAVA::int32>(changedRect.x), static_cast<DAVA::int32>(changedRect.y),
+                                static_cast<DAVA::int32>(changedRect.dx), static_cast<DAVA::int32>(changedRect.dy));
 
         if (customDrawRequestCount == 0)
         {
@@ -224,7 +198,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
         {
             if (baseLandscape->IsUpdatable())
             {
-                baseLandscape->UpdatePart(heightmapProxy, updateRect);
+                baseLandscape->UpdatePart(updateRect);
             }
             else
             {
@@ -248,71 +222,69 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 
 void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 {
-    Heightmap* h = new Heightmap();
+    DAVA::ScopedPtr<DAVA::Heightmap> h(new DAVA::Heightmap());
     heightmapProxy->Clone(h);
 
     baseLandscape->SetHeightmap(h);
 
-    SafeRelease(h);
-
     GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
 
-float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
+DAVA::float32 LandscapeEditorDrawSystem::GetTextureSize(const DAVA::FastName& level)
 {
-    float32 size = 0.f;
-    Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
+    DAVA::float32 size = 0.f;
+    DAVA::Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
     if (texture)
     {
-        size = (float32)texture->GetWidth();
+        size = static_cast<DAVA::float32>(texture->GetWidth());
     }
     return size;
 }
 
-Vector3 LandscapeEditorDrawSystem::GetLandscapeSize()
+DAVA::Vector3 LandscapeEditorDrawSystem::GetLandscapeSize()
 {
-    AABBox3 transformedBox;
+    DAVA::AABBox3 transformedBox;
     baseLandscape->GetBoundingBox().GetTransformedBox(*baseLandscape->GetWorldTransformPtr(), transformedBox);
 
-    Vector3 landSize = transformedBox.max - transformedBox.min;
+    DAVA::Vector3 landSize = transformedBox.max - transformedBox.min;
     return landSize;
 }
 
-float32 LandscapeEditorDrawSystem::GetLandscapeMaxHeight()
+DAVA::float32 LandscapeEditorDrawSystem::GetLandscapeMaxHeight()
 {
-    Vector3 landSize = GetLandscapeSize();
+    DAVA::Vector3 landSize = GetLandscapeSize();
     return landSize.z;
 }
 
-Rect LandscapeEditorDrawSystem::GetTextureRect(const FastName& level)
+DAVA::Rect LandscapeEditorDrawSystem::GetTextureRect(const DAVA::FastName& level)
 {
-    float32 textureSize = GetTextureSize(level);
-    return Rect(Vector2(0.f, 0.f), Vector2(textureSize, textureSize));
+    DAVA::float32 textureSize = GetTextureSize(level);
+    return DAVA::Rect(DAVA::Vector2(0.f, 0.f), DAVA::Vector2(textureSize, textureSize));
 }
 
-Rect LandscapeEditorDrawSystem::GetHeightmapRect()
+DAVA::Rect LandscapeEditorDrawSystem::GetHeightmapRect()
 {
-    float32 heightmapSize = (float32)GetHeightmapProxy()->Size();
-    return Rect(Vector2(0.f, 0.f), Vector2(heightmapSize, heightmapSize));
+    DAVA::float32 heightmapSize = static_cast<DAVA::float32>(GetHeightmapProxy()->Size());
+    return DAVA::Rect(DAVA::Vector2(0.f, 0.f), DAVA::Vector2(heightmapSize, heightmapSize));
 }
 
-Rect LandscapeEditorDrawSystem::GetLandscapeRect()
+DAVA::Rect LandscapeEditorDrawSystem::GetLandscapeRect()
 {
-    AABBox3 boundingBox = GetLandscapeProxy()->GetLandscapeBoundingBox();
-    Vector2 landPos(boundingBox.min.x, boundingBox.min.y);
-    Vector2 landSize((boundingBox.max - boundingBox.min).x,
-                     (boundingBox.max - boundingBox.min).y);
+    DAVA::AABBox3 boundingBox = GetLandscapeProxy()->GetLandscapeBoundingBox();
+    DAVA::Vector2 landPos(boundingBox.min.x, boundingBox.min.y);
+    DAVA::Vector2 landSize((boundingBox.max - boundingBox.min).x,
+                           (boundingBox.max - boundingBox.min).y);
 
-    return Rect(landPos, landSize);
+    return DAVA::Rect(landPos, landSize);
 }
 
-float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const Vector2& point)
+DAVA::float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const DAVA::Vector2& point)
 {
-    Heightmap* heightmap = GetHeightmapProxy();
+    DAVA::Heightmap* heightmap = GetHeightmapProxy();
 
-    int32 hmSize = heightmap->Size();
-    int32 x = (int32)point.x;
-    int32 y = (int32)point.y;
+    DAVA::int32 hmSize = heightmap->Size();
+    DAVA::int32 x = static_cast<DAVA::int32>(point.x);
+    DAVA::int32 y = static_cast<DAVA::int32>(point.y);
 
     DVASSERT_MSG((x >= 0) && (x < hmSize) && (y >= 0) && (y < hmSize),
                  "Point must be in heightmap coordinates");
@@ -336,10 +308,10 @@ float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const Vector2& poin
     float h1 = h10 * (1.0f - dx) + h11 * dx;
     float h = h0 * (1.0f - dy) + h1 * dy;
 
-    return h * GetLandscapeMaxHeight() / static_cast<float>(Heightmap::MAX_VALUE);
+    return h * GetLandscapeMaxHeight() / static_cast<DAVA::float32>(DAVA::Heightmap::MAX_VALUE);
 }
 
-float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const FastName& level, const Vector2& point)
+DAVA::float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const DAVA::FastName& level, const DAVA::Vector2& point)
 {
     auto textureRect = GetTextureRect(level);
     if (textureRect.PointInside(point))
@@ -350,46 +322,46 @@ float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const FastName& level
     return 0.0f;
 }
 
-Vector2 LandscapeEditorDrawSystem::HeightmapPointToTexturePoint(const FastName& level, const Vector2& point)
+DAVA::Vector2 LandscapeEditorDrawSystem::HeightmapPointToTexturePoint(const DAVA::FastName& level, const DAVA::Vector2& point)
 {
     return TranslatePoint(point, GetHeightmapRect(), GetTextureRect(level));
 }
 
-Vector2 LandscapeEditorDrawSystem::TexturePointToHeightmapPoint(const FastName& level, const Vector2& point)
+DAVA::Vector2 LandscapeEditorDrawSystem::TexturePointToHeightmapPoint(const DAVA::FastName& level, const DAVA::Vector2& point)
 {
     return TranslatePoint(point, GetTextureRect(level), GetHeightmapRect());
 }
 
-Vector2 LandscapeEditorDrawSystem::TexturePointToLandscapePoint(const FastName& level, const Vector2& point)
+DAVA::Vector2 LandscapeEditorDrawSystem::TexturePointToLandscapePoint(const DAVA::FastName& level, const DAVA::Vector2& point)
 {
     return TranslatePoint(point, GetTextureRect(level), GetLandscapeRect());
 }
 
-Vector2 LandscapeEditorDrawSystem::LandscapePointToTexturePoint(const FastName& level, const Vector2& point)
+DAVA::Vector2 LandscapeEditorDrawSystem::LandscapePointToTexturePoint(const DAVA::FastName& level, const DAVA::Vector2& point)
 {
     return TranslatePoint(point, GetLandscapeRect(), GetTextureRect(level));
 }
 
-Vector2 LandscapeEditorDrawSystem::TranslatePoint(const Vector2& point, const Rect& fromRect, const Rect& toRect)
+DAVA::Vector2 LandscapeEditorDrawSystem::TranslatePoint(const DAVA::Vector2& point, const DAVA::Rect& fromRect, const DAVA::Rect& toRect)
 {
     DVASSERT(fromRect.dx != 0.f && fromRect.dy != 0.f);
 
-    Vector2 origRectSize = fromRect.GetSize();
-    Vector2 destRectSize = toRect.GetSize();
+    DAVA::Vector2 origRectSize = fromRect.GetSize();
+    DAVA::Vector2 destRectSize = toRect.GetSize();
 
-    Vector2 scale(destRectSize.x / origRectSize.x,
-                  destRectSize.y / origRectSize.y);
+    DAVA::Vector2 scale(destRectSize.x / origRectSize.x,
+                        destRectSize.y / origRectSize.y);
 
-    Vector2 relPos = point - fromRect.GetPosition();
-    Vector2 newRelPos(relPos.x * scale.x,
-                      toRect.dy - 1.0f - relPos.y * scale.y);
+    DAVA::Vector2 relPos = point - fromRect.GetPosition();
+    DAVA::Vector2 newRelPos(relPos.x * scale.x,
+                            toRect.dy - 1.0f - relPos.y * scale.y);
 
-    Vector2 newPos = newRelPos + toRect.GetPosition();
+    DAVA::Vector2 newPos = newRelPos + toRect.GetPosition();
 
     return newPos;
 }
 
-KeyedArchive* LandscapeEditorDrawSystem::GetLandscapeCustomProperties()
+DAVA::KeyedArchive* LandscapeEditorDrawSystem::GetLandscapeCustomProperties()
 {
     return GetOrCreateCustomProperties(landscapeNode)->GetArchive();
 }
@@ -414,29 +386,29 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 {
     if (heightmapProxy == nullptr)
     {
-        Heightmap* heightmap = baseLandscape->GetHeightmap();
+        DAVA::Heightmap* heightmap = baseLandscape->GetHeightmap();
         if ((heightmap == nullptr) || (heightmap->Size() == 0))
         {
             return LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
         }
-        ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+        DAVA::ScopedPtr<DAVA::Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
         heightmapProxy = new HeightmapProxy(clonedHeightmap);
     }
 
     if (customColorsProxy == nullptr)
     {
-        customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
+        customColorsProxy = new CustomColorsProxy(static_cast<DAVA::int32>(GetTextureSize(DAVA::Landscape::TEXTURE_COLOR)));
     }
 
     if (rulerToolProxy == nullptr)
     {
-        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
+        rulerToolProxy = new RulerToolProxy(static_cast<DAVA::int32>(GetTextureSize(DAVA::Landscape::TEXTURE_COLOR)));
     }
 
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
-LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(Entity* landscapeEntity, Landscape* landscape)
+LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(DAVA::Entity* landscapeEntity, DAVA::Landscape* landscape)
 {
     DeinitLandscape();
 
@@ -450,6 +422,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
     UpdateTilemaskPathname();
 
+    DVASSERT(landscapeProxy == nullptr);
     landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -462,19 +435,19 @@ void LandscapeEditorDrawSystem::DeinitLandscape()
     SafeRelease(baseLandscape);
 }
 
-void LandscapeEditorDrawSystem::ClampToTexture(const FastName& level, Rect& rect)
+void LandscapeEditorDrawSystem::ClampToTexture(const DAVA::FastName& level, DAVA::Rect& rect)
 {
     GetTextureRect(level).ClampToRect(rect);
 }
 
-void LandscapeEditorDrawSystem::ClampToHeightmap(Rect& rect)
+void LandscapeEditorDrawSystem::ClampToHeightmap(DAVA::Rect& rect)
 {
     GetHeightmapRect().ClampToRect(rect);
 }
 
 void LandscapeEditorDrawSystem::AddEntity(DAVA::Entity* entity)
 {
-    Landscape* landscape = GetLandscape(entity);
+    DAVA::Landscape* landscape = GetLandscape(entity);
     if (landscape != NULL)
     {
         entity->SetLocked(true);
@@ -492,7 +465,7 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
         bool needRemoveBaseLandscape = sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL
                                                                    & ~SceneEditor2::LANDSCAPE_TOOL_TILEMAP_EDITOR);
 
-        sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+        sceneEditor->DisableToolsInstantly(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 
         if (needRemoveBaseLandscape)
         {
@@ -501,7 +474,7 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 
         DeinitLandscape();
 
-        Entity* entity = FindLandscapeEntity(sceneEditor);
+        DAVA::Entity* entity = FindLandscapeEntity(sceneEditor);
         if (entity != NULL)
         {
             InitLandscape(entity, GetLandscape(entity));
@@ -516,14 +489,14 @@ bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
         return false;
     }
 
-    Texture* texture = GetTileMaskTexture();
+    DAVA::Texture* texture = GetTileMaskTexture();
     if (texture != nullptr)
     {
-        Image* image = texture->CreateImageFromMemory();
+        DAVA::Image* image = texture->CreateImageFromMemory();
 
         if (image)
         {
-            ImageSystem::Instance()->Save(sourceTilemaskPath, image);
+            DAVA::ImageSystem::Save(sourceTilemaskPath, image);
             SafeRelease(image);
         }
 
@@ -542,22 +515,22 @@ void LandscapeEditorDrawSystem::ResetTileMaskTexture()
         return;
     }
 
-    ScopedPtr<Texture> texture(Texture::CreateFromFile(sourceTilemaskPath));
+    DAVA::ScopedPtr<DAVA::Texture> texture(DAVA::Texture::CreateFromFile(sourceTilemaskPath));
     texture->Reload();
     SetTileMaskTexture(texture);
 }
 
-void LandscapeEditorDrawSystem::SetTileMaskTexture(Texture* texture)
+void LandscapeEditorDrawSystem::SetTileMaskTexture(DAVA::Texture* texture)
 {
     if (baseLandscape == nullptr)
     {
         return;
     }
 
-    NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
+    DAVA::NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
     while (landscapeMaterial != nullptr)
     {
-        if (landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
+        if (landscapeMaterial->HasLocalTexture(DAVA::Landscape::TEXTURE_TILEMASK))
             break;
 
         landscapeMaterial = landscapeMaterial->GetParent();
@@ -565,18 +538,18 @@ void LandscapeEditorDrawSystem::SetTileMaskTexture(Texture* texture)
 
     if (landscapeMaterial != nullptr)
     {
-        landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
+        landscapeMaterial->SetTexture(DAVA::Landscape::TEXTURE_TILEMASK, texture);
     }
 }
 
-Texture* LandscapeEditorDrawSystem::GetTileMaskTexture()
+DAVA::Texture* LandscapeEditorDrawSystem::GetTileMaskTexture()
 {
     if (baseLandscape != nullptr)
     {
-        NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
+        DAVA::NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
         if (landscapeMaterial != nullptr)
         {
-            return landscapeMaterial->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+            return landscapeMaterial->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
         }
     }
 
@@ -591,19 +564,19 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
         return LANDSCAPE_EDITOR_SYSTEM_LANDSCAPE_ENTITY_ABSENT;
     }
 
-    Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
+    DAVA::Texture* tileMask = landscapeProxy->GetLandscapeTexture(DAVA::Landscape::TEXTURE_TILEMASK);
     if (tileMask == nullptr || tileMask->IsPinkPlaceholder())
     {
         return LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT;
     }
 
-    Texture* texTile = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILE);
+    DAVA::Texture* texTile = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILE);
     if ((texTile == nullptr || texTile->IsPinkPlaceholder()))
     {
         return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE_ABSENT;
     }
 
-    Texture* texColor = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_COLOR);
+    DAVA::Texture* texColor = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR);
     if ((texColor == nullptr || texColor->IsPinkPlaceholder()))
     {
         return LANDSCAPE_EDITOR_SYSTEM_COLOR_TEXTURE_ABSENT;
@@ -612,14 +585,14 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
     return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
-Landscape* LandscapeEditorDrawSystem::GetBaseLandscape() const
+DAVA::Landscape* LandscapeEditorDrawSystem::GetBaseLandscape() const
 {
     return baseLandscape;
 }
 
-String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
+DAVA::String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 {
-    String ret;
+    DAVA::String ret;
     switch (error)
     {
     case LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS:
@@ -656,42 +629,52 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 
 void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    if (command == NULL)
-    {
-        return;
-    }
+    static const DAVA::FastName heightmapPath("heightmapPath");
 
-    switch (command->GetId())
+    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-    case CMDID_INSP_MEMBER_MODIFY:
-    {
-        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (String("heightmapPath") == cmd->member->Name().c_str())
-        {
-            Heightmap* heightmap = baseLandscape->GetHeightmap();
-            if ((heightmap != nullptr) && (heightmap->Size() > 0))
+        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+            if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
-                ScopedPtr<Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
-                heightmapProxy = new HeightmapProxy(clonedHeightmap);
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (heightmapPath == cmd->member->Name() && baseLandscape != nullptr)
+                {
+                    DAVA::Heightmap* heightmap = baseLandscape->GetHeightmap();
+                    if ((heightmap != nullptr) && (heightmap->Size() > 0))
+                    {
+                        DAVA::ScopedPtr<DAVA::Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+                        SafeRelease(heightmapProxy);
+                        heightmapProxy = new HeightmapProxy(clonedHeightmap);
 
-                int32 size = heightmapProxy->Size();
-                heightmapProxy->UpdateRect(Rect(0.f, 0.f, (float32)size, (float32)size));
+                        DAVA::float32 size = static_cast<DAVA::float32>(heightmapProxy->Size());
+                        heightmapProxy->UpdateRect(DAVA::Rect(0.f, 0.f, size, size));
+                    }
+                }
+            }
+            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
+            {
+                const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+                if (DAVA::Landscape::TEXTURE_TILEMASK == cmd->key)
+                {
+                    UpdateTilemaskPathname();
+                }
+            }
+
+        };
+
+        if (command->GetId() == CMDID_BATCH)
+        {
+            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::uint32 count = batch->Size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                ProcessSingleCommand(batch->GetCommand(i), redo);
             }
         }
-        break;
-    }
-    case CMDID_INSP_DYNAMIC_MODIFY:
-    {
-        const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
-        if (DAVA::FastName("tileMask") == cmd->key)
+        else
         {
-            UpdateTilemaskPathname();
+            ProcessSingleCommand(command, redo);
         }
-        break;
-    }
-
-    default:
-        break;
     }
 }
 
@@ -699,7 +682,7 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
 {
     if (nullptr != baseLandscape)
     {
-        auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+        auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
         if (nullptr != texture)
         {
             sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();

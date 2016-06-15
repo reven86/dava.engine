@@ -1,39 +1,11 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../rhi_ShaderCache.h"
     #include "../Common/rhi_Pool.h"
 
     #include "rhi_ProgGLES2.h"
     #include "rhi_GLES2.h"
     
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "FileSystem/File.h"
     #include "FileSystem/FileSystem.h"
 using DAVA::Logger;
@@ -48,14 +20,28 @@ namespace rhi
 namespace PipelineStateGLES2
 {
 static int cachedBlendEnabled = -1;
-static GLenum cachedBlendSrc = (GLenum)0;
-static GLenum cachedBlendDst = (GLenum)0;
+static GLenum cachedBlendSrc = 0;
+static GLenum cachedBlendDst = 0;
 static uint32 cachedProgram = 0;
+static GLboolean mask[4] = { false, false, false, false };
 }
 
 struct
 VertexDeclGLES2
 {
+    struct
+    vattr_t
+    {
+        const GLvoid* pointer;
+        GLint size;
+        GLenum type;
+        int divisor;
+        GLboolean normalized;
+        bool enabled;
+    };
+
+    static vattr_t vattr[VATTR_COUNT];
+
     VertexDeclGLES2()
         : elemCount(0)
         , vattrInited(false)
@@ -154,7 +140,7 @@ VertexDeclGLES2
             }
 
             elem[elemCount].count = layout.ElementDataCount(i);
-            elem[elemCount].offset = (void*)(uint64(layout.ElementOffset(i)));
+            elem[elemCount].offset = reinterpret_cast<void*>(uint64(layout.ElementOffset(i)));
             elem[elemCount].index = DAVA::InvalidIndex;
             elem[elemCount].streamIndex = stream_i;
             elem[elemCount].attrDivisor = (layout.StreamFrequency(stream_i) == VDF_PER_INSTANCE) ? 1 : 0;
@@ -197,18 +183,6 @@ VertexDeclGLES2
 
         memset(attr_used, 0, sizeof(attr_used));
 
-        struct
-        vattr_t
-        {
-            bool enabled;
-            GLint size;
-            GLenum type;
-            GLboolean normalized;
-            int divisor;
-            const GLvoid* pointer;
-        };
-
-        static vattr_t vattr[VATTR_COUNT];
         static unsigned cur_stride[MAX_VERTEX_STREAM_COUNT];
         static unsigned cur_stream_count = 0;
         static bool needInit = true;
@@ -254,7 +228,7 @@ VertexDeclGLES2
 
         for (unsigned i = 0; i != elemCount; ++i)
         {
-            if (cur_stream_count != streamCount)
+            if (!VAttrCacheValid || cur_stream_count != streamCount)
             {
                 if (elem[i].streamIndex != stream)
                 {
@@ -277,27 +251,30 @@ VertexDeclGLES2
                     vattr[idx].enabled = true;
                 }
 
-                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != (GLboolean)(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset)))
+                if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != GLboolean(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset)))
                 {
                     //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
-                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride[stream], (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset))));
+                    GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, GLboolean(elem[i].normalized), stride[stream], static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset))));
 
                     vattr[idx].size = elem[i].count;
                     vattr[idx].type = elem[i].type;
-                    vattr[idx].normalized = (GLboolean)(elem[i].normalized);
-                    vattr[idx].pointer = (const GLvoid*)(base[stream] + (uint8_t*)(elem[i].offset));
+                    vattr[idx].normalized = GLboolean(elem[i].normalized);
+                    vattr[idx].pointer = static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset));
                 }
 
-                if (!VAttrCacheValid && vattr[idx].divisor != elem[i].attrDivisor)
+                if (!VAttrCacheValid || vattr[idx].divisor != elem[i].attrDivisor)
                 {
                     #if defined(__DAVAENGINE_IPHONE__)
-                    glVertexAttribDivisorEXT(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisorEXT(idx, elem[i].attrDivisor));
                     #elif defined(__DAVAENGINE_ANDROID__)
-                    glVertexAttribDivisor_EXT(idx, elem[i].attrDivisor);
+                    if (glVertexAttribDivisor)
+                    {
+                        GL_CALL(glVertexAttribDivisor(idx, elem[i].attrDivisor));
+                    }
                     #elif defined(__DAVAENGINE_MACOS__)
-                    glVertexAttribDivisorARB(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisorARB(idx, elem[i].attrDivisor));
                     #else
-                    glVertexAttribDivisor(idx, elem[i].attrDivisor);
+                    GL_CALL(glVertexAttribDivisor(idx, elem[i].attrDivisor));
                     #endif
                     vattr[idx].divisor = elem[i].attrDivisor;
                 }
@@ -312,6 +289,16 @@ VertexDeclGLES2
     static void InvalidateVAttrCache()
     {
         VAttrCacheValid = false;
+    }
+
+    static void InvalidateVAttrCacheForTools()
+    {
+        InvalidateVAttrCache();
+
+        for (size_t i = 0; i < VATTR_COUNT; ++i)
+        {
+            vattr[i].enabled = false;
+        }
     }
 
     struct
@@ -338,6 +325,7 @@ VertexDeclGLES2
 };
 
 bool VertexDeclGLES2::VAttrCacheValid = false;
+VertexDeclGLES2::vattr_t VertexDeclGLES2::vattr[VATTR_COUNT];
 
 class
 PipelineStateGLES2_t
@@ -466,8 +454,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
-    fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
+    vprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&vprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&vprog_bin[0]))));
+    fprogSrcHash = DAVA::HashValue_N(reinterpret_cast<const char*>(&fprog_bin[0]), static_cast<uint32>(strlen(reinterpret_cast<const char*>(&fprog_bin[0]))));
 
     for (std::vector<PipelineStateGLES2_t::ProgramEntry>::iterator p = _ProgramEntry.begin(), p_end = _ProgramEntry.end(); p != p_end; ++p)
     {
@@ -524,7 +512,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         // construct vprog
 
         entry.vprog = new VertexProgGLES2();
-        if (entry.vprog->Construct((const char*)(&vprog_bin[0])))
+        if (entry.vprog->Construct(reinterpret_cast<const char*>(&vprog_bin[0])))
         {
             entry.vprog->vdecl.Construct(desc.vertexLayout);
             vprog_valid = true;
@@ -533,7 +521,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
         // construct fprog
 
         entry.fprog = new FragmentProgGLES2();
-        if (entry.fprog->Construct((const char*)(&fprog_bin[0])))
+        if (entry.fprog->Construct(reinterpret_cast<const char*>(&fprog_bin[0])))
         {
             fprog_valid = true;
         }
@@ -556,7 +544,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
               { GLCommand::LINK_PROGRAM, { gl_prog } },
-              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, (uint64_t)(&status) } },
+              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, reinterpret_cast<uint64>(&status) } },
             };
 
             ExecGL(cmd2, countof(cmd2));
@@ -579,7 +567,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
             {
                 char info[1024];
 
-                glGetProgramInfoLog(gl_prog, countof(info), 0, info);
+                GL_CALL(glGetProgramInfoLog(gl_prog, countof(info), 0, info));
                 Trace("prog-link failed:\n");
                 Trace(info);
             }
@@ -766,11 +754,9 @@ void SetToRHI(Handle ps)
         }
     }
 
-    static GLboolean mask[4] = { false, false, false, false };
-
     if (ps2->maskR != mask[0] || ps2->maskG != mask[1] || ps2->maskB != mask[2] || ps2->maskA != mask[3])
     {
-        glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA);
+        GL_CALL(glColorMask(ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA));
         mask[0] = ps2->maskR;
         mask[1] = ps2->maskG;
         mask[2] = ps2->maskB;
@@ -832,11 +818,12 @@ ProgramUid(Handle ps)
 void InvalidateCache()
 {
     cachedBlendEnabled = -1;
-    cachedBlendSrc = (GLenum)0;
-    cachedBlendDst = (GLenum)0;
+    cachedBlendSrc = 0;
+    cachedBlendDst = 0;
     cachedProgram = 0;
+    mask[0] = mask[1] = mask[2] = mask[3] = false;
 
-    VertexDeclGLES2::InvalidateVAttrCache();
+    VertexDeclGLES2::InvalidateVAttrCacheForTools();
 }
 
 void InvalidateVattrCache()

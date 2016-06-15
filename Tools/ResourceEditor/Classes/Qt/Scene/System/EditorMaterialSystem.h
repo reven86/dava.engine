@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __EDITOR_MATERIAL_SYSTEM_H__
 #define __EDITOR_MATERIAL_SYSTEM_H__
 
@@ -73,16 +44,19 @@ public:
 private:
     struct MaterialMapping
     {
-        enum class Mode : DAVA::uint32
-        {
-            RetainedRenderBatch,
-            RenderBatchIndexInRenderObject
-        };
+        MaterialMapping() = default;
+        MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_);
+
+        ~MaterialMapping();
+
+        MaterialMapping(const MaterialMapping& other);
+        MaterialMapping(MaterialMapping&& other) = delete;
+
+        MaterialMapping& operator=(const MaterialMapping& other);
+        MaterialMapping& operator=(MaterialMapping&& other) = delete;
 
         DAVA::Entity* entity = nullptr;
         DAVA::RenderBatch* renderBatch = nullptr;
-        DAVA::uint32 renderBatchIndexInRenderObject = static_cast<DAVA::uint32>(-1);
-        Mode mode = Mode::RenderBatchIndexInRenderObject;
     };
     using MaterialToObjectsMap = DAVA::Map<DAVA::NMaterial*, MaterialMapping>;
 
@@ -91,8 +65,7 @@ private:
 
     void ProcessCommand(const Command2* command, bool redo);
 
-    void AddMaterialsFromEntity(DAVA::Entity* entity);
-    void AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity);
+    void AddMaterials(DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
 
     void RemoveMaterial(DAVA::NMaterial* material);

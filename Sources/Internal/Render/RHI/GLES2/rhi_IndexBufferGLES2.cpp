@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -45,38 +17,44 @@ IndexBufferGLES2_t
 : public ResourceImpl<IndexBufferGLES2_t, IndexBuffer::Descriptor>
 {
 public:
-    IndexBufferGLES2_t()
-        : size(0)
-        , mappedData(nullptr)
-        , uid(0)
-        , is_32bit(false)
-        , isMapped(false)
-        , isUPBuffer(false)
-    {
-    }
+    IndexBufferGLES2_t();
 
     bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
     unsigned size;
-    void* mappedData;
     GLenum usage;
     unsigned uid;
-    uint32 is_32bit : 1;
+    void* mappedData = nullptr;
     uint32 isMapped : 1;
     uint32 updatePending : 1;
+    uint32 is_32bit : 1;
     uint32 isUPBuffer : 1;
 };
-RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor);
+
+RHI_IMPL_RESOURCE(IndexBufferGLES2_t, IndexBuffer::Descriptor)
 
 typedef ResourcePool<IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true> IndexBufferGLES2Pool;
 RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descriptor, true, 3072);
 
 //------------------------------------------------------------------------------
 
+IndexBufferGLES2_t::IndexBufferGLES2_t()
+    : size(0)
+    , uid(0)
+    , isMapped(0)
+    , updatePending(0)
+    , is_32bit(false)
+    , isUPBuffer(false)
+{
+}
+
+//------------------------------------------------------------------------------
+
 bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
     bool success = false;
+    UpdateCreationDesc(desc);
 
     DVASSERT(desc.size);
     if (desc.size)
@@ -99,7 +77,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
         GLuint b = 0;
         if (isUPBuffer)
         {
-            mappedData = ::malloc(desc.size);
+            mappedData = reinterpret_cast<uint8*>(::malloc(desc.size));
 
             if (desc.initialData)
                 memcpy(mappedData, desc.initialData, desc.size);
@@ -108,7 +86,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
         }
         else
         {
-            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, (uint64)(&b) } };
+            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, reinterpret_cast<uint64>(&b) } };
 
             ExecGL(&cmd1, 1, force_immediate);
 
@@ -117,7 +95,7 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
                 GLCommand cmd2[] =
                 {
                   { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
-                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
+                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, reinterpret_cast<uint64>(desc.initialData), usage } },
                   { GLCommand::RESTORE_INDEX_BUFFER, {} }
                 };
 
@@ -156,10 +134,8 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
 {
     if (uid)
     {
-        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+        GLCommand cmd = { GLCommand::DELETE_BUFFERS, { 1, reinterpret_cast<uint64>(&uid) } };
         ExecGL(&cmd, 1, force_immediate);
-
-        uid = 0;
     }
 
     if (mappedData)
@@ -169,6 +145,7 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
     }
 
     size = 0;
+    uid = 0;
 }
 
 //==============================================================================
@@ -179,13 +156,7 @@ gles2_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     Handle handle = IndexBufferGLES2Pool::Alloc();
     IndexBufferGLES2_t* ib = IndexBufferGLES2Pool::Get(handle);
 
-    if (ib->Create(desc))
-    {
-        IndexBuffer::Descriptor creationDesc(desc);
-        creationDesc.initialData = nullptr;
-        ib->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (ib->Create(desc) == false)
     {
         IndexBufferGLES2Pool::Free(handle);
         handle = InvalidHandle;
@@ -222,7 +193,7 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
         if (self->isUPBuffer)
         {
             DVASSERT(self->mappedData);
-            memcpy((uint8*)self->mappedData + offset, (uint8*)data + offset, size);
+            memcpy(static_cast<uint8*>(self->mappedData) + offset, static_cast<const uint8*>(data) + offset, size);
 
             success = true;
         }
@@ -231,7 +202,7 @@ gles2_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
             GLCommand cmd[] =
             {
               { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
-              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
+              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(data), self->usage } },
               { GLCommand::RESTORE_INDEX_BUFFER, {} }
             };
 
@@ -261,7 +232,7 @@ gles2_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
             self->mappedData = ::malloc(self->size);
 
         self->isMapped = true;
-        data = ((uint8*)self->mappedData) + offset;
+        data = static_cast<uint8*>(self->mappedData) + offset;
     }
 
     return data;
@@ -292,7 +263,7 @@ gles2_IndexBuffer_Unmap(Handle ib)
         GLCommand cmd[] =
         {
           { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
-          { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->mappedData), self->usage } },
+          { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, reinterpret_cast<uint64>(self->mappedData), self->usage } },
           { GLCommand::RESTORE_INDEX_BUFFER, {} }
         };
 
@@ -360,7 +331,7 @@ SetToRHI(Handle ib)
         if (self->updatePending)
         {
             DVASSERT(self->mappedData);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage);
+            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, self->size, self->mappedData, self->usage));
             self->updatePending = false;
         }
     }
@@ -376,7 +347,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return IndexBufferGLES2_t::NeedRestoreCount();
+    return IndexBufferGLES2Pool::PendingRestoreCount();
 }
 
 } // namespace IndexBufferGLES

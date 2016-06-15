@@ -1,37 +1,7 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Scene.h"
 
 #include "Render/Texture.h"
 #include "Render/3D/StaticMesh.h"
-#include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/RenderOptions.h"
@@ -41,12 +11,9 @@
 #include "FileSystem/FileSystem.h"
 #include "Debug/Stats.h"
 
-#include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
-#include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
-#include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderSystem.h"
 
@@ -66,6 +33,7 @@
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
 
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
@@ -109,7 +77,7 @@ void EntityCache::Preload(const FilePath& path)
             Entity* child = srcRootEntity->GetChild(0);
             if (1 == child->GetComponentCount())
             {
-                TransformComponent* tr = (TransformComponent*)srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT);
+                TransformComponent* tr = static_cast<TransformComponent*>(srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT));
                 if (nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
                 {
                     srcRootEntity = child;
@@ -245,8 +213,6 @@ void Scene::SetGlobalMaterial(NMaterial* globalMaterial)
 
     if (nullptr != particleEffectSystem)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
-
-    ImportShadowColor(this);
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -337,6 +303,12 @@ void Scene::CreateSystems()
         AddSystem(debugRenderSystem, MAKE_COMPONENT_MASK(Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
+    if (SCENE_SYSTEM_LANDSCAPE_FLAG & systemsMask)
+    {
+        landscapeSystem = new LandscapeSystem(this);
+        AddSystem(landscapeSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
     if (SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)
     {
         foliageSystem = new FoliageSystem(this);
@@ -372,13 +344,6 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-    for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
-    {
-        AnimatedMesh* obj = *t;
-        obj->Release();
-    }
-    animatedMeshes.clear();
-
     for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
     {
         Camera* obj = *t;
@@ -411,8 +376,8 @@ Scene::~Scene()
     waveSystem = 0;
     animationSystem = 0;
 
-    uint32 size = (uint32)systems.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systems.size();
+    for (size_t k = 0; k < size; ++k)
         SafeDelete(systems[k]);
     systems.clear();
 
@@ -583,24 +548,6 @@ Scene* Scene::GetScene()
     return this;
 }
 
-void Scene::AddAnimatedMesh(AnimatedMesh* mesh)
-{
-    if (mesh)
-    {
-        mesh->Retain();
-        animatedMeshes.push_back(mesh);
-    }
-}
-
-void Scene::RemoveAnimatedMesh(AnimatedMesh* mesh)
-{
-}
-
-AnimatedMesh* Scene::GetAnimatedMesh(int32 index)
-{
-    return animatedMeshes[index];
-}
-
 void Scene::AddCamera(Camera* camera)
 {
     if (camera)
@@ -624,7 +571,7 @@ bool Scene::RemoveCamera(Camera* c)
 
 Camera* Scene::GetCamera(int32 n)
 {
-    if (n >= 0 && n < (int32)cameras.size())
+    if (n >= 0 && n < static_cast<int32>(cameras.size()))
         return cameras[n];
 
     return nullptr;
@@ -689,8 +636,8 @@ void Scene::Update(float timeElapsed)
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    uint32 size = (uint32)systemsToProcess.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systemsToProcess.size();
+    for (size_t k = 0; k < size; ++k)
     {
         SceneSystem* system = systemsToProcess[k];
         if ((systemsMask & SCENE_SYSTEM_UPDATEBLE_FLAG) && system == transformSystem)
@@ -712,25 +659,6 @@ void Scene::Update(float timeElapsed)
         }
     }
 
-    // 	int32 size;
-    //
-    // 	size = (int32)animations.size();
-    // 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-    // 	{
-    // 		SceneNodeAnimationList * anim = animations[animationIndex];
-    // 		anim->Update(timeElapsed);
-    // 	}
-    //
-    // 	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATED_MESHES))
-    // 	{
-    // 		size = (int32)animatedMeshes.size();
-    // 		for (int32 animatedMeshIndex = 0; animatedMeshIndex < size; ++animatedMeshIndex)
-    // 		{
-    // 			AnimatedMesh * mesh = animatedMeshes[animatedMeshIndex];
-    // 			mesh->Update(timeElapsed);
-    // 		}
-    // 	}
-
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
 
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
@@ -746,12 +674,14 @@ void Scene::Draw()
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32* propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)propDataPtr);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
+                                                       propDataPtr, reinterpret_cast<pointer_size>(propDataPtr));
     }
     else
     {
         static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size) this);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
+                                                       defShadowColor.color, reinterpret_cast<pointer_size>(this));
     }
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
@@ -784,17 +714,6 @@ void Scene::SceneDidLoaded()
         systems[k]->SceneDidLoaded();
     }
 }
-
-// void Scene::StopAllAnimations(bool recursive )
-// {
-// 	int32 size = (int32)animations.size();
-// 	for (int32 animationIndex = 0; animationIndex < size; ++animationIndex)
-// 	{
-// 		SceneNodeAnimationList * anim = animations[animationIndex];
-// 		anim->StopAnimation();
-// 	}
-// 	Entity::StopAllAnimations(recursive);
-// }
 
 void Scene::SetCurrentCamera(Camera* _camera)
 {
@@ -967,16 +886,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
     RemoveAllChildren();
     SetName(pathname.GetFilename().c_str());
 
-    if (pathname.IsEqualToExtension(".sce"))
-    {
-        ScopedPtr<SceneFile> file(new SceneFile());
-        file->SetDebugLog(true);
-        if (file->LoadScene(pathname, this))
-        {
-            ret = SceneFileV2::ERROR_NO_ERROR;
-        }
-    }
-    else if (pathname.IsEqualToExtension(".sc2"))
+    if (pathname.IsEqualToExtension(".sc2"))
     {
         ScopedPtr<SceneFileV2> file(new SceneFileV2());
         file->EnableDebugLog(false);
@@ -1027,43 +937,17 @@ void Scene::OptimizeBeforeExport()
         }
     }
 
-    ImportShadowColor(this);
-
     Entity::OptimizeBeforeExport();
-}
-
-void Scene::ImportShadowColor(Entity* rootNode)
-{
-    if (nullptr != sceneGlobalMaterial)
-    {
-        Entity* landscapeNode = FindLandscapeEntity(rootNode);
-        if (nullptr != landscapeNode)
-        {
-            // try to get shadow color for landscape
-            KeyedArchive* props = GetCustomPropertiesArchieve(landscapeNode);
-            if (props->IsKeyExists("ShadowColor"))
-            {
-                //RHI_COMPLETE TODO: check if shadow color from landscape is used, fix it and remove this crap
-                if (sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
-                    sceneGlobalMaterial->RemoveProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-
-                Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
-                props->DeleteKey("ShadowColor");
-            }
-        }
-    }
 }
 
 void Scene::OnSceneReady(Entity* rootNode)
 {
-    ImportShadowColor(rootNode);
 }
 
 void Scene::Input(DAVA::UIEvent* event)
 {
-    uint32 size = (uint32)systemsToInput.size();
-    for (uint32 k = 0; k < size; ++k)
+    size_t size = systemsToInput.size();
+    for (size_t k = 0; k < size; ++k)
     {
         SceneSystem* system = systemsToInput[k];
         system->Input(event);

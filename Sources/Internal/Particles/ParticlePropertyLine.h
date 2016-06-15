@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_PARTICLES_PROPERTY_LINE_H__
 #define __DAVAENGINE_PARTICLES_PROPERTY_LINE_H__
 
@@ -56,14 +27,14 @@ public:
     Vector<PropertyKey>& GetValues()
     {
         return keys;
-    };
+    }
 
     virtual const T& GetValue(float32 t) = 0;
 
     virtual PropertyLine<T>* Clone()
     {
         return 0;
-    };
+    }
 };
 
 class PropertyValueHelper
@@ -114,7 +85,7 @@ public:
 
     const T& GetValue(float32 t)
     {
-        int32 keysSize = (int32)PropertyLine<T>::keys.size();
+        int32 keysSize = static_cast<int32>(PropertyLine<T>::keys.size());
         DVASSERT(keysSize);
         if (t > PropertyLine<T>::keys[keysSize - 1].t)
         {
@@ -141,7 +112,7 @@ public:
             return PropertyLine<T>::keys[0].value;
         else
         {
-            int32 l = BinaryFind(t, 0, (int32)PropertyLine<T>::keys.size() - 1);
+            int32 l = BinaryFind(t, 0, static_cast<int32>(PropertyLine<T>::keys.size()) - 1);
 
             float ti = (t - PropertyLine<T>::keys[l].t) / (PropertyLine<T>::keys[l + 1].t - PropertyLine<T>::keys[l].t);
             resultValue = PropertyLine<T>::keys[l].value + (PropertyLine<T>::keys[l + 1].value - PropertyLine<T>::keys[l].value) * ti;
@@ -291,7 +262,7 @@ public:
     {
         this->t = t;
         this->v = v;
-    };
+    }
 };
 
 // A wrapper for Property Line, which allows easy access to the values.
@@ -309,7 +280,7 @@ public:
 
     virtual ~PropLineWrapper()
     {
-    };
+    }
 
     void Init(RefPtr<PropertyLine<T>> propertyLine);
 

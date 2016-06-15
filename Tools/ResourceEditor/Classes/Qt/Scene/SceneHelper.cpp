@@ -1,46 +1,55 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
 
-void SceneHelper::EnumerateSceneTextures(DAVA::Scene* forScene, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode)
+SceneHelper::TextureCollector::TextureCollector(DAVA::uint32 options)
 {
-    EnumerateEntityTextures(forScene, forScene, textureCollection, mode);
+    includeNullTextures = (options & IncludeNullTextures) != 0;
+    onlyActiveTextures = (options & OnlyActiveTextures) != 0;
 }
 
-void SceneHelper::BuildMaterialList(DAVA::Entity* forNode, Set<NMaterial*>& materialList, bool includeRuntime)
+void SceneHelper::TextureCollector::Apply(DAVA::NMaterial* material)
+{
+    DAVA::Set<DAVA::MaterialTextureInfo*> materialTextures;
+    if (onlyActiveTextures)
+        material->CollectActiveLocalTextures(materialTextures);
+    else
+        material->CollectLocalTextures(materialTextures);
+
+    for (auto const& matTex : materialTextures)
+    {
+        const DAVA::FilePath& texturePath = matTex->path;
+        DAVA::Texture* texture = matTex->texture;
+
+        if (texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
+        {
+            continue;
+        }
+
+        if ((includeNullTextures == false) && (nullptr == texture || texture->isRenderTarget))
+        {
+            continue;
+        }
+
+        textureMap[FILEPATH_MAP_KEY(texturePath)] = texture;
+    }
+}
+
+DAVA::TexturesMap& SceneHelper::TextureCollector::GetTextures()
+{
+    return textureMap;
+}
+
+void SceneHelper::EnumerateSceneTextures(DAVA::Scene* forScene, TextureCollector& collector)
+{
+    EnumerateEntityTextures(forScene, forScene, collector);
+}
+
+void SceneHelper::BuildMaterialList(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeRuntime)
 {
     if (nullptr == forNode)
         return;
 
-    List<NMaterial*> materials;
+    DAVA::List<DAVA::NMaterial*> materials;
     forNode->GetDataNodes(materials);
 
     for (auto& mat : materials)
@@ -54,7 +63,7 @@ void SceneHelper::BuildMaterialList(DAVA::Entity* forNode, Set<NMaterial*>& mate
     }
 }
 
-void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, DAVA::TexturesMap& textureCollection, TexturesEnumerateMode mode)
+void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* forNode, TextureCollector& collector)
 {
     if (nullptr == forNode || nullptr == forScene)
     {
@@ -64,47 +73,29 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene* forScene, DAVA::Entity* f
     DAVA::Set<DAVA::NMaterial*> materials;
     BuildMaterialList(forNode, materials);
 
-    Set<MaterialTextureInfo*> materialTextures;
+    DAVA::Set<DAVA::MaterialTextureInfo*> materialTextures;
     for (auto& mat : materials)
     {
-        String materialName = mat->GetMaterialName().c_str();
-        String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : String();
+        DAVA::String materialName = mat->GetMaterialName().c_str();
+        DAVA::String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : DAVA::String();
 
-        if ((parentName.find("Particle") != String::npos) || (materialName.find("Particle") != String::npos))
+        if ((parentName.find("Particle") != DAVA::String::npos) || (materialName.find("Particle") != DAVA::String::npos))
         { //because particle materials has textures only after first start, so we have different result during scene life.
             continue;
         }
 
-        mat->CollectLocalTextures(materialTextures);
-    }
-
-    for (auto const& matTex : materialTextures)
-    {
-        const DAVA::FilePath& texturePath = matTex->path;
-        Texture* texture = matTex->texture;
-
-        if (texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
-        {
-            continue;
-        }
-
-        if ((TexturesEnumerateMode::EXCLUDE_NULL == mode) && (nullptr == texture || texture->isRenderTarget))
-        {
-            continue;
-        }
-
-        textureCollection[FILEPATH_MAP_KEY(texturePath)] = texture;
+        collector.Apply(mat);
     }
 }
 
-int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures)
+DAVA::int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DAVA::Texture*, DAVA::Vector<DAVA::eGPUFamily>>& textures)
 {
-    int32 retValue = 0;
+    DAVA::int32 retValue = 0;
     textures.clear();
-    TexturesMap allTextures;
-    EnumerateSceneTextures(forScene, allTextures, TexturesEnumerateMode::EXCLUDE_NULL);
+    TextureCollector collector;
+    EnumerateSceneTextures(forScene, collector);
 
-    for (auto& it : allTextures)
+    for (auto& it : collector.GetTextures())
     {
         DAVA::Texture* texture = it.second;
         if (nullptr == texture)
@@ -119,11 +110,11 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene* forScene, DAVA::Map<DA
         DAVA::Vector<DAVA::eGPUFamily> markedGPUs;
         for (int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
         {
-            eGPUFamily gpu = (eGPUFamily)i;
-            if (GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
+            DAVA::eGPUFamily gpu = static_cast<DAVA::eGPUFamily>(i);
+            if (DAVA::GPUFamilyDescriptor::IsFormatSupported(gpu, static_cast<DAVA::PixelFormat>(descriptor->compression[gpu].format)))
             {
-                FilePath texPath = descriptor->GetSourceTexturePathname();
-                if (FileSystem::Instance()->Exists(texPath) && !descriptor->IsCompressedTextureActual(gpu))
+                DAVA::FilePath texPath = descriptor->GetSourceTexturePathname();
+                if (DAVA::FileSystem::Instance()->Exists(texPath) && !descriptor->IsCompressedTextureActual(gpu))
                 {
                     markedGPUs.push_back(gpu);
                     retValue++;
@@ -155,17 +146,17 @@ void SceneHelper::EnumerateMaterials(DAVA::Entity* forNode, DAVA::Set<DAVA::NMat
 
 void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DAVA::NMaterial*>& materials)
 {
-    uint32 childrenCount = forNode->GetChildrenCount();
-    for (uint32 i = 0; i < childrenCount; ++i)
+    DAVA::uint32 childrenCount = forNode->GetChildrenCount();
+    for (DAVA::uint32 i = 0; i < childrenCount; ++i)
     {
         EnumerateMaterialInstances(forNode->GetChild(i), materials);
     }
 
-    RenderObject* ro = GetRenderObject(forNode);
+    DAVA::RenderObject* ro = GetRenderObject(forNode);
     if (ro != nullptr)
     {
-        uint32 batchCount = ro->GetRenderBatchCount();
-        for (uint32 i = 0; i < batchCount; ++i)
+        DAVA::uint32 batchCount = ro->GetRenderBatchCount();
+        for (DAVA::uint32 i = 0; i < batchCount; ++i)
         {
             auto material = ro->GetRenderBatch(i)->GetMaterial();
             if (material != nullptr)
@@ -178,25 +169,25 @@ void SceneHelper::EnumerateMaterialInstances(DAVA::Entity* forNode, DAVA::Set<DA
 
 DAVA::Entity* SceneHelper::CloneEntityWithMaterials(DAVA::Entity* fromNode)
 {
-    Scene* scene = fromNode->GetScene();
-    NMaterial* globalMaterial = (scene) ? scene->GetGlobalMaterial() : nullptr;
+    DAVA::Scene* scene = fromNode->GetScene();
+    DAVA::NMaterial* globalMaterial = (scene) ? scene->GetGlobalMaterial() : nullptr;
 
-    Entity* newEntity = fromNode->Clone();
+    DAVA::Entity* newEntity = fromNode->Clone();
 
-    Set<NMaterial*> materialInstances;
+    DAVA::Set<DAVA::NMaterial*> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);
 
-    Set<NMaterial*> materialParentsSet;
+    DAVA::Set<DAVA::NMaterial*> materialParentsSet;
     for (auto material : materialInstances)
     {
         materialParentsSet.insert(material->GetParent());
     }
     materialParentsSet.erase(globalMaterial);
 
-    Map<NMaterial*, NMaterial*> clonedParents;
+    DAVA::Map<DAVA::NMaterial*, DAVA::NMaterial*> clonedParents;
     for (auto& mp : materialParentsSet)
     {
-        NMaterial* mat = mp ? mp->Clone() : nullptr;
+        DAVA::NMaterial* mat = mp ? mp->Clone() : nullptr;
         if (mat && mat->GetParent() == globalMaterial)
         {
             mat->SetParent(nullptr); // exclude material from scene
@@ -206,7 +197,7 @@ DAVA::Entity* SceneHelper::CloneEntityWithMaterials(DAVA::Entity* fromNode)
 
     for (auto material : materialInstances)
     {
-        NMaterial* parent = material->GetParent();
+        DAVA::NMaterial* parent = material->GetParent();
         material->SetParent(clonedParents[parent]);
     }
 

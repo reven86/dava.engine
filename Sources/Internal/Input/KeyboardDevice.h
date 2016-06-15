@@ -1,39 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_KEYBOARD_DEVICE_H__
 #define __DAVAENGINE_KEYBOARD_DEVICE_H__
 
 #include "Base/BaseObject.h"
 
 /**
-	\defgroup inputsystem	Input System
+    \defgroup inputsystem    Input System
 */
 namespace DAVA
 {
@@ -176,8 +147,10 @@ class KeyboardDevice : public BaseObject
 {
 public:
     bool IsKeyPressed(Key key) const; // during frame
-    static const String& GetKeyName(Key key);
+    const String& GetKeyName(Key key);
+    const Key GetKeyByName(const String& name);
 
+    void ClearAllKeys(); // unpress keys during ALT+TAB or similar events
 private:
     friend class InputSystem;
     friend class CoreWin32Platform;
@@ -188,6 +161,9 @@ private:
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif
+#if defined(ENABLE_CEF_WEBVIEW)
+    friend class CEFWebViewControl;
+#endif
     ~KeyboardDevice();
     KeyboardDevice();
 
@@ -195,10 +171,11 @@ private:
 public:
 #endif
     Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+#if defined(ENABLE_CEF_WEBVIEW)
+    uint32 GetSystemKeyForDavaKey(Key key) const;
+#endif
     void OnKeyPressed(Key keyCode);
     void OnKeyUnpressed(Key keyCode);
-    void ClearAllKeys();
-
 #ifdef __DAVAENGINE_MACOS__
 private:
 #endif
@@ -210,6 +187,8 @@ private:
     Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
     static const int MAX_KEYS = 512;
     Array<Key, MAX_KEYS> keyTranslator;
+    mutable Array<uint32, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> backCodeTranslator;
+    Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
 
 }; // end DAVA namespace

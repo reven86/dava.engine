@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FastName.h"
 #include "Debug/DVAssert.h"
 
@@ -41,7 +12,7 @@ FastName::FastName()
     FastNameDB::Instance();
 
 #ifdef __DAVAENGINE_DEBUG__
-    debug_str_ptr = NULL;
+    debug_str_ptr = nullptr;
 #endif
 }
 
@@ -81,7 +52,7 @@ FastName::~FastName()
 
 void FastName::Init(const char* name)
 {
-    DVASSERT(NULL != name);
+    DVASSERT(nullptr != name);
 
     FastNameDB* db = FastNameDB::Instance();
     LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
@@ -98,7 +69,7 @@ void FastName::Init(const char* name)
         // string isn't in hash and it isn't in names table, so we need to copy it
         // and find place for copied string in names table and set it
         size_t nameLen = strlen(name);
-        char* nameCopy = (char*)malloc(nameLen + 1);
+        char* nameCopy = new char[nameLen + 1];
         memcpy(nameCopy, name, nameLen + 1);
 
         // search for empty indexes in names table
@@ -130,24 +101,24 @@ void FastName::Init(const char* name)
 #endif
 }
 
-void FastName::AddRef(int i) const
+void FastName::AddRef(int32 i) const
 {
     LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
 
     FastNameDB* db = FastNameDB::Instance();
-    DVASSERT(i >= -1 && i < (int)db->namesTable.size());
+    DVASSERT(i >= -1 && i < static_cast<int32>(db->namesTable.size()));
     if (i >= 0)
     {
         db->namesRefCounts[i]++;
     }
 }
 
-void FastName::RemRef(int i) const
+void FastName::RemRef(int32 i) const
 {
     LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
 
     FastNameDB* db = FastNameDB::Instance();
-    DVASSERT(i >= -1 && i < (int)db->namesTable.size());
+    DVASSERT(i >= -1 && i < static_cast<int32>(db->namesTable.size()));
     if (i >= 0)
     {
         db->namesRefCounts[i]--;
@@ -159,10 +130,10 @@ void FastName::RemRef(int i) const
             db->namesHash.erase(db->namesTable[i]);
 
             // delete allocated memory for this string
-            free((void*)db->namesTable[i]);
+            delete[] db->namesTable[i];
 
             // remove name from names table
-            db->namesTable[i] = NULL;
+            db->namesTable[i] = nullptr;
 
             // remember that this index is empty already
             db->namesEmptyIndexes.push_back(i);

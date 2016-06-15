@@ -1480,7 +1480,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       for(i=0;i<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-            lua_rawgeti(L, bases_table, i + 1);
+        lua_rawgeti(L,bases_table,i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;
@@ -5151,7 +5151,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_0(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControl",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua const *");
   if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",2,"DAVA::String const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
@@ -5159,7 +5159,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_0(lua_State* L) {
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  result = (DAVA::UIControl *)(arg1)->FindControl((DAVA::String const &)*arg2);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControl((DAVA::String const &)*arg2);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5180,7 +5180,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_1(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControl",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua const *");
   if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",2,"DAVA::String const &");
   if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",3,"DAVA::UIControl *");
   
@@ -5194,7 +5194,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_1(lua_State* L) {
     SWIG_fail_ptr("AutotestingSystemLua_FindControl",3,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (DAVA::UIControl *)(arg1)->FindControl((DAVA::String const &)*arg2,arg3);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControl((DAVA::String const &)*arg2,arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5214,7 +5214,7 @@ static int _wrap_AutotestingSystemLua_FindControlOnPopUp(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControlOnPopUp",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControlOnPopUp",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControlOnPopUp",1,"DAVA::AutotestingSystemLua const *");
   if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControlOnPopUp",2,"DAVA::String const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
@@ -5222,7 +5222,7 @@ static int _wrap_AutotestingSystemLua_FindControlOnPopUp(lua_State* L) {
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  result = (DAVA::UIControl *)(arg1)->FindControlOnPopUp((DAVA::String const &)*arg2);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControlOnPopUp((DAVA::String const &)*arg2);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5243,7 +5243,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_2(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControl",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua const *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",2,"DAVA::UIControl *");
   if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",3,"DAVA::String const &");
   
@@ -5257,7 +5257,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_2(lua_State* L) {
   }
   
   temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
-  result = (DAVA::UIControl *)(arg1)->FindControl(arg2,(DAVA::String const &)*arg3);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControl(arg2,(DAVA::String const &)*arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5277,7 +5277,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_3(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControl",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua const *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",2,"DAVA::UIControl *");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",3,"DAVA::int32");
   
@@ -5291,7 +5291,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_3(lua_State* L) {
   }
   
   arg3 = (DAVA::int32)lua_tonumber(L, 3);
-  result = (DAVA::UIControl *)(arg1)->FindControl(arg2,arg3);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControl(arg2,arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5311,7 +5311,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_4(lua_State* L) {
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::FindControl",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",1,"DAVA::AutotestingSystemLua const *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",2,"DAVA::UIList *");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::FindControl",3,"DAVA::int32");
   
@@ -5325,7 +5325,7 @@ static int _wrap_AutotestingSystemLua_FindControl__SWIG_4(lua_State* L) {
   }
   
   arg3 = (DAVA::int32)lua_tonumber(L, 3);
-  result = (DAVA::UIControl *)(arg1)->FindControl(arg2,arg3);
+  result = (DAVA::UIControl *)((DAVA::AutotestingSystemLua const *)arg1)->FindControl(arg2,arg3);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -5482,11 +5482,11 @@ static int _wrap_AutotestingSystemLua_FindControl(lua_State* L) {
   
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'AutotestingSystemLua_FindControl'\n"
     "  Possible C/C++ prototypes are:\n"
-    "    DAVA::AutotestingSystemLua::FindControl(DAVA::String const &)\n"
-    "    DAVA::AutotestingSystemLua::FindControl(DAVA::String const &,DAVA::UIControl *)\n"
-    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIControl *,DAVA::String const &)\n"
-    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIControl *,DAVA::int32)\n"
-    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIList *,DAVA::int32)\n");
+    "    DAVA::AutotestingSystemLua::FindControl(DAVA::String const &) const\n"
+    "    DAVA::AutotestingSystemLua::FindControl(DAVA::String const &,DAVA::UIControl *) const\n"
+    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIControl *,DAVA::String const &) const\n"
+    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIControl *,DAVA::int32) const\n"
+    "    DAVA::AutotestingSystemLua::FindControl(DAVA::UIList *,DAVA::int32) const\n");
   lua_error(L);return 0;
 }
 
@@ -5499,7 +5499,7 @@ static int _wrap_AutotestingSystemLua_IsCenterInside(lua_State* L) {
   bool result;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::IsCenterInside",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsCenterInside",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsCenterInside",1,"DAVA::AutotestingSystemLua const *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsCenterInside",2,"DAVA::UIControl *");
   if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsCenterInside",3,"DAVA::UIControl *");
   
@@ -5517,7 +5517,7 @@ static int _wrap_AutotestingSystemLua_IsCenterInside(lua_State* L) {
     SWIG_fail_ptr("AutotestingSystemLua_IsCenterInside",3,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (bool)(arg1)->IsCenterInside(arg2,arg3);
+  result = (bool)((DAVA::AutotestingSystemLua const *)arg1)->IsCenterInside(arg2,arg3);
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
@@ -5726,13 +5726,11 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::Vector2 *arg2 = 0 ;
   DAVA::int32 arg3 ;
-  DAVA::int32 arg4 ;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",4,4)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",3,3)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",1,"DAVA::AutotestingSystemLua *");
   if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",2,"DAVA::Vector2 const &");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",3,"DAVA::int32");
-  if(!lua_isnumber(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",4,"DAVA::int32");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_TouchDown",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
@@ -5744,8 +5742,7 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   }
   
   arg3 = (DAVA::int32)lua_tonumber(L, 3);
-  arg4 = (DAVA::int32)lua_tonumber(L, 4);
-  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3,arg4);
+  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3);
   
   return SWIG_arg;
   
@@ -5805,6 +5802,33 @@ static int _wrap_AutotestingSystemLua_TouchUp(lua_State* L) {
   
   arg2 = (DAVA::int32)lua_tonumber(L, 2);
   (arg1)->TouchUp(arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_AutotestingSystemLua_ScrollToControl(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  DAVA::String *arg2 = 0 ;
+  DAVA::String temp2 ;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::ScrollToControl",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ScrollToControl",1,"DAVA::AutotestingSystemLua const *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ScrollToControl",2,"DAVA::String const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_ScrollToControl",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
+  ((DAVA::AutotestingSystemLua const *)arg1)->ScrollToControl((DAVA::String const &)*arg2);
   
   return SWIG_arg;
   
@@ -6068,24 +6092,23 @@ static int _wrap_AutotestingSystemLua_ReadState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::String *arg2 = 0 ;
-  DAVA::String* arg3 = 0;
+  DAVA::String *arg3 = 0 ;
   DAVA::String temp2 ;
-  DAVA::String temp3;
+  DAVA::String temp3 ;
   DAVA::String result;
-
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadState", 3, 3) if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState", 1, "DAVA::AutotestingSystemLua *");
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadState",3,3)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",1,"DAVA::AutotestingSystemLua *");
   if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",2,"DAVA::String const &");
-  if (!lua_isstring(L, 3))
-      SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState", 3, "DAVA::String const &");
-
+  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",3,"DAVA::String const &");
+  
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_ReadState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  temp3.assign(lua_tostring(L, 3), lua_rawlen(L, 3));
-  arg3 = &temp3;
-  result = (arg1)->ReadState((DAVA::String const&)*arg2, (DAVA::String const&)*arg3);
+  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
+  result = (arg1)->ReadState((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
   lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
   return SWIG_arg;
   
@@ -6096,36 +6119,32 @@ fail:
   return SWIG_arg;
 }
 
-static int _wrap_AutotestingSystemLua_WriteState(lua_State* L)
-{
+
+static int _wrap_AutotestingSystemLua_WriteState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::String *arg2 = 0 ;
-  DAVA::String* arg3 = 0;
-  DAVA::String* arg4 = 0;
+  DAVA::String *arg3 = 0 ;
+  DAVA::String *arg4 = 0 ;
   DAVA::String temp2 ;
-  DAVA::String temp3;
-  DAVA::String temp4;
-
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteState", 4, 4) if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState", 1, "DAVA::AutotestingSystemLua *");
-  if (!lua_isstring(L, 2))
-      SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState", 2, "DAVA::String const &");
-  if (!lua_isstring(L, 3))
-      SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState", 3, "DAVA::String const &");
-  if (!lua_isstring(L, 4))
-      SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState", 4, "DAVA::String const &");
-
+  DAVA::String temp3 ;
+  DAVA::String temp4 ;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteState",4,4)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",1,"DAVA::AutotestingSystemLua *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",2,"DAVA::String const &");
+  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",3,"DAVA::String const &");
+  if(!lua_isstring(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",4,"DAVA::String const &");
+  
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-      SWIG_fail_ptr("AutotestingSystemLua_WriteState", 1, SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    SWIG_fail_ptr("AutotestingSystemLua_WriteState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  temp3.assign(lua_tostring(L, 3), lua_rawlen(L, 3));
-  arg3 = &temp3;
-  temp4.assign(lua_tostring(L, 4), lua_rawlen(L, 4));
-  arg4 = &temp4;
-  (arg1)->WriteState((DAVA::String const&)*arg2, (DAVA::String const&)*arg3, (DAVA::String const&)*arg4);
-
+  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
+  temp4.assign(lua_tostring(L,4),lua_rawlen(L,4)); arg4=&temp4;
+  (arg1)->WriteState((DAVA::String const &)*arg2,(DAVA::String const &)*arg3,(DAVA::String const &)*arg4);
+  
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6139,15 +6158,16 @@ fail:
 static int _wrap_AutotestingSystemLua_InitializeDevice(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::InitializeDevice", 1, 1) if (!SWIG_isptrtype(L, 1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::InitializeDevice", 1, "DAVA::AutotestingSystemLua *");
-
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::InitializeDevice",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::InitializeDevice",1,"DAVA::AutotestingSystemLua *");
+  
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_InitializeDevice",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
-
+  
   (arg1)->InitializeDevice();
-
+  
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6317,6 +6337,30 @@ fail:
 }
 
 
+static int _wrap_AutotestingSystemLua_GetIsScreenShotSaving(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  bool result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::GetIsScreenShotSaving",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetIsScreenShotSaving",1,"DAVA::AutotestingSystemLua const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetIsScreenShotSaving",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  result = (bool)((DAVA::AutotestingSystemLua const *)arg1)->GetIsScreenShotSaving();
+  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static void swig_delete_AutotestingSystemLua(void *obj) {
 DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) obj;
 delete arg1;
@@ -6332,45 +6376,47 @@ static int _proxy__wrap_new_AutotestingSystemLua(lua_State *L) {
 static swig_lua_attribute swig_AutotestingSystemLua_attributes[] = {
     {0,0,0}
 };
-static swig_lua_method swig_AutotestingSystemLua_methods[] = {
-    { "OnError", _wrap_AutotestingSystemLua_OnError },
-    { "OnTestFinished", _wrap_AutotestingSystemLua_OnTestFinished },
-    { "GetUsedMemory", _wrap_AutotestingSystemLua_GetUsedMemory },
-    { "GetTimeElapsed", _wrap_AutotestingSystemLua_GetTimeElapsed },
-    { "OnTestStart", _wrap_AutotestingSystemLua_OnTestStart },
-    { "OnStepStart", _wrap_AutotestingSystemLua_OnStepStart },
-    { "Log", _wrap_AutotestingSystemLua_Log },
-    { "GetScreen", _wrap_AutotestingSystemLua_GetScreen },
-    { "FindControlOnPopUp", _wrap_AutotestingSystemLua_FindControlOnPopUp },
-    { "FindControl", _wrap_AutotestingSystemLua_FindControl },
-    { "IsCenterInside", _wrap_AutotestingSystemLua_IsCenterInside },
-    { "IsSelected", _wrap_AutotestingSystemLua_IsSelected },
-    { "IsListHorisontal", _wrap_AutotestingSystemLua_IsListHorisontal },
-    { "GetListScrollPosition", _wrap_AutotestingSystemLua_GetListScrollPosition },
-    { "GetMaxListOffsetSize", _wrap_AutotestingSystemLua_GetMaxListOffsetSize },
-    { "GetContainerScrollPosition", _wrap_AutotestingSystemLua_GetContainerScrollPosition },
-    { "GetMaxContainerOffsetSize", _wrap_AutotestingSystemLua_GetMaxContainerOffsetSize },
-    { "TouchDown", _wrap_AutotestingSystemLua_TouchDown },
-    { "TouchMove", _wrap_AutotestingSystemLua_TouchMove },
-    { "TouchUp", _wrap_AutotestingSystemLua_TouchUp },
-    { "KeyPress", _wrap_AutotestingSystemLua_KeyPress },
-    { "ProcessInput", _wrap_AutotestingSystemLua_ProcessInput },
-    { "SetText", _wrap_AutotestingSystemLua_SetText },
-    { "CheckText", _wrap_AutotestingSystemLua_CheckText },
-    { "CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText },
-    { "GetText", _wrap_AutotestingSystemLua_GetText },
-    { "GetServerQueueState", _wrap_AutotestingSystemLua_GetServerQueueState },
-    { "SetServerQueueState", _wrap_AutotestingSystemLua_SetServerQueueState },
-    { "ReadState", _wrap_AutotestingSystemLua_ReadState },
-    { "WriteState", _wrap_AutotestingSystemLua_WriteState },
-    { "InitializeDevice", _wrap_AutotestingSystemLua_InitializeDevice },
-    { "GetDeviceName", _wrap_AutotestingSystemLua_GetDeviceName },
-    { "GetPlatform", _wrap_AutotestingSystemLua_GetPlatform },
-    { "IsPhoneScreen", _wrap_AutotestingSystemLua_IsPhoneScreen },
-    { "SaveKeyedArchiveToDevice", _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice },
-    { "GetTestParameter", _wrap_AutotestingSystemLua_GetTestParameter },
-    { "MakeScreenshot", _wrap_AutotestingSystemLua_MakeScreenshot },
-    { 0, 0 }
+static swig_lua_method swig_AutotestingSystemLua_methods[]= {
+    { "OnError", _wrap_AutotestingSystemLua_OnError},
+    { "OnTestFinished", _wrap_AutotestingSystemLua_OnTestFinished},
+    { "GetUsedMemory", _wrap_AutotestingSystemLua_GetUsedMemory},
+    { "GetTimeElapsed", _wrap_AutotestingSystemLua_GetTimeElapsed},
+    { "OnTestStart", _wrap_AutotestingSystemLua_OnTestStart},
+    { "OnStepStart", _wrap_AutotestingSystemLua_OnStepStart},
+    { "Log", _wrap_AutotestingSystemLua_Log},
+    { "GetScreen", _wrap_AutotestingSystemLua_GetScreen},
+    { "FindControlOnPopUp", _wrap_AutotestingSystemLua_FindControlOnPopUp},
+    { "FindControl", _wrap_AutotestingSystemLua_FindControl},
+    { "IsCenterInside", _wrap_AutotestingSystemLua_IsCenterInside},
+    { "IsSelected", _wrap_AutotestingSystemLua_IsSelected},
+    { "IsListHorisontal", _wrap_AutotestingSystemLua_IsListHorisontal},
+    { "GetListScrollPosition", _wrap_AutotestingSystemLua_GetListScrollPosition},
+    { "GetMaxListOffsetSize", _wrap_AutotestingSystemLua_GetMaxListOffsetSize},
+    { "GetContainerScrollPosition", _wrap_AutotestingSystemLua_GetContainerScrollPosition},
+    { "GetMaxContainerOffsetSize", _wrap_AutotestingSystemLua_GetMaxContainerOffsetSize},
+    { "TouchDown", _wrap_AutotestingSystemLua_TouchDown},
+    { "TouchMove", _wrap_AutotestingSystemLua_TouchMove},
+    { "TouchUp", _wrap_AutotestingSystemLua_TouchUp},
+    { "ScrollToControl", _wrap_AutotestingSystemLua_ScrollToControl},
+    { "KeyPress", _wrap_AutotestingSystemLua_KeyPress},
+    { "ProcessInput", _wrap_AutotestingSystemLua_ProcessInput},
+    { "SetText", _wrap_AutotestingSystemLua_SetText},
+    { "CheckText", _wrap_AutotestingSystemLua_CheckText},
+    { "CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText},
+    { "GetText", _wrap_AutotestingSystemLua_GetText},
+    { "GetServerQueueState", _wrap_AutotestingSystemLua_GetServerQueueState},
+    { "SetServerQueueState", _wrap_AutotestingSystemLua_SetServerQueueState},
+    { "ReadState", _wrap_AutotestingSystemLua_ReadState},
+    { "WriteState", _wrap_AutotestingSystemLua_WriteState},
+    { "InitializeDevice", _wrap_AutotestingSystemLua_InitializeDevice},
+    { "GetDeviceName", _wrap_AutotestingSystemLua_GetDeviceName},
+    { "GetPlatform", _wrap_AutotestingSystemLua_GetPlatform},
+    { "IsPhoneScreen", _wrap_AutotestingSystemLua_IsPhoneScreen},
+    { "SaveKeyedArchiveToDevice", _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice},
+    { "GetTestParameter", _wrap_AutotestingSystemLua_GetTestParameter},
+    { "MakeScreenshot", _wrap_AutotestingSystemLua_MakeScreenshot},
+    { "GetIsScreenShotSaving", _wrap_AutotestingSystemLua_GetIsScreenShotSaving},
+    {0,0}
 };
 static swig_lua_method swig_AutotestingSystemLua_meta[] = {
     {0,0}

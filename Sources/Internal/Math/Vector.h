@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_VECTOR_H__
 #define __DAVAENGINE_VECTOR_H__
 
@@ -49,7 +20,7 @@ public:
         AXIS_Y = 1,
         AXIS_COUNT = 2
     };
-
+    static const Vector2 Zero;
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
@@ -69,6 +40,8 @@ public:
     inline Vector2();
     inline Vector2(float32 _x, float32 _y);
     inline Vector2(const float32* _data);
+    inline Vector2(const Vector2& _v);
+
     inline Vector2& operator=(const Vector2& _v);
 
     //! Set functions
@@ -98,7 +71,7 @@ public:
 
     //! Get operators
     float32& operator[](eAxis axis);
-    float32 operator[](eAxis axis) const;
+    const float32 operator[](eAxis axis) const;
     //! On operations
     inline const Vector2& operator+=(const Vector2& _v);
     inline const Vector2& operator-=(const Vector2& _v);
@@ -136,7 +109,7 @@ inline float32 DotProduct(const Vector2& _v1, const Vector2& _v2);
 inline Vector2 Normalize(const Vector2& _v);
 inline float32 CrossProduct(const Vector2& a, const Vector2& b);
 inline Vector2 Reflect(const Vector2& v, const Vector2& n);
-
+Vector2 Rotate(const Vector2& in, float32 angleRad);
 /**	
 	\ingroup math
 	\brief Vector with 3 coordinates
@@ -174,6 +147,7 @@ public:
     inline Vector3(const Vector2& v, float _z);
     explicit inline Vector3(const Vector2& v);
     explicit inline Vector3(const Vector4& v);
+    inline Vector3(const Vector3& v);
     inline Vector3& operator=(const Vector3& _v);
     inline Vector3& operator=(const Vector2& _v);
 
@@ -258,6 +232,7 @@ inline Vector3 CrossProduct(const Vector3& v1, const Vector3& v2);
 inline float32 DotProduct(const Vector3& v1, const Vector3& v2);
 inline Vector3 Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
 inline Vector3 Reflect(const Vector3& v, const Vector3& n);
+inline float32 Distance(const Vector3& v1, const Vector3& v2);
 inline Vector3 PerpendicularVector(const Vector3& normal);
 
 /**	
@@ -290,6 +265,7 @@ public:
     inline Vector4(const float32* _data);
     inline Vector4(const Vector3& xyz, float32 _w);
     explicit inline Vector4(const Vector3& v);
+    inline Vector4(const Vector4& v);
     inline Vector4& operator=(const Vector4& _v);
     inline Vector4& operator=(const Vector3& _v);
 
@@ -369,6 +345,12 @@ inline Vector2::Vector2(const float32* _data)
     data[1] = _data[1];
 }
 
+inline Vector2::Vector2(const Vector2& _v)
+{
+    x = _v.x;
+    y = _v.y;
+}
+
 inline Vector2& Vector2::operator=(const Vector2& _v)
 {
     x = _v.x;
@@ -395,7 +377,7 @@ inline float32& Vector2::operator[](eAxis axis)
     return data[axis];
 }
 
-inline float32 Vector2::operator[](eAxis axis) const
+inline const float32 Vector2::operator[](eAxis axis) const
 {
     return data[axis];
 }
@@ -451,11 +433,11 @@ inline Vector2 Vector2::operator-() const
 //! Comparison operators
 inline bool Vector2::operator==(const Vector2& _v) const
 {
-    return ((x == _v.x) && (y == _v.y));
+    return (Memcmp(data, _v.data, sizeof(Vector2)) == 0);
 }
 inline bool Vector2::operator!=(const Vector2& _v) const
 {
-    return ((x != _v.x) || (y != _v.y));
+    return (Memcmp(data, _v.data, sizeof(Vector2)) != 0);
 }
 
 //! On functions
@@ -610,6 +592,13 @@ inline Vector3::Vector3(const Vector2& v)
     x = v.x;
     y = v.y;
     z = 0.0f;
+}
+
+inline Vector3::Vector3(const Vector3& v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
 }
 
 inline Vector3::Vector3(const Vector2& v, float _z)
@@ -776,11 +765,11 @@ inline Vector3 Vector3::operator-() const
 //! Comparison operators
 inline bool Vector3::operator==(const Vector3& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z));
+    return (Memcmp(data, _v.data, sizeof(Vector3)) == 0);
 }
 inline bool Vector3::operator!=(const Vector3& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z));
+    return (Memcmp(data, _v.data, sizeof(Vector3)) != 0);
 }
 
 //! operators
@@ -871,6 +860,14 @@ inline Vector3 Reflect(const Vector3& v, const Vector3& n)
     return r;
 }
 
+inline float32 Distance(const Vector3& v1, const Vector3& v2)
+{
+    float32 dx = v1.x - v2.x;
+    float32 dy = v1.y - v2.y;
+    float32 dz = v1.z - v2.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
 inline Vector3 PerpendicularVector(const Vector3& normal)
 {
     Vector3 componentsLength(normal.x * normal.x, normal.y * normal.y, normal.z * normal.z);
@@ -926,6 +923,14 @@ inline Vector4::Vector4(const Vector3& v)
     y = v.y;
     z = v.z;
     w = 1.0f;
+}
+
+inline Vector4::Vector4(const Vector4& v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
+    w = v.w;
 }
 
 inline Vector4& Vector4::operator=(const Vector4& _v)
@@ -1067,11 +1072,11 @@ inline Vector4 Vector4::operator-() const
 //! Comparison operators
 inline bool Vector4::operator==(const Vector4& _v) const
 {
-    return ((x == _v.x) && (y == _v.y) && (z == _v.z) && (w == _v.w));
+    return (Memcmp(data, _v.data, sizeof(Vector4)) == 0);
 }
 inline bool Vector4::operator!=(const Vector4& _v) const
 {
-    return ((x != _v.x) || (y != _v.y) || (z != _v.z) || (w != _v.w));
+    return (Memcmp(data, _v.data, sizeof(Vector4)) != 0);
 }
 
 inline const Vector3& Vector4::GetVector3() const

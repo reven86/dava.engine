@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/Platform.h"
 
 //#include "Core/Core.h"
@@ -276,10 +248,11 @@ void CorePlatformAndroid::KeyUp(int32 keyCode)
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnKeyUnpressed(static_cast<DAVA::Key>(keyCode));
+    keyboard.OnKeyUnpressed(keyEvent.key);
 }
 
 void CorePlatformAndroid::KeyDown(int32 keyCode)
@@ -291,10 +264,11 @@ void CorePlatformAndroid::KeyDown(int32 keyCode)
     keyEvent.device = UIEvent::Device::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
-    keyboard.OnKeyPressed(static_cast<DAVA::Key>(keyCode));
+    keyboard.OnKeyPressed(keyEvent.key);
 }
 
 void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
@@ -323,6 +297,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
     newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
+    newEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
@@ -338,7 +313,7 @@ void CorePlatformAndroid::OnGamepadTriggersAvailable(bool isAvailable)
     InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 }
 
-void CorePlatformAndroid::OnInput(int32, int32, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
+void CorePlatformAndroid::OnInput(Vector<UIEvent>& allInputs)
 {
     DVASSERT(!allInputs.empty());
     if (!allInputs.empty())

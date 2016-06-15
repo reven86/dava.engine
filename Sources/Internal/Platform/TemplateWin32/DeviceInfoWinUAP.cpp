@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -62,6 +34,7 @@ using namespace ::Windows::System::UserProfile;
 using namespace ::Windows::UI::Xaml;
 using namespace ::Windows::System::Profile;
 using namespace ::Windows::Globalization;
+using namespace ::Windows::UI::ViewManagement;
 
 namespace DAVA
 {
@@ -73,6 +46,8 @@ const char* DEFAULT_TOUCH_ID = "touchId";
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
+    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+    platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     if (isTouchPresent)
@@ -81,8 +56,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         Set<String>& setIdDevices = (*(hidsAccessor))[TOUCH];
         setIdDevices.emplace(DEFAULT_TOUCH_ID);
     }
-    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
-    platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
 
     AnalyticsVersionInfo ^ versionInfo = AnalyticsInfo::VersionInfo;
     Platform::String ^ deviceVersion = versionInfo->DeviceFamilyVersion;
@@ -219,31 +192,46 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 }
 
 // temporary decision
-void DeviceInfoPrivate::InitializeScreenInfo()
+void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit)
 {
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+
+    if (screenInfo_.width > 0 && screenInfo_.height > 0)
+    {
+        screenInfo = screenInfo_;
+    }
+
+    // First time InitializeScreenInfo is called before dava thread and dispatcher are created
+    // so use this flag to leave function
+    if (!fullInit)
+    {
+        return;
+    }
 
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
     auto func = [this]() {
         // should be started on UI thread
-        CoreWindow ^ coreWindow = Window::Current->CoreWindow;
-        DVASSERT(coreWindow != nullptr);
-
-        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
-        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
-
-        DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
-        DVASSERT(displayInfo != nullptr);
-        screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-        DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
-        if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
+        //  in Continuum mode, we don't have touch
+        if (isMobileMode)
         {
-            std::swap(screenInfo.width, screenInfo.height);
+            bool last = isContinuumMode;
+            if (UserInteractionMode::Mouse == UIViewSettings::GetForCurrentView()->UserInteractionMode)
+            {
+                isContinuumMode = true;
+            }
+            else
+            {
+                isContinuumMode = false;
+            }
+            if (last != isContinuumMode)
+            {
+                NotifyAllClients(TOUCH, !isContinuumMode);
+            }
         }
     };
-    core->RunOnUIThreadBlocked(func);
+    core->RunOnUIThread(func);
     // start device watchers, after creation main thread dispatcher
     if (!watchersCreated)
     {
@@ -308,6 +296,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
+    // continuum mode don't have touch
+    if (DeviceInfo::HID_TOUCH_TYPE == type && isContinuumMode)
+    {
+        return false;
+    }
     auto func = [type](HIDConvPair pair) -> bool {
         return pair.second == type;
     };
@@ -317,7 +310,7 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 
 bool DeviceInfoPrivate::IsTouchPresented()
 {
-    return isTouchPresent; //  Touch is always present in MSVS simulator
+    return isTouchPresent && !isContinuumMode; //  Touch is always present in MSVS simulator
 }
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)

@@ -1,33 +1,6 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene/SceneTabWidget.h"
+
+#include "UI/Focus/UIFocusComponent.h"
 
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
@@ -47,14 +20,10 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QDebug>
+#include <QTimer>
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
-    , davaUIScreenID(0)
-    , dava3DViewMargin(3)
-    , previewDialog(NULL)
-    , newSceneCounter(0)
-    , curScene(NULL)
 {
     this->setMouseTracking(true);
 
@@ -68,7 +37,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     tabBar->setExpanding(false);
 
     // davawidget to display DAVAEngine content
-    davaWidget = new DavaGLWidget(this);
+    davaWidget = new DavaGLWidget();
     tabBar->setMinimumWidth(davaWidget->minimumWidth());
     setMinimumWidth(davaWidget->minimumWidth());
     setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
@@ -76,7 +45,11 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     // put tab bar and davawidget into vertical layout
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
-    layout->addWidget(davaWidget);
+    QTimer::singleShot(100, [layout, this]
+                       {
+                           davaWidget->setParent(this);
+                           layout->addWidget(davaWidget);
+                       });
     layout->setMargin(0);
     layout->setSpacing(1);
     setLayout(layout);
@@ -91,8 +64,9 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(DAVAWidgetDataDropped(const QMimeData*)));
     QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const SelectableGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const SelectableGroup*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Updated(SceneEditor2*)), this, SLOT(SceneUpdated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
 
     SetCurrentTab(0);
@@ -128,6 +102,10 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
 
 SceneTabWidget::~SceneTabWidget()
 {
+    if (previewDialog != nullptr)
+    {
+        previewDialog->RemoveFromParent();
+    }
     SafeRelease(previewDialog);
 
     ReleaseDAVAUI();
@@ -137,12 +115,13 @@ void SceneTabWidget::InitDAVAUI()
 {
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
+    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
     davaUIScreen->AddControl(dava3DView);
 
-    UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
-    UIScreenManager::Instance()->SetScreen(davaUIScreenID);
+    DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
+    DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
 }
 
 void SceneTabWidget::ReleaseDAVAUI()
@@ -196,14 +175,15 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     SceneEditor2* scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
 
-    if (FileSystem::Instance()->Exists(scenePathname))
+    if (DAVA::FileSystem::Instance()->Exists(scenePathname))
     {
-        bool sceneWasLoaded = scene->Load(scenePathname);
-        if (!sceneWasLoaded)
+        DAVA::SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
+        if (sceneWasLoaded != DAVA::SceneFileV2::ERROR_NO_ERROR)
         {
             QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
         }
     }
+    scene->EnableEditorSystems();
 
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);
@@ -214,18 +194,18 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
 
 bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
 {
-    VersionInfo::SceneVersion sceneVersion = SceneFileV2::LoadSceneVersion(scenePath);
+    DAVA::VersionInfo::SceneVersion sceneVersion = DAVA::SceneFileV2::LoadSceneVersion(scenePath);
 
     if (sceneVersion.IsValid())
     {
-        VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(sceneVersion);
-        const uint32 curVersion = VersionInfo::Instance()->GetCurrentVersion().version;
+        DAVA::VersionInfo::eStatus status = DAVA::VersionInfo::Instance()->TestVersion(sceneVersion);
+        const DAVA::uint32 curVersion = DAVA::VersionInfo::Instance()->GetCurrentVersion().version;
 
         switch (status)
         {
-        case VersionInfo::COMPATIBLE:
+        case DAVA::VersionInfo::COMPATIBLE:
         {
-            const String& branches = VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             const QMessageBox::StandardButton result = QMessageBox::warning(this, "Compatibility warning", msg, QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
             if (result != QMessageBox::Open)
@@ -234,9 +214,9 @@ bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
             }
             break;
         }
-        case VersionInfo::INVALID:
+        case DAVA::VersionInfo::INVALID:
         {
-            const String& branches = VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             QMessageBox::critical(this, "Compatibility error", msg);
             return false;
@@ -409,7 +389,7 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
     }
 }
 
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup* entities)
+void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects)
 {
     static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
     static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
@@ -417,20 +397,20 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 
     auto view = davaWidget->GetGLView();
 
-    if (GetCurrentScene() == scene && nullptr != entities)
+    if ((GetCurrentScene() == scene) && (objects != nullptr))
     {
-        switch (scene->modifSystem->GetModifMode())
+        switch (scene->modifSystem->GetTransformType())
         {
-        case ST_MODIF_MOVE:
+        case Selectable::TransformType::Translation:
             view->setCursor(cursorMove);
             break;
-        case ST_MODIF_ROTATE:
+        case Selectable::TransformType::Rotation:
             view->setCursor(cursorRotate);
             break;
-        case ST_MODIF_SCALE:
+        case Selectable::TransformType::Scale:
             view->setCursor(cursorScale);
             break;
-        case ST_MODIF_OFF:
+        case Selectable::TransformType::Disabled:
         default:
             view->unsetCursor();
             break;
@@ -442,7 +422,7 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
     }
 }
 
-void SceneTabWidget::SceneSaved(SceneEditor2* scene)
+void SceneTabWidget::SceneUpdated(SceneEditor2* scene)
 {
     // update scene name on tabBar
     for (int i = 0; i < tabBar->count(); ++i)
@@ -454,6 +434,11 @@ void SceneTabWidget::SceneSaved(SceneEditor2* scene)
             break;
         }
     }
+}
+
+void SceneTabWidget::SceneSaved(SceneEditor2* scene)
+{
+    SceneUpdated(scene);
 }
 
 void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified)
@@ -581,7 +566,7 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
 
 bool SceneTabWidget::CloseAllTabs()
 {
-    uint32 count = GetTabCount();
+    DAVA::uint32 count = GetTabCount();
     while (count)
     {
         if (!CloseTab(GetCurrentTab()))

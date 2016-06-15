@@ -1,40 +1,12 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 extern void FrameworkMain(int argc, char* argv[]);
 
+using namespace DAVA;
+
 @implementation OpenGLView
-@synthesize willQuit;
 
 - (id)initWithFrame:(NSRect)frameRect
 {
@@ -72,13 +44,9 @@ extern void FrameworkMain(int argc, char* argv[]);
 
     // Just as a diagnostic, report the renderer ID that this pixel format binds to.  CGLRenderers.h contains a list of known renderers and their corresponding RendererID codes.
     [pixelFormat getValues:&rendererID forAttribute:NSOpenGLPFARendererID forVirtualScreen:0];
-    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", (unsigned)rendererID);
+    NSLog(@"[CoreMacOSPlatform] NSOpenGLView pixelFormat RendererID = %08x", static_cast<unsigned>(rendererID));
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-    trackingArea = nil;
-    [self enableTrackingArea];
-    isFirstDraw = true;
-    willQuit = false;
 
     // enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
@@ -107,19 +75,6 @@ extern void FrameworkMain(int argc, char* argv[]);
 }
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
 
-- (void)enableTrackingArea
-{
-    [trackingArea release];
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:(NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingActiveInKeyWindow) owner:self userInfo:nil];
-    [self addTrackingArea:trackingArea];
-}
-
-- (void)disableTrackingArea
-{
-    if (trackingArea)
-        [self removeTrackingArea:trackingArea];
-}
-
 - (void)dealloc
 {
     [super dealloc];
@@ -141,27 +96,14 @@ extern void FrameworkMain(int argc, char* argv[]);
         CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
         CGLUpdateContext([[self openGLContext] CGLContextObj]);
 
-        rhi::ResetParam params;
-        params.window = self;
-        params.width = backingSize[0];
-        params.height = backingSize[1];
-        Renderer::Reset(params);
+        float32 scale = DeviceInfo::GetScreenInfo().scale;
+        Core::Instance()->WindowSizeChanged(windowSize.width, windowSize.height, scale, scale);
+        Core::Instance()->SetNativeView(self);
 
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowSize.width, windowSize.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backingSize[0], backingSize[1]);
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        UIScreenManager::Instance()->ScreenSizeChanged();
+        Core::Instance()->SystemProcessFrame();
     }
 
     [super reshape];
-}
-
-- (void)drawRect:(NSRect)theRect
-{
-    if (willQuit)
-        return;
-
-    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (BOOL)acceptsFirstResponder
@@ -186,7 +128,7 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
 
-    if (InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];
@@ -228,18 +170,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
             // simple mouse - sends float values from 0.1 for one wheel tick
             event.wheelDelta.x = rawScrollDeltaX * rawScrollCoefficient;
             event.wheelDelta.y = rawScrollDeltaY * rawScrollCoefficient;
-        }
-    }
-    else
-    {
-        @try
-        {
-            event.tapCount = [curEvent clickCount];
-        }
-        @catch (NSException* exception)
-        {
-            String err([[NSString stringWithFormat:@"Error %@:", [exception reason]] UTF8String]);
-            DVASSERT_MSG(false, DAVA::Format("You should not use clickCount property for that event type! %s", err.c_str()).c_str());
         }
     }
 }
@@ -412,11 +342,6 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 - (void)mouseDragged:(NSEvent*)theEvent
 {
     [self process:DAVA::UIEvent::Phase::ENDED touch:theEvent];
-}
-
-- (void)mouseExited:(NSEvent*)theEvent
-{
-    [NSCursor unhide];
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent

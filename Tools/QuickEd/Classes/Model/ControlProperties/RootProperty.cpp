@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "RootProperty.h"
 
 #include "PropertyVisitor.h"
@@ -67,7 +38,7 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     {
         for (ComponentPropertiesSection* section : sourceProperties->componentProperties)
         {
-            UIComponent::eType type = (UIComponent::eType)section->GetComponent()->GetType();
+            UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponent()->GetType());
             int32 index = section->GetComponentIndex();
             ScopedPtr<ComponentPropertiesSection> newSection(new ComponentPropertiesSection(node->GetControl(), type, index, section, cloneType));
             AddComponentPropertiesSection(newSection);
@@ -126,22 +97,25 @@ uint32 RootProperty::GetCount() const
 
 AbstractProperty* RootProperty::GetProperty(int index) const
 {
-    if (index < (int)baseProperties.size())
+    DVASSERT(index >= 0);
+
+    if (index < static_cast<int>(baseProperties.size()))
         return baseProperties[index];
     index -= baseProperties.size();
 
-    if (index < (int)controlProperties.size())
+    if (index < static_cast<int>(controlProperties.size()))
         return controlProperties[index];
     index -= controlProperties.size();
 
-    if (index < (int)componentProperties.size())
+    if (index < static_cast<int>(componentProperties.size()))
         return componentProperties[index];
     index -= componentProperties.size();
 
-    if (index < (int)backgroundProperties.size())
+    if (index < static_cast<int>(backgroundProperties.size()))
         return backgroundProperties[index];
     index -= backgroundProperties.size();
 
+    DVASSERT(index < internalControlProperties.size());
     return internalControlProperties[index];
 }
 
@@ -237,9 +211,8 @@ ComponentPropertiesSection* RootProperty::AddComponentPropertiesSection(DAVA::ui
             index++;
     }
 
-    ComponentPropertiesSection* section = new ComponentPropertiesSection(node->GetControl(), (UIComponent::eType)componentType, index, nullptr, CT_INHERIT);
+    ScopedPtr<ComponentPropertiesSection> section(new ComponentPropertiesSection(node->GetControl(), static_cast<UIComponent::eType>(componentType), index, nullptr, CT_INHERIT));
     AddComponentPropertiesSection(section);
-    section->Release();
     return section;
 }
 
@@ -328,7 +301,7 @@ const Vector<BackgroundPropertiesSection*>& RootProperty::GetBackgroundPropertie
 
 BackgroundPropertiesSection* RootProperty::GetBackgroundPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int)backgroundProperties.size())
+    if (0 <= num && num < static_cast<int>(backgroundProperties.size()))
         return backgroundProperties[num];
     return nullptr;
 }
@@ -340,7 +313,7 @@ const DAVA::Vector<InternalControlPropertiesSection*>& RootProperty::GetInternal
 
 InternalControlPropertiesSection* RootProperty::GetInternalControlPropertiesSection(int num) const
 {
-    if (0 <= num && num < (int)internalControlProperties.size())
+    if (0 <= num && num < static_cast<int>(internalControlProperties.size()))
         return internalControlProperties[num];
     return nullptr;
 }
@@ -395,32 +368,12 @@ void RootProperty::RefreshProperty(AbstractProperty* property, DAVA::int32 refre
         listener->PropertyChanged(property);
 }
 
-AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
-{
-    int propertiesCount = GetCount();
-    for (int index = 0; index < propertiesCount; ++index)
-    {
-        AbstractProperty* rootProperty = GetProperty(index);
-        if (nullptr != rootProperty)
-        {
-            int sectionCount = rootProperty->GetCount();
-            for (int prop = 0; prop < sectionCount; ++prop)
-            {
-                AbstractProperty* valueProperty = rootProperty->GetProperty(prop);
-                if (nullptr != valueProperty && valueProperty->GetName() == name)
-                {
-                    return valueProperty;
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-
 void RootProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    for (int32 i = 0; i < GetCount(); i++)
+    for (int32 i = 0; i < static_cast<int32>(GetCount()); i++)
+    {
         GetProperty(i)->Refresh(refreshFlags);
+    }
 }
 
 void RootProperty::Accept(PropertyVisitor* visitor)
@@ -524,7 +477,7 @@ uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint
         i++;
     }
     DVASSERT(index == 0);
-    return (uint32)componentProperties.size();
+    return static_cast<uint32>(componentProperties.size());
 }
 
 void RootProperty::RefreshComponentIndices()

@@ -1,38 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PropertiesModel.h"
 
-#include <QPoint>
-#include <QColor>
+#include "Platform/SystemTimer.h"
+#include "QtTools/Utils/Utils.h"
+
 #include <QFont>
-#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
 #include "Document.h"
@@ -51,51 +22,43 @@
 
 #include "UI/UIControl.h"
 
-#include <chrono>
+#include "QtTools/Updaters/ContinuousUpdater.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
-using namespace std::chrono;
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
+    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
 {
-    controlNode = SafeRetain(_controlNode);
-    controlNode->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(controlNode->GetRootProperty());
-    Init();
-}
-
-PropertiesModel::PropertiesModel(StyleSheetNode* aStyleSheet, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
-    : QAbstractItemModel(parent)
-    , commandExecutor(SafeRetain(_commandExecutor))
-{
-    styleSheet = SafeRetain(aStyleSheet);
-    styleSheet->GetRootProperty()->AddListener(this);
-    rootProperty = SafeRetain(styleSheet->GetRootProperty());
-    Init();
 }
 
 PropertiesModel::~PropertiesModel()
 {
-    if (controlNode)
-        controlNode->GetRootProperty()->RemoveListener(this);
-
-    if (styleSheet)
-        styleSheet->GetRootProperty()->RemoveListener(this);
-
-    SafeRelease(commandExecutor);
-    SafeRelease(controlNode);
-    SafeRelease(rootProperty);
-    SafeRelease(styleSheet);
+    CleanUp();
+    continuousUpdater->Stop();
 }
 
-void PropertiesModel::Init()
+void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
-    updatePropertyTimer = new QTimer(this);
-    updatePropertyTimer->setSingleShot(true);
-    updatePropertyTimer->setInterval(30);
-    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
+    continuousUpdater->Stop();
+    beginResetModel();
+    CleanUp();
+    commandExecutor = commandExecutor_;
+    controlNode = dynamic_cast<ControlNode*>(node_);
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->AddListener(this);
+        rootProperty = controlNode->GetRootProperty();
+    }
+
+    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->AddListener(this);
+        rootProperty = styleSheet->GetRootProperty();
+    }
+    endResetModel();
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex& parent) const
@@ -138,7 +101,7 @@ int PropertiesModel::rowCount(const QModelIndex& parent) const
     return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
-int PropertiesModel::columnCount(const QModelIndex& parent) const
+int PropertiesModel::columnCount(const QModelIndex&) const
 {
     return 2;
 }
@@ -149,13 +112,14 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+    DAVA::VariantType value = property->GetValue();
     uint32 flags = property->GetFlags();
     switch (role)
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
-            return property->GetValue().AsBool() ? Qt::Checked : Qt::Unchecked;
+        if (value.GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
+            return value.AsBool() ? Qt::Checked : Qt::Unchecked;
     }
     break;
 
@@ -192,14 +156,18 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         QVariant var;
         if (index.column() != 0)
         {
-            var.setValue<DAVA::VariantType>(property->GetValue());
+            var.setValue<VariantType>(value);
         }
         return var;
     }
     break;
 
     case Qt::BackgroundRole:
-        return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+        if (property->GetType() == AbstractProperty::TYPE_HEADER)
+        {
+            return Themes::GetViewLineAlternateColor();
+        }
+        break;
 
     case Qt::FontRole:
     {
@@ -215,6 +183,10 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
 
     case Qt::TextColorRole:
     {
+        if (property->IsOverriddenLocally() || property->IsReadOnly())
+        {
+            return Themes::GetChangedPropertyColor();
+        }
         if (controlNode)
         {
             int32 propertyIndex = property->GetStylePropertyIndex();
@@ -222,10 +194,15 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
             {
                 bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
                 if (setByStyle)
-                    return QColor(Qt::darkGreen);
+                {
+                    return Themes::GetStyleSheetNodeColor();
+                }
             }
         }
-        return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+        if (flags & AbstractProperty::EF_INHERITED)
+        {
+            return Themes::GetPrototypeColor();
+        }
     }
     }
 
@@ -245,10 +222,11 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
+        if (property->GetValueType() == VariantType::TYPE_BOOLEAN)
         {
             VariantType newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
+            UpdateProperty(property);
             return true;
         }
     }
@@ -268,13 +246,15 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
         }
 
         ChangeProperty(property, newVal);
+        UpdateProperty(property);
         return true;
     }
     break;
 
-    case DAVA::ResetRole:
+    case ResetRole:
     {
         ResetProperty(property);
+        UpdateProperty(property);
         return true;
     }
     break;
@@ -289,7 +269,8 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex& index) const
 
     AbstractProperty* prop = static_cast<AbstractProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (!prop->IsReadOnly() && (prop->GetType() == AbstractProperty::TYPE_ENUM || prop->GetType() == AbstractProperty::TYPE_FLAGS || prop->GetType() == AbstractProperty::TYPE_VARIANT))
+    AbstractProperty::ePropertyType propType = prop->GetType();
+    if (!prop->IsReadOnly() && (propType == AbstractProperty::TYPE_ENUM || propType == AbstractProperty::TYPE_FLAGS || propType == AbstractProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }
@@ -308,18 +289,26 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::UpdateAllChangedProperties()
 {
-    for (auto pair : changedIndexes)
+    for (auto property : changedProperties)
     {
-        emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
+        UpdateProperty(property.Get());
     }
+    changedProperties.clear();
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    updatePropertyTimer->start();
+    property->Retain();
+    changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
+    continuousUpdater->Update();
+}
+
+void PropertiesModel::UpdateProperty(AbstractProperty* property)
+{
+    QPersistentModelIndex nameIndex = indexByProperty(property, 0);
+    QPersistentModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    if (nameIndex.isValid() && valueIndex.isValid())
+        emit dataChanged(nameIndex, valueIndex, QVector<int>() << Qt::DisplayRole);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, ComponentPropertiesSection* section, int index)
@@ -388,33 +377,40 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
     endRemoveRows();
 }
 
-void PropertiesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
+void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantType& value)
 {
-    if (controlNode)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
-        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
-        size_t usCount = static_cast<size_t>(us.count());
-        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
-    }
-    else if (styleSheet)
-    {
-        commandExecutor->ChangeProperty(styleSheet, property, value);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            size_type usCount = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
+            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
+        }
+        else if (styleSheet)
+        {
+            commandExecutor->ChangeProperty(styleSheet, property, value);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
 {
-    if (controlNode)
+    DVASSERT(nullptr != commandExecutor);
+    if (nullptr != commandExecutor)
     {
-        commandExecutor->ResetProperty(controlNode, property);
-    }
-    else
-    {
-        DVASSERT(false);
+        if (nullptr != controlNode)
+        {
+            commandExecutor->ResetProperty(controlNode, property);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 
@@ -437,7 +433,14 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     case VariantType::TYPE_BOOLEAN:
         return QString();
-
+    case VariantType::TYPE_INT8:
+        return QVariant(val.AsInt8()).toString();
+    case VariantType::TYPE_UINT8:
+        return QVariant(val.AsUInt8()).toString();
+    case VariantType::TYPE_INT16:
+        return QVariant(val.AsInt16()).toString();
+    case VariantType::TYPE_UINT16:
+        return QVariant(val.AsUInt16()).toString();
     case VariantType::TYPE_INT32:
         if (property->GetType() == AbstractProperty::TYPE_ENUM)
         {
@@ -470,8 +473,17 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_UINT32:
         return QVariant(val.AsUInt32()).toString();
 
+    case VariantType::TYPE_INT64:
+        return QVariant(val.AsInt64()).toString();
+
+    case VariantType::TYPE_UINT64:
+        return QVariant(val.AsUInt64()).toString();
+
     case VariantType::TYPE_FLOAT:
         return QVariant(val.AsFloat()).toString();
+
+    case VariantType::TYPE_FLOAT64:
+        return QVariant(val.AsFloat64()).toString();
 
     case VariantType::TYPE_STRING:
         return StringToQString(val.AsString());
@@ -479,14 +491,8 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_WIDE_STRING:
         return WideStringToQString(val.AsWideString());
 
-    //        case VariantType::TYPE_UINT32:
-    //            return val.AsUInt32();
-    //
-    //        case VariantType::TYPE_INT64:
-    //            return val.AsInt64();
-    //
-    //        case VariantType::TYPE_UINT64:
-    //            return val.AsUInt64();
+    case VariantType::TYPE_FASTNAME:
+        return StringToQString(val.AsFastName().c_str());
 
     case VariantType::TYPE_VECTOR2:
         return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
@@ -507,7 +513,6 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     case VariantType::TYPE_MATRIX2:
     case VariantType::TYPE_MATRIX3:
     case VariantType::TYPE_MATRIX4:
-    case VariantType::TYPE_FASTNAME:
     case VariantType::TYPE_AABBOX3:
     default:
         DVASSERT(false);
@@ -516,7 +521,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     return QString();
 }
 
-void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& val) const
+void PropertiesModel::initVariantType(VariantType& var, const QVariant& val) const
 {
     switch (var.GetType())
     {
@@ -555,7 +560,7 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
     case VariantType::TYPE_VECTOR2:
     {
         QVector2D vector = val.value<QVector2D>();
-        var.SetVector2(DAVA::Vector2(vector.x(), vector.y()));
+        var.SetVector2(Vector2(vector.x(), vector.y()));
     }
     break;
 
@@ -569,7 +574,7 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
     case VariantType::TYPE_VECTOR4:
     {
         QVector4D vector = val.value<QVector4D>();
-        var.SetVector4(DAVA::Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        var.SetVector4(Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
     }
     break;
 
@@ -583,4 +588,19 @@ void PropertiesModel::initVariantType(DAVA::VariantType& var, const QVariant& va
         DVASSERT(false);
         break;
     }
+}
+
+void PropertiesModel::CleanUp()
+{
+    if (nullptr != controlNode)
+    {
+        controlNode->GetRootProperty()->RemoveListener(this);
+    }
+    if (nullptr != styleSheet)
+    {
+        styleSheet->GetRootProperty()->RemoveListener(this);
+    }
+    controlNode = nullptr;
+    styleSheet = nullptr;
+    rootProperty = nullptr;
 }
