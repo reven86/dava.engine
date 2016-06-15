@@ -16,6 +16,7 @@
 #include "Render/Image/Image.h"
 
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 #include "Utils/Random.h"
 #include "Utils/Utils.h"
 
