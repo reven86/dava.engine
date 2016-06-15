@@ -53,15 +53,13 @@ public slots:
     void OnCancelClicked();
 
 private slots:
-    void NetworkError(QNetworkReply::NetworkError code);
     void DownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void DownloadFinished();
-    void DownloadReadyRead();
+    void OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
     void StartNextTask();
 
 private:
     bool ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files);
-    bool TestArchive(const QString& archivePath, const ZipUtils::CompressedFilesAndSizes& files);
     bool UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files);
     void UpdateButton();
 
@@ -76,15 +74,10 @@ private:
 
     int tasksCount = 0;
 
-    QFile outputFile;
     QQueue<UpdateTask> tasks;
 
     QTreeWidgetItem* currentLogItem = nullptr;
     QTreeWidgetItem* currentTopLogItem = nullptr;
-
-    int lastErrorCode = QNetworkReply::NoError;
-    QString lastErrorDesrc;
-
     ApplicationManager* appManager = nullptr;
 };
 
