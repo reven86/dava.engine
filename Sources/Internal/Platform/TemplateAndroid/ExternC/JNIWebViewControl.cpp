@@ -1,5 +1,5 @@
 #include "AndroidLayer.h"
-#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "UI/Private/Android/WebViewControlAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"

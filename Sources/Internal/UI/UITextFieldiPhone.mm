@@ -10,7 +10,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/TemplateiOS/WebViewControliOS.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 

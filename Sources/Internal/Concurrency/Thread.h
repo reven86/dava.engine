@@ -74,6 +74,11 @@ public:
     };
 
     /**
+    \brief main thread name
+    */
+    static const char* davaMainThreadName;
+
+    /**
 		\brief static function to detect if current thread is main thread of application
 		\returns true if now main thread executes
 	*/
@@ -166,6 +171,11 @@ public:
      \brief register current native thread handle and remember it's Id as Id of MainThread.
      */
     static void InitMainThread();
+
+    /**
+    \brief sets name of current thread
+    */
+    static void SetCurrentThreadName(const String& str);
 
     /**
     \brief bind current thread to specified processor. Thread cannot be run on other processors.
