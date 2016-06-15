@@ -119,6 +119,10 @@ bool MouseDevice::IsPinningEnabled() const
 bool MouseDevice::SkipEvents(const UIEvent* event)
 {
     context->focusChanged = false;
+    if (!context->focused)
+    {
+        return true;
+    }
     if (privateImpl->SkipEvents(event))
     {
         return true;
