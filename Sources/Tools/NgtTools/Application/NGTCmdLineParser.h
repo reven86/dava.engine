@@ -11,6 +11,8 @@ class NGTCmdLineParser
 public:
     NGTCmdLineParser(int argc_, char** argv_);
 
+    void addParam(std::string&& key, std::string&& value);
+
     int argc() const override;
     char** argv() const override;
 
@@ -22,5 +24,7 @@ public:
 private:
     int m_argc;
     char** m_argv;
+
+    std::vector<std::pair<std::string, std::string>> additionalParams;
 };
 } // namespace NGTLayer
