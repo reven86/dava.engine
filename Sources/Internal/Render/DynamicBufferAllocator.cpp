@@ -127,6 +127,7 @@ struct BufferAllocator
             if (requiredSize > currentlyMappedBuffer->allocatedSize)
             {
                 count = currentlyMappedBuffer->allocatedSize / size;
+                requiredSize = size * count;
             }
 
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
@@ -201,6 +202,22 @@ struct BufferAllocator
             currentlyMappedData = nullptr;
             currentlyMappedBuffer = nullptr;
             currentlyUsedSize = 0;
+        }
+
+        // remove free buffers that are larger than actual page size
+        for (auto i = freeBuffers.begin(); i != freeBuffers.end();)
+        {
+            BufferInfo* buffer = *i;
+            if (buffer->allocatedSize > actualPageSize)
+            {
+                BufferProxy<HBuffer>::DeleteBuffer(buffer->buffer);
+                SafeDelete(buffer);
+                i = freeBuffers.erase(i);
+            }
+            else
+            {
+                ++i;
+            }
         }
     }
 
