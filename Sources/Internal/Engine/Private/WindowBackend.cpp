@@ -6,7 +6,7 @@
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/NativeWindow.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Dispatcher/DispatcherEvent.h"
+#include "Engine/Private/Dispatcher/Dispatcher.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -29,6 +29,9 @@ WindowBackend::~WindowBackend()
 {
     delete window;
     window = nullptr;
+
+    delete nativeWindow;
+    nativeWindow = nullptr;
 }
 
 void WindowBackend::Resize(float32 w, float32 h)
@@ -36,12 +39,6 @@ void WindowBackend::Resize(float32 w, float32 h)
     if (nativeWindow != nullptr)
     {
         nativeWindow->Resize(w, h);
-    }
-    else
-    {
-        pendingWidth = w;
-        pendingHeight = h;
-        pendingResizeRequest = true;
     }
 }
 
@@ -93,6 +90,8 @@ void WindowBackend::EventHandler(const DispatcherEvent& e)
     case DispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
+    default:
+        break;
     }
 }
 
@@ -102,8 +101,6 @@ void WindowBackend::FinishEventHandlingOnCurrentFrame()
     {
         HandlePendingSizeChanging();
         pendingSizeChanging = false;
-
-        Logger::Debug("****** WindowBackend::FinishEventHandlingOnCurrentFrame");
     }
 }
 
@@ -124,13 +121,71 @@ void WindowBackend::Draw()
     }
 }
 
+void WindowBackend::PostFocusChanged(bool focus)
+{
+    DispatcherEvent e;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.type = DispatcherEvent::WINDOW_FOCUS_CHANGED;
+    e.stateEvent.state = focus;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostVisibilityChanged(bool visibility)
+{
+    DispatcherEvent e;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
+    e.stateEvent.state = visibility;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
+{
+    DispatcherEvent e;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.type = DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED;
+
+    e.sizeEvent.width = width;
+    e.sizeEvent.height = height;
+    e.sizeEvent.scaleX = scaleX;
+    e.sizeEvent.scaleY = scaleY;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostWindowCreated(NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY)
+{
+    DispatcherEvent e;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.type = DispatcherEvent::WINDOW_CREATED;
+
+    e.windowCreatedEvent.nativeWindow = native;
+    e.windowCreatedEvent.size.width = width;
+    e.windowCreatedEvent.size.height = height;
+    e.windowCreatedEvent.size.scaleX = scaleX;
+    e.windowCreatedEvent.size.scaleY = scaleY;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostWindowDestroyed()
+{
+    DispatcherEvent e;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.type = DispatcherEvent::WINDOW_DESTROYED;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
 void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
 {
     inputSystem = engineBackend->context->inputSystem;
     uiControlSystem = engineBackend->context->uiControlSystem;
     virtualCoordSystem = engineBackend->context->virtualCoordSystem;
 
-    Logger::Error("****** WINDOW_CREATED: w=%.1f, h=%.1f", e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.width);
+    Logger::Error("****** WINDOW_CREATED: w=%.1f, h=%.1f", e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
 
     nativeWindow = e.windowCreatedEvent.nativeWindow;
 
@@ -143,17 +198,11 @@ void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
 
     pendingInitRender = true;
     pendingSizeChanging = true;
-
-    if (pendingResizeRequest)
-    {
-        nativeWindow->Resize(pendingWidth, pendingHeight);
-        pendingResizeRequest = false;
-    }
 }
 
 void WindowBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 {
-    nativeWindow = nullptr;
+    Logger::Error("****** WINDOW_DESTROYED");
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
@@ -247,8 +296,6 @@ void WindowBackend::HandleMouseWheel(const DispatcherEvent& e)
 
 void WindowBackend::HandleMouseMove(const DispatcherEvent& e)
 {
-    //Logger::Debug("****** MOUSE_MOVE: x=%.1f, y=%.1f", e.mmoveEvent.x, e.mmoveEvent.y);
-
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mmoveEvent.x, e.mmoveEvent.y);
@@ -315,24 +362,27 @@ void WindowBackend::HandleKeyChar(const DispatcherEvent& e)
 
 void WindowBackend::HandlePendingSizeChanging()
 {
+    int32 w = static_cast<int32>(width);
+    int32 h = static_cast<int32>(height);
+    int32 physW = static_cast<int32>(GetRenderSurfaceWidth());
+    int32 physH = static_cast<int32>(GetRenderSurfaceHeight());
+
     if (pendingInitRender)
     {
-        Logger::Debug("****** WindowBackend: init renderer");
+        Logger::Debug("****** WindowBackend init renderer: w=%d, h=%d, pw=%d, ph=%d", w, h, physW, physH);
 
         engineBackend->InitRenderer(this);
         pendingInitRender = false;
     }
     else
     {
-        Logger::Debug("****** WindowBackend: reset renderer");
+        Logger::Debug("****** WindowBackend reset rendererL w=%d, h=%d, pw=%d, ph=%d", w, h, physW, physH);
 
         engineBackend->ResetRenderer(this, false);
     }
 
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
     virtualCoordSystem->SetInputScreenAreaSize(w, h);
-    virtualCoordSystem->SetPhysicalScreenSize(w, h);
+    virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
     virtualCoordSystem->UnregisterAllAvailableResourceSizes();
     virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
     virtualCoordSystem->ScreenSizeChanged();

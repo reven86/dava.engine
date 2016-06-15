@@ -36,6 +36,7 @@ public:
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
+    void OnBeforeTerminate();
 
     void DoEvents();
     int32 OnFrame();
@@ -54,6 +55,9 @@ public:
     void EventHandler(const DispatcherEvent& e);
     void HandleWindowCreated(const DispatcherEvent& e);
     void HandleWindowDestroyed(const DispatcherEvent& e);
+    void HandleAppTerminate(const DispatcherEvent& e);
+
+    void PostAppTerminate();
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
     Dispatcher* dispatcher = nullptr;
@@ -63,12 +67,14 @@ public:
     Vector<String> cmdargs;
     Engine* engine = nullptr;
     WindowBackend* primaryWindow = nullptr;
-    Vector<WindowBackend*> windows;
+    Set<WindowBackend*> windows;
 
     bool consoleMode = false;
 
     bool quitConsole = false;
     int exitCode = 0;
+
+    bool appTerminateSent = false;
 
     KeyedArchive* options = nullptr;
     uint32 globalFrameIndex = 0;

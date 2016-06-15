@@ -31,7 +31,9 @@ struct DispatcherEvent final
         KEY_UP,
         KEY_CHAR,
 
-        FUNCTOR
+        FUNCTOR,
+
+        APP_TERMINATE,
     };
 
     struct WindowStateEvent

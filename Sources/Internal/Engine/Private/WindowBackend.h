@@ -26,14 +26,26 @@ public:
     bool IsVisible() const;
     bool HasFocus() const;
 
+    // Window size in logical pixels
     float32 GetWidth() const;
     float32 GetHeight() const;
+    // Window's render surface size in pixels
+    float32 GetRenderSurfaceWidth() const;
+    float32 GetRenderSurfaceHeight() const;
+
+    // Window scale factors
     float32 GetScaleX() const;
     float32 GetScaleY() const;
+    // Additional user scale factor
+    float32 GetUserScale() const;
+    // Window's render surface scale factors
+    float32 GetRenderSurfaceScaleX() const;
+    float32 GetRenderSurfaceScaleY() const;
 
     void Resize(float32 w, float32 h);
     Window* GetWindow() const;
     void* GetNativeHandle() const;
+    NativeWindow* GetNativeWindow() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -43,6 +55,14 @@ public:
     void FinishEventHandlingOnCurrentFrame();
     void Update(float32 frameDelta);
     void Draw();
+
+    //////////////////////////////////////////////////////////////////////////
+
+    void PostFocusChanged(bool focus);
+    void PostVisibilityChanged(bool visibility);
+    void PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowCreated(NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowDestroyed();
 
 private:
     void HandleWindowCreated(const DispatcherEvent& e);
@@ -77,13 +97,10 @@ private:
     float32 height = 0.0f;
     float32 scaleX = 1.0f;
     float32 scaleY = 1.0f;
+    float32 userScale = 1.0f;
 
     bool pendingInitRender = false;
     bool pendingSizeChanging = false;
-
-    float32 pendingWidth = 0.0f;
-    float32 pendingHeight = 0.0f;
-    bool pendingResizeRequest = false;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
@@ -113,6 +130,16 @@ inline float32 WindowBackend::GetHeight() const
     return height;
 }
 
+inline float32 WindowBackend::GetRenderSurfaceWidth() const
+{
+    return width * scaleX * userScale;
+}
+
+inline float32 WindowBackend::GetRenderSurfaceHeight() const
+{
+    return height * scaleY * userScale;
+}
+
 inline float32 WindowBackend::GetScaleX() const
 {
     return scaleX;
@@ -123,9 +150,29 @@ inline float32 WindowBackend::GetScaleY() const
     return scaleY;
 }
 
+inline float32 WindowBackend::GetUserScale() const
+{
+    return userScale;
+}
+
+inline float32 WindowBackend::GetRenderSurfaceScaleX() const
+{
+    return scaleX * userScale;
+}
+
+inline float32 WindowBackend::GetRenderSurfaceScaleY() const
+{
+    return scaleY * userScale;
+}
+
 inline Window* WindowBackend::GetWindow() const
 {
     return window;
+}
+
+inline NativeWindow* WindowBackend::GetNativeWindow() const
+{
+    return nativeWindow;
 }
 
 } // namespace Private

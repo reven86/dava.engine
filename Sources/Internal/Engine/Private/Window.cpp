@@ -40,6 +40,16 @@ float32 Window::GetHeight() const
     return windowBackend->GetHeight();
 }
 
+float32 Window::GetRenderSurfaceWidth() const
+{
+    return windowBackend->GetRenderSurfaceWidth();
+}
+
+float32 Window::GetRenderSurfaceHeight() const
+{
+    return windowBackend->GetRenderSurfaceHeight();
+}
+
 float32 Window::GetScaleX() const
 {
     return windowBackend->GetScaleX();
@@ -48,6 +58,21 @@ float32 Window::GetScaleX() const
 float32 Window::GetScaleY() const
 {
     return windowBackend->GetScaleY();
+}
+
+float32 Window::GetUserScale() const
+{
+    return windowBackend->GetUserScale();
+}
+
+float32 Window::GetRenderSurfaceScaleX() const
+{
+    return windowBackend->GetRenderSurfaceScaleX();
+}
+
+float32 Window::GetRenderSurfaceScaleY() const
+{
+    return windowBackend->GetRenderSurfaceScaleY();
 }
 
 void Window::Resize(float32 w, float32 h)

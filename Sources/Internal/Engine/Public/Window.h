@@ -17,10 +17,21 @@ public:
     bool IsVisible() const;
     bool HasFocus() const;
 
+    // Window size in logical pixels
     float32 GetWidth() const;
     float32 GetHeight() const;
+    // Window's render surface size in pixels
+    float32 GetRenderSurfaceWidth() const;
+    float32 GetRenderSurfaceHeight() const;
+
+    // Window scale factors
     float32 GetScaleX() const;
     float32 GetScaleY() const;
+    // Additional user scale factor
+    float32 GetUserScale() const;
+    // Window's render surface scale factors
+    float32 GetRenderSurfaceScaleX() const;
+    float32 GetRenderSurfaceScaleY() const;
 
     Vector2 GetSize() const;
     Vector2 GetScale() const;

@@ -12,6 +12,7 @@
 #include "Functional/Function.h"
 
 #include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/OsX/OsXFwd.h"
 
 namespace DAVA
 {
@@ -20,8 +21,8 @@ namespace Private
 class WindowOsX final
 {
 public:
-    static WindowOsX* Create(Dispatcher* dispatcher, WindowBackend* window);
-    static void Destroy(WindowOsX* nativeWindow);
+    WindowOsX(EngineBackend* engine_, WindowBackend* window_);
+    ~WindowOsX();
 
     void Resize(float32 width, float32 height);
     void* GetHandle() const;
@@ -29,26 +30,26 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 private:
-    WindowOsX(Dispatcher* dispatcher_, WindowBackend* window_);
-    ~WindowOsX();
-
-    WindowOsX(const WindowOsX&) = delete;
-    WindowOsX& operator=(const WindowOsX&) = delete;
-
-    bool CreateNativeWindow();
-    void ResizeNativeWindow(int32 width, int32 height);
+    bool CreateWindow(float32 width, float32 height);
+    void DestroyWindow();
+    void ResizeWindow(float32 width, float32 height);
 
     //void PostCustomMessage(const EventWin32& e);
     //void ProcessCustomEvents();
 
 private:
+    EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
     WindowBackend* window = nullptr;
 
-    bool isMinimized = false;
+    WindowOsXObjcBridge* bridge = nullptr;
 
-    //Mutex mutex;
-    //Vector<EventWin32> events;
+    bool isMinimized = false;
+    size_t hideUnhideSignalId = 0;
+
+    // Friends
+    friend class CoreOsX;
+    friend struct WindowOsXObjcBridge;
 };
 
 } // namespace Private

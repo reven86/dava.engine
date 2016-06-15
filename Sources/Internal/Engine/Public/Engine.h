@@ -47,6 +47,7 @@ public:
     // Signals
     Signal<> gameLoopStarted;
     Signal<> gameLoopStopped;
+    Signal<> beforeTerminate;
     Signal<Window*> windowCreated;
     Signal<Window*> windowDestroyed;
     Signal<> beginFrame;

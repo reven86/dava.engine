@@ -8,7 +8,10 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Functional/Signal.h"
+
 #include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/OsX/OsXFwd.h"
 
 namespace DAVA
 {
@@ -17,7 +20,7 @@ namespace Private
 class CoreOsX final
 {
 public:
-    CoreOsX();
+    CoreOsX(EngineBackend* e);
     ~CoreOsX();
 
     CoreOsX(const CoreOsX&) = delete;
@@ -29,7 +32,23 @@ public:
     void Run();
     void Quit();
 
-    WindowOsX* CreateNativeWindow(WindowBackend* w);
+    WindowOsX* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
+    void DestroyNativeWindow(WindowBackend* w);
+
+    // WindowOsX gets notified about application hidden/unhidden state changing
+    // to update its visibility state
+    Signal<bool> didHideUnhide;
+
+private:
+    int OnFrame();
+
+private:
+    EngineBackend* engineBackend = nullptr;
+    // TODO: std::unique_ptr
+    CoreOsXObjcBridge* objcBridge = nullptr;
+
+    // Friends
+    friend struct CoreOsXObjcBridge;
 };
 
 } // namespace Private

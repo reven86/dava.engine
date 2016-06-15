@@ -55,7 +55,7 @@ EngineBackend* EngineBackend::instance = nullptr;
 
 EngineBackend::EngineBackend(int argc, char* argv[])
     : dispatcher(new Dispatcher)
-    , platformCore(new PlatformCore)
+    , platformCore(new PlatformCore(this))
     , context(new AppContext)
 {
     DVASSERT(instance == nullptr);
@@ -63,7 +63,6 @@ EngineBackend::EngineBackend(int argc, char* argv[])
 
     new Logger;
 
-    windows.reserve(10);
     cmdargs = platformCore->GetCommandLine(argc, argv);
 }
 
@@ -84,12 +83,8 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     platformCore->Init();
     if (!consoleMode)
     {
-#if defined(__DAVAENGINE_QT__)
-        ;
-#elif defined(__DAVAENGINE_WIN32__)
         primaryWindow = new WindowBackend(this, true);
-        windows.push_back(primaryWindow);
-#endif
+        windows.insert(primaryWindow);
     }
 
     // init modules
@@ -155,11 +150,6 @@ int EngineBackend::Run()
     }
     else
     {
-#if defined(__DAVAENGINE_QT__)
-        ;
-#elif defined(__DAVAENGINE_WIN32__)
-        platformCore->CreateNativeWindow(primaryWindow);
-#endif
         platformCore->Run();
     }
     return exitCode;
@@ -169,9 +159,13 @@ void EngineBackend::Quit(int exitCode_)
 {
     exitCode = exitCode_;
     if (consoleMode)
+    {
         quitConsole = true;
+    }
     else
-        platformCore->Quit();
+    {
+        PostAppTerminate();
+    }
 }
 
 void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
@@ -206,6 +200,11 @@ void EngineBackend::OnGameLoopStopped()
     {
         Renderer::Uninitialize();
     }
+}
+
+void EngineBackend::OnBeforeTerminate()
+{
+    engine->beforeTerminate.Emit();
 }
 
 void EngineBackend::DoEvents()
@@ -308,6 +307,9 @@ void EngineBackend::EventHandler(const DispatcherEvent& e)
     case DispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
+    case DispatcherEvent::APP_TERMINATE:
+        HandleAppTerminate(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -327,16 +329,58 @@ void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 {
     engine->windowDestroyed.Emit(e.window->GetWindow());
     e.window->EventHandler(e);
-    if (e.window->IsPrimary())
+
+    size_t nerased = windows.erase(e.window);
+    DVASSERT(nerased == 1);
+
+    bool isPrimary = e.window->IsPrimary();
+    delete e.window;
+
+    if (isPrimary)
     {
-        engine->Quit();
+        primaryWindow = nullptr;
+        // If primary window is destroyed then terminate application
+        PostAppTerminate();
+    }
+
+    if (windows.empty())
+    {
+        platformCore->Quit();
+    }
+}
+
+void EngineBackend::HandleAppTerminate(const DispatcherEvent& e)
+{
+    for (WindowBackend* w : windows)
+    {
+        platformCore->DestroyNativeWindow(w);
+    }
+}
+
+void EngineBackend::PostAppTerminate()
+{
+    if (!appTerminateSent)
+    {
+        DispatcherEvent e;
+        e.window = nullptr;
+        e.type = DispatcherEvent::APP_TERMINATE;
+        e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+        dispatcher->PostEvent(e);
+
+        appTerminateSent = true;
     }
 }
 
 void EngineBackend::InitRenderer(WindowBackend* w)
 {
     rhi::InitParam rendererParams;
-    rhi::Api renderer = rhi::RHI_DX9; //static_cast<rhi::Api>(options->GetInt32("renderer"));
+#if defined(__DAVAENGINE_QT__)
+    rhi::Api renderer = rhi::RHI_GLES2;
+#elif defined(__DAVAENGINE_MACOS__)
+    rhi::Api renderer = rhi::RHI_GLES2;
+#elif defined(__DAVAENGINE_WIN32__)
+    rhi::Api renderer = rhi::RHI_DX9;
+#endif
 
     rendererParams.threadedRenderEnabled = true;
     rendererParams.threadedRenderFrameCount = 2;
@@ -356,11 +400,13 @@ void EngineBackend::InitRenderer(WindowBackend* w)
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
+    int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
+    int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
     rendererParams.window = w->GetNativeHandle();
-    rendererParams.width = static_cast<int>(w->GetWidth());
-    rendererParams.height = static_cast<int>(w->GetHeight());
-    rendererParams.scaleX = w->GetScaleX();
-    rendererParams.scaleY = w->GetScaleY();
+    rendererParams.width = physW;
+    rendererParams.height = physH;
+    rendererParams.scaleX = w->GetRenderSurfaceScaleX();
+    rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
@@ -380,11 +426,13 @@ void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
     }
     else
     {
+        int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
+        int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
         rendererParams.window = w->GetNativeHandle();
-        rendererParams.width = static_cast<int>(w->GetWidth());
-        rendererParams.height = static_cast<int>(w->GetHeight());
-        rendererParams.scaleX = w->GetScaleX();
-        rendererParams.scaleY = w->GetScaleY();
+        rendererParams.width = physW;
+        rendererParams.height = physH;
+        rendererParams.scaleX = w->GetRenderSurfaceScaleX();
+        rendererParams.scaleY = w->GetRenderSurfaceScaleY();
     }
     Renderer::Reset(rendererParams);
 }

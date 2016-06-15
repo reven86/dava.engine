@@ -20,7 +20,8 @@ Engine* Engine::Instance()
 
 Engine::Engine()
 {
-    //DVASSERT(engineSingleton == nullptr);
+    DVASSERT(engineSingleton == nullptr);
+
     engineSingleton = this;
     engineBackend = Private::EngineBackend::instance;
     engineBackend->engine = this;
