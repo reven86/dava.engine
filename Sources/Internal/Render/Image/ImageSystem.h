@@ -43,6 +43,7 @@ eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionF
 ImageInfo GetImageInfo(const FilePath& pathName);
 
 const Vector<String>& GetExtensionsFor(ImageFormat format);
+const String& GetDefaultExtension(ImageFormat format);
 
 ImageFormat GetImageFormatForExtension(const String& extension);
 ImageFormat GetImageFormatForExtension(const FilePath& pathname);

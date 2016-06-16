@@ -54,9 +54,8 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
         descriptor->CreateLoadPathnamesForGPU(forGPU, files);
     }
 
-    for (size_t i = 0; i < files.size(); ++i)
+    for (const FilePath& imagePathname : files)
     {
-        const FilePath& imagePathname = files[i];
         ImageInfo info = ImageSystem::GetImageInfo(imagePathname);
         if (!info.IsEmpty())
         {
@@ -65,9 +64,8 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
             uint32 m = Min(baseMipMaps, info.mipmapsCount - 1);
             for (; m < info.mipmapsCount; ++m)
             {
-                uint32 w = (info.width >> m);
-                uint32 h = (info.height >> m);
-
+                uint32 w = Max(info.width >> m, 1u);
+                uint32 h = Max(info.height >> m, 1u);
                 size += Image::GetSizeInBytes(w, h, info.format);
             }
         }

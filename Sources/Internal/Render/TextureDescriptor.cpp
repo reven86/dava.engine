@@ -458,7 +458,6 @@ String ReadStringDeprecated(File* file)
     file->Read(extStr.data(), length);
     return String(extStr.data(), length);
 }
-
 }
 
 void TextureDescriptor::OverridePathName(const FilePath& filename)

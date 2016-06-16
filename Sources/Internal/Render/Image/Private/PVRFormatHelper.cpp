@@ -487,8 +487,8 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
         {
             for (uint32 face = 0; face < pvrFile->header.u32NumFaces; ++face)
             {
-                uint32 mipWidth = pvrFile->header.u32Width >> mip;
-                uint32 mipHeight = pvrFile->header.u32Height >> mip;
+                uint32 mipWidth = Max(pvrFile->header.u32Width >> mip, 1u);
+                uint32 mipHeight = Max(pvrFile->header.u32Height >> mip, 1u);
                 uint32 mipDataSize = Image::GetSizeInBytes(mipWidth, mipHeight, pxFormat);
 
                 if (mip < fromMipMap)

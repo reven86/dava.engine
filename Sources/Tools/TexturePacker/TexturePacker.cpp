@@ -465,11 +465,25 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector
 {
     Vector<ImageExportKeys> compressionTargets;
 
-    uint32 count = static_cast<uint32>(forGPUs.size());
+    size_type count = forGPUs.size();
     compressionTargets.resize(count);
-    for (uint32 i = 0; i < count; ++i)
+    for (size_type i = 0; i < count; ++i)
     {
-        compressionTargets[i].forGPU = forGPUs[i];
+        eGPUFamily curGPU = forGPUs[i];
+        if (curGPU == eGPUFamily::GPU_FAMILY_COUNT || curGPU == eGPUFamily::GPU_DEVICE_COUNT)
+        {
+            size_type targetsCount = static_cast<size_type>(curGPU);
+            compressionTargets.resize(targetsCount);
+            for (size_type i = 0; i < targetsCount; ++i)
+            {
+                compressionTargets[i].forGPU = static_cast<eGPUFamily>(i);
+            }
+            break;
+        }
+        else
+        {
+            compressionTargets[i].forGPU = curGPU;
+        }
     }
 
     for (ImageExportKeys& keys : compressionTargets)

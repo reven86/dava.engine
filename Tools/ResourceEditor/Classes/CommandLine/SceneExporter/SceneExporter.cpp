@@ -549,49 +549,102 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
     DAVA::PixelFormat targetFormat = descriptor.GetPixelFormatForGPU(gpu);
     DVASSERT(targetFormat == loadedImages[0]->format);
 
+    DAVA::size_type mipmapsCount = loadedImages.size();
+    bool isCubemap = loadedImages[0]->cubeFaceID != DAVA::Texture::INVALID_CUBEMAP_FACE;
+    if (isCubemap)
+    {
+        DAVA::uint32 firstFace = loadedImages[0]->cubeFaceID;
+        mipmapsCount = count_if(loadedImages.begin(), loadedImages.end(), [&firstFace](const DAVA::Image* img){ return img->cubeFaceID == firstFace; });
+    }
+
+    DAVA::Vector<DAVA::FilePath> pathnamesForGPU;
+    descriptor.CreateLoadPathnamesForGPU(gpu, pathnamesForGPU);
+    DAVA::size_type outTexturesCount = pathnamesForGPU.size();
+
+    if (mipmapsCount < outTexturesCount)
+    {
+        Logger::Error("Can't split HD level for %s", compressedTexturePath.GetStringValue().c_str());
+        return false;
+    }
+
     auto createOutPathname = [&](const DAVA::FilePath& pathname)
     {
         DAVA::String fileLink = pathname.GetRelativePathname(exportingParams.dataSourceFolder);
         return exportingParams.dataFolder + fileLink;
     };
 
-    auto saveImages = [&](const DAVA::FilePath& path, const DAVA::Vector<DAVA::Image*> images)
+    enum class eSavingParam { SaveOneMip, SaveRemainingMips };
+    auto saveImages = [&](const DAVA::FilePath& path, DAVA::size_type mip, eSavingParam param)
     {
-        DAVA::eErrorCode saveError = DAVA::ImageSystem::Save(path, images, targetFormat);
-        if (saveError != DAVA::eErrorCode::SUCCESS)
+        if (isCubemap)
         {
-            Logger::Error("Can't save %s", path.GetStringValue().c_str());
-            return false;
+            Vector<Vector<Image*>> savedImages;
+            for (DAVA::uint32 face = 0; face < Texture::CUBE_FACE_COUNT; ++face)
+            {
+                Vector<Image*> faceMips;
+
+                for (Image* loadedImage : loadedImages)
+                {
+                    if (loadedImage->cubeFaceID == face && loadedImage->mipmapLevel >= static_cast<DAVA::uint32>(mip))
+                    {
+                        faceMips.push_back(loadedImage);
+                        if (param == eSavingParam::SaveOneMip)
+                            break;
+                    }
+                }
+                
+                if (!faceMips.empty())
+                {
+                    savedImages.resize(savedImages.size() + 1);
+                    savedImages.back().swap(faceMips);
+                }
+            }
+
+            DAVA::eErrorCode saveError = DAVA::ImageSystem::SaveAsCubeMap(path, savedImages, targetFormat);
+            if (saveError != DAVA::eErrorCode::SUCCESS)
+            {
+                Logger::Error("Can't save %s", path.GetStringValue().c_str());
+                return false;
+            }
         }
+        else
+        {
+            DVASSERT(mip < loadedImages.size());
+            Vector<Image*> savedImages;
+            if (param == eSavingParam::SaveOneMip)
+            {
+                savedImages.push_back(loadedImages[mip]);
+            }
+            else
+            {
+                savedImages.assign(loadedImages.begin() + mip, loadedImages.end());
+            }
+
+            DAVA::eErrorCode saveError = DAVA::ImageSystem::Save(path, savedImages, targetFormat);
+            if (saveError != DAVA::eErrorCode::SUCCESS)
+            {
+                Logger::Error("Can't save %s", path.GetStringValue().c_str());
+                return false;
+            }
+        }
+
         return true;
     };
 
-    DAVA::Vector<DAVA::FilePath> imagePathnames;
-    descriptor.CreateLoadPathnamesForGPU(gpu, imagePathnames);
-    DAVA::uint32 mipmapsCount = static_cast<uint32>(loadedImages.size());
-    DAVA::uint32 imagesCount = static_cast<uint32>(imagePathnames.size());
-
-    if (mipmapsCount < imagesCount)
+    // save hd mips, each in separate file
+    DAVA::size_type mip = 0;
+    DAVA::size_type singleMipCount = outTexturesCount - 1;
+    for (; mip < singleMipCount; ++mip)
     {
-        Logger::Error("Can't split HD level for %s", compressedTexturePath.GetStringValue().c_str());
-        return false;
-    }
-
-    DAVA::uint32 multipleImageIndex = imagesCount - 1;
-    for (DAVA::uint32 mip = 0; mip < multipleImageIndex; ++mip)
-    {
-        bool saved = saveImages(createOutPathname(imagePathnames[mip]), { loadedImages[mip] });
+        bool saved = saveImages(createOutPathname(pathnamesForGPU[mip]), mip, eSavingParam::SaveOneMip);
         if (!saved)
         {
             return false;
         }
     }
 
-    auto mipImagesIterator = loadedImages.begin();
-    std::advance(mipImagesIterator, multipleImageIndex);
-
-    DAVA::Vector<DAVA::Image*> multipleMipImages(mipImagesIterator, loadedImages.end());
-    return saveImages(createOutPathname(imagePathnames[multipleImageIndex]), multipleMipImages);
+    // save remaining mips, all in single file
+    return saveImages(createOutPathname(pathnamesForGPU[mip]), mip, eSavingParam::SaveRemainingMips);
 }
 
 bool SceneExporter::CopyFile(const FilePath& filePath) const

@@ -21,7 +21,7 @@ public:
 
     void SetPVRTexTool(const FilePath& textToolPathname);
 
-    FilePath GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
+    FilePath GetConvertedTexturePath(const TextureDescriptor& descriptor, eGPUFamily gpuFamily);
 
 protected:
     FilePath PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor);

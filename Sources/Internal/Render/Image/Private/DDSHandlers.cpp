@@ -1100,8 +1100,8 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
         uint32 bytesToSkip = 0;
         for (uint32 mip = 0; mip < baseMipMap; ++mip)
         {
-            uint32 mipWidth = info.width >> mip;
-            uint32 mipHeight = info.height >> mip;
+            uint32 mipWidth = Max(info.width >> mip, 1u);
+            uint32 mipHeight = Max(info.height >> mip, 1u);
             bytesToSkip += MipSize(mipWidth, mipHeight);
         }
         if (bytesToSkip > 0 && (file->Seek(bytesToSkip, File::SEEK_FROM_CURRENT) == false))
@@ -1112,8 +1112,8 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
 
         for (uint32 mip = baseMipMap; mip < info.mipmapsCount; ++mip)
         {
-            uint32 mipWidth = info.width >> mip;
-            uint32 mipHeight = info.height >> mip;
+            uint32 mipWidth = Max(info.width >> mip, 1u);
+            uint32 mipHeight = Max(info.height >> mip, 1u);
             uint32 bytesInMip = MipSize(mipWidth, mipHeight);
 
             auto readSize = file->Read(dataBuffer.data(), bytesInMip);

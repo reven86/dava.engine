@@ -263,5 +263,11 @@ const Vector<String>& GetExtensionsFor(ImageFormat format)
 {
     return GetImageFormatInterface(format)->GetExtensions();
 }
+
+const String& GetDefaultExtension(ImageFormat format)
+{
+    return GetExtensionsFor(format)[0];
+}
+
 }
 }
