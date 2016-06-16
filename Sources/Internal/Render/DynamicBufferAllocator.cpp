@@ -336,9 +336,5 @@ void SetPageSize(uint32 size)
     actualPageSize = size;
 }
 
-uint32 GetPageSize()
-{
-    return actualPageSize;
-}
 }
 }
