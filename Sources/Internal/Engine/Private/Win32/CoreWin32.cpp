@@ -9,6 +9,7 @@
 #include <shellapi.h>
 
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Win32/WindowWin32.h"
 
 #include "Platform/SystemTimer.h"
@@ -20,7 +21,8 @@ namespace Private
 {
 HINSTANCE CoreWin32::hinstance = nullptr;
 
-CoreWin32::CoreWin32()
+CoreWin32::CoreWin32(EngineBackend* e)
+    : engineBackend(e)
 {
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
@@ -56,6 +58,8 @@ void CoreWin32::Run()
     bool quitLoop = false;
 
     EngineBackend::instance->OnGameLoopStarted();
+    CreateNativeWindow(engineBackend->primaryWindow, 640.0f, 480.0f);
+
     for (;;)
     {
         uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
@@ -87,16 +91,28 @@ void CoreWin32::Run()
             break;
     }
     EngineBackend::instance->OnGameLoopStopped();
+    EngineBackend::instance->OnBeforeTerminate();
 }
 
 void CoreWin32::Quit()
 {
-    ::PostQuitMessage(0);
+    ::PostQuitMessage(engineBackend->exitCode);
 }
 
-WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w)
+WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
 {
-    return WindowWin32::Create(EngineBackend::instance->dispatcher, w);
+    WindowWin32* nativeWindow = new WindowWin32(engineBackend, w);
+    if (!nativeWindow->CreateNWindow(width, height))
+    {
+        delete nativeWindow;
+        nativeWindow = nullptr;
+    }
+    return nativeWindow;
+}
+
+void CoreWin32::DestroyNativeWindow(WindowBackend* w)
+{
+    w->GetNativeWindow()->DestroyNWindow();
 }
 
 } // namespace Private

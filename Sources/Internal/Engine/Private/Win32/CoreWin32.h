@@ -21,7 +21,7 @@ namespace Private
 class CoreWin32 final
 {
 public:
-    CoreWin32();
+    CoreWin32(EngineBackend* e);
     ~CoreWin32();
 
     CoreWin32(const CoreWin32&) = delete;
@@ -35,9 +35,12 @@ public:
     void Run();
     void Quit();
 
-    WindowWin32* CreateNativeWindow(WindowBackend* w);
+    WindowWin32* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
+    void DestroyNativeWindow(WindowBackend* w);
 
 private:
+    EngineBackend* engineBackend = nullptr;
+
     static HINSTANCE hinstance;
 };
 

@@ -23,8 +23,11 @@ namespace Private
 class WindowWin32 final
 {
 public:
-    static WindowWin32* Create(Dispatcher* dispatcher, WindowBackend* window);
-    static void Destroy(WindowWin32* nativeWindow);
+    WindowWin32(EngineBackend* engine_, WindowBackend* window_);
+    ~WindowWin32();
+
+    WindowWin32(const WindowWin32&) = delete;
+    WindowWin32& operator=(const WindowWin32&) = delete;
 
     void Resize(float32 width, float32 height);
     void* GetHandle() const;
@@ -32,11 +35,9 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 private:
-    WindowWin32(Dispatcher* dispatcher_, WindowBackend* window_);
-    ~WindowWin32();
-
-    WindowWin32(const WindowWin32&) = delete;
-    WindowWin32& operator=(const WindowWin32&) = delete;
+    bool CreateNWindow(float32 width, float32 height);
+    void DestroyNWindow();
+    void ResizeNWindow(float32 width, float32 height);
 
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnSetKillFocus(bool gotFocus);
@@ -52,14 +53,12 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
-    bool CreateNativeWindow();
-    void ResizeNativeWindow(int32 width, int32 height);
-
     void PostCustomMessage(const EventWin32& e);
     void ProcessCustomEvents();
 
 private:
     HWND hwnd = nullptr;
+    EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
     WindowBackend* window = nullptr;
 
@@ -73,6 +72,9 @@ private:
     static const UINT WM_CUSTOM_MESSAGE = WM_USER + 39;
     static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD windowExStyle = 0;
+
+    // Friends
+    friend class CoreWin32;
 };
 
 } // namespace Private

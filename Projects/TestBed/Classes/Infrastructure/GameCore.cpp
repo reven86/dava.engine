@@ -71,6 +71,7 @@ GameCore::GameCore(Engine* eng)
 
     engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
     engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
+    engine->beforeTerminate.Connect(this, &GameCore::OnBeforeTerminate);
 
     if (engine->IsConsoleMode())
     {
@@ -95,6 +96,8 @@ void GameCore::OnGameLoopStarted()
 {
     Logger::Debug("****** GameCore::OnGameLoopStarted");
 
+    RunOnlyThisTest();
+
     engine->RunAsyncOnMainThread([]() {
         Logger::Error("******** KABOOM on main thread********");
     });
@@ -110,6 +113,11 @@ void GameCore::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
+}
+
+void GameCore::OnBeforeTerminate()
+{
+    Logger::Debug("****** GameCore::OnBeforeTerminate");
 }
 
 void GameCore::OnWindowCreated(DAVA::Window* w)

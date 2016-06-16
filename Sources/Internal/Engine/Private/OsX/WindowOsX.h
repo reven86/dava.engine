@@ -30,9 +30,9 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 private:
-    bool CreateWindow(float32 width, float32 height);
-    void DestroyWindow();
-    void ResizeWindow(float32 width, float32 height);
+    bool CreateNWindow(float32 width, float32 height);
+    void DestroyNWindow();
+    void ResizeNWindow(float32 width, float32 height);
 
     //void PostCustomMessage(const EventWin32& e);
     //void ProcessCustomEvents();

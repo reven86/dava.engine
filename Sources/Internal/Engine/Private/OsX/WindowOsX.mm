@@ -50,7 +50,7 @@ void WindowOsX::RunAsyncOnUIThread(const Function<void()>& task)
 {
 }
 
-bool WindowOsX::CreateWindow(float32 width, float32 height)
+bool WindowOsX::CreateNWindow(float32 width, float32 height)
 {
     NSSize screenSize = [[NSScreen mainScreen] frame].size;
     float32 x = (screenSize.width - width) / 2.0f;
@@ -58,12 +58,12 @@ bool WindowOsX::CreateWindow(float32 width, float32 height)
     return bridge->CreateNSWindow(x, y, width, height);
 }
 
-void WindowOsX::DestroyWindow()
+void WindowOsX::DestroyNWindow()
 {
     bridge->DestroyNSWindow();
 }
 
-void WindowOsX::ResizeWindow(float32 width, float32 height)
+void WindowOsX::ResizeNWindow(float32 width, float32 height)
 {
     bridge->ResizeNSWindow(width, height);
 }

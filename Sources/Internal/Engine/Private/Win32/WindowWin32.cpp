@@ -23,46 +23,9 @@ namespace Private
 bool WindowWin32::windowClassRegistered = false;
 const wchar_t WindowWin32::windowClassName[] = L"DAVA_WND_CLASS";
 
-WindowWin32* WindowWin32::Create(Dispatcher* dispatcher, WindowBackend* window)
-{
-    if (!RegisterWindowClass())
-    {
-        Logger::Error("Failed to register win32 window class: %d", GetLastError());
-        return nullptr;
-    }
-
-    WindowWin32* nativeWindow = new WindowWin32(dispatcher, window);
-    HWND hwnd = ::CreateWindowExW(windowExStyle,
-                                  windowClassName,
-                                  L"DAVA_WINDOW",
-                                  windowStyle,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  nullptr,
-                                  nullptr,
-                                  CoreWin32::Win32AppInstance(),
-                                  nativeWindow);
-    if (hwnd != nullptr)
-    {
-        ::ShowWindow(hwnd, SW_SHOWNORMAL);
-        ::UpdateWindow(hwnd);
-    }
-    else
-    {
-        delete nativeWindow;
-        nativeWindow = nullptr;
-    }
-    return nativeWindow;
-}
-
-void WindowWin32::Destroy(WindowWin32* nativeWindow)
-{
-}
-
-WindowWin32::WindowWin32(Dispatcher* dispatcher_, WindowBackend* window_)
-    : dispatcher(dispatcher_)
+WindowWin32::WindowWin32(EngineBackend* engine_, WindowBackend* window_)
+    : engine(engine_)
+    , dispatcher(engine->dispatcher)
     , window(window_)
 {
 }
@@ -76,8 +39,8 @@ void WindowWin32::Resize(float32 width, float32 height)
 {
     EventWin32 e;
     e.type = EventWin32::RESIZE;
-    e.resizeEvent.width = static_cast<int32>(width);
-    e.resizeEvent.height = static_cast<int32>(height);
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
     PostCustomMessage(e);
 }
 
@@ -94,18 +57,60 @@ void WindowWin32::RunAsyncOnUIThread(const Function<void()>& task)
     PostCustomMessage(e);
 }
 
+bool WindowWin32::CreateNWindow(float32 width, float32 height)
+{
+    if (!RegisterWindowClass())
+    {
+        Logger::Error("Failed to register win32 window class: %d", GetLastError());
+        return false;
+    }
+
+    HWND handle = ::CreateWindowExW(windowExStyle,
+                                    windowClassName,
+                                    L"DAVA_WINDOW",
+                                    windowStyle,
+                                    CW_USEDEFAULT,
+                                    CW_USEDEFAULT,
+                                    CW_USEDEFAULT,
+                                    CW_USEDEFAULT,
+                                    nullptr,
+                                    nullptr,
+                                    CoreWin32::Win32AppInstance(),
+                                    this);
+    if (handle != nullptr)
+    {
+        ::ShowWindow(handle, SW_SHOWNORMAL);
+        ::UpdateWindow(handle);
+        return true;
+    }
+    return false;
+}
+
+void WindowWin32::DestroyNWindow()
+{
+    ::DestroyWindow(hwnd);
+}
+
+void WindowWin32::ResizeNWindow(float32 width, float32 height)
+{
+    int32 w = static_cast<int32>(width);
+    int32 h = static_cast<int32>(height);
+
+    RECT rc = { 0, 0, w, h };
+    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
+
+    w = rc.right - rc.left;
+    h = rc.bottom - rc.top;
+    UINT flags = SWP_NOMOVE | SWP_NOZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, w, h, flags);
+}
+
 LRESULT WindowWin32::OnSize(int resizingType, int width, int height)
 {
-    DispatcherEvent e;
-    e.window = window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
-        e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
-        e.stateEvent.state = 0;
-        dispatcher->PostEvent(e);
+        window->PostVisibilityChanged(false);
         return 0;
     }
 
@@ -114,29 +119,21 @@ LRESULT WindowWin32::OnSize(int resizingType, int width, int height)
         if (isMinimized)
         {
             isMinimized = false;
-            e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
-            e.stateEvent.state = 1;
-            dispatcher->PostEvent(e);
+            window->PostVisibilityChanged(true);
+            return 0;
         }
     }
 
-    e.type = DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED;
-    e.sizeEvent.width = static_cast<float32>(width);
-    e.sizeEvent.height = static_cast<float32>(height);
-    e.sizeEvent.scaleX = 1.0f;
-    e.sizeEvent.scaleY = 1.0f;
-    dispatcher->PostEvent(e);
+    window->PostSizeChanged(static_cast<float32>(width),
+                            static_cast<float32>(height),
+                            1.0f,
+                            1.0f);
     return 0;
 }
 
 LRESULT WindowWin32::OnSetKillFocus(bool gotFocus)
 {
-    DispatcherEvent e;
-    e.type = DispatcherEvent::WINDOW_FOCUS_CHANGED;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-    e.stateEvent.state = gotFocus;
-    dispatcher->PostEvent(e);
+    window->PostFocusChanged(gotFocus);
     return 0;
 }
 
@@ -267,38 +264,23 @@ LRESULT WindowWin32::OnCreate()
     RECT rc;
     GetClientRect(hwnd, &rc);
 
-    DispatcherEvent e;
-    e.window = window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
-    e.type = DispatcherEvent::WINDOW_CREATED;
-    e.windowCreatedEvent.nativeWindow = this;
-    e.windowCreatedEvent.size.width = static_cast<float32>(rc.right - rc.left);
-    e.windowCreatedEvent.size.height = static_cast<float32>(rc.bottom - rc.top);
-    e.windowCreatedEvent.size.scaleX = 1.0f;
-    e.windowCreatedEvent.size.scaleY = 1.0f;
-    dispatcher->PostEvent(e);
-
-    e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
-    e.stateEvent.state = 1;
-    dispatcher->PostEvent(e);
+    window->PostWindowCreated(this,
+                              static_cast<float32>(rc.right - rc.left),
+                              static_cast<float32>(rc.bottom - rc.top),
+                              1.0f,
+                              1.0f);
+    window->PostVisibilityChanged(true);
     return 0;
 }
 
 LRESULT WindowWin32::OnDestroy()
 {
-    DispatcherEvent e;
-    e.window = window;
-
     if (!isMinimized)
     {
-        e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
-        e.stateEvent.state = 0;
-        dispatcher->PostEvent(e);
+        window->PostVisibilityChanged(false);
     }
-
-    e.type = DispatcherEvent::WINDOW_DESTROYED;
-    dispatcher->PostEvent(e);
+    window->PostWindowDestroyed();
+    hwnd = nullptr;
     return 0;
 }
 
@@ -448,21 +430,6 @@ bool WindowWin32::RegisterWindowClass()
     return windowClassRegistered;
 }
 
-void WindowWin32::ResizeNativeWindow(int32 width, int32 height)
-{
-    RECT rc = {
-        0, 0,
-        width,
-        height
-    };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
-
-    width = rc.right - rc.left;
-    height = rc.bottom - rc.top;
-    UINT flags = SWP_NOMOVE | SWP_NOZORDER;
-    ::SetWindowPos(hwnd, nullptr, 0, 0, width, height, flags);
-}
-
 void WindowWin32::PostCustomMessage(const EventWin32& e)
 {
     {
@@ -496,7 +463,7 @@ void WindowWin32::ProcessCustomEvents()
 
     if (pendingEvent.type == EventWin32::RESIZE)
     {
-        ResizeNativeWindow(pendingEvent.resizeEvent.width, pendingEvent.resizeEvent.height);
+        ResizeNWindow(pendingEvent.resizeEvent.width, pendingEvent.resizeEvent.height);
     }
 }
 

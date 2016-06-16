@@ -25,8 +25,8 @@ struct EventWin32 final
 
     struct ResizeEvent
     {
-        int32 width;
-        int32 height;
+        float32 width;
+        float32 height;
     };
 
     eType type = DUMMY;

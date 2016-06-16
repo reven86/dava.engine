@@ -68,9 +68,6 @@ EngineBackend::EngineBackend(int argc, char* argv[])
 
 EngineBackend::~EngineBackend()
 {
-    delete context;
-    delete dispatcher;
-    delete platformCore;
     instance = nullptr;
 }
 
@@ -186,6 +183,7 @@ void EngineBackend::RunConsole()
         Thread::Sleep(1);
     }
     OnGameLoopStopped();
+    OnBeforeTerminate();
 }
 
 void EngineBackend::OnGameLoopStarted()
@@ -205,6 +203,13 @@ void EngineBackend::OnGameLoopStopped()
 void EngineBackend::OnBeforeTerminate()
 {
     engine->beforeTerminate.Emit();
+
+    delete context;
+    delete dispatcher;
+    delete platformCore;
+    context = nullptr;
+    dispatcher = nullptr;
+    platformCore = nullptr;
 }
 
 void EngineBackend::DoEvents()
