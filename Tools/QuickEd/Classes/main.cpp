@@ -3,7 +3,6 @@
 #include "FileSystem/FileSystem.h"
 
 #include <QApplication>
-#include "UI/mainwindow.h"
 
 #include "EditorCore.h"
 #include "QEApplication.h"
@@ -47,12 +46,7 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();
-        {
-            EditorCore editorCore;
-
-            editorCore.Start();
-            returnCode = a.StartApplication(editorCore.GetMainWindow());
-        }
+        returnCode = a.Run();
     }
     return returnCode;
 }

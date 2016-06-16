@@ -38,7 +38,7 @@ private:
     void commandExecuted(const CommandInstance& commandInstance, CommandOperation operation) override;
     void CleanCheck();
 
-    void HistoryIndexChanged(int currentIndex);
+    void OnHistoryIndexChanged(int currentIndex);
 
     void EnableConections();
     void DisableConnections();

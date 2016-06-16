@@ -20,7 +20,7 @@ REApplication::REApplication(int argc, char** argv)
 
 REApplication::~REApplication() = default;
 
-void REApplication::Run()
+int REApplication::Run()
 {
     IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
     if (historyPanel != nullptr)
@@ -31,16 +31,17 @@ void REApplication::Run()
 
     // create and init UI
     ResourceEditorLauncher launcher;
-    mainWindow = new QtMainWindow(GetComponentContext());
+    QtMainWindow* mainWindow = new QtMainWindow(GetComponentContext());
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
-    StartApplication(mainWindow);
+    int exitCode = StartApplication(mainWindow);
 
     DAVA::SafeRelease(mainWindow);
     ControlsFactory::ReleaseFonts();
+    return exitCode;
 }
 
 void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const

@@ -34,7 +34,7 @@ void UnpackHelpDoc();
 void FixOSXFonts();
 
 void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
-void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
+int RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
 
 int main(int argc, char* argv[])
 {
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 #endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
                  )
         {
-            RunGui(argc, argv, cmdLine);
+            exitCode = RunGui(argc, argv, cmdLine);
         }
         else
         {
@@ -122,7 +122,7 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     cmdLineManager.Process();
 }
 
-void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
+int RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 {
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
@@ -139,7 +139,7 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
     const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
     RunGuard runGuard(appUidPath);
     if (!runGuard.tryToRun())
-        return;
+        return 0;
 
     Q_INIT_RESOURCE(QtToolsResources);
 
@@ -162,7 +162,7 @@ void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
-    a.Run();
+    return a.Run();
 }
 
 void UnpackHelpDoc()

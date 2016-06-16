@@ -2,7 +2,6 @@
 
 #include "NgtTools/Application/NGTApplication.h"
 
-class QtMainWindow;
 class NGTCommand;
 class ICommandManager;
 
@@ -12,7 +11,7 @@ public:
     REApplication(int argc, char** argv);
     ~REApplication();
 
-    void Run();
+    int Run();
 
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
@@ -22,5 +21,4 @@ protected:
 private:
     ICommandManager* commandManager = nullptr;
     std::unique_ptr<NGTCommand> ngtCommand;
-    QtMainWindow* mainWindow = nullptr;
 };

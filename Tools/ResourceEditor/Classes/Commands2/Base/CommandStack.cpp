@@ -172,7 +172,7 @@ CommandStack::CommandStack()
 
     ActiveCommandStack::Instance()->CommandStackCreated(this);
 
-    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::HistoryIndexChanged, this, std::placeholders::_1));
+    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::OnHistoryIndexChanged, this, std::placeholders::_1));
 }
 
 CommandStack::~CommandStack()
@@ -408,7 +408,7 @@ void CommandStack::commandExecuted(const CommandInstance& commandInstance, Comma
     }
 }
 
-void CommandStack::HistoryIndexChanged(int currentIndex)
+void CommandStack::OnHistoryIndexChanged(int currentIndex)
 {
     nextCommandIndex = currentIndex;
     CleanCheck();
