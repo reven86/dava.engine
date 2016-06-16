@@ -1918,6 +1918,12 @@ metal_Present(Handle syncObject)
 
     if (do_discard)
     {
+        if (syncObject != InvalidHandle)
+        {
+            SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+            sync->is_signaled = true;
+        }
+
         return;
     }
     

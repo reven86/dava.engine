@@ -536,6 +536,7 @@ void metal_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
     if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
         metal_Texture_Map(tex, level, face);
+        DVASSERT(sz <= self->mappedDataSize);
         memcpy(self->mappedData, data, sz);
         metal_Texture_Unmap(tex);
     }
@@ -598,15 +599,20 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
 //_CheckAllTextures();
 #if 1
-    if (self->need_restoring
-        && [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent] == MTLPurgeableStateEmpty
-        )
+    if (self->need_restoring)
     {
-        if (!self->NeedRestore())
+        MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
+
+        DVASSERT(s != MTLPurgeableStateKeepCurrent)
+        if (s == MTLPurgeableStateEmpty)
         {
-            self->MarkNeedRestore();
-            DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", self->width, self->height, int([self->uid setPurgeableState:MTLPurgeableStateKeepCurrent]));
+            if (!self->NeedRestore())
+            {
+                self->MarkNeedRestore();
+                DAVA::Logger::Info("tex-lost  %ux%u  ps= %i", self->width, self->height, int(s));
+            }
         }
+        //-        [self->uid setPurgeableState:s];
     }
 #endif
 }
@@ -639,6 +645,16 @@ unsigned
 NeedRestoreCount()
 {
     return TextureMetalPool::PendingRestoreCount();
+}
+
+void
+MarkAllNeedRestore()
+{
+    for (TextureMetalPool::Iterator t = TextureMetalPool::Begin(), t_end = TextureMetalPool::End(); t != t_end; ++t)
+    {
+        if (t->need_restoring)
+            t->MarkNeedRestore();
+    }
 }
 
 } // namespace TextureMetal
