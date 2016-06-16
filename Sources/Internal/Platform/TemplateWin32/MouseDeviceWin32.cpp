@@ -9,13 +9,6 @@ namespace DAVA
 {
 void MouseDeviceWin32::SetCursorInCenter()
 {
-    // if mouse device reconnected, system recalculate counter
-    int showCount = ShowCursor(false);
-    if (showCount < -1)
-    {
-        showCount = ShowCursor(true);
-    }
-
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
     RECT wndRect;
     GetWindowRect(hWnd, &wndRect);
@@ -31,21 +24,17 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
-    DAVA::int32 showCount = 0;
-    showCount = ShowCursor(show); // No cursor info available, just call
+    HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     if (show)
     {
-        if (showCount > 0)
-        {
-            showCount = ShowCursor(!show);
-        }
+        HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
+        SetClassLongPtr(wnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
+        ::SetCursor(defaultCursor);
     }
     else
     {
-        if (showCount < -1)
-        {
-            showCount = ShowCursor(!show);
-        }
+        SetClassLongPtr(wnd, GCLP_HCURSOR, NULL);
+        ::SetCursor(NULL);
     }
     return true;
 }
