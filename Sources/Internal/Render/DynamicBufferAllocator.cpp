@@ -315,6 +315,5 @@ void SetPageSize(uint32 size)
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
-
 }
 }
