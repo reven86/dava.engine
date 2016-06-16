@@ -1167,10 +1167,12 @@ void SceneTree::SyncSelectionToTree()
     }
 
     QItemSelectionModel* selectModel = selectionModel();
-    selectModel->clearSelection();
+    selectModel->clear();
 
     if (toSelect.empty())
         return;
+
+    QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
 
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
@@ -1195,17 +1197,21 @@ void SceneTree::SyncSelectionToTree()
             else
             {
                 QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                selectModel->select(selection, selectionMode);
                 startIndex = i;
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
         QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        selectModel->select(selection, selectionMode);
     }
 
-    scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    if (lastValidIndex.isValid())
+    {
+        selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);
+        scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    }
 }
 
 void SceneTree::SyncSelectionFromTree()
