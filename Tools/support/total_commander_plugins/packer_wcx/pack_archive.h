@@ -14,7 +14,7 @@ struct FileInfo
     FileInfo(const char* relativePath, uint32_t originalSize,
              uint32_t compressedSize, uint32_t compressionType);
 
-    const char* relativeFilePath = nullptr;
+    std::string relativeFilePath;
     uint32_t originalSize = 0;
     uint32_t compressedSize = 0;
     uint32_t compressionType = 0;

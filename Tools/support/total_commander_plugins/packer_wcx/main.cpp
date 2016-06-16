@@ -5,7 +5,7 @@
 #include "pack_archive.h"
 
 using DWORD = std::uint32_t;
-#define MAX_PATH 260
+const std::uint32_t MAX_PATH = 260;
 
 #if defined(__MINGW32__)
 #define DLL_EXPORT __declspec(dllexport)
@@ -35,15 +35,26 @@ SetProcessDataProc(HANDLE hArcData, tProcessDataProc pProcessDataProc);
 DLL_EXPORT int STDCALL GetPackerCaps();
 }
 
+std::ofstream l;
+
 HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 {
+    if (!l.is_open())
+    {
+        // TODO uncomment for crossplatform debuging
+        // l.open("d:/Users/l_chayka/Documents/dvpk_plugin.log");
+    }
+
     PackArchive* archive = nullptr;
     try
     {
         archive = new PackArchive(ArchiveData->ArcName);
+
+        l << "open archive: " << ArchiveData->ArcName << '\n';
     }
     catch (std::exception& ex)
     {
+        l << ex.what();
         ArchiveData->OpenResult = E_BAD_ARCHIVE;
     }
     return archive;
@@ -52,6 +63,9 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 int STDCALL CloseArchive(HANDLE hArcData)
 {
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
+
+    l << "close archive: " << archive->arcName << '\n';
+
     delete archive;
     return 0;
 }
@@ -61,14 +75,13 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
     PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
 
     const std::vector<FileInfo>& files = archive->GetFilesInfo();
-    if (files.size() > archive->fileIndex)
+    if (archive->fileIndex < files.size())
     {
-        const FileInfo& info = files[archive->fileIndex];
-        archive->fileIndex++;
+        const FileInfo& info = files.at(archive->fileIndex);
 
         std::string name(info.relativeFilePath);
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSVC)
         std::for_each(begin(name), end(name), [](char& ch) {
             if (ch == '/')
             {
@@ -78,23 +91,27 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 #endif
 
         HeaderData->FileAttr = 1; // FILE_SHARE_READ;
-        std::strcpy(HeaderData->FileName, name.c_str());
-        archive->fileIndex++;
+        std::strncpy(HeaderData->FileName, name.c_str(), MAX_PATH);
+        std::strncpy(HeaderData->ArcName, archive->arcName.c_str(), MAX_PATH);
 
-        strcpy(HeaderData->ArcName, archive->arcName.c_str());
-
-        HeaderData->FileCRC = 0;
-
+        HeaderData->FileCRC = info.hash;
         HeaderData->FileTime = 0;
-
         HeaderData->UnpSize = info.originalSize;
         HeaderData->PackSize = info.compressedSize;
 
         archive->lastFileName = info.relativeFilePath;
+
+        l << "read header file: " << HeaderData->FileName << " relative: "
+          << info.relativeFilePath << " index: " << archive->fileIndex << '\n';
+
+        ++archive->fileIndex;
     }
     else
     {
         archive->fileIndex = 0;
+        std::memset(HeaderData, 0, sizeof(*HeaderData));
+
+        l << "end header\n";
         return E_END_ARCHIVE;
     }
 
