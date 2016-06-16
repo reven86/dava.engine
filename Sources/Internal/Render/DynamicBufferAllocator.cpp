@@ -8,7 +8,7 @@ namespace DynamicBufferAllocator
 {
 namespace //for private members
 {
-uint32 actualPageSize = DEFAULT_PAGE_SIZE;
+uint32 pageSize = DEFAULT_PAGE_SIZE;
 
 template <class HBuffer>
 class BufferProxy
@@ -105,23 +105,16 @@ struct BufferAllocator
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
 
-            // find first free buffer with capacity not less than actual page size
-            auto bufferInfoIterator = std::find_if(freeBuffers.begin(), freeBuffers.end(), [](BufferInfo* info)
-                                                   {
-                                                       return info->allocatedSize >= actualPageSize;
-                                                   });
-
-            // and create new one, if such buffer could not be found
-            if (bufferInfoIterator == freeBuffers.end())
+            if (freeBuffers.empty())
             {
                 currentlyMappedBuffer = new BufferInfo();
-                currentlyMappedBuffer->allocatedSize = actualPageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(actualPageSize);
+                currentlyMappedBuffer->allocatedSize = pageSize;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
             }
             else
             {
-                currentlyMappedBuffer = *bufferInfoIterator;
-                freeBuffers.erase(bufferInfoIterator);
+                currentlyMappedBuffer = freeBuffers.back();
+                freeBuffers.pop_back();
             }
 
             if (requiredSize > currentlyMappedBuffer->allocatedSize)
@@ -202,22 +195,6 @@ struct BufferAllocator
             currentlyMappedData = nullptr;
             currentlyMappedBuffer = nullptr;
             currentlyUsedSize = 0;
-        }
-
-        // remove free buffers that are larger than actual page size
-        for (auto i = freeBuffers.begin(); i != freeBuffers.end();)
-        {
-            BufferInfo* buffer = *i;
-            if (buffer->allocatedSize > actualPageSize)
-            {
-                BufferProxy<HBuffer>::DeleteBuffer(buffer->buffer);
-                SafeDelete(buffer);
-                i = freeBuffers.erase(i);
-            }
-            else
-            {
-                ++i;
-            }
         }
     }
 
@@ -333,7 +310,10 @@ void Clear()
 
 void SetPageSize(uint32 size)
 {
-    actualPageSize = size;
+    pageSize = size;
+
+    vertexBufferAllocator.Clear();
+    indexBufferAllocator.Clear();
 }
 
 }
