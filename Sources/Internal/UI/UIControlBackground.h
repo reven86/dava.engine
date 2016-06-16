@@ -310,10 +310,10 @@ protected:
 
     ePerPixelAccuracyType perPixelAccuracyType = PER_PIXEL_ACCURACY_DISABLED; //!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
-    Sprite* mask = nullptr;
-    Sprite* detail = nullptr;
-    Sprite* gradient = nullptr;
-    Sprite* contour = nullptr;
+    RefPtr<Sprite> mask;
+    RefPtr<Sprite> detail;
+    RefPtr<Sprite> gradient;
+    RefPtr<Sprite> contour;
     eGradientBlendMode gradientMode = GRADIENT_MULTIPLY;
 
 private:
@@ -441,63 +441,55 @@ inline FilePath UIControlBackground::GetBgSpritePath() const
 
 inline FilePath UIControlBackground::GetMaskSpritePath() const
 {
-    Sprite* sprite = mask;
-    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
-        return Sprite::GetPathString(sprite);
+    if ((mask != nullptr) && (mask->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(mask.Get());
     return "";
 }
 inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
 {
-    Sprite* tmp = nullptr;
     if (path != "")
-        tmp = Sprite::Create(path);
-    SafeRelease(mask);
-    mask = tmp;
+        mask = Sprite::Create(path);
+    else
+        mask = nullptr;
 }
 inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
-    Sprite* sprite = detail;
-    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
-        return Sprite::GetPathString(sprite);
+    if ((detail != nullptr) && (detail->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(detail.Get());
     return "";
 }
 inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
 {
-    Sprite* tmp = nullptr;
     if (path != "")
-        tmp = Sprite::Create(path);
-    SafeRelease(detail);
-    detail = tmp;
+        detail = Sprite::Create(path);
+    else
+        detail = nullptr;
 }
 inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
-    Sprite* sprite = gradient;
-    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
-        return Sprite::GetPathString(sprite);
+    if ((gradient != nullptr) && (gradient->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(gradient.Get());
     return "";
 }
 inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
 {
-    Sprite* tmp = nullptr;
     if (path != "")
-        tmp = Sprite::Create(path);
-    SafeRelease(gradient);
-    gradient = tmp;
+        gradient = Sprite::Create(path);
+    else
+        gradient = nullptr;
 }
 inline FilePath UIControlBackground::GetContourSpritePath() const
 {
-    Sprite* sprite = contour;
-    if ((sprite != nullptr) && (sprite->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
-        return Sprite::GetPathString(sprite);
+    if ((contour != nullptr) && (contour->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
+        return Sprite::GetPathString(contour.Get());
     return "";
 }
 inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
 {
-    Sprite* tmp = nullptr;
     if (path != "")
-        tmp = Sprite::Create(path);
-    SafeRelease(contour);
-    contour = tmp;
+        contour = Sprite::Create(path);
+    else
+        contour = nullptr;
 }
 
 inline int32 UIControlBackground::GetGradientBlendMode() const
