@@ -13,6 +13,8 @@ namespace DAVA
 {
 void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 {
+    using ::Windows::UI::Xaml::Window;
+
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);

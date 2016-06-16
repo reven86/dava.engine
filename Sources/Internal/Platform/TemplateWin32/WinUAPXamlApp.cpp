@@ -108,6 +108,8 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
+    using Windows::UI::Xaml::Window;
+
     PreStartAppSettings();
     uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
@@ -125,6 +127,7 @@ void WinUAPXamlApp::StartMainLoopThread(::Windows::ApplicationModel::Activation:
 
 void WinUAPXamlApp::PreStartAppSettings()
 {
+    using Windows::UI::Xaml::Window;
     if (isPhoneApiDetected)
     {
         // default orientation landscape and landscape flipped
@@ -148,11 +151,13 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
         EmitPushNotification(args);
     }
 
+    using Windows::UI::Xaml::Window;
     Window::Current->Activate();
 }
 
 void WinUAPXamlApp::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
+    using ::Windows::UI::Xaml::Window;
     using ::Windows::ApplicationModel::Activation::ActivationKind;
 
     if (args->Kind == ActivationKind::Protocol)
@@ -780,6 +785,8 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
 
 DeviceInfo::ScreenInfo WinUAPXamlApp::ObtainScreenInfo()
 {
+    using ::Windows::UI::Xaml::Window;
+
     DeviceInfo::ScreenInfo result;
 
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
@@ -799,6 +806,8 @@ DeviceInfo::ScreenInfo WinUAPXamlApp::ObtainScreenInfo()
 
 void WinUAPXamlApp::SetupEventHandlers()
 {
+    using ::Windows::UI::Xaml::Window;
+
     Suspending += ref new SuspendingEventHandler(this, &WinUAPXamlApp::OnSuspending);
     Resuming += ref new EventHandler<::Platform::Object ^>(this, &WinUAPXamlApp::OnResuming);
 
@@ -829,6 +838,8 @@ void WinUAPXamlApp::SetupEventHandlers()
 
 void WinUAPXamlApp::CreateBaseXamlUI()
 {
+    using ::Windows::UI::Xaml::Window;
+
     // workaround for Surface, otherwise we lost MouseMoved event
     Platform::Object ^ obj = XamlReader::Load(ref new Platform::String(xamlWebView));
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
