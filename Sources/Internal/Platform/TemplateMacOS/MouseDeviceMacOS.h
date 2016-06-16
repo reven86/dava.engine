@@ -12,12 +12,18 @@ namespace DAVA
 class MouseDeviceMacOS : public MouseDeviceInterface
 {
 public:
+    MouseDeviceMacOS() = default;
+    ~MouseDeviceMacOS();
+
     void SetMode(eCaptureMode newMode) override;
     void SetCursorInCenter() override;
     bool SkipEvents(const UIEvent* event) override;
 
 private:
     bool cursorVisible = true;
+    void* blankCursor = nullptr;
+    bool blankCursorSetNeeded = false;
+
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
     // So move mouse pointer to window center before enabling pinning mode.
@@ -32,6 +38,7 @@ private:
     void MovePointerToWindowCenter();
     void OSXShowCursor();
     void OSXHideCursor();
+    void* GetOrCreateBlankCursor();
 };
 
 } //  namespace DAVA
