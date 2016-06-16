@@ -51,7 +51,7 @@ void CoreOsX::Quit()
 WindowOsX* CoreOsX::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
 {
     WindowOsX* nativeWindow = new WindowOsX(engineBackend, w);
-    if (!nativeWindow->CreateWindow(width, height))
+    if (!nativeWindow->CreateNWindow(width, height))
     {
         delete nativeWindow;
         nativeWindow = nullptr;
@@ -61,7 +61,7 @@ WindowOsX* CoreOsX::CreateNativeWindow(WindowBackend* w, float32 width, float32 
 
 void CoreOsX::DestroyNativeWindow(WindowBackend* w)
 {
-    w->GetNativeWindow()->DestroyWindow();
+    w->GetNativeWindow()->DestroyNWindow();
 }
 
 int32 CoreOsX::OnFrame()

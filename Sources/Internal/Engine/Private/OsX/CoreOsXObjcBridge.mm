@@ -175,8 +175,9 @@ void CoreOsXObjcBridge::ApplicationWillTerminate()
     [appDelegate release];
     [frameTimer release];
 
+    int exitCode = core->engineBackend->exitCode;
     core->engineBackend->OnBeforeTerminate();
-    std::exit(core->engineBackend->exitCode);
+    std::exit(exitCode);
 }
 
 } // namespace Private
