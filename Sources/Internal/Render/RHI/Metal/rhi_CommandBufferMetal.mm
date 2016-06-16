@@ -797,7 +797,9 @@ RenderPassMetal_t::Initialize()
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
+        #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
         cb->do_commit_on_end = !do_present;
+        #endif
 
         if (do_present)
             pbuf = buf;
@@ -824,7 +826,9 @@ RenderPassMetal_t::Initialize()
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 
+            #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
             cb->do_commit_on_end = !do_present;
+            #endif
 
             if (i == 0 && do_present)
                 pbuf = cb->buf;
@@ -1834,7 +1838,7 @@ metal_Present(Handle syncObject)
         return;
     }
 
-    bool do_discard = false;
+    bool do_discard = false; //TextureMetal::NeedRestoreCount();
 
     _Metal_ScreenshotCallbackSync.Lock();
     if (_Metal_Suspended)
