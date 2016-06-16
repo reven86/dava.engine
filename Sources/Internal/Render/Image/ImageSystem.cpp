@@ -268,6 +268,5 @@ const String& GetDefaultExtension(ImageFormat format)
 {
     return GetExtensionsFor(format)[0];
 }
-
 }
 }

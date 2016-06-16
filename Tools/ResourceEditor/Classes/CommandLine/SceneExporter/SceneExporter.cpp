@@ -554,7 +554,7 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
     if (isCubemap)
     {
         DAVA::uint32 firstFace = loadedImages[0]->cubeFaceID;
-        mipmapsCount = count_if(loadedImages.begin(), loadedImages.end(), [&firstFace](const DAVA::Image* img){ return img->cubeFaceID == firstFace; });
+        mipmapsCount = count_if(loadedImages.begin(), loadedImages.end(), [&firstFace](const DAVA::Image* img) { return img->cubeFaceID == firstFace; });
     }
 
     DAVA::Vector<DAVA::FilePath> pathnamesForGPU;
@@ -573,7 +573,11 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
         return exportingParams.dataFolder + fileLink;
     };
 
-    enum class eSavingParam { SaveOneMip, SaveRemainingMips };
+    enum class eSavingParam
+    {
+        SaveOneMip,
+        SaveRemainingMips
+    };
     auto saveImages = [&](const DAVA::FilePath& path, DAVA::size_type mip, eSavingParam param)
     {
         if (isCubemap)
@@ -592,7 +596,7 @@ bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descripto
                             break;
                     }
                 }
-                
+
                 if (!faceMips.empty())
                 {
                     savedImages.resize(savedImages.size() + 1);

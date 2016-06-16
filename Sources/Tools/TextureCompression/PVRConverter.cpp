@@ -136,7 +136,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         return FilePath();
     }
 
-    Vector<Image*> srcImages, convertedImages;
+    Vector<Image *> srcImages, convertedImages;
     SCOPE_EXIT
     {
         for_each(srcImages.begin(), srcImages.end(), SafeRelease<Image>);
