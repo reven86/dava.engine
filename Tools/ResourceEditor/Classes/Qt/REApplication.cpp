@@ -5,6 +5,7 @@
 #include "Commands2/NGTCommand.h"
 
 #include "NgtTools/Common/GlobalContext.h"
+#include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
@@ -82,4 +83,9 @@ void REApplication::OnPreUnloadPlugins()
 bool REApplication::OnRequestCloseApp()
 {
     return mainWindow->CanBeClosed();
+}
+
+void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
+{
+    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
 }
