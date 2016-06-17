@@ -26,12 +26,12 @@ int main(int argc, char* argv[])
         Application a(argc, argv);
         a.LoadPlugins();
 
-        IUIFramework* framework = Context::queryInterface<IUIFramework>();
+        wgt::IUIFramework* framework = wgt::Context::queryInterface<wgt::IUIFramework>();
 
-        IUIApplication* app = Context::queryInterface<IUIApplication>();
+        wgt::IUIApplication* app = wgt::Context::queryInterface<wgt::IUIApplication>();
         DVASSERT(app != nullptr);
 
-        std::unique_ptr<IWindow> window = framework->createWindow(":/MainWindow.ui", IUIFramework::ResourceType::File);
+        std::unique_ptr<wgt::IWindow> window = framework->createWindow(":/MainWindow.ui", wgt::IUIFramework::ResourceType::File);
         app->addWindow(*window);
 
         GLView glView;

@@ -28,7 +28,7 @@ const char* GLView::windowId() const
     return "";
 }
 
-const LayoutHint& GLView::hint() const
+const wgt::LayoutHint& GLView::hint() const
 {
     return layoutHint;
 };
@@ -46,11 +46,11 @@ void GLView::focusOutEvent()
 {
 }
 
-void GLView::registerListener(IViewEventListener* listener)
+void GLView::registerListener(wgt::IViewEventListener* listener)
 {
 }
 
-void GLView::deregisterListener(IViewEventListener* listener)
+void GLView::deregisterListener(wgt::IViewEventListener* listener)
 {
 }
 

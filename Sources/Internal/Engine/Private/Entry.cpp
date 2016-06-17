@@ -5,8 +5,7 @@
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
-#if defined(__DAVAENGINE_QT__) || \
-defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_QT__) || defined(__DAVAENGINE_MACOS__)
 
 int main(int argc, char* argv[])
 {
