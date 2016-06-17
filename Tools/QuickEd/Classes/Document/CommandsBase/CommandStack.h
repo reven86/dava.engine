@@ -6,7 +6,10 @@
 
 #include <core_common/signal.hpp>
 
+namespace wgt
+{
 class ICommandManager;
+}
 class CommandBatch;
 
 class CommandStack
@@ -14,7 +17,7 @@ class CommandStack
 public:
     CommandStack();
     ~CommandStack();
-    void Push(QECommand::CommandPtr&& command);
+    void Push(Command::CommandPtr&& command);
     void BeginMacro(const DAVA::String& name);
     void EndMacro();
 
@@ -33,8 +36,8 @@ private:
     void OnHistoryIndexChanged(int currentIndex);
 
     int cleanIndex = -1;
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     int ID = 0;
-    Connection indexChanged;
+    wgt::Connection indexChanged;
     DAVA::Stack<CommandBatch*> batches;
 };

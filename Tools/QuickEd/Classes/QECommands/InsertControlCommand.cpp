@@ -7,7 +7,7 @@
 using namespace DAVA;
 
 InsertControlCommand::InsertControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _dest, int _index)
-    : QECommand("InsertControl")
+    : Command("InsertControl")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , dest(SafeRetain(_dest))

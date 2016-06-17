@@ -8,7 +8,7 @@ class PackageNode;
 class StyleSheetNode;
 class AbstractProperty;
 
-class ChangeStylePropertyCommand : public QECommand
+class ChangeStylePropertyCommand : public Command
 {
 public:
     ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);

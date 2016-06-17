@@ -7,7 +7,7 @@
 
 CommandStackGroup::CommandStackGroup()
 {
-    envManager = NGTLayer::queryInterface<IEnvManager>();
+    envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
     DVASSERT(envManager);
 }
 

@@ -6,7 +6,7 @@
 class PackageNode;
 class PackageControlsNode;
 
-class RemoveImportedPackageCommand : public QECommand
+class RemoveImportedPackageCommand : public Command
 {
 public:
     RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage);

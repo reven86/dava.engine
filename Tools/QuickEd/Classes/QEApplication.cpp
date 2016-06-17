@@ -19,7 +19,7 @@ QEApplication::~QEApplication() = default;
 
 int QEApplication::Run()
 {
-    IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
     {
         historyPanel->setClearButtonVisible(false);
@@ -49,7 +49,7 @@ void QEApplication::OnPostLoadPugins()
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("QuickEd");
 
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
 }

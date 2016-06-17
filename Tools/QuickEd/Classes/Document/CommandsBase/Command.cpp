@@ -1,21 +1,21 @@
 #include "Document/CommandsBase/Command.h"
 
-QECommand::QECommand(const DAVA::String& text_)
+Command::Command(const DAVA::String& text_)
     : text(text_)
 {
 }
 
-void QECommand::SetText(const DAVA::String& text_)
+void Command::SetText(const DAVA::String& text_)
 {
     text = text_;
 }
 
-DAVA::String QECommand::GetText() const
+DAVA::String Command::GetText() const
 {
     return text;
 }
 
-void QECommand::Execute()
+void Command::Execute()
 {
     Redo();
 }

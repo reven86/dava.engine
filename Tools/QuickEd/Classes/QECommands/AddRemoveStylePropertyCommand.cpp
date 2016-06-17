@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 AddRemoveStylePropertyCommand::AddRemoveStylePropertyCommand(PackageNode* aRoot, StyleSheetNode* aNode, StyleSheetProperty* aProperty, bool anAdd)
-    : QECommand("AddRemoveStyleProperty")
+    : Command("AddRemoveStyleProperty")
     , root(SafeRetain(aRoot))
     , node(SafeRetain(aNode))
     , property(SafeRetain(aProperty))

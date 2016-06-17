@@ -8,19 +8,19 @@
 
 CommandStack::CommandStack()
 {
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     DVASSERT(commandManager != nullptr);
 
     indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::OnHistoryIndexChanged, this, std::placeholders::_1));
 
-    IEnvManager* envManager = NGTLayer::queryInterface<IEnvManager>();
+    wgt::IEnvManager* envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
     DVASSERT(envManager != nullptr);
     ID = envManager->addEnv("");
 }
 
 CommandStack::~CommandStack()
 {
-    IEnvManager* envManager = NGTLayer::queryInterface<IEnvManager>();
+    wgt::IEnvManager* envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
     DVASSERT(envManager != nullptr);
     envManager->removeEnv(ID);
 
@@ -28,7 +28,7 @@ CommandStack::~CommandStack()
     indexChanged.disconnect();
 }
 
-void CommandStack::Push(QECommand::CommandPtr&& command)
+void CommandStack::Push(Command::CommandPtr&& command)
 {
     if (!batches.empty())
     {
@@ -36,7 +36,7 @@ void CommandStack::Push(QECommand::CommandPtr&& command)
     }
     else
     {
-        commandManager->queueCommand(getClassIdentifier<WGTCommand>(), ObjectHandle(std::move(command)));
+        commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(command)));
     }
 }
 
@@ -52,8 +52,8 @@ void CommandStack::EndMacro()
     batches.pop();
     if (batches.empty())
     {
-        QECommand::CommandPtr commandPtr(batch);
-        commandManager->queueCommand(getClassIdentifier<WGTCommand>(), ObjectHandle(std::move(commandPtr)));
+        Command::CommandPtr commandPtr(batch);
+        commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
     }
 }
 

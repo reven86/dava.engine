@@ -147,7 +147,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(const Vector<ChangePropertyAc
     }
     if (!propertiesToChange.empty())
     {
-        QECommand* command = new ChangePropertyValueCommand(packageNode, propertiesToChange, hash);
+        Command* command = new ChangePropertyValueCommand(packageNode, propertiesToChange, hash);
         PushCommand(command);
     }
 }
@@ -156,7 +156,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractPr
 {
     if (!property->IsReadOnly())
     {
-        QECommand* command = new ChangePropertyValueCommand(packageNode, node, property, value, hash);
+        Command* command = new ChangePropertyValueCommand(packageNode, node, property, value, hash);
         PushCommand(command);
     }
 }
@@ -700,9 +700,9 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode* nod
     return false;
 }
 
-void QtModelPackageCommandExecutor::PushCommand(QECommand* cmd)
+void QtModelPackageCommandExecutor::PushCommand(Command* cmd)
 {
-    GetCommandStack()->Push(std::unique_ptr<QECommand>(cmd));
+    GetCommandStack()->Push(std::unique_ptr<Command>(cmd));
 }
 
 void QtModelPackageCommandExecutor::BeginMacro(const QString& name)

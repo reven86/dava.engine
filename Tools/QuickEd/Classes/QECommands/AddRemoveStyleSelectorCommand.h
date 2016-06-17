@@ -7,7 +7,7 @@ class PackageNode;
 class StyleSheetNode;
 class StyleSheetSelectorProperty;
 
-class AddRemoveStyleSelectorCommand : public QECommand
+class AddRemoveStyleSelectorCommand : public Command
 {
 public:
     AddRemoveStyleSelectorCommand(PackageNode* root, StyleSheetNode* node, StyleSheetSelectorProperty* property, bool add);

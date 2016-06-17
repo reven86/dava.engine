@@ -9,7 +9,7 @@ class PackageNode;
 class ControlNode;
 class AbstractProperty;
 
-class ChangePropertyValueCommand : public QECommand
+class ChangePropertyValueCommand : public Command
 {
 public:
     ChangePropertyValueCommand(PackageNode* _root, const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash = 0);

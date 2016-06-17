@@ -3,7 +3,10 @@
 
 class CommandStack;
 
+namespace wgt
+{
 class IEnvManager;
+}
 
 class CommandStackGroup
 {
@@ -17,5 +20,5 @@ public:
 private:
     CommandStack* activeStack = nullptr;
     DAVA::Set<CommandStack*> stacks;
-    IEnvManager* envManager = nullptr;
+    wgt::IEnvManager* envManager = nullptr;
 };

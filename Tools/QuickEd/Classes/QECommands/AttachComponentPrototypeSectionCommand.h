@@ -7,7 +7,7 @@ class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AttachComponentPrototypeSectionCommand : public QECommand
+class AttachComponentPrototypeSectionCommand : public Command
 {
 public:
     AttachComponentPrototypeSectionCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);

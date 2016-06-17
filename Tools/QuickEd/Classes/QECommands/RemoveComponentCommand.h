@@ -7,7 +7,7 @@ class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class RemoveComponentCommand : public QECommand
+class RemoveComponentCommand : public Command
 {
 public:
     RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section);

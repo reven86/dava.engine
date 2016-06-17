@@ -2,7 +2,7 @@
 #include "Debug/DVAssert.h"
 
 CommandBatch::CommandBatch(const DAVA::String& text)
-    : QECommand(text)
+    : Command(text)
 {
 }
 

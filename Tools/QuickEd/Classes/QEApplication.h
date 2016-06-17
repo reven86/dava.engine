@@ -3,8 +3,10 @@
 #include "NgtTools/Application/NGTApplication.h"
 
 class WGTCommand;
+namespace wgt
+{
 class ICommandManager;
-
+}
 class QEApplication : public NGTLayer::BaseApplication
 {
 public:
@@ -19,6 +21,6 @@ protected:
     void OnPreUnloadPlugins() override;
 
 private:
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<WGTCommand> ngtCommand;
 };

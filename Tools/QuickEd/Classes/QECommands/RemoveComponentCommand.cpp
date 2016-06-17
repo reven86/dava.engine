@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 RemoveComponentCommand::RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section)
-    : QECommand("RemoveComponent")
+    : Command("RemoveComponent")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , componentSection(SafeRetain(_section))

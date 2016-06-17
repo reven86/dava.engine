@@ -34,7 +34,7 @@ int REApplication::Run()
 
     // create and init UI
     ResourceEditorLauncher launcher;
-    QtMainWindow* mainWindow = new QtMainWindow(GetComponentContext());
+    mainWindow = new QtMainWindow(GetComponentContext());
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();

@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const Vector<ChangePropertyAction>& propertyActions_, size_t hash_)
-    : QECommand("ChangePropertyValue")
+    : Command("ChangePropertyValue")
     , root(SafeRetain(root_))
     , hash(hash_)
 {
@@ -26,7 +26,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const
 }
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node, AbstractProperty* prop, const VariantType& newVal, size_t hash_)
-    : QECommand("ChangePropertyValue")
+    : Command("ChangePropertyValue")
     , root(SafeRetain(root_))
     , hash(hash_)
 {
@@ -35,7 +35,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
 }
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node, AbstractProperty* prop)
-    : QECommand("ChangePropertyValue")
+    : Command("ChangePropertyValue")
     , root(SafeRetain(root_))
 {
     changedProperties.emplace_back(node, prop, GetValueFromProperty(prop), VariantType());

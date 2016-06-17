@@ -2,6 +2,7 @@
 
 #include "NgtTools/Application/NGTApplication.h"
 
+class QtMainWindow;
 class NGTCommand;
 namespace NGTLayer
 {
@@ -31,4 +32,5 @@ protected:
 private:
     wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<NGTCommand> ngtCommand;
+    QtMainWindow* mainWindow = nullptr;
 };

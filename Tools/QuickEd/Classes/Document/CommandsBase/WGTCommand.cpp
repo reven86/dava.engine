@@ -8,20 +8,20 @@
 
 const char* WGTCommand::getId() const
 {
-    return getClassIdentifier<WGTCommand>();
+    return wgt::getClassIdentifier<WGTCommand>();
 }
 
-ObjectHandle WGTCommand::execute(const ObjectHandle& arguments) const
+wgt::ObjectHandle WGTCommand::execute(const wgt::ObjectHandle& arguments) const
 {
     DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
     DVASSERT(command != nullptr);
     command->Execute();
-    return CommandErrorCode::COMMAND_NO_ERROR;
+    return wgt::CommandErrorCode::COMMAND_NO_ERROR;
 }
 
-CommandThreadAffinity WGTCommand::threadAffinity() const
+wgt::CommandThreadAffinity WGTCommand::threadAffinity() const
 {
-    return CommandThreadAffinity::UI_THREAD;
+    return wgt::CommandThreadAffinity::UI_THREAD;
 }
 
 bool WGTCommand::customUndo() const
@@ -29,14 +29,14 @@ bool WGTCommand::customUndo() const
     return true;
 }
 
-bool WGTCommand::canUndo(const ObjectHandle& arguments) const
+bool WGTCommand::canUndo(const wgt::ObjectHandle& arguments) const
 {
     DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
     DVASSERT(command != nullptr);
     return true;
 }
 
-bool WGTCommand::undo(const ObjectHandle& arguments) const
+bool WGTCommand::undo(const wgt::ObjectHandle& arguments) const
 {
     DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
     DVASSERT(command != nullptr);
@@ -44,7 +44,7 @@ bool WGTCommand::undo(const ObjectHandle& arguments) const
     return true;
 }
 
-bool WGTCommand::redo(const ObjectHandle& arguments) const
+bool WGTCommand::redo(const wgt::ObjectHandle& arguments) const
 {
     DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
     DVASSERT(command != nullptr);
@@ -52,12 +52,12 @@ bool WGTCommand::redo(const ObjectHandle& arguments) const
     return true;
 }
 
-ObjectHandle WGTCommand::getCommandDescription(const ObjectHandle& arguments) const
+wgt::ObjectHandle WGTCommand::getCommandDescription(const wgt::ObjectHandle& arguments) const
 {
     DAVA::String text;
     DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
     DVASSERT(nullptr != command);
-    QECommand* qeCommand = dynamic_cast<QECommand*>(command);
+    ::Command* qeCommand = dynamic_cast<::Command*>(command);
     if (qeCommand != nullptr)
     {
         text = qeCommand->GetText();
@@ -69,9 +69,9 @@ ObjectHandle WGTCommand::getCommandDescription(const ObjectHandle& arguments) co
         text = batch->GetText();
     }
 
-    IDefinitionManager* defManager = NGTLayer::queryInterface<IDefinitionManager>();
+    wgt::IDefinitionManager* defManager = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defManager != nullptr);
-    auto handle = GenericObject::create(*defManager);
+    auto handle = wgt::GenericObject::create(*defManager);
     handle->set("Name", text);
-    return ObjectHandle(std::move(handle));
+    return wgt::ObjectHandle(std::move(handle));
 }

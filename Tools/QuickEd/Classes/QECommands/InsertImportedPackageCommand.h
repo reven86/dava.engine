@@ -6,7 +6,7 @@
 class PackageNode;
 class PackageControlsNode;
 
-class InsertImportedPackageCommand : public QECommand
+class InsertImportedPackageCommand : public Command
 {
 public:
     InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex);

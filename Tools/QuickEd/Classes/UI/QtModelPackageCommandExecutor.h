@@ -65,7 +65,7 @@ private:
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 
     CommandStack* GetCommandStack() const;
-    void PushCommand(QECommand* cmd);
+    void PushCommand(Command* cmd);
     void BeginMacro(const QString& name);
     void EndMacro();
 

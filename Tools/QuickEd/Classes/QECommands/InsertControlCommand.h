@@ -7,7 +7,7 @@ class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 
-class InsertControlCommand : public QECommand
+class InsertControlCommand : public Command
 {
 public:
     InsertControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _dest, int _index);

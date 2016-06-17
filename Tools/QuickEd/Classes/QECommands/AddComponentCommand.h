@@ -7,7 +7,7 @@ class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AddComponentCommand : public QECommand
+class AddComponentCommand : public Command
 {
 public:
     AddComponentCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* section);

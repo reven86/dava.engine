@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 AddComponentCommand::AddComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section)
-    : QECommand("Add component")
+    : Command("Add component")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , section(SafeRetain(_section))
