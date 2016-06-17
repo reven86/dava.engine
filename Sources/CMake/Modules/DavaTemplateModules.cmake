@@ -169,6 +169,10 @@ macro( setup_main_module )
                 set( ${VALUE}_DIR_NAME ${${VALUE}} )
                 set( ${VALUE})
             endforeach()
+
+            if( EXTERNAL_MODULES_DIR_NAME )
+                load_external_modules( "${EXTERNAL_MODULES_DIR_NAME}" )
+            endif()
             
             if( SRC_FOLDERS_DIR_NAME )
                 define_source_folders  ( SRC_ROOT            ${SRC_FOLDERS_DIR_NAME}
@@ -177,10 +181,6 @@ macro( setup_main_module )
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
             endif()
  
-            if( EXTERNAL_MODULES_DIR_NAME )
-                load_external_modules( "${EXTERNAL_MODULES_DIR_NAME}" )
-            endif()
-
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set(  ${VALUE} ${${VALUE}_DIR_NAME} )
             endforeach()
