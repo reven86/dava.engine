@@ -536,7 +536,6 @@ void metal_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
     if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
         metal_Texture_Map(tex, level, face);
-        DVASSERT(sz <= self->mappedDataSize);
         memcpy(self->mappedData, data, sz);
         metal_Texture_Unmap(tex);
     }
