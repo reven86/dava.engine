@@ -18,8 +18,13 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
 
-add_definitions(-D__DAVAENGINE_COREV2__)
-add_definitions(-D__DAVAENGINE_QT__)
+if (DAVA_COREV2)
+    add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+    add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+    add_definitions(-D__DAVAENGINE_QT__)
+    set (NO_CEF 1)
+endif()
 
 add_definitions       (
 -DQT_GUI_LIB
