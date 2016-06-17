@@ -654,6 +654,7 @@ struct Descriptor
     uint32 stencilEnabled : 1;
     uint32 stencilTwoSided : 1;
     uint32 pad : 25;
+    uint32 pad64 : 32;
 
     struct
     {
@@ -666,6 +667,7 @@ struct Descriptor
         uint32 depthFailOperation : 3;
         uint32 depthStencilPassOperation : 3;
         uint32 pad32 : 20;
+        uint32 pad64 : 32;
     } stencilFront, stencilBack;
 
     Descriptor()
@@ -675,6 +677,7 @@ struct Descriptor
         , stencilEnabled(false)
         , stencilTwoSided(false)
         , pad(0)
+        , pad64(0)
     {
         stencilFront.readMask = 0xFF;
         stencilFront.writeMask = 0xFF;
@@ -685,6 +688,7 @@ struct Descriptor
         stencilFront.depthStencilPassOperation = STENCILOP_KEEP;
         stencilFront.pad8 = 0;
         stencilFront.pad32 = 0;
+        stencilFront.pad64 = 0;
 
         stencilBack.readMask = 0xFF;
         stencilBack.writeMask = 0xFF;
@@ -695,6 +699,9 @@ struct Descriptor
         stencilBack.depthStencilPassOperation = STENCILOP_KEEP;
         stencilBack.pad8 = 0;
         stencilBack.pad32 = 0;
+#if defined(__DAVAENGINE_MACOS__)
+        stencilBack.pad64 = 0;
+#endif
     }
 };
 }
