@@ -699,9 +699,7 @@ struct Descriptor
         stencilBack.depthStencilPassOperation = STENCILOP_KEEP;
         stencilBack.pad8 = 0;
         stencilBack.pad32 = 0;
-#if defined(__DAVAENGINE_MACOS__)
         stencilBack.pad64 = 0;
-#endif
     }
 };
 }
