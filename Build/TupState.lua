@@ -79,12 +79,14 @@ function TupState.New(userConf)
     self.cmd.fwdep = fwPath .. "../Tools/Bin/dep"    
     self.cmd.fwzip = fwPath .. "../Tools/Bin/7za"    
     self.cmd.fwsql = fwPath .. "../Tools/Bin/sqlite3"
+    -- TODO add ResourceArchiver tool path
     
     if self.platform == "win32" then
         self.cmd.cat = "type 2> nul"
         self.cmd.fwzip = fwPath .. "../Tools/Bin/7z.exe"
         self.cmd.fwsql = self.cmd.fwsql .. ".exe"
         self.cmd.fwdep = self.cmd.fwdep .. ".exe" 
+        -- TODO add .exe on win
     
         UtilConvertToPlatformPath(self.platform, self.cmd)
     end
@@ -232,6 +234,9 @@ function TupState.BuildLists(self)
 end
 
 function TupState.BuildPacks(self)
+    local superPackGroup = "<superpack>"
+    local superPackFiles = { }
+
     for pai, pack in pairs(self.packs) do
         -- by default gpu list contain only common folder
         local gpus = { }
@@ -274,6 +279,8 @@ function TupState.BuildPacks(self)
             local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".pack"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
 
+            superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, archiveOutput)
+
             -- generate pack hash
             local hashCmd = self.cmd.fwdep .. " hash %f -o %o"
             local hashCmdText = "^ Hash for " .. pack.name .. gpu .. "^ "
@@ -311,5 +318,29 @@ function TupState.BuildPacks(self)
         local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
         local dbCmdText = "^ Gen final packs DB for " .. gpu .. "^ "
         tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)
+
+        superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, dbOutput)
     end
+
+    -- create superpack lists
+    for i, part in UtilIterateTable(superPackFiles, self.conf.cmdMaxFilesCount) do
+        local superPartOutput = self.packlistDir .. "/super-" .. i .. self.conf.packlistExt
+        local superPartCmd = self.cmd.fwdep .. " echo %f -o %o"
+        local superPartCmdText = "^ Gen superpack list-" .. i .. "^ "
+        tup.rule(part, superPartCmdText .. superPartCmd, { superPartOutput, superPackGroup })
+    end
+
+    -- merge superpack lists
+    local mergeSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
+    local mergeSuperCmd = self.cmd.cat .. " " .. mergeSuperMask .. " > %o"
+    local mergeSuperCmdText = "^ Gen merged superlist^ "
+    local mergeSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
+
+    mergeSuperCmd = UtilConvertToPlatformPath(self.platform, mergeSuperCmd)
+
+    tup.rule({ mergeSuperMask, superPackGroup }, mergeSuperCmdText .. mergeSuperCmd, mergeSuperOutput)
+
+    -- create super pack
+    local superpackOutput = self.outputDir .. "/super.dvpk"
+    tup.rule(mergeSuperOutput, "echo %f > %o", superpackOutput) -- TODO change @echo to ResourceArchiver
 end
