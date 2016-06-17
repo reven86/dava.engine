@@ -339,7 +339,7 @@ void EntityInjectDataExtension::RemoveComponent(const wgt::RefPropertyItem* item
     INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
     const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
-    delegateObj.StartBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
+    delegateObj.BeginBatch("Remove component", static_cast<DAVA::uint32>(objects.size()));
     for (const std::shared_ptr<const wgt::PropertyNode>& object : objects)
     {
         wgt::Variant value = object->propertyInstance->get(object->object, defManager);
@@ -413,7 +413,7 @@ void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* it
     w->ValueReady.Connect([this, item, &defManager](const DAVA::String& name, const DAVA::VariantType& value)
                           {
                               const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
-                              delegateObj.StartBatch("Add custom property", static_cast<DAVA::uint32>(objects.size()));
+                              delegateObj.BeginBatch("Add custom property", static_cast<DAVA::uint32>(objects.size()));
 
                               for (const std::shared_ptr<const wgt::PropertyNode>& object : objects)
                               {

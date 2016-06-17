@@ -98,7 +98,7 @@ public:
     class Delegate
     {
     public:
-        virtual void StartBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
+        virtual void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
         virtual void Exec(Command2::Pointer&& command) = 0;
         virtual void EndBatch() = 0;
     };

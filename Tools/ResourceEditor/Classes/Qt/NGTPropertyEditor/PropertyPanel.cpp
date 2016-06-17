@@ -144,7 +144,7 @@ void PropertyPanel::UpdateModel()
     model->update();
 }
 
-void PropertyPanel::StartBatch(const DAVA::String& name, DAVA::uint32 commandCount)
+void PropertyPanel::BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount)
 {
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);
