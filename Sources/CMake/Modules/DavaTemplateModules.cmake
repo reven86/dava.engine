@@ -43,10 +43,12 @@ DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
 FIND_SYSTEM_LIBRARY                   
 FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
 #
-BINARY_DIR_WIN
 BINARY_WIN32_DIR_RELEASE
 BINARY_WIN32_DIR_DEBUG
 BINARY_WIN32_DIR_RELWITHDEB
+BINARY_WIN64_DIR_RELEASE
+BINARY_WIN64_DIR_DEBUG
+BINARY_WIN64_DIR_RELWITHDEB
 )
 #
 macro( setup_main_module )
@@ -168,7 +170,6 @@ macro( setup_main_module )
 
         set_project_files_properties( "${ALL_SRC}" )
 
-
         #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
                 DEFINITIONS
@@ -186,6 +187,9 @@ macro( setup_main_module )
                 BINARY_WIN32_DIR_RELEASE
                 BINARY_WIN32_DIR_DEBUG
                 BINARY_WIN32_DIR_RELWITHDEB
+                BINARY_WIN64_DIR_RELEASE
+                BINARY_WIN64_DIR_DEBUG
+                BINARY_WIN64_DIR_RELWITHDEB
                 )
 
         load_property( PROPERTY_LIST 
@@ -243,9 +247,15 @@ macro( setup_main_module )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
                     set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
                     set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
+                    set( BINARY_WIN64_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
+                    set( BINARY_WIN64_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
+                    set( BINARY_WIN64_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
                     save_property( PROPERTY_LIST BINARY_WIN32_DIR_RELEASE 
                                                  BINARY_WIN32_DIR_DEBUG
-                                                 BINARY_WIN32_DIR_RELWITHDEB )
+                                                 BINARY_WIN32_DIR_RELWITHDEB
+                                                 BINARY_WIN64_DIR_RELEASE 
+                                                 BINARY_WIN64_DIR_DEBUG
+                                                 BINARY_WIN64_DIR_RELWITHDEB )
                 endif()
 
             endif()
