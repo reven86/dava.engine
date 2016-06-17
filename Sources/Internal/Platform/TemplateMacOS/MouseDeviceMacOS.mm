@@ -12,7 +12,7 @@ namespace DAVA
 {
 MouseDeviceMacOS::~MouseDeviceMacOS()
 {
-    if (blankCursor)
+    if (blankCursor != nullptr)
     {
         [static_cast<NSCursor*>(blankCursor) release];
     }
@@ -45,10 +45,10 @@ void MouseDeviceMacOS::SetCursorInCenter()
 
 bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 {
-    if (blankCursor && blankCursorSetNeeded)
+    if (blankCursor != nullptr && needToSetBlankCursor)
     {
         [static_cast<NSCursor*>(blankCursor) set];
-        blankCursorSetNeeded = false;
+        needToSetBlankCursor = false;
     }
 
     bool isMouse = event->device == UIEvent::Device::MOUSE;
@@ -72,7 +72,7 @@ void MouseDeviceMacOS::MovePointerToWindowCenter()
     windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
     float x = windowRect.origin.x + windowRect.size.width / 2.0f;
     float y = windowRect.origin.y + windowRect.size.height / 2.0f;
-    CGError err = CGWarpMouseCursorPosition(CGPointMake(x, y));
+    CGWarpMouseCursorPosition(CGPointMake(x, y));
 }
 
 void MouseDeviceMacOS::OSXShowCursor()
@@ -80,7 +80,7 @@ void MouseDeviceMacOS::OSXShowCursor()
     if (!cursorVisible)
     {
         [[NSCursor arrowCursor] set];
-        blankCursorSetNeeded = false;
+        needToSetBlankCursor = false;
         cursorVisible = true;
     }
 }
@@ -92,7 +92,7 @@ void MouseDeviceMacOS::OSXHideCursor()
         [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
         // We need to set blank cursor again on the first input event
         // If we wont do it, in some cases blank cursor wont set
-        blankCursorSetNeeded = true;
+        needToSetBlankCursor = true;
         cursorVisible = false;
     }
 }
