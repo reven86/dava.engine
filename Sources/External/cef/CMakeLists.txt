@@ -1,6 +1,9 @@
 set( NAME_MODULE CEFWebview )
 set( MODULE_TYPE STATIC )
 
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+include      ( "${CMAKE_CURRENT_LIST_DIR}/../../CMake/Modules/Cmake-common.cmake" )
+
 set( HPP_FILES Sources/*.h Sources/*.hpp )
 set( CPP_FILES Sources/*.cpp     )
 
@@ -11,36 +14,44 @@ set ( UNITY_IGNORE_LIST "Sources/CEFController.cpp"
                         "Sources/CEFDavaResourceHandler.cpp" )
 
 set( DEFINITIONS      -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
-set( INCLUDES_PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include )
+set( INCLUDES_PRIVATE "${DAVA_INCLUDE_DIR}"
+                      "${CMAKE_CURRENT_SOURCE_DIR}/Sources"
+                      "${CMAKE_CURRENT_SOURCE_DIR}/Include"
+                      "${CMAKE_CURRENT_SOURCE_DIR}/Include/cef" )
 
-set ( CEF_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Libs/win )
+set ( CEF_LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Libs/win" )
 
-set( STATIC_LIBRARIES_WIN32_RELEASE  ${CEF_LIBS_DIR}/x86/Release/libcef.lib 
-                                     ${CEF_LIBS_DIR}/x86/Release/libcef_dll_wrapper.lib )
+set( STATIC_LIBRARIES_WIN32_RELEASE  "${CEF_LIBS_DIR}/x86/Release/libcef.lib"
+                                     "${CEF_LIBS_DIR}/x86/Release/libcef_dll_wrapper.lib" )
 
-set( STATIC_LIBRARIES_WIN32_DEBUG    ${CEF_LIBS_DIR}/x86/Debug/libcef.lib 
-                                     ${CEF_LIBS_DIR}/x86/Debug/libcef_dll_wrapper.lib )
+set( STATIC_LIBRARIES_WIN32_DEBUG    "${CEF_LIBS_DIR}/x86/Debug/libcef.lib" 
+                                     "${CEF_LIBS_DIR}/x86/Debug/libcef_dll_wrapper.lib" )
                                      
-set( STATIC_LIBRARIES_WIN64_RELEASE  ${CEF_LIBS_DIR}/x64/Release/libcef.lib 
-                                     ${CEF_LIBS_DIR}/x64/Release/libcef_dll_wrapper.lib )
+set( STATIC_LIBRARIES_WIN64_RELEASE  "${CEF_LIBS_DIR}/x64/Release/libcef.lib"
+                                     "${CEF_LIBS_DIR}/x64/Release/libcef_dll_wrapper.lib" )
 
-set( STATIC_LIBRARIES_WIN64_DEBUG    ${CEF_LIBS_DIR}/x64/Debug/libcef.lib 
-                                     ${CEF_LIBS_DIR}/x64/Debug/libcef_dll_wrapper.lib )
+set( STATIC_LIBRARIES_WIN64_DEBUG    "${CEF_LIBS_DIR}/x64/Debug/libcef.lib"
+                                     "${CEF_LIBS_DIR}/x64/Debug/libcef_dll_wrapper.lib" )
+                                     
+set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
+set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
+set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
+set( BINARY_WIN64_DIR_RELEASE    "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
+set( BINARY_WIN64_DIR_DEBUG      "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
+set( BINARY_WIN64_DIR_RELWITHDEB "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
 
 if ( X64_MODE )
-    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64/*" )
-    set( BINARY_WIN32_DIR_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
-    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x64/NGT/Release/*.lib")
-    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x64/NGT/Debug/*.lib")
+    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
+    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x64/NGT/Release/*.lib" )
+    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x64/NGT/Debug/*.lib" )
 else()
-    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86/*" )
-    set( BINARY_WIN32_DIR_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
-    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x86/NGT/Release/*.lib")
-    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x86/NGT/Debug/*.lib")
+    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
+    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x86/NGT/Release/*.lib" )
+    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x86/NGT/Debug/*.lib" )
 endif ()
 
-set(EXCLUDE_LIBS "libcef_dll_wrapper.lib" CACHE INTERNAL "")
-set(ADDITIONAL_RELEASE_LIBS ${RELEASE_LIBS} CACHE INTERNAL "")
-set(ADDITIONAL_DEBUG_LIBS ${DEBUG_LIBS} CACHE INTERNAL "")
+set( EXCLUDE_LIBS "libcef_dll_wrapper.lib" CACHE INTERNAL "" )
+set( ADDITIONAL_RELEASE_LIBS "${RELEASE_LIBS}" CACHE INTERNAL "" )
+set( ADDITIONAL_DEBUG_LIBS "${DEBUG_LIBS}" CACHE INTERNAL "" )
 
 setup_main_module()
