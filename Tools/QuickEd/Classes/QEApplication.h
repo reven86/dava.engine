@@ -19,6 +19,7 @@ protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
     void OnPostLoadPugins() override;
     void OnPreUnloadPlugins() override;
+    void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;
 
 private:
     wgt::ICommandManager* commandManager = nullptr;

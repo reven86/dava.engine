@@ -80,6 +80,7 @@ public slots:
 private slots:
     void OnResize();
     void OnCleanup();
+    void OnFocusWindowChanged(QWindow* focusWindow);
 
 protected:
     void resizeEvent(QResizeEvent*) override;

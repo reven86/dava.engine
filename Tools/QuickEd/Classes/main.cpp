@@ -9,7 +9,6 @@
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
-#include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/Utils/MessageHandler.h"
 #include "QtTools/Utils/AssertGuard.h"
 
@@ -42,7 +41,6 @@ int main(int argc, char* argv[])
         QEApplication a(argc, argv);
         a.LoadPlugins();
 
-        Themes::InitFromQApplication();
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();

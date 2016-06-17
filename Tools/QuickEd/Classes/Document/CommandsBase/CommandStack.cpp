@@ -24,7 +24,6 @@ CommandStack::~CommandStack()
     DVASSERT(envManager != nullptr);
     envManager->removeEnv(ID);
 
-    DVASSERT(!indexChanged.enabled());
     indexChanged.disconnect();
 }
 

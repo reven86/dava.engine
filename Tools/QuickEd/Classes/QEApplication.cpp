@@ -1,6 +1,9 @@
+#include "FileSystem/FileSystem.h"
+
 #include "QEApplication.h"
 #include "EditorCore.h"
 
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include "Document/CommandsBase/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
@@ -33,8 +36,8 @@ int QEApplication::Run()
 
 void QEApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
 {
-    names.push_back(L"plg_reflection");
     names.push_back(L"plg_variant");
+    names.push_back(L"plg_reflection");
     names.push_back(L"plg_command_system");
     names.push_back(L"plg_serialization");
     names.push_back(L"plg_file_system");
@@ -52,9 +55,20 @@ void QEApplication::OnPostLoadPugins()
     commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
+
+    const char* settingsPath = "QuickEdSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    Themes::InitFromQApplication();
 }
 
 void QEApplication::OnPreUnloadPlugins()
 {
     commandManager->deregisterCommand(ngtCommand->getId());
+}
+
+void QEApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
+{
+    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname() + "QuickEd/");
 }
