@@ -153,18 +153,37 @@ metal_TakeScreenshot(ScreenShotCallback callback)
 
 //------------------------------------------------------------------------------
 
+bool
+rhi_MetalIsSupported()
+{
+    if (!_Metal_Device)
+    {
+        _Metal_Device = MTLCreateSystemDefaultDevice();
+        [_Metal_Device retain];
+    }
+
+    return (_Metal_Device) ? true : false;
+    //    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
+}
+
+//------------------------------------------------------------------------------
+
 void metal_Initialize(const InitParam& param)
 {
     _Metal_Layer = (CAMetalLayer*)param.window;
     [_Metal_Layer retain];
 
-    _Metal_Layer.device = MTLCreateSystemDefaultDevice();
+    if (!_Metal_Device)
+    {
+        _Metal_Device = MTLCreateSystemDefaultDevice();
+        [_Metal_Device retain];
+    }
+
+    _Metal_Layer.device = _Metal_Device;
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _Metal_Layer.framebufferOnly = YES;
     _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
 
-    _Metal_Device = _Metal_Layer.device;
-    [_Metal_Device retain];
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer

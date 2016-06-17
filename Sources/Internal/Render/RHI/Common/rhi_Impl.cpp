@@ -22,9 +22,6 @@ using DAVA::Logger;
 
     #include "MemoryManager/MemoryProfiler.h"
 
-    #if defined(__DAVAENGINE_IPHONE__)
-extern bool rhi_MetalIsSupported(); 
-    #endif
 
 namespace rhi
 {

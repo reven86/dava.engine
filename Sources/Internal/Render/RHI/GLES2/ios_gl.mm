@@ -19,14 +19,6 @@ static bool resize_pending = true;
 
 //------------------------------------------------------------------------------
 
-bool
-rhi_MetalIsSupported()
-{
-    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
-}
-
-//------------------------------------------------------------------------------
-
 bool ios_gl_check_layer()
 {
     if (!resize_pending)
