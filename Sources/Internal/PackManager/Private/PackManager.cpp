@@ -28,20 +28,20 @@ void PackManager::Initialize(const String& dbFileName_,
         throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
     }
 
-    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, packState, packDownload, requestProgress);
+    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, packStateChanged, packDownloadChanged, requestProgressChanged);
 }
 
-bool PackManager::IsProcessingEnabled() const
+bool PackManager::IsRequestingEnabled() const
 {
     return impl->IsProcessingEnabled();
 }
 
-void PackManager::EnableProcessing()
+void PackManager::EnableRequesting()
 {
     impl->EnableProcessing();
 }
 
-void PackManager::DisableProcessing()
+void PackManager::DisableRequesting()
 {
     impl->DisableProcessing();
 }

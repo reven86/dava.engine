@@ -17,9 +17,7 @@ public:
                     const FilePath& readOnlyPacksDir_,
                     const String& packUrlCommon,
                     const String& packUrlGpu,
-                    Signal<const PackManager::Pack&>& signal,
-                    Signal<const PackManager::Pack&>& signalDownload,
-                    Signal<const PackManager::IRequest&>& signal2);
+                    PackManager* packManager_);
 
     bool IsProcessingEnabled() const;
 
@@ -52,17 +50,21 @@ public:
     Signal<const PackManager::IRequest&>* onRequestChange = nullptr;
 
 private:
+    void ContinueInitialization();
+
     FilePath dbFile;
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
     String packsUrlCommon;
-    String packsUrlGpu;
+    String architecture;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
     Vector<PackManager::Pack> packs;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
+
+    PackManager::InitState state = PackManager::InitState::Starting;
 };
 
 struct PackPriorityComparator
@@ -93,14 +95,6 @@ inline void PackManagerImpl::DisableProcessing()
     {
         isProcessingEnabled = false;
         requestManager->Stop();
-    }
-}
-
-inline void PackManagerImpl::Update()
-{
-    if (isProcessingEnabled)
-    {
-        requestManager->Update();
     }
 }
 
@@ -139,7 +133,7 @@ inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
 {
     if (isGpu)
     {
-        return packsUrlGpu;
+        return architecture;
     }
     return packsUrlCommon;
 }

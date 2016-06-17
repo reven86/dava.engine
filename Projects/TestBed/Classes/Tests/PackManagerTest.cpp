@@ -236,12 +236,12 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
     // clear and renew all packs state
     packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
-    packManager.EnableProcessing();
+    packManager.EnableRequesting();
 
-    packManager.packState.DisconnectAll();
+    packManager.packStateChanged.DisconnectAll();
 
-    packManager.packState.Connect(this, &PackManagerTest::OnPackStateChange);
-    packManager.requestProgress.Connect(this, &PackManagerTest::OnRequestChange);
+    packManager.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    packManager.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
 
     String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
 

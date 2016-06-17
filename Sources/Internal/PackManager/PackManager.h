@@ -10,28 +10,50 @@ class PackManagerImpl;
 class PackManager final
 {
 public:
-    enum class InitializeState : uint32
+    enum class InitState : uint32
     {
-        Starting,
-        LoadingDB,
-        UnpakingkDB,
-        LoadingPacksData,
-        MountingLocalPacks,
+
+        Starting, // if not exist local DB in ~doc copy it from local resources (on first start)
+
+        MountingLocalPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
+        // now you can load files from local packs
+
+        LoadingRequestAskFooter, // if no connection goto LoadingPacksDataFromDB try using only local packs
+        LoadingRequestGetFooter,
+        LoadingRequestAskFileTable,
+        LoadingRequestGetFileTable,
+        CalculateLocalDBHashAndCompare, // go to MountingDownloadedPacks if match
+        LoadingRequestAskDB, // skip if hash match
+        LoadingRequestGetDB, // skip if hash match
+        UnpakingDB, // skip if hash match
+        DeleteDownloadedPacksIfNotMatchHash, // skip if hash match
+        LoadingPacksDataFromLocalDB,
         MountingDownloadedPacks,
-        Ready,
-        Error
+        Ready
+    };
+
+    enum class InitError : uint32
+    {
+        AllGood,
+        CantCopyLocalDB,
+        CantMountLocalPacks,
+        LoadingRequestFailed,
+        UnpackingDBFailed,
+        DeleteDownloadedPackFailed,
+        LoadingPacksDataFailed,
+        MountingDownloadedPackFailed
     };
 
     struct Pack
     {
         enum class Status : uint32
         {
-            NotRequested = 0,
-            Requested = 1,
-            Downloading = 2,
-            Mounted = 3,
-            ErrorLoading = 4, // downloadError - value returned from DLC DownloadManager
-            OtherError = 5 // mount failed, check hash failed, file IO failed see otherErrorMsg
+            NotRequested,
+            Requested,
+            Downloading,
+            Mounted,
+            ErrorLoading, // downloadError - value returned from DLC DownloadManager
+            OtherError // mount failed, check hash failed, file IO failed see otherErrorMsg
         };
 
         Vector<String> dependency; // names of dependency packs or empty
@@ -56,6 +78,18 @@ public:
         bool isGPU = false;
     };
 
+    class IInitInterface
+    {
+    public:
+        virtual ~IInitInterface();
+
+        virtual InitState GetState() const = 0;
+        virtual InitError GetError() const = 0;
+        virtual const String& GetErrorMessage() const = 0;
+        virtual bool CanRetry() const = 0;
+        virtual void Retry() = 0;
+    };
+
     // proxy interface to easily check pack request progress
     class IRequest
     {
@@ -63,15 +97,20 @@ public:
         virtual ~IRequest();
 
         virtual const String& GetPackName() const = 0;
-
         virtual uint64 GetFullSizeWithDependencies() const = 0;
-
         virtual uint64 GetDownloadedSize() const = 0;
-
         virtual bool IsError() const = 0;
-
         virtual const String& GetErrorMessage() const = 0;
     };
+
+    // user have to wait till InitializationState become Ready
+    // second argument - status text usfull for loging
+    Signal<IInitInterface&> initStatChanged;
+    // signal user about every pack state change
+    Signal<const Pack&> packStateChanged;
+    Signal<const Pack&> packDownloadChanged;
+    // signal per user request with complete size of all depended packs
+    Signal<const IRequest&> requestProgressChanged;
 
     PackManager();
     ~PackManager();
@@ -86,13 +125,13 @@ public:
                     const FilePath& downloadPacksDir,
                     const FilePath& readOnlyPacksDir, // can be empty
                     const String& packsUrlCommon,
-                    const String& packsUrlGpu);
+                    const String& architecture);
 
-    bool IsProcessingEnabled() const;
+    bool IsRequestingEnabled() const;
     // enable user request processing
-    void EnableProcessing();
+    void EnableRequesting();
     // disalbe user request processing
-    void DisableProcessing();
+    void DisableRequesting();
 
     // internal method called per frame in framework (can thow exception)
     void Update();
@@ -108,21 +147,11 @@ public:
 
     void DeletePack(const String& packName);
 
-    // user have to wait till InitializationState become Ready
-    // second argument - status text usfull for loging
-    Signal<InitializeState, const String&> initializationStatus;
-    // signal user about every pack state change
-    Signal<const Pack&> packState;
-    Signal<const Pack&> packDownload;
-    // signal per user request with complete size of all depended packs
-    Signal<const IRequest&> requestProgress;
-
     const FilePath& GetLocalPacksDirectory() const;
     const String& GetRemotePacksUrl(bool isGPU) const;
 
 private:
     std::unique_ptr<PackManagerImpl> impl;
-    InitializeState state = InitializeState::Starting;
 };
 
 } // end namespace DAVA

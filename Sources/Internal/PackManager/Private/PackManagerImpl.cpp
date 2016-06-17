@@ -9,10 +9,8 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
                                  const FilePath& localPacksDir_,
                                  const FilePath& readOnlyPacksDir_,
                                  const String& remotePacksURL_,
-                                 const String& packsUrlGpu_,
-                                 Signal<const PackManager::Pack&>& signal,
-                                 Signal<const PackManager::Pack&>& signalDownload,
-                                 Signal<const PackManager::IRequest&>& signal2)
+                                 const String& architecture_,
+                                 PackManager* packManager_)
 {
     dbFile = dbFile_;
     localPacksDir = localPacksDir_;
@@ -22,22 +20,73 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     {
         throw std::runtime_error("incorrect common url");
     }
-    packsUrlGpu = packsUrlGpu_;
-    if (packsUrlGpu.empty() || packsUrlGpu.back() != '/')
+    architecture = architecture_;
+    if (architecture.empty() || architecture.back() != '/')
     {
         throw std::runtime_error("incorrect gpu url");
     }
     requestManager.reset(new RequestManager(*this));
 
-    onPackChange = &signal;
-    onRequestChange = &signal2;
-    packDownload = &signalDownload;
+    packManager = packManager_;
+    DVASSERT(packManager != nullptr);
+
+    onPackChange = &packManager->packStateChanged;
+    onRequestChange = &packManager->requestProgressChanged;
+    packDownload = &packManager->packDownloadChanged;
+
+    state = PackManager::InitState::Starting;
 
     // open DB and load packs state then mount all archives to FileSystem
-    db.reset(new PacksDB(dbFile));
-    db->InitializePacks(packs);
-    MountDownloadedPacks(readOnlyPacksDir);
-    MountDownloadedPacks(localPacksDir);
+    //db.reset(new PacksDB(dbFile));
+    //db->InitializePacks(packs);
+    //MountDownloadedPacks(readOnlyPacksDir);
+    //MountDownloadedPacks(localPacksDir);
+}
+
+void PackManagerImpl::Update()
+{
+    if (state != PackManager::InitState::Ready &&
+        state != PackManager::InitState::Error)
+    {
+        ContinueInitialization();
+    }
+    else if (isProcessingEnabled)
+    {
+        requestManager->Update();
+    }
+}
+
+void PackManagerImpl::ContinueInitialization()
+{
+    // TODO
+    //        Starting,
+    //        MountingLocalPacks,
+    //        LoadingRequestFooter,
+    //        LoadingRequestFileTable,
+    //        CalculateLocalDataBaseHashAndCompare,
+    //        LoadingRequestDataBase,              // skip if hash match
+    //        UnpakingkDataBase,                   // skip if hash match
+    //        DeleteDownloadedPacksIfNotMatchHash, // skip if hash match
+    //        LoadingPacksDataFromDataBase,
+    //        MountingDownloadedPacks,
+    //        Ready,
+    //        Error
+    if (PackManager::InitState::Starting == state)
+    {
+        state = PackManager::InitState::MountingLocalPacks;
+    }
+    else if (PackManager::InitState::MountingLocalPacks == state)
+    {
+        MountDownloadedPacks(localPacksDir);
+        state = PackManager::InitState::LoadingRequestFooter;
+    }
+    else if (PackManager::InitState::LoadingRequestFooter == state)
+    {
+        if (IsFinishingLoadingFooter())
+        {
+            state = PackManager::InitState::LoadingRequestFileTable;
+        }
+    }
 }
 
 const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, float32 priority)
