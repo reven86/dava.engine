@@ -47,7 +47,7 @@ else()
     set ( ARCH_PREFIX "x86" )    
 endif ()
 
-set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/${ARCH_PREFIX}" )
+set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/${ARCH_PREFIX}/*" )
 
 if ( USE_DYNAMIC_CRT )
     file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/DynamicCRT/${ARCH_PREFIX}/Release/*.lib" )
