@@ -187,7 +187,6 @@ macro( setup_main_module )
                 INCLUDES_${DAVA_PLATFORM_CURENT}
                 INCLUDES_PRIVATE
                 INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                
-                BINARY_DIR_WIN
                 BINARY_WIN32_DIR_RELEASE
                 BINARY_WIN32_DIR_DEBUG
                 BINARY_WIN32_DIR_RELWITHDEB
