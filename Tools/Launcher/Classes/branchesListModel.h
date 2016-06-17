@@ -7,7 +7,7 @@
 
 class ApplicationManager;
 
-class ListModel : public QAbstractListModel
+class BranchesListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
@@ -19,11 +19,13 @@ public:
         LIST_ITEM_SEPARATOR
     };
     static const int DAVA_WIDGET_ROLE = Qt::UserRole + 1;
-    ListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
-    void clearItems();
-    void addItem(const QString& dataText, ListItemType type);
+    BranchesListModel(const ApplicationManager* appManager_, QObject* parent = nullptr);
+    void ClearItems();
+    void AddItem(const QString& dataText, ListItemType type);
     QVariant data(const QModelIndex& index, int role) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    ListItemType GetType(int row) const;
 
 private:
     struct Item
@@ -38,6 +40,6 @@ private:
     const ApplicationManager* appManager;
 };
 
-Q_DECLARE_METATYPE(ListModel::ListItemType);
+Q_DECLARE_METATYPE(BranchesListModel::ListItemType);
 
 #endif // __LIST_MODEL_H__

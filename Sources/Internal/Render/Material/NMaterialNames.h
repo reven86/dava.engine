@@ -121,6 +121,7 @@ public:
     static const FastName PARAM_SCREEN_OFFSET;
     static const FastName PARAM_ALPHATEST_THRESHOLD;
     static const FastName PARAM_LANDSCAPE_TEXTURE_TILING;
+    static const FastName WATER_CLEAR_COLOR;
     static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
     static const FastName DEPRECATED_LANDSCAPE_TEXTURE_0_TILING;
 };
@@ -158,6 +159,8 @@ public:
     static const FastName FLAG_DEBUG_NORMAL_ROTATION;
 
     static const FastName FLAG_SKINNING;
+
+    static const FastName FLAG_FLOWMAP_SKY;
 
     static const FastName FLAG_LIGHTMAPONLY;
     static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY

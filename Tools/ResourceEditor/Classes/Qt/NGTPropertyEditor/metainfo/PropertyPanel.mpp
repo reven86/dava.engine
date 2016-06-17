@@ -3,6 +3,9 @@
 #include "core_reflection/metadata/meta_types.hpp"
 #include "core_reflection/utilities/reflection_function_utilities.hpp"
 
+namespace wgt
+{
 BEGIN_EXPOSE( PropertyPanel, MetaNone() )
-    EXPOSE( "PropertyTree", GetPropertyTree, SetPropertyTree, MetaNone() )
+    EXPOSE( "PropertyTree", GetPropertyTree, SetPropertyTree, wgt::MetaNone() )
 END_EXPOSE()
+}

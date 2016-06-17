@@ -12,6 +12,7 @@ namespace DefaultValues
 {
 const Vector3 defaultVec3;
 const Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
+const Color blackColor(0.0f, 0.0f, 0.0f, 1.0f);
 const float32 defaultFloat05 = 0.5f;
 const float32 defaultFloat10 = 1.0f;
 const Vector2 defaultVec2;
@@ -373,6 +374,7 @@ void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* 
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
     checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
+    checkAndAdd(NMaterialParamName::WATER_CLEAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::blackColor.color);
 
     //checkAndAdd(NMaterialParamName::PARAM_NORMAL_SCALE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
     //checkAndAdd(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, rhi::ShaderProp::TYPE_FLOAT1, 1, (float32*) &DefaultValues::defaultFloat05);
