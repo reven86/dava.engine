@@ -107,6 +107,7 @@ const FastName NMaterialParamName::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterialParamName::PARAM_SCREEN_OFFSET("screenOffset");
 const FastName NMaterialParamName::PARAM_ALPHATEST_THRESHOLD("alphatestThreshold");
 const FastName NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING("textureTiling");
+const FastName NMaterialParamName::WATER_CLEAR_COLOR("waterColor");
 const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 const FastName NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING("texture0Tiling");
 
@@ -141,6 +142,8 @@ const FastName NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_
 const FastName NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
 
 const FastName NMaterialFlagName::FLAG_SKINNING = FastName("SKINNING");
+
+const FastName NMaterialFlagName::FLAG_FLOWMAP_SKY = FastName("FLOWMAP_SKY");
 
 const FastName NMaterialFlagName::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterialFlagName::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
