@@ -51,8 +51,6 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
-    void EmitParticleSignals();
-
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
