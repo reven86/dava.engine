@@ -150,8 +150,8 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Disabled, QPalette::Light, lightWindowColor);
 
     lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8B, 0xBF));
-    lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor);
-    lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor);
+    lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor.darker(120));
+    lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor.darker(120));
 
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
