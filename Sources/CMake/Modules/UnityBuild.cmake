@@ -1,6 +1,7 @@
 macro( generated_unity_sources SOURCE_FILES )  
 
-    if( SOURCE_FILES )
+    list ( LENGTH ${SOURCE_FILES} SOURCE_FILES_LIST_LEN )
+    if ( ${SOURCE_FILES_LIST_LEN} GREATER "0" )
        list( REMOVE_DUPLICATES ${SOURCE_FILES} )
     endif()
 
