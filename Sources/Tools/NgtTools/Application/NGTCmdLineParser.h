@@ -1,16 +1,19 @@
-#ifndef __QTTOOLS_NGTCMDLINEPARSER_H__
-#define __QTTOOLS_NGTCMDLINEPARSER_H__
+#pragma once
 
-#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
-#include "core_dependency_system/i_interface.hpp"
+#include <core_generic_plugin/interfaces/i_command_line_parser.hpp>
+#include <core_dependency_system/i_interface.hpp>
+
+#include <map>
 
 namespace NGTLayer
 {
 class NGTCmdLineParser
-: public Implements<ICommandLineParser>
+: public wgt::Implements<wgt::ICommandLineParser>
 {
 public:
     NGTCmdLineParser(int argc_, char** argv_);
+
+    void addParam(std::string&& key, std::string&& value);
 
     int argc() const override;
     char** argv() const override;
@@ -23,7 +26,7 @@ public:
 private:
     int m_argc;
     char** m_argv;
+
+    std::map<std::string, std::string> additionalParams;
 };
 } // namespace NGTLayer
-
-#endif // __QTTOOLS_NGTCMDLINEPARSER_H__

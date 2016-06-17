@@ -476,7 +476,7 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
         void* code = shader->GetBufferPointer();
         DX9Command cmd = { DX9Command::CREATE_VERTEX_SHADER, { uint64_t((const DWORD*)code), uint64_t(&vs9) } };
 
-        ExecDX9(&cmd, 1);
+        ExecDX9(&cmd, 1, false);
 
         if (SUCCEEDED(cmd.retval))
         {
@@ -721,7 +721,7 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
         void* code = shader->GetBufferPointer();
         DX9Command cmd = { DX9Command::CREATE_PIXEL_SHADER, { uint64_t((const DWORD*)code), uint64_t(&ps9) } };
 
-        ExecDX9(&cmd, 1);
+        ExecDX9(&cmd, 1, false);
 
         if (SUCCEEDED(cmd.retval))
         {

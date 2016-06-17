@@ -3,7 +3,15 @@
 #include "NgtTools/Application/NGTApplication.h"
 
 class NGTCommand;
+namespace NGTLayer
+{
+class NGTCmdLineParser;
+}
+
+namespace wgt
+{
 class ICommandManager;
+}
 
 class REApplication : public NGTLayer::BaseApplication
 {
@@ -17,8 +25,10 @@ protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
     void OnPostLoadPugins() override;
     void OnPreUnloadPlugins() override;
+    bool OnRequestCloseApp() override;
+    void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;
 
 private:
-    ICommandManager* commandManager = nullptr;
+    wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<NGTCommand> ngtCommand;
 };

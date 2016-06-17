@@ -6,6 +6,7 @@ elseif (MACOS AND NOT ANDROID)
     add_definitions (-DDARWIN_NO_CARBON)
 endif()
 
+add_definitions(-DFAST_WORKAROUND_TASK_NGT_2540)
 include               ( CMake-common )
 include               ( NGTMacro )
 

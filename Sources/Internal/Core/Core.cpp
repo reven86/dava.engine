@@ -184,7 +184,7 @@ void DisableFloatingPointExceptions()
 // on iOS fpu exceptions disables by default
 #endif
 }
-#endif 
+#endif
 #endif // not DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
 } // end namespace debug_details
 
@@ -245,7 +245,7 @@ void Core::CreateSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
-    
+
 #if defined __DAVAENGINE_IPHONE__
 // not used
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -319,8 +319,6 @@ void Core::ReleaseSingletons()
 #endif
 
     LocalNotificationController::Instance()->Release();
-    DownloadManager::Instance()->Release();
-    packManager.reset();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -338,6 +336,9 @@ void Core::ReleaseSingletons()
     FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
+
+    packManager.reset();
+    DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -357,7 +358,7 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
-    
+
 #if defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
@@ -545,6 +546,7 @@ void Core::SystemAppFinished()
 {
     Logger::Info("Core::SystemAppFinished in");
 
+    systemAppFinished.Emit();
     if (core != nullptr)
     {
         #if TRACER_ENABLED
@@ -592,7 +594,7 @@ void Core::SystemProcessFrame()
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
-    
+
 #if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
@@ -676,6 +678,7 @@ void Core::SystemProcessFrame()
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        updated.Emit(frameDelta);
         core->Update(frameDelta);
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
 
@@ -698,7 +701,7 @@ void Core::SystemProcessFrame()
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;
-    
+
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;

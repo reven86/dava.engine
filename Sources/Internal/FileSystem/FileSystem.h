@@ -58,6 +58,14 @@ public:
 	*/
     virtual uint32 DeleteDirectoryFiles(const FilePath& path, bool isRecursive = false);
 
+    /*
+        \brief Enumerate all files in specific directory
+        \param[in] path full path to the directory you want to enumerate
+        \param[in] isRecursive if true go into child directories and enumarate files there also, true by default
+        \returns list of files
+    */
+    virtual Vector<FilePath> EnumerateFilesInDirectory(const FilePath& path, bool isRecursive = true);
+
     enum eCreateDirectoryResult
     {
         DIRECTORY_CANT_CREATE = 0,
@@ -178,7 +186,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    virtual bool CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
+    virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
         \brief Read whole file contents into new buffer. 
@@ -197,6 +205,8 @@ public:
         \returns string with whole file contents
      */
     String ReadFileContents(const FilePath& pathname);
+
+    bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
 
     /**
 		\brief Function to attach ResourceArchive to filesystem
@@ -250,6 +260,11 @@ public:
      \brief Function check if specified path exists on file system
      */
     bool Exists(const FilePath& filePath) const;
+
+    /**
+    \brief Copies one folder into another recursively
+    */
+    bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
 private:
     bool HasLineEnding(File* f);

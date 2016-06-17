@@ -366,6 +366,8 @@ gles2_Reset(const ResetParam& param)
     ios_gl_reset(param.window);
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
+#elif defined(__DAVAENGINE_WIN32__)
+    win_gl_reset(param);
 #endif
 }
 
@@ -589,6 +591,12 @@ void gles2_Initialize(const InitParam& param)
 #endif
         if (_GLES2_IsSeamlessCubmapSupported)
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+        if (wglSwapIntervalEXT != nullptr)
+        {
+            wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);
+            DAVA::Logger::Info("GLES2 V-Sync: %s", param.vsyncEnabled ? "ON" : "OFF");
+        }
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
