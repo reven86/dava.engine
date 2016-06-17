@@ -1,20 +1,21 @@
 #include "QtModelPackageCommandExecutor.h"
 
 #include "Document/Document.h"
+#include "Document/CommandsBase/CommandStack.h"
 
-#include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Commands/InsertControlCommand.h"
-#include "UI/Commands/RemoveControlCommand.h"
-#include "UI/Commands/InsertImportedPackageCommand.h"
-#include "UI/Commands/RemoveImportedPackageCommand.h"
-#include "UI/Commands/AddComponentCommand.h"
-#include "UI/Commands/RemoveComponentCommand.h"
-#include "UI/Commands/AttachComponentPrototypeSectionCommand.h"
-#include "UI/Commands/InsertRemoveStyleCommand.h"
-#include "UI/Commands/AddRemoveStylePropertyCommand.h"
-#include "UI/Commands/AddRemoveStyleSelectorCommand.h"
+#include "QECommands//ChangePropertyValueCommand.h"
+#include "QECommands/InsertControlCommand.h"
+#include "QECommands/RemoveControlCommand.h"
+#include "QECommands/InsertImportedPackageCommand.h"
+#include "QECommands/RemoveImportedPackageCommand.h"
+#include "QECommands/AddComponentCommand.h"
+#include "QECommands/RemoveComponentCommand.h"
+#include "QECommands/AttachComponentPrototypeSectionCommand.h"
+#include "QECommands/InsertRemoveStyleCommand.h"
+#include "QECommands/AddRemoveStylePropertyCommand.h"
+#include "QECommands/AddRemoveStyleSelectorCommand.h"
 
-#include "UI/Commands/ChangeStylePropertyCommand.h"
+#include "QECommands/ChangeStylePropertyCommand.h"
 
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -146,7 +147,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(const Vector<ChangePropertyAc
     }
     if (!propertiesToChange.empty())
     {
-        QUndoCommand* command = new ChangePropertyValueCommand(packageNode, propertiesToChange, hash);
+        QECommand* command = new ChangePropertyValueCommand(packageNode, propertiesToChange, hash);
         PushCommand(command);
     }
 }
@@ -155,7 +156,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractPr
 {
     if (!property->IsReadOnly())
     {
-        QUndoCommand* command = new ChangePropertyValueCommand(packageNode, node, property, value, hash);
+        QECommand* command = new ChangePropertyValueCommand(packageNode, node, property, value, hash);
         PushCommand(command);
     }
 }
@@ -699,22 +700,22 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode* nod
     return false;
 }
 
-void QtModelPackageCommandExecutor::PushCommand(QUndoCommand* cmd)
+void QtModelPackageCommandExecutor::PushCommand(QECommand* cmd)
 {
-    GetUndoStack()->push(cmd);
+    GetCommandStack()->Push(std::unique_ptr<QECommand>(cmd));
 }
 
 void QtModelPackageCommandExecutor::BeginMacro(const QString& name)
 {
-    GetUndoStack()->beginMacro(name);
+    GetCommandStack()->BeginMacro(name.toUtf8().data());
 }
 
 void QtModelPackageCommandExecutor::EndMacro()
 {
-    GetUndoStack()->endMacro();
+    GetCommandStack()->EndMacro();
 }
 
-QUndoStack* QtModelPackageCommandExecutor::GetUndoStack() const
+CommandStack* QtModelPackageCommandExecutor::GetCommandStack() const
 {
-    return document->GetUndoStack();
+    return document->GetCommandStack();
 }

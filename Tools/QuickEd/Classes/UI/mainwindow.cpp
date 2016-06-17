@@ -88,16 +88,16 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     documentGroup->ConnectToTabBar(tabBar);
 
-    QAction* undoAction = documentGroup->CreateUndoAction(this);
-    undoAction->setShortcut(QKeySequence::Undo);
-    undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
-
-    QAction* redoAction = documentGroup->CreateRedoAction(this);
-    redoAction->setShortcut(QKeySequence::Redo);
-    redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
-
-    mainToolbar->addAction(undoAction);
-    mainToolbar->addAction(redoAction);
+    //    QAction* undoAction = documentGroup->CreateUndoAction(this);
+    //    undoAction->setShortcut(QKeySequence::Undo);
+    //    undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
+    //
+    //    QAction* redoAction = documentGroup->CreateRedoAction(this);
+    //    redoAction->setShortcut(QKeySequence::Redo);
+    //    redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
+    //
+    //    mainToolbar->addAction(undoAction);
+    //    mainToolbar->addAction(redoAction);
 
     Q_ASSERT(documentGroup != nullptr);
     documentGroup->AttachSaveAction(actionSaveDocument);

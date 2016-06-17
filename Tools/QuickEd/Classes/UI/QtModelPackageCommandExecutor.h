@@ -4,13 +4,12 @@
 #include "Base/BaseObject.h"
 #include "Base/Result.h"
 #include "EditorSystems/EditorSystemsManager.h"
-
+#include "Document/CommandsBase/Command.h"
 #include <QString>
 
 class Document;
 class PackageBaseNode;
-class QUndoStack;
-class QUndoCommand;
+class CommandStack;
 
 class ControlNode;
 class StyleSheetNode;
@@ -65,8 +64,8 @@ private:
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 
-    QUndoStack* GetUndoStack() const;
-    void PushCommand(QUndoCommand* cmd);
+    CommandStack* GetCommandStack() const;
+    void PushCommand(QECommand* cmd);
     void BeginMacro(const QString& name);
     void EndMacro();
 

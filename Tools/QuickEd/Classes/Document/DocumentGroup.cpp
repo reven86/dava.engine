@@ -1,5 +1,8 @@
-#include "Document.h"
-#include "DocumentGroup.h"
+#include "Document/Document.h"
+#include "Document/DocumentGroup.h"
+#include "Document/CommandsBase/CommandStack.h"
+#include "Document/CommandsBase/CommandStackGroup.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 
 #include "Debug/DVAssert.h"
@@ -8,7 +11,6 @@
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
-#include <QUndoGroup>
 #include <QApplication>
 #include <QMutableListIterator>
 #include <QAction>
@@ -20,7 +22,7 @@ using namespace DAVA;
 DocumentGroup::DocumentGroup(QObject* parent)
     : QObject(parent)
     , active(nullptr)
-    , undoGroup(new QUndoGroup(this))
+    , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
 }
@@ -49,16 +51,6 @@ bool DocumentGroup::CanSave() const
 bool DocumentGroup::CanClose() const
 {
     return active != nullptr;
-}
-
-QAction* DocumentGroup::CreateUndoAction(QObject* parent, const QString& prefix) const
-{
-    return undoGroup->createUndoAction(parent, prefix);
-}
-
-QAction* DocumentGroup::CreateRedoAction(QObject* parent, const QString& prefix) const
-{
-    return undoGroup->createRedoAction(parent, prefix);
 }
 
 void DocumentGroup::AttachSaveAction(QAction* saveAction) const
@@ -240,7 +232,7 @@ void DocumentGroup::CloseDocument(Document* document)
     DVVERIFY(documents.removeAll(document) == 1);
     emit CanSaveAllChanged(!documents.empty());
 
-    undoGroup->removeStack(document->GetUndoStack());
+    commandStackGroup->RemoveStack(document->GetCommandStack());
 
     SetActiveDocument(nextDocument);
     delete document;
@@ -306,12 +298,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
 
     if (nullptr == active)
     {
-        undoGroup->setActiveStack(nullptr);
+        commandStackGroup->SetActiveStack(nullptr);
     }
     else
     {
         connect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
-        undoGroup->setActiveStack(active->GetUndoStack());
+        commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
     emit ActiveDocumentChanged(document);
     emit ActiveIndexChanged(documents.indexOf(document));
@@ -510,7 +502,7 @@ void DocumentGroup::SaveDocument(Document* document, bool force)
             return;
         }
     }
-    else if (!force && document->GetUndoStack()->isClean())
+    else if (!force && document->GetCommandStack()->IsClean())
     {
         return;
     }
@@ -538,7 +530,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
 void DocumentGroup::InsertDocument(Document* document, int index)
 {
     DVASSERT(nullptr != document);
-    undoGroup->addStack(document->GetUndoStack());
+    commandStackGroup->AddStack(document->GetCommandStack());
     if (documents.contains(document))
     {
         DVASSERT(false && "document already exists in document group");

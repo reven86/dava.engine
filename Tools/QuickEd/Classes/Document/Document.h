@@ -1,7 +1,7 @@
 #ifndef __QUICKED_DOCUMENT_H__
 #define __QUICKED_DOCUMENT_H__
 
-#include <QUndoStack>
+#include <QObject>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "EditorSystems/SelectionContainer.h"
 
@@ -30,6 +30,7 @@ class ControlNode;
 class AbstractProperty;
 
 class QFileSystemWatcher;
+class CommandStack;
 
 class Document final : public QObject
 {
@@ -42,7 +43,7 @@ public:
 
     const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
-    QUndoStack* GetUndoStack() const;
+    CommandStack* GetCommandStack() const;
     PackageNode* GetPackage() const;
     QtModelPackageCommandExecutor* GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
@@ -70,7 +71,7 @@ private:
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    std::unique_ptr<QUndoStack> undoStack;
+    std::unique_ptr<CommandStack> commandStack;
     QFileSystemWatcher* fileSystemWatcher = nullptr;
     bool fileExists = true;
     bool canSave = false;

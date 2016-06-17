@@ -1,4 +1,5 @@
-#include "Document.h"
+#include "Document/Document.h"
+#include "Document/CommandsBase/CommandStack.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -16,7 +17,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     : QObject(parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
-    , undoStack(new QUndoStack(this))
+    , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
 {
     QString path = GetPackageAbsolutePath();
@@ -27,12 +28,11 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     }
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
-    connect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged);
+    commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
 
 Document::~Document()
 {
-    disconnect(undoStack.get(), &QUndoStack::cleanChanged, this, &Document::OnCleanChanged); //destructor of UndoStack send signal here
     for (auto& context : contexts)
     {
         delete context.second;
@@ -49,9 +49,9 @@ QString Document::GetPackageAbsolutePath() const
     return QString::fromStdString(GetPackageFilePath().GetAbsolutePathname());
 }
 
-QUndoStack* Document::GetUndoStack() const
+CommandStack* Document::GetCommandStack() const
 {
-    return undoStack.get();
+    return commandStack.get();
 }
 
 PackageNode* Document::GetPackage() const
@@ -81,7 +81,7 @@ void Document::Save()
     YamlPackageSerializer serializer;
     serializer.SerializePackage(package.Get());
     serializer.WriteToFile(package->GetPath());
-    undoStack->setClean();
+    commandStack->SetClean();
     if (!fileSystemWatcher->addPath(path))
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
@@ -133,7 +133,7 @@ void Document::OnFileChanged(const QString& path)
 {
     DVASSERT(path == GetPackageAbsolutePath());
     fileExists = QFile::exists(GetPackageAbsolutePath());
-    SetCanSave(!fileExists || !undoStack->isClean());
+    SetCanSave(!fileExists || !commandStack->IsClean());
     emit FileChanged(this);
 }
 

@@ -1,12 +1,49 @@
-<root>	2	</root>
+<root>	5	</root>
+<root>	"635CFD0B.4B118F02.2AEEF79D.F6C37E49"	</root>
+<root>	""	</root>
+<root>	3	</root>
+<root>	"geometry"	</root>
+<root>	"blob"	</root>
+<root>	"layoutState"	</root>
+<root>	"blob"	</root>
+<root>	"maximized"	</root>
+<root>	"int"	</root>
 <root>	"E382E1DE.470C0487.54CB828B.48437142"	</root>
 <root>	""	</root>
 <root>	0	</root>
+<root>	"3902B1AC.43008A4F.9ABAC982.FCCC6CE6"	</root>
+<root>	""	</root>
+<root>	3	</root>
+<root>	"geometry"	</root>
+<root>	"blob"	</root>
+<root>	"layoutState"	</root>
+<root>	"blob"	</root>
+<root>	"maximized"	</root>
+<root>	"int"	</root>
+<root>	"CE0BFB41.4480547C.D2354299.BB91C672"	</root>
+<root>	""	</root>
+<root>	3	</root>
+<root>	"geometry"	</root>
+<root>	"blob"	</root>
+<root>	"layoutState"	</root>
+<root>	"blob"	</root>
+<root>	"maximized"	</root>
+<root>	"int"	</root>
 <root>	"0DB3AF9A.4C9C3709.2000A4AA.5D326E7A"	</root>
 <root>	""	</root>
-<root>	0	</root>
+<root>	3	</root>
+<root>	"geometry"	</root>
+<root>	"blob"	</root>
+<root>	"layoutState"	</root>
+<root>	"blob"	</root>
+<root>	"maximized"	</root>
+<root>	"int"	</root>
 <root>	2	</root>
+<root>	"E28A7FA9-08D4-464F-B073-47CB9DD20F62"	</root>
+<root type="0DB3AF9A.4C9C3709.2000A4AA.5D326E7A" id="953D7386.4BE6EF2A.81F1F79F.313E9F49">
+	<property name="geometry" type="blob">	"AdnQywACAAD////4////+AAAB4cAAASPAAACZgAAABYAAAZlAAADdgAAAAACAAAAB4A="	</property>
+	<property name="layoutState" type="blob">	"AAAA/wAAAAD9AAAAAwAAAAAAAAEAAAAC/PwCAAAAA/sAAAAoAGYAaQBsAGUAUwB5AHMAdABlAG0ARABvAGMAawBXAGkAZABnAGUAdAEAAAA1AAAAwwAAAHYA////+wAAABoAcABhAGMAawBhAGcAZQBXAGkAZABnAGUAdAEAAAD+AAAAwgAAAHYA////+wAAABoAbABpAGIAcgBhAHIAeQBXAGkAZABnAGUAdAEAAAHGAAABawAAAFkA////AAAAAQAAAQAAAAL8/AIAAAAC+wAAACAAcAByAG8AcABlAHIAdABpAGUAcwBXAGkAZABnAGUAdAEAAAA1AAAB7AAAAFkA/////AAAAicAAAEKAAAAJgAIABL6AAAAAQIAAAAC+wAAABoAVwBHAFQARABvAGMAawBXAGkAZABnAGUAdAAAAAAA/////wAAABMA////+wAAADYAVwBHAEgAaQBzAHQAbwByAHkALwBXAEcASABpAHMAdABvAHIAeQBWAGkAZQB3AC4AcQBtAGwBAAAAAP////8AAAAmAAgAEgAAAAMAAAeAAAABJfwBAAAAAfsAAAAiAGMAbwBuAHMAbwBsAGUARABvAGMAawBXAGkAZABnAGUAdAEAAAAAAAAHgAAAANMA////AAAFdAAAAvwAAAAEAAAABAAAAAgAAAAI/AAAAAEAAAACAAAAAgAAABYAbQBhAGkAbgBUAG8AbwBsAGIAYQByAQAAAAD/////AAAAAAAAAAAAAAAcAHQAbwBvAGwAQgBhAHIAUABsAHUAZwBpAG4AcwEAAADG/////wAAAAAAAAAA"	</property>
+	<property name="maximized">	1	</property>
+</root>
 <root>	"WGHistory/WGHistoryView.qml"	</root>
 <root type="E382E1DE.470C0487.54CB828B.48437142" id="A420E7A5.417F606E.D186BA86.DA7C893A"/>
-<root>	"E28A7FA9-08D4-464F-B073-47CB9DD20F62"	</root>
-<root type="0DB3AF9A.4C9C3709.2000A4AA.5D326E7A" id="953D7386.4BE6EF2A.81F1F79F.313E9F49"/>

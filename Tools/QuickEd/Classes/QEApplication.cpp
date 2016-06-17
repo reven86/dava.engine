@@ -2,7 +2,7 @@
 #include "EditorCore.h"
 
 
-#include "Document/Commands/WGTCommand.h"
+#include "Document/CommandsBase/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
 
 #include <core_command_system/i_command_manager.hpp>

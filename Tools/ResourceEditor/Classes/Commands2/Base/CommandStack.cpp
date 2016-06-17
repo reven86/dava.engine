@@ -179,6 +179,8 @@ CommandStack::~CommandStack()
 {
     DisconnectEvents();
     ActiveCommandStack::Instance()->CommandStackDeleted(this);
+    DVASSERT(!indexChanged.enabled());
+    indexChanged.disconnect();
 }
 
 bool CommandStack::CanUndo() const

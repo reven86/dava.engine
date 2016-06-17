@@ -7,7 +7,7 @@
 #include <QPointer>
 
 class Document;
-class QUndoGroup;
+class CommandStackGroup;
 class PackageBaseNode;
 class QAction;
 class QTabBar;
@@ -26,9 +26,6 @@ public:
 
     bool CanSave() const;
     bool CanClose() const;
-
-    QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const;
-    QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const;
 
     void AttachSaveAction(QAction* action) const;
     void AttachSaveAllAction(QAction* action) const;
@@ -83,7 +80,7 @@ private:
 
     Document* active;
     QList<Document*> documents;
-    QUndoGroup* undoGroup;
+    std::unique_ptr<CommandStackGroup> commandStackGroup;
     QSet<Document*> changedFiles;
     QList<QPointer<QTabBar>> attachedTabBars;
 };
