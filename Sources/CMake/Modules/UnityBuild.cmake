@@ -1,6 +1,8 @@
 macro( generated_unity_sources SOURCE_FILES )  
 
-    list( REMOVE_DUPLICATES ${SOURCE_FILES} )
+    if( SOURCE_FILES )
+       list( REMOVE_DUPLICATES ${SOURCE_FILES} )
+    endif()
 
     if( UNITY_BUILD )
         message( ">>> Unity packages ${PROJECT_NAME} info" )
