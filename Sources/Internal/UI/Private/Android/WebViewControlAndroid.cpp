@@ -264,6 +264,11 @@ void JniWebView::OnExecuteJScript(int id, const String& result)
     }
 }
 
+std::unique_ptr<IWebViewControl> IWebViewControl::Create(UIWebView& uiWebView)
+{
+    return std::make_unique<WebViewControl>(uiWebView);
+}
+
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     :
     webViewId(-1)

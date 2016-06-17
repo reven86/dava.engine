@@ -49,7 +49,9 @@ load_property( PROPERTY_LIST
         BINARY_WIN64_DIR_RELWITHDEB
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
         STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
-        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG    
+        DEPLOY_TO_BIN
+        DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}        
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}   
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}               
@@ -665,8 +667,15 @@ endif()
 ###
 
 if( DEPLOY )
-   message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
-   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+    
+    if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
+        file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+        foreach( ITEM ${RESOURCES_LIST} )
+            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
+        endforeach()
+    endif()
 
    append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
 

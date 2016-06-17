@@ -1,9 +1,6 @@
 set( NAME_MODULE CEFWebview )
 set( MODULE_TYPE STATIC )
 
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
-include      ( "${CMAKE_CURRENT_LIST_DIR}/../../CMake/Modules/Cmake-common.cmake" )
-
 set( HPP_FILES Sources/*.h Sources/*.hpp )
 set( CPP_FILES Sources/*.cpp     )
 
