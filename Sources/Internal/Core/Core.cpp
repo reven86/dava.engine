@@ -13,7 +13,6 @@
 #include "Debug/Replay.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "Input/InputSystem.h"
 #include "Platform/DPIHelper.h"
 #include "Base/AllocatorFactory.h"
 #include "Render/2D/FTFont.h"
@@ -749,6 +748,7 @@ void Core::GoForeground()
 
 void Core::FocusLost()
 {
+    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
     if (core)
     {
         core->OnFocusLost();

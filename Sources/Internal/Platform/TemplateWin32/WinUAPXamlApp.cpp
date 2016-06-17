@@ -340,7 +340,6 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
                 Core::Instance()->SetIsActive(false);
             }
             Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             EnableHighResolutionTimer(false);
             break;
         default:
@@ -374,7 +373,6 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
                 Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
             }
             Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         }
     });
 }
