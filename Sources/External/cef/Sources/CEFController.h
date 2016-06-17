@@ -1,5 +1,4 @@
 #pragma once
-#if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/internal/cef_ptr.h>
 #include "Base/RefPtr.h"
@@ -25,5 +24,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW

@@ -1,14 +1,12 @@
-﻿#if defined(ENABLE_CEF_WEBVIEW)
-
-#include <cef/include/cef_browser.h>
+﻿#include <cef/include/cef_browser.h>
 #include <regex>
 
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIWebView.h"
-#include "UI/Private/CEFWebViewControl.h"
-#include "UI/Private/CEFDavaResourceHandler.h"
+#include "CEFWebViewControl.h"
+#include "CEFDavaResourceHandler.h"
 
 namespace DAVA
 {
@@ -542,5 +540,3 @@ void CEFWebViewControl::OnKey(UIEvent* input)
 }
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW

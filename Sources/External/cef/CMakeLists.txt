@@ -33,6 +33,10 @@ set( STATIC_LIBRARIES_WIN64_RELEASE  "${CEF_LIBS_DIR}/x64/Release/libcef.lib"
 set( STATIC_LIBRARIES_WIN64_DEBUG    "${CEF_LIBS_DIR}/x64/Debug/libcef.lib"
                                      "${CEF_LIBS_DIR}/x64/Debug/libcef_dll_wrapper.lib" )
                                      
+if ( WIN32 )
+    set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /delayload:libcef.dll" )
+endif ()
+                                     
 set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
 set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
 set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
@@ -41,17 +45,20 @@ set( BINARY_WIN64_DIR_DEBUG      "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
 set( BINARY_WIN64_DIR_RELWITHDEB "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
 
 if ( X64_MODE )
-    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x64" )
-    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x64/NGT/Release/*.lib" )
-    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x64/NGT/Debug/*.lib" )
+    set ( ARCH_PREFIX "x64" )
 else()
-    set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/x86" )
-    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/x86/NGT/Release/*.lib" )
-    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/x86/NGT/Debug/*.lib" )
+    set ( ARCH_PREFIX "x86" )    
 endif ()
 
-set( EXCLUDE_LIBS "libcef_dll_wrapper.lib" CACHE INTERNAL "" )
-set( ADDITIONAL_RELEASE_LIBS "${RELEASE_LIBS}" CACHE INTERNAL "" )
-set( ADDITIONAL_DEBUG_LIBS "${DEBUG_LIBS}" CACHE INTERNAL "" )
+set( DEPLOY_TO_BIN_WIN "${CMAKE_CURRENT_SOURCE_DIR}/Data/${ARCH_PREFIX}" )
+
+if ( USE_DYNAMIC_CRT )
+    file(GLOB RELEASE_LIBS "${CEF_LIBS_DIR}/${ARCH_PREFIX}/NGT/Release/*.lib" )
+    file(GLOB DEBUG_LIBS   "${CEF_LIBS_DIR}/${ARCH_PREFIX}/NGT/Debug/*.lib" )
+    
+    set( EXCLUDE_LIBS "libcef_dll_wrapper.lib" CACHE INTERNAL "" )
+    set( ADDITIONAL_RELEASE_LIBS "${RELEASE_LIBS}" CACHE INTERNAL "" )
+    set( ADDITIONAL_DEBUG_LIBS "${DEBUG_LIBS}" CACHE INTERNAL "" )
+endif ()
 
 setup_main_module()

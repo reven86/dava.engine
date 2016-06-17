@@ -1,15 +1,13 @@
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_app.h>
 #include <cef/include/cef_client.h>
-#include "UI/Private/CEFDavaResourceHandler.h"
+#include "CEFDavaResourceHandler.h"
 
 #include "Base/TypeHolders.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Signal.h"
-#include "UI/Private/CEFController.h"
+#include "CEFController.h"
 
 namespace DAVA
 {
@@ -249,5 +247,3 @@ void CEFController::SetCacheLimitSize(uint32 size)
 }
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW

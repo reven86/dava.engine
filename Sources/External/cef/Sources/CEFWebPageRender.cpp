@@ -1,6 +1,4 @@
-#if defined(ENABLE_CEF_WEBVIEW)
-
-#include "UI/Private/CEFWebPageRender.h"
+#include "CEFWebPageRender.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
 #include "Render/RenderCallbacks.h"
@@ -242,5 +240,3 @@ void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 #endif
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW
