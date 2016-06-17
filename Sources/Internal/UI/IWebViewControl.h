@@ -44,7 +44,10 @@ class UIGeometricData;
 class IWebViewControl
 {
 public:
-    virtual ~IWebViewControl();
+    virtual ~IWebViewControl() = default;
+
+    // Factory must be implemented on each platform
+    static std::unique_ptr<IWebViewControl> Create(UIWebView& uiWebView);
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;

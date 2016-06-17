@@ -4,7 +4,10 @@ if( WIN32 AND NOT WINDOWS_UAP  )
 endif()
 include ( DavaLibs             )
 
-add_subdirectory ( "${DAVA_EXTERNAL_DIR}/cef" ${CMAKE_CURRENT_BINARY_DIR}/cef )
+if ( WIN32 AND NOT WINDOWS_UAP )
+    add_subdirectory ( "${DAVA_EXTERNAL_DIR}/cef" ${CMAKE_CURRENT_BINARY_DIR}/cef )
+    list ( APPEND DEFINITIONS -DDISABLE_NATIVE_WEBVIEW )
+endif ()
 
 set( NAME_MODULE DavaFramework )
 
