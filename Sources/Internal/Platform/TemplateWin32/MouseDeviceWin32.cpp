@@ -16,11 +16,12 @@ void MouseDeviceWin32::SetCursorInCenter()
     int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
     SetCursorPos(centerX, centerY);
 
-    if (needHideCursor)
+    if (pendingCursorHide)
     {
-        // lock PC Win+L, after enter password, quickly press some button and hold it.
-        // result: mouse arrow didn't hide
-        needHideCursor = false;
+        // While app is in pinning mode lock PC with Win+L, enter password and quickly press some key and hold it...
+        // That will lead us to the state, when mouse arrow won't be hidden while app remains in pinnig mode.
+        // The hack bellow tries to fix that.
+        pendingCursorHide = false;
         SetSystemCursorVisibility(true);
         SetSystemCursorVisibility(false);
     }
@@ -34,7 +35,6 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
-    Logger::Info("!!!! SetSystemCursorVisibility %d,    %d", int(show), int(wnd));
     if (show)
     {
         HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
@@ -65,7 +65,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
             lastCursorPosition.y = p.y;
 
             SetCursorInCenter();
-            needHideCursor = true;
+            pendingCursorHide = true;
         }
         else
         {

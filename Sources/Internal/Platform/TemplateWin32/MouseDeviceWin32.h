@@ -20,7 +20,7 @@ public:
 private:
     bool SetSystemCursorVisibility(bool show);
 
-    bool needHideCursor = false;
+    bool pendingCursorHide = false;
     Point2i lastCursorPosition;
 };
 
