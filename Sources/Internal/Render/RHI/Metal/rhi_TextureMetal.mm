@@ -11,6 +11,8 @@ using DAVA::Logger;
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
+#define RHI_METAL__USE_PURGABLE_STATE 0
+
 namespace rhi
 {
 //==============================================================================
@@ -300,7 +302,9 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                 }
             }
         }
+        #if RHI_METAL__USE_PURGABLE_STATE
         [tex->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+        #endif
 
         tex->mappedDataSize = TextureSize(texDesc.format, texDesc.width, texDesc.height, 0);
 
@@ -321,7 +325,9 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 
             if (uid2)
             {
+                #if RHI_METAL__USE_PURGABLE_STATE
                 [tex->uid2 setPurgeableState:MTLPurgeableStateNonVolatile];
+                #endif
                 tex->uid2 = uid2;
                 uid2 = nil;
             }
@@ -360,13 +366,17 @@ metal_Texture_Delete(Handle tex)
 
         if (self->uid)
         {
+            #if RHI_METAL__USE_PURGABLE_STATE
             [self->uid setPurgeableState:MTLPurgeableStateVolatile];
+            #endif
             [self->uid release];
             self->uid = nil;
         }
         if (self->uid2)
         {
+            #if RHI_METAL__USE_PURGABLE_STATE
             [self->uid2 setPurgeableState:MTLPurgeableStateVolatile];
+            #endif
             [self->uid2 release];
             self->uid2 = nil;
         }
@@ -491,12 +501,13 @@ metal_Texture_Unmap(Handle tex)
     {
         [self->uid replaceRegion:rgn mipmapLevel:self->mappedLevel withBytes:self->mappedData bytesPerRow:stride];
     }
+    #if RHI_METAL__USE_PURGABLE_STATE
     [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+    #endif
 
     self->is_mapped = false;
     ::free(self->mappedData);
     self->mappedData = nullptr;
-    //-    [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
     self->MarkRestored();
 }
 
@@ -558,7 +569,9 @@ void metal_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
         }
     }
 
+    #if RHI_METAL__USE_PURGABLE_STATE
     [self->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+    #endif
     self->MarkRestored();
 }
 
@@ -597,7 +610,7 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
 
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
 //_CheckAllTextures();
-#if 1
+#if RHI_METAL__USE_PURGABLE_STATE
     if (self->need_restoring)
     {
         MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
