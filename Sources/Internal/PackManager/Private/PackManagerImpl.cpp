@@ -34,8 +34,9 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     onRequestChange = &packManager->requestProgressChanged;
     packDownload = &packManager->packDownloadChanged;
 
-    state = PackManager::InitState::Starting;
+    initState = PackManager::InitState::Starting;
 
+    // TODO
     // open DB and load packs state then mount all archives to FileSystem
     //db.reset(new PacksDB(dbFile));
     //db->InitializePacks(packs);
@@ -43,10 +44,73 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     //MountDownloadedPacks(localPacksDir);
 }
 
+// start PackManager::IInitialization //////////////////////////////////////
+PackManager::InitState PackManagerImpl::GetState() const
+{
+    return initState;
+}
+
+PackManager::InitError PackManagerImpl::GetError() const
+{
+    return initError;
+}
+
+const String& PackManagerImpl::GetErrorMessage() const
+{
+    return initErrorMsg;
+}
+
+bool PackManagerImpl::CanRetry() const
+{
+    switch (initState)
+    {
+    case PackManager::InitState::FirstInit:
+    case PackManager::InitState::Starting:
+    case PackManager::InitState::MountingLocalPacks:
+        return false;
+    case PackManager::InitState::LoadingRequestAskFooter:
+    case PackManager::InitState::LoadingRequestGetFooter:
+    case PackManager::InitState::LoadingRequestAskFileTable:
+    case PackManager::InitState::LoadingRequestGetFileTable:
+        return true;
+    case PackManager::InitState::CalculateLocalDBHashAndCompare:
+        return false;
+    case PackManager::InitState::LoadingRequestAskDB:
+    case PackManager::InitState::LoadingRequestGetDB:
+        return true;
+    case PackManager::InitState::UnpakingDB:
+    case PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash:
+    case PackManager::InitState::LoadingPacksDataFromLocalDB:
+    case PackManager::InitState::MountingDownloadedPacks:
+    case PackManager::InitState::Ready:
+        return false;
+    }
+}
+
+void PackManagerImpl::Retry()
+{
+    if (CanRetry())
+    {
+        // TODO clear error and move to prev state and unpause if needed
+        throw std::runtime_error("implement it");
+    }
+    else
+    {
+        throw std::runtime_error("can't retry initialization from current state");
+    }
+}
+
+bool PackManagerImpl::IsPaused() const
+{
+    return initIsPaused;
+}
+void PackManagerImpl::Pause() override;
+// end PackManager::IInitialization ////////////////////////////////////////
+
 void PackManagerImpl::Update()
 {
-    if (state != PackManager::InitState::Ready &&
-        state != PackManager::InitState::Error)
+    if (initState != PackManager::InitState::Ready &&
+        initState != PackManager::InitState::Error)
     {
         ContinueInitialization();
     }
@@ -71,20 +135,20 @@ void PackManagerImpl::ContinueInitialization()
     //        MountingDownloadedPacks,
     //        Ready,
     //        Error
-    if (PackManager::InitState::Starting == state)
+    if (PackManager::InitState::Starting == initState)
     {
-        state = PackManager::InitState::MountingLocalPacks;
+        initState = PackManager::InitState::MountingLocalPacks;
     }
-    else if (PackManager::InitState::MountingLocalPacks == state)
+    else if (PackManager::InitState::MountingLocalPacks == initState)
     {
         MountDownloadedPacks(localPacksDir);
-        state = PackManager::InitState::LoadingRequestFooter;
+        initState = PackManager::InitState::LoadingRequestFooter;
     }
-    else if (PackManager::InitState::LoadingRequestFooter == state)
+    else if (PackManager::InitState::LoadingRequestFooter == initState)
     {
         if (IsFinishingLoadingFooter())
         {
-            state = PackManager::InitState::LoadingRequestFileTable;
+            initState = PackManager::InitState::LoadingRequestFileTable;
         }
     }
 }

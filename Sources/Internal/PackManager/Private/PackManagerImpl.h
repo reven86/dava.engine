@@ -7,7 +7,7 @@ namespace DAVA
 {
 struct PackPriorityComparator;
 
-class PackManagerImpl
+class PackManagerImpl : public PackManager::IInitialization
 {
 public:
     PackManagerImpl() = default;
@@ -18,6 +18,16 @@ public:
                     const String& packUrlCommon,
                     const String& packUrlGpu,
                     PackManager* packManager_);
+
+    // start PackManager::IInitialization ///////////////////////////////
+    PackManager::InitState GetState() const override;
+    PackManager::InitError GetError() const override;
+    const String& GetErrorMessage() const override;
+    bool CanRetry() const override;
+    void Retry() override;
+    bool IsPaused() const override;
+    void Pause() override; // if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "Retry"
+    // end PackManager::IInitialization /////////////////////////////////
 
     bool IsProcessingEnabled() const;
 
@@ -64,7 +74,9 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
-    PackManager::InitState state = PackManager::InitState::Starting;
+    String initErrorMsg;
+    PackManager::InitState initState = PackManager::InitState::FirstInit;
+    PackManager::InitError initError = PackManager::InitError::AllGood;
 };
 
 struct PackPriorityComparator

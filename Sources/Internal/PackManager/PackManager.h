@@ -12,7 +12,7 @@ class PackManager final
 public:
     enum class InitState : uint32
     {
-
+        FirstInit,
         Starting, // if not exist local DB in ~doc copy it from local resources (on first start)
 
         MountingLocalPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
@@ -78,16 +78,18 @@ public:
         bool isGPU = false;
     };
 
-    class IInitInterface
+    class IInitialization
     {
     public:
-        virtual ~IInitInterface();
+        virtual ~IInitialization();
 
         virtual InitState GetState() const = 0;
         virtual InitError GetError() const = 0;
         virtual const String& GetErrorMessage() const = 0;
         virtual bool CanRetry() const = 0;
         virtual void Retry() = 0;
+        virtual bool IsPaused() const = 0;
+        virtual void Pause() = 0; // if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "Retry"
     };
 
     // proxy interface to easily check pack request progress
@@ -105,7 +107,7 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<IInitInterface&> initStatChanged;
+    Signal<IInitialization&> initStatChanged;
     // signal user about every pack state change
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
@@ -126,6 +128,8 @@ public:
                     const FilePath& readOnlyPacksDir, // can be empty
                     const String& packsUrlCommon,
                     const String& architecture);
+
+    IInitialization& GetInitialization();
 
     bool IsRequestingEnabled() const;
     // enable user request processing

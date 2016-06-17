@@ -17,18 +17,24 @@ void PackManager::Initialize(const String& dbFileName_,
                              const FilePath& downloadPacksDir_,
                              const FilePath& readOnlyPacksDir_,
                              const String& packsUrlCommon_,
-                             const String& packsUrlGpu_)
+                             const String& architecture_)
 {
     if (!FileSystem::Instance()->IsFile(dbFileName_))
     {
         throw std::runtime_error("can't find: " + dbFileName_);
     }
+
     if (!FileSystem::Instance()->IsDirectory(downloadPacksDir_))
     {
         throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
     }
 
-    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, packStateChanged, packDownloadChanged, requestProgressChanged);
+    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, architecture_, this);
+}
+
+PackManager::IInitialization& PackManager::GetInitialization()
+{
+    return *impl;
 }
 
 bool PackManager::IsRequestingEnabled() const
