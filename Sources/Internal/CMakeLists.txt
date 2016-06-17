@@ -4,14 +4,11 @@ if( WIN32 AND NOT WINDOWS_UAP  )
 endif()
 include ( DavaLibs             )
 
-if ( WIN32 AND NOT WINDOWS_UAP )
-    add_subdirectory ( "${DAVA_EXTERNAL_DIR}/cef" ${CMAKE_CURRENT_BINARY_DIR}/cef )
-    list ( APPEND DEFINITIONS -DDISABLE_NATIVE_WEBVIEW )
-endif ()
-
 set( NAME_MODULE DavaFramework )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
+
+set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -74,7 +71,7 @@ set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_
 set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
-set( SOURCE_FOLDERS                 "." )
+set( SRC_FOLDERS                    "." )
 
 set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    
@@ -118,6 +115,8 @@ set( DEFINITIONS_PRIVATE_IOS        -DDDARWIN_NO_CARBON )
 set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )
 set( DEFINITIONS_PRIVATE_ANDROID    -D__ANDROID__ )
 set( DEFINITIONS_PRIVATE_WINUAP     -DSQLITE_OS_WINRT=1 )
+set( DEFINITIONS_PRIVATE_WIN        -DDISABLE_NATIVE_WEBVIEW )
+
 
 if( DAVA_DISABLE_AUTOTESTS  )
     list( APPEND DEFINITIONS -DDISABLE_AUTOTESTS )

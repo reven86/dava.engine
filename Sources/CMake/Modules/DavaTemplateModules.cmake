@@ -3,7 +3,10 @@ set(  MAIN_MODULE_VALUES
 NAME_MODULE                            #
 MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
 #
-SOURCE_FOLDERS             
+EXTERNAL_MODULES
+EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
+#
+SRC_FOLDERS             
 ERASE_FOLDERS              
 ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}   
 #
@@ -50,6 +53,23 @@ BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
 )
+#
+macro ( load_external_modules EXTERNAL_MODULES )
+    foreach( FOLDER_MODULE ${EXTERNAL_MODULES} )
+        file( GLOB FIND_CMAKELIST "${FOLDER_MODULE}/CMakeLists.txt" )
+        if( FIND_CMAKELIST )
+            get_filename_component ( FOLDER_NAME ${FOLDER_MODULE} NAME )
+            add_subdirectory ( ${FOLDER_MODULE}  ${FOLDER_NAME} )       
+        else()
+            file( GLOB LIST ${FOLDER_MODULE} )
+            foreach( ITEM ${LIST} )
+                if( IS_DIRECTORY ${ITEM} )
+                    load_external_modules( ${ITEM} )
+                endif()
+            endforeach()
+        endif()
+    endforeach()
+endmacro()
 #
 macro( setup_main_module )
 
@@ -138,21 +158,30 @@ macro( setup_main_module )
              list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
         endif()
 
-        if( SOURCE_FOLDERS )
+
+        set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ) 
+        
+        if( SRC_FOLDERS OR EXTERNAL_MODULES )
 
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set( ${VALUE}_DIR_NAME ${${VALUE}} )
-                set( ${VALUE}  )
+                set( ${VALUE})
             endforeach()
-
-            define_source_folders  ( SRC_ROOT            ${SOURCE_FOLDERS_DIR_NAME}
-                                     ERASE_FOLDERS       ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+            
+            if( SRC_FOLDERS_DIR_NAME )
+                define_source_folders  ( SRC_ROOT            ${SRC_FOLDERS_DIR_NAME}
+                                         ERASE_FOLDERS       ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                                         
+                set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+            endif()
+ 
+            if( EXTERNAL_MODULES_DIR_NAME )
+                load_external_modules( "${EXTERNAL_MODULES_DIR_NAME}" )
+            endif()
 
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set(  ${VALUE} ${${VALUE}_DIR_NAME} )
             endforeach()
-
-            set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 
         endif()
 
