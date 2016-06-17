@@ -1259,7 +1259,7 @@ _ExecuteQueuedCommandsDX11()
         // do present
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
-        _D3D11_SwapChain->Present(1, 0);
+        _D3D11_SwapChain->Present(0, 0);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
 
         if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
