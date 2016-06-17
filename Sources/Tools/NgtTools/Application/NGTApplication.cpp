@@ -44,6 +44,7 @@ BaseApplication::~BaseApplication()
 
 void BaseApplication::LoadPlugins()
 {
+    ConfigureLineCommand(commandLineParser);
     DAVA::Vector<DAVA::WideString> pluginList;
     GetPluginsForLoad(pluginList);
 
@@ -94,6 +95,23 @@ int BaseApplication::StartApplication()
     wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
     DVASSERT(app != nullptr);
     return app->startApplication();
+}
+
+void BaseApplication::OnPostLoadPugins()
+{
+}
+
+void BaseApplication::OnPreUnloadPlugins()
+{
+}
+
+bool BaseApplication::OnRequestCloseApp()
+{
+    return true;
+}
+
+void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
+{
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const

@@ -5,6 +5,11 @@
 
 class QtMainWindow;
 class NGTCommand;
+namespace NGTLayer
+{
+class NGTCmdLineParser;
+}
+
 namespace wgt
 {
 class ICommandManager;
@@ -23,6 +28,7 @@ protected:
     void OnPostLoadPugins() override;
     void OnPreUnloadPlugins() override;
     bool OnRequestCloseApp() override;
+    void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;
 
 private:
     wgt::ICommandManager* commandManager = nullptr;

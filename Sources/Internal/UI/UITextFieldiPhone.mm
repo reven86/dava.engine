@@ -74,7 +74,14 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
     UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
     UIView* view = textFieldHolder->textCtrl;
-    [view setValue:col forKey:@"textColor"];
+    UILabel* label = static_cast<UILabel*>(view);
+    if (nullptr != label)
+    {
+        if (![label.textColor isEqual:col])
+        {
+            label.textColor = col;
+        }
+    }
 
     isNeedToUpdateTexture = true;
 }
