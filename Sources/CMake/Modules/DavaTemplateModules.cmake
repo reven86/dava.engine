@@ -43,8 +43,10 @@ DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
 FIND_SYSTEM_LIBRARY                   
 FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
 #
-DEPLOY_TO_BIN
-DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
+BINARY_DIR_WIN
+BINARY_WIN32_DIR_RELEASE
+BINARY_WIN32_DIR_DEBUG
+BINARY_WIN32_DIR_RELWITHDEB
 )
 #
 macro( setup_main_module )
@@ -176,8 +178,14 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
-                DEPLOY_TO_BIN
-                DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
+                INCLUDES
+                INCLUDES_${DAVA_PLATFORM_CURENT}
+                INCLUDES_PRIVATE
+                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                
+                BINARY_DIR_WIN
+                BINARY_WIN32_DIR_RELEASE
+                BINARY_WIN32_DIR_DEBUG
+                BINARY_WIN32_DIR_RELWITHDEB
                 )
 
         load_property( PROPERTY_LIST 
@@ -187,6 +195,10 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
+                INCLUDES
+                INCLUDES_${DAVA_PLATFORM_CURENT}
+                INCLUDES_PRIVATE
+                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                  
                 )
 
 
@@ -201,10 +213,10 @@ macro( setup_main_module )
         #"INCLUDES_DIR"
         load_property( PROPERTY_LIST INCLUDES )
         if( INCLUDES )
-            include_directories( ${INCLUDES} )  
+            include_directories( "${INCLUDES}" )  
         endif()
         if( INCLUDES_${DAVA_PLATFORM_CURENT} )
-            include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )  
+            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
@@ -282,7 +294,9 @@ macro( setup_main_module )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
-            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )            
+            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )     
+            reset_property( INCLUDES_PRIVATE )            
+            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )            
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )

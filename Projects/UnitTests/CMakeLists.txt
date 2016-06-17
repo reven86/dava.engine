@@ -14,7 +14,7 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 include      ( CMake-common )
 
 find_package( Steam REQUIRED )
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS Sound CEFWebview )
 if ( WIN32 OR MACOS )
 	find_package(DavaTools REQUIRED )
 endif()

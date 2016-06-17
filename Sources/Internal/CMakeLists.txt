@@ -4,6 +4,8 @@ if( WIN32 AND NOT WINDOWS_UAP  )
 endif()
 include ( DavaLibs             )
 
+add_subdirectory ( "${DAVA_EXTERNAL_DIR}/cef" ${CMAKE_CURRENT_BINARY_DIR}/cef )
+
 set( NAME_MODULE DavaFramework )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
