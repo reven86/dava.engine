@@ -51,6 +51,15 @@ public:
     }
 };
 
+template <typename T>
+struct StructureWrapperCreator
+{
+    static StructureWrapper* Create()
+    {
+        return new StructureWrapperDefault<T>();
+    }
+};
+
 } // namespace DAVA
 
 #endif

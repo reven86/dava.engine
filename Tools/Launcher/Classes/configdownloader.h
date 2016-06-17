@@ -32,6 +32,7 @@ private:
     ApplicationManager* appManager = nullptr;
     QNetworkAccessManager* networkManager = nullptr;
     QList<QNetworkReply*> requests;
+    bool aborted = false;
 };
 
 #endif // CONFIGDOWNLOADER_H

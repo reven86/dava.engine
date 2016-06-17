@@ -2,6 +2,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/SystemTimer.h"
 #include "Render/RenderCallbacks.h"
+#include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
@@ -185,6 +186,7 @@ void CEFWebPageRender::AppyTexture()
     {
         RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, imageData.data(),
                                                         imageWidth, imageHeight, true));
+        texture->texDescriptor->pathname = "memoryfile_webview_page_render";
         texture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
         RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0,
