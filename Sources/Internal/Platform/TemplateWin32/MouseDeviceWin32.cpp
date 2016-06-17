@@ -15,6 +15,15 @@ void MouseDeviceWin32::SetCursorInCenter()
     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
     int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
     SetCursorPos(centerX, centerY);
+
+    if (needHideCursor)
+    {
+        // lock PC Win+L, after enter password, quickly press some button and hold it.
+        // result: mouse arrow didn't hide
+        needHideCursor = false;
+        SetSystemCursorVisibility(true);
+        SetSystemCursorVisibility(false);
+    }
 }
 
 bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
@@ -25,6 +34,7 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
+    Logger::Info("!!!! SetSystemCursorVisibility %d,    %d", int(show), int(wnd));
     if (show)
     {
         HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
@@ -55,6 +65,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
             lastCursorPosition.y = p.y;
 
             SetCursorInCenter();
+            needHideCursor = true;
         }
         else
         {
