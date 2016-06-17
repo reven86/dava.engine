@@ -2,6 +2,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "UI/UIEvent.h"
+
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 
@@ -15,6 +17,7 @@ void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 {
     using ::Windows::UI::Xaml::Window;
 
+#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     SwapChainPanel ^ swapchain = reinterpret_cast<SwapChainPanel ^>(DAVA::Core::Instance()->GetNativeView());
     DVASSERT(swapchain);
@@ -34,6 +37,7 @@ void MouseDeviceUWP::SetMode(eCaptureMode newMode)
                                 Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
                             });
     }
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void MouseDeviceUWP::SetCursorInCenter()

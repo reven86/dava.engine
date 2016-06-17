@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Platform/TemplateWin32/PrivateTextFieldWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -1149,3 +1151,4 @@ Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, in
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__

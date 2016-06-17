@@ -385,6 +385,8 @@ void EngineBackend::InitRenderer(WindowBackend* w)
     rhi::Api renderer = rhi::RHI_GLES2;
 #elif defined(__DAVAENGINE_WIN32__)
     rhi::Api renderer = rhi::RHI_DX9;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    rhi::Api renderer = rhi::RHI_DX11;
 #endif
 
     rendererParams.threadedRenderEnabled = true;

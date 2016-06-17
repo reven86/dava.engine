@@ -46,6 +46,9 @@ namespace DAVA
 {
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return true; // Alwayes break
+#else
     using namespace Windows::UI::Popups;
 
     enum eUserChoice
@@ -118,6 +121,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
         msg->ShowAsync(); // This is always async call
     }
     return USER_CHOOSE_BREAK == userChoice;
+#endif
 }
 
 } // namespace DAVA

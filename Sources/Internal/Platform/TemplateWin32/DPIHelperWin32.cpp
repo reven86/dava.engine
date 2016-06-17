@@ -39,7 +39,7 @@ Size2i DPIHelper::GetScreenSize()
 
 uint32 DPIHelper::GetScreenDPI()
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     uint32 d(0);
     auto func = [&d]()
@@ -57,7 +57,7 @@ uint32 DPIHelper::GetScreenDPI()
 
 float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     float64 scaleFactor = 0.0;
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     core->RunOnUIThreadBlocked([&scaleFactor]()
@@ -74,7 +74,7 @@ float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
 
 Size2i DPIHelper::GetScreenSize()
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__) && !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     uint32 w(0), h(0);
     auto func = [&w, &h]()

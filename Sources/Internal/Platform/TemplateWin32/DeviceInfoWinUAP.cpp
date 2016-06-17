@@ -208,6 +208,7 @@ void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& scree
         return;
     }
 
+#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
@@ -238,6 +239,7 @@ void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& scree
         CreateAndStartHIDWatcher();
         watchersCreated = true;
     }
+#endif // !__DAVAENGINE_COREV2__
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -315,6 +317,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     auto func = [type](HIDConvPair pair) -> bool {
         return pair.first == type;
     };
@@ -325,6 +328,7 @@ void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 
     DeviceInfo::HIDConnectionSignal* signal = &GetHIDConnectionSignal(hidType);
     core->RunOnMainThread([=] { signal->Emit(hidType, isConnected); });
+#endif // !__DAVAENGINE_COREV2__
 }
 
 eGPUFamily DeviceInfoPrivate::GPUFamily()

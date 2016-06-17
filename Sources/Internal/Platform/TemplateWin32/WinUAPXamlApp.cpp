@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -1155,3 +1157,4 @@ const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__

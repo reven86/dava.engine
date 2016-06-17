@@ -1,8 +1,8 @@
 #include "Core/Core.h"
 
-#if defined(__DAVAENGINE_WIN32__)
-
 #if !defined(__DAVAENGINE_COREV2__)
+
+#if defined(__DAVAENGINE_WIN32__)
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -15,8 +15,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     return DAVA::Core::Run(0, 0, hInstance);
 }
 
-#endif
-
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 [Platform::MTAThread]
@@ -26,3 +24,4 @@ int main(Platform::Array<Platform::String ^> ^ args)
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)
+#endif // !__DAVAENGINE_COREV2__
