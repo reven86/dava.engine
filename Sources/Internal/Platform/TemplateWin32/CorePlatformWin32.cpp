@@ -182,12 +182,34 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
         ZeroMemory(&dmi, sizeof(dmi));
     }
+    // calculate window area
+    RECT workArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+    int32 workWidth = workArea.right - workArea.left;
+    int32 workHeight = workArea.bottom - workArea.top;
+    // calculate border
+    RECT borderRect = { 0, 0, 0, 0 };
+    AdjustWindowRect(&borderRect, style, 0);
+    int32 borderWidth = borderRect.right - borderRect.left;
+    int32 borderHeight = borderRect.bottom - borderRect.top;
+    int32 maxWidth = workWidth - borderWidth;
+    int32 maxHeight = workHeight - borderHeight;
 
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
         windowedMode.height = options->GetInt32("height");
         windowedMode.bpp = options->GetInt32("bpp");
+
+        //check windowed sizes
+        if (windowedMode.width > maxWidth)
+        {
+            windowedMode.width = maxWidth;
+        }
+        if (windowedMode.height > maxHeight)
+        {
+            windowedMode.height = maxHeight;
+        }
 
         // get values from config in case if they are available
         fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
@@ -220,8 +242,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         realWidth = clientSize.right - clientSize.left;
         realHeight = clientSize.bottom - clientSize.top;
 
-        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-        windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+        windowLeft = (workWidth - realWidth) / 2 + workArea.left;
+        windowTop = (workHeight - realHeight) / 2 + workArea.top;
 
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
     }
