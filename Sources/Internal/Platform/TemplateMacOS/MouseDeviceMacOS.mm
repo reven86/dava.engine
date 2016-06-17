@@ -99,7 +99,7 @@ void MouseDeviceMacOS::OSXHideCursor()
 
 void* MouseDeviceMacOS::GetOrCreateBlankCursor()
 {
-    if (blankCursor)
+    if (blankCursor != nullptr)
     {
         return blankCursor;
     }
