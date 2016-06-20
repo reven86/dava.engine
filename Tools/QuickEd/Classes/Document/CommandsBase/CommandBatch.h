@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Document/CommandsBase/Command.h"
 #include "Base/BaseTypes.h"
 
