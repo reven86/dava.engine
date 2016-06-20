@@ -41,7 +41,7 @@ private:
     void commandExecuted(const wgt::CommandInstance& commandInstance, wgt::CommandOperation operation) override;
     void CleanCheck();
 
-    void OnHistoryIndexChanged(int currentIndex);
+    void HistoryIndexChanged(int currentIndex);
 
     void EnableConections();
     void DisableConnections();

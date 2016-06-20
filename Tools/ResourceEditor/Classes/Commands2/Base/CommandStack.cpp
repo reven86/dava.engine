@@ -172,15 +172,13 @@ CommandStack::CommandStack()
 
     ActiveCommandStack::Instance()->CommandStackCreated(this);
 
-    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::OnHistoryIndexChanged, this, std::placeholders::_1));
+    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::HistoryIndexChanged, this, std::placeholders::_1));
 }
 
 CommandStack::~CommandStack()
 {
     DisconnectEvents();
     ActiveCommandStack::Instance()->CommandStackDeleted(this);
-    DVASSERT(!indexChanged.enabled());
-    indexChanged.disconnect();
 }
 
 bool CommandStack::CanUndo() const
@@ -410,7 +408,7 @@ void CommandStack::commandExecuted(const wgt::CommandInstance& commandInstance, 
     }
 }
 
-void CommandStack::OnHistoryIndexChanged(int currentIndex)
+void CommandStack::HistoryIndexChanged(int currentIndex)
 {
     nextCommandIndex = currentIndex;
     CleanCheck();
