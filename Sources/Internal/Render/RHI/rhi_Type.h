@@ -667,7 +667,6 @@ struct Descriptor
         uint32 depthFailOperation : 3;
         uint32 depthStencilPassOperation : 3;
         uint32 pad32 : 20;
-        uint32 pad64 : 32;
     } stencilFront, stencilBack;
 
     Descriptor()
@@ -688,7 +687,6 @@ struct Descriptor
         stencilFront.depthStencilPassOperation = STENCILOP_KEEP;
         stencilFront.pad8 = 0;
         stencilFront.pad32 = 0;
-        stencilFront.pad64 = 0;
 
         stencilBack.readMask = 0xFF;
         stencilBack.writeMask = 0xFF;
@@ -699,7 +697,6 @@ struct Descriptor
         stencilBack.depthStencilPassOperation = STENCILOP_KEEP;
         stencilBack.pad8 = 0;
         stencilBack.pad32 = 0;
-        stencilBack.pad64 = 0;
     }
 };
 }
