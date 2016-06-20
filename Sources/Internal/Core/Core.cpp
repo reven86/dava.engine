@@ -748,6 +748,7 @@ void Core::GoForeground()
 
 void Core::FocusLost()
 {
+    UIControlSystem::Instance()->CancelAllInputs();
     InputSystem::Instance()->GetKeyboard().ClearAllKeys();
     if (core)
     {
