@@ -50,7 +50,7 @@ ImageSplitterDialog::~ImageSplitterDialog()
 
 void ImageSplitterDialog::ConnectSignals()
 {
-    connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathSelected(const QString&)));
+    connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathChanged(const QString&)));
 
     connect(ui->redImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     connect(ui->greenImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
@@ -70,9 +70,11 @@ void ImageSplitterDialog::ConnectSignals()
 
     connect(ui->reload, SIGNAL(clicked()), SLOT(OnReload()));
     connect(ui->reloadSpecular, SIGNAL(clicked()), SLOT(OnReloadSpecularMap()));
+
+    PathChanged(ui->path->text());
 }
 
-void ImageSplitterDialog::PathSelected(const QString& path)
+void ImageSplitterDialog::PathChanged(const QString& path)
 {
     if (path.isEmpty())
     {
@@ -156,7 +158,7 @@ void ImageSplitterDialog::OnRestoreClicked()
     ui->blueSpinBox->setValue(0);
     ui->alphaSpinBox->setValue(0);
 
-    PathSelected(QString::fromStdString(lastSelectedFile));
+    PathChanged(QString::fromStdString(lastSelectedFile));
 }
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
@@ -265,7 +267,7 @@ void ImageSplitterDialog::OnFillBtnClicked()
 void ImageSplitterDialog::OnReload()
 {
     const DAVA::FilePath path = ui->path->text().toStdString();
-    PathSelected(QString::fromStdString(path.GetAbsolutePathname()));
+    PathChanged(QString::fromStdString(path.GetAbsolutePathname()));
 }
 
 void ImageSplitterDialog::OnReloadSpecularMap()

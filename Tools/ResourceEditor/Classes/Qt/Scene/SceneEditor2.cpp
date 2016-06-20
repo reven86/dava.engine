@@ -268,9 +268,6 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
-        LoggerErrorHandler handler;
-        DAVA::Logger::AddCustomOutput(&handler);
-
         SceneExporter exporter;
         exporter.SetExportingParams(exportingParams);
 
@@ -279,21 +276,10 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;
-        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
-        exporter.ExportObjects(exportedObjects);
+        bool sceneExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        bool objectExported = exporter.ExportObjects(exportedObjects);
 
-        DAVA::Logger::RemoveCustomOutput(&handler);
-        if (handler.HasErrors())
-        {
-            const auto& errorLog = handler.GetErrors();
-            for (auto& error : errorLog)
-            {
-                DAVA::Logger::Error("Export error: %s", error.c_str());
-            }
-            return false;
-        }
-
-        return true;
+        return (sceneExported == true && objectExported == true);
     }
     return false;
 }

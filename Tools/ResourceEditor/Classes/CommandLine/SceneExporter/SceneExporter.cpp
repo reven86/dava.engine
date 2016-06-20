@@ -60,7 +60,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
 
 namespace SceneExporterInternal
 {
-void SaveExportedObjects(const FilePath& linkPathname, const SceneExporter::ExportedObjectCollection& exportedObjects)
+bool SaveExportedObjects(const FilePath& linkPathname, const SceneExporter::ExportedObjectCollection& exportedObjects)
 {
     ScopedPtr<File> linksFile(File::Create(linkPathname, File::CREATE | File::WRITE));
     if (linksFile)
@@ -70,14 +70,16 @@ void SaveExportedObjects(const FilePath& linkPathname, const SceneExporter::Expo
         {
             linksFile->WriteLine(Format("%d,%s", object.type, object.relativePathname.c_str()));
         }
+        return true;
     }
     else
     {
         Logger::Error("Cannot open file with links: %s", linkPathname.GetAbsolutePathname().c_str());
+        return false;
     }
 }
 
-void LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedObjectCollection& exportedObjects)
+bool LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedObjectCollection& exportedObjects)
 {
     ScopedPtr<File> linksFile(File::Create(linkPathname, File::OPEN | File::READ));
     if (linksFile)
@@ -112,12 +114,16 @@ void LoadExportedObjects(const FilePath& linkPathname, SceneExporter::ExportedOb
         else if (number != 1)
         {
             Logger::Error("Cannot read size value from file: %s", linkPathname.GetAbsolutePathname().c_str());
+            return false;
         }
     }
     else
     {
         Logger::Error("Cannot open file with links: %s", linkPathname.GetAbsolutePathname().c_str());
+        return false;
     }
+
+    return true;
 }
 
 inline bool IsEditorEntity(Entity* entity)
@@ -244,7 +250,7 @@ void SceneExporter::SetCacheClient(AssetCacheClient* cacheClient_, String machin
     cacheItemDescription.comment = comment;
 }
 
-void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String& sceneLink)
+bool SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String& sceneLink)
 {
     Logger::Info("Exporting of %s", sceneLink.c_str());
 
@@ -271,10 +277,10 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(cacheKey, &retrievedData);
         if (requested == AssetCache::Error::NO_ERRORS)
         {
-            retrievedData.ExportToFolder(outScenePathname.GetDirectory());
-            SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
-            ExportObjects(externalLinks);
-            return;
+            bool exportedToFolder = retrievedData.ExportToFolder(outScenePathname.GetDirectory());
+            bool objectsLoaded = SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
+            bool objectsExported = ExportObjects(externalLinks);
+            return exportedToFolder && objectsLoaded && objectsExported;
         }
         else
         {
@@ -282,9 +288,11 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
         }
     }
 
+    bool sceneExported = false;
+    bool objectsExported = false;
     { //has no scene in cache or using of cache is disabled. Export scene directly
-        ExportSceneFileInternal(scenePathname, externalLinks);
-        ExportObjects(externalLinks);
+        sceneExported = ExportSceneFileInternal(scenePathname, externalLinks);
+        objectsExported = ExportObjects(externalLinks);
     }
 
     if (cacheClient != nullptr && cacheClient->IsConnected())
@@ -307,15 +315,19 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
             Logger::Info("%s - failed to add to cache (%s)", scenePathname.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
+
+    return sceneExported && objectsExported;
 }
 
-void SceneExporter::ExportSceneFileInternal(const FilePath& scenePathname, ExportedObjectCollection& exportedObjects)
+bool SceneExporter::ExportSceneFileInternal(const FilePath& scenePathname, ExportedObjectCollection& exportedObjects)
 {
+    bool sceneExported = false;
+
     //Load scene from *.sc2
     ScopedPtr<Scene> scene(new Scene());
     if (SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scenePathname))
     {
-        ExportScene(scene, scenePathname, exportedObjects);
+        sceneExported = ExportScene(scene, scenePathname, exportedObjects);
     }
     else
     {
@@ -323,6 +335,7 @@ void SceneExporter::ExportSceneFileInternal(const FilePath& scenePathname, Expor
     }
 
     RenderObjectsFlusher::Flush();
+    return sceneExported;
 }
 
 namespace TextureDescriptorValidator
@@ -377,13 +390,13 @@ void CollectSourceImageInfo(const DAVA::TextureDescriptor& descriptor, DAVA::Vec
 }
 }
 
-void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const String& descriptorLink)
+bool SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const String& descriptorLink)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
     if (!descriptor)
     {
         Logger::Error("Can't create descriptor for pathname %s", descriptorPathname.GetAbsolutePathname().c_str());
-        return;
+        return false;
     }
 
     bool texturesExported = ExportTextures(*descriptor);
@@ -398,11 +411,13 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
             descriptor->Save(exportingParams.dataFolder + descriptorLink);
         }
     }
+
+    return texturesExported;
 }
 
 bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 {
-    DAVA::Map<DAVA::eGPUFamily, bool> exportedStatus;
+    DAVA::Map<DAVA::eGPUFamily, bool> exportFailed;
 
     { // compress images
 
@@ -416,9 +431,8 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                 DAVA::ImageFormat targetFormat = static_cast<DAVA::ImageFormat>(descriptor.compression[gpu].imageFormat);
                 if (exportingParams.useHDTextures && (targetFormat != DAVA::ImageFormat::IMAGE_FORMAT_DDS && targetFormat != IMAGE_FORMAT_PVR))
                 {
-                    Logger::Error("Can't create HD texture for ", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
-
-                    exportedStatus[gpu] = false;
+                    Logger::Error("HD texture will not be created for exported %s for GPU 'origin'", descriptor.pathname.GetStringValue().c_str());
+                    exportFailed[gpu] = true;
                     continue;
                 }
             }
@@ -427,9 +441,8 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                 DAVA::PixelFormat format = descriptor.GetPixelFormatForGPU(gpu);
                 if (format == DAVA::PixelFormat::FORMAT_INVALID)
                 {
-                    Logger::Error("Not selected export format for pathname %s for %s", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
-
-                    exportedStatus[gpu] = false;
+                    Logger::Error("Texture %s has not pixel format specified for GPU %s", descriptor.pathname.GetStringValue().c_str(), GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
+                    exportFailed[gpu] = true;
                     continue;
                 }
 
@@ -439,21 +452,19 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                     {
                         Logger::Error("Can't export non-square texture %s into compression format %s",
                                       descriptor.pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(format));
-
-                        exportedStatus[gpu] = false;
+                        exportFailed[gpu] = true;
                         break;
                     }
                     else if (!TextureDescriptorValidator::IsImageSizeValidForTextures(imgInfo))
                     {
                         Logger::Error("Can't export small sized texture %s into compression format %s",
                                       descriptor.pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(format));
-
-                        exportedStatus[gpu] = false;
+                        exportFailed[gpu] = true;
                         break;
                     }
                 }
 
-                if (exportedStatus.count(gpu) == 0)
+                if (exportFailed.count(gpu) == 0)
                 {
                     SceneExporterLocal::CompressNotActualTexture(gpu, exportingParams.quality, descriptor);
                 }
@@ -461,7 +472,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
             else if (gpu != DAVA::eGPUFamily::GPU_ORIGIN)
             {
                 Logger::Error("Has no code for GPU %d (%s)", gpu, GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(gpu));
-                exportedStatus[gpu] = false;
+                exportFailed[gpu] = true;
             }
         }
     }
@@ -472,7 +483,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
     { // copy or separate images
         for (DAVA::eGPUFamily gpu : exportingParams.exportForGPUs)
         {
-            if (exportedStatus.count(gpu) != 0)
+            if (exportFailed.count(gpu) != 0)
             { // found errors on compress step
                 continue;
             }
@@ -513,17 +524,17 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 
             if (!copied)
             {
-                exportedStatus[gpu] = false;
+                exportFailed[gpu] = true;
             }
         }
     }
 
-    return exportedStatus.empty();
+    return exportFailed.empty();
 }
 
-void SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const String& heightmapLink)
+bool SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const String& heightmapLink)
 {
-    CopyFile(heightmapPathname, heightmapLink);
+    return CopyFile(heightmapPathname, heightmapLink);
 }
 
 bool SceneExporter::SplitCompressedFile(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu) const
@@ -695,7 +706,7 @@ bool SceneExporter::ExportScene(Scene* scene, const FilePath& scenePathname, Exp
     return true;
 }
 
-void SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObjects)
+bool SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObjects)
 {
     UnorderedSet<String> folders;
     folders.reserve(exportedObjects.size());
@@ -722,23 +733,28 @@ void SceneExporter::ExportObjects(const ExportedObjectCollection& exportedObject
         FileSystem::Instance()->CreateDirectory(outFolderString + folder, true);
     }
 
-    using ExporterFunction = Function<void(const FilePath&, const String&)>;
+    using ExporterFunction = Function<bool(const FilePath&, const String&)>;
     Array<ExporterFunction, OBJECT_COUNT> exporters =
     { { MakeFunction(this, &SceneExporter::ExportSceneFile),
         MakeFunction(this, &SceneExporter::ExportTextureFile),
         MakeFunction(this, &SceneExporter::ExportHeightmapFile) } };
 
+    bool exportIsOk = true;
     for (const auto& object : exportedObjects)
     {
         if (object.type != OBJECT_NONE && object.type < OBJECT_COUNT)
         {
             FilePath path(inFolderString + object.relativePathname);
-            exporters[object.type](path, object.relativePathname);
+            bool currentResult = exporters[object.type](path, object.relativePathname);
+            exportIsOk = exportIsOk && currentResult;
         }
         else
         {
             Logger::Error("Found wrong path: %s", object.relativePathname.c_str());
+            exportIsOk = false;
             continue; //need continue exporting of resources in any case.
         }
     }
+
+    return exportIsOk;
 }

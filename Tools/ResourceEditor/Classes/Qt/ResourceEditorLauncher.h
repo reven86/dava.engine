@@ -46,10 +46,6 @@ inline void ResourceEditorLauncher::OnProjectOpened(const QString&)
     DVASSERT(QtMainWindow::Instance() != nullptr);
     QtMainWindow::Instance()->SetupTitle();
     QtMainWindow::Instance()->OnSceneNew();
-
-    DVASSERT(QtMainWindow::Instance() != nullptr);
-    QtMainWindow::Instance()->SetupTitle();
-    QtMainWindow::Instance()->OnSceneNew();
 }
 
 #endif // __RESOURCEEDITOR_LAUNCHER_H__

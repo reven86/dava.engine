@@ -35,6 +35,8 @@ void ExportSceneDialog::SetupUI()
     static const int UI_WIDTH = 160;
     static const int UI_HEIGHT = 20;
 
+    setWindowTitle("Export scene");
+
     QGridLayout* dialogLayout = new QGridLayout();
     dialogLayout->setColumnStretch(0, 1);
     dialogLayout->setColumnStretch(1, 1);
@@ -42,7 +44,8 @@ void ExportSceneDialog::SetupUI()
     DVASSERT(projectPathBrowser == nullptr); // to prevent several calls of this functions
     projectPathBrowser = new FilePathBrowser(this);
     projectPathBrowser->SetType(FilePathBrowser::Folder);
-    projectPathBrowser->setMinimumSize(UI_WIDTH * 3, UI_HEIGHT);
+    projectPathBrowser->AllowInvalidPath(true);
+    projectPathBrowser->setMinimumWidth(UI_WIDTH * 3);
     dialogLayout->addWidget(projectPathBrowser, 0, 0, 1, 0);
 
     { //GPU
@@ -115,12 +118,12 @@ void ExportSceneDialog::SetupUI()
         exportButton->setFixedHeight(UI_HEIGHT);
         connect(exportButton, &QPushButton::clicked, this, &QDialog::accept);
 
-        dialogLayout->addWidget(cancelButton, 2, 0);
-        dialogLayout->addWidget(exportButton, 2, 1);
+        dialogLayout->addWidget(exportButton, 2, 0);
+        dialogLayout->addWidget(cancelButton, 2, 1);
     }
 
     setLayout(dialogLayout);
-    setFixedHeight(220);
+    setFixedHeight(sizeHint().height());
 }
 
 void ExportSceneDialog::InitializeValues()

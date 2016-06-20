@@ -348,11 +348,13 @@ void CachedItemValue::Free()
     }
 }
 
-void CachedItemValue::ExportToFolder(const FilePath& folder) const
+bool CachedItemValue::ExportToFolder(const FilePath& folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
 
     FileSystem::Instance()->CreateDirectory(folder, true);
+
+    bool exportResult = true;
 
     for (const auto& dc : dataContainer)
     {
@@ -375,8 +377,11 @@ void CachedItemValue::ExportToFolder(const FilePath& folder) const
         else
         {
             Logger::Error("[CachedItemValue::%s] Cannot create file %s", __FUNCTION__, savedPath.GetStringValue().c_str());
+            exportResult = false;
         }
     }
+
+    return exportResult;
 }
 
 size_type CachedItemValue::GetItemCount() const

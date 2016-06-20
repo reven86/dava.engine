@@ -23,7 +23,6 @@ public:
     };
 
     explicit FilePathBrowser(QWidget* parent = NULL);
-    ~FilePathBrowser();
 
     void SetHint(const QString& hint);
     void SetDefaultFolder(const QString& path);
@@ -33,6 +32,7 @@ public:
     void SetFilter(const QString& filter);
 
     void SetType(eFileType type);
+    void AllowInvalidPath(bool allow);
 
     QSize sizeHint() const;
 
@@ -41,8 +41,7 @@ protected:
 
 private slots:
     void OnBrowse();
-    void OnReturnPressed();
-    void ValidatePath();
+    void TryToAcceptPath();
 
 private:
     void InitButtons();

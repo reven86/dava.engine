@@ -65,7 +65,7 @@ public:
 
     size_type GetItemCount() const;
 
-    void ExportToFolder(const FilePath& folder) const;
+    bool ExportToFolder(const FilePath& folder) const;
     bool ExportToFile(const FilePath& filePath) const;
 
     void SetDescription(const Description& description);

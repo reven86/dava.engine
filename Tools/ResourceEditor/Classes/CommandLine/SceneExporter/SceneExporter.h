@@ -59,16 +59,16 @@ public:
     void SetExportingParams(const SceneExporter::Params& exportingParams);
 
     bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
-    void ExportObjects(const ExportedObjectCollection& exportedObjects);
+    bool ExportObjects(const ExportedObjectCollection& exportedObjects);
 
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, DAVA::String machineName, DAVA::String runDate, DAVA::String comment);
 
 private:
-    void ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
-    void ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
-    void ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
+    bool ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
+    bool ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
+    bool ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
 
-    void ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
+    bool ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
 
     bool ExportTextures(DAVA::TextureDescriptor& descriptor);
 
