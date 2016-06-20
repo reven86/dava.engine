@@ -1,4 +1,4 @@
-#include "blending.cgh"
+blending : src=one dst=inv_src_alpha
 
 #define GRADIENT_MULTIPLY 0
 #define GRADIENT_BLEND    1
@@ -50,11 +50,12 @@ FPROG_BEGIN
     #elif GRADIENT_MODE == GRADIENT_OVERLAY
         float3 overlayLow = 2.0 * detailColor.rgb * gradientColor.rgb;
         float3 overlayHi = float3(1.0, 1.0, 1.0) - 2.0* (float3(1.0, 1.0, 1.0)-detailColor.rgb) * (float3(1.0, 1.0, 1.0) - gradientColor.rgb);
-        float3 detailImpactColor = lerp(overlayLow, overlayHi, step( 0.5, detailColor.rgb));
+        float3 detailImpactColor = lerp(overlayLow, overlayHi, step(0.5, detailColor.rgb));
         float4 detailImpact = float4(detailImpactColor, maskColor);
     #endif
-    
-    float4 resColor = lerp(detailImpact, contourColor.rgba, contourColor.a);
+
+    float3 detailPremult = detailImpact.rgb*detailImpact.a;
+    float4 resColor = float4((contourColor.rgb-detailPremult)*contourColor.a+detailPremult, detailImpact.a + contourColor.a);
 
     resColor = resColor * float4(in_color);
 

@@ -13,6 +13,7 @@
 #include "Render/Texture.h"
 
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -227,7 +228,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
 {
     DVASSERT(!reflectionPass);
 
-    reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD);
+    reflectionPass = new WaterReflectionRenderPass(PASS_REFLECTION_REFRACTION);
     reflectionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
     reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
@@ -236,7 +237,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
 
-    refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
+    refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
@@ -264,6 +265,16 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* re
             RenderBatch* batch = waterLayerBatches.Get(i);
             waterBox.AddAABBox(batch->GetRenderObject()->GetWorldBoundingBox());
         }
+    }
+
+    const float32* clearColor = Color::Black.color;
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        clearColor = static_cast<const float32*>(Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR));
+
+    for (int32 i = 0; i < 4; ++i)
+    {
+        reflectionPass->GetPassConfig().colorBuffer[0].clearColor[i] = clearColor[i];
+        refractionPass->GetPassConfig().colorBuffer[0].clearColor[i] = clearColor[i];
     }
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
@@ -385,6 +396,12 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
+
     BeginRenderPass();
     DrawLayers(currMainCamera);
     EndRenderPass();
@@ -434,6 +451,12 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
 
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
+
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
 
     BeginRenderPass();
     DrawLayers(currMainCamera);
