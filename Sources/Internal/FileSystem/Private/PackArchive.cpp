@@ -6,6 +6,81 @@
 
 namespace DAVA
 {
+void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
+                                       const Vector<char>& tmpBuffer,
+                                       String& fileNames,
+                                       PackFormat::PackFile::FilesTableBlock& fileTableBlock)
+{
+    Vector<uint8>& compressedNamesBuffer = fileTableBlock.names.compressedNames;
+    compressedNamesBuffer.resize(footerBlock.info.namesSizeCompressed, '\0');
+
+    uint32 sizeOfFilesData = footerBlock.info.numFiles * sizeof(PackFormat::FileTableEntry);
+    const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
+
+    fileTableBlock.names.compressedNames.resize(footerBlock.info.namesSizeCompressed);
+
+    std::copy_n(startOfCompressedNames, footerBlock.info.namesSizeCompressed, reinterpret_cast<char*>(fileTableBlock.names.compressedNames.data()));
+
+    Vector<uint8> originalNamesBuffer;
+    originalNamesBuffer.resize(footerBlock.info.namesSizeOriginal);
+    if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
+    {
+        throw std::runtime_error("can't uncompress file names");
+    }
+
+    fileNames = String(begin(originalNamesBuffer), end(originalNamesBuffer));
+
+    Vector<PackFormat::FileTableEntry>& fileTable = fileTableBlock.data.files;
+    fileTable.resize(footerBlock.info.numFiles);
+
+    const PackFormat::FileTableEntry* startFilesData = reinterpret_cast<const PackFormat::FileTableEntry*>(tmpBuffer.data());
+
+    std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
+}
+
+void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
+                                const String& fileNames,
+                                UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData,
+                                Vector<ResourceArchive::FileInfo>& filesInfo)
+{
+    filesInfo.reserve(packFile.footer.info.numFiles);
+
+    size_t numFiles =
+    std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
+                  {
+                      return '\0' == ch;
+                  });
+
+    const Vector<PackFormat::FileTableEntry>& fileTable = packFile.filesTable.data.files;
+
+    if (numFiles != fileTable.size())
+    {
+        throw std::runtime_error("number of file names not match with table");
+    }
+
+    // now fill support structures for fast search by filename
+    size_t fileNameIndex{ 0 };
+
+    std::for_each(begin(fileTable), end(fileTable), [&](PackFormat::FileTableEntry& fileEntry)
+                  {
+                      const char* fileNameLoc = &fileNames[fileNameIndex];
+                      mapFileData.emplace(fileNameLoc, &fileEntry);
+
+                      ResourceArchive::FileInfo info;
+
+                      info.relativeFilePath = fileNameLoc;
+                      info.originalSize = fileEntry.originalSize;
+                      info.compressedSize = fileEntry.compressedSize;
+                      info.crc32 = fileEntry.compressedCrc32;
+                      info.compressionType = fileEntry.type;
+
+                      filesInfo.push_back(info);
+
+                      fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
+                      ++fileNameIndex;
+                  });
+}
+
 PackArchive::PackArchive(const FilePath& archiveName)
 {
     using namespace PackFormat;
@@ -69,65 +144,11 @@ PackArchive::PackArchive(const FilePath& archiveName)
         throw std::runtime_error("crc32 not match in filesTable in file: " + fileName);
     }
 
-    Vector<uint8>& compressedNamesBuffer = packFile.filesTable.names.compressedNames;
-    compressedNamesBuffer.resize(packFile.footer.info.namesSizeCompressed, '\0');
+    String fileNames;
 
-    uint32 sizeOfFilesData = packFile.footer.info.numFiles * sizeof(FileTableEntry);
-    const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
+    ExtractFileTableData(footerBlock, tmpBuffer, fileNames, packFile.filesTable);
 
-    packFile.filesTable.names.compressedNames.resize(packFile.footer.info.namesSizeCompressed);
-
-    std::copy_n(startOfCompressedNames, packFile.footer.info.namesSizeCompressed, reinterpret_cast<char*>(packFile.filesTable.names.compressedNames.data()));
-
-    Vector<uint8> originalNamesBuffer;
-    originalNamesBuffer.resize(packFile.footer.info.namesSizeOriginal);
-    if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
-    {
-        throw std::runtime_error("can't uncompress file names");
-    }
-
-    String fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
-
-    Vector<FileTableEntry>& fileTable = packFile.filesTable.data.files;
-    fileTable.resize(footerBlock.info.numFiles);
-
-    FileTableEntry* startFilesData = reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
-
-    std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
-
-    filesInfo.reserve(footerBlock.info.numFiles);
-
-    size_t numFiles =
-    std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
-                  {
-                      return '\0' == ch;
-                  });
-    if (numFiles != fileTable.size())
-    {
-        throw std::runtime_error("number of file names not match with table");
-    }
-
-    // now fill support structures for fast search by filename
-    size_t fileNameIndex{ 0 };
-
-    std::for_each(begin(fileTable), end(fileTable), [&](FileTableEntry& fileEntry)
-                  {
-                      const char* fileNameLoc = &fileNames[fileNameIndex];
-                      mapFileData.emplace(fileNameLoc, &fileEntry);
-
-                      ResourceArchive::FileInfo info;
-
-                      info.relativeFilePath = fileNameLoc;
-                      info.originalSize = fileEntry.originalSize;
-                      info.compressedSize = fileEntry.compressedSize;
-                      info.crc32 = fileEntry.compressedCrc32;
-                      info.compressionType = fileEntry.type;
-
-                      filesInfo.push_back(info);
-
-                      fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
-                      ++fileNameIndex;
-                  });
+    FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
 }
 
 const Vector<ResourceArchive::FileInfo>& PackArchive::GetFilesInfo() const

@@ -78,10 +78,10 @@ public:
         bool isGPU = false;
     };
 
-    class IInitialization
+    class IInit
     {
     public:
-        virtual ~IInitialization();
+        virtual ~IInit();
 
         virtual InitState GetState() const = 0;
         virtual InitError GetError() const = 0;
@@ -107,7 +107,7 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<IInitialization&> initStatChanged;
+    Signal<IInit&> initStateChanged;
     // signal user about every pack state change
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
@@ -129,7 +129,7 @@ public:
                     const String& packsUrlCommon,
                     const String& architecture);
 
-    IInitialization& GetInitialization();
+    IInit& GetInitialization();
 
     bool IsRequestingEnabled() const;
     // enable user request processing

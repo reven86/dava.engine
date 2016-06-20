@@ -32,7 +32,7 @@ void PackManager::Initialize(const String& dbFileName_,
     impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, architecture_, this);
 }
 
-PackManager::IInitialization& PackManager::GetInitialization()
+PackManager::IInit& PackManager::GetInitialization()
 {
     return *impl;
 }

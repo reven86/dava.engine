@@ -2,6 +2,7 @@
 #include "FileSystem/FileList.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
+#include "FileSystem/Private/PackArchive.h"
 
 namespace DAVA
 {
@@ -85,6 +86,8 @@ bool PackManagerImpl::CanRetry() const
     case PackManager::InitState::Ready:
         return false;
     }
+    DVASSERT(false && "add state");
+    return false;
 }
 
 void PackManagerImpl::Retry()
@@ -102,27 +105,37 @@ void PackManagerImpl::Retry()
 
 bool PackManagerImpl::IsPaused() const
 {
-    return initIsPaused;
+    return initPaused;
 }
-void PackManagerImpl::Pause() override;
+
+void PackManagerImpl::Pause()
+{
+    if (initState != PackManager::InitState::Ready)
+    {
+        initPaused = true;
+    }
+}
 // end PackManager::IInitialization ////////////////////////////////////////
 
 void PackManagerImpl::Update()
 {
-    if (initState != PackManager::InitState::Ready &&
-        initState != PackManager::InitState::Error)
+    if (initPaused)
     {
-        ContinueInitialization();
-    }
-    else if (isProcessingEnabled)
-    {
-        requestManager->Update();
+        if (initState != PackManager::InitState::Ready)
+        {
+            ContinueInitialization();
+        }
+        else if (isProcessingEnabled)
+        {
+            requestManager->Update();
+        }
     }
 }
 
 void PackManagerImpl::ContinueInitialization()
 {
     // TODO
+    //        InitState
     //        Starting,
     //        MountingLocalPacks,
     //        LoadingRequestFooter,
@@ -135,21 +148,209 @@ void PackManagerImpl::ContinueInitialization()
     //        MountingDownloadedPacks,
     //        Ready,
     //        Error
-    if (PackManager::InitState::Starting == initState)
+    if (PackManager::InitState::FirstInit == initState)
     {
-        initState = PackManager::InitState::MountingLocalPacks;
+        FirstTimeInit();
+    }
+    else if (PackManager::InitState::Starting == initState)
+    {
+        InitStarting();
     }
     else if (PackManager::InitState::MountingLocalPacks == initState)
     {
-        MountDownloadedPacks(localPacksDir);
-        initState = PackManager::InitState::LoadingRequestFooter;
+        MountLocalPacks();
     }
-    else if (PackManager::InitState::LoadingRequestFooter == initState)
+    else if (PackManager::InitState::LoadingRequestAskFooter == initState)
     {
-        if (IsFinishingLoadingFooter())
+        AskFooter();
+    }
+    else if (PackManager::InitState::LoadingRequestGetFooter == initState)
+    {
+        GetFooter();
+    }
+    else if (PackManager::InitState::LoadingRequestAskFileTable == initState)
+    {
+        AskFileTable();
+    }
+    else if (PackManager::InitState::LoadingRequestGetFileTable == initState)
+    {
+        GetFileTable();
+    }
+    else if (PackManager::InitState::CalculateLocalDBHashAndCompare == initState)
+    {
+        CalcLocalDBWitnRemoteCrc32();
+    }
+    else if (PackManager::InitState::LoadingRequestAskDB == initState)
+    {
+        AskDB();
+    }
+    else if (PackManager::InitState::LoadingRequestGetDB == initState)
+    {
+        GetDB();
+    }
+    else if (PackManager::InitState::UnpakingDB == initState)
+    {
+        UnpackDB();
+    }
+    else if (PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash == initState)
+    {
+        DeleteOldPacks();
+    }
+    else if (PackManager::InitState::LoadingPacksDataFromLocalDB == initState)
+    {
+        LoadingPacksData();
+    }
+    else if (PackManager::InitState::MountingDownloadedPacks == initState)
+    {
+        MountDownloadedPacks();
+    }
+    else if (PackManager::InitState::Ready == initState)
+    {
+        // happy end
+    }
+}
+
+void PackManagerImpl::FirstTimeInit()
+{
+    DVASSERT(initState == PackManager::InitState::FirstInit);
+    initState = PackManager::InitState::Starting;
+}
+
+void PackManagerImpl::InitStarting()
+{
+    DVASSERT(initState != PackManager::InitState::FirstInit);
+    // you can be in any state and user can start REinitialization
+    initState = PackManager::InitState::MountingLocalPacks;
+}
+
+void PackManagerImpl::MountLocalPacks()
+{
+    MountPacks(localPacksDir);
+    initState = PackManager::InitState::LoadingRequestAskFooter;
+}
+
+void PackManagerImpl::AskFooter()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+
+    if (0 == fullSizeServerData)
+    {
+        if (0 == downloadTaskId)
         {
-            initState = PackManager::InitState::LoadingRequestFileTable;
+            downloadTaskId = dm->Download(packsUrlCommon, "", GET_SIZE);
         }
+        else
+        {
+            DownloadStatus status = DL_UNKNOWN;
+            if (dm->GetStatus(downloadTaskId, status))
+            {
+                if (DL_FINISHED == status)
+                {
+                    DownloadError error = DLE_NO_ERROR;
+                    dm->GetError(downloadTaskId, error);
+                    if (DLE_NO_ERROR == error)
+                    {
+                        if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
+                        {
+                            throw std::runtime_error("can't get size of file on server side");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (fullSizeServerData < sizeof(PackFormat::PackFile))
+        {
+            throw std::runtime_error("too small superpack on server");
+        }
+
+        uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
+        downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, &footerOnServer, downloadOffset, sizeof(footerOnServer));
+        DVASSERT(0 != downloadTaskId);
+        initState = PackManager::InitState::LoadingRequestGetFooter;
+    }
+}
+
+void PackManagerImpl::GetFooter()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    if (dm->GetStatus(downloadTaskId, status))
+    {
+        if (DL_FINISHED == status)
+        {
+            DownloadError error = DLE_NO_ERROR;
+            dm->GetError(downloadTaskId, error);
+            if (DLE_NO_ERROR == error)
+            {
+                uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerOnServer.info), sizeof(footerOnServer.info));
+                if (crc32 != footerOnServer.infoCrc32)
+                {
+                    throw std::runtime_error("on server bad superpack!!! Footer not match crc32");
+                }
+                usedPackFile.footer = footerOnServer;
+                initState = PackManager::InitState::LoadingRequestAskFileTable;
+            }
+            else
+            {
+                // TODO ask what to do from Client?
+                throw std::runtime_error("not implemented");
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("can't get status for download task");
+    }
+}
+
+void PackManagerImpl::AskFileTable()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    tmpFileTable.resize(footerOnServer.info.filesTableSize);
+
+    uint64 downloadOffset = fullSizeServerData - (sizeof(footerOnServer) + footerOnServer.info.filesTableSize);
+
+    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, tmpFileTable.data(), downloadOffset, static_cast<uint32>(tmpFileTable.size()));
+    DVASSERT(0 != downloadTaskId);
+    initState = PackManager::InitState::LoadingRequestGetFileTable;
+}
+
+void PackManagerImpl::GetFileTable()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    if (dm->GetStatus(downloadTaskId, status))
+    {
+        if (DL_FINISHED == status)
+        {
+            DownloadError error = DLE_NO_ERROR;
+            dm->GetError(downloadTaskId, error);
+            if (DLE_NO_ERROR == error)
+            {
+                uint32 crc32 = CRC32::ForBuffer(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
+                if (crc32 != footerOnServer.info.filesTableCrc32)
+                {
+                    throw std::runtime_error("on server bad superpack!!! FileTable not match crc32");
+                }
+
+                String fileNames;
+                PackArchive::ExtractFileTableData(footerOnServer, tmpFileTable, fileNames, usedPackFile.filesTable);
+
+                initState = PackManager::InitState::LoadingRequest;
+            }
+            else
+            {
+                // TODO ask what to do from Client?
+                throw std::runtime_error("not implemented");
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("can't get status for download task");
     }
 }
 
@@ -173,7 +374,7 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, fl
     return pack;
 }
 
-void PackManagerImpl::MountDownloadedPacks(const FilePath& packsDir)
+void PackManagerImpl::MountPacks(const FilePath& packsDir)
 {
     if (packsDir.IsEmpty())
     {

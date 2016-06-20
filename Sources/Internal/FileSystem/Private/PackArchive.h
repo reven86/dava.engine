@@ -16,6 +16,16 @@ public:
     bool HasFile(const String& relativeFilePath) const override;
     bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const override;
 
+    static void ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
+                                     const Vector<char>& tmpBuffer,
+                                     String& fileNames,
+                                     PackFormat::PackFile::FilesTableBlock& fileTableBlock);
+
+    static void FillFilesInfo(const PackFormat::PackFile& packFile,
+                              const String& fileNames,
+                              UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData,
+                              Vector<ResourceArchive::FileInfo>& filesInfo);
+
 private:
     mutable RefPtr<File> file;
     PackFormat::PackFile packFile;

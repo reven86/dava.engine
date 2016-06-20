@@ -2,12 +2,13 @@
 
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
+#include "FileSystem/Private/PackFormatSpec.h"
 
 namespace DAVA
 {
 struct PackPriorityComparator;
 
-class PackManagerImpl : public PackManager::IInitialization
+class PackManagerImpl : public PackManager::IInit
 {
 public:
     PackManagerImpl() = default;
@@ -45,7 +46,7 @@ public:
 
     PackManager::Pack& GetPack(const String& packName);
 
-    void MountDownloadedPacks(const FilePath&);
+    void MountPacks(const FilePath&);
 
     void DeletePack(const String& packName);
 
@@ -62,6 +63,14 @@ public:
 private:
     void ContinueInitialization();
 
+    void FirstTimeInit();
+    void InitStarting();
+    void MountLocalPacks();
+    void AskFooter();
+    void GetFooter();
+    void AskFileTable();
+    void GetFileTable();
+
     FilePath dbFile;
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
@@ -77,6 +86,12 @@ private:
     String initErrorMsg;
     PackManager::InitState initState = PackManager::InitState::FirstInit;
     PackManager::InitError initError = PackManager::InitError::AllGood;
+    PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile usedPackFile; // current superpack info
+    Vector<char> tmpFileTable;
+    uint32 downloadTaskId = 0;
+    uint64 fullSizeServerData = 0;
+    bool initPaused = false;
 };
 
 struct PackPriorityComparator
