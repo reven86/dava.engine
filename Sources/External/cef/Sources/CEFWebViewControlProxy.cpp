@@ -12,7 +12,7 @@ WebViewControl::WebViewControl(UIWebView& uiWebView)
     : impl(new CEFWebViewControl(uiWebView))
     , cefController(impl)
 {
-    if (!cefController.IsCEFInitialized())
+    if (!cefController.IsCEFAvailable())
     {
         impl = nullptr;
     }
@@ -150,7 +150,6 @@ void WebViewControl::Update()
 {
     if (impl != nullptr)
     {
-        cefController.Update();
         impl->Update();
     }
 }

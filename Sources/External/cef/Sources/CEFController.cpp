@@ -37,7 +37,7 @@ public:
     CEFControllerImpl();
     ~CEFControllerImpl();
 
-    bool IsCEFInitializedSuccessfully();
+    bool IsCEFAvailable();
     void AddClient(const CefRefPtr<CefClient>& client);
 
     FilePath GetCachePath();
@@ -89,7 +89,7 @@ CEFControllerImpl::CEFControllerImpl()
         cookieMan->SetSupportedSchemes({ "dava" }, nullptr);
     }
 
-    if (IsCEFInitializedSuccessfully())
+    if (isInitialized && schemeRegistered)
     {
         Core* core = Core::Instance();
         auto shutdown = [] { cefControllerGlobal = nullptr; };
@@ -126,7 +126,7 @@ CEFControllerImpl::~CEFControllerImpl()
     }
 }
 
-bool CEFControllerImpl::IsCEFInitializedSuccessfully()
+bool CEFControllerImpl::IsCEFAvailable()
 {
     return isInitialized && schemeRegistered;
 }
@@ -148,7 +148,7 @@ FilePath CEFControllerImpl::GetLogPath()
 
 void CEFControllerImpl::Update()
 {
-    if (IsCEFInitializedSuccessfully() && !clients.empty())
+    if (IsCEFAvailable() && !clients.empty())
     {
         DoUpdate();
     }
@@ -218,7 +218,7 @@ CEFController::CEFController(const CefRefPtr<CefClient>& client)
     }
 
     cefControllerImpl = cefControllerGlobal;
-    if (IsCEFInitialized())
+    if (IsCEFAvailable())
     {
         cefControllerImpl->AddClient(client);
     }
@@ -226,14 +226,9 @@ CEFController::CEFController(const CefRefPtr<CefClient>& client)
 
 CEFController::~CEFController() = default;
 
-bool CEFController::IsCEFInitialized()
+bool CEFController::IsCEFAvailable()
 {
-    return cefControllerGlobal && cefControllerGlobal->IsCEFInitializedSuccessfully();
-}
-
-void CEFController::Update()
-{
-    cefControllerImpl->Update();
+    return cefControllerGlobal && cefControllerGlobal->IsCEFAvailable();
 }
 
 uint32 CEFController::GetCacheLimitSize()

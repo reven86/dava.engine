@@ -57,7 +57,7 @@ void CEFWebPageRender::ClearRenderSurface()
 {
     if (!imageData.empty())
     {
-        ::memset(imageData.data(), 0, imageData.size());
+        std::fill_n(imageData.begin(), imageData.size(), 0);
         AppyTexture();
     }
 }
@@ -161,7 +161,7 @@ void CEFWebPageRender::OnPaint(CefRefPtr<CefBrowser> browser,
     }
 
     // Update texture
-    ::memcpy(imageData.data(), buffer, imageData.size());
+    std::copy_n(static_cast<const uint8*>(buffer), imageData.size(), imageData.begin());
 
     // BGRA -> RGBA, resolve transparency and apply
     PostProcessImage();
@@ -235,7 +235,7 @@ CefCursorHandle CEFWebPageRender::GetDefaultCursor()
 void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 {
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
-    SetClassLongPtr(wnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(cursor)));
+    SetClassLongPtr(wnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
     ::SetCursor(cursor);
 }
 
