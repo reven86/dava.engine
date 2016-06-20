@@ -56,6 +56,9 @@ public:
     void Remove(const DAVA::Vector<ControlNode*>& controls, const DAVA::Vector<StyleSheetNode*>& styles);
     DAVA::Vector<PackageBaseNode*> Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data);
 
+    void BeginMacro(const QString& name);
+    void EndMacro();
+
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package);
     void InsertControlImpl(ControlNode* control, ControlsContainerNode* dest, DAVA::int32 destIndex);
@@ -66,8 +69,6 @@ private:
 
     CommandStack* GetCommandStack() const;
     void PushCommand(Command* cmd);
-    void BeginMacro(const QString& name);
-    void EndMacro();
 
 private:
     Document* document = nullptr;

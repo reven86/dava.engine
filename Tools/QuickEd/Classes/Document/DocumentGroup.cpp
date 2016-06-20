@@ -25,6 +25,8 @@ DocumentGroup::DocumentGroup(QObject* parent)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
+    commandStackGroup->canUndoChanged.Connect(this, &DocumentGroup::CanUndoChanged);
+    commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
 }
 
 DocumentGroup::~DocumentGroup() = default;
@@ -51,6 +53,20 @@ bool DocumentGroup::CanSave() const
 bool DocumentGroup::CanClose() const
 {
     return active != nullptr;
+}
+
+void DocumentGroup::AttachUndoAction(QAction* undoAction) const
+{
+    undoAction->setEnabled(commandStackGroup->CanUndo());
+    connect(this, &DocumentGroup::CanUndoChanged, undoAction, &QAction::setEnabled);
+    connect(undoAction, &QAction::triggered, this, &DocumentGroup::Undo);
+}
+
+void DocumentGroup::AttachRedoAction(QAction* redoAction) const
+{
+    redoAction->setEnabled(commandStackGroup->CanRedo());
+    connect(this, &DocumentGroup::CanRedoChanged, redoAction, &QAction::setEnabled);
+    connect(redoAction, &QAction::triggered, this, &DocumentGroup::Redo);
 }
 
 void DocumentGroup::AttachSaveAction(QAction* saveAction) const
@@ -343,6 +359,16 @@ void DocumentGroup::OnCanSaveChanged(bool canSave)
         }
         tabBar->setTabText(index, tabText);
     }
+}
+
+void DocumentGroup::Undo()
+{
+    commandStackGroup->Undo();
+}
+
+void DocumentGroup::Redo()
+{
+    commandStackGroup->Redo();
 }
 
 void DocumentGroup::OnApplicationStateChanged(Qt::ApplicationState state)

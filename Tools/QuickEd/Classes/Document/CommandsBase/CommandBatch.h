@@ -11,6 +11,8 @@ public:
 
     void AddAndRedo(CommandPtr&& command);
 
+    bool IsEmpty() const;
+
 private:
     DAVA::Vector<CommandPtr> commands;
 };

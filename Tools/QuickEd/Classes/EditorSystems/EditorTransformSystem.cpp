@@ -129,6 +129,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
+        systemsManager->BeginTransformBatch.Emit();
         currentHash = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
         extraDelta.SetZero();
         prevPos = currentInput->point;
@@ -151,6 +152,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::Phase::ENDED:
+        systemsManager->EndTransformBatch.Emit();
         if (activeArea == HUDAreaInfo::ROTATE_AREA)
         {
             ClampAngle();

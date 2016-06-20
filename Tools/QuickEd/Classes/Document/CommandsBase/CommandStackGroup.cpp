@@ -29,6 +29,10 @@ void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
 {
     if (activeStack != nullptr)
     {
+        activeStack->cleanChanged.Disconnect(this);
+        activeStack->canRedoChanged.Disconnect(this);
+        activeStack->canUndoChanged.Disconnect(this);
+
         activeStack->DisconnectFromCommandManager();
     }
     activeStack = commandStack;
@@ -37,5 +41,48 @@ void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
         DVASSERT(stacks.find(commandStack) != stacks.end());
         envManager->selectEnv(activeStack->ID);
         activeStack->ConnectToCommandManager();
+
+        activeStack->cleanChanged.Connect(&cleanChanged, &DAVA::Signal<bool>::Emit);
+        activeStack->canRedoChanged.Connect(&canRedoChanged, &DAVA::Signal<bool>::Emit);
+        activeStack->canUndoChanged.Connect(&canUndoChanged, &DAVA::Signal<bool>::Emit);
     }
+    else
+    {
+        cleanChanged.Emit(true);
+        canRedoChanged.Emit(false);
+        canUndoChanged.Emit(false);
+    }
+}
+
+void CommandStackGroup::Undo()
+{
+    DVASSERT(activeStack != nullptr);
+    if (activeStack != nullptr)
+    {
+        activeStack->Undo();
+    }
+}
+
+void CommandStackGroup::Redo()
+{
+    DVASSERT(activeStack != nullptr);
+    if (activeStack != nullptr)
+    {
+        activeStack->Redo();
+    }
+}
+
+bool CommandStackGroup::IsClean() const
+{
+    return activeStack != nullptr ? activeStack->IsClean() : true;
+}
+
+bool CommandStackGroup::CanUndo() const
+{
+    return activeStack != nullptr ? activeStack->CanUndo() : false;
+}
+
+bool CommandStackGroup::CanRedo() const
+{
+    return activeStack != nullptr ? activeStack->CanRedo() : false;
 }

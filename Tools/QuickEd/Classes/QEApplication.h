@@ -3,6 +3,7 @@
 #include "NgtTools/Application/NGTApplication.h"
 
 class WGTCommand;
+class EditorCore;
 namespace wgt
 {
 class ICommandManager;
@@ -20,8 +21,10 @@ protected:
     void OnPostLoadPugins() override;
     void OnPreUnloadPlugins() override;
     void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;
+    bool OnRequestCloseApp() override;
 
 private:
     wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<WGTCommand> ngtCommand;
+    EditorCore* editorCore = nullptr;
 };

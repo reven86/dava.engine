@@ -27,6 +27,8 @@ public:
     bool CanSave() const;
     bool CanClose() const;
 
+    void AttachUndoAction(QAction* action) const;
+    void AttachRedoAction(QAction* action) const;
     void AttachSaveAction(QAction* action) const;
     void AttachSaveAllAction(QAction* action) const;
     void AttachCloseDocumentAction(QAction* action) const;
@@ -41,6 +43,8 @@ signals:
     void CanSaveChanged(bool canSave);
     void CanSaveAllChanged(bool canSaveAll);
     void CanCloseChanged(bool canClose);
+    void CanUndoChanged(bool canUndo);
+    void CanRedoChanged(bool canRedo);
 
 public slots:
     void AddDocument(const QString& path);
@@ -61,6 +65,9 @@ public slots:
     void SaveAllDocuments();
     void SaveCurrentDocument();
     void OnCanSaveChanged(bool canSave);
+
+    void Undo();
+    void Redo();
 
 private slots:
     void OnApplicationStateChanged(Qt::ApplicationState state);

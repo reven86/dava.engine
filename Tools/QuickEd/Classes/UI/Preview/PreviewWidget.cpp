@@ -332,6 +332,8 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    systemsManager->BeginTransformBatch.Connect(this, &PreviewWidget::OnBeginBatch);
+    systemsManager->EndTransformBatch.Connect(this, &PreviewWidget::OnEndBatch);
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
@@ -651,6 +653,28 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
             }
         }
     }
+}
+
+void PreviewWidget::OnBeginBatch()
+{
+    DVASSERT(document != nullptr);
+    if (document == nullptr)
+    {
+        return;
+    }
+    QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+    executor->BeginMacro("transformations");
+}
+
+void PreviewWidget::OnEndBatch()
+{
+    DVASSERT(document != nullptr);
+    if (document == nullptr)
+    {
+        return;
+    }
+    QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+    executor->EndMacro();
 }
 
 qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

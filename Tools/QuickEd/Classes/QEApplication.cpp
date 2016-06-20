@@ -28,10 +28,13 @@ int QEApplication::Run()
         historyPanel->setClearButtonVisible(false);
         historyPanel->setMakeMacroButtonVisible(false);
     }
-    EditorCore editorCore;
+    editorCore = new EditorCore();
 
-    editorCore.Start();
-    return StartApplication(editorCore.GetMainWindow());
+    editorCore->Start();
+    int exitCode = StartApplication(editorCore->GetMainWindow());
+    delete editorCore;
+    editorCore = nullptr;
+    return exitCode;
 }
 
 void QEApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
@@ -71,4 +74,10 @@ void QEApplication::OnPreUnloadPlugins()
 void QEApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
 {
     lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname() + "QuickEd/");
+}
+
+bool QEApplication::OnRequestCloseApp()
+{
+    DVASSERT(editorCore != nullptr);
+    return editorCore->CloseProject();
 }

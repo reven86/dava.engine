@@ -124,7 +124,8 @@ public:
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>&> NodesHovered;
     DAVA::Signal<bool> TransformStateChanged; //indicates when user transform control
-
+    DAVA::Signal<> BeginTransformBatch;
+    DAVA::Signal<> EndTransformBatch;
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
 private:

@@ -24,9 +24,17 @@ public:
     bool IsClean() const;
     void SetClean();
 
+    void Undo();
+    void Redo();
+
+    bool CanUndo() const;
+    bool CanRedo() const;
+
     int GetID() const;
 
     DAVA::Signal<bool> cleanChanged;
+    DAVA::Signal<bool> canUndoChanged;
+    DAVA::Signal<bool> canRedoChanged;
 
 private:
     friend class CommandStackGroup;
@@ -40,4 +48,13 @@ private:
     int ID = 0;
     wgt::Connection indexChanged;
     DAVA::Stack<CommandBatch*> batches;
+
+    //members to remember stack state and do not emit extra signals
+    bool isClean = true;
+    bool canUndo = false;
+    bool canRedo = false;
+
+    void SetClean(bool isClean);
+    void SetCanUndo(bool canUndo);
+    void SetCanRedo(bool canRedo);
 };

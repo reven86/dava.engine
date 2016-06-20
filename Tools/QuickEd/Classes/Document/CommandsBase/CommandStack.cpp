@@ -52,7 +52,10 @@ void CommandStack::EndMacro()
     if (batches.empty())
     {
         Command::CommandPtr commandPtr(batch);
-        commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+        if (!batch->IsEmpty())
+        {
+            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+        }
     }
 }
 
@@ -65,6 +68,28 @@ void CommandStack::SetClean()
 {
     cleanIndex = commandManager->commandIndex();
     cleanChanged.Emit(true);
+}
+
+void CommandStack::Undo()
+{
+    DVASSERT(commandManager->canUndo());
+    commandManager->undo();
+}
+
+void CommandStack::Redo()
+{
+    DVASSERT(commandManager->canRedo());
+    commandManager->redo();
+}
+
+bool CommandStack::CanUndo() const
+{
+    return commandManager->canUndo();
+}
+
+bool CommandStack::CanRedo() const
+{
+    return commandManager->canRedo();
 }
 
 int CommandStack::GetID() const
@@ -84,5 +109,34 @@ void CommandStack::ConnectToCommandManager()
 
 void CommandStack::OnHistoryIndexChanged(int currentIndex)
 {
-    cleanChanged.Emit(IsClean());
+    SetClean(IsClean());
+    SetCanUndo(CanUndo());
+    SetCanRedo(CanRedo());
+}
+
+void CommandStack::SetClean(bool isClean_)
+{
+    if (isClean != isClean_)
+    {
+        isClean = isClean_;
+        cleanChanged.Emit(isClean);
+    }
+}
+
+void CommandStack::SetCanUndo(bool canUndo_)
+{
+    if (canUndo != canUndo_)
+    {
+        canUndo = canUndo_;
+        canUndoChanged.Emit(canUndo);
+    }
+}
+
+void CommandStack::SetCanRedo(bool canRedo_)
+{
+    if (canRedo != canRedo_)
+    {
+        canRedo = canRedo_;
+        canRedoChanged.Emit(canRedo);
+    }
 }

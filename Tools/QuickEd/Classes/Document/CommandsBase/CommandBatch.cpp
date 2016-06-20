@@ -12,9 +12,9 @@ void CommandBatch::Execute()
 
 void CommandBatch::Undo()
 {
-    for (CommandPtr& commandPtr : commands)
+    for (auto iter = commands.rbegin(); iter != commands.rend(); ++iter)
     {
-        commandPtr->Undo();
+        (*iter)->Undo();
     }
 }
 
@@ -32,4 +32,9 @@ void CommandBatch::AddAndRedo(CommandPtr&& command)
     DAVA::ICommand* actualCommand = command.get();
     commands.emplace_back(std::move(command));
     actualCommand->Redo();
+}
+
+bool CommandBatch::IsEmpty() const
+{
+    return commands.empty();
 }
