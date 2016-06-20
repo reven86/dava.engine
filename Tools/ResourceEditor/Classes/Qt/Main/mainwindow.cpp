@@ -107,7 +107,9 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
     , ngtContext(ngtContext_)
+#if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
+#endif
     , spritesPacker(new SpritesPackerModule())
 {
     PathDescriptor::InitializePathDescriptors();
@@ -166,20 +168,24 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     DiableUIForFutureUsing();
     SynchronizeStateWithUI();
 
+#if defined(NEW_PROPERTY_PANEL)
     wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
     wgt::IUIFramework* uiFramework = ngtContext.queryInterface<wgt::IUIFramework>();
     DVASSERT(uiApplication != nullptr);
     DVASSERT(uiFramework != nullptr);
     propertyPanel->Initialize(*uiFramework, *uiApplication);
     QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, propertyPanel.get(), &PropertyPanel::SceneSelectionChanged);
+#endif
 }
 
 QtMainWindow::~QtMainWindow()
 {
+#if defined(NEW_PROPERTY_PANEL)
     wgt::IUIApplication* uiApplication = ngtContext.queryInterface<wgt::IUIApplication>();
     DVASSERT(uiApplication != nullptr);
     propertyPanel->Finalize(*uiApplication);
     propertyPanel.reset();
+#endif
 
     const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
