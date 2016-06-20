@@ -175,6 +175,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     //        NSLog(@"Sent to background by home button/switching to other app");
     //    }
     DAVA::Core::Instance()->GoBackground(isLock);
+    DAVA::Core::Instance()->FocusLost();
 
     rhi::SuspendRendering();
 }
