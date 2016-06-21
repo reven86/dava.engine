@@ -1223,8 +1223,8 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
     if (!(rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0))
     {
-        unsigned max_x = (cb->rt)  ? unsigned(cb->rt.width-1)  :  unsigned(_Metal_DefFrameBuf.width-1);
-        unsigned max_y = (cb->rt)  ? unsigned(cb->rt.height-1)  :  unsigned(_Metal_DefFrameBuf.height-1);
+        unsigned max_x = (cb->rt) ? unsigned(cb->rt.width) : unsigned(_Metal_DefFrameBuf.width);
+        unsigned max_y = (cb->rt) ? unsigned(cb->rt.height) : unsigned(_Metal_DefFrameBuf.height);
 
         rc.x = rect.x;
         rc.y = rect.y;
