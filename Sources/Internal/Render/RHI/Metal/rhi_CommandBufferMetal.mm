@@ -1838,13 +1838,12 @@ metal_Present(Handle syncObject)
         return;
     }
 
-    bool do_discard = false; //TextureMetal::NeedRestoreCount();
+    bool do_discard = TextureMetal::NeedRestoreCount();
 
     _Metal_ScreenshotCallbackSync.Lock();
     if (_Metal_Suspended)
         do_discard = true;
     _Metal_ScreenshotCallbackSync.Unlock();
-
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 

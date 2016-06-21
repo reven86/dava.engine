@@ -103,16 +103,16 @@ metal_DeviceCaps()
 static bool
 metal_NeedRestoreResources()
 {
-    static bool lastNeenRestore = false;
+    static bool lastNeedRestore = false;
     bool needRestore = TextureMetal::NeedRestoreCount();
 
     if (needRestore)
         DAVA::Logger::Debug("NeedRestore %d TEX", TextureMetal::NeedRestoreCount());
 
-    if (lastNeenRestore && !needRestore)
+    if (lastNeedRestore && !needRestore)
         DAVA::Logger::Debug("all RHI-resources restored");
 
-    lastNeenRestore = needRestore;
+    lastNeedRestore = needRestore;
 
     return needRestore;
 }
@@ -133,7 +133,8 @@ metal_Suspend()
 static void
 metal_Resume()
 {
-    TextureMetal::MarkAllNeedRestore();
+    //    TextureMetal::MarkAllNeedRestore();
+    TextureMetal::ReCreateAll();
     _Metal_ScreenshotCallbackSync.Lock();
     _Metal_Suspended = false;
     _Metal_ScreenshotCallbackSync.Unlock();

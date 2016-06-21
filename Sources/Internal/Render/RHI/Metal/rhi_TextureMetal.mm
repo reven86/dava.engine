@@ -44,6 +44,7 @@ public:
     uint32 mappedSlice;
     id<MTLTexture> uid;
     id<MTLTexture> uid2;
+    Texture::Descriptor creationDesc;
     uint32 is_mapped : 1;
     uint32 is_renderable : 1;
     uint32 is_cubemap : 1;
@@ -203,26 +204,10 @@ MetalRenderableTextureFormat(TextureFormat format)
 
 //------------------------------------------------------------------------------
 
-static Handle
-metal_Texture_Create(const Texture::Descriptor& texDesc)
+static bool
+_Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
 {
-    DVASSERT(texDesc.levelCount);
-
-    if (
-    (texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA ||
-     texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA ||
-     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGB ||
-     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGBA ||
-     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGB ||
-     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGBA)
-    && (texDesc.width != texDesc.height)
-    )
-    {
-        Logger::Error("can't create non-square PVRTC-tex %ux%u fmt=%i", texDesc.width, texDesc.height, int(texDesc.format));
-        return InvalidHandle;
-    }
-
-    Handle handle = InvalidHandle;
+    bool success = true;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
 
     //    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
@@ -243,14 +228,12 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
     desc.resourceOptions = MTLResourceCPUCacheModeDefaultCache;
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
-    TextureMetal_t* tex = nullptr;
 
     [desc release];
 
     if (uid != nil)
     {
-        handle = TextureMetalPool::Alloc();
-        tex = TextureMetalPool::Get(handle);
+        [uid retain];
         //Logger::Info("{%u} create-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(handle)), (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height);
 
         tex->format = texDesc.format;
@@ -331,18 +314,93 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                 tex->uid2 = uid2;
                 uid2 = nil;
             }
+            else
+            {
+                success = false;
+            }
 
             [desc2 release];
         }
-
-        uid = nil;
     }
     else
     {
         DAVA::Logger::Debug("failed to create tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
+        success = false;
     }
 
     tex->need_restoring = texDesc.needRestore;
+    tex->creationDesc = texDesc;
+
+    return success;
+}
+
+//------------------------------------------------------------------------------
+
+static void
+_Destroy(TextureMetal_t* self)
+{
+    //Logger::Info("{%u} del-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "",self->width,self->height);
+    if (self->mappedData)
+    {
+        ::free(self->mappedData);
+        self->mappedData = nullptr;
+    }
+
+    if (self->uid)
+    {
+        #if RHI_METAL__USE_PURGABLE_STATE
+        [self->uid setPurgeableState:MTLPurgeableStateVolatile];
+        #endif
+        [self->uid release];
+        [self->uid release];
+        self->uid = nil;
+    }
+    if (self->uid2)
+    {
+        #if RHI_METAL__USE_PURGABLE_STATE
+        [self->uid2 setPurgeableState:MTLPurgeableStateVolatile];
+        #endif
+        [self->uid2 release];
+        self->uid2 = nil;
+    }
+
+    self->MarkRestored();
+}
+
+//------------------------------------------------------------------------------
+
+static Handle
+metal_Texture_Create(const Texture::Descriptor& texDesc)
+{
+    DVASSERT(texDesc.levelCount);
+
+    if (
+    (texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGB ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_4BPP_RGBA ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGB ||
+     texDesc.format == TEXTURE_FORMAT_PVRTC2_2BPP_RGBA)
+    && (texDesc.width != texDesc.height)
+    )
+    {
+        Logger::Error("can't create non-square PVRTC-tex %ux%u fmt=%i", texDesc.width, texDesc.height, int(texDesc.format));
+        return InvalidHandle;
+    }
+
+    Handle handle = TextureMetalPool::Alloc();
+    TextureMetal_t* tex = TextureMetalPool::Get(handle);
+
+    if (_Construct(tex, texDesc))
+    {
+    }
+    else
+    {
+        DAVA::Logger::Debug("failed to create tex%s %ux%u fmt=%i", (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height, int(texDesc.format));
+
+        TextureMetalPool::Free(handle);
+        handle = InvalidHandle;
+    }
 
     //_CheckAllTextures();
     return handle;
@@ -357,31 +415,7 @@ metal_Texture_Delete(Handle tex)
 
     if (self)
     {
-        //Logger::Info("{%u} del-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(tex)), (self->is_renderable) ? "-rt" : "",self->width,self->height);
-        if (self->mappedData)
-        {
-            ::free(self->mappedData);
-            self->mappedData = nullptr;
-        }
-
-        if (self->uid)
-        {
-            #if RHI_METAL__USE_PURGABLE_STATE
-            [self->uid setPurgeableState:MTLPurgeableStateVolatile];
-            #endif
-            [self->uid release];
-            self->uid = nil;
-        }
-        if (self->uid2)
-        {
-            #if RHI_METAL__USE_PURGABLE_STATE
-            [self->uid2 setPurgeableState:MTLPurgeableStateVolatile];
-            #endif
-            [self->uid2 release];
-            self->uid2 = nil;
-        }
-
-        self->MarkRestored();
+        _Destroy(self);
         TextureMetalPool::Free(tex);
     }
     else
@@ -402,7 +436,7 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
     Size2i ext = TextureExtents(Size2i([self->uid width], [self->uid height]), level);
     unsigned sz = TextureSize(self->format, [self->uid width], [self->uid height], level);
 
-    DVASSERT(!self->is_renderable);
+    ///    DVASSERT(!self->is_renderable);
     DVASSERT(!self->is_mapped);
 
     rgn.origin.x = 0;
@@ -609,7 +643,9 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
+
 //_CheckAllTextures();
+    /*
 #if RHI_METAL__USE_PURGABLE_STATE
     if (self->need_restoring)
     {
@@ -627,6 +663,28 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
         //-        [self->uid setPurgeableState:s];
     }
 #endif
+*/
+    /*
+    if( self->need_restoring && !self->NeedRestore() )
+    {
+        MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
+
+        if (s == MTLPurgeableStateEmpty)
+        {
+            Texture::Descriptor desc = self->creationDesc;
+
+            _Destroy( self );
+            memset( desc.initialData, 0, sizeof(desc.initialData) );
+            _Construct( self, desc );
+
+            self->MarkNeedRestore();
+            DAVA::Logger::Info("tex-%u lost  (%ux%u)", RHI_HANDLE_INDEX(tex), self->width, self->height );
+        }
+    }
+
+    if (!self->NeedRestore())
+        [ce setFragmentTexture:self->uid atIndex:unitIndex];    
+*/
 }
 
 void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce)
@@ -666,6 +724,22 @@ MarkAllNeedRestore()
     {
         if (t->need_restoring)
             t->MarkNeedRestore();
+    }
+}
+
+void
+ReCreateAll()
+{
+    for (TextureMetalPool::Iterator t = TextureMetalPool::Begin(), t_end = TextureMetalPool::End(); t != t_end; ++t)
+    {
+        TextureMetal_t* self = &(*t);
+        Texture::Descriptor desc = t->creationDesc;
+
+        _Destroy(self);
+        memset(desc.initialData, 0, sizeof(desc.initialData));
+        _Construct(self, desc);
+
+        self->MarkNeedRestore();
     }
 }
 

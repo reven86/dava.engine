@@ -5,6 +5,8 @@
 #include "_metal.h"
 #include <string>
 
+#define RHI_METAL__USE_BUF_PURGABLE_STATE 0
+
 namespace rhi
 {
 class
@@ -99,7 +101,9 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
         page.buffer = [_Metal_Device newBufferWithLength:page.size options:MTLResourceOptionCPUCacheModeDefault];
         DVASSERT(page.buffer);
         [page.buffer retain];
+        #if RHI_METAL__USE_BUF_PURGABLE_STATE
         [page.buffer setPurgeableState:MTLPurgeableStateNonVolatile];
+        #endif
 
         page.heap = new SimpleRemoteHeap<8 * 1024>();
         page.heap->initialize([page.buffer contents], page.size);
@@ -142,7 +146,10 @@ BufferAllocator::free(const BufferAllocator::Block& block)
                 p->heap->uninitialize();
                 delete p->heap;
 
+                #if RHI_METAL__USE_BUF_PURGABLE_STATE
                 [p->buffer setPurgeableState:MTLPurgeableStateEmpty];
+                #endif
+                [p->buffer release];
                 [p->buffer release];
                 p->buffer = nil;
 
