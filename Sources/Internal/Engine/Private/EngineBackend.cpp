@@ -80,8 +80,10 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     platformCore->Init();
     if (!consoleMode)
     {
+#if !defined(__DAVAENGINE_WIN_UAP__)
         primaryWindow = new WindowBackend(this, true);
         windows.insert(primaryWindow);
+#endif
     }
 
     // init modules

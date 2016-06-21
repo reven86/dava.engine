@@ -9,7 +9,7 @@ namespace Private
 Vector<String> InitializeEngine(int argc, char* argv[])
 {
     EngineBackend* engineBackend = new EngineBackend(argc, argv);
-    return engineBackend->GetCommandLine();
+    return Vector<String>();
 }
 
 void TerminateEngine()

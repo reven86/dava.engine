@@ -16,6 +16,8 @@ namespace DAVA
 {
 namespace Private
 {
+// clang-format off
+
 class WindowWinUWP final
 {
 public:
@@ -28,13 +30,22 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 private:
+    void BindXamlWindow(::Windows::UI::Xaml::Window^ xamlWindow);
+    void DestroyNWindow();
+
+private:
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
     WindowBackend* window = nullptr;
 
+    ref struct WindowWinUWPCxxBridge^ bridge = nullptr;
+
     // Friends
     friend class CoreWinUWP;
+    friend ref struct WindowWinUWPCxxBridge;
 };
+
+// clang-format on
 
 } // namespace Private
 } // namespace DAVA

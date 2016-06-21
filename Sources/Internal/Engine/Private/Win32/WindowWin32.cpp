@@ -228,20 +228,17 @@ LRESULT WindowWin32::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16
 
 LRESULT WindowWin32::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    DispatcherEvent e;
-
-    e.type = isPressed ? DispatcherEvent::KEY_DOWN : DispatcherEvent::KEY_UP;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-
     if ((key == VK_SHIFT && scanCode == 0x36) || isExtended)
     {
         key |= 0x100;
     }
 
+    DispatcherEvent e;
+    e.type = isPressed ? DispatcherEvent::KEY_DOWN : DispatcherEvent::KEY_UP;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.window = window;
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-
     dispatcher->PostEvent(e);
     return 0;
 }
@@ -249,12 +246,11 @@ LRESULT WindowWin32::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, boo
 LRESULT WindowWin32::OnCharEvent(uint32 key, bool isRepeated)
 {
     DispatcherEvent e;
-
     e.type = DispatcherEvent::KEY_CHAR;
+    e.window = window;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-
     dispatcher->PostEvent(e);
     return 0;
 }

@@ -38,23 +38,21 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-// clang-format off
-
-//int __cdecl _main();
-
-[Platform::MTAThread]
-int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+namespace DAVA
 {
-    //return _main();
-    return 0;
+namespace Private
+{
+extern void StartUWPApplication();
+}
 }
 
-//int main(Platform::Array<Platform::String^>^ /*args*/)
-//{
-//    return 0;
-//}
-
-// clang-format on
+[Platform::MTAThread]
+int CALLBACK
+wWinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    DAVA::Private::StartUWPApplication();
+    return 0;
+}
 
 #endif
 

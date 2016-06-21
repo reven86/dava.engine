@@ -12,8 +12,11 @@
 
 namespace DAVA
 {
+class Thread;
 namespace Private
 {
+// clang-format off
+
 class CoreWinUWP final
 {
 public:
@@ -29,9 +32,23 @@ public:
     WindowWinUWP* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
     void DestroyNativeWindow(WindowBackend* w);
 
+    void OnApplicationLaunched();
+    void OnNativeWindowCreated(::Windows::UI::Xaml::Window^ xamlWindow);
+
+    void OnSuspending();
+    void OnResuming();
+
+private:
+    void GameThread();
+
 private:
     EngineBackend* engineBackend = nullptr;
+
+    Thread* gameThread = nullptr;   // TODO: RefPtr
+    bool quitGameThread = false;
 };
+
+// clang-format on
 
 } // namespace Private
 } // namespace DAVA
