@@ -8,7 +8,7 @@ namespace DAVA
 {
 // GLOBAL PASSES
 static const FastName PASS_FORWARD("ForwardPass");
-static const FastName PASS_DEFERRED("DeferredPass");
+static const FastName PASS_REFLECTION_REFRACTION("ReflectionRefractionPass");
 static const FastName PASS_STATIC_OCCLUSION("StaticOcclusionPass");
 
 } // ns
