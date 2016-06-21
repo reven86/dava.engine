@@ -191,7 +191,7 @@ FPROG_BEGIN
 				min10float4 flowSample2 = min10float4(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y));
 				min10float4 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);
 			#else
-				min10float4 textureColor0 = min10float(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ));
+				min10float4 textureColor0 = min10float4(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ));
 			#endif
 			
             #if ALPHA_MASK 
