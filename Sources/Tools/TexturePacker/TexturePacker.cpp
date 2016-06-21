@@ -470,7 +470,7 @@ Vector<TexturePacker::ImageExportKeys> TexturePacker::GetExportKeys(const Vector
     for (size_type i = 0; i < count; ++i)
     {
         eGPUFamily curGPU = forGPUs[i];
-        if (curGPU == eGPUFamily::GPU_FAMILY_COUNT || curGPU == eGPUFamily::GPU_DEVICE_COUNT)
+        if (curGPU == eGPUFamily::GPU_FAMILY_COUNT)
         {
             size_type targetsCount = static_cast<size_type>(curGPU);
             compressionTargets.resize(targetsCount);

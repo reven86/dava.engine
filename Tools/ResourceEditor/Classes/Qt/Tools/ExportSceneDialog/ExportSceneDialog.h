@@ -23,6 +23,9 @@ public:
     bool GetOptimizeOnExport() const;
     bool GetUseHDTextures() const;
 
+private slots:
+    void SetExportEnabled(); 
+
 private:
     void SetupUI();
     void InitializeValues();
@@ -34,4 +37,6 @@ private:
 
     QCheckBox* optimizeOnExport = nullptr;
     QCheckBox* useHDtextures = nullptr;
+
+    QPushButton* exportButton = nullptr;
 };

@@ -70,8 +70,6 @@ void ImageSplitterDialog::ConnectSignals()
 
     connect(ui->reload, SIGNAL(clicked()), SLOT(OnReload()));
     connect(ui->reloadSpecular, SIGNAL(clicked()), SLOT(OnReloadSpecularMap()));
-
-    PathChanged(ui->path->text());
 }
 
 void ImageSplitterDialog::PathChanged(const QString& path)

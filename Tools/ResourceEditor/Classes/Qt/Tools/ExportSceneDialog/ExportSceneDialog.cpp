@@ -64,6 +64,7 @@ void ExportSceneDialog::SetupUI()
             gpuSelector[gpu]->setMinimumSize(UI_WIDTH, UI_HEIGHT);
 
             gpuLayout->addWidget(gpuSelector[gpu]);
+            connect(gpuSelector[gpu], &QCheckBox::toggled, this, &ExportSceneDialog::SetExportEnabled);
         }
 
         gpuLayout->addStretch();
@@ -113,7 +114,7 @@ void ExportSceneDialog::SetupUI()
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
-        QPushButton* exportButton = new QPushButton("Export", this);
+        exportButton = new QPushButton("Export", this);
         exportButton->setMinimumSize(UI_WIDTH, UI_HEIGHT);
         exportButton->setFixedHeight(UI_HEIGHT);
         connect(exportButton, &QPushButton::clicked, this, &QDialog::accept);
@@ -140,6 +141,23 @@ void ExportSceneDialog::InitializeValues()
     qualitySelector->setCurrentIndex(quality.AsInt32());
     optimizeOnExport->setCheckState(Qt::Checked);
     useHDtextures->setCheckState(Qt::Unchecked);
+
+    SetExportEnabled();
+}
+
+void ExportSceneDialog::SetExportEnabled()
+{
+    bool gpuChecked = false;
+    for (QCheckBox* gpuBox : gpuSelector)
+    {
+        if (gpuBox->isChecked())
+        {
+            gpuChecked = true;
+            break;
+        }
+    }
+
+    exportButton->setEnabled(gpuChecked);
 }
 
 DAVA::FilePath ExportSceneDialog::GetDataFolder() const

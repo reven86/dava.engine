@@ -66,7 +66,7 @@ ImageFormatInterface* GetImageFormatInterface(File* file)
             return wrapper.get();
         }
     }
-    DVASSERT(false);
+    Logger::Error("Can't determinate image format of %s", file->GetFilename().GetAbsolutePathname().c_str());
 
     return nullptr;
 }
