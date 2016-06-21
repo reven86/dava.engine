@@ -99,16 +99,6 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     // End preparing
 
     // Render to texture
-
-#if 1
-    //[CLEAR]
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = screenshot->GetWidth();
-    viewport.height = screenshot->GetHeight();
-    RenderHelper::CreateClearPass(screenshot->handle, screenshot->handleDepthStencil, PRIORITY_SCREENSHOT + PRIORITY_CLEAR, Color::Clear, viewport);
-
-    //[DRAW]
     RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.colorAttachment = screenshot->handle;
     desc.depthAttachment = screenshot->handleDepthStencil;
@@ -117,18 +107,6 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = true;
-#else
-    // this way, handar UI background (options,shop) is rendered incorrectly on iOS/Metal
-    //[DRAW]
-    RenderSystem2D::RenderTargetPassDescriptor desc;
-    desc.colorAttachment = screenshot->handle;
-    desc.depthAttachment = screenshot->handleDepthStencil;
-    desc.width = screenshot->GetWidth();
-    desc.height = screenshot->GetHeight();
-    desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
-    desc.clearTarget = true;
-    desc.transformVirtualToPhysical = true;
-#endif
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
     control->SystemUpdate(0.0f);

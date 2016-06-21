@@ -235,12 +235,14 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
+    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.depthStencilBuffer.texture = desc.depthAttachment;
+    renderTargetPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    renderTargetPassConfig.depthStencilBuffer.loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderTargetPassConfig.priority = desc.priority;
     renderTargetPassConfig.viewport.width = desc.width;
     renderTargetPassConfig.viewport.height = desc.height;
-    renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
-    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
