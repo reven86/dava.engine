@@ -35,7 +35,7 @@ DAVA_TESTCLASS (StringUtilsTest)
         TEST_VERIFY(StringUtils::TrimRight(String("\t\t")) == "");
     }
 
-    DAVA_TEST(StartsWithTest)
+    DAVA_TEST (StartsWithTest)
     {
         TEST_VERIFY(StringUtils::StartsWith("abcdef", "abc") == true);
         TEST_VERIFY(StringUtils::StartsWith("abc", "abc") == true);
