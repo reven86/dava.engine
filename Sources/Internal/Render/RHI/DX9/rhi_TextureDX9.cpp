@@ -260,17 +260,17 @@ void TextureDX9_t::Destroy(bool force_immediate)
       { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_tex9) } }
     };
 
-    bool shouldCancelRecreate = true;
+    bool cancelRecreate = true;
     for (size_t i = 0; i < countof(cmd); ++i)
     {
         if (cmd[i].func != DX9Command::NOP)
         {
-            shouldCancelRecreate = false;
+            cancelRecreate = false;
             break;
         }
     }
 
-    if (shouldCancelRecreate)
+    if (cancelRecreate)
     {
         SetRecreatePending(false);
     }
