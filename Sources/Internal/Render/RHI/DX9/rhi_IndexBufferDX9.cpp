@@ -113,6 +113,10 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }
+    else
+    {
+        SetRecreatePending(false);
+    }
 
     if (!RecreatePending() && mappedData)
     {
@@ -290,13 +294,7 @@ void SetToRHI(Handle ib)
 
 void ReleaseAll()
 {
-    IndexBufferDX9Pool::Lock();
-    for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
-    {
-        b->SetRecreatePending(true);
-        b->Destroy(true);
-    }
-    IndexBufferDX9Pool::Unlock();
+    IndexBufferDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()

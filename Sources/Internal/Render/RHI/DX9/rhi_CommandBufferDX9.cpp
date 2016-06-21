@@ -1377,11 +1377,12 @@ _DX9_ExecuteQueuedCommands()
             else
             {
                 Logger::Error("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
         else
         {
-            Logger::Info("Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
+            Logger::Error("Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -1442,6 +1443,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::CREATE_VERTEX_BUFFER:
         {
+            DVASSERT(*(IDirect3DVertexBuffer9**)(arg[4]) == nullptr);
             cmd->retval = _D3D9_Device->CreateVertexBuffer(UINT(arg[0]), DWORD(arg[1]), DWORD(arg[2]), D3DPOOL(arg[3]), (IDirect3DVertexBuffer9**)(arg[4]), (HANDLE*)(arg[5]));
             CHECK_HR(cmd->retval);
         }
@@ -1488,6 +1490,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::CREATE_INDEX_BUFFER:
         {
+            DVASSERT(*(IDirect3DIndexBuffer9**)(arg[4]) == nullptr);
             cmd->retval = _D3D9_Device->CreateIndexBuffer(UINT(arg[0]), DWORD(arg[1]), D3DFORMAT(arg[2]), D3DPOOL(arg[3]), (IDirect3DIndexBuffer9**)(arg[4]), (HANDLE*)(arg[5]));
             CHECK_HR(cmd->retval);
         }
@@ -1534,6 +1537,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::CREATE_TEXTURE:
         {
+            DVASSERT(*(IDirect3DTexture9**)(arg[6]) == nullptr);
             cmd->retval = _D3D9_Device->CreateTexture(UINT(arg[0]), UINT(arg[1]), UINT(arg[2]), DWORD(arg[3]), D3DFORMAT(arg[4]), D3DPOOL(arg[5]), (IDirect3DTexture9**)(arg[6]), (HANDLE*)(arg[7]));
             CHECK_HR(cmd->retval);
         }
@@ -1541,6 +1545,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::CREATE_CUBE_TEXTURE:
         {
+            DVASSERT(*(IDirect3DCubeTexture9**)(arg[5]) == nullptr);
             cmd->retval = _D3D9_Device->CreateCubeTexture(UINT(arg[0]), UINT(arg[1]), DWORD(arg[2]), D3DFORMAT(arg[3]), D3DPOOL(arg[4]), (IDirect3DCubeTexture9**)(arg[5]), (HANDLE*)(arg[6]));
             CHECK_HR(cmd->retval);
         }

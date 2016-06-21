@@ -110,6 +110,10 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }
+    else
+    {
+        SetRecreatePending(false);
+    }
 
     if (!RecreatePending() && mappedData)
     {
@@ -289,13 +293,7 @@ void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 
 void ReleaseAll()
 {
-    VertexBufferDX9Pool::Unlock();
-    for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
-    {
-        b->SetRecreatePending(true);
-        b->Destroy(true);
-    }
-    VertexBufferDX9Pool::Unlock();
+    VertexBufferDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()

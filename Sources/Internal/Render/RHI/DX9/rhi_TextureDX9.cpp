@@ -259,8 +259,23 @@ void TextureDX9_t::Destroy(bool force_immediate)
       { rt_surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_surf9) } },
       { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_tex9) } }
     };
-    ExecDX9(cmd, countof(cmd), force_immediate);
 
+    bool shouldCancelRecreate = true;
+    for (size_t i = 0; i < countof(cmd); ++i)
+    {
+        if (cmd[i].func != DX9Command::NOP)
+        {
+            shouldCancelRecreate = false;
+            break;
+        }
+    }
+
+    if (shouldCancelRecreate)
+    {
+        SetRecreatePending(false);
+    }
+
+    ExecDX9(cmd, countof(cmd), force_immediate);
     surf9 = nullptr;
     tex9 = nullptr;
     cubetex9 = nullptr;
@@ -524,13 +539,7 @@ void SetAsDepthStencil(Handle tex)
 
 void ReleaseAll()
 {
-    TextureDX9Pool::Lock();
-    for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
-    {
-        t->SetRecreatePending(true);
-        t->Destroy(true);
-    }
-    TextureDX9Pool::Unlock();
+    TextureDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()

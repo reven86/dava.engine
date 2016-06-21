@@ -37,6 +37,7 @@ public:
     static bool IsAlive(Handle h);
 
     static void Reserve(unsigned maxCount);
+    static unsigned ReleaseAll();
     static unsigned ReCreateAll();
 
     static uint32 PendingRestoreCount();
@@ -247,6 +248,24 @@ ResourcePool<T, RT, DT, nr>::End()
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline unsigned
+ResourcePool<T, RT, DT, nr>::ReleaseAll()
+{
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+
+    unsigned count = 0;
+    for (auto i = Begin(), i_end = End(); i != i_end; ++i)
+    {
+        i->SetRecreatePending(true);
+        i->Destroy(true);
+        ++count;
+    }
+    return count;
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline unsigned
 ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
@@ -254,12 +273,12 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
     unsigned count = 0;
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
-        DT desc = i->CreationDesc();
-        i->SetRecreatePending(true);
-        i->Destroy(true);
-        i->Create(desc, true);
-        i->SetRecreatePending(false);
-        i->MarkNeedRestore();
+        if (i->RecreatePending())
+        {
+            i->Create(i->CreationDesc(), true);
+            i->SetRecreatePending(false);
+            i->MarkNeedRestore();
+        }
         ++count;
     }
     return count;
