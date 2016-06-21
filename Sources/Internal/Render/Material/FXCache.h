@@ -11,7 +11,7 @@ struct RenderPassDescriptor
 {
     FastName passName;
     FastName shaderFileName;
-    Set<FastName> templateDefines;
+    HashMap<FastName, int> templateDefines = HashMap<FastName, int>(8);
     ShaderDescriptor* shader = nullptr;
     bool hasBlend = false;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;
