@@ -41,16 +41,14 @@ void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
 
 void MouseDeviceMacOS::SetCursorInCenter()
 {
+    if (blankCursor != nullptr)
+    {
+        [static_cast<NSCursor*>(blankCursor) set];
+    }
 }
 
 bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 {
-    if (blankCursor != nullptr && needToSetBlankCursor)
-    {
-        [static_cast<NSCursor*>(blankCursor) set];
-        needToSetBlankCursor = false;
-    }
-
     bool isMouse = event->device == UIEvent::Device::MOUSE;
     bool isMovePhase = event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE;
 
@@ -80,7 +78,6 @@ void MouseDeviceMacOS::OSXShowCursor()
     if (!cursorVisible)
     {
         [[NSCursor arrowCursor] set];
-        needToSetBlankCursor = false;
         cursorVisible = true;
     }
 }
@@ -90,9 +87,6 @@ void MouseDeviceMacOS::OSXHideCursor()
     if (cursorVisible)
     {
         [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
-        // We need to set blank cursor again on the first input event
-        // If we wont do it, in some cases blank cursor wont set
-        needToSetBlankCursor = true;
         cursorVisible = false;
     }
 }

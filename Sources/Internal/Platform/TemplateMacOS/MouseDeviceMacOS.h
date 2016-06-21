@@ -22,7 +22,6 @@ public:
 private:
     bool cursorVisible = true;
     void* blankCursor = nullptr;
-    bool needToSetBlankCursor = false;
 
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
