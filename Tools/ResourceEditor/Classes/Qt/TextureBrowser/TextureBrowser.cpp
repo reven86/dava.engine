@@ -65,10 +65,10 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)));
 
     setupStatusBar();
+    setupTextureToolbar();
     setupTexturesList();
     setupImagesScrollAreas();
     setupTextureListToolbar();
-    setupTextureToolbar();
     setupTextureListFilter();
     setupTextureProperties();
     setupTextureViewTabBar();

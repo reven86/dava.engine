@@ -50,7 +50,6 @@ RenderVariantInstance::RenderVariantInstance()
 
 RenderVariantInstance::~RenderVariantInstance()
 {
-    rhi::ReleaseDepthStencilState(depthState);
     rhi::ReleaseTextureSet(textureSet);
     rhi::ReleaseSamplerState(samplerState);
 }
@@ -736,7 +735,7 @@ void NMaterial::RebuildRenderVariants()
     {
         RenderVariantInstance* variant = new RenderVariantInstance();
         variant->renderLayer = variantDescr.renderLayer;
-        variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
+        variant->depthState = variantDescr.depthStencilState;
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
         variant->wireFrame = variantDescr.wireframe;

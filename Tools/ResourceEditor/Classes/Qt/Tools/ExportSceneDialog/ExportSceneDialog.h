@@ -24,7 +24,7 @@ public:
     bool GetUseHDTextures() const;
 
 private slots:
-    void SetExportEnabled(); 
+    void SetExportEnabled();
 
 private:
     void SetupUI();
