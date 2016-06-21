@@ -35,7 +35,8 @@ void ApplicationCore::Update(float32 timeElapsed)
 {
     TIME_PROFILE("ApplicationCore::Update");
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Update(timeElapsed);
+    float32 realFrameDelta = SystemTimer::RealFrameDelta();
+    AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
     SoundSystem::Instance()->Update(timeElapsed);

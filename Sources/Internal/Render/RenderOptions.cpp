@@ -6,6 +6,8 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 {
   FastName("Test Option"),
 
+  FastName("Preview Metal"),
+
   FastName("Draw Landscape"),
   FastName("Draw Water Refl/Refr"),
   FastName("Draw Opaque Layer"),
@@ -67,6 +69,8 @@ RenderOptions::RenderOptions()
 #endif
     options[DRAW_NONDEF_GLYPH] = false;
     options[HIGHLIGHT_HARD_CONTROLS] = false;
+
+    options[PREVIEW_METAL_ON_GL] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

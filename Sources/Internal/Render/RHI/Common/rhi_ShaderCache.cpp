@@ -488,6 +488,8 @@ static const char* _ShaderHeader_GLES2 =
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 #endif
 
+"#define  frac(a) fract(a)\n"
+
 "#define fmod(x, y) mod( (x), (y) )\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
