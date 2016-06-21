@@ -1,8 +1,9 @@
 #include "PackManager/Private/PackManagerImpl.h"
 #include "FileSystem/FileList.h"
+#include "FileSystem/Private/PackArchive.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
-#include "FileSystem/Private/PackArchive.h"
+#include "Compression/LZ4Compressor.h"
 
 namespace DAVA
 {
@@ -35,6 +36,7 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
     onRequestChange = &packManager->requestProgressChanged;
     packDownload = &packManager->packDownloadChanged;
 
+    initLocalDBFileName = architecture + ".db";
     initState = PackManager::InitState::Starting;
 
     // TODO
@@ -190,7 +192,7 @@ void PackManagerImpl::ContinueInitialization()
     }
     else if (PackManager::InitState::UnpakingDB == initState)
     {
-        UnpackDB();
+        UnpackingDB();
     }
     else if (PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash == initState)
     {
@@ -220,6 +222,7 @@ void PackManagerImpl::InitStarting()
 {
     DVASSERT(initState != PackManager::InitState::FirstInit);
     // you can be in any state and user can start REinitialization
+    // TODO copy localPackDB from Data to ~doc:/ if not exist
     initState = PackManager::InitState::MountingLocalPacks;
 }
 
@@ -309,11 +312,11 @@ void PackManagerImpl::GetFooter()
 void PackManagerImpl::AskFileTable()
 {
     DownloadManager* dm = DownloadManager::Instance();
-    tmpFileTable.resize(footerOnServer.info.filesTableSize);
+    buffer.resize(footerOnServer.info.filesTableSize);
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(footerOnServer) + footerOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, tmpFileTable.data(), downloadOffset, static_cast<uint32>(tmpFileTable.size()));
+    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), downloadOffset, static_cast<uint32>(buffer.size()));
     DVASSERT(0 != downloadTaskId);
     initState = PackManager::InitState::LoadingRequestGetFileTable;
 }
@@ -330,16 +333,17 @@ void PackManagerImpl::GetFileTable()
             dm->GetError(downloadTaskId, error);
             if (DLE_NO_ERROR == error)
             {
-                uint32 crc32 = CRC32::ForBuffer(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
+                uint32 crc32 = CRC32::ForBuffer(buffer.data(), static_cast<uint32>(buffer.size()));
                 if (crc32 != footerOnServer.info.filesTableCrc32)
                 {
                     throw std::runtime_error("on server bad superpack!!! FileTable not match crc32");
                 }
 
                 String fileNames;
-                PackArchive::ExtractFileTableData(footerOnServer, tmpFileTable, fileNames, usedPackFile.filesTable);
+                PackArchive::ExtractFileTableData(footerOnServer, buffer, fileNames, usedPackFile.filesTable);
+                PackArchive::FillFilesInfo(usedPackFile, fileNames, initFileData, initfilesInfo);
 
-                initState = PackManager::InitState::LoadingRequest;
+                initState = PackManager::InitState::CalculateLocalDBHashAndCompare;
             }
             else
             {
@@ -352,6 +356,174 @@ void PackManagerImpl::GetFileTable()
     {
         throw std::runtime_error("can't get status for download task");
     }
+}
+
+void PackManagerImpl::CalcLocalDBWitnRemoteCrc32()
+{
+    const FilePath localDB("~doc:/" + initLocalDBFileName);
+    FileSystem* fs = FileSystem::Instance();
+
+    if (fs->IsFile(localDB))
+    {
+        const uint32 localCrc32 = CRC32::ForFile(localDB);
+        auto it = initFileData.find(initLocalDBFileName);
+        if (it != end(initFileData))
+        {
+            if (localCrc32 != it->second->originalCrc32)
+            {
+                // we have to download new localDB file from server!
+                initState = PackManager::InitState::LoadingRequestAskDB;
+            }
+            else
+            {
+                // all good go to
+                initState = PackManager::InitState::MountingDownloadedPacks;
+            }
+        }
+        else
+        {
+            throw std::runtime_error("can't find local DB in server superpack: " + initLocalDBFileName);
+        }
+    }
+    else
+    {
+        initState = PackManager::InitState::MountingDownloadedPacks;
+    }
+}
+
+void PackManagerImpl::AskDB()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+
+    auto it = initFileData.find(initLocalDBFileName);
+    if (it == end(initFileData))
+    {
+        throw std::runtime_error("can't find local DB file on server in superpack: " + initLocalDBFileName);
+    }
+
+    const PackFormat::FileTableEntry& fileData = *(it->second);
+
+    uint64 downloadOffset = fileData.startPosition;
+    uint64 downloadSize = fileData.compressedSize;
+
+    buffer.resize(downloadSize);
+
+    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
+    DVASSERT(0 != downloadTaskId);
+
+    initState = PackManager::InitState::LoadingRequestGetDB;
+}
+
+void PackManagerImpl::GetDB()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    if (dm->GetStatus(downloadTaskId, status))
+    {
+        if (DL_FINISHED == status)
+        {
+            DownloadError error = DLE_NO_ERROR;
+            dm->GetError(downloadTaskId, error);
+            if (DLE_NO_ERROR == error)
+            {
+                initState = PackManager::InitState::UnpakingDB;
+            }
+            else
+            {
+                // TODO ask what to do from Client?
+                throw std::runtime_error("not implemented");
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("can't get status for download task");
+    }
+}
+
+void PackManagerImpl::UnpackingDB()
+{
+    uint32 compressedCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(buffer.data()), static_cast<uint32>(buffer.size()));
+
+    auto it = initFileData.find(initLocalDBFileName);
+    if (it == end(initFileData))
+    {
+        throw std::runtime_error("can't find local DB file on server in superpack: " + initLocalDBFileName);
+    }
+
+    PackFormat::FileTableEntry& fileData = *it->second;
+
+    if (compressedCrc32 != fileData.compressedCrc32)
+    {
+        throw std::runtime_error("on server bad superpack!!! Footer not match crc32");
+    }
+
+    Vector<uint8> outDB;
+    outDB.resize(fileData.originalSize);
+
+    if (LZ4HCCompressor().Decompress(buffer, outDB))
+    {
+        buffer.clear();
+        buffer.shrink_to_fit();
+
+        File* f = File::Create("~doc:/" + initLocalDBFileName, File::WRITE | File::CREATE);
+        if (nullptr == f)
+        {
+            throw std::runtime_error("can't create file for local DB");
+        }
+        else
+        {
+            uint32 written = f->Write(outDB.data(), static_cast<uint32>(outDB.size()));
+            if (written != outDB.size())
+            {
+                throw std::runtime_error("can't write file for local DB");
+            }
+        }
+
+        initState = PackManager::InitState::UnpakingDB;
+    }
+    else
+    {
+        throw std::runtime_error("can't decompress buffer with local DB");
+    }
+}
+
+void PackManagerImpl::DeleteOldPacks()
+{
+    // list all packs (dvpk files) downloaded
+    // for each file calculate CRC32
+    // check CRC32 with value in FileTable
+
+    ScopedPtr<FileList> fileList(new FileList(localPacksDir));
+
+    for (uint32 i = 0; i > fileList->GetCount(); ++i)
+    {
+        const FilePath& path = fileList->GetPathname(i);
+
+        if (path.GetExtension() == ".dvpk")
+        {
+            uint32 crc32 = CRC32::ForFile(path);
+
+            String fileName = path.GetBasename();
+
+            for (auto it = initFileData.begin(); it != initFileData.end(); ++it)
+            {
+                if (String::npos != it->first.find(fileName))
+                {
+                    if (crc32 != it->second->originalCrc32)
+                    {
+                        // delete old packfile
+                        if (!FileSystem::Instance()->DeleteFile(path))
+                        {
+                            throw std::runtime_error("can't delete old packfile: " + path.GetStringValue());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    initState = PackManager::InitState::LoadingPacksDataFromLocalDB;
 }
 
 const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, float32 priority)

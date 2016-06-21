@@ -17,7 +17,7 @@ public:
     bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const override;
 
     static void ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
-                                     const Vector<char>& tmpBuffer,
+                                     const Vector<uint8>& tmpBuffer,
                                      String& fileNames,
                                      PackFormat::PackFile::FilesTableBlock& fileTableBlock);
 

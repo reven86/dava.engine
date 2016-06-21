@@ -116,10 +116,11 @@ uint32 CRC32::ForFile(const FilePath& pathName)
     return crc.Done();
 }
 
-uint32 CRC32::ForBuffer(const char* data, uint32 size)
+uint32 CRC32::ForBuffer(const void* data, uint32 size)
 {
+    const char* ptrData = reinterpret_cast<const char*>(data);
     CRC32 crc;
-    crc.AddData(data, size);
+    crc.AddData(ptrData, size);
     return crc.Done();
 }
 };

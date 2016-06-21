@@ -141,7 +141,10 @@ public:
     void Update();
 
     // return unique pack name or empty string
-    const String& FindPack(const FilePath& relativePathInArchive) const;
+    const String& FindPackName(const FilePath& relativePathInArchive) const;
+
+    // fast find using index
+    const Pack& FindPack(const String& packName) const;
 
     // thow exception if can't find pack
     const Pack& RequestPack(const String& packName, float priority = 0.0f);

@@ -58,9 +58,14 @@ void PackManager::Update()
     impl->Update();
 }
 
-const String& PackManager::FindPack(const FilePath& relativePathInPack) const
+const String& PackManager::FindPackName(const FilePath& relativePathInPack) const
 {
-    return impl->FindPack(relativePathInPack);
+    return impl->FindPackName(relativePathInPack);
+}
+
+const PackManager::Pack& PackManager::FindPack(const String& packName) const
+{
+    return impl->GetPack(packName);
 }
 
 const PackManager::Pack& PackManager::RequestPack(const String& packID, float priority)

@@ -53,11 +53,17 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
 ResourceArchive::~ResourceArchive() = default;
 
-ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, uint32 hash_, Compressor::Type compressionType_)
+ResourceArchive::FileInfo::FileInfo(const char8* relativePath_,
+                                    uint32 originalSize_,
+                                    uint32 originalCrc32_,
+                                    uint32 compressedSize_,
+                                    uint32 compressedCrc32_,
+                                    Compressor::Type compressionType_)
     : relativeFilePath(relativePath_)
     , originalSize(originalSize_)
+    , originalCrc32(originalCrc32_)
     , compressedSize(compressedSize_)
-    , crc32(hash_)
+    , compressedCrc32(compressedCrc32_)
     , compressionType(compressionType_)
 {
 }

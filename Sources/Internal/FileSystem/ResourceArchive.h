@@ -17,12 +17,13 @@ public:
     struct FileInfo
     {
         FileInfo() = default;
-        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, uint32 hash, Compressor::Type compressionType);
+        FileInfo(const char8* relativePath, uint32 originalSize, uint32 originalCrc32, uint32 compressedSize, uint32 compressedCrc32, Compressor::Type compressionType);
 
         String relativeFilePath;
         uint32 originalSize = 0;
+        uint32 originalCrc32 = 0;
         uint32 compressedSize = 0;
-        uint32 crc32 = 0;
+        uint32 compressedCrc32 = 0;
         Compressor::Type compressionType = Compressor::Type::None;
     };
 

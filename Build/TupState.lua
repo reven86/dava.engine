@@ -314,7 +314,7 @@ function TupState.BuildPacks(self)
         tup.rule({ mergeSqlMask, sqlCommonGroup, sqlGroup }, mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
             
         -- generate packs database
-        local dbOutput = self.outputDir .. "/" .. self.conf.outputDbName .. "_" .. gpu .. self.conf.outputDbExt
+        local dbOutput = self.outputDir .. "/" .. self.conf.outputDbName .. gpu .. self.conf.outputDbExt
         local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
         local dbCmdText = "^ Gen final packs DB for " .. gpu .. "^ "
         tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)

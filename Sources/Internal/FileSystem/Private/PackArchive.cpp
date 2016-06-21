@@ -7,7 +7,7 @@
 namespace DAVA
 {
 void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
-                                       const Vector<char>& tmpBuffer,
+                                       const Vector<uint8>& tmpBuffer,
                                        String& fileNames,
                                        PackFormat::PackFile::FilesTableBlock& fileTableBlock)
 {
@@ -15,7 +15,7 @@ void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& 
     compressedNamesBuffer.resize(footerBlock.info.namesSizeCompressed, '\0');
 
     uint32 sizeOfFilesData = footerBlock.info.numFiles * sizeof(PackFormat::FileTableEntry);
-    const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
+    const char* startOfCompressedNames = reinterpret_cast<const char*>(&tmpBuffer[sizeOfFilesData]);
 
     fileTableBlock.names.compressedNames.resize(footerBlock.info.namesSizeCompressed);
 
@@ -71,7 +71,7 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                       info.relativeFilePath = fileNameLoc;
                       info.originalSize = fileEntry.originalSize;
                       info.compressedSize = fileEntry.compressedSize;
-                      info.crc32 = fileEntry.compressedCrc32;
+                      info.compressedCrc32 = fileEntry.compressedCrc32;
                       info.compressionType = fileEntry.type;
 
                       filesInfo.push_back(info);
@@ -124,7 +124,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
 
     uint64 startFilesTableBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
 
-    Vector<char> tmpBuffer;
+    Vector<uint8> tmpBuffer;
     tmpBuffer.resize(packFile.footer.info.filesTableSize);
 
     if (!file->Seek(startFilesTableBlock, File::SEEK_FROM_START))

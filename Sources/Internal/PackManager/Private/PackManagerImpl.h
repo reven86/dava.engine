@@ -38,7 +38,7 @@ public:
 
     void Update();
 
-    const String& FindPack(const FilePath& relativePathInPack) const;
+    const String& FindPackName(const FilePath& relativePathInPack) const;
 
     const PackManager::Pack& RequestPack(const String& packName, float32 priority);
 
@@ -70,6 +70,11 @@ private:
     void GetFooter();
     void AskFileTable();
     void GetFileTable();
+    void CalcLocalDBWitnRemoteCrc32();
+    void AskDB();
+    void GetDB();
+    void UnpackingDB();
+    void DeleteOldPacks();
 
     FilePath dbFile;
     FilePath localPacksDir;
@@ -83,12 +88,15 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
+    String initLocalDBFileName;
     String initErrorMsg;
     PackManager::InitState initState = PackManager::InitState::FirstInit;
     PackManager::InitError initError = PackManager::InitError::AllGood;
     PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
-    Vector<char> tmpFileTable;
+    Vector<uint8> buffer;
+    UnorderedMap<String, PackFormat::FileTableEntry*> initFileData;
+    Vector<ResourceArchive::FileInfo>& initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
@@ -125,7 +133,7 @@ inline void PackManagerImpl::DisableProcessing()
     }
 }
 
-inline const String& PackManagerImpl::FindPack(const FilePath& relativePathInPack) const
+inline const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
     return db->FindPack(relativePathInPack);
 }
@@ -143,7 +151,7 @@ inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
 inline PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
     uint32 index = GetPackIndex(packName);
-    return packs[index];
+    return packs.at(index);
 }
 
 inline const Vector<PackManager::Pack>& PackManagerImpl::GetAllState() const

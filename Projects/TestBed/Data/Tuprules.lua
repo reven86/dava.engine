@@ -3,7 +3,7 @@ require("TupState")
 
 tupState = TupState.New({
     outputDir = "../.output",
-    outputDbName = "testbed",
+    outputDbName = "",
     intermediateDir = "../.tmp"
 })
 
