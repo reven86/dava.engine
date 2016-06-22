@@ -103,6 +103,9 @@ extern void FrameworkWillTerminate();
 
     mainWindowController->willQuit = true;
 
+    Core::Instance()->FocusLost();
+    Core::Instance()->GoBackground(false);
+
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
 #if defined(__DAVAENGINE_STEAM__)
