@@ -367,6 +367,9 @@ void CoreWin32Platform::Run()
         }
     }
 
+    Core::Instance()->FocusLost();
+    Core::Instance()->GoBackground(false);
+
     Core::Instance()->SystemAppFinished();
 #if defined(__DAVAENGINE_STEAM__)
     Steam::Deinit();
