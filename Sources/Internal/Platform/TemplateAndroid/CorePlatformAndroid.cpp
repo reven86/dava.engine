@@ -207,6 +207,7 @@ void CorePlatformAndroid::StartForeground()
             DAVA::Core::Instance()->SetIsActive(true);
         }
         DAVA::Core::Instance()->GoForeground();
+        DAVA::Core::Instance()->FocusReceived();
 
         if (!foreground)
             rhi::ResumeRendering();
@@ -230,6 +231,7 @@ void CorePlatformAndroid::StopForeground(bool isLock)
         DAVA::Core::Instance()->SetIsActive(false);
     }
     DAVA::Core::Instance()->GoBackground(isLock);
+    DAVA::Core::Instance()->FocusLost();
 
     if (foreground)
         rhi::SuspendRendering();
