@@ -219,6 +219,8 @@ bool SceneExporterTool::InitializeInternal()
 
 void SceneExporterTool::ProcessInternal()
 {
+    Texture::SetDefaultGPU(GPU_ORIGIN); // todo: discuss vith V.K.
+
     AssetCacheClient cacheClient(true);
 
     SceneExporter::Params exportingParams;

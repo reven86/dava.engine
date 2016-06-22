@@ -1043,7 +1043,7 @@ bool TextureDescriptor::IsPresetValid(const KeyedArchive* presetArchive) const
     const int32 version = presetArchive->GetInt32("version");
     if (version < CURRENT_VERSION)
     {
-        Logger::Warning("Trying to load old version %d", version);
+        Logger::Warning("Loading old preset version %d. Current is %d", version, CURRENT_VERSION);
     }
     else if (version > CURRENT_VERSION)
     {
@@ -1100,6 +1100,11 @@ bool TextureDescriptor::DeserializeFromPreset(const KeyedArchive* presetArchive)
                 compressionGPU.convertedFileCrc = 0;
             }
         }
+    }
+
+    if (presetArchive->GetInt32("version") < 12)
+    {
+        Validator::FillImageContainerFromFormat(*this);
     }
 
     return true;
