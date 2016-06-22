@@ -5,6 +5,7 @@ project      ( ResourceArchiver )
 set( NO_CEF                 true)
  
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set          ( NO_CEF true)
 
 include      ( CMake-common )
 

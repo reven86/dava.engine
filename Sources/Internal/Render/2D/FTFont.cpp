@@ -551,7 +551,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
     // Transform width from FT points to pixels
-    metrics.width = FtCeil(layoutWidth) >> ftToPixelShift;
+    float32 totalWidth = float32(layoutWidth) / ftToPixelScale;
 
     if (!contentScaleIncluded)
     {
@@ -560,8 +560,12 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         metrics.drawRect.dx = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
         metrics.drawRect.dy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
         metrics.baseline = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
-        metrics.width = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.width))));
         metrics.height = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.height))));
+        metrics.width = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(totalWidth)));
+    }
+    else
+    {
+        metrics.width = int32(ceilf(totalWidth));
     }
     return metrics;
 }

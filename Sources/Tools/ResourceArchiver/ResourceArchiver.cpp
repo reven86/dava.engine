@@ -4,6 +4,7 @@
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "Utils/Utils.h"
+#include "Utils/StringUtils.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
@@ -234,20 +235,36 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
-bool CollectFiles(const Vector<String>& sources, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
+bool CollectFiles(const Vector<String>& sources, String cropBase, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
+    FilePath cropBasePath(cropBase);
+    if (cropBase.empty() == false && (cropBasePath.IsDirectoryPathname() == false || FileSystem::Instance()->IsDirectory(cropBasePath) == false))
+    {
+        Logger::Warning("Cropped path '%s' is not an existing directory", cropBase.c_str());
+        cropBase.clear();
+    }
+
     for (String source : sources)
     {
+        String croppedSource;
+        if (!cropBase.empty() && StringUtils::StartsWith(source, cropBase))
+        {
+            DVASSERT(source.size() >= cropBase.size());
+            croppedSource.assign(source.begin() + cropBase.size(), source.end());
+        }
+
         FilePath sourcePath(source);
         if (sourcePath.IsDirectoryPathname())
         {
-            CollectAllFilesInDirectory(sourcePath, sourcePath.GetLastDirectoryName() + '/', addHiddenFiles, collectedFiles);
+            String archivePath = (croppedSource.empty() ? sourcePath.GetLastDirectoryName() + '/' : croppedSource);
+            CollectAllFilesInDirectory(sourcePath, archivePath, addHiddenFiles, collectedFiles);
         }
         else
         {
+            String archivePath = (croppedSource.empty() ? sourcePath.GetFilename() : croppedSource);
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
-            collectedFile.archivePath = sourcePath.GetFilename();
+            collectedFile.archivePath = archivePath;
             collectedFiles.push_back(collectedFile);
         }
     }
@@ -480,7 +497,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 bool CreateArchive(const Params& params)
 {
     Vector<CollectedFile> collectedFiles;
-    if (false == CollectFiles(params.sourcesList, params.addHiddenFiles, collectedFiles))
+    if (false == CollectFiles(params.sourcesList, params.croppedPath, params.addHiddenFiles, collectedFiles))
     {
         Logger::Error("Collecting files error");
         return false;
