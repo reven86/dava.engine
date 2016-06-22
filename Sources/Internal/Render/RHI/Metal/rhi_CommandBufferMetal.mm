@@ -277,6 +277,7 @@ CommandBufferMetal_t
     id<MTLCommandBuffer> buf;
 
     id<MTLTexture> rt;
+    MTLPixelFormat color_fmt;
     Handle cur_ib;
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
@@ -412,7 +413,7 @@ CommandBufferMetal_t::Execute()
             Handle ps = ((CommandMTL_SetPipelineState*)cmd)->ps;
             unsigned layoutUID = ((CommandMTL_SetPipelineState*)cmd)->vdeclUID;
 
-            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, ds_used, encoder);
+            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
             StatSet::IncStat(stat_SET_PS, 1);
         }
@@ -791,6 +792,7 @@ RenderPassMetal_t::Initialize()
 
         cb->buf = buf;
         cb->rt = desc.colorAttachments[0].texture;
+        cb->color_fmt = desc.colorAttachments[0].texture.pixelFormat;
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
@@ -820,6 +822,7 @@ RenderPassMetal_t::Initialize()
             [cb->encoder retain];
             cb->buf = buf;
             cb->rt = desc.colorAttachments[0].texture;
+            cb->color_fmt = desc.colorAttachments[0].texture.pixelFormat;
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
@@ -980,6 +983,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
 
         cb->buf = pass->buf;
         cb->rt = pass->desc.colorAttachments[0].texture;
+        cb->color_fmt = pass->desc.colorAttachments[0].texture.pixelFormat;
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
@@ -1013,6 +1017,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             [cb->encoder retain];
             cb->buf = pass->buf;
             cb->rt = pass->desc.colorAttachments[0].texture;
+            cb->color_fmt = pass->desc.colorAttachments[0].texture.pixelFormat;
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
@@ -1171,7 +1176,7 @@ metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->ds_used, cb->encoder);
+    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->color_fmt, cb->ds_used, cb->encoder);
     cb->cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
     StatSet::IncStat(stat_SET_PS, 1);
 #else

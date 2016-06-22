@@ -250,7 +250,7 @@ public:
     FragmentProg fprog;
 
     id<MTLRenderPipelineState> state;
-    id<MTLRenderPipelineState> state_nodepth;
+    //    id<MTLRenderPipelineState> state_nodepth;
 
     VertexLayout layout;
     MTLRenderPipelineDescriptor* desc;
@@ -258,6 +258,7 @@ public:
     state_t
     {
         uint32 layoutUID;
+        MTLPixelFormat color_format;
         id<MTLRenderPipelineState> state;
         uint32 stride;
         uint32 ds_used : 1;
@@ -899,13 +900,189 @@ VertexStreamCount(Handle ps)
 }
 
 uint32
-SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce)
+SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce)
 {
     uint32 stride = 0;
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
 
     DVASSERT(psm);
 
+    if (layoutUID == VertexLayout::InvalidUID
+        && color_fmt == MTLPixelFormatBGRA8Unorm
+        && ds_used
+        )
+    {
+        [ce setRenderPipelineState:psm->state];
+        stride = psm->layout.Stride();
+    }
+    else
+    {
+        bool do_add = true;
+        unsigned si = DAVA::InvalidIndex;
+
+        for (unsigned i = 0; i != psm->altState.size(); ++i)
+        {
+            if (psm->altState[i].layoutUID == layoutUID && psm->altState[i].color_format == color_fmt && psm->altState[i].ds_used == ds_used)
+            {
+                si = i;
+                do_add = false;
+                break;
+            }
+        }
+
+        if (do_add)
+        {
+            PipelineStateMetal_t::state_t state;
+            const VertexLayout* layout = VertexLayout::Get(layoutUID);
+            MTLRenderPipelineDescriptor* rp_desc = [MTLRenderPipelineDescriptor new];
+            MTLRenderPipelineReflection* ps_info = nil;
+            NSError* rs_err = nil;
+
+            if (ds_used)
+            {
+                rp_desc.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatStencil8;
+            }
+            else
+            {
+                rp_desc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+            }
+
+            rp_desc.colorAttachments[0] = psm->desc.colorAttachments[0];
+            rp_desc.colorAttachments[0].pixelFormat = color_fmt;
+            rp_desc.sampleCount = 1;
+            rp_desc.vertexFunction = psm->desc.vertexFunction;
+            rp_desc.fragmentFunction = psm->desc.fragmentFunction;
+
+            for (unsigned i = 0; i != psm->layout.ElementCount(); ++i)
+            {
+                unsigned attr_i = _Metal_VertexAttribIndex(psm->layout.ElementSemantics(i), psm->layout.ElementSemanticsIndex(i));
+                bool attr_set = false;
+                unsigned stream_i = layout->ElementStreamIndex(i);
+
+                for (unsigned j = 0; j != layout->ElementCount(); ++j)
+                {
+                    if (layout->ElementSemantics(j) == psm->layout.ElementSemantics(i) && layout->ElementSemanticsIndex(j) == psm->layout.ElementSemanticsIndex(i))
+                    {
+                        MTLVertexFormat fmt = MTLVertexFormatInvalid;
+
+                        switch (psm->layout.ElementDataType(i))
+                        {
+                        case VDT_FLOAT:
+                        {
+                            switch (psm->layout.ElementDataCount(i))
+                            {
+                            case 1:
+                                fmt = MTLVertexFormatFloat;
+                                break;
+                            case 2:
+                                fmt = MTLVertexFormatFloat2;
+                                break;
+                            case 3:
+                                fmt = MTLVertexFormatFloat3;
+                                break;
+                            case 4:
+                                fmt = MTLVertexFormatFloat4;
+                                break;
+                            }
+                        }
+                        break;
+
+                        case VDT_HALF:
+                        {
+                            switch (psm->layout.ElementDataCount(i))
+                            {
+                            case 1:
+                                //                                fmt = MTLVertexFormatHalf;
+                                break;
+                            case 2:
+                                fmt = MTLVertexFormatHalf2;
+                                break;
+                            case 3:
+                                fmt = MTLVertexFormatHalf3;
+                                break;
+                            case 4:
+                                fmt = MTLVertexFormatHalf4;
+                                break;
+                            }
+                        }
+                        break;
+
+                        case VDT_UINT8:
+                        case VDT_UINT8N:
+                        {
+                            switch (psm->layout.ElementDataCount(i))
+                            {
+                            //                                    case 1 : fmt = MTLVertexFormatUCharNormalized; break;
+                            case 2:
+                                fmt = MTLVertexFormatUChar2Normalized;
+                                break;
+                            case 3:
+                                fmt = MTLVertexFormatUChar3Normalized;
+                                break;
+                            case 4:
+                                fmt = MTLVertexFormatUChar4Normalized;
+                                break;
+                            }
+                        }
+                        break;
+
+                        default:
+                            break;
+                        }
+
+                        rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = stream_i;
+                        rp_desc.vertexDescriptor.attributes[attr_i].offset = layout->ElementOffset(j);
+                        rp_desc.vertexDescriptor.attributes[attr_i].format = fmt;
+
+                        attr_set = true;
+                        break;
+                    }
+                }
+
+                if (!attr_set)
+                {
+                    Logger::Error("vertex-layout mismatch");
+                    Logger::Info("pipeline-state layout:");
+                    psm->layout.Dump();
+                    Logger::Info("packet layout:");
+                    layout->Dump();
+                    DVASSERT(!"kaboom!");
+                }
+            }
+
+            for (unsigned s = 0; s != layout->StreamCount(); ++s)
+            {
+                rp_desc.vertexDescriptor.layouts[s].stepFunction = (layout->StreamFrequency(s) == VDF_PER_VERTEX) ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+                rp_desc.vertexDescriptor.layouts[s].stepRate = 1;
+                rp_desc.vertexDescriptor.layouts[s].stride = layout->Stride(s);
+            }
+
+            state.layoutUID = layoutUID;
+            state.state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
+            state.color_format = color_fmt;
+            state.ds_used = ds_used;
+            state.stride = layout->Stride();
+
+            if (state.state != nil)
+            {
+                si = psm->altState.size();
+                psm->altState.push_back(state);
+            }
+            else
+            {
+                if (rs_err != nil)
+                    Logger::Error("failed to create alt-ps : %s", rs_err.localizedDescription.UTF8String);
+            }
+        }
+
+        DVASSERT(si != DAVA::InvalidIndex);
+        [ce setRenderPipelineState:psm->altState[si].state];
+        stride = psm->altState[si].stride;
+    }
+
+    /*
     if (layoutUID == VertexLayout::InvalidUID)
     {
         if (ds_used)
@@ -1095,7 +1272,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
         [ce setRenderPipelineState:psm->altState[si].state];
         stride = psm->altState[si].stride;
     }
-
+*/
     return stride;
 }
 

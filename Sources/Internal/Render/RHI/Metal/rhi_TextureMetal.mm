@@ -208,7 +208,7 @@ static bool
 _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
 {
     bool success = true;
-    MTLPixelFormat pf = (texDesc.isRenderTarget) ? /*MetalRenderableTextureFormat(texDesc.format)*/MTLPixelFormatBGRA8Unorm : MetalTextureFormat(texDesc.format);
+    MTLPixelFormat pf = (texDesc.isRenderTarget) ? MetalRenderableTextureFormat(texDesc.format) : MetalTextureFormat(texDesc.format);
 
     //    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
     MTLTextureDescriptor* desc = [MTLTextureDescriptor new];
