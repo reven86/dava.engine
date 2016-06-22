@@ -134,7 +134,7 @@ static void
 metal_Resume()
 {
     //    TextureMetal::MarkAllNeedRestore();
-    TextureMetal::ReCreateAll();
+    //TextureMetal::ReCreateAll();
     _Metal_ScreenshotCallbackSync.Lock();
     _Metal_Suspended = false;
     _Metal_ScreenshotCallbackSync.Unlock();
