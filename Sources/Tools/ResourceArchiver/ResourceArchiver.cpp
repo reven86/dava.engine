@@ -433,47 +433,62 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     Vector<uint8> namesOriginal = SpliceFileNames(collectedFiles);
     namesBlock.compressedNames.reserve(namesOriginal.size());
 
-    if (!GetCompressor(Compressor::Type::Lz4HC)->Compress(namesOriginal, namesBlock.compressedNames))
+    if (!namesOriginal.empty())
     {
-        Logger::Error("Can't compress names block");
-        return false;
+        if (!GetCompressor(Compressor::Type::Lz4HC)->Compress(namesOriginal, namesBlock.compressedNames))
+        {
+            Logger::Error("Can't compress names block");
+            return false;
+        }
     }
 
-    namesBlock.compressedCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(namesBlock.compressedNames.data()),
-                                                  static_cast<uint32>(namesBlock.compressedNames.size()));
+    namesBlock.compressedCrc32 = CRC32::ForBuffer(namesBlock.compressedNames.data(), namesBlock.compressedNames.size());
 
     uint32 fileDataSize = static_cast<uint32>(filesDataBlock.files.size() * sizeof(PackFormat::FileTableEntry));
     uint32 fileTableSize = fileDataSize + static_cast<uint32>(namesBlock.compressedNames.size() + sizeof(namesBlock.compressedCrc32));
+
+    if (0 == fileDataSize)
+    {
+        fileTableSize = 0;
+    }
 
     // place in one buffer full FileTableBlock first all filesData then compressed names and compressedNamesCrc32
     Vector<uint8> tmpFileTable;
     tmpFileTable.resize(fileTableSize);
 
-    // copy files data
-    std::copy_n(filesDataBlock.files.data(), filesDataBlock.files.size(), reinterpret_cast<PackFormat::FileTableEntry*>(tmpFileTable.data()));
+    if (!filesDataBlock.files.empty())
+    {
+        // copy files data
+        std::copy_n(filesDataBlock.files.data(), filesDataBlock.files.size(), reinterpret_cast<PackFormat::FileTableEntry*>(tmpFileTable.data()));
+    }
 
-    // copy compressed names data
-    std::copy_n(namesBlock.compressedNames.data(), namesBlock.compressedNames.size(), &tmpFileTable[fileDataSize]);
+    if (!namesBlock.compressedNames.empty())
+    {
+        // copy compressed names data
+        std::copy_n(namesBlock.compressedNames.data(), namesBlock.compressedNames.size(), &tmpFileTable.at(fileDataSize));
+        // copy compressed crc32
+        std::copy_n(&namesBlock.compressedCrc32, 1, reinterpret_cast<uint32*>(&tmpFileTable.at(fileTableSize - sizeof(namesBlock.compressedCrc32))));
+    }
 
-    // copy compressed crc32
-    std::copy_n(&namesBlock.compressedCrc32, 1, reinterpret_cast<uint32*>(&tmpFileTable[fileDataSize - sizeof(namesBlock.compressedCrc32)]));
+    if (fileTableSize > 0)
+    {
+        uint32 numBytesWrite = outputFile->Write(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
+        if (numBytesWrite != tmpFileTable.size())
+        {
+            Logger::Error("Can't write fileTableBlock");
+            return false;
+        }
+    }
 
     footerBlock.info.filesTableSize = fileTableSize;
-    footerBlock.info.filesTableCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(tmpFileTable.data()), static_cast<uint32>(tmpFileTable.size()));
+    footerBlock.info.filesTableCrc32 = CRC32::ForBuffer(tmpFileTable.data(), tmpFileTable.size());
     footerBlock.info.packArchiveMarker = PackFormat::FileMarker;
     footerBlock.info.numFiles = static_cast<uint32>(filesDataBlock.files.size());
     footerBlock.info.namesSizeCompressed = static_cast<uint32>(namesBlock.compressedNames.size());
     footerBlock.info.namesSizeOriginal = static_cast<uint32>(namesOriginal.size());
 
-    footerBlock.infoCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerBlock.info), sizeof(footerBlock.info));
+    footerBlock.infoCrc32 = CRC32::ForBuffer(&footerBlock.info, sizeof(footerBlock.info));
     footerBlock.reserved.fill(0);
-
-    uint32 numBytesWrite = outputFile->Write(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
-    if (numBytesWrite != tmpFileTable.size())
-    {
-        Logger::Error("Can't write fileTableBlock");
-        return false;
-    }
 
     if (!WriteHeaderBlock(outputFile, footerBlock))
     {
@@ -516,12 +531,6 @@ bool CreateArchive(const Params& params)
     if (false == CollectFiles(params.sourcesList, params.croppedPath, params.addHiddenFiles, collectedFiles))
     {
         Logger::Error("Collecting files error");
-        return false;
-    }
-
-    if (collectedFiles.empty())
-    {
-        Logger::Error("No input files for pack");
         return false;
     }
 

@@ -155,12 +155,6 @@ int ArchivePackTool::ProcessInternal()
     }
     }
 
-    if (sources.empty())
-    {
-        Logger::Error("No sources specified");
-        return ResourceArchiverResult::ERROR_WRONG_COMMAND_LINE;
-    }
-
     FilePath logFilePath(logFileName);
     if (!logFilePath.IsEmpty())
     {

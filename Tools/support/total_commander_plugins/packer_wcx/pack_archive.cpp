@@ -71,104 +71,107 @@ PackArchive::PackArchive(const std::string& archiveName)
         throw std::runtime_error("incorrect marker in pack file: " + fileName);
     }
 
-    uint64_t startFilesTableBlock =
-    size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
-
-    std::vector<char> tmpBuffer;
-    tmpBuffer.resize(packFile.footer.info.filesTableSize);
-
-    if (!file.seekg(startFilesTableBlock, std::ios_base::beg))
+    if (footerBlock.info.numFiles > 0)
     {
-        throw std::runtime_error(
-        "can't seek to filesTable block in file: " + fileName);
+        uint64_t startFilesTableBlock =
+        size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
+
+        std::vector<char> tmpBuffer;
+        tmpBuffer.resize(packFile.footer.info.filesTableSize);
+
+        if (!file.seekg(startFilesTableBlock, std::ios_base::beg))
+        {
+            throw std::runtime_error(
+            "can't seek to filesTable block in file: " + fileName);
+        }
+
+        file.read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        if (!file)
+        {
+            throw std::runtime_error(
+            "can't read filesTable block from file: " + fileName);
+        }
+
+        uint32_t crc32filesTable = CRC32ForBuffer(tmpBuffer.data(),
+                                                  packFile.footer.info
+                                                  .filesTableSize);
+        if (crc32filesTable != packFile.footer.info.filesTableCrc32)
+        {
+            throw std::runtime_error(
+            "crc32 not match in filesTable in file: " + fileName);
+        }
+
+        std::vector<uint8_t>
+        & compressedNamesBuffer = packFile.filesTable.names.compressedNames;
+        compressedNamesBuffer
+        .resize(packFile.footer.info.namesSizeCompressed, '\0');
+
+        uint32_t
+        sizeOfFilesData =
+        packFile.footer.info.numFiles * sizeof(FileTableEntry);
+        const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
+
+        packFile.filesTable.names.compressedNames
+        .resize(packFile.footer.info.namesSizeCompressed);
+
+        std::copy_n(startOfCompressedNames,
+                    packFile.footer.info.namesSizeCompressed,
+                    reinterpret_cast<char*>(packFile.filesTable.names
+                                            .compressedNames.data()));
+
+        std::vector<uint8_t> originalNamesBuffer;
+        originalNamesBuffer.resize(packFile.footer.info.namesSizeOriginal);
+        if (!LZ4CompressorDecompress(compressedNamesBuffer, originalNamesBuffer))
+        {
+            throw std::runtime_error("can't uncompress file names");
+        }
+
+        std::string fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
+
+        std::vector<FileTableEntry>& fileTable = packFile.filesTable.data.files;
+        fileTable.resize(footerBlock.info.numFiles);
+
+        FileTableEntry
+        * startFilesData = reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
+
+        std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
+
+        filesInfo.reserve(footerBlock.info.numFiles);
+
+        size_t numFiles =
+        std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
+                      {
+                          return '\0' == ch;
+                      });
+        if (numFiles != fileTable.size())
+        {
+            throw std::runtime_error("number of file names not match with table");
+        }
+
+        // now fill support structures for fast search by filename
+        size_t fileNameIndex{ 0 };
+
+        std::for_each(begin(fileTable),
+                      end(fileTable),
+                      [&](FileTableEntry& fileEntry)
+                      {
+                          const char* fileNameLoc = &fileNames[fileNameIndex];
+                          mapFileData.emplace(fileNameLoc, &fileEntry);
+
+                          FileInfo info;
+
+                          info.relativeFilePath = fileNameLoc;
+                          info.originalSize = fileEntry.originalSize;
+                          info.compressedSize = fileEntry.compressedSize;
+                          info.hash = fileEntry.compressedCrc32;
+                          info.compressionType = fileEntry.type;
+
+                          filesInfo.push_back(info);
+
+                          fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
+                          ++fileNameIndex;
+                      });
     }
-
-    file.read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
-    if (!file)
-    {
-        throw std::runtime_error(
-        "can't read filesTable block from file: " + fileName);
-    }
-
-    uint32_t crc32filesTable = CRC32ForBuffer(tmpBuffer.data(),
-                                              packFile.footer.info
-                                              .filesTableSize);
-    if (crc32filesTable != packFile.footer.info.filesTableCrc32)
-    {
-        throw std::runtime_error(
-        "crc32 not match in filesTable in file: " + fileName);
-    }
-
-    std::vector<uint8_t>
-    & compressedNamesBuffer = packFile.filesTable.names.compressedNames;
-    compressedNamesBuffer
-    .resize(packFile.footer.info.namesSizeCompressed, '\0');
-
-    uint32_t
-    sizeOfFilesData =
-    packFile.footer.info.numFiles * sizeof(FileTableEntry);
-    const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
-
-    packFile.filesTable.names.compressedNames
-    .resize(packFile.footer.info.namesSizeCompressed);
-
-    std::copy_n(startOfCompressedNames,
-                packFile.footer.info.namesSizeCompressed,
-                reinterpret_cast<char*>(packFile.filesTable.names
-                                        .compressedNames.data()));
-
-    std::vector<uint8_t> originalNamesBuffer;
-    originalNamesBuffer.resize(packFile.footer.info.namesSizeOriginal);
-    if (!LZ4CompressorDecompress(compressedNamesBuffer, originalNamesBuffer))
-    {
-        throw std::runtime_error("can't uncompress file names");
-    }
-
-    std::string fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
-
-    std::vector<FileTableEntry>& fileTable = packFile.filesTable.data.files;
-    fileTable.resize(footerBlock.info.numFiles);
-
-    FileTableEntry
-    * startFilesData = reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
-
-    std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
-
-    filesInfo.reserve(footerBlock.info.numFiles);
-
-    size_t numFiles =
-    std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
-                  {
-                      return '\0' == ch;
-                  });
-    if (numFiles != fileTable.size())
-    {
-        throw std::runtime_error("number of file names not match with table");
-    }
-
-    // now fill support structures for fast search by filename
-    size_t fileNameIndex{ 0 };
-
-    std::for_each(begin(fileTable),
-                  end(fileTable),
-                  [&](FileTableEntry& fileEntry)
-                  {
-                      const char* fileNameLoc = &fileNames[fileNameIndex];
-                      mapFileData.emplace(fileNameLoc, &fileEntry);
-
-                      FileInfo info;
-
-                      info.relativeFilePath = fileNameLoc;
-                      info.originalSize = fileEntry.originalSize;
-                      info.compressedSize = fileEntry.compressedSize;
-                      info.hash = fileEntry.compressedCrc32;
-                      info.compressionType = fileEntry.type;
-
-                      filesInfo.push_back(info);
-
-                      fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
-                      ++fileNameIndex;
-                  });
 
     l << "end constructor\n";
     l << "files:\n";

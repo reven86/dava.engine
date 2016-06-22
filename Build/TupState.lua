@@ -274,9 +274,9 @@ function TupState.BuildPacks(self)
                 mergePackCmdText .. mergePackCmd, mergePackOutput)
 
             -- archivate
-            local archiveCmd = self.cmd.fwzip .. " a -bd -tzip %o @%f"
+            local archiveCmd = self.cmd.fwResourceArchive .. " -pack -compression lz4hc -listfile %f %o"
             local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
-            local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".pack"
+            local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
 
             superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, archiveOutput)

@@ -302,7 +302,7 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         }
 
         std::string packfile = hashpath;
-        packfile.replace(packfile.find(".hash"), 5, ".pack");
+        packfile.replace(packfile.find(".hash"), 5, ".dvpk");
 
         std::streamsize size = std::ifstream(packfile, std::ios_base::ate | std::ios_base::binary).tellg();
         if (size == -1)
