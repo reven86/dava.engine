@@ -79,7 +79,6 @@ metal_QueryBuffer_Delete(Handle handle)
 
     if (buf)
     {
-        [buf->uid setPurgeableState:MTLPurgeableStateEmpty];
         buf->uid = nil;
     }
 

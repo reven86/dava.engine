@@ -62,7 +62,7 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
             vb->size = desc.size;
             vb->uid = uid;
 
-            [vb->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+            [vb->uid retain];
         }
     }
     else
@@ -102,7 +102,7 @@ metal_VertexBuffer_Delete(Handle vb)
         //DAVA::Logger::Info( "vb-del %i  %p sz= %u", RHI_HANDLE_INDEX(vb), [self->uid contents], self->size );
         if (self->uid)
         {
-            [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid release];
             [self->uid release];
             self->uid = nil;
             self->data = nullptr;

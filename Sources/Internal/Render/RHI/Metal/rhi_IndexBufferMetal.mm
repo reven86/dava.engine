@@ -94,7 +94,7 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
             ib->uid = uid;
             ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
-            [ib->uid setPurgeableState:MTLPurgeableStateNonVolatile];
+            [ib->uid retain];
         }
     }
     else
@@ -134,7 +134,7 @@ metal_IndexBuffer_Delete(Handle ib)
         //DAVA::Logger::Info( "ib-del %i  %p sz= %u", RHI_HANDLE_INDEX(ib), [self->uid contents], self->size );
         if (self->uid)
         {
-            [self->uid setPurgeableState:MTLPurgeableStateEmpty];
+            [self->uid release];
             [self->uid release];
             self->uid = nil;
             self->data = nullptr;

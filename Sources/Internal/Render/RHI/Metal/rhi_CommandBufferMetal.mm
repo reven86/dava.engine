@@ -1279,7 +1279,7 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     cmd->y = y;
     cmd->w = w;
     cmd->h = h;
-	
+    
 #endif
 }
 
@@ -2062,7 +2062,6 @@ metal_Present(Handle syncObject)
                                                   ::free(_Metal_ScreenshotData);
                                                   _Metal_PendingScreenshotCallback = nullptr;
                                                   _Metal_ScreenshotData = nullptr;
-                                                  [_ScreenshotTexture setPurgeableState:MTLPurgeableStateEmpty];
                                                   _ScreenshotTexture = nil;
                                               }
 
