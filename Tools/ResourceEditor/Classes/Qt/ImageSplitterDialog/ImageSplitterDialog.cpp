@@ -27,14 +27,14 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget* parent)
 
     ui->path->SetFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
-    DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
-    if (defaultPath.IsEmpty())
+    DAVA::FilePath currentPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
+    if (currentPath.IsEmpty())
     {
-        defaultPath = GetDefaultPath();
+        currentPath = GetDefaultPath();
     }
 
-    ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
-    ui->path->SetPath(QString::fromStdString(defaultPath.GetAbsolutePathname()));
+    ui->path->SetCurrentFolder(QString::fromStdString(currentPath.GetDirectory().GetAbsolutePathname()));
+    ui->path->SetPath(QString::fromStdString(currentPath.GetAbsolutePathname()));
     ui->saveBtn->setFocus();
     lastSelectedFile = "";
     ConnectSignals();
@@ -103,7 +103,7 @@ void ImageSplitterDialog::PathChanged(const QString& path)
     }
     else
     {
-        ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
+        ui->path->SetCurrentFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
         ui->path->SetPath(QString());
         if (!image)
         {

@@ -529,7 +529,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
         }
     }
 
-    return exportFailed.empty();
+    return (exportFailed.size() < exportingParams.exportForGPUs.size());
 }
 
 bool SceneExporter::ExportHeightmapFile(const FilePath& heightmapPathname, const String& heightmapLink)

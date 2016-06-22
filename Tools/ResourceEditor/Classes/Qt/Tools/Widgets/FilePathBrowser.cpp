@@ -37,9 +37,9 @@ void FilePathBrowser::SetHint(const QString& hint)
     setPlaceholderText(hintText);
 }
 
-void FilePathBrowser::SetDefaultFolder(const QString& _path)
+void FilePathBrowser::SetCurrentFolder(const QString& _path)
 {
-    defaultFolder = _path;
+    currentFolder = _path;
 }
 
 void FilePathBrowser::AllowInvalidPath(bool allow)
@@ -55,7 +55,7 @@ void FilePathBrowser::SetPath(const QString& _path)
 
     if (type == eFileType::Folder)
     {
-        SetDefaultFolder(path);
+        SetCurrentFolder(path);
     }
 }
 
@@ -90,16 +90,16 @@ QSize FilePathBrowser::sizeHint() const
     return hint;
 }
 
-QString FilePathBrowser::DefaultBrowsePath()
+QString FilePathBrowser::CurrentBrowsePath()
 {
     const QFileInfo pathInfo(text());
-    const QFileInfo defaultInfo(defaultFolder);
+    const QFileInfo defaultInfo(currentFolder);
 
     if (pathInfo.isFile())
         return path;
 
     if (defaultInfo.isDir())
-        return defaultFolder;
+        return currentFolder;
 
     return QString();
 }
@@ -109,14 +109,17 @@ void FilePathBrowser::OnBrowse()
     QString newPath;
     if (type == eFileType::File)
     {
-        newPath = FileDialog::getOpenFileName(this, hintText, DefaultBrowsePath(), filter, nullptr, 0);
+        newPath = FileDialog::getOpenFileName(this, hintText, CurrentBrowsePath(), filter, nullptr, 0);
     }
     else
     {
-        newPath = FileDialog::getExistingDirectory(this, hintText, DefaultBrowsePath());
+        newPath = FileDialog::getExistingDirectory(this, hintText, CurrentBrowsePath());
     }
 
-    TryToAcceptPath(newPath);
+    if (!newPath.isEmpty())
+    {
+        TryToAcceptPath(newPath);
+    }
 }
 
 void FilePathBrowser::TryToAcceptPath()

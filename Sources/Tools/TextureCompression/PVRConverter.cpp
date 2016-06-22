@@ -195,8 +195,10 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         convertedImages.push_back(convertedImage);
     }
 
+    DVASSERT(convertedImages.empty() == false);
+
     FilePath convertedTexturePath = GetConvertedTexturePath(descriptor, gpuFamily);
-    if (ImageSystem::Save(convertedTexturePath, convertedImages) != eErrorCode::SUCCESS)
+    if (ImageSystem::Save(convertedTexturePath, convertedImages, convertedImages[0]->format) != eErrorCode::SUCCESS)
     {
         return FilePath();
     }
