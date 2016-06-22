@@ -41,7 +41,7 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
     bool fileOrDirAdded = false;
 
     ScopedPtr<FileList> fileList(new FileList(dirPath, addHidden));
-    for (auto file = 0; file < fileList->GetCount(); ++file)
+    for (uint32 file = 0; file < fileList->GetCount(); ++file)
     {
         if (fileList->IsNavigationDirectory(file))
         {
@@ -235,8 +235,22 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
+void ConvertToUnixPath(String& cropBase)
+{
+    std::transform(begin(cropBase), end(cropBase), begin(cropBase), [](char value)
+                   {
+                       if ('\\' == value)
+                       {
+                           value = '/';
+                       }
+                       return value;
+                   });
+}
+
 bool CollectFiles(const Vector<String>& sources, String cropBase, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
+    ConvertToUnixPath(cropBase);
+
     FilePath cropBasePath(cropBase);
     if (cropBase.empty() == false && (cropBasePath.IsDirectoryPathname() == false || FileSystem::Instance()->IsDirectory(cropBasePath) == false))
     {
@@ -246,6 +260,8 @@ bool CollectFiles(const Vector<String>& sources, String cropBase, bool addHidden
 
     for (String source : sources)
     {
+        ConvertToUnixPath(source);
+
         String croppedSource;
         if (!cropBase.empty() && StringUtils::StartsWith(source, cropBase))
         {

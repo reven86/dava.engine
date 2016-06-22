@@ -342,5 +342,5 @@ function TupState.BuildPacks(self)
 
     -- create super pack
     local superpackOutput = self.outputDir .. "/superpack.dvpk"
-    tup.rule(mergeSuperOutput, self.cmd.fwResourceArchive .. " -pack -compression none -listfile %f %o", superpackOutput)
+    tup.rule(mergeSuperOutput, self.cmd.fwResourceArchive .. " -pack -compression none -pathcrop " .. self.outputDir .. "/ -listfile %f %o", superpackOutput)
 end
