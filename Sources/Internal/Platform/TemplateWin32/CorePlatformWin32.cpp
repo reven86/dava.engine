@@ -1043,7 +1043,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             if (appCore)
             {
                 // unpress all pressed buttons
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
                 core->ClearMouseButtons();
                 appCore->OnSuspend();
             }
