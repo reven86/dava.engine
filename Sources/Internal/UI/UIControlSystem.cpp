@@ -25,6 +25,11 @@ namespace DAVA
 {
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
+bool drawDubleClick = false;
+Vector2 center;
+float32 radius;
+Color color = Color::White;
+
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -356,6 +361,11 @@ void UIControlSystem::Draw()
     }
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
+    if (drawDubleClick)
+    {
+        RenderSystem2D::Instance()->DrawCircle(center, radius, color);
+    }
+
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
@@ -582,6 +592,9 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
+        Logger::Info("!!!! CheckTimeAndPosition lastx %f, lasty %f", lastClickData.physPoint.dx, lastClickData.physPoint.dy);
+        Logger::Info("!!!! CheckTimeAndPosition currx %f, curry %f", newEvent->physPoint.dx, newEvent->physPoint.dy);
+        Logger::Info("!!!! CheckTimeAndPosition sqr   %f,  <    %d", point.SquareLength(), doubleClickRadiusSquared);
         if (point.SquareLength() < doubleClickRadiusSquared)
         {
             return true;
@@ -617,8 +630,11 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         if (newEvent->touchId == lastClickData.touchId)
         {
             lastClickData.lastClickEnded = true;
-            if (CheckTimeAndPosition(newEvent))
+            if (lastClickData.tapCount != 1 && CheckTimeAndPosition(newEvent))
             {
+                drawDubleClick = true;
+                center = newEvent->point;
+                radius = sqrt(doubleClickRadiusSquared);
                 tapCount = lastClickData.tapCount;
             }
         }
