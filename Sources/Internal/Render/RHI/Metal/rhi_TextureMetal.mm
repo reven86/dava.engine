@@ -739,7 +739,8 @@ ReCreateAll()
         memset(desc.initialData, 0, sizeof(desc.initialData));
         _Construct(self, desc);
 
-        self->MarkNeedRestore();
+        if (self->need_restoring)
+            self->MarkNeedRestore();
     }
 }
 
