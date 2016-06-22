@@ -381,6 +381,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
         }
 
         pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);
+        pass.depthStencilState = rhi::AcquireDepthStencilState(pass.depthStateDescriptor);
     }
 
     return fxDescriptors[key] = target;
