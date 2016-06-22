@@ -79,14 +79,14 @@ function TupState.New(userConf)
     self.cmd.fwdep = fwPath .. "../Tools/Bin/dep"    
     self.cmd.fwzip = fwPath .. "../Tools/Bin/7za"    
     self.cmd.fwsql = fwPath .. "../Tools/Bin/sqlite3"
-    -- TODO add ResourceArchiver tool path
+    self.cmd.fwResourceArchive = fwPath .. "../Tools/Bin/ResourceArchiver"
     
     if self.platform == "win32" then
         self.cmd.cat = "type 2> nul"
         self.cmd.fwzip = fwPath .. "../Tools/Bin/7z.exe"
         self.cmd.fwsql = self.cmd.fwsql .. ".exe"
         self.cmd.fwdep = self.cmd.fwdep .. ".exe" 
-        -- TODO add .exe on win
+        self.cmd.fwResourceArchive = self.cmd.fwResourceArchive .. ".exe"
     
         UtilConvertToPlatformPath(self.platform, self.cmd)
     end
@@ -341,6 +341,6 @@ function TupState.BuildPacks(self)
     tup.rule({ mergeSuperMask, superPackGroup }, mergeSuperCmdText .. mergeSuperCmd, mergeSuperOutput)
 
     -- create super pack
-    local superpackOutput = self.outputDir .. "/super.dvpk"
-    tup.rule(mergeSuperOutput, "echo %f > %o", superpackOutput) -- TODO change @echo to ResourceArchiver
+    local superpackOutput = self.outputDir .. "/superpack.dvpk"
+    tup.rule(mergeSuperOutput, self.cmd.fwResourceArchive .. " -pack -compression none -listfile %f %o", superpackOutput)
 end

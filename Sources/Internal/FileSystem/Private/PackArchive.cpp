@@ -40,7 +40,7 @@ void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& 
 
 void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                                 const String& fileNames,
-                                UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData,
+                                UnorderedMap<String, const PackFormat::FileTableEntry*>& mapFileData,
                                 Vector<ResourceArchive::FileInfo>& filesInfo)
 {
     filesInfo.reserve(packFile.footer.info.numFiles);
@@ -61,7 +61,7 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
     // now fill support structures for fast search by filename
     size_t fileNameIndex{ 0 };
 
-    std::for_each(begin(fileTable), end(fileTable), [&](PackFormat::FileTableEntry& fileEntry)
+    std::for_each(begin(fileTable), end(fileTable), [&](const PackFormat::FileTableEntry& fileEntry)
                   {
                       const char* fileNameLoc = &fileNames[fileNameIndex];
                       mapFileData.emplace(fileNameLoc, &fileEntry);

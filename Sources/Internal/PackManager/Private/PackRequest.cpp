@@ -9,15 +9,15 @@ namespace DAVA
 {
 PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_)
     : packManager(&packManager_)
-    , pack(&pack_)
+    , rootPack(&pack_)
 {
     DVASSERT(packManager != nullptr);
-    DVASSERT(pack != nullptr);
+    DVASSERT(rootPack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
-    CollectDownlodbleDependency(pack->name, dependencySet);
+    CollectDownlodbleDependency(rootPack->name, dependencySet);
 
-    if (pack->hashFromDB != 0) // not fully virtual pack
+    if (rootPack->hashFromDB != 0) // not fully virtual pack
     {
         dependencies.reserve(dependencySet.size() + 1);
     }
@@ -38,11 +38,11 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
     }
 
     // last step download pack itself (if it not virtual)
-    if (pack->hashFromDB != 0)
+    if (rootPack->hashFromDB != 0)
     {
         SubRequest subRequest;
 
-        subRequest.pack = pack;
+        subRequest.pack = rootPack;
         subRequest.status = SubRequest::Wait;
         subRequest.taskId = 0;
         dependencies.push_back(subRequest);
@@ -282,10 +282,10 @@ bool PackRequest::IsLoadingPackFileFinished()
                 currentPack.downloadError = downloadError;
                 currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
 
-                if (currentPack.name != pack->name)
+                if (currentPack.name != rootPack->name)
                 {
-                    pack->state = PackManager::Pack::Status::OtherError;
-                    pack->otherErrorMsg = "can't load dependency: " + currentPack.name;
+                    rootPack->state = PackManager::Pack::Status::OtherError;
+                    rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
                 subRequest.status = SubRequest::Error;
@@ -311,10 +311,10 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
     currentPack.state = PackManager::Pack::Status::OtherError;
     subRequest.status = SubRequest::Error;
 
-    if (pack->name != currentPack.name)
+    if (rootPack->name != currentPack.name)
     {
-        pack->state = PackManager::Pack::Status::OtherError;
-        pack->otherErrorMsg = "error with dependency: " + currentPack.name;
+        rootPack->state = PackManager::Pack::Status::OtherError;
+        rootPack->otherErrorMsg = "error with dependency: " + currentPack.name;
     }
 
     // inform user about problem with pack
@@ -487,10 +487,7 @@ void PackRequest::ChangePriority(float32 newPriority)
     for (SubRequest& subRequest : dependencies)
     {
         PackManager::Pack& pack = *subRequest.pack;
-        if (pack.priority < newPriority)
-        {
-            pack.priority = newPriority;
-        }
+        pack.priority = newPriority;
     }
 }
 
@@ -528,13 +525,19 @@ uint64 PackRequest::GetDownloadedSize() const
                       result += p->downloadedSize;
                   });
 
-    result += pack->downloadedSize;
+    result += rootPack->downloadedSize;
     return result;
+}
+
+const PackManager::Pack& PackRequest::GetErrorPack() const
+{
+    auto& subRequest = GetCurrentSubRequest();
+    return *subRequest.pack;
 }
 
 const String& PackRequest::GetErrorMessage() const
 {
-    return pack->otherErrorMsg;
+    return rootPack->otherErrorMsg;
 }
 
 } // end namespace DAVA

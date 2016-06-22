@@ -13,6 +13,8 @@ PackManager::~PackManager() = default;
 
 PackManager::IRequest::~IRequest() = default;
 
+PackManager::IInit::~IInit() = default;
+
 void PackManager::Initialize(const String& dbFileName_,
                              const FilePath& downloadPacksDir_,
                              const FilePath& readOnlyPacksDir_,
@@ -68,9 +70,14 @@ const PackManager::Pack& PackManager::FindPack(const String& packName) const
     return impl->GetPack(packName);
 }
 
-const PackManager::Pack& PackManager::RequestPack(const String& packID, float priority)
+const PackManager::Pack& PackManager::RequestPack(const String& packID)
 {
-    return impl->RequestPack(packID, priority);
+    return impl->RequestPack(packID);
+}
+
+void PackManager::ChangePackPriority(const String& packName, float newPriority)
+{
+    impl->ChangePackPriority(packName, newPriority);
 }
 
 const Vector<PackManager::Pack>& PackManager::GetPacks() const

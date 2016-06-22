@@ -7,7 +7,7 @@
 
 namespace DAVA
 {
-void PackManagerImpl::Initialize(const FilePath& dbFile_,
+void PackManagerImpl::Initialize(const String& dbFile_,
                                  const FilePath& localPacksDir_,
                                  const FilePath& readOnlyPacksDir_,
                                  const String& remotePacksURL_,
@@ -38,13 +38,6 @@ void PackManagerImpl::Initialize(const FilePath& dbFile_,
 
     initLocalDBFileName = architecture + ".db";
     initState = PackManager::InitState::Starting;
-
-    // TODO
-    // open DB and load packs state then mount all archives to FileSystem
-    //db.reset(new PacksDB(dbFile));
-    //db->InitializePacks(packs);
-    //MountDownloadedPacks(readOnlyPacksDir);
-    //MountDownloadedPacks(localPacksDir);
 }
 
 // start PackManager::IInitialization //////////////////////////////////////
@@ -136,20 +129,8 @@ void PackManagerImpl::Update()
 
 void PackManagerImpl::ContinueInitialization()
 {
-    // TODO
-    //        InitState
-    //        Starting,
-    //        MountingLocalPacks,
-    //        LoadingRequestFooter,
-    //        LoadingRequestFileTable,
-    //        CalculateLocalDataBaseHashAndCompare,
-    //        LoadingRequestDataBase,              // skip if hash match
-    //        UnpakingkDataBase,                   // skip if hash match
-    //        DeleteDownloadedPacksIfNotMatchHash, // skip if hash match
-    //        LoadingPacksDataFromDataBase,
-    //        MountingDownloadedPacks,
-    //        Ready,
-    //        Error
+    const PackManager::InitState beforeState = initState;
+
     if (PackManager::InitState::FirstInit == initState)
     {
         FirstTimeInit();
@@ -200,7 +181,7 @@ void PackManagerImpl::ContinueInitialization()
     }
     else if (PackManager::InitState::LoadingPacksDataFromLocalDB == initState)
     {
-        LoadingPacksData();
+        LoadPacksDataFromDB();
     }
     else if (PackManager::InitState::MountingDownloadedPacks == initState)
     {
@@ -209,6 +190,13 @@ void PackManagerImpl::ContinueInitialization()
     else if (PackManager::InitState::Ready == initState)
     {
         // happy end
+    }
+
+    const PackManager::InitState newState = initState;
+
+    if (newState != beforeState)
+    {
+        packManager->initStateChanged.Emit(*this);
     }
 }
 
@@ -270,7 +258,8 @@ void PackManagerImpl::AskFooter()
         }
 
         uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
-        downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, &footerOnServer, downloadOffset, sizeof(footerOnServer));
+        uint32 sizeofFooter = static_cast<uint32>(sizeof(footerOnServer));
+        downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, &footerOnServer, sizeofFooter, downloadOffset, sizeofFooter);
         DVASSERT(0 != downloadTaskId);
         initState = PackManager::InitState::LoadingRequestGetFooter;
     }
@@ -316,7 +305,7 @@ void PackManagerImpl::AskFileTable()
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(footerOnServer) + footerOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), downloadOffset, static_cast<uint32>(buffer.size()));
+    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), static_cast<uint32>(downloadOffset), static_cast<uint32>(buffer.size()));
     DVASSERT(0 != downloadTaskId);
     initState = PackManager::InitState::LoadingRequestGetFileTable;
 }
@@ -369,6 +358,7 @@ void PackManagerImpl::CalcLocalDBWitnRemoteCrc32()
         auto it = initFileData.find(initLocalDBFileName);
         if (it != end(initFileData))
         {
+            // on server side we not compress
             if (localCrc32 != it->second->originalCrc32)
             {
                 // we have to download new localDB file from server!
@@ -406,7 +396,7 @@ void PackManagerImpl::AskDB()
     uint64 downloadOffset = fileData.startPosition;
     uint64 downloadSize = fileData.compressedSize;
 
-    buffer.resize(downloadSize);
+    buffer.resize(static_cast<uint32>(downloadSize));
 
     downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
     DVASSERT(0 != downloadTaskId);
@@ -451,7 +441,7 @@ void PackManagerImpl::UnpackingDB()
         throw std::runtime_error("can't find local DB file on server in superpack: " + initLocalDBFileName);
     }
 
-    PackFormat::FileTableEntry& fileData = *it->second;
+    const PackFormat::FileTableEntry& fileData = *it->second;
 
     if (compressedCrc32 != fileData.compressedCrc32)
     {
@@ -526,24 +516,46 @@ void PackManagerImpl::DeleteOldPacks()
     initState = PackManager::InitState::LoadingPacksDataFromLocalDB;
 }
 
-const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, float32 priority)
+void PackManagerImpl::LoadPacksDataFromDB()
 {
-    priority = std::max(0.f, priority);
-    priority = std::min(1.f, priority);
-
-    auto& pack = GetPack(packName);
-    if (pack.state == PackManager::Pack::Status::NotRequested)
+    // open DB and load packs state then mount all archives to FileSystem
+    FilePath path("~doc:/" + dbFile);
+    if (FileSystem::Instance()->IsFile(path))
     {
-        requestManager->Push(packName, priority);
+        db.reset(new PacksDB(dbFile));
+        db->InitializePacks(packs);
+
+        initState = PackManager::InitState::MountingDownloadedPacks;
     }
     else
     {
-        if (requestManager->IsInQueue(packName))
-        {
-            requestManager->UpdatePriority(packName, priority);
-        }
+        throw std::runtime_error("no local DB file: " + path.GetStringValue());
+    }
+}
+
+void PackManagerImpl::MountDownloadedPacks()
+{
+    MountPacks(localPacksDir);
+    initState = PackManager::InitState::Ready;
+}
+
+const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
+{
+    auto& pack = GetPack(packName);
+    if (pack.state == PackManager::Pack::Status::NotRequested)
+    {
+        float priority = 0.0f;
+        requestManager->Push(packName, priority);
     }
     return pack;
+}
+
+void PackManagerImpl::ChangePackPriority(const String& packName, float newPriority) const
+{
+    if (requestManager->IsInQueue(packName))
+    {
+        requestManager->UpdatePriority(packName, newPriority);
+    }
 }
 
 void PackManagerImpl::MountPacks(const FilePath& packsDir)

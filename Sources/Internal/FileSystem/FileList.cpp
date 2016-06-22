@@ -145,7 +145,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
 
     directoryCount = 0;
     fileCount = 0;
-    for (int fi = 0; fi < GetCount(); ++fi)
+    for (uint32 fi = 0; fi < GetCount(); ++fi)
     {
         if (IsDirectory(fi))
         {
@@ -161,9 +161,9 @@ FileList::~FileList()
 {
 }
 
-int32 FileList::GetCount() const
+uint32 FileList::GetCount() const
 {
-    return static_cast<int32>(fileList.size());
+    return static_cast<uint32>(fileList.size());
 }
 
 int32 FileList::GetFileCount() const

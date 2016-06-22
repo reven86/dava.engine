@@ -23,13 +23,13 @@ public:
 
     static void FillFilesInfo(const PackFormat::PackFile& packFile,
                               const String& fileNames,
-                              UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData,
+                              UnorderedMap<String, const PackFormat::FileTableEntry*>& mapFileData,
                               Vector<ResourceArchive::FileInfo>& filesInfo);
 
 private:
     mutable RefPtr<File> file;
     PackFormat::PackFile packFile;
-    UnorderedMap<String, PackFormat::FileTableEntry*> mapFileData;
+    UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<ResourceArchive::FileInfo> filesInfo;
 };
 

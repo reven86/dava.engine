@@ -252,7 +252,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
     DVASSERT(path.IsDirectoryPathname());
 
     FileList* fileList = new FileList(path);
-    for (int i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {
@@ -296,7 +296,7 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     uint32 fileCount = 0;
 
     FileList* fileList = new FileList(path);
-    for (int i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {
@@ -325,7 +325,7 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
     ScopedPtr<FileList> fileList(new FileList(path));
     Vector<FilePath> result;
 
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsNavigationDirectory(i))
         {
@@ -1030,7 +1030,7 @@ bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& 
 
     bool retCode = true;
     ScopedPtr<FileList> fileList(new FileList(src));
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {

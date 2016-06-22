@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILELIST_H__
-#define __DAVAENGINE_FILELIST_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FileSystem.h"
@@ -8,7 +7,7 @@
 
 namespace DAVA
 {
-/** 
+/**
 	\brief Class used to enumerate files in directories
 */
 class FileList : public BaseObject
@@ -24,7 +23,7 @@ public:
 		This function return total number of items in directory including "." and ".." items
 		\returns number of items in this directory,
 	 */
-    int32 GetCount() const;
+    uint32 GetCount() const;
 
     /**
 		\brief Get total item count in current list
@@ -40,8 +39,8 @@ public:
     int32 GetDirectoryCount() const;
 
     /**
-		\brief Get current path 
-		
+		\brief Get current path
+
 	 */
     const FilePath& GetCurrentPath() const;
 
@@ -60,7 +59,7 @@ public:
     bool IsDirectory(int32 index) const;
 
     /*
-		\brief is file with given index, is navigation directory. 
+		\brief is file with given index, is navigation directory.
 		This funciton checks is directory == "." or directory == ".."
 		\return true if this is ".", or ".." directory
 	 */
@@ -100,6 +99,3 @@ private:
 };
 
 }; // end of namespace DAVA
-
-
-#endif // __LOGENGINE_ANSIFILESYSTEM_H__

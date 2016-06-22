@@ -81,8 +81,9 @@ CRC32::CRC32()
     crc32 = 0xffffffff;
 }
 
-void CRC32::AddData(const char* data, uint32 size)
+void CRC32::AddData(const void* dataPtr, size_t size)
 {
+    const char* data = reinterpret_cast<const char*>(dataPtr);
     for (uint32 i = 0; i < size; i++)
     {
         crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ data[i]) & 0xff];
@@ -116,7 +117,7 @@ uint32 CRC32::ForFile(const FilePath& pathName)
     return crc.Done();
 }
 
-uint32 CRC32::ForBuffer(const void* data, uint32 size)
+uint32 CRC32::ForBuffer(const void* data, size_t size)
 {
     const char* ptrData = reinterpret_cast<const char*>(data);
     CRC32 crc;

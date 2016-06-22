@@ -41,9 +41,9 @@ void RequestManager::Update()
         else if (request.IsError())
         {
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
-            if (request.GetPackName() != subRequest.pack->name)
+            if (request.GetRootPack().name != subRequest.pack->name)
             {
-                PackManager::Pack& rootPack = packManager.GetPack(request.GetPackName());
+                PackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
                 rootPack.state = PackManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
                                                 rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.errorMsg.c_str());
@@ -64,7 +64,7 @@ bool RequestManager::IsInQueue(const String& packName) const
 {
     auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
                            {
-                               return r.GetPackName() == packName;
+                               return r.GetRootPack().name == packName;
                            });
     return it != end(items);
 }
@@ -91,7 +91,7 @@ PackRequest& RequestManager::Find(const String& packName)
 {
     auto it = std::find_if(begin(items), end(items), [&packName](const PackRequest& r) -> bool
                            {
-                               return r.GetPackName() == packName;
+                               return r.GetRootPack().name == packName;
                            });
     if (it == end(items))
     {
@@ -108,15 +108,15 @@ void RequestManager::CheckRestartLoading()
 
     if (Size() == 1)
     {
-        currrentTopLoadingPack = top.GetPackName();
+        currrentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
-    else if (!currrentTopLoadingPack.empty() && top.GetPackName() != currrentTopLoadingPack)
+    else if (!currrentTopLoadingPack.empty() && top.GetRootPack().name != currrentTopLoadingPack)
     {
         // we have to cancel current pack request and start new with higher priority
         PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
         prevTopRequest.Stop();
-        currrentTopLoadingPack = top.GetPackName();
+        currrentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
 }

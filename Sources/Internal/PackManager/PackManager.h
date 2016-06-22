@@ -98,10 +98,11 @@ public:
     public:
         virtual ~IRequest();
 
-        virtual const String& GetPackName() const = 0;
+        virtual const Pack& GetRootPack() const = 0;
         virtual uint64 GetFullSizeWithDependencies() const = 0;
         virtual uint64 GetDownloadedSize() const = 0;
         virtual bool IsError() const = 0;
+        virtual const Pack& GetErrorPack() const = 0;
         virtual const String& GetErrorMessage() const = 0;
     };
 
@@ -126,7 +127,7 @@ public:
     void Initialize(const String& dbFileName,
                     const FilePath& downloadPacksDir,
                     const FilePath& readOnlyPacksDir, // can be empty
-                    const String& packsUrlCommon,
+                    const String& urlToServerSuperpack,
                     const String& architecture);
 
     IInit& GetInitialization();
@@ -147,7 +148,9 @@ public:
     const Pack& FindPack(const String& packName) const;
 
     // thow exception if can't find pack
-    const Pack& RequestPack(const String& packName, float priority = 0.0f);
+    const Pack& RequestPack(const String& packName);
+
+    void ChangePackPriority(const String& packName, float newPriority);
 
     // all packs state, valid till next call Update()
     const Vector<Pack>& GetPacks() const;

@@ -332,6 +332,8 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     uint64 dataOffset = 0;
 
+    FileSystem* fs = FileSystem::Instance();
+
     try
     {
         std::for_each(begin(collectedFiles), end(collectedFiles), [&](const CollectedFile& f)
@@ -339,7 +341,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           const CollectedFile& collectedFile = f;
                           PackFormat::FileTableEntry fileEntry = { 0 };
 
-                          if (FileSystem::Instance()->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
+                          if (fs->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
                           {
                               throw std::runtime_error("Can't read contents of " + collectedFile.absPath.GetAbsolutePathname());
                           }
@@ -355,13 +357,13 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           }
 
                           Vector<uint8>& useBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
-                          uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(useBuffer.data()), static_cast<uint32>(useBuffer.size()));
 
                           fileEntry.startPosition = dataOffset;
                           fileEntry.originalSize = static_cast<uint32>(origFileBuffer.size());
                           fileEntry.compressedSize = static_cast<uint32>(compressedFileBuffer.size());
                           fileEntry.type = (useCompressedBuffer ? compressionType : Compressor::Type::None);
-                          fileEntry.compressedCrc32 = crc32;
+                          fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
+                          fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
                           fileEntry.reserved.fill(0); // do it or your crc32 randomly change on same files
 
                           dataOffset += static_cast<uint32>(useBuffer.size());

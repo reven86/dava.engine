@@ -88,7 +88,7 @@ void MD5::CalculateDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecur
     ScopedPtr<FileList> fileList(new FileList(pathName, includeHidden));
     fileList->Sort();
 
-    for (int i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsHidden(i) && !includeHidden)
         {
@@ -321,7 +321,7 @@ void MD5::Final()
     }
 }
 
-/* 
+/*
 	Basic MD5 step. Transform buf based on in.
  */
 static void Transform(uint32* buf, uint32* in)

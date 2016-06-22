@@ -13,7 +13,7 @@ class PackManagerImpl : public PackManager::IInit
 public:
     PackManagerImpl() = default;
 
-    void Initialize(const FilePath& dbFile_,
+    void Initialize(const String& dbFile_,
                     const FilePath& localPacksDir_,
                     const FilePath& readOnlyPacksDir_,
                     const String& packUrlCommon,
@@ -40,7 +40,9 @@ public:
 
     const String& FindPackName(const FilePath& relativePathInPack) const;
 
-    const PackManager::Pack& RequestPack(const String& packName, float32 priority);
+    const PackManager::Pack& RequestPack(const String& packName);
+
+    void ChangePackPriority(const String& packName, float newPriority) const;
 
     uint32 GetPackIndex(const String& packName);
 
@@ -75,8 +77,10 @@ private:
     void GetDB();
     void UnpackingDB();
     void DeleteOldPacks();
+    void LoadPacksDataFromDB();
+    void MountDownloadedPacks();
 
-    FilePath dbFile;
+    String dbFile;
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
     String packsUrlCommon;
@@ -95,8 +99,8 @@ private:
     PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer;
-    UnorderedMap<String, PackFormat::FileTableEntry*> initFileData;
-    Vector<ResourceArchive::FileInfo>& initfilesInfo;
+    UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
+    Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;

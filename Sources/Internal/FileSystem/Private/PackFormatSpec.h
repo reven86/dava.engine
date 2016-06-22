@@ -24,10 +24,11 @@ struct PackFile
                 uint32 compressedSize;
                 uint32 originalSize;
                 uint32 compressedCrc32;
-                uint32 originalCrc32;
                 Compressor::Type type;
+                uint32 originalCrc32;
                 Array<char8, 4> reserved; // null bytes, leave for future
             };
+
             Vector<Data> files;
         } data;
 
