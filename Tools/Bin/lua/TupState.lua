@@ -18,7 +18,6 @@ function TupState.New(userConf)
     -- can be defined by user
     local conf = { }
     conf.outputDir = userConf.outputDir or "Output"
-    conf.outputDbName = userConf.outputDbName or "packs"
     conf.outputDbExt = userConf.outputDbExt or ".db"
     conf.unusedPackName = userConf.unusedPackName or "__unused__"
     conf.delimiter = userConf.delimiter or "#"
@@ -69,21 +68,21 @@ function TupState.New(userConf)
         .. "/" .. self.conf.intermediateDir 
         .. "/" .. self.conf.intermediateSqlDir
         
-    local fwPath = self:FindFWPath(self.projectDir)
+    local fwPath = self:FindFWLuaPath(self.projectDir)
     self.frameworkPath = fwPath
            
     -- setting up commands
     self.cmd = { }
     self.cmd.cp = "cp"
     self.cmd.cat = "cat"
-    self.cmd.fwdep = fwPath .. "../Tools/Bin/dep"    
-    self.cmd.fwzip = fwPath .. "../Tools/Bin/7za"    
-    self.cmd.fwsql = fwPath .. "../Tools/Bin/sqlite3"
-    self.cmd.fwResourceArchive = fwPath .. "../Tools/Bin/ResourceArchiver"
+    self.cmd.fwdep = fwPath .. "../dep"    
+    self.cmd.fwzip = fwPath .. "../7za"    
+    self.cmd.fwsql = fwPath .. "../sqlite3"
+    self.cmd.fwResourceArchive = fwPath .. "../ResourceArchiver"
     
     if self.platform == "win32" then
         self.cmd.cat = "type 2> nul"
-        self.cmd.fwzip = fwPath .. "../Tools/Bin/7z.exe"
+        self.cmd.fwzip = fwPath .. "../7z.exe"
         self.cmd.fwsql = self.cmd.fwsql .. ".exe"
         self.cmd.fwdep = self.cmd.fwdep .. ".exe" 
         self.cmd.fwResourceArchive = self.cmd.fwResourceArchive .. ".exe"
@@ -109,7 +108,7 @@ function TupState.GetSqlGroup(self, packGPU)
     return self.sqlDir .. "/<sql_" .. packGPU .. ">"
 end
 
-function TupState.FindFWPath(self, projectDir)
+function TupState.FindFWLuaPath(self, projectDir)
     -- get lua debug info
     local info = debug.getinfo(1, 'S')
     local sourcePath = info.source:sub(2)
@@ -211,7 +210,7 @@ function TupState.BuildLists(self)
         -- if not - that should be thread as error
         if secondMatch ~= nil then
             print("Packs: " .. firstMatch .. " and " .. secondMatch)
-            error "File is matching more than one pack"
+            print "File is matching more than one pack"
         end
     end
     
@@ -221,7 +220,7 @@ function TupState.BuildLists(self)
             local packGroup = self:GetPackGroup(pack.name, gpu)
 
             for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-                local partCmd = self.cmd.fwdep .. " echo -p \"" .. self.currentDir .. "\" %\"f -o %o"
+                local partCmd = self.cmd.fwdep .. " echo -ap \"" .. self.currentDir .. "\" %\"f -o %o"
                 local partCmdText = "^ Gen " .. gpu .. " list " .. i .. " for " .. pack.name .. "^ "
                 local partOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name 
                     .. self.conf.delimiter .. self.currentDirString 
@@ -274,9 +273,9 @@ function TupState.BuildPacks(self)
                 mergePackCmdText .. mergePackCmd, mergePackOutput)
 
             -- archivate
-            local archiveCmd = self.cmd.fwzip .. " a -bd -tzip %o @%f"
+            local archiveCmd = self.cmd.fwzip .. " a -bd -bso0 -tzip %o @%f"
             local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
-            local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".pack"
+            local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
 
             superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, archiveOutput)
@@ -314,12 +313,19 @@ function TupState.BuildPacks(self)
         tup.rule({ mergeSqlMask, sqlCommonGroup, sqlGroup }, mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
             
         -- generate packs database
-        local dbOutput = self.outputDir .. "/" .. self.conf.outputDbName .. gpu .. self.conf.outputDbExt
+        local dbOutput = self.outputDir .. "/" .. gpu .. self.conf.outputDbExt
         local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
         local dbCmdText = "^ Gen final packs DB for " .. gpu .. "^ "
         tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)
 
-        superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, dbOutput)
+        -- zip generated db
+        local dbZipOutput = self.outputDir .. "/" .. gpu .. self.conf.outputDbExt .. ".zip"
+        local dbZipCmd = self.cmd.fwzip .. " a -bd -bso0 -tzip %o %f"
+        local dbZipCmdText = "^ Zip final packs DB for " .. gpu .. "^ "
+
+        tup.rule(dbOutput, dbZipCmdText .. dbZipCmd, dbZipOutput)
+
+        superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, dbZipOutput)
     end
 
     -- create superpack lists
@@ -342,5 +348,6 @@ function TupState.BuildPacks(self)
 
     -- create super pack
     local superpackOutput = self.outputDir .. "/superpack.dvpk"
-    tup.rule(mergeSuperOutput, self.cmd.fwResourceArchive .. " -pack -compression none -pathcrop " .. self.outputDir .. "/ -listfile %f %o", superpackOutput)
+    local superpackCmd = self.cmd.fwResourceArchive .. " -pack -compression none -pathcrop " .. self.outputDir .. "/ -listfile %f %o"
+    tup.rule(mergeSuperOutput, superpackCmd, superpackOutput)
 end

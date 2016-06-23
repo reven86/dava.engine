@@ -4,13 +4,6 @@
 #include <set>
 #include <vector>
 #include <cstdint>
-#include <filesystem>
-
-#ifdef _MSC_VER
-namespace fs = std::tr2::sys;
-#else
-namespace fs = std::filesystem;
-#endif
 
 static const uint32_t crc32_tab[256] =
 {
@@ -87,7 +80,8 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
         throw std::runtime_error("nothing to echo");
     }
 
-    std::string prefix;
+    std::string aprefix;
+    std::string rprefix;
     std::ofstream output;
     std::set<std::string> files;
 
@@ -95,11 +89,15 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
     for (int i = 2; i < argc; ++i)
     {
         std::string arg = argv[i];
-        if (arg == "-p" && (i + 1) < argc)
+        if (arg == "-ap" && (i + 1) < argc)
         {
             ++i;
-            prefix = argv[i];
-            prefix.append("/");
+            aprefix = argv[i];
+        }
+        else if (arg == "-rp" && (i + 1) < argc)
+        {
+            ++i;
+            rprefix = argv[i];
         }
         if (arg == "-o" && (i + 1) < argc)
         {
@@ -123,7 +121,19 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
         std::ifstream file(path);
         if (file)
         {
-            std::cout << prefix << path << '\n';
+            std::string name = path;
+
+            // should remove prefix?
+            if (!rprefix.empty())
+            {
+                std::string::size_type pos = name.find(rprefix);
+                if (0 == pos)
+                {
+                    name.erase(0, rprefix.size());
+                }
+            }
+
+            std::cout << aprefix << name << '\n';
             file.close();
         }
     }
@@ -133,29 +143,6 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
         std::cout.rdbuf(coutbuf);
         output.close();
     }
-}
-
-void print_help()
-{
-    std::cerr << '\n'
-              << "Usage: dep <command> [<args>]" << '\n'
-              << '\n'
-              << "Commands:" << '\n'
-              << "    echo [options] [<file>...] - Try to open each file and if success prints it name" << '\n'
-              << "        -p <prefix>            - add prefix to printed name" << '\n'
-              << "        -o <output>            - print into output file" << '\n'
-              << '\n'
-              << "    hash <file> - Calculate CRC32 for file" << '\n'
-              << "        -o <output>            - print into output file" << '\n'
-              << '\n'
-              << "    sql [options] <packname> [dependencies...]" << '\n'
-              << "        -l <file>           - read file for pack content" << '\n'
-              << "        -h <file>           - read file for pack hash" << '\n'
-              << "        -o <output>         - print into output file" << '\n'
-              << "        -g {true|false}     - is gpu pack(default false)" << '\n'
-              << '\n'
-              << "    ls [options] <directory>" << '\n'
-              << "        -exclude <filename> - exclude filename from output" << '\n';
 }
 
 void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
@@ -302,7 +289,7 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         }
 
         std::string packfile = hashpath;
-        packfile.replace(packfile.find(".hash"), 5, ".pack");
+        packfile.replace(packfile.find(".hash"), 5, ".dvpk");
 
         std::streamsize size = std::ifstream(packfile, std::ios_base::ate | std::ios_base::binary).tellg();
         if (size == -1)
@@ -337,62 +324,30 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
     }
 }
 
-void list_dir(int argc, const char** argv, std::streambuf* coutbuf)
+void print_help()
 {
-    using namespace fs;
-    if (argc <= 2)
-    {
-        throw std::runtime_error("no dir");
-    }
-    // list dir and write to output
-    // on each line name of dir with last /
-    // or file name
-
-    std::string dir = argv[2];
-
-    std::set<std::string> exclude;
-    for (auto arg_index = 2; arg_index < argc; ++arg_index)
-    {
-        std::string param = argv[arg_index];
-        if (param == "-exclude")
-        {
-            ++arg_index;
-            std::string ex_flag = argv[arg_index];
-            exclude.insert(ex_flag);
-            continue;
-        }
-        if (!fs::exists(fs::path(param)))
-        {
-            throw std::runtime_error("bad parameter not dir not -exclude flag: " + param);
-        }
-        dir = param;
-    }
-
-    auto dir_it = directory_iterator(dir);
-    for (; dir_it != directory_iterator(); ++dir_it)
-    {
-        auto path = dir_it->path();
-
-        if (is_directory(path))
-        {
-            std::cout << path << '/';
-        }
-        else if (is_regular_file(path))
-        {
-            if (exclude.find(path.filename()) != exclude.end())
-            {
-                continue;
-            }
-            std::cout << path;
-        }
-        std::cout << '\n';
-    }
+    std::cerr << '\n'
+              << "Usage: dep <command> [<args>]" << '\n'
+              << '\n'
+              << "Commands:" << '\n'
+              << "    echo [options] [<file>...] - Try to open each file and if success prints it name" << '\n'
+              << "        -ap <prefix>           - add prefix to printed name" << '\n'
+              << "        -rp <prefix>           - remove prefix from printed name" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
+              << "    hash <file> - Calculate CRC32 for file" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
+              << "    sql [options] <packname> [dependencies...]" << '\n'
+              << "        -l <file>           - read file for pack content" << '\n'
+              << "        -h <file>           - read file for pack hash" << '\n'
+              << "        -o <output>         - print into output file" << '\n'
+              << "        -g {true|false}     - is gpu pack(default false)" << '\n';
 }
 
 int main(int argc, const char* argv[])
 {
     using namespace std;
-    using namespace fs;
 
     try
     {
@@ -418,10 +373,6 @@ int main(int argc, const char* argv[])
             {
                 generate_sql(argc, argv, coutbuf);
             }
-            else if (cmd == "ls")
-            {
-                list_dir(argc, argv, coutbuf);
-            }
             else
             {
                 throw std::runtime_error("unknown command: " + cmd);
@@ -435,18 +386,6 @@ int main(int argc, const char* argv[])
     catch (exception& ex)
     {
         cerr << ex.what() << '\n';
-
-        string cwd = current_path<path>().string();
-
-        cerr << "cwd: " << cwd << '\n';
-        cerr << "params: " << '\n';
-
-        for (int i = 0; i < argc; ++i)
-        {
-            cerr << argv[i] << ' ';
-        }
-
-        cerr << '\n';
         cerr << "Use --help for help" << '\n';
 
         return EXIT_FAILURE;

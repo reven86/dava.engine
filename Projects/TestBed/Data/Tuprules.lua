@@ -1,4 +1,4 @@
-package.path = package.path .. ";../../../../dava.framework/Build/?.lua"
+--package.path = package.path .. ";../../../../dava.framework/Build/?.lua"
 require("TupState")
 
 tupState = TupState.New({
