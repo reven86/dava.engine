@@ -575,8 +575,8 @@ elseif ( WIN32 )
             endif ()
             
             add_custom_target ( ${DLL_FIX_TARGET_NAME} ALL
-                    COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_uwp_dll_deploy_fix.py
-                                       ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
+                    COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py uwpDeployDll
+                                       --pathVcxProj ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
             )
 
             add_dependencies( ${PROJECT_NAME} ${DLL_FIX_TARGET_NAME} )
@@ -618,6 +618,18 @@ if( ANDROID )
     endforeach()
 
 endif() 
+
+
+if( WIN32 AND NOT WINDOWS_UAP )
+   set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
+   add_custom_target( VS_MODIFIED  ALL 
+        COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY} )
+
+   add_dependencies( ${PROJECT_NAME} VS_MODIFIED )
+   set_property( TARGET VS_MODIFIED PROPERTY FOLDER "CMAKE" )
+ 
+endif() 
+
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
