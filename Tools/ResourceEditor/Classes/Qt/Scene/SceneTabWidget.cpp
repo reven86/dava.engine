@@ -45,7 +45,7 @@ SceneTabWidget::SceneTabWidget(QWidget* parent)
     // put tab bar and davawidget into vertical layout
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(tabBar);
-    QTimer::singleShot(100, [layout, this]
+    QTimer::singleShot(1500, [layout, this]
                        {
                            davaWidget->setParent(this);
                            layout->addWidget(davaWidget);

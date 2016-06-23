@@ -894,7 +894,7 @@ void CommandBufferDX9_t::Execute()
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
-                RECT rect = { x, y, x + w - 1, y + h - 1 };
+                RECT rect = { x, y, x + w, y + h };
 
                 _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
                 _D3D9_Device->SetScissorRect(&rect);
