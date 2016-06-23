@@ -10,12 +10,12 @@
 
 #include "Engine/Private/EngineFwd.h"
 
+#include "Concurrency/Mutex.h"
+
 namespace DAVA
 {
-class Thread;
 namespace Private
 {
-// clang-format off
 
 class CoreWinUWP final
 {
@@ -29,12 +29,10 @@ public:
     void Run();
     void Quit();
 
-    WindowWinUWP* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
-    void DestroyNativeWindow(WindowBackend* w);
-
-    void OnApplicationLaunched();
-    void OnNativeWindowCreated(::Windows::UI::Xaml::Window^ xamlWindow);
-
+    // Forwarded methods from UWPApplication
+    void OnLaunched();
+    void OnActivated();
+    void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();
 
@@ -44,11 +42,9 @@ private:
 private:
     EngineBackend* engineBackend = nullptr;
 
-    Thread* gameThread = nullptr;   // TODO: RefPtr
+    bool gameThreadRunning = false;
     bool quitGameThread = false;
 };
-
-// clang-format on
 
 } // namespace Private
 } // namespace DAVA

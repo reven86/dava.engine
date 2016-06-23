@@ -42,6 +42,12 @@ void WindowBackend::Resize(float32 w, float32 h)
     }
 }
 
+void WindowBackend::Close()
+{
+    DVASSERT(nativeWindow != nullptr);
+    nativeWindow->Close();
+}
+
 void* WindowBackend::GetNativeHandle() const
 {
     DVASSERT(nativeWindow != nullptr);
@@ -101,6 +107,11 @@ void WindowBackend::FinishEventHandlingOnCurrentFrame()
     {
         HandlePendingSizeChanging();
         pendingSizeChanging = false;
+    }
+
+    if (nativeWindow != nullptr)
+    {
+        nativeWindow->TriggerPlatformEvents();
     }
 }
 
@@ -179,13 +190,42 @@ void WindowBackend::PostWindowDestroyed()
     engineBackend->dispatcher->PostEvent(e);
 }
 
+void WindowBackend::PostKeyDown(uint32 key, bool isRepeated)
+{
+    DispatcherEvent e;
+    e.type = DispatcherEvent::KEY_DOWN;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.keyEvent.key = key;
+    e.keyEvent.isRepeated = isRepeated;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostKeyUp(uint32 key)
+{
+    DispatcherEvent e;
+    e.type = DispatcherEvent::KEY_UP;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.keyEvent.key = key;
+    e.keyEvent.isRepeated = false;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
+void WindowBackend::PostKeyChar(uint32 key, bool isRepeated)
+{
+    DispatcherEvent e;
+    e.type = DispatcherEvent::KEY_CHAR;
+    e.window = this;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.keyEvent.key = key;
+    e.keyEvent.isRepeated = isRepeated;
+    engineBackend->dispatcher->PostEvent(e);
+}
+
 void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
 {
-    inputSystem = engineBackend->context->inputSystem;
-    uiControlSystem = engineBackend->context->uiControlSystem;
-    virtualCoordSystem = engineBackend->context->virtualCoordSystem;
-
-    Logger::Error("****** WINDOW_CREATED: w=%.1f, h=%.1f", e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
+    Logger::Error("****** WINDOW_CREATED: this=%p, w=%.1f, h=%.1f", this, e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
 
     nativeWindow = e.windowCreatedEvent.nativeWindow;
 
@@ -194,15 +234,19 @@ void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
     scaleX = e.windowCreatedEvent.size.scaleX;
     scaleY = e.windowCreatedEvent.size.scaleY;
 
-    virtualCoordSystem->EnableReloadResourceOnResize(true);
-
     pendingInitRender = true;
     pendingSizeChanging = true;
+
+    inputSystem = engineBackend->context->inputSystem;
+    uiControlSystem = engineBackend->context->uiControlSystem;
+    virtualCoordSystem = engineBackend->context->virtualCoordSystem;
+
+    virtualCoordSystem->EnableReloadResourceOnResize(true);
 }
 
 void WindowBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_DESTROYED");
+    Logger::Error("****** WINDOW_DESTROYED: this=%p", this);
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
@@ -222,7 +266,7 @@ void WindowBackend::HandleSizeChanged(const DispatcherEvent& e)
 
 void WindowBackend::HandleFocusChanged(const DispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state);
+    Logger::Error("****** WINDOW_FOCUS_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
 
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
@@ -233,7 +277,7 @@ void WindowBackend::HandleFocusChanged(const DispatcherEvent& e)
 
 void WindowBackend::HandleVisibilityChanged(const DispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_VISIBILITY_CHANGED: state=%u", e.stateEvent.state);
+    Logger::Error("****** WINDOW_VISIBILITY_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
 
     isVisible = e.stateEvent.state != 0;
     window->visibilityChanged.Emit(window, isVisible);
@@ -243,7 +287,7 @@ void WindowBackend::HandleMouseClick(const DispatcherEvent& e)
 {
     bool pressed = e.type == DispatcherEvent::MOUSE_BUTTON_DOWN;
 
-    Logger::Debug("****** %s: x=%.1f, y=%.1f, button=%d", pressed ? "MOUSE_BUTTON_DOWN" : "MOUSE_BUTTON_UP", e.mclickEvent.x, e.mclickEvent.y, e.mclickEvent.button);
+    Logger::Debug("****** %s: this=%p, x=%.1f, y=%.1f, button=%d", pressed ? "MOUSE_BUTTON_DOWN" : "MOUSE_BUTTON_UP", this, e.mclickEvent.x, e.mclickEvent.y, e.mclickEvent.button);
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
@@ -275,7 +319,7 @@ void WindowBackend::HandleMouseClick(const DispatcherEvent& e)
 
 void WindowBackend::HandleMouseWheel(const DispatcherEvent& e)
 {
-    Logger::Debug("****** MOUSE_WHEEL: x=%.1f, y=%.1f, delta=%d", e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
+    Logger::Debug("****** MOUSE_WHEEL: this=%p, x=%.1f, y=%.1f, delta=%d", this, e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
 
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
@@ -329,7 +373,7 @@ void WindowBackend::HandleKeyPress(const DispatcherEvent& e)
 {
     bool pressed = e.type == DispatcherEvent::KEY_DOWN;
 
-    Logger::Debug("****** %s", pressed ? "KEY_DOWN" : "KEY_UP");
+    Logger::Debug("****** %s: this=%p", pressed ? "KEY_DOWN" : "KEY_UP", this);
 
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
@@ -349,7 +393,7 @@ void WindowBackend::HandleKeyPress(const DispatcherEvent& e)
 
 void WindowBackend::HandleKeyChar(const DispatcherEvent& e)
 {
-    Logger::Debug("****** KEY_CHAR");
+    Logger::Debug("****** KEY_CHAR: this=%p", this);
 
     UIEvent uie;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
@@ -369,14 +413,14 @@ void WindowBackend::HandlePendingSizeChanging()
 
     if (pendingInitRender)
     {
-        Logger::Debug("****** WindowBackend init renderer: w=%d, h=%d, pw=%d, ph=%d", w, h, physW, physH);
+        Logger::Debug("****** WindowBackend init renderer: this=%p, w=%d, h=%d, pw=%d, ph=%d", this, w, h, physW, physH);
 
         engineBackend->InitRenderer(this);
         pendingInitRender = false;
     }
     else
     {
-        Logger::Debug("****** WindowBackend reset rendererL w=%d, h=%d, pw=%d, ph=%d", w, h, physW, physH);
+        Logger::Debug("****** WindowBackend reset renderer: this=%p, w=%d, h=%d, pw=%d, ph=%d", this, w, h, physW, physH);
 
         engineBackend->ResetRenderer(this, false);
     }

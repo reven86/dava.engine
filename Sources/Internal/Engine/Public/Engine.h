@@ -10,7 +10,6 @@
 
 namespace DAVA
 {
-class Window;
 
 class Engine final
 {

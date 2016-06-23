@@ -4,13 +4,13 @@
 
 #include "Base/BaseTypes.h"
 #include "Engine/Private/Dispatcher/DispatcherT.h"
-#include "Engine/Private/Dispatcher/DispatcherEvent.h"
+#include "Engine/Private/Dispatcher/PlatformEvent.h"
 
 namespace DAVA
 {
 namespace Private
 {
-using Dispatcher = DispatcherT<DispatcherEvent>;
+using PlatformDispatcher = DispatcherT<PlatformEvent>;
 
 } // namespace Private
 } // namespace DAVA

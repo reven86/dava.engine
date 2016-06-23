@@ -10,49 +10,87 @@
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/WinUWP/CoreWinUWP.h"
-#include "Engine/Private/WinUWP/WindowWinUWPCxxBridge.h"
+#include "Engine/Private/WinUWP/WindowWinUWPBridge.h"
 
 namespace DAVA
 {
 namespace Private
 {
-// clang-format off
-
-WindowWinUWP::WindowWinUWP(EngineBackend* engine_, WindowBackend* window_)
-    : engine(engine_)
+WindowWinUWP::WindowWinUWP(EngineBackend* e, WindowBackend* w)
+    : engine(e)
     , dispatcher(engine->dispatcher)
-    , window(window_)
-    , bridge(ref new WindowWinUWPCxxBridge(this))
+    , window(w)
+    , bridge(ref new WindowWinUWPBridge(this))
 {
 
 }
 
 WindowWinUWP::~WindowWinUWP() = default;
 
-void WindowWinUWP::Resize(float32 width, float32 height)
-{
-}
-
 void* WindowWinUWP::GetHandle() const
 {
-    return reinterpret_cast<void*>(bridge->xamlSwapChainPanel);
+    return bridge->GetHandle();
+}
+
+void WindowWinUWP::Resize(float32 width, float32 height)
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::RESIZE_WINDOW;
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowWinUWP::Close()
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::CLOSE_WINDOW;
+    platformDispatcher.PostEvent(e);
 }
 
 void WindowWinUWP::RunAsyncOnUIThread(const Function<void()>& task)
 {
+    PlatformEvent e;
+    e.type = PlatformEvent::FUNCTOR;
+    e.functor = task;
+    platformDispatcher.PostEvent(e);
 }
 
-void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window^ xamlWindow)
+void WindowWinUWP::TriggerPlatformEvents()
 {
+    bridge->TriggerPlatformEvents();
+}
+
+void WindowWinUWP::ProcessPlatformEvents()
+{
+    // Method executes in context of XAML::Window's UI thread
+    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowWinUWP::EventHandler));
+}
+
+void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
+{
+    // Method executes in context of XAML::Window's UI thread
     bridge->BindToXamlWindow(xamlWindow);
 }
 
-void WindowWinUWP::DestroyNWindow()
+void WindowWinUWP::EventHandler(const PlatformEvent& e)
 {
-
+    // Method executes in context of XAML::Window's UI thread
+    switch (e.type)
+    {
+    case PlatformEvent::RESIZE_WINDOW:
+        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        break;
+    case PlatformEvent::CLOSE_WINDOW:
+        bridge->DoCloseWindow();
+        break;
+    case PlatformEvent::FUNCTOR:
+        e.functor();
+        break;
+    default:
+        break;
+    }
 }
-
-// clang-format on
 
 } // namespace Private
 } // namespace DAVA

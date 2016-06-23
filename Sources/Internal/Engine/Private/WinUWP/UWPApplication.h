@@ -19,7 +19,6 @@ namespace Private
 ref class UWPApplication sealed : public ::Windows::UI::Xaml::Application
 {
 public:
-    // Deleted and defaulted functions are not supported in WinRT classes
     UWPApplication();
     virtual ~UWPApplication();
 

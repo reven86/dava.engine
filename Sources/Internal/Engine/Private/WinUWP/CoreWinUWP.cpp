@@ -12,6 +12,7 @@
 
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
@@ -20,7 +21,6 @@ namespace DAVA
 {
 namespace Private
 {
-// clang-format off
 
 CoreWinUWP::CoreWinUWP(EngineBackend* e)
     : engineBackend(e)
@@ -28,10 +28,7 @@ CoreWinUWP::CoreWinUWP(EngineBackend* e)
 
 }
 
-CoreWinUWP::~CoreWinUWP()
-{
-    SafeRelease(gameThread);
-}
+CoreWinUWP::~CoreWinUWP() = default;
 
 Vector<String> CoreWinUWP::GetCommandLine(int /*argc*/, char* /*argv*/[])
 {
@@ -67,60 +64,54 @@ void CoreWinUWP::Run()
 
     engineBackend->OnGameLoopStopped();
     engineBackend->OnBeforeTerminate();
+
+    using namespace ::Windows::UI::Xaml;
+    Application::Current->Exit();
 }
 
 void CoreWinUWP::Quit()
 {
+    quitGameThread = true;
 }
 
-WindowWinUWP* CoreWinUWP::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
+void CoreWinUWP::OnLaunched()
 {
-    return nullptr;
-}
+    Logger::Debug("****** CoreWinUWP::OnLaunched: thread=%d", GetCurrentThreadId());
 
-void CoreWinUWP::DestroyNativeWindow(WindowBackend* w)
-{
-    w->GetNativeWindow()->DestroyNWindow();
-}
-
-void CoreWinUWP::OnApplicationLaunched()
-{
-    Logger::Debug("****** CoreWinUWP::OnApplicationLaunched: thread=%d", GetCurrentThreadId());
-
-    if (gameThread == nullptr)
+    if (!gameThreadRunning)
     {
-        gameThread = Thread::Create(MakeFunction(this, &CoreWinUWP::GameThread));
+        Thread* gameThread = Thread::Create(MakeFunction(this, &CoreWinUWP::GameThread));
         gameThread->Start();
         gameThread->BindToProcessor(0);
+        // TODO: make Thread detachable
+        //gameThread->Detach();
+        //gameThread->Release();
+
+        gameThreadRunning = true;
     }
 }
 
-void CoreWinUWP::OnNativeWindowCreated(::Windows::UI::Xaml::Window^ xamlWindow)
+void CoreWinUWP::OnActivated()
 {
-    Logger::Debug("****** CoreWinUWP::OnNativeWindowCreated: thread=%d", GetCurrentThreadId());
+    Logger::Debug("****** CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
+}
 
-    bool isPrimary = engineBackend->primaryWindow == nullptr;
+void CoreWinUWP::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
+{
+    Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
-    WindowBackend* w = new WindowBackend(engineBackend, isPrimary);
-    engineBackend->windows.insert(w);
-
-    WindowWinUWP* nativeW = new WindowWinUWP(engineBackend, w);
-    nativeW->BindXamlWindow(xamlWindow);
-
-    if (isPrimary)
-    {
-        engineBackend->primaryWindow = w;
-    }
+    WindowWinUWP* nativeWindow = new WindowWinUWP(engineBackend, engineBackend->primaryWindow);
+    nativeWindow->BindXamlWindow(xamlWindow);
 }
 
 void CoreWinUWP::OnSuspending()
 {
-
+    Logger::Debug("******** CoreWinUWP::OnSuspending: thread=%d", GetCurrentThreadId());
 }
 
 void CoreWinUWP::OnResuming()
 {
-
+    Logger::Debug("******** CoreWinUWP::OnResuming: thread=%d", GetCurrentThreadId());
 }
 
 void CoreWinUWP::GameThread()
@@ -132,8 +123,6 @@ void CoreWinUWP::GameThread()
 
     Logger::Debug("****** CoreWinUWP::GameThread leave: thread=%d", GetCurrentThreadId());
 }
-
-// clang-format on
 
 } // namespace Private
 } // namespace DAVA

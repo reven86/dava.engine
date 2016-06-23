@@ -8,9 +8,13 @@ class AppContext;
 
 namespace Private
 {
-
-class Dispatcher;
+template <typename T>
+class DispatcherT;
 struct DispatcherEvent;
+struct PlatformEvent;
+
+using Dispatcher = DispatcherT<DispatcherEvent>;
+using PlatformDispatcher = DispatcherT<PlatformEvent>;
 
 class EngineBackend;
 class WindowBackend;

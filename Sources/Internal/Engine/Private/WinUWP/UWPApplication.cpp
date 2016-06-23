@@ -7,11 +7,7 @@
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/WinUWP/CoreWinUWP.h"
-
-#include "Functional/Function.h"
-#include "Concurrency/Thread.h"
 
 // clang-format off
 
@@ -32,7 +28,6 @@ void StartUWPApplication()
 UWPApplication::UWPApplication()
     : engineBackend(new EngineBackend(0, nullptr))
 {
-    
 }
 
 UWPApplication::~UWPApplication()
@@ -42,21 +37,24 @@ UWPApplication::~UWPApplication()
 
 void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
+    using namespace ::Platform;
+    using namespace ::Windows::Foundation;
     using namespace ::Windows::UI::Xaml;
 
     Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
+    Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
 
-    engineBackend->platformCore->OnApplicationLaunched();
+    engineBackend->platformCore->OnLaunched();
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
 {
-
+    engineBackend->platformCore->OnActivated();
 }
 
 void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args)
 {
-    engineBackend->platformCore->OnNativeWindowCreated(args->Window);
+    engineBackend->platformCore->OnWindowCreated(args->Window);
 }
 
 void UWPApplication::OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg)

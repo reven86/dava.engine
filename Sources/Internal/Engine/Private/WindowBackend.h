@@ -43,6 +43,7 @@ public:
     float32 GetRenderSurfaceScaleY() const;
 
     void Resize(float32 w, float32 h);
+    void Close();
     Window* GetWindow() const;
     void* GetNativeHandle() const;
     NativeWindow* GetNativeWindow() const;
@@ -63,6 +64,10 @@ public:
     void PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void PostWindowCreated(NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void PostWindowDestroyed();
+
+    void PostKeyDown(uint32 key, bool isRepeated);
+    void PostKeyUp(uint32 key);
+    void PostKeyChar(uint32 key, bool isRepeated);
 
 private:
     void HandleWindowCreated(const DispatcherEvent& e);

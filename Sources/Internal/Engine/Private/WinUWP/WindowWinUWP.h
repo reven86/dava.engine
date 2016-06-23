@@ -9,6 +9,7 @@
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/Dispatcher/PlatformDispatcher.h"
 
 #include "Functional/Function.h"
 
@@ -16,36 +17,53 @@ namespace DAVA
 {
 namespace Private
 {
-// clang-format off
 
 class WindowWinUWP final
 {
 public:
-    WindowWinUWP(EngineBackend* engine_, WindowBackend* window_);
+    WindowWinUWP(EngineBackend* e, WindowBackend* w);
     ~WindowWinUWP();
 
-    void Resize(float32 width, float32 height);
     void* GetHandle() const;
+    Dispatcher* GetDispatcher() const;
+    WindowBackend* GetWindowBackend() const;
+
+    void Resize(float32 width, float32 height);
+    void Close();
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-private:
+    void TriggerPlatformEvents();
+    void ProcessPlatformEvents();
+
     void BindXamlWindow(::Windows::UI::Xaml::Window^ xamlWindow);
-    void DestroyNWindow();
+
+private:
+    void EventHandler(const PlatformEvent& e);
 
 private:
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
     WindowBackend* window = nullptr;
 
-    ref struct WindowWinUWPCxxBridge^ bridge = nullptr;
+    PlatformDispatcher platformDispatcher;
+
+    ref struct WindowWinUWPBridge ^ bridge = nullptr;
 
     // Friends
     friend class CoreWinUWP;
-    friend ref struct WindowWinUWPCxxBridge;
+    friend ref struct WindowWinUWPBridge;
 };
 
-// clang-format on
+inline Dispatcher* WindowWinUWP::GetDispatcher() const
+{
+    return dispatcher;
+}
+
+inline WindowBackend* WindowWinUWP::GetWindowBackend() const
+{
+    return window;
+}
 
 } // namespace Private
 } // namespace DAVA

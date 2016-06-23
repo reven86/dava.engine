@@ -64,6 +64,10 @@ EngineBackend::EngineBackend(int argc, char* argv[])
     new Logger;
 
     cmdargs = platformCore->GetCommandLine(argc, argv);
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    CreatePrimaryWindowBackend();
+#endif
 }
 
 EngineBackend::~EngineBackend()
@@ -73,16 +77,13 @@ EngineBackend::~EngineBackend()
 
 void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 {
-    Logger::Debug("****** EngineBackend::Init enter");
-
     consoleMode = consoleMode_;
 
     platformCore->Init();
     if (!consoleMode)
     {
 #if !defined(__DAVAENGINE_WIN_UAP__)
-        primaryWindow = new WindowBackend(this, true);
-        windows.insert(primaryWindow);
+        CreatePrimaryWindowBackend();
 #endif
     }
 
@@ -96,9 +97,7 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 
     if (!consoleMode)
     {
-        Logger::Info("SoundSystem init start");
         new SoundSystem();
-        Logger::Info("SoundSystem init finish");
 
         DeviceInfo::InitializeScreenInfo();
         new AnimationManager();
@@ -132,13 +131,11 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 
     RegisterDAVAClasses();
 
-    if (!consoleMode_)
+    if (!consoleMode)
     {
         VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
         VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
-
-    Logger::Debug("****** EngineBackend::Init leave");
 }
 
 int EngineBackend::Run()
@@ -360,7 +357,7 @@ void EngineBackend::HandleAppTerminate(const DispatcherEvent& e)
 {
     for (WindowBackend* w : windows)
     {
-        platformCore->DestroyNativeWindow(w);
+        w->Close();
     }
 }
 
@@ -448,6 +445,17 @@ void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
 
 void EngineBackend::DeinitRender(WindowBackend* w)
 {
+}
+
+WindowBackend* EngineBackend::CreatePrimaryWindowBackend()
+{
+    DVASSERT(primaryWindow == nullptr);
+
+    WindowBackend* window = new WindowBackend(this, true);
+    windows.insert(window);
+
+    primaryWindow = window;
+    return window;
 }
 
 } // namespace Private
