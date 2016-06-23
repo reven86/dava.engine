@@ -38,6 +38,6 @@ private:
     DAVA::List<DAVA::String> listFiles;
     DAVA::Vector<DAVA::String> srcFiles;
     DAVA::String packFileName;
-    DAVA::String croppedPath;
+    DAVA::String baseDir;
     Source source = Source::Unknown;
 };

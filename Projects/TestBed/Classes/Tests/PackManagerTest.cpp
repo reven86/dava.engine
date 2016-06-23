@@ -13,7 +13,7 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 {
     if (url == textField)
     {
-        urlPacksCommon = UTF8Utils::EncodeToUTF8(newText);
+        urlToServerSuperpack = UTF8Utils::EncodeToUTF8(newText);
         UpdateDescription();
     }
 }
@@ -25,7 +25,7 @@ void PackManagerTest::UpdateDescription()
                                   "Url to gpu packs: \"%s\"\n"
                                   "When you press \"start loading\" full reinitializetion begins",
                                   folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
-                                  urlPacksCommon.c_str(),
+                                  urlToServerSuperpack.c_str(),
                                   urlPacksGpu.c_str());
     description->SetText(UTF8Utils::EncodeToWideString(message));
 }
@@ -38,22 +38,22 @@ void PackManagerTest::LoadResources()
     switch (gpu)
     {
     case GPU_ADRENO:
-        gpuName = "adreno";
+        gpuArchitecture = "adreno";
         break;
     case GPU_DX11:
-        gpuName = "dx11";
+        gpuArchitecture = "dx11";
         break;
     case GPU_MALI:
-        gpuName = "mali";
+        gpuArchitecture = "mali";
         break;
     case GPU_POWERVR_IOS:
-        gpuName = "pvr_ios";
+        gpuArchitecture = "pvr_ios";
         break;
     case GPU_POWERVR_ANDROID:
-        gpuName = "pvr_android";
+        gpuArchitecture = "pvr_android";
         break;
     case GPU_TEGRA:
-        gpuName = "tegra";
+        gpuArchitecture = "tegra";
         break;
     default:
         throw std::runtime_error("unknown gpu famili");
@@ -62,7 +62,7 @@ void PackManagerTest::LoadResources()
     auto startPos = urlPacksGpu.find("{gpu}");
     if (startPos != String::npos)
     {
-        urlPacksGpu.replace(startPos, 5, gpuName);
+        urlPacksGpu.replace(startPos, 5, gpuArchitecture);
     }
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -135,7 +135,7 @@ void PackManagerTest::LoadResources()
     url = new UITextField(Rect(5, 250, 400, 20));
     url->SetFont(font);
     url->SetFontSize(14);
-    url->SetText(UTF8Utils::EncodeToWideString(urlPacksCommon));
+    url->SetText(UTF8Utils::EncodeToWideString(urlToServerSuperpack));
     url->SetDebugDraw(true);
     url->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     url->SetInputEnabled(true);
@@ -163,6 +163,14 @@ void PackManagerTest::LoadResources()
     checkFile->SetStateText(0xFF, L"check file");
     checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
+
+    startInit = new UIButton(Rect(420, 410, 100, 20));
+    startInit->SetDebugDraw(true);
+    startInit->SetStateFont(0xFF, font);
+    startInit->SetStateFontColor(0xFF, Color::White);
+    startInit->SetStateText(0xFF, L"start init");
+    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitializeClicked));
+    AddControl(startInit);
 }
 
 void PackManagerTest::UnloadResources()
@@ -178,6 +186,7 @@ void PackManagerTest::UnloadResources()
     SafeRelease(url);
     SafeRelease(filePathField);
     SafeRelease(checkFile);
+    SafeRelease(startInit);
 
     BaseScreen::UnloadResources();
 }
@@ -211,6 +220,37 @@ void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request
     greenControl->SetRect(rect);
 }
 
+void PackManagerTest::OnInitChange(PackManager::IInit& init)
+{
+    StringStream ss;
+
+    ss << "init change state: " << static_cast<uint32>(init.GetState()) << '\n';
+
+    if (init.GetError() != PackManager::InitError::AllGood)
+    {
+        ss << "error: " << static_cast<uint32>(init.GetError()) << " message: " << init.GetErrorMessage() << '\n';
+
+        if (init.CanRetry())
+        {
+            ss << "do you want to retry?\n";
+            init.Pause(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
+        }
+    }
+}
+
+void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+
+    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+
+    String dbFile = sqliteDbFile;
+    dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
+
+    // clear and renew all packs state
+    pm.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, gpuArchitecture);
+}
+
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
@@ -231,11 +271,11 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-    String dbFile = sqliteDbFile.GetStringValue();
-    dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
+    String dbFile = sqliteDbFile;
+    dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlPacksCommon, urlPacksGpu);
+    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, urlPacksGpu);
     packManager.EnableRequesting();
 
     packManager.packStateChanged.DisconnectAll();

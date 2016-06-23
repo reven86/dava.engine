@@ -210,7 +210,7 @@ function TupState.BuildLists(self)
         -- if not - that should be thread as error
         if secondMatch ~= nil then
             print("Packs: " .. firstMatch .. " and " .. secondMatch)
-            print "File is matching more than one pack"
+            error "File is matching more than one pack"
         end
     end
     
@@ -273,7 +273,7 @@ function TupState.BuildPacks(self)
                 mergePackCmdText .. mergePackCmd, mergePackOutput)
 
             -- archivate
-            local archiveCmd = self.cmd.fwzip .. " a -bd -bso0 -tzip %o @%f"
+            local archiveCmd = self.cmd.fwResourceArchive .. " -pack -compression lz4hc -listfile %f %o"
             local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
             local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
@@ -337,17 +337,17 @@ function TupState.BuildPacks(self)
     end
 
     -- merge superpack lists
-    local mergeSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-    local mergeSuperCmd = self.cmd.cat .. " " .. mergeSuperMask .. " > %o"
-    local mergeSuperCmdText = "^ Gen merged superlist^ "
-    local mergeSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
+    local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
+    local mergedSuperCmd = self.cmd.cat .. " " .. mergeSuperMask .. " > %o"
+    local mergedSuperCmdText = "^ Gen merged superlist^ "
+    local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 
-    mergeSuperCmd = UtilConvertToPlatformPath(self.platform, mergeSuperCmd)
+    mergedSuperCmd = UtilConvertToPlatformPath(self.platform, mergedSuperCmd)
 
-    tup.rule({ mergeSuperMask, superPackGroup }, mergeSuperCmdText .. mergeSuperCmd, mergeSuperOutput)
+    tup.rule({ mergedSuperMask, superPackGroup }, mergedSuperCmdText .. mergedSuperCmd, mergedSuperOutput)
 
     -- create super pack
     local superpackOutput = self.outputDir .. "/superpack.dvpk"
-    local superpackCmd = self.cmd.fwResourceArchive .. " -pack -compression none -pathcrop " .. self.outputDir .. "/ -listfile %f %o"
-    tup.rule(mergeSuperOutput, superpackCmd, superpackOutput)
+    local superpackCmd = self.cmd.fwResourceArchive .. " -pack -compression none -basedir " .. self.outputDir .. "/ -listfile %f %o"
+    tup.rule(mergedSuperOutput, superpackCmd, superpackOutput)
 end

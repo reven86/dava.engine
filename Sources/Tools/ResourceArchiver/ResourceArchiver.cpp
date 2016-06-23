@@ -38,8 +38,6 @@ struct CollectedFile
 
 void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchivePath, bool addHidden, Vector<CollectedFile>& collectedFiles)
 {
-    bool fileOrDirAdded = false;
-
     ScopedPtr<FileList> fileList(new FileList(dirPath, addHidden));
     for (uint32 file = 0; file < fileList->GetCount(); ++file)
     {
@@ -50,7 +48,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
 
         if (fileList->IsDirectory(file))
         {
-            fileOrDirAdded = true;
             String directoryName = fileList->GetFilename(file);
             FilePath subDirAbsolute = dirPath + (directoryName + '/');
             String subDirArchive = dirArchivePath + (directoryName + '/');
@@ -62,7 +59,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
             {
                 continue;
             }
-            fileOrDirAdded = true;
 
             CollectedFile collectedFile;
             collectedFile.absPath = fileList->GetPathname(file);
@@ -235,49 +231,43 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
-void ConvertToUnixPath(String& cropBase)
+bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
-    std::transform(begin(cropBase), end(cropBase), begin(cropBase), [](char value)
-                   {
-                       if ('\\' == value)
-                       {
-                           value = '/';
-                       }
-                       return value;
-                   });
-}
-
-bool CollectFiles(const Vector<String>& sources, String cropBase, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
-{
-    ConvertToUnixPath(cropBase);
-
-    FilePath cropBasePath(cropBase);
-    if (cropBase.empty() == false && (cropBasePath.IsDirectoryPathname() == false || FileSystem::Instance()->IsDirectory(cropBasePath) == false))
-    {
-        Logger::Warning("Cropped path '%s' is not an existing directory", cropBase.c_str());
-        cropBase.clear();
-    }
 
     for (String source : sources)
     {
-        ConvertToUnixPath(source);
-
-        String croppedSource;
-        if (!cropBase.empty() && StringUtils::StartsWith(source, cropBase))
+        FilePath sourcePath;
+        if (FilePath::IsAbsolutePathname(source))
         {
-            DVASSERT(source.size() >= cropBase.size());
-            croppedSource.assign(source.begin() + cropBase.size(), source.end());
+            sourcePath = source;
+            if (sourcePath == baseDir)
+            {
+                Logger::Error("Source path is the same as base dir: %s", baseDir.GetAbsolutePathname().c_str());
+                return false;
+            }
+        }
+        else
+        {
+            sourcePath = baseDir + source;
         }
 
-        FilePath sourcePath(source);
+        String archivePath;
+        if (sourcePath.StartsWith(baseDir))
+        {
+            archivePath = sourcePath.GetRelativePathname(baseDir);
+        }
+        else
+        {
+            Logger::Warning("Source '%s' doesn't belong to base dir %s and will be placed in archive root", sourcePath.GetAbsolutePathname().c_str(), baseDir.GetAbsolutePathname().c_str());
+            archivePath = (sourcePath.IsDirectoryPathname() ? sourcePath.GetLastDirectoryName() + '/' : sourcePath.GetFilename());
+        }
+
         if (sourcePath.IsDirectoryPathname())
         {
-            String archivePath = (croppedSource.empty() ? sourcePath.GetLastDirectoryName() + '/' : croppedSource);
             CollectAllFilesInDirectory(sourcePath, archivePath, addHiddenFiles, collectedFiles);
         }
         else
         {
-            String archivePath = (croppedSource.empty() ? sourcePath.GetFilename() : croppedSource);
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
             collectedFile.archivePath = archivePath;
@@ -433,47 +423,62 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     Vector<uint8> namesOriginal = SpliceFileNames(collectedFiles);
     namesBlock.compressedNames.reserve(namesOriginal.size());
 
-    if (!GetCompressor(Compressor::Type::Lz4HC)->Compress(namesOriginal, namesBlock.compressedNames))
+    if (!namesOriginal.empty())
     {
-        Logger::Error("Can't compress names block");
-        return false;
+        if (!GetCompressor(Compressor::Type::Lz4HC)->Compress(namesOriginal, namesBlock.compressedNames))
+        {
+            Logger::Error("Can't compress names block");
+            return false;
+        }
     }
 
-    namesBlock.compressedCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(namesBlock.compressedNames.data()),
-                                                  static_cast<uint32>(namesBlock.compressedNames.size()));
+    namesBlock.compressedCrc32 = CRC32::ForBuffer(namesBlock.compressedNames.data(), namesBlock.compressedNames.size());
 
     uint32 fileDataSize = static_cast<uint32>(filesDataBlock.files.size() * sizeof(PackFormat::FileTableEntry));
     uint32 fileTableSize = fileDataSize + static_cast<uint32>(namesBlock.compressedNames.size() + sizeof(namesBlock.compressedCrc32));
+
+    if (0 == fileDataSize)
+    {
+        fileTableSize = 0;
+    }
 
     // place in one buffer full FileTableBlock first all filesData then compressed names and compressedNamesCrc32
     Vector<uint8> tmpFileTable;
     tmpFileTable.resize(fileTableSize);
 
-    // copy files data
-    std::copy_n(filesDataBlock.files.data(), filesDataBlock.files.size(), reinterpret_cast<PackFormat::FileTableEntry*>(tmpFileTable.data()));
+    if (!filesDataBlock.files.empty())
+    {
+        // copy files data
+        std::copy_n(filesDataBlock.files.data(), filesDataBlock.files.size(), reinterpret_cast<PackFormat::FileTableEntry*>(tmpFileTable.data()));
+    }
 
-    // copy compressed names data
-    std::copy_n(namesBlock.compressedNames.data(), namesBlock.compressedNames.size(), &tmpFileTable[fileDataSize]);
+    if (!namesBlock.compressedNames.empty())
+    {
+        // copy compressed names data
+        std::copy_n(namesBlock.compressedNames.data(), namesBlock.compressedNames.size(), &tmpFileTable.at(fileDataSize));
+        // copy compressed crc32
+        std::copy_n(&namesBlock.compressedCrc32, 1, reinterpret_cast<uint32*>(&tmpFileTable.at(fileTableSize - sizeof(namesBlock.compressedCrc32))));
+    }
 
-    // copy compressed crc32
-    std::copy_n(&namesBlock.compressedCrc32, 1, reinterpret_cast<uint32*>(&tmpFileTable[fileDataSize - sizeof(namesBlock.compressedCrc32)]));
+    if (fileTableSize > 0)
+    {
+        uint32 numBytesWrite = outputFile->Write(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
+        if (numBytesWrite != tmpFileTable.size())
+        {
+            Logger::Error("Can't write fileTableBlock");
+            return false;
+        }
+    }
 
     footerBlock.info.filesTableSize = fileTableSize;
-    footerBlock.info.filesTableCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(tmpFileTable.data()), static_cast<uint32>(tmpFileTable.size()));
+    footerBlock.info.filesTableCrc32 = CRC32::ForBuffer(tmpFileTable.data(), tmpFileTable.size());
     footerBlock.info.packArchiveMarker = PackFormat::FileMarker;
     footerBlock.info.numFiles = static_cast<uint32>(filesDataBlock.files.size());
     footerBlock.info.namesSizeCompressed = static_cast<uint32>(namesBlock.compressedNames.size());
     footerBlock.info.namesSizeOriginal = static_cast<uint32>(namesOriginal.size());
 
-    footerBlock.infoCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerBlock.info), sizeof(footerBlock.info));
+    footerBlock.infoCrc32 = CRC32::ForBuffer(&footerBlock.info, sizeof(footerBlock.info));
     footerBlock.reserved.fill(0);
-
-    uint32 numBytesWrite = outputFile->Write(tmpFileTable.data(), static_cast<uint32>(tmpFileTable.size()));
-    if (numBytesWrite != tmpFileTable.size())
-    {
-        Logger::Error("Can't write fileTableBlock");
-        return false;
-    }
 
     if (!WriteHeaderBlock(outputFile, footerBlock))
     {
@@ -512,16 +517,16 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
 bool CreateArchive(const Params& params)
 {
-    Vector<CollectedFile> collectedFiles;
-    if (false == CollectFiles(params.sourcesList, params.croppedPath, params.addHiddenFiles, collectedFiles))
+    if (!params.baseDirPath.IsDirectoryPathname() || !FileSystem::Instance()->IsDirectory(params.baseDirPath))
     {
-        Logger::Error("Collecting files error");
+        Logger::Error("Base dir '%s' is not a valid path", params.baseDirPath.GetAbsolutePathname().c_str());
         return false;
     }
 
-    if (collectedFiles.empty())
+    Vector<CollectedFile> collectedFiles;
+    if (false == CollectFiles(params.sourcesList, params.baseDirPath, params.addHiddenFiles, collectedFiles))
     {
-        Logger::Error("No input files for pack");
+        Logger::Error("Collecting files error");
         return false;
     }
 

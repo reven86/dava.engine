@@ -8,10 +8,10 @@
 namespace DAVA
 {
 PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_)
-    : packManager(&packManager_)
+    : packManagerImpl(&packManager_)
     , rootPack(&pack_)
 {
-    DVASSERT(packManager != nullptr);
+    DVASSERT(packManagerImpl != nullptr);
     DVASSERT(rootPack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
@@ -56,10 +56,10 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
 
 void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency)
 {
-    const PackManager::Pack& packState = packManager->GetPack(packName);
+    const PackManager::Pack& packState = packManagerImpl->GetPack(packName);
     for (const String& dependName : packState.dependency)
     {
-        PackManager::Pack& dependPack = packManager->GetPack(dependName);
+        PackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
         if (dependPack.hashFromDB != 0 && dependPack.state != PackManager::Pack::Status::Mounted)
         {
             dependency.insert(&dependPack);
@@ -78,8 +78,8 @@ void PackRequest::StartLoadingHashFile()
     // build url to pack_name_crc32_file
 
     PackManager::Pack& pack = *subRequest.pack;
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + pack.name + RequestManager::hashPostfix;
-    String url = packManager->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::hashPostfix;
+    FilePath archiveCrc32Path = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::hashPostfix;
+    String url = packManagerImpl->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::hashPostfix;
 
     // start downloading file
 
@@ -177,8 +177,8 @@ bool PackRequest::IsLoadingHashFileFinished()
 
                     subRequest.status = SubRequest::Error;
 
-                    packManager->onPackChange->Emit(currentPack);
-                    packManager->onRequestChange->Emit(*this);
+                    packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
+                    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
                     break;
                 }
             }
@@ -205,8 +205,8 @@ void PackRequest::StartLoadingPackFile()
 
     PackManager::Pack& pack = *subRequest.pack;
 
-    FilePath packPath = packManager->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
-    String url = packManager->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::packPostfix;
+    FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+    String url = packManagerImpl->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::packPostfix;
 
     // start downloading
 
@@ -218,7 +218,7 @@ void PackRequest::StartLoadingPackFile()
 
     pack.state = PackManager::Pack::Status::Downloading;
 
-    packManager->onPackChange->Emit(pack);
+    packManagerImpl->GetPM().packStateChanged.Emit(pack);
 }
 
 bool PackRequest::IsLoadingPackFileFinished()
@@ -253,8 +253,8 @@ bool PackRequest::IsLoadingPackFileFinished()
                     currentPack.downloadedSize = static_cast<uint32>(progress);
                     currentPack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
-                    packManager->packDownload->Emit(currentPack);
-                    packManager->onRequestChange->Emit(*this);
+                    packManagerImpl->GetPM().packDownloadChanged.Emit(currentPack);
+                    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
                 }
             }
         }
@@ -273,7 +273,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 currentPack.downloadProgress = 1.0f;
                 currentPack.downloadedSize = progress;
-                packManager->packDownload->Emit(currentPack);
+                packManagerImpl->GetPM().packDownloadChanged.Emit(currentPack);
             }
             else
             {
@@ -290,9 +290,9 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 subRequest.status = SubRequest::Error;
 
-                packManager->onPackChange->Emit(currentPack);
+                packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
             }
-            packManager->onRequestChange->Emit(*this);
+            packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
         }
         else
         {
@@ -318,9 +318,9 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
     }
 
     // inform user about problem with pack
-    packManager->onPackChange->Emit(currentPack);
+    packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
 
-    packManager->onRequestChange->Emit(*this);
+    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
 }
 
 void PackRequest::StartCheckHash()
@@ -332,7 +332,7 @@ void PackRequest::StartCheckHash()
     PackManager::Pack& currentPack = *subRequest.pack;
 
     // build crcMetaFilePath
-    FilePath archiveCrc32Path = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
+    FilePath archiveCrc32Path = packManagerImpl->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
     // read crc32 from meta file
     ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
     if (!crcFile)
@@ -349,7 +349,7 @@ void PackRequest::StartCheckHash()
         ss >> currentPack.hashFromMeta;
     }
     // calculate crc32 from PackFile
-    FilePath packPath = packManager->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
+    FilePath packPath = packManagerImpl->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
 
     if (!FileSystem::Instance()->IsFile(packPath))
     {
@@ -392,7 +392,7 @@ void PackRequest::MountPack()
 
     if (pack.hashFromDB != RequestManager::emptyZipArchiveHash)
     {
-        FilePath packPath = packManager->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+        FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
         FileSystem* fs = FileSystem::Instance();
         fs->Mount(packPath, "Data/");
     }
@@ -401,7 +401,7 @@ void PackRequest::MountPack()
 
     pack.state = PackManager::Pack::Status::Mounted;
 
-    packManager->onPackChange->Emit(pack);
+    packManagerImpl->GetPM().packStateChanged.Emit(pack);
 }
 
 void PackRequest::GoToNextSubRequest()

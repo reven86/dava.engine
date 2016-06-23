@@ -122,33 +122,36 @@ PackArchive::PackArchive(const FilePath& archiveName)
         throw std::runtime_error("incorrect marker in pack file: " + fileName);
     }
 
-    uint64 startFilesTableBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
-
-    Vector<uint8> tmpBuffer;
-    tmpBuffer.resize(packFile.footer.info.filesTableSize);
-
-    if (!file->Seek(startFilesTableBlock, File::SEEK_FROM_START))
+    if (footerBlock.info.numFiles > 0)
     {
-        throw std::runtime_error("can't seek to filesTable block in file: " + fileName);
+        uint64 startFilesTableBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
+
+        Vector<uint8> tmpBuffer;
+        tmpBuffer.resize(packFile.footer.info.filesTableSize);
+
+        if (!file->Seek(startFilesTableBlock, File::SEEK_FROM_START))
+        {
+            throw std::runtime_error("can't seek to filesTable block in file: " + fileName);
+        }
+
+        numBytesRead = file->Read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        if (numBytesRead != packFile.footer.info.filesTableSize)
+        {
+            throw std::runtime_error("can't read filesTable block from file: " + fileName);
+        }
+
+        uint32 crc32filesTable = CRC32::ForBuffer(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        if (crc32filesTable != packFile.footer.info.filesTableCrc32)
+        {
+            throw std::runtime_error("crc32 not match in filesTable in file: " + fileName);
+        }
+
+        String fileNames;
+
+        ExtractFileTableData(footerBlock, tmpBuffer, fileNames, packFile.filesTable);
+
+        FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
     }
-
-    numBytesRead = file->Read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
-    if (numBytesRead != packFile.footer.info.filesTableSize)
-    {
-        throw std::runtime_error("can't read filesTable block from file: " + fileName);
-    }
-
-    uint32 crc32filesTable = CRC32::ForBuffer(tmpBuffer.data(), packFile.footer.info.filesTableSize);
-    if (crc32filesTable != packFile.footer.info.filesTableCrc32)
-    {
-        throw std::runtime_error("crc32 not match in filesTable in file: " + fileName);
-    }
-
-    String fileNames;
-
-    ExtractFileTableData(footerBlock, tmpBuffer, fileNames, packFile.filesTable);
-
-    FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
 }
 
 const Vector<ResourceArchive::FileInfo>& PackArchive::GetFilesInfo() const
