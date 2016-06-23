@@ -1,10 +1,12 @@
+#include "Debug/DVAssert.h"
+
 #include "Document/CommandsBase/WGTCommand.h"
 #include "Document/CommandsBase/Command.h"
 #include "Document/CommandsBase/CommandBatch.h"
 
 #include "NgtTools/Common/GlobalContext.h"
 
-#include "Debug/DVAssert.h"
+#include <core_reflection/i_definition_manager.hpp>
 
 const char* WGTCommand::getId() const
 {
