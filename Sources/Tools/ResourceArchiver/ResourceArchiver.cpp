@@ -36,8 +36,6 @@ struct CollectedFile
 
 void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchivePath, bool addHidden, Vector<CollectedFile>& collectedFiles)
 {
-    bool fileOrDirAdded = false;
-
     ScopedPtr<FileList> fileList(new FileList(dirPath, addHidden));
     for (auto file = 0; file < fileList->GetCount(); ++file)
     {
@@ -48,7 +46,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
 
         if (fileList->IsDirectory(file))
         {
-            fileOrDirAdded = true;
             String directoryName = fileList->GetFilename(file);
             FilePath subDirAbsolute = dirPath + (directoryName + '/');
             String subDirArchive = dirArchivePath + (directoryName + '/');
@@ -60,21 +57,12 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
             {
                 continue;
             }
-            fileOrDirAdded = true;
 
             CollectedFile collectedFile;
             collectedFile.absPath = fileList->GetPathname(file);
             collectedFile.archivePath = dirArchivePath + fileList->GetFilename(file);
             collectedFiles.push_back(collectedFile);
         }
-    }
-
-    if (fileOrDirAdded == false) // add empty folder to preserve file tree hierarchy as-is
-    {
-        CollectedFile collectedFile;
-        collectedFile.absPath = FilePath();
-        collectedFile.archivePath = dirArchivePath;
-        collectedFiles.push_back(collectedFile);
     }
 }
 
@@ -272,20 +260,45 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
-bool CollectFiles(const Vector<String>& sources, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
+bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
     for (String source : sources)
     {
-        FilePath sourcePath(source);
+        FilePath sourcePath;
+        if (FilePath::IsAbsolutePathname(source))
+        {
+            sourcePath = source;
+            if (sourcePath == baseDir)
+            {
+                Logger::Error("Source path is the same as base dir: %s", baseDir.GetAbsolutePathname().c_str());
+                return false;
+            }
+        }
+        else
+        {
+            sourcePath = baseDir + source;
+        }
+
+        String archivePath;
+        if (sourcePath.StartsWith(baseDir))
+        {
+            archivePath = sourcePath.GetRelativePathname(baseDir);
+        }
+        else
+        {
+            Logger::Warning("Source '%s' doesn't belong to base dir %s and will be placed in archive root", sourcePath.GetAbsolutePathname().c_str(), baseDir.GetAbsolutePathname().c_str());
+            archivePath = (sourcePath.IsDirectoryPathname() ? sourcePath.GetLastDirectoryName() + '/' : sourcePath.GetFilename());
+        }
+
         if (sourcePath.IsDirectoryPathname())
         {
-            CollectAllFilesInDirectory(sourcePath, sourcePath.GetLastDirectoryName() + '/', addHiddenFiles, collectedFiles);
+            CollectAllFilesInDirectory(sourcePath, archivePath, addHiddenFiles, collectedFiles);
         }
         else
         {
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
-            collectedFile.archivePath = sourcePath.GetFilename();
+            collectedFile.archivePath = archivePath;
             collectedFiles.push_back(collectedFile);
         }
     }
@@ -492,8 +505,14 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
 bool CreateArchive(const Params& params)
 {
+    if (!params.baseDirPath.IsDirectoryPathname() || !FileSystem::Instance()->IsDirectory(params.baseDirPath))
+    {
+        Logger::Error("Base dir '%s' is not a valid path", params.baseDirPath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
     Vector<CollectedFile> collectedFiles;
-    if (false == CollectFiles(params.sourcesList, params.addHiddenFiles, collectedFiles))
+    if (false == CollectFiles(params.sourcesList, params.baseDirPath, params.addHiddenFiles, collectedFiles))
     {
         Logger::Error("Collecting files error");
         return false;

@@ -16,6 +16,7 @@ struct Params
     DAVA::Compressor::Type compressionType = Compressor::Type::Lz4HC;
     FilePath archivePath;
     FilePath logPath;
+    FilePath baseDirPath;
     AssetCacheClient* assetCacheClient = nullptr;
 };
 

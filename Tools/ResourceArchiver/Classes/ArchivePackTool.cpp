@@ -20,6 +20,7 @@ const DAVA::String Timeout = "-t";
 const DAVA::String LogFile = "-log";
 const DAVA::String Src = "-src";
 const DAVA::String ListFile = "-listfile";
+const DAVA::String BaseDir = "-basedir";
 };
 
 ArchivePackTool::ArchivePackTool()
@@ -36,6 +37,7 @@ ArchivePackTool::ArchivePackTool()
     options.AddOption(OptionNames::LogFile, VariantType(String("")), "package process log file");
     options.AddOption(OptionNames::Src, VariantType(String("")), "source files directory", true);
     options.AddOption(OptionNames::ListFile, VariantType(String("")), "text files containing list of source files", true);
+    options.AddOption(OptionNames::BaseDir, VariantType(String("")), "source base directory");
     options.AddArgument("packfile");
 }
 
@@ -57,6 +59,7 @@ bool ArchivePackTool::ConvertOptionsToParamsInternal()
     assetCacheParams.port = static_cast<uint16>(options.GetOption(OptionNames::Port).AsUInt32());
     assetCacheParams.timeoutms = options.GetOption(OptionNames::Timeout).AsUInt64();
     logFileName = options.GetOption(OptionNames::LogFile).AsString();
+    baseDir = options.GetOption(OptionNames::BaseDir).AsString();
 
     source = Source::Unknown;
 
@@ -184,6 +187,7 @@ int ArchivePackTool::ProcessInternal()
     params.archivePath = packFileName;
     params.logPath = logFilePath;
     params.assetCacheClient = assetCache.get();
+    params.baseDirPath = (baseDir.empty() ? FileSystem::Instance()->GetCurrentWorkingDirectory() : baseDir);
 
     ResourceArchiver::CreateArchive(params);
 
