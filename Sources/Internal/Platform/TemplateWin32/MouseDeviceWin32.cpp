@@ -17,10 +17,11 @@ void MouseDeviceWin32::SetCursorInCenter()
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
 #endif
     RECT wndRect;
-    GetWindowRect(hWnd, &wndRect);
+    ::GetWindowRect(hWnd, &wndRect);
     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
     int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
-    SetCursorPos(centerX, centerY);
+    ::SetCursorPos(centerX, centerY);
+    ::SetCursor(NULL);
 }
 
 bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
@@ -30,23 +31,17 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
-    DAVA::int32 showCount = 0;
-    showCount = ShowCursor(show); // No cursor info available, just call
-
-    if (show && showCount >= 0)
+    HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
+    if (show)
     {
-        // If system cursor is visible then showCount should be >= 0
-        lastSystemCursorShowState = true;
-    }
-    else if (!show && showCount < 0)
-    {
-        // If system cursor is not visible then showCount should be -1
-        lastSystemCursorShowState = false;
+        HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
+        SetClassLongPtr(wnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
+        ::SetCursor(defaultCursor);
     }
     else
     {
-        // Setup failure
-        return false;
+        SetClassLongPtr(wnd, GCLP_HCURSOR, NULL);
+        ::SetCursor(NULL);
     }
     return true;
 }
@@ -62,7 +57,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
         if (newMode == eCaptureMode::PINING)
         {
             POINT p;
-            GetCursorPos(&p);
+            ::GetCursorPos(&p);
             lastCursorPosition.x = p.x;
             lastCursorPosition.y = p.y;
 
@@ -70,7 +65,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
         }
         else
         {
-            SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
         }
         break;
     }

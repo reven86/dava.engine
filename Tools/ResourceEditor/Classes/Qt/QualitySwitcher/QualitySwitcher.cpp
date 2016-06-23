@@ -174,6 +174,15 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
             optionsLayout->addWidget(labOp, i, 0);
             optionsLayout->addWidget(checkOp, i, 1);
         }
+
+        //AppleMetal features preview
+        QLabel* labOp = new QLabel("Metal Enabled:", materialsGroup);
+        QCheckBox* checkOp = new QCheckBox(materialsGroup);
+        checkOp->setObjectName("MetalEnabledCheckBox");
+        checkOp->setChecked(DAVA::QualitySettingsSystem::Instance()->GetMetalPreview());
+        QObject::connect(checkOp, SIGNAL(clicked(bool)), this, SLOT(OnOptionClick(bool)));
+        optionsLayout->addWidget(labOp, optionsCount, 0);
+        optionsLayout->addWidget(checkOp, optionsCount, 1);
     }
 
     // buttons
@@ -303,6 +312,8 @@ void QualitySwitcher::ApplySettings()
     }
 
     // materials
+    bool materialSettingsChanged = false;
+    bool optionSettingsChanged = false;
     {
         for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
@@ -312,20 +323,10 @@ void QualitySwitcher::ApplySettings()
             {
                 DAVA::FastName newMaQuality(combo->currentText().toLatin1());
                 DAVA::FastName group(combo->currentData().toString().toLatin1());
-
                 if (newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
                 {
+                    materialSettingsChanged = true;
                     DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
-                    ApplyMa();
-
-                    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-                    for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
-                    {
-                        DAVA::Scene* scene = tabWidget->GetTabScene(tab);
-                        UpdateEntitiesToQuality(scene);
-                    }
-
-                    emit QualityChanged();
                 }
             }
         }
@@ -385,15 +386,42 @@ void QualitySwitcher::ApplySettings()
             if (nullptr != checkBox)
             {
                 DAVA::FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
-                DAVA::QualitySettingsSystem::Instance()->EnableOption(optionName, checkBox->isChecked());
-
-                SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-                for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+                bool checked = checkBox->isChecked();
+                if (DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName) != checked)
                 {
-                    DAVA::Scene* scene = tabWidget->GetTabScene(tab);
-                    UpdateEntitiesToQuality(scene);
+                    DAVA::QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
+                    optionSettingsChanged = true;
                 }
             }
+        }
+    }
+
+    QCheckBox* metalCheckBox = findChild<QCheckBox*>("MetalEnabledCheckBox");
+    if (nullptr != metalCheckBox)
+    {
+        bool checked = metalCheckBox->isChecked();
+        if (DAVA::QualitySettingsSystem::Instance()->GetMetalPreview() != checked)
+        {
+            DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(checked);
+            optionSettingsChanged = true;
+            materialSettingsChanged = true;
+        }
+    }
+
+    if (materialSettingsChanged)
+    {
+        ApplyMa();
+        emit QualityChanged();
+    }
+
+    if (materialSettingsChanged || optionSettingsChanged)
+    {
+        SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+        {
+            DAVA::Scene* scene = tabWidget->GetTabScene(tab);
+            UpdateEntitiesToQuality(scene);
+            scene->foliageSystem->SyncFoliageWithLandscape();
         }
     }
 }

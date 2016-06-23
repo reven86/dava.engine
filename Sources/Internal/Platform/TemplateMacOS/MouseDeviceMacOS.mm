@@ -10,6 +10,14 @@
 
 namespace DAVA
 {
+MouseDeviceMacOS::~MouseDeviceMacOS()
+{
+    if (blankCursor != nullptr)
+    {
+        [static_cast<NSCursor*>(blankCursor) release];
+    }
+}
+
 void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
 {
     switch (newMode)
@@ -33,18 +41,23 @@ void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
 
 void MouseDeviceMacOS::SetCursorInCenter()
 {
+    if (blankCursor != nullptr)
+    {
+        [static_cast<NSCursor*>(blankCursor) set];
+    }
 }
 
 bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 {
-    if (event->device == UIEvent::Device::MOUSE)
+    bool isMouse = event->device == UIEvent::Device::MOUSE;
+    bool isMovePhase = event->phase == UIEvent::Phase::DRAG || event->phase == UIEvent::Phase::MOVE;
+
+    if (isMouse && isMovePhase && skipMouseMoveEvents != 0)
     {
-        if (skipMouseMoveEvents)
-        {
-            skipMouseMoveEvents--;
-            return true;
-        }
+        skipMouseMoveEvents--;
+        return true;
     }
+
     return false;
 }
 
@@ -68,7 +81,7 @@ void MouseDeviceMacOS::OSXShowCursor()
 {
     if (!cursorVisible)
     {
-        [NSCursor unhide];
+        [[NSCursor arrowCursor] set];
         cursorVisible = true;
     }
 }
@@ -77,9 +90,56 @@ void MouseDeviceMacOS::OSXHideCursor()
 {
     if (cursorVisible)
     {
-        [NSCursor hide];
+        [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
         cursorVisible = false;
     }
+}
+
+void* MouseDeviceMacOS::GetOrCreateBlankCursor()
+{
+    if (blankCursor != nullptr)
+    {
+        return blankCursor;
+    }
+
+    // Image data -> CGDataProviderRef
+    const size_t width = 1;
+    const size_t height = 1;
+    uint32 pixel = 0;
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(nullptr, &pixel, sizeof(pixel), nullptr);
+
+    // CGDataProviderRef -> CGImageRef
+    const size_t bitsPerComponent = 8;
+    const size_t bitsPerPixel = 32;
+    const size_t bytesPerRow = width * 4;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Host;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+    CGImageRef imageRef = CGImageCreate(width,
+                                        height,
+                                        bitsPerComponent,
+                                        bitsPerPixel,
+                                        bytesPerRow,
+                                        colorSpace,
+                                        bitmapInfo,
+                                        dataProvider,
+                                        nullptr,
+                                        false,
+                                        renderingIntent);
+
+    // CGImageRef -> NSImage
+    NSImage* img = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(width, height)];
+
+    // NSImage -> NSCursor
+    NSCursor* cursor = [[NSCursor alloc] initWithImage:img hotSpot:NSMakePoint(0, 0)];
+
+    CFRelease(dataProvider);
+    CFRelease(colorSpace);
+    CGImageRelease(imageRef);
+    [img release];
+
+    blankCursor = cursor;
+    return blankCursor;
 }
 
 } //  namespace DAVA

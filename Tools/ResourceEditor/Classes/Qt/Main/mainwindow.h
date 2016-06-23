@@ -286,7 +286,9 @@ private:
     RecentMenuItems recentProjects;
 
     wgt::IComponentContext& ngtContext;
+#if defined(NEW_PROPERTY_PANEL)
     std::unique_ptr<PropertyPanel> propertyPanel;
+#endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
