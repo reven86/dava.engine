@@ -142,6 +142,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::BEGAN:
     {
         systemsManager->TransformStateChanged.Emit(true);
+        inTransformState = true;
         extraDelta.SetZero();
         prevPos = currentInput->point;
         return false;
@@ -164,7 +165,11 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
             ClampAngle();
         }
         systemsManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        systemsManager->TransformStateChanged.Emit(false);
+        if (inTransformState)
+        {
+            systemsManager->TransformStateChanged.Emit(false);
+            inTransformState = false;
+        }
         return false;
     default:
         return false;
