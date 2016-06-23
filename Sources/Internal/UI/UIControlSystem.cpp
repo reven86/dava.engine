@@ -363,7 +363,20 @@ void UIControlSystem::Draw()
 
     if (drawDubleClick)
     {
-        RenderSystem2D::Instance()->DrawCircle(center, radius, color);
+        //draw first click
+        Vector2 x = Vector2(radius, 0);
+        Vector2 y = Vector2(0, radius);
+        Color col2(0, 1, 0, 1);
+        Color col1 = col2;
+
+        RenderSystem2D::Instance()->DrawLine(lastClickData.prePoint - x, lastClickData.prePoint + x, col1);
+        RenderSystem2D::Instance()->DrawLine(lastClickData.prePoint - y, lastClickData.prePoint + y, col1);
+        RenderSystem2D::Instance()->DrawCircle(lastClickData.prePoint, radius, col1);
+
+        //draw second click
+        RenderSystem2D::Instance()->DrawLine(center - x, center + x, col2);
+        RenderSystem2D::Instance()->DrawLine(center - y, center + y, col2);
+        RenderSystem2D::Instance()->DrawCircle(center, radius, col2);
     }
 
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
@@ -592,9 +605,12 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
-        Logger::Info("!!!! CheckTimeAndPosition lastx %f, lasty %f", lastClickData.physPoint.dx, lastClickData.physPoint.dy);
-        Logger::Info("!!!! CheckTimeAndPosition currx %f, curry %f", newEvent->physPoint.dx, newEvent->physPoint.dy);
-        Logger::Info("!!!! CheckTimeAndPosition sqr   %f,  <    %d", point.SquareLength(), doubleClickRadiusSquared);
+        Logger::Info("!!!! phys lastx %f, lasty %f", lastClickData.physPoint.dx, lastClickData.physPoint.dy);
+        Logger::Info("!!!! virt lastx %f, lasty %f", lastClickData.point.dx, lastClickData.point.dy);
+        Logger::Info("!!!! phys currx %f, curry %f", newEvent->physPoint.dx, newEvent->physPoint.dy);
+        Logger::Info("!!!! virt currx %f, curry %f", newEvent->point.dx, newEvent->point.dy);
+        Logger::Info("!!!! phys sqr   %f,  <    %d", point.SquareLength(), doubleClickRadiusSquared);
+        Logger::Info("!!!! virt sqr   %f,  <    %f", VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(point.SquareLength()), VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(doubleClickRadiusSquared)));
         if (point.SquareLength() < doubleClickRadiusSquared)
         {
             return true;
@@ -606,6 +622,7 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
     int32 tapCount = 0;
+    drawDubleClick = false;
     // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
@@ -622,6 +639,8 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         lastClickData.touchId = newEvent->touchId;
         lastClickData.timestamp = newEvent->timestamp;
         lastClickData.physPoint = newEvent->physPoint;
+        lastClickData.prePoint = lastClickData.point;
+        lastClickData.point = newEvent->point;
         lastClickData.tapCount = tapCount;
         lastClickData.lastClickEnded = false;
     }
@@ -634,7 +653,15 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
             {
                 drawDubleClick = true;
                 center = newEvent->point;
+                //radius = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sqrt(doubleClickRadiusSquared));
+                //radius = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sqrt(doubleClickRadiusSquared));
                 radius = sqrt(doubleClickRadiusSquared);
+                Vector2 newRad;
+                newRad.x = lastClickData.physPoint.x;
+                newRad.y = lastClickData.physPoint.x + radius;
+                newRad = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newRad);
+                radius = newRad.y - newRad.x;
+
                 tapCount = lastClickData.tapCount;
             }
         }

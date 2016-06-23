@@ -328,6 +328,8 @@ private:
     {
         uint32 touchId = 0;
         Vector2 physPoint;
+        Vector2 prePoint;
+        Vector2 point;
         float64 timestamp = 0.0;
         int32 tapCount = 0;
         bool lastClickEnded = false;
