@@ -214,7 +214,7 @@ void PackManagerImpl::InitStarting()
     if (!fs->IsFile(dbLocal))
     {
         FilePath dbInData("~res:/" + initLocalDBFileName);
-        if (!fs->CopyFileW(dbInData, dbLocal))
+        if (!fs->CopyFile(dbInData, dbLocal))
         {
             throw std::runtime_error("can't copy pack DB from data to doc");
         }
