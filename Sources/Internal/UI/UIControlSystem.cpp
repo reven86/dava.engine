@@ -54,7 +54,7 @@ UIControlSystem::UIControlSystem()
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / DeviceInfo::GetScreenInfo().scale / 4;
         defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
     }
     else
@@ -605,6 +605,8 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
+        Logger::Info("!!!! device dpi %d, dpiScale %d, scale %f", DPIHelper::GetScreenDPI(), DPIHelper::GetDpiScaleFactor(0), DeviceInfo::GetScreenInfo().scale);
+
         Logger::Info("!!!! phys lastx %f, lasty %f", lastClickData.physPoint.dx, lastClickData.physPoint.dy);
         Logger::Info("!!!! virt lastx %f, lasty %f", lastClickData.point.dx, lastClickData.point.dy);
         Logger::Info("!!!! phys currx %f, curry %f", newEvent->physPoint.dx, newEvent->physPoint.dy);
