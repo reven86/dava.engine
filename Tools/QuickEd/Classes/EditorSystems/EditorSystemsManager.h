@@ -63,19 +63,6 @@ struct MagnetLineInfo
     const DAVA::Vector2::eAxis axis;
 };
 
-struct ChangePropertyAction
-{
-    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
-        : node(node_)
-        , property(property_)
-        , value(value_)
-    {
-    }
-    ControlNode* node = nullptr;
-    AbstractProperty* property = nullptr;
-    DAVA::VariantType value;
-};
-
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
@@ -117,7 +104,7 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<const DAVA::Vector<ChangePropertyAction>& /*propertyActions*/, size_t /*hash*/> PropertiesChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> PropertyChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;

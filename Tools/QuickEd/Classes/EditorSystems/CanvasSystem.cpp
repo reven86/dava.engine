@@ -513,7 +513,7 @@ void CanvasSystem::LayoutCanvas()
     float32 totalHeight = 0.0f;
     const int spacing = 5;
     const List<UIControl*>& children = controlsCanvas->GetChildren();
-    int childrenCount = children.size();
+    DAVA::size_type childrenCount = children.size();
     if (childrenCount > 1)
     {
         totalHeight += spacing * (childrenCount - 1);
