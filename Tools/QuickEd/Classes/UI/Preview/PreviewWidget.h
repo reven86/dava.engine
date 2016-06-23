@@ -91,8 +91,7 @@ private:
     bool ProcessDragMoveEvent(QDropEvent* event);
     void OnDragLeaveEvent(QDragLeaveEvent* event);
     void OnDropEvent(QDropEvent* event);
-    void OnBeginBatch();
-    void OnEndBatch();
+    void OnTransformStateChanged(bool inTransformState);
 
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;

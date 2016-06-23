@@ -47,7 +47,8 @@ void QEApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) con
     names.push_back(L"plg_editor_interaction");
     names.push_back(L"plg_qt_app");
     names.push_back(L"plg_qt_common");
-    names.push_back(L"plg_history_ui");
+    //uncomment it when DavaGLWidget will be rewrited to the QQuickWidget
+    //names.push_back(L"plg_history_ui");
 }
 
 void QEApplication::OnPostLoadPugins()

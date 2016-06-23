@@ -129,14 +129,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
-        systemsManager->BeginTransformBatch.Emit();
+        systemsManager->TransformStateChanged.Emit(true);
         currentHash = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
-        {
-            systemsManager->TransformStateChanged.Emit(true);
-        }
         return false;
     }
     case UIEvent::Phase::DRAG:
@@ -152,16 +148,12 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::Phase::ENDED:
-        systemsManager->EndTransformBatch.Emit();
         if (activeArea == HUDAreaInfo::ROTATE_AREA)
         {
             ClampAngle();
         }
         systemsManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
-        {
-            systemsManager->TransformStateChanged.Emit(false);
-        }
+        systemsManager->TransformStateChanged.Emit(false);
         return false;
     default:
         return false;
