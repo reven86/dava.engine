@@ -160,6 +160,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         FileSystem::Instance()->Init();
 
         Core::Instance()->SystemAppStarted();
+
+        foreground = true;
         StartForeground();
     }
 
