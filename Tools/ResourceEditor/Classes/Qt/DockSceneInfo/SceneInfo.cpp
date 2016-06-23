@@ -36,6 +36,7 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(signalDispatcher, &SceneSignals::StructureChanged, this, &SceneInfo::SceneStructureChanged);
     connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
     connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
+    connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -417,7 +418,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    ApplyStyle(headerData, HEADER_STYLE);
+    headerData->SetBackground(palette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -602,6 +603,11 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command,
     default:
         break;
     }
+}
+
+void SceneInfo::OnThemeChanged()
+{
+    InitializeInfo();
 }
 
 void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)

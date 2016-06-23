@@ -279,9 +279,11 @@ void SceneExporter::ExportSceneFile(const FilePath& scenePathname, const String&
     { //request Scene from cache
         SceneExporterCache::CalculateSceneKey(scenePathname, sceneLink, cacheKey, static_cast<uint32>(optimizeOnExport));
 
-        AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(cacheKey, outScenePathname.GetDirectory());
+        AssetCache::CachedItemValue retrievedData;
+        AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(cacheKey, &retrievedData);
         if (requested == AssetCache::Error::NO_ERRORS)
         {
+            retrievedData.ExportToFolder(outScenePathname.GetDirectory());
             SceneExporterInternal::LoadExportedObjects(linksPathname, externalLinks);
             ExportObjects(externalLinks);
             return;

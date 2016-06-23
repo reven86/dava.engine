@@ -1,14 +1,19 @@
-﻿cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.0)
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( CMakeTool )
 
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set                   ( DAVA_USE_QT_WIDGETS    true )
+
 include               ( CMake-common )
 
 
 find_package          ( QT5           REQUIRED )
+find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

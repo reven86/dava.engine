@@ -17,12 +17,11 @@ public:
 
 protected slots:
     void OnResetPressed();
+    void InitProperties();
 
 protected:
     QtPosSaver posSaver;
     QtPropertyEditor* editor;
-
-    void InitProperties();
 };
 
 class QtPropertyDataSettingsNode : public QtPropertyDataDavaVariant

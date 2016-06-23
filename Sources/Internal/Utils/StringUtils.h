@@ -2,6 +2,7 @@
 #define __DAVAENGINE_STRING_UTILS__
 
 #include "Base/BaseTypes.h"
+#include <cctype>
 
 namespace DAVA
 {
@@ -33,47 +34,52 @@ enum eLineBreakType
 */
 void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale = 0);
 
+bool IsWhitespace(char8 t);
+bool IsWhitespace(char16 t);
+
 /**
 * \brief Trims the given string.
 * \param [in] string The string.
 * \return output string.
 */
-WideString Trim(const WideString& string);
+template <typename StringType>
+StringType Trim(const StringType& string)
+{
+    auto it = string.begin();
+    auto end = string.end();
+    auto rit = string.rbegin();
+    while (it != end && IsWhitespace(*it)) ++it;
+    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
+    return StringType(it, rit.base());
+}
 
 /**
 * \brief Trim left.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimLeft(const WideString& string);
+template <typename StringType>
+StringType TrimLeft(const StringType& string)
+{
+    auto it = string.begin();
+    auto end = string.end();
+    while (it != end && IsWhitespace(*it)) ++it;
+    return StringType(it, end);
+}
 
 /**
 * \brief Trim right.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimRight(const WideString& string);
-
-/**
- * \brief Trim right.
- * \param [in] string The string.
- * \return output string.
- */
-String Trim(const String& str);
-
-/**
- * \brief Trim left.
- * \param [in] string The string.
- * \return output string.
- */
-String TrimLeft(const String& string);
-
-/**
- * \brief Trim right.
- * \param [in] string The string.
- * \return output string.
- */
-String TrimRight(const String& string);
+template <typename StringType>
+StringType TrimRight(const StringType& string)
+{
+    auto rit = string.rbegin();
+    auto rend = string.rend();
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
+    return StringType(rend.base(), rit.base());
+}
 
 /**
 * \brief Remove from line non-printable characters and replace 
@@ -90,6 +96,38 @@ WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1)
  * \return output string.
  */
 bool RemoveEmoji(WideString& string);
+
+/**
+ * \brief Replaces all occurrences of a search string in the specified string with replacement string
+ * \param string Original string
+ * \param search Seeking value
+ * \param replacement Replacement value
+ */
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement);
+
+/**
+* \brief Query if 't' is kind of printable character.
+* \param t The char16 to process.
+* \return false if not printable.
+*/
+inline bool IsPrintable(char16 t)
+{
+    switch (t)
+    {
+    case L'\n': // Line feed
+    case L'\r': // Carriage return
+    case 0x200B: // Zero-width space
+    case 0x200C: // Zero-width non-joiner
+    case 0x200D: // Zero-width joiner
+    case 0x200E: // Zero-width Left-to-right zero-width character
+    case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+    case 0x061C: // Arabic letter mark
+        return false;
+    default:
+        return true;
+    }
+}
+
 /**
  * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespace.
  * \param t The char16 to process.
@@ -123,9 +161,9 @@ inline bool IsWhitespace(char16 t)
     case 0x205F: // Medium mathematical space
     case 0x3000: // Ideographic space
     // Unicode characters in 'Separator, Line' category (Zl)
-    case 0x2028:
+    case 0x2028: // Line separator
     // Unicode characters in 'Separator, Paragraph' category (Zp)
-    case 0x2029:
+    case 0x2029: // Paragraph separator
     // Additional characters are treated as spaces
     case 0x200B: // Zero-width space
     case 0x200E: // Left-to-right zero-width character
@@ -135,6 +173,11 @@ inline bool IsWhitespace(char16 t)
     default:
         return false;
     }
+}
+
+inline bool IsWhitespace(char8 t)
+{
+    return (std::isspace(t) != 0);
 }
 }
 }

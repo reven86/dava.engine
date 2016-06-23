@@ -5,8 +5,11 @@
 #include "Commands2/NGTCommand.h"
 
 #include "NgtTools/Common/GlobalContext.h"
+#include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
+#include "Preferences/PreferencesStorage.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include <core_command_system/i_command_manager.hpp>
@@ -22,7 +25,7 @@ REApplication::~REApplication() = default;
 
 void REApplication::Run()
 {
-    IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
     {
         historyPanel->setClearButtonVisible(false);
@@ -45,8 +48,8 @@ void REApplication::Run()
 
 void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
 {
-    names.push_back(L"plg_reflection");
     names.push_back(L"plg_variant");
+    names.push_back(L"plg_reflection");
     names.push_back(L"plg_command_system");
     names.push_back(L"plg_serialization");
     names.push_back(L"plg_file_system");
@@ -61,12 +64,28 @@ void REApplication::OnPostLoadPugins()
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
 
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
+
+    const char* settingsPath = "ResourceEditorSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    Themes::InitFromQApplication();
 }
 
 void REApplication::OnPreUnloadPlugins()
 {
     commandManager->deregisterCommand(ngtCommand->getId());
+}
+
+bool REApplication::OnRequestCloseApp()
+{
+    return mainWindow->CanBeClosed();
+}
+
+void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
+{
+    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
 }

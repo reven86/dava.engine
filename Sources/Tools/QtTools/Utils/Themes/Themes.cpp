@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QStyleFactory>
 #include <QFont>
+#include <QFile>
 
 ENUM_DECLARE(Themes::eTheme)
 {
@@ -127,6 +128,9 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::WindowText, QColor(0x25, 0x25, 0x25));
     lightPalette.setColor(QPalette::Disabled, QPalette::WindowText, lightDisabledTextColor);
 
+    lightPalette.setColor(QPalette::Dark, lightWindowColor);
+    lightPalette.setColor(QPalette::Midlight, lightWindowColor.darker(130));
+
     lightPalette.setColor(QPalette::Base, Qt::white);
     lightPalette.setColor(QPalette::Disabled, QPalette::Base, lightWindowColor);
 
@@ -146,17 +150,18 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Disabled, QPalette::Light, lightWindowColor);
 
     lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8B, 0xBF));
-    lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor);
-    lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor);
+    lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor.darker(120));
+    lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor.darker(120));
 
     lightPalette.setColor(QPalette::HighlightedText, lightTextColor);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
-    qApp->setPalette(lightPalette);
+    QFile styleSheet(":/QtTools/LightTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
-    qApp->setStyleSheet("QDockWidget::title { background: #d5d5d5; }"
-                        //workaround for expanded combobox interval
-                        "QComboBox { font: 11px;  }");
+    qApp->setPalette(lightPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
 void SetupDarkTheme()
@@ -166,6 +171,9 @@ void SetupDarkTheme()
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkWindowColor);
     darkPalette.setColor(QPalette::WindowText, darkTextColor);
+
+    darkPalette.setColor(QPalette::Dark, darkWindowColor);
+    darkPalette.setColor(QPalette::Midlight, darkWindowColor.lighter(130));
 
     darkPalette.setColor(QPalette::Base, darkWindowColor.darker(130));
     darkPalette.setColor(QPalette::AlternateBase, darkWindowColor);
@@ -190,13 +198,28 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
-    qApp->setPalette(darkPalette);
+    QFile styleSheet(":/QtTools/DarkTheme.qss");
+    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    QString styleSheetContent = styleSheet.readAll();
 
-    qApp->setStyleSheet("QToolTip { color: #e0e0e0; background-color: #373737;  }"
-                        "QTabBar::close-button { image: url(:/Icons/close.png); }"
-                        "QDockWidget::title { background: #454545; }"
-                        //workaround for expanded combobox interval
-                        "QComboBox{ font: 11px; }");
+    auto colorToString = [](const QColor& color)
+    {
+        return QString("rgba(%1, %2, %3, %4)").arg(color.red()).arg(color.green())
+        .arg(color.blue())
+        .arg(color.alpha());
+    };
+
+    QString tabBarStyle = QString("QTabBar::tab:selected { color: %1 }"
+                                  "QTabBar::tab:!selected { color: %2 }")
+                          .
+                          arg(colorToString(darkTextColor))
+                          .
+                          arg(colorToString(darkDisabledTextColor));
+
+    styleSheetContent.append(tabBarStyle);
+
+    qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(styleSheetContent);
 }
 
 QString GetCurrentThemeStr()

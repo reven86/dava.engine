@@ -403,7 +403,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)windowDidResignKey:(NSNotification*)notification
 {
     Core::Instance()->FocusLost();
-    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification

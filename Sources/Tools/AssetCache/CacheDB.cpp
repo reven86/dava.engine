@@ -285,7 +285,7 @@ void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
     fullCache[key] = std::move(entry);
     ServerCacheEntry* insertedEntry = &fullCache[key];
     FilePath savedPath = CreateFolderPath(key);
-    insertedEntry->GetValue().Export(savedPath);
+    insertedEntry->GetValue().ExportToFolder(savedPath);
     insertedEntry->UpdateAccessTimestamp();
     occupiedSize += insertedEntry->GetValue().GetSize();
 

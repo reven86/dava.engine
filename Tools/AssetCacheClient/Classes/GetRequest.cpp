@@ -21,7 +21,13 @@ AssetCache::Error GetRequest::SendRequest(AssetCacheClient& cacheClient)
     FilePath folder = options.GetOption("-f").AsString();
     folder.MakeDirectoryPathname();
 
-    return cacheClient.RequestFromCacheSynchronously(key, folder);
+    AssetCache::CachedItemValue data;
+    AssetCache::Error resultOfRequest = cacheClient.RequestFromCacheSynchronously(key, &data);
+    if (resultOfRequest == AssetCache::Error::NO_ERRORS)
+    {
+        data.ExportToFolder(folder);
+    }
+    return resultOfRequest;
 }
 
 AssetCache::Error GetRequest::CheckOptionsInternal() const

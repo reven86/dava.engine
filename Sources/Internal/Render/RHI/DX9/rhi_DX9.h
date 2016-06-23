@@ -127,7 +127,7 @@ DX9Command
 
         CREATE_TEXTURE = 41,
         CREATE_CUBE_TEXTURE = 42,
-        GET_TEXTURE_SURFACE_LEVEl = 43,
+        GET_TEXTURE_SURFACE_LEVEL = 43,
         SET_TEXTURE_AUTOGEN_FILTER_TYPE = 44,
         LOCK_TEXTURE_RECT = 45,
         UNLOCK_TEXTURE_RECT = 46,
@@ -144,7 +144,10 @@ DX9Command
         GET_QUERY_DATA = 61,
 
         QUERY_INTERFACE = 101,
-        RELEASE = 102
+        RELEASE = 102,
+
+        READ_TEXTURE_LEVEL,
+        READ_CUBETEXTURE_LEVEL,
     };
 
     Func func;
@@ -152,7 +155,7 @@ DX9Command
     long retval;
 };
 
-void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate = false);
+void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate);
 
 //==============================================================================
 }

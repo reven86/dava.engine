@@ -21,7 +21,7 @@ public:
     {
     }
 
-    void operator()(const CommandInstancePtr& instance)
+    void operator()(const wgt::CommandInstancePtr& instance)
     {
         Command2* cmd = instance->getArguments().getBase<Command2>();
         if (cmd != nullptr)
@@ -57,7 +57,7 @@ class CommandStack::ActiveCommandStack : public DAVA::StaticSingleton<ActiveComm
 public:
     ActiveCommandStack()
     {
-        envManager = NGTLayer::queryInterface<IEnvManager>();
+        envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
         DVASSERT(envManager);
     }
 
@@ -148,7 +148,7 @@ private:
 private:
     CommandStack* activeStack = nullptr;
     DAVA::Stack<CommandStack*> activationStack;
-    IEnvManager* envManager = nullptr;
+    wgt::IEnvManager* envManager = nullptr;
 };
 
 class CommandStack::ActiveStackGuard
@@ -167,7 +167,7 @@ public:
 
 CommandStack::CommandStack()
 {
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     DVASSERT(commandManager != nullptr);
 
     ActiveCommandStack::Instance()->CommandStackCreated(this);
@@ -196,7 +196,7 @@ bool CommandStack::CanRedo() const
 void CommandStack::Clear()
 {
     ActiveStackGuard guard(this);
-    commandManager->removeCommands([this](const CommandInstancePtr&)
+    commandManager->removeCommands([this](const wgt::CommandInstancePtr&)
                                    {
                                        nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, EMPTY_INDEX);
                                        return true;
@@ -208,7 +208,7 @@ void CommandStack::RemoveCommands(DAVA::int32 commandId)
 {
     ActiveStackGuard guard(this);
     int commandIndex = 0;
-    commandManager->removeCommands([&commandId, &commandIndex, this](const CommandInstancePtr& instance)
+    commandManager->removeCommands([&commandId, &commandIndex, this](const wgt::CommandInstancePtr& instance)
                                    {
                                        Command2* cmd = instance->getArguments().getBase<Command2>();
                                        if (cmd->GetId() == CMDID_BATCH)
@@ -276,7 +276,7 @@ void CommandStack::Exec(Command2::Pointer&& command)
         }
         else
         {
-            commandManager->queueCommand(getClassIdentifier<NGTCommand>(), ObjectHandle(std::move(command)));
+            commandManager->queueCommand(wgt::getClassIdentifier<NGTCommand>(), wgt::ObjectHandle(std::move(command)));
         }
     }
 }
@@ -314,7 +314,7 @@ void CommandStack::EndBatch()
             // As Command2 hierarchy don't have NGT reflection, we have to cast manually
             // to be sure that ObjectHandle will get correct <typename T>
             Command2* batchCommand = curBatchCommand.release();
-            commandManager->queueCommand(getClassIdentifier<NGTCommand>(), ObjectHandle(Command2::Pointer(batchCommand)));
+            commandManager->queueCommand(wgt::getClassIdentifier<NGTCommand>(), wgt::ObjectHandle(Command2::Pointer(batchCommand)));
         }
         else
         {
@@ -352,11 +352,11 @@ bool CommandStack::IsClean() const
         endCommandIndex = nextAfterCleanCommandIndex;
     }
 
-    const VariantList& history = commandManager->getHistory();
+    const wgt::VariantList& history = commandManager->getHistory();
     DVASSERT(endCommandIndex < static_cast<DAVA::int32>(history.size()));
     for (DAVA::int32 i = startCommandIndex; i <= endCommandIndex; ++i)
     {
-        CommandInstancePtr instance = history[i].value<CommandInstancePtr>();
+        wgt::CommandInstancePtr instance = history[i].value<wgt::CommandInstancePtr>();
         Command2* cmd = instance->getArguments().getBase<Command2>();
         if (cmd == nullptr || cmd->IsModifying())
             return false;
@@ -378,13 +378,13 @@ void CommandStack::SetClean(bool clean)
 
     ActiveStackGuard guard(this);
     uncleanCommandIds.clear();
-    const VariantList& history = commandManager->getHistory();
+    const wgt::VariantList& history = commandManager->getHistory();
     CommandStackLocal::CommandIdsAccumulator functor(uncleanCommandIds);
     DAVA::int32 historySize = static_cast<DAVA::int32>(history.size());
     DVASSERT(nextAfterCleanCommandIndex < historySize);
     for (DAVA::int32 i = DAVA::Max(nextAfterCleanCommandIndex, 0); i < historySize; ++i)
     {
-        functor(history[i].value<CommandInstancePtr>());
+        functor(history[i].value<wgt::CommandInstancePtr>());
     }
 
     CleanCheck();
@@ -399,12 +399,12 @@ void CommandStack::CleanCheck()
     }
 }
 
-void CommandStack::commandExecuted(const CommandInstance& commandInstance, CommandOperation operation)
+void CommandStack::commandExecuted(const wgt::CommandInstance& commandInstance, wgt::CommandOperation operation)
 {
     Command2* cmd = commandInstance.getArguments().getBase<Command2>();
     if (cmd != nullptr)
     {
-        EmitNotify(cmd, operation != CommandOperation::UNDO);
+        EmitNotify(cmd, operation != wgt::CommandOperation::UNDO);
     }
 }
 

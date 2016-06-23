@@ -218,9 +218,9 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
                     rgn.size.depth = 1;
 
                     if (texDesc.format == TEXTURE_FORMAT_R4G4B4A4)
-                        _FlipRGBA4_ABGR4(texDesc.initialData[m], sz);
+                        _FlipRGBA4_ABGR4(texDesc.initialData[m], texDesc.initialData[m], sz);
                     else if (texDesc.format == TEXTURE_FORMAT_R5G5B5A1)
-                        _ABGR1555toRGBA5551(texDesc.initialData[m], sz);
+                        _ABGR1555toRGBA5551(texDesc.initialData[m], texDesc.initialData[m], sz);
 
                     if ((texDesc.format == TEXTURE_FORMAT_PVRTC_4BPP_RGBA) || (texDesc.format == TEXTURE_FORMAT_PVRTC_2BPP_RGBA))
                     {
@@ -336,11 +336,11 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, sz);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, sz);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _ABGR1555toRGBA5551(self->mappedData, sz);
+        _ABGR1555toRGBA5551(self->mappedData, self->mappedData, sz);
     }
 
     self->is_mapped = true;
@@ -371,11 +371,11 @@ metal_Texture_Unmap(Handle tex)
 
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, sz);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, sz);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _RGBA5551toABGR1555(self->mappedData, sz);
+        _RGBA5551toABGR1555(self->mappedData, self->mappedData, sz);
     }
 
     if (self->is_cubemap)

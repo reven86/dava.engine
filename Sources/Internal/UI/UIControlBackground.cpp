@@ -33,6 +33,12 @@ void UIControlBackground::CopyDataFrom(UIControlBackground* srcBackground)
     frame = srcBackground->frame;
     align = srcBackground->align;
 
+    mask = srcBackground->mask;
+    detail = srcBackground->detail;
+    gradient = srcBackground->gradient;
+    contour = srcBackground->contour;
+    gradientMode = srcBackground->gradientMode;
+
     SetDrawType(srcBackground->type);
     SetMargins(srcBackground->GetMargins());
 
@@ -52,11 +58,6 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
-
-    SafeRelease(mask);
-    SafeRelease(detail);
-    SafeRelease(gradient);
-    SafeRelease(contour);
 }
 
 bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
@@ -496,7 +497,7 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
         drawState.SetMaterial(RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[gradientMode]);
         drawState.usePerPixelAccuracy = (perPixelAccuracyType == PER_PIXEL_ACCURACY_FORCED) || ((perPixelAccuracyType == PER_PIXEL_ACCURACY_ENABLED) && (lastDrawPos == geometricData.position));
         lastDrawPos = geometricData.position;
-        RenderSystem2D::Instance()->DrawTiledMultylayer(mask, detail, gradient, contour, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, drawColor);
+        RenderSystem2D::Instance()->DrawTiledMultylayer(mask.Get(), detail.Get(), gradient.Get(), contour.Get(), &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledMultulayerData, drawColor);
         break;
     default:
         break;

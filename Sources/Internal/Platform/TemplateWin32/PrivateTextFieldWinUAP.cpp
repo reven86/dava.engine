@@ -243,7 +243,8 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+            core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
@@ -456,7 +457,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
     if (textControl)
     {
-        nativeText = ref new TextBox();
+        nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
         InstallTextEventHandlers();

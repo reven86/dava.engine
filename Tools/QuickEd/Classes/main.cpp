@@ -24,6 +24,13 @@ public:
     {
     }
 
+    int Run()
+    {
+        editorCore.reset(new EditorCore());
+        editorCore->Start();
+        return StartApplication(editorCore->GetMainWindow());
+    }
+
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override
     {
@@ -42,6 +49,14 @@ protected:
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
     }
+
+    bool OnRequestCloseApp() override
+    {
+        return editorCore->CloseProject();
+    }
+
+private:
+    std::unique_ptr<EditorCore> editorCore;
 };
 
 void InitPVRTexTool()
@@ -75,12 +90,7 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();
-        {
-            EditorCore editorCore;
-
-            editorCore.Start();
-            returnCode = a.StartApplication(editorCore.GetMainWindow());
-        }
+        returnCode = a.Run();
     }
     return returnCode;
 }

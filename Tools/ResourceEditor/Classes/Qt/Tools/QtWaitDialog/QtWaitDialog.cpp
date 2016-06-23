@@ -107,6 +107,7 @@ void QtWaitDialog::processEvents()
 {
     if (!isRunnedFromExec && isVisible())
     {
+        QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         QApplication::processEvents();
     }
 }

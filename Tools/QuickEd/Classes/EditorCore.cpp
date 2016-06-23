@@ -29,7 +29,6 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
-    qApp->installEventFilter(this);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
     mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
@@ -355,17 +354,4 @@ void EditorCore::DisableCacheClient()
         cacheClient->Disconnect();
         cacheClient.reset();
     }
-}
-
-bool EditorCore::eventFilter(QObject* obj, QEvent* event)
-{
-    if (obj == mainWindow.get() && event->type() == QEvent::Close)
-    {
-        if (!CloseProject())
-        {
-            event->ignore();
-        }
-    }
-
-    return QObject::eventFilter(obj, event);
 }

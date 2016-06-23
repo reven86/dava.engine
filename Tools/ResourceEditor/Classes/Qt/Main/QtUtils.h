@@ -42,8 +42,6 @@ const Qt::WindowFlags WINDOWFLAG_ON_TOP_OF_APPLICATION = Qt::Tool;
 
 DAVA::String ReplaceInString(const DAVA::String& sourceString, const DAVA::String& what, const DAVA::String& on);
 
-void ShowFileInExplorer(const QString& path);
-
 // Method for debugging. Save image to file
 void SaveSpriteToFile(DAVA::Sprite* sprite, const DAVA::FilePath& path);
 void SaveTextureToFile(DAVA::Texture* texture, const DAVA::FilePath& path);

@@ -4,6 +4,8 @@
 #include <memory>
 #include <typeindex>
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "Base/BaseTypes.h"
 
 #define DAVA_DECLARE_TYPE_INITIALIZER \
@@ -113,3 +115,5 @@ inline const ReflectionDB* Type::GetReflectionDB() const
 } // namespace DAVA
 
 #include "Private/Type_impl.h"
+
+#endif

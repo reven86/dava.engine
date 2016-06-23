@@ -81,7 +81,7 @@ DAVA_TESTCLASS (StaticTextTest)
         Vector<WideString> resultStrings;
         resultStrings.push_back(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN");
         resultStrings.push_back(L"G, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR");
-        resultStrings.push_back(L" IMPLIED WARRANTIES");
+        resultStrings.push_back(L"IMPLIED WARRANTIES");
 
         staticText->SetMultiline(true, true);
 

@@ -64,7 +64,7 @@ void ClientApplication::PrintUsage() const
     printf("\n\n");
     for (auto& r : requests)
     {
-        r->options.PrintUsage();
+        printf("%s\n", r->options.GetUsageString().c_str());
         printf("\n");
     }
 }

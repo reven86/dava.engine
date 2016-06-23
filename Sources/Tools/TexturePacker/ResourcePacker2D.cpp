@@ -517,9 +517,11 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
-    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, outputPath);
+    AssetCache::CachedItemValue retrievedData;
+    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
     if (requested == AssetCache::Error::NO_ERRORS)
     {
+        retrievedData.ExportToFolder(outputPath);
         return true;
     }
     else

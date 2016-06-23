@@ -6,13 +6,13 @@
 #include "Utils/Utils.h"
 #include "Math/AABBox3.h"
 
-#include "wg_types/vector2.hpp"
-#include "wg_types/vector3.hpp"
-#include "wg_types/vector4.hpp"
+#include <wg_types/vector2.hpp>
+#include <wg_types/vector3.hpp>
+#include <wg_types/vector4.hpp>
 
 namespace NGTLayer
 {
-class EnumGenerator : public IEnumGenerator
+class EnumGenerator : public wgt::IEnumGenerator
 {
 public:
     EnumGenerator(const DAVA::InspMember* insp)
@@ -20,7 +20,7 @@ public:
     {
     }
 
-    Collection getCollection(const ObjectHandle& provider, const IDefinitionManager& definitionManager) override
+    wgt::Collection getCollection(const wgt::ObjectHandle& provider, const wgt::IDefinitionManager& definitionManager) override
     {
         DAVA::InspDesc const& desc = memberInsp->Desc();
 
@@ -36,14 +36,14 @@ public:
                 enumMap->insert(std::make_pair(static_cast<int>(i), desc.enumMap->ToString(value)));
         }
 
-        return Collection(*enumMap);
+        return wgt::Collection(*enumMap);
     }
 
 private:
     const DAVA::InspMember* memberInsp;
 };
 
-class DavaObjectStorage : public IObjectHandleStorage
+class DavaObjectStorage : public wgt::IObjectHandleStorage
 {
 public:
     DavaObjectStorage(void* object_, const char* typeName)
@@ -58,19 +58,19 @@ public:
         return object;
     }
 
-    TypeId type() const override
+    wgt::TypeId type() const override
     {
         return typeId;
     }
 
-    bool getId(RefObjectId& id) const override
+    bool getId(wgt::RefObjectId& id) const override
     {
         return false;
     }
 
 private:
     void* object;
-    TypeId typeId;
+    wgt::TypeId typeId;
 };
 
 NGTTypeDefinition::NGTTypeDefinition(const DAVA::InspInfo* info_)
@@ -79,7 +79,7 @@ NGTTypeDefinition::NGTTypeDefinition(const DAVA::InspInfo* info_)
     DVASSERT(info != nullptr);
 
     displayName = DAVA::StringToWString(info->Name().c_str());
-    metaHandle = MetaDisplayName(displayName.c_str());
+    metaHandle = wgt::MetaDisplayName(displayName.c_str());
 
     const DAVA::MetaInfo* objectType = info->Type();
 
@@ -92,7 +92,7 @@ NGTTypeDefinition::NGTTypeDefinition(const DAVA::InspInfo* info_)
         if ((memberFlags & DAVA::I_VIEW) == 0)
             continue;
 
-        properties.addProperty(IBasePropertyPtr(new NGTMemberProperty(member, objectType)));
+        properties.addProperty(wgt::IBasePropertyPtr(new NGTMemberProperty(member, objectType)));
     }
 }
 
@@ -101,7 +101,7 @@ bool NGTTypeDefinition::isGeneric() const
     return false;
 }
 
-MetaHandle NGTTypeDefinition::getMetaData() const
+wgt::MetaHandle NGTTypeDefinition::getMetaData() const
 {
     return metaHandle;
 }
@@ -125,10 +125,10 @@ const char* NGTTypeDefinition::getParentName() const
     return nullptr;
 }
 
-ObjectHandle NGTTypeDefinition::create(const IClassDefinition& classDefinition) const
+wgt::ObjectHandle NGTTypeDefinition::create(const wgt::IClassDefinition& classDefinition) const
 {
     throw std::logic_error("The method or operation is not implemented.");
-    return ObjectHandle();
+    return wgt::ObjectHandle();
 }
 
 void* NGTTypeDefinition::upCast(void* object) const
@@ -139,12 +139,12 @@ void* NGTTypeDefinition::upCast(void* object) const
     return nullptr;
 }
 
-PropertyIteratorImplPtr NGTTypeDefinition::getPropertyIterator() const
+wgt::PropertyIteratorImplPtr NGTTypeDefinition::getPropertyIterator() const
 {
     return properties.getIterator();
 }
 
-IClassDefinitionModifier* NGTTypeDefinition::getDefinitionModifier() const
+wgt::IClassDefinitionModifier* NGTTypeDefinition::getDefinitionModifier() const
 {
     return nullptr;
 }
@@ -153,17 +153,17 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
     : BaseProperty(member->Name().c_str(), member->Type()->GetTypeName())
     , objectType(objectType_)
     , memberInsp(member)
-    , metaBase(MetaNone())
+    , metaBase(wgt::MetaNone())
 {
     DVASSERT(objectType != nullptr);
     DVASSERT(memberInsp != nullptr);
 
     if ((memberInsp->Flags() & DAVA::I_EDIT) == 0)
-        metaBase = metaBase + MetaReadOnly();
+        metaBase = metaBase + wgt::MetaReadOnly();
 
     const DAVA::InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
-        metaBase = metaBase + MetaEnum(IEnumGeneratorPtr(new EnumGenerator(memberInsp)));
+        metaBase = metaBase + wgt::MetaEnum(wgt::IEnumGeneratorPtr(new EnumGenerator(memberInsp)));
 
     const DAVA::MetaInfo* metaType = member->Type();
 
@@ -175,20 +175,20 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
         metaType == DAVA::MetaInfo::Instance<DAVA::Matrix4>() ||
         metaType == DAVA::MetaInfo::Instance<DAVA::AABBox3>())
     {
-        setType(TypeId(DAVA::MetaInfo::Instance<DAVA::String>()->GetTypeName()));
+        setType(wgt::TypeId(DAVA::MetaInfo::Instance<DAVA::String>()->GetTypeName()));
     }
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector2>())
-        setType(TypeId(getClassIdentifier<::Vector2>()));
+        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector2>()));
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector3>())
-        setType(TypeId(getClassIdentifier<::Vector3>()));
+        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector3>()));
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Color>())
     {
-        setType(TypeId(getClassIdentifier<::Vector4>()));
-        metaBase = metaBase + MetaColor();
+        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector4>()));
+        metaBase = metaBase + wgt::MetaColor();
     }
 }
 
-Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManager& definitionManager) const
+wgt::Variant NGTMemberProperty::get(const wgt::ObjectHandle& pBase, const wgt::IDefinitionManager& definitionManager) const
 {
     void* object = UpCast(pBase, definitionManager);
     if (object != nullptr)
@@ -199,12 +199,12 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
 
         if (nullptr != fieldIntrospection && (fieldIntrospection->Type() == DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()))
         {
-            return Collection(std::make_shared<NGTKeyedArchiveImpl>(reinterpret_cast<DAVA::KeyedArchive*>(field)));
+            return wgt::Collection(std::make_shared<NGTKeyedArchiveImpl>(reinterpret_cast<DAVA::KeyedArchive*>(field)));
         }
         // introspection
         else if (nullptr != field && nullptr != fieldIntrospection)
         {
-            return CreateObjectHandle(const_cast<IDefinitionManager&>(definitionManager), fieldIntrospection, field);
+            return CreateObjectHandle(const_cast<wgt::IDefinitionManager&>(definitionManager), fieldIntrospection, field);
         }
         else if (memberMetaInfo->IsPointer())
         {
@@ -216,20 +216,20 @@ Variant NGTMemberProperty::get(const ObjectHandle& pBase, const IDefinitionManag
         {
             DVASSERT(field != nullptr);
             const DAVA::InspColl* collection = memberInsp->Collection();
-            return Collection(std::make_shared<NGTCollection>(field, collection));
+            return wgt::Collection(std::make_shared<NGTCollection>(field, collection));
         }
         else if (memberInsp->Dynamic())
         {
-            return Variant();
+            return wgt::Variant();
         }
 
         return VariantConverter::Convert(memberInsp->Value(object));
     }
 
-    return Variant();
+    return wgt::Variant();
 }
 
-bool NGTMemberProperty::set(const ObjectHandle& pBase, const Variant& v, const IDefinitionManager& definitionManager) const
+bool NGTMemberProperty::set(const wgt::ObjectHandle& pBase, const wgt::Variant& v, const wgt::IDefinitionManager& definitionManager) const
 {
     void* object = UpCast(pBase, definitionManager);
     if (object == nullptr)
@@ -244,15 +244,15 @@ bool NGTMemberProperty::set(const ObjectHandle& pBase, const Variant& v, const I
     return true;
 }
 
-MetaHandle NGTMemberProperty::getMetaData() const
+wgt::MetaHandle NGTMemberProperty::getMetaData() const
 {
     return metaBase;
 }
 
-void* NGTMemberProperty::UpCast(ObjectHandle const& pBase, const IDefinitionManager& definitionManager) const
+void* NGTMemberProperty::UpCast(wgt::ObjectHandle const& pBase, const wgt::IDefinitionManager& definitionManager) const
 {
-    TypeId srcID = pBase.type();
-    TypeId dstID(objectType->GetTypeName());
+    wgt::TypeId srcID = pBase.type();
+    wgt::TypeId dstID(objectType->GetTypeName());
     return reflectedCast(pBase.data(), srcID, dstID, definitionManager);
 }
 
@@ -267,34 +267,34 @@ bool NGTMemberProperty::isValue() const
     return true;
 }
 
-void RegisterType(IDefinitionManager& mng, const DAVA::InspInfo* inspInfo)
+void RegisterType(wgt::IDefinitionManager& mng, const DAVA::InspInfo* inspInfo)
 {
     if (inspInfo == nullptr)
         return;
 
-    static DAVA::UnorderedMap<const DAVA::MetaInfo*, NGTTypeDefinition*> definitionMap;
+    static DAVA::UnorderedSet<const DAVA::MetaInfo*> definitionMap;
 
     const DAVA::MetaInfo* type = inspInfo->Type();
 
-    DAVA::UnorderedMap<const DAVA::MetaInfo*, NGTTypeDefinition*>::iterator definitionIter = definitionMap.find(type);
+    DAVA::UnorderedSet<const DAVA::MetaInfo*>::iterator definitionIter = definitionMap.find(type);
     if (definitionIter == definitionMap.end())
     {
-        definitionIter = definitionMap.emplace(type, new NGTTypeDefinition(inspInfo)).first;
-        mng.registerDefinition(definitionIter->second);
+        definitionMap.insert(type);
+        mng.registerDefinition(std::unique_ptr<wgt::IClassDefinitionDetails>(new NGTTypeDefinition(inspInfo)));
         RegisterType(mng, inspInfo->BaseInfo());
     }
 }
 
-ObjectHandle CreateObjectHandle(IDefinitionManager& defMng, const DAVA::InspInfo* fieldInsp, void* field)
+wgt::ObjectHandle CreateObjectHandle(wgt::IDefinitionManager& defMng, const DAVA::InspInfo* fieldInsp, void* field)
 {
     const char* typeName = fieldInsp->Type()->GetTypeName();
-    IClassDefinition* def = defMng.getDefinition(typeName);
+    wgt::IClassDefinition* def = defMng.getDefinition(typeName);
     if (def == nullptr)
     {
         RegisterType((defMng), fieldInsp);
     }
 
-    std::shared_ptr<IObjectHandleStorage> storage(new DavaObjectStorage(field, typeName));
-    return ObjectHandle(storage);
+    std::shared_ptr<wgt::IObjectHandleStorage> storage(new DavaObjectStorage(field, typeName));
+    return wgt::ObjectHandle(storage);
 }
 } // namespace NGTLayer

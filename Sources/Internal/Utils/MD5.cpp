@@ -77,13 +77,13 @@ void MD5::ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecur
 {
     MD5 md5;
     md5.Init();
-    MD5::RecursiveDirectoryMD5(pathName, md5, isRecursive, includeHidden);
+    MD5::CalculateDirectoryMD5(pathName, md5, isRecursive, includeHidden);
     md5.Final();
 
     digest = md5.GetDigest();
 }
 
-void MD5::RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden)
+void MD5::CalculateDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden)
 {
     ScopedPtr<FileList> fileList(new FileList(pathName, includeHidden));
     fileList->Sort();
@@ -104,7 +104,7 @@ void MD5::RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecur
                     String name = fileList->GetPathname(i).GetLastDirectoryName();
                     md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
 
-                    RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
+                    CalculateDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
                 }
             }
         }
