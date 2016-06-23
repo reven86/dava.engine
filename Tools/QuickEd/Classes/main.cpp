@@ -48,6 +48,8 @@ protected:
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
+
+        BaseApplication::OnPostLoadPugins();
     }
 
     bool OnRequestCloseApp() override

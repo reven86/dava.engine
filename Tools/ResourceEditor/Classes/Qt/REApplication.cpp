@@ -73,6 +73,8 @@ void REApplication::OnPostLoadPugins()
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
+
+    BaseApplication::OnPostLoadPlugins();
 }
 
 void REApplication::OnPreUnloadPlugins()
