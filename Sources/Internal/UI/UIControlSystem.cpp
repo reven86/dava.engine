@@ -315,6 +315,10 @@ void UIControlSystem::Update()
         popupContainer->SystemUpdate(timeElapsed);
     }
 
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearTarget = (ui3DViewCount == 0) && needClearMainPass;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
+
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
@@ -328,10 +332,6 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
-
-    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearTarget = (ui3DViewCount == 0) && needClearMainPass;
-    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 
     if (currentScreenTransition)
     {
