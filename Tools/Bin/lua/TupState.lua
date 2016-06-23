@@ -338,7 +338,7 @@ function TupState.BuildPacks(self)
 
     -- merge superpack lists
     local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-    local mergedSuperCmd = self.cmd.cat .. " " .. mergeSuperMask .. " > %o"
+    local mergedSuperCmd = self.cmd.cat .. " " .. mergedSuperMask .. " > %o"
     local mergedSuperCmdText = "^ Gen merged superlist^ "
     local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 
