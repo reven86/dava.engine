@@ -450,8 +450,8 @@ CommandBufferMetal_t::Execute()
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
-                unsigned max_x = (rt) ? unsigned(rt.width - 1) : unsigned(_Metal_DefFrameBuf.width - 1);
-                unsigned max_y = (rt) ? unsigned(rt.height - 1) : unsigned(_Metal_DefFrameBuf.height - 1);
+                unsigned max_x = (rt) ? unsigned(rt.width) : unsigned(_Metal_DefFrameBuf.width);
+                unsigned max_y = (rt) ? unsigned(rt.height) : unsigned(_Metal_DefFrameBuf.height);
 
                 rc.x = x;
                 rc.y = y;
