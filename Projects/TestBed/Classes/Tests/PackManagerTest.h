@@ -45,6 +45,7 @@ private:
     void LoadResources() override;
     void UnloadResources() override;
 
+    void OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
@@ -52,14 +53,15 @@ private:
     void OnPackStateChange(const DAVA::PackManager::Pack& pack);
     void OnPackDownloadChange(const DAVA::PackManager::Pack& pack);
     void OnRequestChange(const DAVA::PackManager::IRequest& request);
+    void OnInitChange(PackManager::IInit& init);
 
-    DAVA::FilePath sqliteDbFile = "~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db";
+    DAVA::String sqliteDbFile = "{gpu}.db";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     DAVA::FilePath readOnlyDirWithPacks = "~res:/TestData/PackManagerTest/packs/read_only_packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlPacksCommon = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/common/"; //"http://127.0.0.1:2424/packs/common/";
+    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk"; //"http://127.0.0.1:2424/packs/common/";
     DAVA::String urlPacksGpu = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/{gpu}/"; //"http://127.0.0.1:2424/packs/{gpu}/";
-    DAVA::String gpuName;
+    DAVA::String gpuArchitecture;
 
     DAVA::UIStaticText* packNameLoading = nullptr;
     DAVA::UIButton* startLoadingButton = nullptr;
@@ -75,4 +77,5 @@ private:
     DAVA::UITextField* url = nullptr;
     DAVA::UITextField* filePathField = nullptr;
     DAVA::UIButton* checkFile = nullptr;
+    DAVA::UIButton* startInit = nullptr;
 };

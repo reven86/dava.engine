@@ -18,14 +18,14 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     localPacksDir = localPacksDir_;
     readOnlyPacksDir = readOnlyPacksDir_;
     packsUrlCommon = remotePacksURL_;
-    if (packsUrlCommon.empty() || packsUrlCommon.back() != '/')
+    if (packsUrlCommon.empty())
     {
-        throw std::runtime_error("incorrect common url");
+        throw std::runtime_error("empty url");
     }
     architecture = architecture_;
-    if (architecture.empty() || architecture.back() != '/')
+    if (architecture.empty())
     {
-        throw std::runtime_error("incorrect gpu url");
+        throw std::runtime_error("empty gpu architecture");
     }
     requestManager.reset(new RequestManager(*this));
 
