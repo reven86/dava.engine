@@ -24,6 +24,7 @@
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/CoreV2Test.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -98,9 +99,12 @@ void GameCore::OnGameLoopStarted()
 
     RunOnlyThisTest();
 
-    engine->RunAsyncOnMainThread([]() {
-        Logger::Error("******** KABOOM on main thread********");
-    });
+    if (engine->IsConsoleMode())
+    {
+        engine->RunAsyncOnMainThread([]() {
+            Logger::Error("******** KABOOM on main thread********");
+        });
+    }
 }
 
 void GameCore::OnGameLoopStopped()
@@ -128,11 +132,6 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
     RegisterTests();
     RunTests();
-
-    w->Resize(1024, 768);
-    w->RunAsyncOnUIThread([]() {
-        Logger::Error("******** KABOOM on UI thread********");
-    });
 }
 
 void GameCore::OnWindowDestroyed(DAVA::Window* w)
@@ -172,6 +171,9 @@ void GameCore::ShowStartScreen()
 
 void GameCore::RegisterTests()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    new CoreV2Test(engine);
+#endif
     new DlcTest();
     new UIScrollViewTest();
     new NotificationScreen();
@@ -193,6 +195,7 @@ void GameCore::RegisterTests()
     new CoreTest();
     new FormatsTest();
     new FloatingPointExceptionTest();
+    //$UNITTEST_CTOR
 }
 
 void GameCore::RunTests()
