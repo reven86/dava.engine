@@ -25,11 +25,6 @@ namespace DAVA
 {
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
-bool drawDubleClick = false;
-Vector2 center;
-float32 radius;
-Color color = Color::White;
-
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -54,7 +49,11 @@ UIControlSystem::UIControlSystem()
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / DeviceInfo::GetScreenInfo().scale / 4;
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
+        if (DeviceInfo::GetScreenInfo().scale != 0)
+        {
+            defaultDoubleClickRadiusSquared /= DeviceInfo::GetScreenInfo().scale;
+        }
         defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
     }
     else
@@ -361,24 +360,6 @@ void UIControlSystem::Draw()
     }
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
-    if (drawDubleClick)
-    {
-        //draw first click
-        Vector2 x = Vector2(radius, 0);
-        Vector2 y = Vector2(0, radius);
-        Color col2(0, 1, 0, 1);
-        Color col1 = col2;
-
-        RenderSystem2D::Instance()->DrawLine(lastClickData.prePoint - x, lastClickData.prePoint + x, col1);
-        RenderSystem2D::Instance()->DrawLine(lastClickData.prePoint - y, lastClickData.prePoint + y, col1);
-        RenderSystem2D::Instance()->DrawCircle(lastClickData.prePoint, radius, col1);
-
-        //draw second click
-        RenderSystem2D::Instance()->DrawLine(center - x, center + x, col2);
-        RenderSystem2D::Instance()->DrawLine(center - y, center + y, col2);
-        RenderSystem2D::Instance()->DrawCircle(center, radius, col2);
-    }
-
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
@@ -605,14 +586,6 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
-        Logger::Info("!!!! device dpi %d, dpiScale %d, scale %f", DPIHelper::GetScreenDPI(), DPIHelper::GetDpiScaleFactor(0), DeviceInfo::GetScreenInfo().scale);
-
-        Logger::Info("!!!! phys lastx %f, lasty %f", lastClickData.physPoint.dx, lastClickData.physPoint.dy);
-        Logger::Info("!!!! virt lastx %f, lasty %f", lastClickData.point.dx, lastClickData.point.dy);
-        Logger::Info("!!!! phys currx %f, curry %f", newEvent->physPoint.dx, newEvent->physPoint.dy);
-        Logger::Info("!!!! virt currx %f, curry %f", newEvent->point.dx, newEvent->point.dy);
-        Logger::Info("!!!! phys sqr   %f,  <    %d", point.SquareLength(), doubleClickRadiusSquared);
-        Logger::Info("!!!! virt sqr   %f,  <    %f", VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(point.SquareLength()), VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(doubleClickRadiusSquared)));
         if (point.SquareLength() < doubleClickRadiusSquared)
         {
             return true;
@@ -624,7 +597,6 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
     int32 tapCount = 0;
-    drawDubleClick = false;
     // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
@@ -641,8 +613,6 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         lastClickData.touchId = newEvent->touchId;
         lastClickData.timestamp = newEvent->timestamp;
         lastClickData.physPoint = newEvent->physPoint;
-        lastClickData.prePoint = lastClickData.point;
-        lastClickData.point = newEvent->point;
         lastClickData.tapCount = tapCount;
         lastClickData.lastClickEnded = false;
     }
@@ -653,17 +623,6 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
             lastClickData.lastClickEnded = true;
             if (lastClickData.tapCount != 1 && CheckTimeAndPosition(newEvent))
             {
-                drawDubleClick = true;
-                center = newEvent->point;
-                //radius = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sqrt(doubleClickRadiusSquared));
-                //radius = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sqrt(doubleClickRadiusSquared));
-                radius = sqrt(doubleClickRadiusSquared);
-                Vector2 newRad;
-                newRad.x = lastClickData.physPoint.x;
-                newRad.y = lastClickData.physPoint.x + radius;
-                newRad = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newRad);
-                radius = newRad.y - newRad.x;
-
                 tapCount = lastClickData.tapCount;
             }
         }
