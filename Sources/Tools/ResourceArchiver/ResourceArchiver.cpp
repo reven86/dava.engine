@@ -38,8 +38,6 @@ struct CollectedFile
 
 void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchivePath, bool addHidden, Vector<CollectedFile>& collectedFiles)
 {
-    bool fileOrDirAdded = false;
-
     ScopedPtr<FileList> fileList(new FileList(dirPath, addHidden));
     for (uint32 file = 0; file < fileList->GetCount(); ++file)
     {
@@ -50,7 +48,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
 
         if (fileList->IsDirectory(file))
         {
-            fileOrDirAdded = true;
             String directoryName = fileList->GetFilename(file);
             FilePath subDirAbsolute = dirPath + (directoryName + '/');
             String subDirArchive = dirArchivePath + (directoryName + '/');
@@ -62,7 +59,6 @@ void CollectAllFilesInDirectory(const FilePath& dirPath, const String& dirArchiv
             {
                 continue;
             }
-            fileOrDirAdded = true;
 
             CollectedFile collectedFile;
             collectedFile.absPath = fileList->GetPathname(file);
@@ -235,44 +231,39 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
     return archiveIsAdded;
 }
 
-void ConvertToUnixPath(String& cropBase)
+bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
-    std::transform(begin(cropBase), end(cropBase), begin(cropBase), [](char value)
-                   {
-                       if ('\\' == value)
-                       {
-                           value = '/';
-                       }
-                       return value;
-                   });
-}
-
-bool CollectFiles(const Vector<String>& sources, String cropBase, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
-{
-    ConvertToUnixPath(cropBase);
-
-    FilePath cropBasePath(cropBase);
-    if (cropBase.empty() == false && (cropBasePath.IsDirectoryPathname() == false || FileSystem::Instance()->IsDirectory(cropBasePath) == false))
-    {
-        Logger::Warning("Cropped path '%s' is not an existing directory", cropBase.c_str());
-        cropBase.clear();
-    }
 
     for (String source : sources)
     {
-        ConvertToUnixPath(source);
-
-        String croppedSource;
-        if (!cropBase.empty() && StringUtils::StartsWith(source, cropBase))
+        FilePath sourcePath;
+        if (FilePath::IsAbsolutePathname(source))
         {
-            DVASSERT(source.size() >= cropBase.size());
-            croppedSource.assign(source.begin() + cropBase.size(), source.end());
+            sourcePath = source;
+            if (sourcePath == baseDir)
+            {
+                Logger::Error("Source path is the same as base dir: %s", baseDir.GetAbsolutePathname().c_str());
+                return false;
+            }
+        }
+        else
+        {
+            sourcePath = baseDir + source;
         }
 
-        FilePath sourcePath(source);
+        String archivePath;
+        if (sourcePath.StartsWith(baseDir))
+        {
+            archivePath = sourcePath.GetRelativePathname(baseDir);
+        }
+        else
+        {
+            Logger::Warning("Source '%s' doesn't belong to base dir %s and will be placed in archive root", sourcePath.GetAbsolutePathname().c_str(), baseDir.GetAbsolutePathname().c_str());
+            archivePath = (sourcePath.IsDirectoryPathname() ? sourcePath.GetLastDirectoryName() + '/' : sourcePath.GetFilename());
+        }
+
         if (sourcePath.IsDirectoryPathname())
         {
-            String archivePath = (croppedSource.empty() ? sourcePath.GetLastDirectoryName() + '/' : croppedSource);
             CollectAllFilesInDirectory(sourcePath, archivePath, addHiddenFiles, collectedFiles);
         }
         else
@@ -527,8 +518,14 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
 bool CreateArchive(const Params& params)
 {
+    if (!params.baseDirPath.IsDirectoryPathname() || !FileSystem::Instance()->IsDirectory(params.baseDirPath))
+    {
+        Logger::Error("Base dir '%s' is not a valid path", params.baseDirPath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
     Vector<CollectedFile> collectedFiles;
-    if (false == CollectFiles(params.sourcesList, params.croppedPath, params.addHiddenFiles, collectedFiles))
+    if (false == CollectFiles(params.sourcesList, params.baseDirPath, params.addHiddenFiles, collectedFiles))
     {
         Logger::Error("Collecting files error");
         return false;

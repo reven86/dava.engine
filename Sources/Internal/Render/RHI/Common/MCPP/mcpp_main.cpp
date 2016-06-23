@@ -1033,7 +1033,7 @@ char* out)
         return;
     len = strlen(out);
     tp = out_p = out + len - 2; /* Just before '\n'     */
-    while (char_type[*out_p & UCHARMAX] & SPA)
+    while (out_p >= out && char_type[*out_p & UCHARMAX] & SPA)
         out_p--; /* Remove trailing white spaces */
     if (out_p < tp)
     {

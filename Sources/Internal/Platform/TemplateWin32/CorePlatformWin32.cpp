@@ -367,6 +367,9 @@ void CoreWin32Platform::Run()
         }
     }
 
+    Core::Instance()->FocusLost();
+    Core::Instance()->GoBackground(false);
+
     Core::Instance()->SystemAppFinished();
 #if defined(__DAVAENGINE_STEAM__)
     Steam::Deinit();
@@ -1043,7 +1046,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             if (appCore)
             {
                 // unpress all pressed buttons
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
                 core->ClearMouseButtons();
                 appCore->OnSuspend();
             }

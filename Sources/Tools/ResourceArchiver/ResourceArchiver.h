@@ -16,7 +16,7 @@ struct Params
     Compressor::Type compressionType = Compressor::Type::Lz4HC;
     FilePath archivePath;
     FilePath logPath;
-    String croppedPath;
+    FilePath baseDirPath;
     AssetCacheClient* assetCacheClient = nullptr;
 };
 
