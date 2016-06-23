@@ -23,7 +23,7 @@ public class JNIAssert {
 	    
 		Activity activity = JNIActivity.GetActivity();
 
-        if (activity.isFinishing())
+        if (activity == null || activity.isFinishing())
         {
             // skip if activity will be destroyed
             return false;
