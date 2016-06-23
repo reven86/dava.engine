@@ -152,3 +152,8 @@ int STDCALL GetPackerCaps()
 {
     return PK_CAPS_MULTIPLE | PK_CAPS_HIDE;
 }
+
+void STDCALL SetProcessDataProc(HANDLE hArcData, tProcessDataProc pProcessDataProc)
+{
+    // do nothing
+}

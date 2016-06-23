@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 project(double_commander_packer_plugin)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(OUT_PREFIX "_win.wcx")
+    set(OUT_PREFIX "_win.wcx64")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -static -O3")
 else()
     set(OUT_PREFIX "_mac.wcx")

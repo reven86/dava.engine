@@ -109,15 +109,18 @@ void PackManagerImpl::Pause()
 
 void PackManagerImpl::Update()
 {
-    if (initPaused)
+    if (PackManager::InitState::FirstInit != initState)
     {
-        if (initState != PackManager::InitState::Ready)
+        if (!initPaused)
         {
-            ContinueInitialization();
-        }
-        else if (isProcessingEnabled)
-        {
-            requestManager->Update();
+            if (initState != PackManager::InitState::Ready)
+            {
+                ContinueInitialization();
+            }
+            else if (isProcessingEnabled)
+            {
+                requestManager->Update();
+            }
         }
     }
 }
@@ -204,8 +207,18 @@ void PackManagerImpl::FirstTimeInit()
 void PackManagerImpl::InitStarting()
 {
     DVASSERT(initState != PackManager::InitState::FirstInit);
-    // you can be in any state and user can start REinitialization
-    // TODO copy localPackDB from Data to ~doc:/ if not exist
+
+    // copy localPackDB from Data to ~doc:/ if not exist
+    FileSystem* fs = FileSystem::Instance();
+    FilePath dbLocal("~doc:/" + initLocalDBFileName);
+    if (!fs->IsFile(dbLocal))
+    {
+        FilePath dbInData("~res:/" + initLocalDBFileName);
+        if (!fs->CopyFileW(dbInData, dbLocal))
+        {
+            throw std::runtime_error("can't copy pack DB from data to doc");
+        }
+    }
     initState = PackManager::InitState::MountingLocalPacks;
 }
 
