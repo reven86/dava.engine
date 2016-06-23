@@ -2,6 +2,7 @@
 #include "NgtTools/Common/GlobalContext.h"
 
 #include "Debug/DVAssert.h"
+#include "Core/Core.h"
 
 #include <core_generic_plugin/interfaces/i_plugin_context_manager.hpp>
 #include <core_generic_plugin/interfaces/i_application.hpp>
@@ -98,6 +99,26 @@ int BaseApplication::StartApplication()
 
 void BaseApplication::OnPostLoadPugins()
 {
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
+    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
+                     {
+                         DAVA::Core* core = DAVA::Core::Instance();
+                         if (core == nullptr)
+                         {
+                             return;
+                         }
+                         if (state == Qt::ApplicationActive)
+                         {
+                             core->FocusReceived();
+                         }
+                         else
+                         {
+                             core->FocusLost();
+                         }
+                     });
 }
 
 void BaseApplication::OnPreUnloadPlugins()

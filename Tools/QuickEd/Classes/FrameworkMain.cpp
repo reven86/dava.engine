@@ -22,7 +22,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("height", screenSize.dy);
     VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenSize.dx, screenSize.dy);
     VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenSize.dx, screenSize.dy, "Gfx");
-    Core::Instance()->FocusReceived();
+
     Core::Instance()->SetOptions(appOptions);
     VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
@@ -34,5 +34,4 @@ void FrameworkDidLaunched()
 
 void FrameworkWillTerminate()
 {
-    Core::Instance()->FocusLost();
 }

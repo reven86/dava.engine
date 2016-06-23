@@ -65,11 +65,14 @@ void QEApplication::OnPostLoadPugins()
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
+
+    BaseApplication::OnPostLoadPugins();
 }
 
 void QEApplication::OnPreUnloadPlugins()
 {
     commandManager->deregisterCommand(ngtCommand->getId());
+    BaseApplication::OnPreUnloadPlugins();
 }
 
 void QEApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
