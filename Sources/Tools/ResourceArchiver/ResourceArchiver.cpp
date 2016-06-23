@@ -268,7 +268,6 @@ bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool a
         }
         else
         {
-            String archivePath = (croppedSource.empty() ? sourcePath.GetFilename() : croppedSource);
             CollectedFile collectedFile;
             collectedFile.absPath = sourcePath;
             collectedFile.archivePath = archivePath;

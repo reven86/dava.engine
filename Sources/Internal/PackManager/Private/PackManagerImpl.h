@@ -58,9 +58,10 @@ public:
 
     const String& GetRemotePacksURL(bool isGpu) const;
 
-    Signal<const PackManager::Pack&>* onPackChange = nullptr;
-    Signal<const PackManager::Pack&>* packDownload = nullptr;
-    Signal<const PackManager::IRequest&>* onRequestChange = nullptr;
+    PackManager& GetPM()
+    {
+        return *packManager;
+    }
 
 private:
     void ContinueInitialization();
@@ -80,10 +81,9 @@ private:
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
 
-    String dbFile;
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
-    String packsUrlCommon;
+    String superPackUrl;
     String architecture;
     bool isProcessingEnabled = false;
     PackManager* packManager = nullptr;
@@ -98,7 +98,7 @@ private:
     PackManager::InitError initError = PackManager::InitError::AllGood;
     PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
-    Vector<uint8> buffer;
+    Vector<uint8> buffer; // tmp buff
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
@@ -174,7 +174,7 @@ inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
     {
         return architecture;
     }
-    return packsUrlCommon;
+    return superPackUrl;
 }
 
 } // end namespace DAVA

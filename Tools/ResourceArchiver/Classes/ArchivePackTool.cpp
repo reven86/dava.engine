@@ -180,7 +180,6 @@ int ArchivePackTool::ProcessInternal()
     params.compressionType = compressionType;
     params.archivePath = packFileName;
     params.logPath = logFilePath;
-    params.croppedPath = croppedPath;
     params.assetCacheClient = assetCache.get();
     params.baseDirPath = (baseDir.empty() ? FileSystem::Instance()->GetCurrentWorkingDirectory() : baseDir);
 

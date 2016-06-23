@@ -10,15 +10,14 @@ namespace DAVA
 void PackManagerImpl::Initialize(const String& dbFile_,
                                  const FilePath& localPacksDir_,
                                  const FilePath& readOnlyPacksDir_,
-                                 const String& remotePacksURL_,
+                                 const String& superPackUrl_,
                                  const String& architecture_,
                                  PackManager* packManager_)
 {
-    dbFile = dbFile_;
     localPacksDir = localPacksDir_;
     readOnlyPacksDir = readOnlyPacksDir_;
-    packsUrlCommon = remotePacksURL_;
-    if (packsUrlCommon.empty())
+    superPackUrl = superPackUrl_;
+    if (superPackUrl.empty())
     {
         throw std::runtime_error("empty url");
     }
@@ -32,11 +31,7 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     packManager = packManager_;
     DVASSERT(packManager != nullptr);
 
-    onPackChange = &packManager->packStateChanged;
-    onRequestChange = &packManager->requestProgressChanged;
-    packDownload = &packManager->packDownloadChanged;
-
-    initLocalDBFileName = architecture + ".db";
+    initLocalDBFileName = dbFile_;
     initState = PackManager::InitState::Starting;
 }
 
@@ -228,7 +223,7 @@ void PackManagerImpl::AskFooter()
     {
         if (0 == downloadTaskId)
         {
-            downloadTaskId = dm->Download(packsUrlCommon, "", GET_SIZE);
+            downloadTaskId = dm->Download(superPackUrl, "", GET_SIZE);
         }
         else
         {
@@ -259,7 +254,7 @@ void PackManagerImpl::AskFooter()
 
         uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
         uint32 sizeofFooter = static_cast<uint32>(sizeof(footerOnServer));
-        downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, &footerOnServer, sizeofFooter, downloadOffset, sizeofFooter);
+        downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, &footerOnServer, sizeofFooter, downloadOffset, sizeofFooter);
         DVASSERT(0 != downloadTaskId);
         initState = PackManager::InitState::LoadingRequestGetFooter;
     }
@@ -305,7 +300,7 @@ void PackManagerImpl::AskFileTable()
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(footerOnServer) + footerOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), static_cast<uint32>(downloadOffset), static_cast<uint32>(buffer.size()));
+    downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(downloadOffset), static_cast<uint32>(buffer.size()));
     DVASSERT(0 != downloadTaskId);
     initState = PackManager::InitState::LoadingRequestGetFileTable;
 }
@@ -398,7 +393,7 @@ void PackManagerImpl::AskDB()
 
     buffer.resize(static_cast<uint32>(downloadSize));
 
-    downloadTaskId = dm->DownloadIntoBuffer(packsUrlCommon, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
+    downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
     DVASSERT(0 != downloadTaskId);
 
     initState = PackManager::InitState::LoadingRequestGetDB;
@@ -519,10 +514,10 @@ void PackManagerImpl::DeleteOldPacks()
 void PackManagerImpl::LoadPacksDataFromDB()
 {
     // open DB and load packs state then mount all archives to FileSystem
-    FilePath path("~doc:/" + dbFile);
+    FilePath path("~doc:/" + initLocalDBFileName);
     if (FileSystem::Instance()->IsFile(path))
     {
-        db.reset(new PacksDB(dbFile));
+        db.reset(new PacksDB(path));
         db->InitializePacks(packs);
 
         initState = PackManager::InitState::MountingDownloadedPacks;

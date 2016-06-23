@@ -74,7 +74,7 @@ private:
     void MountPack();
     void GoToNextSubRequest();
 
-    PackManagerImpl* packManager = nullptr;
+    PackManagerImpl* packManagerImpl = nullptr;
     PackManager::Pack* rootPack = nullptr;
     Set<PackManager::Pack*> dependencySet;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
