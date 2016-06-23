@@ -236,6 +236,8 @@ void PackManagerTest::OnInitChange(PackManager::IInit& init)
             init.Pause(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
         }
     }
+
+    DAVA::Logger::Info("%s", ss.str().c_str());
 }
 
 void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData)
