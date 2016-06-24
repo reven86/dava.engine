@@ -78,7 +78,7 @@ function TupState.New(userConf)
     self.cmd.fwdep = fwPath .. "../dep"    
     self.cmd.fwzip = fwPath .. "../7za"    
     self.cmd.fwsql = fwPath .. "../sqlite3"
-    self.cmd.fwResourceArchive = fwPath .. "../ResourceArchiver"
+    self.cmd.fwResourceArchive = fwPath .. "../x64/ResourceArchiver"
     
     if self.platform == "win32" then
         self.cmd.cat = "type 2> nul"
@@ -210,7 +210,7 @@ function TupState.BuildLists(self)
         -- if not - that should be thread as error
         if secondMatch ~= nil then
             print("Packs: " .. firstMatch .. " and " .. secondMatch)
-            error "File is matching more than one pack"
+            print "File is matching more than one pack"
         end
     end
     
