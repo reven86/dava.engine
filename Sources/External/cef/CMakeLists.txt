@@ -6,11 +6,15 @@ set( CPP_FILES Sources/*.cpp     )
 
 set ( UNITY_IGNORE_LIST "Sources/CEFController.cpp"
                         "Sources/CEFWebViewControl.cpp"
-                        "Sources/CEFWebViewControlProxy.cpp"
                         "Sources/CEFWebPageRender.cpp"
                         "Sources/CEFDavaResourceHandler.cpp" )
 
 set( DEFINITIONS      -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
+
+set( INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/Sources"
+              "${CMAKE_CURRENT_SOURCE_DIR}/Include"
+              "${CMAKE_CURRENT_SOURCE_DIR}/Include/cef" )
+                      
 set( INCLUDES_PRIVATE "${DAVA_INCLUDE_DIR}"
                       "${CMAKE_CURRENT_SOURCE_DIR}/Sources"
                       "${CMAKE_CURRENT_SOURCE_DIR}/Include"

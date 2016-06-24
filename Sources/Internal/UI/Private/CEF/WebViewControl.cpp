@@ -1,5 +1,5 @@
-#include "CEFWebViewControl.h"
-#include "CEFWebViewControlProxy.h"
+#include "cef/Sources/CEFWebViewControl.h"
+#include "UI/Private/CEF/WebViewControl.h"
 
 namespace DAVA
 {
