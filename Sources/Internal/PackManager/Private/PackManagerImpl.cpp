@@ -254,6 +254,10 @@ void PackManagerImpl::AskFooter()
                             throw std::runtime_error("can't get size of file on server side");
                         }
                     }
+                    else
+                    {
+                        throw std::runtime_error("can't get size of superpack from server");
+                    }
                 }
             }
         }
@@ -313,7 +317,7 @@ void PackManagerImpl::AskFileTable()
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(footerOnServer) + footerOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(downloadOffset), static_cast<uint32>(buffer.size()));
+    downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, buffer.size());
     DVASSERT(0 != downloadTaskId);
     initState = PackManager::InitState::LoadingRequestGetFileTable;
 }
@@ -330,7 +334,7 @@ void PackManagerImpl::GetFileTable()
             dm->GetError(downloadTaskId, error);
             if (DLE_NO_ERROR == error)
             {
-                uint32 crc32 = CRC32::ForBuffer(buffer.data(), static_cast<uint32>(buffer.size()));
+                uint32 crc32 = CRC32::ForBuffer(buffer.data(), buffer.size());
                 if (crc32 != footerOnServer.info.filesTableCrc32)
                 {
                     throw std::runtime_error("on server bad superpack!!! FileTable not match crc32");

@@ -21,9 +21,13 @@ void PackManager::Initialize(const String& dbFileName_,
                              const String& packsUrlCommon_,
                              const String& architecture_)
 {
-    if (!FileSystem::Instance()->IsDirectory(downloadPacksDir_))
+    FileSystem* fs = FileSystem::Instance();
+    if (!fs->IsDirectory(downloadPacksDir_))
     {
-        throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
+        if (!fs->CreateDirectory(downloadPacksDir_, true))
+        {
+            throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
+        }
     }
 
     impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, architecture_, this);
