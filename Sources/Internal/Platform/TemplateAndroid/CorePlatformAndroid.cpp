@@ -161,6 +161,9 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
         Core::Instance()->SystemAppStarted();
 
+        // We are always in foreground when initialize application
+        // This condition avoids render resuming on startup
+        // Render resuming on startup has no sence, but can breaks render
         foreground = true;
         StartForeground();
     }
