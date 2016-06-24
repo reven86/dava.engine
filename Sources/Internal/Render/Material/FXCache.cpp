@@ -337,15 +337,19 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
 
     //add render pass for reflection/refraction - hard coded for now
     //TODO: rethink how to modify material template without full copy for all passes
-    for (RenderPassDescriptor& pass : target.renderPassDescriptors)
+    //do it only for editor or if metal features are allowed - performance issue
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures() || QualitySettingsSystem::Instance()->GetRuntimeQualitySwitching())
     {
-        if (pass.passName == PASS_FORWARD)
+        for (RenderPassDescriptor& pass : target.renderPassDescriptors)
         {
-            RenderPassDescriptor noFog = pass;
-            noFog.passName = PASS_REFLECTION_REFRACTION;
-            noFog.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
-            target.renderPassDescriptors.push_back(noFog);
-            break;
+            if (pass.passName == PASS_FORWARD)
+            {
+                RenderPassDescriptor noFog = pass;
+                noFog.passName = PASS_REFLECTION_REFRACTION;
+                noFog.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
+                target.renderPassDescriptors.push_back(noFog);
+                break;
+            }
         }
     }
 
