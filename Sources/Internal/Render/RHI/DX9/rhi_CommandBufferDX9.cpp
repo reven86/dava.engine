@@ -1000,7 +1000,14 @@ void CommandBufferDX9_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
 
-            DX9_CALL(_D3D9_Device->DrawPrimitive((D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/ 0, UINT(arg[1])), "DrawPrimitive");
+            D3DPRIMITIVETYPE primType = (D3DPRIMITIVETYPE)(arg[0]);
+            uint32 primCount = UINT(arg[1]);
+            DVASSERT(primType == D3DPT_TRIANGLELIST);
+            DVASSERT(primCount / 3 < 0xFFFF);
+            PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, 1);
+            DX9_CALL(_D3D9_Device->SetIndices(_DX9_SequentialIB()), "SetIndices");
+            DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(primType, 0, 0, primCount * 3, 0, primCount), "DrawIndexedPrimitive");
+
             StatSet::IncStat(stat_DP, 1);
             switch (arg[0])
             {
