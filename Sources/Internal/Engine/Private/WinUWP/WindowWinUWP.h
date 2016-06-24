@@ -49,10 +49,6 @@ private:
     PlatformDispatcher platformDispatcher;
 
     ref struct WindowWinUWPBridge ^ bridge = nullptr;
-
-    // Friends
-    friend class CoreWinUWP;
-    friend ref struct WindowWinUWPBridge;
 };
 
 inline Dispatcher* WindowWinUWP::GetDispatcher() const

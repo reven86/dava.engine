@@ -52,7 +52,7 @@ void CoreV2Test::UnloadResources()
 
 void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
-    engine->Quit();
+    engine->Quit(4);
 }
 
 void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)

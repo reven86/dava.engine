@@ -31,7 +31,11 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    HWND wnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->GetNativeHandle());
+#else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
+#endif
     if (show)
     {
         HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);

@@ -102,17 +102,12 @@ void CoreWin32::Quit()
 WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
 {
     WindowWin32* nativeWindow = new WindowWin32(engineBackend, w);
-    if (!nativeWindow->CreateNWindow(width, height))
+    if (!nativeWindow->Create(width, height))
     {
         delete nativeWindow;
         nativeWindow = nullptr;
     }
     return nativeWindow;
-}
-
-void CoreWin32::DestroyNativeWindow(WindowBackend* w)
-{
-    w->GetNativeWindow()->DestroyNWindow();
 }
 
 } // namespace Private
