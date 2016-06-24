@@ -1,13 +1,10 @@
+#if defined(ENABLE_CEF_WEBVIEW)
+
 #include "cef/Sources/CEFWebViewControl.h"
 #include "UI/Private/CEF/WebViewControl.h"
 
 namespace DAVA
 {
-std::unique_ptr<IWebViewControl> IWebViewControl::Create(UIWebView& uiWebView)
-{
-    return std::make_unique<WebViewControl>(uiWebView);
-}
-
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     : impl(new CEFWebViewControl(uiWebView))
     , cefController(impl)
@@ -155,3 +152,5 @@ void WebViewControl::Update()
 }
 
 } // namespace DAVA
+
+#endif // ENABLE_CEF_WEBVIEW

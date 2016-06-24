@@ -164,11 +164,6 @@
 
 @end
 
-std::unique_ptr<DAVA::IWebViewControl> DAVA::IWebViewControl::Create(DAVA::UIWebView& uiWebView)
-{
-    return std::make_unique<DAVA::WebViewControl>(uiWebView);
-}
-
 DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
     : webViewPtr(0)
     , webViewURLDelegatePtr(0)

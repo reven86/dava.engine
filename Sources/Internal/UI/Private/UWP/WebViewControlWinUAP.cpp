@@ -15,11 +15,6 @@ using namespace Windows::Web::Http::Filters;
 
 namespace DAVA
 {
-std::unique_ptr<IWebViewControl> IWebViewControl::Create(UIWebView& uiWebView)
-{
-    return std::make_unique<WebViewControl>(uiWebView);
-}
-
 WebViewControl::WebViewControl(UIWebView& uiWebView)
     : privateImpl(std::make_shared<PrivateWebViewWinUAP>(&uiWebView))
 {

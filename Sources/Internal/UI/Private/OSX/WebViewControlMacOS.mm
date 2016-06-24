@@ -169,11 +169,6 @@ using namespace DAVA;
 
 @end
 
-std::unique_ptr<IWebViewControl> IWebViewControl::Create(UIWebView& uiWebView)
-{
-    return std::make_unique<WebViewControl>(uiWebView);
-}
-
 WebViewControl::WebViewControl(UIWebView& ptr)
     : webImageCachePtr(0)
     , uiWebViewControl(ptr)

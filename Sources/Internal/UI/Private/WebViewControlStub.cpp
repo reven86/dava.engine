@@ -2,13 +2,8 @@
 
 #include "UI/Private/WebViewControlStub.h"
 
-using namespace DAVA;
-
-std::unique_ptr<IWebViewControl> IWebViewControl::Create(UIWebView& uiWebView)
+namespace DAVA
 {
-    return std::make_unique<WebViewControl>(uiWebView);
-}
-
 WebViewControl::WebViewControl(UIWebView&)
 {
 }
@@ -67,5 +62,6 @@ bool WebViewControl::IsRenderToTexture() const
 {
     return false;
 }
+} // namespace DAVA
 
 #endif //DISABLE_NATIVE_WEBVIEW && !ENABLE_CEF_WEBVIEW
