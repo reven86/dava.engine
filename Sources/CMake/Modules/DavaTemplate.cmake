@@ -622,11 +622,11 @@ endif()
 
 if( WIN32 AND NOT WINDOWS_UAP )
    set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
-   add_custom_target( VS_MODIFIED  ALL 
+   add_custom_target( VS_MODIFIED_${PROJECT_NAME}  ALL 
         COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY} )
 
-   add_dependencies( ${PROJECT_NAME} VS_MODIFIED )
-   set_property( TARGET VS_MODIFIED PROPERTY FOLDER "CMAKE" )
+   add_dependencies( ${PROJECT_NAME} VS_MODIFIED_${PROJECT_NAME} )
+   set_property( TARGET VS_MODIFIED_${PROJECT_NAME} PROPERTY FOLDER "CMAKE" )
  
 endif() 
 
