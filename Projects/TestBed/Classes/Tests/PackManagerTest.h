@@ -55,7 +55,7 @@ private:
     void OnRequestChange(const DAVA::PackManager::IRequest& request);
     void OnInitChange(PackManager::IInit& init);
 
-    DAVA::String sqliteDbFile = "{gpu}.db";
+    DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     DAVA::FilePath readOnlyDirWithPacks = "~res:/TestData/PackManagerTest/packs/read_only_packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server

@@ -1,6 +1,7 @@
 #include "PackManager/Private/PackManagerImpl.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/Private/PackArchive.h"
+#include "FileSystem/Private/ZipArchive.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
@@ -26,7 +27,6 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     {
         throw std::runtime_error("empty gpu architecture");
     }
-    requestManager.reset(new RequestManager(*this));
 
     packManager = packManager_;
     DVASSERT(packManager != nullptr);
@@ -87,10 +87,8 @@ void PackManagerImpl::Retry()
         // TODO clear error and move to prev state and unpause if needed
         throw std::runtime_error("implement it");
     }
-    else
-    {
-        throw std::runtime_error("can't retry initialization from current state");
-    }
+
+    throw std::runtime_error("can't retry initialization from current state");
 }
 
 bool PackManagerImpl::IsPaused() const
@@ -210,10 +208,16 @@ void PackManagerImpl::InitStarting()
 
     // copy localPackDB from Data to ~doc:/ if not exist
     FileSystem* fs = FileSystem::Instance();
+    FilePath dbInData("~res:/" + initLocalDBFileName);
     FilePath dbLocal("~doc:/" + initLocalDBFileName);
+    // example: ~doc:/db_mali.db.zip => ~doc:/db_mali.db
+    dbLocal.ReplaceExtension("");
+
     if (!fs->IsFile(dbLocal))
     {
-        FilePath dbInData("~res:/" + initLocalDBFileName);
+        // 1. extract db file from zip
+
+        // 2. copy file to ~doc:/
         if (!fs->CopyFile(dbInData, dbLocal))
         {
             throw std::runtime_error("can't copy pack DB from data to doc");
@@ -225,6 +229,8 @@ void PackManagerImpl::InitStarting()
 void PackManagerImpl::MountLocalPacks()
 {
     MountPacks(localPacksDir);
+    // now user can do requests for local packs
+    requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::LoadingRequestAskFooter;
 }
 
@@ -553,13 +559,18 @@ void PackManagerImpl::MountDownloadedPacks()
 
 const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
-    auto& pack = GetPack(packName);
-    if (pack.state == PackManager::Pack::Status::NotRequested)
+    if (requestManager)
     {
-        float priority = 0.0f;
-        requestManager->Push(packName, priority);
+        PackManager::Pack& pack = GetPack(packName);
+        if (pack.state == PackManager::Pack::Status::NotRequested)
+        {
+            float priority = 0.0f;
+            requestManager->Push(packName, priority);
+        }
+        return pack;
     }
-    return pack;
+
+    throw std::runtime_error("can't process request initialization not finished");
 }
 
 void PackManagerImpl::ChangePackPriority(const String& packName, float newPriority) const
