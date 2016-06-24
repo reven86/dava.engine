@@ -11,10 +11,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "Concurrency/Mutex.h"
-
 #include "Engine/Private/EngineFwd.h"
-#include "Engine/Private/Win32/EventWin32.h"
+#include "Engine/Private/Dispatcher/PlatformDispatcher.h"
+
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -29,15 +29,23 @@ public:
     WindowWin32(const WindowWin32&) = delete;
     WindowWin32& operator=(const WindowWin32&) = delete;
 
-    void Resize(float32 width, float32 height);
     void* GetHandle() const;
+
+    bool Create(float32 width, float32 height);
+    void Resize(float32 width, float32 height);
+    void Close();
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
+    void TriggerPlatformEvents();
+
 private:
-    bool CreateNWindow(float32 width, float32 height);
-    void DestroyNWindow();
-    void ResizeNWindow(float32 width, float32 height);
+    void DoResizeWindow(float32 width, float32 height);
+    void DoCloseWindow();
+
+    void AdjustWindowSize(int32* w, int32* h);
+
+    void EventHandler(const PlatformEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnSetKillFocus(bool gotFocus);
@@ -53,9 +61,6 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
-    void PostCustomMessage(const EventWin32& e);
-    void ProcessCustomEvents();
-
 private:
     HWND hwnd = nullptr;
     EngineBackend* engine = nullptr;
@@ -64,18 +69,19 @@ private:
 
     bool isMinimized = false;
 
-    Mutex mutex;
-    Vector<EventWin32> events;
+    PlatformDispatcher platformDispatcher;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_CUSTOM_MESSAGE = WM_USER + 39;
     static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD windowExStyle = 0;
-
-    // Friends
-    friend class CoreWin32;
 };
+
+inline void* WindowWin32::GetHandle() const
+{
+    return static_cast<void*>(hwnd);
+}
 
 } // namespace Private
 } // namespace DAVA

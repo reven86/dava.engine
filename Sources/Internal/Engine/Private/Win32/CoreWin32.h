@@ -35,8 +35,8 @@ public:
     void Run();
     void Quit();
 
+private:
     WindowWin32* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
-    void DestroyNativeWindow(WindowBackend* w);
 
 private:
     EngineBackend* engineBackend = nullptr;

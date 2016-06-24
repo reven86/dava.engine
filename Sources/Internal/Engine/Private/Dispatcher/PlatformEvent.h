@@ -3,24 +3,23 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN32__)
-
 #include "Functional/Function.h"
+
+#include "Engine/Private/EngineFwd.h"
 
 namespace DAVA
 {
 namespace Private
 {
-struct EventWin32 final
+struct PlatformEvent final
 {
     enum eType : int32
     {
-        DUMMY,
-        RESIZE,
-        FUNCTOR
+        DUMMY = 0,
+        RESIZE_WINDOW,
+        CREATE_WINDOW,
+        CLOSE_WINDOW,
+        FUNCTOR,
     };
 
     struct ResizeEvent
@@ -40,5 +39,4 @@ struct EventWin32 final
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN32__
 #endif // __DAVAENGINE_COREV2__

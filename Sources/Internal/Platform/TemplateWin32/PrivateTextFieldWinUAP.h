@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
 #define __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -233,4 +235,5 @@ inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__

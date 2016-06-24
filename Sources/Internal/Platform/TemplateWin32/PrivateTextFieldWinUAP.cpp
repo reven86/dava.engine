@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Platform/TemplateWin32/PrivateTextFieldWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -243,7 +245,8 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+            core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
@@ -1149,3 +1152,4 @@ Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, in
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__

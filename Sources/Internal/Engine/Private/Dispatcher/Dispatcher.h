@@ -3,31 +3,14 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Concurrency/Mutex.h"
-#include "Functional/Function.h"
-
+#include "Engine/Private/Dispatcher/DispatcherT.h"
 #include "Engine/Private/Dispatcher/DispatcherEvent.h"
 
 namespace DAVA
 {
 namespace Private
 {
-class Dispatcher final
-{
-public:
-    Dispatcher();
-    ~Dispatcher();
-
-    Dispatcher(const Dispatcher&) = delete;
-    Dispatcher& operator=(const Dispatcher&) = delete;
-
-    void PostEvent(const DispatcherEvent& e);
-    void ProcessEvents(const Function<void(const DispatcherEvent&)>& handler);
-
-private:
-    Mutex mutex;
-    Vector<DispatcherEvent> events;
-};
+using Dispatcher = DispatcherT<DispatcherEvent>;
 
 } // namespace Private
 } // namespace DAVA

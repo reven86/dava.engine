@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "UI/UITextFieldWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -164,3 +166,4 @@ void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__

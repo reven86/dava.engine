@@ -10,12 +10,9 @@
 
 namespace DAVA
 {
-class Window;
 
 class Engine final
 {
-    friend class Private::EngineBackend;
-
 public:
     // TODO: remove this method after all modules and systems will take Engine instance on creation
     static Engine* Instance();
@@ -57,6 +54,9 @@ public:
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
+
+    // Friends
+    friend class Private::EngineBackend;
 };
 
 } // namespace DAVA

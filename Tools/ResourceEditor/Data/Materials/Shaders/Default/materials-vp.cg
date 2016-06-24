@@ -117,6 +117,9 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD3_LOW(varTime,1)        
     #endif
 
+	#if FLOWMAP
+		VPROG_OUT_TEXCOORD4(varFlowData,3)
+	#endif
 
 
 
@@ -228,9 +231,15 @@ property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 #endif
 
-#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
 property float globalTime : dynamic,a : ;
 #endif
+
+#if FLOWMAP
+property float flowAnimSpeed : static,a : ;
+property float flowAnimOffset : static,a : ;
+#endif
+
 
 
 // prototypes, to shut up Metal shader-compiler
@@ -324,6 +333,13 @@ VPROG_BEGIN
     #if VERTEX_COLOR
     float4 inVertexColor = VP_IN_COLOR0;
     #endif
+	
+#if FLOWMAP
+    float scaledTime = globalTime * flowAnimSpeed;
+    float2 flowPhases = frac(float2(scaledTime, scaledTime+0.5))-float2(0.5, 0.5);
+    float flowBlend = abs(flowPhases.x*2.0);
+    VP_OUT(varFlowData) = float3(flowPhases * flowAnimOffset, flowBlend);
+#endif
 
 #if MATERIAL_SKYBOX
     

@@ -8,9 +8,13 @@ class AppContext;
 
 namespace Private
 {
-
-class Dispatcher;
+template <typename T>
+class DispatcherT;
 struct DispatcherEvent;
+struct PlatformEvent;
+
+using Dispatcher = DispatcherT<DispatcherEvent>;
+using PlatformDispatcher = DispatcherT<PlatformEvent>;
 
 class EngineBackend;
 class WindowBackend;
@@ -27,6 +31,12 @@ using PlatformCore = CoreWin32;
 
 class WindowWin32;
 using NativeWindow = WindowWin32;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+class CoreWinUWP;
+using PlatformCore = CoreWinUWP;
+
+class WindowWinUWP;
+using NativeWindow = WindowWinUWP;
 #elif defined(__DAVAENGINE_MACOS__)
 class CoreOsX;
 using PlatformCore = CoreOsX;

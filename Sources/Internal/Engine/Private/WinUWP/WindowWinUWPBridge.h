@@ -1,0 +1,88 @@
+#if defined(__DAVAENGINE_COREV2__)
+
+#pragma once
+
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+#include "Engine/Private/EngineFwd.h"
+
+#include "Functional/Function.h"
+
+namespace DAVA
+{
+namespace Private
+{
+ref struct WindowWinUWPBridge sealed
+{
+    internal :
+    WindowWinUWPBridge(WindowWinUWP* window);
+
+    void* GetHandle() const;
+
+    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd);
+    void TriggerPlatformEvents();
+
+    void DoResizeWindow(float32 width, float32 height);
+    void DoCloseWindow();
+
+private:
+    void OnTriggerPlatformEvents();
+
+    void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
+    void OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg);
+
+    void OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ coreWindow, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg);
+    void OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ dispatcher, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg);
+
+    void OnSizeChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg);
+    void OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ panel, ::Platform::Object ^ obj);
+
+    void OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+
+    static uint32 GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
+    static uint32 GetMouseButtonIndex(std::bitset<5> state);
+    static std::bitset<5> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
+
+    void CreateBaseXamlUI();
+    void InstallEventHandlers();
+    void UninstallEventHandlers();
+
+private:
+    WindowWinUWP* uwpWindow = nullptr;
+
+    ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
+    ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
+    ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
+
+    std::bitset<5> mouseButtonState;
+
+    // Tokens to unsubscribe from event handlers
+    ::Windows::Foundation::EventRegistrationToken tokenActivated;
+    ::Windows::Foundation::EventRegistrationToken tokenVisibilityChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenCharacterReceived;
+    ::Windows::Foundation::EventRegistrationToken tokenAcceleratorKeyActivated;
+    ::Windows::Foundation::EventRegistrationToken tokenSizeChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenCompositionScaleChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerPressed;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
+    ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
+};
+
+inline void* WindowWinUWPBridge::GetHandle() const
+{
+    return reinterpret_cast<void*>(xamlSwapChainPanel);
+}
+
+} // namespace Private
+} // namespace DAVA
+
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_COREV2__

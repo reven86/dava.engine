@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -345,7 +347,6 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
                 Core::Instance()->SetIsActive(false);
             }
             Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
             EnableHighResolutionTimer(false);
             break;
         default:
@@ -361,25 +362,15 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoForeground();
-            }
-            Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
+            Core::Instance()->SetIsActive(true);
+            Core::Instance()->GoForeground();
             Core::Instance()->FocusReceived();
         }
         else
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoBackground(false);
-            }
-            else
-            {
-                Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
-            }
             Core::Instance()->FocusLost();
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            Core::Instance()->GoBackground(false);
+            Core::Instance()->SetIsActive(false);
         }
     });
 }
@@ -1155,3 +1146,4 @@ const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__

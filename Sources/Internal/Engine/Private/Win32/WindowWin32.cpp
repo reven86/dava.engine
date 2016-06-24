@@ -11,7 +11,6 @@
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Win32/CoreWin32.h"
 
-#include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
@@ -35,29 +34,7 @@ WindowWin32::~WindowWin32()
     DVASSERT(hwnd == nullptr);
 }
 
-void WindowWin32::Resize(float32 width, float32 height)
-{
-    EventWin32 e;
-    e.type = EventWin32::RESIZE;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    PostCustomMessage(e);
-}
-
-void* WindowWin32::GetHandle() const
-{
-    return static_cast<void*>(hwnd);
-}
-
-void WindowWin32::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    EventWin32 e;
-    e.type = EventWin32::FUNCTOR;
-    e.functor = task;
-    PostCustomMessage(e);
-}
-
-bool WindowWin32::CreateNWindow(float32 width, float32 height)
+bool WindowWin32::Create(float32 width, float32 height)
 {
     if (!RegisterWindowClass())
     {
@@ -65,14 +42,18 @@ bool WindowWin32::CreateNWindow(float32 width, float32 height)
         return false;
     }
 
+    int32 w = static_cast<int32>(width);
+    int32 h = static_cast<int32>(height);
+    AdjustWindowSize(&w, &h);
+
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"DAVA_WINDOW",
                                     windowStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
-                                    CW_USEDEFAULT,
-                                    CW_USEDEFAULT,
+                                    w,
+                                    h,
                                     nullptr,
                                     nullptr,
                                     CoreWin32::Win32AppInstance(),
@@ -83,26 +64,82 @@ bool WindowWin32::CreateNWindow(float32 width, float32 height)
         ::UpdateWindow(handle);
         return true;
     }
+    else
+    {
+        Logger::Error("Failed to create win32 window: %d", GetLastError());
+    }
     return false;
 }
 
-void WindowWin32::DestroyNWindow()
+void WindowWin32::Resize(float32 width, float32 height)
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::RESIZE_WINDOW;
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowWin32::Close()
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::CLOSE_WINDOW;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowWin32::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::FUNCTOR;
+    e.functor = task;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowWin32::TriggerPlatformEvents()
+{
+    ::PostMessage(hwnd, WM_CUSTOM_MESSAGE, 0, 0);
+}
+
+void WindowWin32::DoResizeWindow(float32 width, float32 height)
+{
+    int32 w = static_cast<int32>(width);
+    int32 h = static_cast<int32>(height);
+    AdjustWindowSize(&w, &h);
+
+    UINT flags = SWP_NOMOVE | SWP_NOZORDER;
+    ::SetWindowPos(hwnd, nullptr, 0, 0, w, h, flags);
+}
+
+void WindowWin32::DoCloseWindow()
 {
     ::DestroyWindow(hwnd);
 }
 
-void WindowWin32::ResizeNWindow(float32 width, float32 height)
+void WindowWin32::AdjustWindowSize(int32* w, int32* h)
 {
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
-
-    RECT rc = { 0, 0, w, h };
+    RECT rc = { 0, 0, *w, *h };
     ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
 
-    w = rc.right - rc.left;
-    h = rc.bottom - rc.top;
-    UINT flags = SWP_NOMOVE | SWP_NOZORDER;
-    ::SetWindowPos(hwnd, nullptr, 0, 0, w, h, flags);
+    *w = rc.right - rc.left;
+    *h = rc.bottom - rc.top;
+}
+
+void WindowWin32::EventHandler(const PlatformEvent& e)
+{
+    switch (e.type)
+    {
+    case PlatformEvent::RESIZE_WINDOW:
+        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        break;
+    case PlatformEvent::CLOSE_WINDOW:
+        DoCloseWindow();
+        break;
+    case PlatformEvent::FUNCTOR:
+        e.functor();
+        break;
+    default:
+        break;
+    }
 }
 
 LRESULT WindowWin32::OnSize(int resizingType, int width, int height)
@@ -228,20 +265,17 @@ LRESULT WindowWin32::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16
 
 LRESULT WindowWin32::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    DispatcherEvent e;
-
-    e.type = isPressed ? DispatcherEvent::KEY_DOWN : DispatcherEvent::KEY_UP;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-
     if ((key == VK_SHIFT && scanCode == 0x36) || isExtended)
     {
         key |= 0x100;
     }
 
+    DispatcherEvent e;
+    e.type = isPressed ? DispatcherEvent::KEY_DOWN : DispatcherEvent::KEY_UP;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.window = window;
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-
     dispatcher->PostEvent(e);
     return 0;
 }
@@ -249,12 +283,11 @@ LRESULT WindowWin32::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, boo
 LRESULT WindowWin32::OnCharEvent(uint32 key, bool isRepeated)
 {
     DispatcherEvent e;
-
     e.type = DispatcherEvent::KEY_CHAR;
+    e.window = window;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-
     dispatcher->PostEvent(e);
     return 0;
 }
@@ -286,7 +319,7 @@ LRESULT WindowWin32::OnDestroy()
 
 LRESULT WindowWin32::OnCustomMessage()
 {
-    ProcessCustomEvents();
+    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowWin32::EventHandler));
     return 0;
 }
 
@@ -428,43 +461,6 @@ bool WindowWin32::RegisterWindowClass()
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
     }
     return windowClassRegistered;
-}
-
-void WindowWin32::PostCustomMessage(const EventWin32& e)
-{
-    {
-        LockGuard<Mutex> lock(mutex);
-        events.push_back(e);
-    }
-    ::PostMessage(hwnd, WM_CUSTOM_MESSAGE, 0, 0);
-}
-
-void WindowWin32::ProcessCustomEvents()
-{
-    Vector<EventWin32> readyEvents;
-    {
-        LockGuard<Mutex> lock(mutex);
-        events.swap(readyEvents);
-    }
-
-    EventWin32 pendingEvent;
-    for (const EventWin32& e : readyEvents)
-    {
-        if (e.type == EventWin32::RESIZE)
-        {
-            pendingEvent.type = e.type;
-            pendingEvent.resizeEvent = e.resizeEvent;
-        }
-        else if (e.type == EventWin32::FUNCTOR)
-        {
-            e.functor();
-        }
-    }
-
-    if (pendingEvent.type == EventWin32::RESIZE)
-    {
-        ResizeNWindow(pendingEvent.resizeEvent.width, pendingEvent.resizeEvent.height);
-    }
 }
 
 } // namespace Private

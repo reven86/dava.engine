@@ -36,6 +36,24 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
     return r;
 }
 
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+namespace DAVA
+{
+namespace Private
+{
+extern void StartUWPApplication();
+}
+}
+
+[Platform::MTAThread]
+int CALLBACK
+wWinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    DAVA::Private::StartUWPApplication();
+    return 0;
+}
+
 #endif
 
 #endif // __DAVAENGINE_COREV2__

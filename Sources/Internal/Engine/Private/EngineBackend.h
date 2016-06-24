@@ -59,6 +59,12 @@ public:
 
     void PostAppTerminate();
 
+    //////////////////////////////////////////////////////////////////////////
+
+    WindowBackend* CreatePrimaryWindowBackend();
+
+    //////////////////////////////////////////////////////////////////////////
+
     // TODO: replace raw pointers with std::unique_ptr after work is done
     Dispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;

@@ -6,6 +6,8 @@
 #include "Engine/Private/Qt/WindowQt.h"
 #elif defined(__DAVAENGINE_WIN32__)
 #include "Engine/Private/Win32/WindowWin32.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "Engine/Private/WinUWP/WindowWinUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Private/OsX/WindowOsX.h"
 #else
