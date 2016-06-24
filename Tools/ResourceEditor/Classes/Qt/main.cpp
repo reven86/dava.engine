@@ -12,6 +12,7 @@
 #include "CommandLine/CommandLineManager.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
+#include "Render/Texture.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
@@ -100,6 +101,8 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     DAVA::Core::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
+
+    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
 
     QApplication a(argc, argv);
 

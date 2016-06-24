@@ -63,6 +63,8 @@
 #include "Classes/Constants.h"
 #include "Classes/StringConstants.h"
 
+#include "Render/2D/Sprite.h"
+
 #include "TextureCompression/TextureConverter.h"
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
@@ -432,6 +434,9 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
                 m->InvalidateTextureBindings();
             }
         }
+
+        DAVA::Sprite::ReloadSprites(gpu);
+        QtMainWindow::Instance()->RestartParticleEffects();
     }
     LoadGPUFormat();
 }

@@ -14,6 +14,7 @@
 #include "AssetCache/AssetCache.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
+#include "Render/TextureDescriptor.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
@@ -330,6 +331,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     packingParams += Format("FilesSize = %llu", allFilesSize);
     packingParams += Format("FilesCount = %u", allFilesCount);
+    packingParams += Format("DescriptorVersion = %i", TextureDescriptor::CURRENT_VERSION);
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
     bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
