@@ -64,5 +64,5 @@ void CommandLineApplication::PrintUsage()
         ss << std::endl;
     }
 
-    DAVA::Logger::Info("%s", ss.str().c_str());
+    DAVA::Logger::Warning("%s", ss.str().c_str());
 }

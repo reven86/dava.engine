@@ -220,7 +220,7 @@ function TupState.BuildLists(self)
             local packGroup = self:GetPackGroup(pack.name, gpu)
 
             for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-                local partCmd = self.cmd.fwdep .. " echo -ap \"" .. self.currentDir .. "\" %\"f -o %o"
+                local partCmd = self.cmd.fwdep .. " echo -ap \"" .. self.currentDir .. "/\" %\"f -o %o"
                 local partCmdText = "^ Gen " .. gpu .. " list " .. i .. " for " .. pack.name .. "^ "
                 local partOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name 
                     .. self.conf.delimiter .. self.currentDirString 
@@ -273,7 +273,7 @@ function TupState.BuildPacks(self)
                 mergePackCmdText .. mergePackCmd, mergePackOutput)
 
             -- archivate
-            local archiveCmd = self.cmd.fwResourceArchive .. " -pack -compression lz4hc -listfile %f %o"
+            local archiveCmd = self.cmd.fwResourceArchive .. " pack -compression lz4hc -listfile %f %o"
             local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
             local archiveOutput = self.outputDir .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
             tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
@@ -313,13 +313,14 @@ function TupState.BuildPacks(self)
         tup.rule({ mergeSqlMask, sqlCommonGroup, sqlGroup }, mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
             
         -- generate packs database
-        local dbOutput = self.outputDir .. "/" .. gpu .. self.conf.outputDbExt
+        local dbName = "db_" .. gpu .. self.conf.outputDbExt
+        local dbOutput = self.outputDir .. "/" .. dbName
         local dbCmd = self.cmd.fwsql .. ' -cmd ".read ' .. mergeSqlOutput .. '" -cmd ".save ' .. dbOutput .. '" "" ""'
         local dbCmdText = "^ Gen final packs DB for " .. gpu .. "^ "
         tup.rule(mergeSqlOutput, dbCmdText .. dbCmd, dbOutput)
 
         -- zip generated db
-        local dbZipOutput = self.outputDir .. "/" .. gpu .. self.conf.outputDbExt .. ".zip"
+        local dbZipOutput = self.outputDir .. "/" ..dbName .. ".zip"
         local dbZipCmd = self.cmd.fwzip .. " a -bd -bso0 -tzip %o %f"
         local dbZipCmdText = "^ Zip final packs DB for " .. gpu .. "^ "
 
@@ -348,6 +349,7 @@ function TupState.BuildPacks(self)
 
     -- create super pack
     local superpackOutput = self.outputDir .. "/superpack.dvpk"
-    local superpackCmd = self.cmd.fwResourceArchive .. " -pack -compression none -basedir " .. self.outputDir .. "/ -listfile %f %o"
-    tup.rule(mergedSuperOutput, superpackCmd, superpackOutput)
+    local superpackCmdText = "^ Archive superpack^ "
+    local superpackCmd = self.cmd.fwResourceArchive .. " pack -compression none -basedir " .. self.outputDir .. "/ -listfile %f %o"
+    tup.rule(mergedSuperOutput, superpackCmdText .. superpackCmd, superpackOutput)
 end

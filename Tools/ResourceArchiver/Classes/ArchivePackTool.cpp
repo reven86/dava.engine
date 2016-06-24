@@ -24,7 +24,7 @@ const DAVA::String BaseDir = "-basedir";
 };
 
 ArchivePackTool::ArchivePackTool()
-    : CommandLineTool("-pack")
+    : CommandLineTool("pack")
 {
     static const uint32 defaultPort = static_cast<uint32>(AssetCache::ASSET_SERVER_PORT);
     static const uint64 defaultTimeout = 1000ul;
