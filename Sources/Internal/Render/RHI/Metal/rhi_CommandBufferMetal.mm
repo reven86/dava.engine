@@ -702,7 +702,7 @@ RenderPassMetal_t::Initialize()
         {
             _Metal_Frame.back().drawable = [_Metal_Layer nextDrawable];
             [_Metal_Frame.back().drawable retain];
-            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
+            //            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
             _Metal_DefFrameBuf = _Metal_Frame.back().drawable.texture;
         }
     }
@@ -1099,10 +1099,12 @@ metal_RenderPass_End(Handle pass_h)
     DVASSERT(!pass->finished);
     pass->finished = true;
 
+    #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (pass->cmdBuf.size() > 1)
     {
         [pass->encoder endEncoding];
     }
+    #endif
     MTL_TRACE("  drawable %p %i", (void*)(_Metal_Frame.back().drawable), [_Metal_Frame.back().drawable retainCount]);
 }
 
@@ -2084,10 +2086,10 @@ metal_Present(Handle syncObject)
             cb->Execute();
         }
         #endif
-
-        #if !RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-        MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
-        [rp->buf commit];
+  
+        #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+        if (rp->encoder)
+            [rp->encoder endEncoding];
         #endif
 
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
@@ -2095,13 +2097,6 @@ metal_Present(Handle syncObject)
             Handle cbh = rp->cmdBuf[b];
             CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
             
-            #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            if (!cb->do_commit_on_end)
-                [cb->buf commit];
-            #lse
-            [cb->buf commit];
-            #endif
-
             cb->buf = nil;
             [cb->encoder release];
             cb->encoder = nil;
@@ -2109,6 +2104,11 @@ metal_Present(Handle syncObject)
 
             CommandBufferPool::Free(cbh);
         }
+
+        #if !RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
+        MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
+        [rp->buf commit];
+        #endif
 
         rp->desc = nullptr;
 
