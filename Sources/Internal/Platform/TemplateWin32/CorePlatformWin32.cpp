@@ -401,7 +401,11 @@ Core::eScreenMode CoreWin32Platform::GetScreenMode()
 
 bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
 {
-    if (GetScreenMode() != screenMode) // check if we try to switch mode
+    // How do I switch a window between normal and fullscreen?
+    // https://blogs.msdn.microsoft.com/oldnewthing/20100412-00/?p=14353/
+
+    static WINDOWPLACEMENT windowPlacement = { sizeof(WINDOWPLACEMENT) };
+    if (GetScreenMode() != screenMode)
     {
         HWND hWindow = static_cast<HWND>(GetNativeView());
         switch (screenMode)
@@ -410,14 +414,22 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         {
             isFullscreen = true;
             currentMode = fullscreenMode;
-            GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
-            MONITORINFO monitor_info;
-            monitor_info.cbSize = sizeof(monitor_info);
-            GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitor_info);
-            RECT window_rect(monitor_info.rcMonitor);
 
-            SetWindowPos(hWindow, NULL, window_rect.left, window_rect.top, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, SWP_NOZORDER);
+            GetWindowPlacement(hWindow, &windowPlacement);
+            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            MONITORINFO monitorInfo;
+            monitorInfo.cbSize = sizeof(monitorInfo);
+            GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+            RECT rect(monitorInfo.rcMonitor);
+
+            SetWindowPos(hWindow,
+                         HWND_TOP,
+                         rect.left,
+                         rect.top,
+                         rect.right - rect.left,
+                         rect.bottom - rect.top,
+                         SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
             break;
         }
         case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
@@ -429,9 +441,13 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         {
             isFullscreen = false;
             currentMode = windowedMode;
+
             SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
-            RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
-            SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowPositionBeforeFullscreen.right - windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.bottom - windowPositionBeforeFullscreen.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            SetWindowPlacement(hWindow, &windowPlacement);
+            SetWindowPos(hWindow,
+                         nullptr,
+                         0, 0, 0, 0,
+                         SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
             break;
         }
         default:
@@ -442,7 +458,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
         }
 
-        Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
+        Logger::FrameworkDebug("[CoreWin32Platform] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
     }
@@ -1027,7 +1043,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             if (appCore)
             {
                 // unpress all pressed buttons
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
                 core->ClearMouseButtons();
                 appCore->OnSuspend();
             }

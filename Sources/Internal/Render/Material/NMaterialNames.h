@@ -9,8 +9,10 @@ class NMaterialName
 {
 public:
     static const FastName DECAL_ALPHABLEND;
+    static const FastName DECAL_ALPHABLEND_CULLFACE;
     static const FastName PIXELLIT_SPECULARMAP_ALPHATEST;
     static const FastName TEXTURED_ALPHABLEND;
+    static const FastName TEXTURED_ALPHABLEND_CULLFACE;
     static const FastName DECAL_ALPHATEST;
     static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
     static const FastName TEXTURED_ALPHATEST;
