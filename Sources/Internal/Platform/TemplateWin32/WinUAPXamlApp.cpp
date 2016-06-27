@@ -355,24 +355,15 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoForeground();
-            }
-            Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
+            Core::Instance()->SetIsActive(true);
+            Core::Instance()->GoForeground();
             Core::Instance()->FocusReceived();
         }
         else
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoBackground(false);
-            }
-            else
-            {
-                Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
-            }
             Core::Instance()->FocusLost();
+            Core::Instance()->GoBackground(false);
+            Core::Instance()->SetIsActive(false);
         }
     });
 }
