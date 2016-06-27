@@ -29,7 +29,7 @@ WindowOsXObjcBridge::WindowOsXObjcBridge(WindowOsX* w)
 
 WindowOsXObjcBridge::~WindowOsXObjcBridge() = default;
 
-bool WindowOsXObjcBridge::CreateNSWindow(float32 x, float32 y, float32 width, float32 height)
+bool WindowOsXObjcBridge::DoCreateWindow(float32 x, float32 y, float32 width, float32 height)
 {
     NSUInteger style = NSTitledWindowMask |
     NSMiniaturizableWindowMask |
@@ -60,14 +60,21 @@ bool WindowOsXObjcBridge::CreateNSWindow(float32 x, float32 y, float32 width, fl
     return true;
 }
 
-void WindowOsXObjcBridge::DestroyNSWindow()
+void WindowOsXObjcBridge::DoResizeWindow(float32 width, float32 height)
+{
+    [nswindow setContentSize:NSMakeSize(width, height)];
+}
+
+void WindowOsXObjcBridge::DoCloseWindow()
 {
     [nswindow close];
 }
 
-void WindowOsXObjcBridge::ResizeNSWindow(float32 width, float32 height)
+void WindowOsXObjcBridge::TriggerPlatformEvents()
 {
-    [nswindow setContentSize:NSMakeSize(width, height)];
+    dispatch_async(dispatch_get_main_queue(), [this]() {
+        window->ProcessPlatformEvents();
+    });
 }
 
 void WindowOsXObjcBridge::ApplicationDidHideUnhide(bool hidden)

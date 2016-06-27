@@ -22,7 +22,7 @@ namespace Private
 // Bridge between C++ and Objective-C for WindowOsX class
 // Responsibilities:
 //  - holds neccesary Objective-C objects
-//  - creates NSWidow
+//  - creates NSWindow
 //  - processes notifications from OsXWindowDelegate which implements
 //    interface NSWindowDelegate
 //  - posts events to dispatcher
@@ -33,9 +33,11 @@ struct WindowOsXObjcBridge final
     WindowOsXObjcBridge(WindowOsX* w);
     ~WindowOsXObjcBridge();
 
-    bool CreateNSWindow(float32 x, float32 y, float32 width, float32 height);
-    void DestroyNSWindow();
-    void ResizeNSWindow(float32 width, float32 height);
+    bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
+    void DoResizeWindow(float32 width, float32 height);
+    void DoCloseWindow();
+
+    void TriggerPlatformEvents();
 
     void ApplicationDidHideUnhide(bool hidden);
 

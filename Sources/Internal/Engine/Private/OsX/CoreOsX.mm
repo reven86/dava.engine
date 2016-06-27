@@ -48,25 +48,20 @@ void CoreOsX::Quit()
     objcBridge->Quit();
 }
 
+int32 CoreOsX::OnFrame()
+{
+    return engineBackend->OnFrame();
+}
+
 WindowOsX* CoreOsX::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
 {
     WindowOsX* nativeWindow = new WindowOsX(engineBackend, w);
-    if (!nativeWindow->CreateNWindow(width, height))
+    if (!nativeWindow->Create(width, height))
     {
         delete nativeWindow;
         nativeWindow = nullptr;
     }
     return nativeWindow;
-}
-
-void CoreOsX::DestroyNativeWindow(WindowBackend* w)
-{
-    w->GetNativeWindow()->DestroyNWindow();
-}
-
-int32 CoreOsX::OnFrame()
-{
-    return engineBackend->OnFrame();
 }
 
 } // namespace Private
