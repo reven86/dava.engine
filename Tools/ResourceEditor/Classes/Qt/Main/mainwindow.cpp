@@ -3182,7 +3182,7 @@ bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
     DAVA::int32 enabledTools = scene->GetEnabledTools();
     if (enabled && (enabledTools != 0))
     {
-        ShowErrorDialog("Please disable Landscape editing tools before enabling Visibility Check System");
+        DAVA::Logger::Error("Please disable Landscape editing tools before enabling Visibility Check System");
         enabled = false;
     }
 
