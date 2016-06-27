@@ -23,11 +23,12 @@ ConfigDownloader::~ConfigDownloader()
 
 int ConfigDownloader::exec()
 {
+    aborted = false;
     appManager->GetRemoteConfig()->Clear();
-    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=launcher" //version, url, news
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=seo_list" //stirngs
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=branches&filter=os:" + platformString // favorites
-                                     << "http://ba-manager.wargaming.net/panel/modules/json_lite.php?source=builds&filter=os:" + platformString //all builds
+    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher" //version, url, news
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list" //stirngs
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString // favorites
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString //all builds
     ;
     for (const QString& str : urls)
     {
@@ -38,25 +39,26 @@ int ConfigDownloader::exec()
 
 void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 {
+    requests.removeOne(reply);
     reply->deleteLater();
+    if (aborted)
+    {
+        return;
+    }
     QNetworkReply::NetworkError error = reply->error();
 
     if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
     {
+        aborted = true;
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
         reject();
+        return;
     }
     else
     {
         appManager->ParseRemoteConfigData(reply->readAll());
     }
-    if (!requests.contains(reply))
-    {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, tr("internal error while downloading config"));
-        reject();
-        return;
-    }
-    requests.removeOne(reply);
+
     if (requests.isEmpty())
     {
         appManager->GetRemoteConfig()->UpdateApplicationsNames();

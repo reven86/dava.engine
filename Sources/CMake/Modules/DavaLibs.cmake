@@ -96,6 +96,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glut32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glutstatic.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/icucommon.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcef.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcef_dll_wrapper.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcurl.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libdxt.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libeay32.lib"
@@ -135,6 +137,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glut32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glutstatic.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/icucommon.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcef.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcef_dll_wrapper.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32.lib"
@@ -173,6 +177,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/glut32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/icucommon.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/jpeg.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcef.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcef_dll_wrapper.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libcurl_a.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libdxt.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/libeay32_64.lib"
@@ -211,6 +217,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glut32.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/icucommon.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/jpeg_d.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcef.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcef_dll_wrapper.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl_a_debug.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
@@ -263,7 +271,9 @@ if( WIN )
                                       "${DAVA_TOOLS_BIN_DIR}/swresample-2.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/swscale-4.dll" 
                                       "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
-                                      "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll" )
+                                      "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/glew32.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll")
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
 

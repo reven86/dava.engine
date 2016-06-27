@@ -5,6 +5,7 @@
 #include "Commands2/NGTCommand.h"
 
 #include "NgtTools/Common/GlobalContext.h"
+#include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
@@ -24,7 +25,7 @@ REApplication::~REApplication() = default;
 
 void REApplication::Run()
 {
-    IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
     {
         historyPanel->setClearButtonVisible(false);
@@ -63,7 +64,7 @@ void REApplication::OnPostLoadPugins()
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
 
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
 
@@ -82,4 +83,9 @@ void REApplication::OnPreUnloadPlugins()
 bool REApplication::OnRequestCloseApp()
 {
     return mainWindow->CanBeClosed();
+}
+
+void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
+{
+    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
 }

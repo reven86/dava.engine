@@ -2,6 +2,8 @@
 
 #include "Utils/StringFormat.h"
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 UnorderedMap<const Type*, Any::AnyOP> Any::operations = {
@@ -121,3 +123,5 @@ Any::Exception::Exception(ErrorCode code, const char* message)
 }
 
 } // namespace DAVA
+
+#endif

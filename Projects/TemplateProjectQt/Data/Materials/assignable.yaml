@@ -50,6 +50,12 @@
  name: "SphericalLit AllQualities Textured Opaque"
  path: SphericalLitAllQualities.Textured.Opaque.material
 -
+ name: "SphericalLit AllQualities Textured VertexColor Alphatest"
+ path: SphericalLitAllQualities.Textured.VertexColor.Alphatest.material
+-
+ name: "SphericalLit AllQualities Textured VertexColor Opaque"
+ path: SphericalLitAllQualities.Textured.VertexColor.Opaque.material
+-
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
 -
@@ -61,6 +67,12 @@
 -
  name: "Textured Opaque"
  path: Textured.Opaque.material
+-
+ name: "Textured VertexColor Alphatest"
+ path: Textured.VertexColor.Alphatest.material
+-
+ name: "Textured VertexColor Opaque"
+ path: Textured.VertexColor.Opaque.material
 -
  name: "TextureLightmap Alphablend"
  path: TextureLightmap.Alphablend.material
@@ -91,9 +103,6 @@
 -
  name: "VertexLit Opaque"
  path: VertexLit.Opaque.material
--
- name: "Skybox"
- path: Skybox.material
 -
  name: "Skyobject"
  path: Skyobject.material

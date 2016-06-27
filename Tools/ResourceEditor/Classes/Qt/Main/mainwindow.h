@@ -14,16 +14,18 @@
 #include <QDockWidget>
 #include <QPointer>
 
+namespace wgt
+{
+class IComponentContext;
+}
+
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-
-class IComponentContext;
 class PropertyPanel;
-
 class DeviceListController;
 class SpritesPackerModule;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
@@ -38,7 +40,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -283,7 +285,7 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    IComponentContext& ngtContext;
+    wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 

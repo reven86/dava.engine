@@ -75,7 +75,7 @@ public:
     {
         const Type* reqType = Type::Instance<T*>();
 
-        assert(reqType == type || reqType->IsDerivedFrom(type));
+        assert(reqType == type || reqType->Decay() == type || reqType->IsDerivedFrom(type));
         return static_cast<T*>(ptr);
     }
 

@@ -12,20 +12,20 @@
 
 #include "Debug/DVAssert.h"
 
-#include "core_reflection/i_definition_manager.hpp"
+#include <core_reflection/i_definition_manager.hpp>
 
 namespace NGTLayer
 {
-TypeId GetItemKeyTypeId(const DAVA::InspColl* collection)
+wgt::TypeId GetItemKeyTypeId(const DAVA::InspColl* collection)
 {
     const DAVA::MetaInfo* itemType = collection->ItemKeyType();
     if (itemType == nullptr)
-        return getClassIdentifier<int>();
+        return wgt::getClassIdentifier<int>();
     else
         return itemType->GetTypeName();
 }
 
-class NGTCollection::Iterator : public CollectionIteratorImplBase
+class NGTCollection::Iterator : public wgt::CollectionIteratorImplBase
 {
 public:
     static const DAVA::uint32 END_ITERATOR_POSITION = static_cast<DAVA::uint32>(-1);
@@ -59,19 +59,19 @@ public:
         collection->Finish(iterator);
     }
 
-    Variant key() const override
+    wgt::Variant key() const override
     {
         const void* key = collection->ItemKeyData(iterator);
         if (key == nullptr)
         {
-            return Variant(linearKey);
+            return wgt::Variant(linearKey);
         }
 
         DVASSERT(collection->ItemKeyType() != nullptr);
         return VariantConverter::Convert(DAVA::VariantType::LoadData(key, collection->ItemKeyType()));
     }
 
-    Variant value() const override
+    wgt::Variant value() const override
     {
         const DAVA::MetaInfo* valueTypeInfo = collection->ItemType();
         DVASSERT(valueTypeInfo != nullptr);
@@ -82,7 +82,7 @@ public:
 
             if (itemData != nullptr && itemInsp != nullptr)
             {
-                IDefinitionManager* defMng = queryInterface<IDefinitionManager>();
+                wgt::IDefinitionManager* defMng = queryInterface<wgt::IDefinitionManager>();
                 DVASSERT(defMng != nullptr);
                 return CreateObjectHandle(*defMng, itemInsp, itemData);
             }
@@ -94,7 +94,7 @@ public:
         return VariantConverter::Convert(DAVA::VariantType::LoadData(valuePointer, valueTypeInfo));
     }
 
-    bool setValue(const Variant& v) const override
+    bool setValue(const wgt::Variant& v) const override
     {
         void* valuePointer = collection->ItemPointer(iterator);
         DVASSERT(valuePointer != nullptr);
@@ -127,9 +127,9 @@ public:
         linearKey == thatIter.linearKey;
     }
 
-    CollectionIteratorImplPtr clone() const override
+    wgt::CollectionIteratorImplPtr clone() const override
     {
-        return CollectionIteratorImplPtr(new Iterator(object, collection, linearKey));
+        return wgt::CollectionIteratorImplPtr(new Iterator(object, collection, linearKey));
     }
 
     bool isValid() const
@@ -137,12 +137,12 @@ public:
         return iterator != nullptr;
     }
 
-    const TypeId& keyType() const override
+    const wgt::TypeId& keyType() const override
     {
         return keyTypeId;
     }
 
-    const TypeId& valueType() const override
+    const wgt::TypeId& valueType() const override
     {
         return valueTypeId;
     }
@@ -156,8 +156,8 @@ private:
     DAVA::String dbg_name;
 #endif
 
-    TypeId keyTypeId;
-    TypeId valueTypeId;
+    wgt::TypeId keyTypeId;
+    wgt::TypeId valueTypeId;
 };
 
 NGTCollection::NGTCollection(void* object_, const DAVA::InspColl* collectionImpl_)
@@ -169,7 +169,7 @@ NGTCollection::NGTCollection(void* object_, const DAVA::InspColl* collectionImpl
 {
     const DAVA::MetaInfo* itemType = collectionImpl->ItemKeyType();
     if (itemType == nullptr)
-        keyId = getClassIdentifier<int>();
+        keyId = wgt::getClassIdentifier<int>();
     else
         keyId = itemType->GetTypeName();
 }
@@ -184,23 +184,23 @@ size_t NGTCollection::size() const
     return collectionImpl->Size(object);
 }
 
-CollectionIteratorImplPtr NGTCollection::begin()
+wgt::CollectionIteratorImplPtr NGTCollection::begin()
 {
-    return CollectionIteratorImplPtr(new Iterator(object, collectionImpl, 0));
+    return wgt::CollectionIteratorImplPtr(new Iterator(object, collectionImpl, 0));
 }
 
-CollectionIteratorImplPtr NGTCollection::end()
+wgt::CollectionIteratorImplPtr NGTCollection::end()
 {
-    return CollectionIteratorImplPtr(new Iterator(object, collectionImpl, Iterator::END_ITERATOR_POSITION));
+    return wgt::CollectionIteratorImplPtr(new Iterator(object, collectionImpl, Iterator::END_ITERATOR_POSITION));
 }
 
-std::pair<CollectionIteratorImplPtr, bool> NGTCollection::get(const Variant& key, GetPolicy policy)
+std::pair<wgt::CollectionIteratorImplPtr, bool> NGTCollection::get(const wgt::Variant& key, GetPolicy policy)
 {
     DVASSERT_MSG(policy != CollectionImplBase::GET_NEW &&
                  policy != CollectionImplBase::GET_AUTO,
                  "GET_NEW and GET_AUTO policy does't implemented");
 
-    using TRet = std::pair<CollectionIteratorImplPtr, bool>;
+    using TRet = std::pair<wgt::CollectionIteratorImplPtr, bool>;
 
     Iterator iter(object, collectionImpl, 0);
     while (iter.isValid())
@@ -217,35 +217,35 @@ std::pair<CollectionIteratorImplPtr, bool> NGTCollection::get(const Variant& key
     return TRet(nullptr, false);
 }
 
-CollectionIteratorImplPtr NGTCollection::erase(const CollectionIteratorImplPtr& pos)
+wgt::CollectionIteratorImplPtr NGTCollection::erase(const wgt::CollectionIteratorImplPtr& pos)
 {
     DVASSERT_MSG(false, "Not implemented operation erase");
     return nullptr;
 }
 
-const TypeId& NGTCollection::keyType() const
+const wgt::TypeId& NGTCollection::keyType() const
 {
     return keyId;
 }
 
-const TypeId& NGTCollection::valueType() const
+const wgt::TypeId& NGTCollection::valueType() const
 {
     return valueId;
 }
 
-CollectionIteratorImplPtr NGTCollection::erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last)
+wgt::CollectionIteratorImplPtr NGTCollection::erase(const wgt::CollectionIteratorImplPtr& first, const wgt::CollectionIteratorImplPtr& last)
 {
     DVASSERT_MSG(false, "Not implemented operation erase");
     return nullptr;
 }
 
-size_t NGTCollection::erase(const Variant& key)
+size_t NGTCollection::erase(const wgt::Variant& key)
 {
     DVASSERT_MSG(false, "Not implemented operation erase");
     return 0;
 }
 
-const TypeId& NGTCollection::containerType() const
+const wgt::TypeId& NGTCollection::containerType() const
 {
     return containerId;
 }
@@ -262,7 +262,7 @@ int NGTCollection::flags() const
 
 //////////////////////////////////////////////////////////////////////////////
 
-class NGTKeyedArchiveImpl::Iterator : public CollectionIteratorImplBase
+class NGTKeyedArchiveImpl::Iterator : public wgt::CollectionIteratorImplBase
 {
 public:
     static const DAVA::String END_KEY_VALUE;
@@ -270,10 +270,10 @@ public:
         : archive(archive_)
         , itemKey(key_)
     {
-        keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
+        keyTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
         if (itemKey == END_KEY_VALUE)
         {
-            valueTypeId = getClassIdentifier<void>();
+            valueTypeId = wgt::getClassIdentifier<void>();
         }
         else
         {
@@ -281,36 +281,36 @@ public:
         }
     }
 
-    const TypeId& keyType() const override
+    const wgt::TypeId& keyType() const override
     {
         return keyTypeId;
     }
 
-    const TypeId& valueType() const override
+    const wgt::TypeId& valueType() const override
     {
         return valueTypeId;
     }
 
-    Variant key() const override
+    wgt::Variant key() const override
     {
-        return Variant(itemKey);
+        return wgt::Variant(itemKey);
     }
 
-    Variant value() const override
+    wgt::Variant value() const override
     {
         DVASSERT(itemKey != END_KEY_VALUE);
         DVASSERT(archive->IsKeyExists(itemKey));
         DAVA::VariantType* value = archive->GetVariant(itemKey);
         if (value->GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
         {
-            IDefinitionManager* defMng = queryInterface<IDefinitionManager>();
+            wgt::IDefinitionManager* defMng = queryInterface<wgt::IDefinitionManager>();
             DVASSERT(defMng != nullptr);
             return CreateObjectHandle(*defMng, DAVA::GetIntrospection<DAVA::KeyedArchive>(), value->AsKeyedArchive());
         }
         return VariantConverter::Convert(*archive->GetVariant(itemKey));
     }
 
-    bool setValue(const Variant& v) const override
+    bool setValue(const wgt::Variant& v) const override
     {
         DVASSERT(itemKey != END_KEY_VALUE);
         DAVA::VariantType* oldValue = archive->GetVariant(itemKey);
@@ -342,7 +342,7 @@ public:
         itemKey == other.itemKey;
     }
 
-    CollectionIteratorImplPtr clone() const override
+    wgt::CollectionIteratorImplPtr clone() const override
     {
         return std::make_shared<Iterator>(archive, itemKey);
     }
@@ -357,8 +357,8 @@ private:
 
     DAVA::KeyedArchive* archive;
     DAVA::String itemKey;
-    TypeId keyTypeId;
-    TypeId valueTypeId;
+    wgt::TypeId keyTypeId;
+    wgt::TypeId valueTypeId;
 };
 
 const DAVA::String NGTKeyedArchiveImpl::Iterator::END_KEY_VALUE = "END_KEY_VALUE";
@@ -367,9 +367,9 @@ NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive* keyedArchive)
     : archive(keyedArchive)
 {
     DVASSERT(archive != nullptr);
-    containerTypeId = TypeId(DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()->GetTypeName());
-    keyTypeId = TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
-    valueTypeId = getClassIdentifier<DAVA::VariantType>();
+    containerTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()->GetTypeName());
+    keyTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
+    valueTypeId = wgt::getClassIdentifier<DAVA::VariantType>();
 }
 
 bool NGTKeyedArchiveImpl::empty() const
@@ -382,7 +382,7 @@ size_t NGTKeyedArchiveImpl::size() const
     return archive->GetArchieveData().size();
 }
 
-CollectionIteratorImplPtr NGTKeyedArchiveImpl::begin()
+wgt::CollectionIteratorImplPtr NGTKeyedArchiveImpl::begin()
 {
     if (empty())
         return end();
@@ -390,14 +390,14 @@ CollectionIteratorImplPtr NGTKeyedArchiveImpl::begin()
     return std::make_shared<Iterator>(archive, archive->GetArchieveData().begin()->first);
 }
 
-CollectionIteratorImplPtr NGTKeyedArchiveImpl::end()
+wgt::CollectionIteratorImplPtr NGTKeyedArchiveImpl::end()
 {
     return std::make_shared<Iterator>(archive, Iterator::END_KEY_VALUE);
 }
 
-std::pair<CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const Variant& key, GetPolicy policy)
+std::pair<wgt::CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const wgt::Variant& key, GetPolicy policy)
 {
-    CollectionIteratorImplPtr resultIter;
+    wgt::CollectionIteratorImplPtr resultIter;
     bool isSuccess = false;
 
     DAVA::String itemKey;
@@ -424,19 +424,19 @@ std::pair<CollectionIteratorImplPtr, bool> NGTKeyedArchiveImpl::get(const Varian
     return std::make_pair(resultIter, isSuccess);
 }
 
-CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& pos)
+wgt::CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const wgt::CollectionIteratorImplPtr& pos)
 {
     Iterator* iter = dynamic_cast<Iterator*>(pos.get());
     DVASSERT(iter != nullptr);
     DVASSERT(iter->isValid());
 
-    CollectionIteratorImplPtr result = iter->clone();
+    wgt::CollectionIteratorImplPtr result = iter->clone();
     result->inc();
     archive->DeleteKey(iter->itemKey);
     return result;
 }
 
-size_t NGTKeyedArchiveImpl::erase(const Variant& key)
+size_t NGTKeyedArchiveImpl::erase(const wgt::Variant& key)
 {
     DAVA::String keyValue;
     DVVERIFY(key.tryCast(keyValue));
@@ -448,7 +448,7 @@ size_t NGTKeyedArchiveImpl::erase(const Variant& key)
     return 1;
 }
 
-CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last)
+wgt::CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const wgt::CollectionIteratorImplPtr& first, const wgt::CollectionIteratorImplPtr& last)
 {
     Iterator* begIter = dynamic_cast<Iterator*>(first.get());
     DVASSERT(begIter != nullptr);
@@ -458,7 +458,7 @@ CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImp
 
     Iterator eraseIter = *begIter;
 
-    CollectionIteratorImplPtr result = endIter->clone();
+    wgt::CollectionIteratorImplPtr result = endIter->clone();
     if (endIter->isValid())
         result->inc();
 
@@ -472,17 +472,17 @@ CollectionIteratorImplPtr NGTKeyedArchiveImpl::erase(const CollectionIteratorImp
     return result;
 }
 
-const TypeId& NGTKeyedArchiveImpl::keyType() const
+const wgt::TypeId& NGTKeyedArchiveImpl::keyType() const
 {
     return keyTypeId;
 }
 
-const TypeId& NGTKeyedArchiveImpl::valueType() const
+const wgt::TypeId& NGTKeyedArchiveImpl::valueType() const
 {
     return valueTypeId;
 }
 
-const TypeId& NGTKeyedArchiveImpl::containerType() const
+const wgt::TypeId& NGTKeyedArchiveImpl::containerType() const
 {
     return containerTypeId;
 }

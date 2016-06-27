@@ -909,7 +909,6 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         filteringProxyModel->invalidate();
 
         SyncSelectionToTree();
-        EmitParticleSignals();
 
         if (treeModel->IsFilterSet())
         {
@@ -955,7 +954,6 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
         return;
 
     SyncSelectionFromTree();
-    EmitParticleSignals();
 }
 
 void SceneTree::TreeItemClicked(const QModelIndex& index)
@@ -1174,6 +1172,8 @@ void SceneTree::SyncSelectionToTree()
     if (toSelect.empty())
         return;
 
+    QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
         DAVA::Vector<QModelIndex>& indexes = selectionNode.second;
@@ -1197,17 +1197,21 @@ void SceneTree::SyncSelectionToTree()
             else
             {
                 QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                selectModel->select(selection, selectionMode);
                 startIndex = i;
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
         QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        selectModel->select(selection, selectionMode);
     }
 
-    scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    if (lastValidIndex.isValid())
+    {
+        selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);
+        scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    }
 }
 
 void SceneTree::SyncSelectionFromTree()
@@ -1233,38 +1237,6 @@ void SceneTree::SyncSelectionFromTree()
         // this should be done until we are inSync mode, to prevent unnecessary updates
         // when signals from selection system will be emitted on next frame
         curScene->selectionSystem->ForceEmitSignals();
-    }
-}
-
-void SceneTree::EmitParticleSignals()
-{
-    QModelIndexList indexList = selectionModel()->selection().indexes();
-    if (indexList.size() != 1)
-        return;
-
-    SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
-    if (item != nullptr)
-    {
-        if (item->ItemType() == SceneTreeItem::eItemType::EIT_Layer)
-        {
-            // hack for widgets: select emitter instance first and then select layer
-            // emitter instance will be in "deselected" -> can handle in widgets
-            SelectableGroup selection;
-            selection.Add(static_cast<SceneTreeItemParticleLayer*>(item)->emitterInstance);
-            treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        }
-        else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Force)
-        {
-            // same hack here, but selecting layer
-            SelectableGroup selection;
-            selection.Add(static_cast<SceneTreeItemParticleForce*>(item)->layer);
-            treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        }
-
-        SelectableGroup selection;
-        selection.Add(item->GetItemObject());
-        treeModel->GetScene()->selectionSystem->SetSelection(selection);
-        treeModel->GetScene()->selectionSystem->ForceEmitSignals();
     }
 }
 

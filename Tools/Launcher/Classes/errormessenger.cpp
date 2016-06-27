@@ -84,8 +84,5 @@ void LogMessage(QtMsgType type, const QString& msg)
         logFile.flush();
         logFile.close();
     }
-
-    if (type == QtFatalMsg)
-        abort();
 }
 }
