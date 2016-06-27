@@ -97,6 +97,12 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
             Logger::FrameworkDebug(procOutput.c_str());
         }
 
+        if (process.GetExitCode() != 0)
+        {
+            Logger::Error("PvrTexTool exited with code %d", process.GetExitCode());
+            return FilePath();
+        }
+
         outputName = GetConvertedTexturePath(descriptor, gpuFamily);
     }
     else
@@ -160,7 +166,6 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     tempFileDescriptor.SetGenerateMipmaps(false);
     tempFileDescriptor.dataSettings.sourceFileFormat = targetFormat;
     tempFileDescriptor.dataSettings.sourceFileExtension = ImageSystem::GetDefaultExtension(targetFormat);
-    tempFileDescriptor.pathname = sourcePath;
     tempFileDescriptor.pathname.ReplaceBasename(sourcePath.GetBasename() + "_temp");
 
     tempFileDescriptor.compression[eGPUFamily::GPU_ORIGIN].format = PixelFormat::FORMAT_RGBA8888;
@@ -175,7 +180,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
 
     for (Image* srcImage : srcImages)
     {
-        if (ImageSystem::Save(tempFileDescriptor.pathname, srcImage) != eErrorCode::SUCCESS)
+        if (ImageSystem::Save(tempFileDescriptor.GetSourceTexturePathname(), srcImage) != eErrorCode::SUCCESS)
         {
             return FilePath();
         }

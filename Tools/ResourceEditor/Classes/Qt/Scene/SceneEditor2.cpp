@@ -279,7 +279,7 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
         bool sceneExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
         bool objectExported = exporter.ExportObjects(exportedObjects);
 
-        return (sceneExported == true && objectExported == true);
+        return (sceneExported && objectExported);
     }
     return false;
 }
