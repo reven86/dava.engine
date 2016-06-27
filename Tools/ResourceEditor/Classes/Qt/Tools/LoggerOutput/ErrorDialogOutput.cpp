@@ -122,17 +122,14 @@ void ErrorDialogOutput::ShowErrorDialog()
         else
         {
             title = DAVA::Format("%u errors occured", totalErrors);
-            DAVA::uint32 errorCounter = 0;
             for (const auto& message : errors)
             {
                 errorMessage += message + ErrorDialogInternal::errorDivideLine;
-                errorCounter++;
+            }
 
-                if (errorCounter == ErrorDialogInternal::maxErrorsPerDialog)
-                {
-                    errorMessage += "\nSee console log for details.";
-                    break;
-                }
+            if (totalErrors == ErrorDialogInternal::maxErrorsPerDialog)
+            {
+                errorMessage += "\nSee console log for details.";
             }
         }
 

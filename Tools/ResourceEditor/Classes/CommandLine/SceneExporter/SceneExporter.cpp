@@ -366,10 +366,6 @@ void SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
             imagePathnames.push_back(descriptor->GetSourceTexturePathname());
         }
 
-        for (FilePath& path : imagePathnames)
-        {
-        }
-
         FilePath compressedTexturePathname = CompressTexture(*descriptor);
         if (compressedTexturePathname.IsEmpty() == false)
         {

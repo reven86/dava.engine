@@ -262,7 +262,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
     return SaveScene(curScenePath);
 }
 
-bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
+void SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
@@ -284,12 +284,9 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;
-        bool wasExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
         exporter.ExportObjects(exportedObjects);
-
-        return wasExported;
     }
-    return false;
 }
 
 const DAVA::FilePath& SceneEditor2::GetScenePath()
