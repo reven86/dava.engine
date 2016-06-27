@@ -96,7 +96,6 @@ void CacheDB::Load()
         return;
     }
 
-    occupiedSize = header->GetUInt64("usedSize");
     auto cacheSize = header->GetUInt64("itemsCount");
     fullCache.reserve(static_cast<size_t>(cacheSize));
 
@@ -107,6 +106,7 @@ void CacheDB::Load()
         return;
     }
 
+    occupiedSize = 0;
     for (uint64 index = 0; index < cacheSize; ++index)
     {
         KeyedArchive* itemArchieve = cache->GetArchive(Format("item_%d", index));
@@ -119,6 +119,7 @@ void CacheDB::Load()
         entry.Deserialize(itemArchieve);
 
         fullCache[key] = std::move(entry);
+        occupiedSize += entry.GetValue().GetSize();
     }
 
     dbStateChanged = false;
@@ -135,6 +136,7 @@ void CacheDB::Unload()
 
     fastCache.clear();
     fullCache.clear();
+    occupiedSize = 0;
 }
 
 void CacheDB::Save()
@@ -151,7 +153,6 @@ void CacheDB::Save()
     ScopedPtr<KeyedArchive> header(new KeyedArchive());
     header->SetString("signature", "cache");
     header->SetUInt32("version", VERSION);
-    header->SetUInt64("usedSize", occupiedSize);
     header->SetUInt64("itemsCount", fullCache.size());
     header->Save(file);
 
@@ -182,6 +183,15 @@ void CacheDB::ReduceFullCacheToSize(uint64 toSize)
         if (found != fullCache.end())
         {
             Remove(found);
+        }
+        else
+        {
+            if (occupiedSize > 0)
+            {
+                Logger::Warning("Occupied size is %u, should be 0", occupiedSize);
+                occupiedSize = 0;
+                break;
+            }
         }
     }
 }
@@ -368,7 +378,10 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator& it)
 
     FilePath dataPath = CreateFolderPath(it->first);
     FileSystem::Instance()->DeleteDirectory(dataPath);
-    DecreaseOccupiedSize(it->second.GetValue().GetSize());
+
+    uint64 itemSize = it->second.GetValue().GetSize();
+    DVASSERT(itemSize <= occupiedSize);
+    occupiedSize -= itemSize;
     fullCache.erase(it);
 }
 
@@ -379,13 +392,6 @@ void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator& it)
     DVASSERT(it->second->GetValue().IsFetched() == true);
     it->second->Free();
     fastCache.erase(it);
-}
-
-void CacheDB::DecreaseOccupiedSize(DAVA::uint64 size)
-{
-    DVASSERT(size <= occupiedSize);
-
-    occupiedSize -= size;
 }
 
 FilePath CacheDB::CreateFolderPath(const CacheItemKey& key) const

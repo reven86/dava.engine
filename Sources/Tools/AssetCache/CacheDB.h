@@ -57,8 +57,6 @@ private:
     ServerCacheEntry* FindInFullCache(const CacheItemKey& key);
     const ServerCacheEntry* FindInFullCache(const CacheItemKey& key) const;
 
-    void DecreaseOccupiedSize(DAVA::uint64 size);
-
     void InsertInFastCache(const CacheItemKey& key, ServerCacheEntry* entry);
 
     void UpdateAccessTimestamp(ServerCacheEntry* entry);
