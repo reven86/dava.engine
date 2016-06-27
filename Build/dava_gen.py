@@ -217,7 +217,7 @@ def main():
         call_string.append("-DUNITY_BUILD=true")
     print call_string
 
-    subprocess.call(call_string, shell=True)
+    subprocess.check_output(call_string, shell=True)
     
     if "android" == destination_platform:
         subprocess.check_output(call_string)    
