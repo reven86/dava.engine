@@ -10,6 +10,14 @@
 #include "filesystemhelper.h"
 #include "help.h"
 
+void FrameworkDidLaunched()
+{
+}
+
+void FrameworkWillTerminate()
+{
+}
+
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);

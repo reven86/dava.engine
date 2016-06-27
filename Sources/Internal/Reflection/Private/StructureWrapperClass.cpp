@@ -6,10 +6,39 @@ namespace DAVA
 {
 Ref::Field StructureWrapperClass::GetField(const ReflectedObject& object, const Any& key) const
 {
-    // TODO:
-    // ...
+    Ref::Field result;
+    if (key.CanGet<String>())
+    {
+        const String& stringKey = key.Get<String>();
+        Vector<ClassField>::const_iterator fieldIter = std::find_if(fields.begin(), fields.end(), [&stringKey](const ClassField& classField)
+                                                                    {
+                                                                        return classField.name == stringKey;
+                                                                    });
 
-    return Ref::Field();
+        if (fieldIter != fields.end())
+        {
+            result.key = fieldIter->name;
+            result.valueRef = Reflection(object, fieldIter->vw.get(), fieldIter->db);
+        }
+        else
+        {
+            for (const BaseClass& base : bases)
+            {
+                const StructureWrapper* baseChildren = base.db->structureWrapper.get();
+                if (nullptr != baseChildren)
+                {
+                    result = baseChildren->GetField(base.castOP(object), key);
+                    /// how to check: is result valid and not empty???
+                    if (!result.key.IsEmpty())
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 Ref::FieldsList StructureWrapperClass::GetFields(const ReflectedObject& object) const
@@ -29,6 +58,7 @@ Ref::FieldsList StructureWrapperClass::GetFields(const ReflectedObject& object) 
         }
     }
 
+    ret.reserve(ret.size() + fields.size());
     for (auto& field : fields)
     {
         Ref::Field child;

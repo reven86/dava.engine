@@ -58,7 +58,7 @@ ReflectionDB* ReflectionDB::EditGlobalDB()
     const Type* type = Type::Instance<DecayT>();
     if (nullptr == type->reflectionDb)
     {
-        db->structureWrapper = std::make_unique<StructureWrapperDefault<DecayT>>();
+        db->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
         // TODO:
         // more default wrappers set here
         // ...

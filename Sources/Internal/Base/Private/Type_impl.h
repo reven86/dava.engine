@@ -48,13 +48,13 @@ public:
 };
 
 template <typename T>
-const Type* GetDerefType(std::false_type)
+const Type* GetTypeIfTrue(std::false_type)
 {
     return nullptr;
 }
 
 template <typename T>
-const Type* GetDerefType(std::true_type)
+const Type* GetTypeIfTrue(std::true_type)
 {
     return Type::Instance<T>();
 }
@@ -69,12 +69,15 @@ void Type::Init()
     using T0 = typename std::remove_cv<T>::type;
     using T1 = typename std::remove_reference<T0>::type;
     using DerefT = typename std::remove_pointer<T1>::type;
+    using DecayT = std::conditional<std::is_pointer<T>::value, std::add_pointer<std::decay<std::remove_pointer<T>::type>::type>::type, std::decay<T>::type>;
 #else
     // standard c++14 way
     using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
+    using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
 #endif
 
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
+    static const bool needDecay = (!std::is_same<T, DecayT>::value);
 
     name = typeid(T).name();
     size = sizeof(T);
@@ -83,8 +86,11 @@ void Type::Init()
     isPointer = std::is_pointer<T>::value;
     isReference = std::is_reference<T>::value;
 
-    auto cond = std::integral_constant<bool, needDeref>();
-    derefType = TypeDetails::GetDerefType<DerefT>(cond);
+    auto condDeref = std::integral_constant<bool, needDeref>();
+    derefType = TypeDetails::GetTypeIfTrue<DerefT>(condDeref);
+
+    auto condDecay = std::integral_constant<bool, needDecay>();
+    decayType = TypeDetails::GetTypeIfTrue<DecayT>(condDecay);
 
     // try to run TypeInitializer if T has this function
     TypeDetails::TypeInitializerRunner<T>::Run();

@@ -7,21 +7,37 @@ namespace DAVA
 {
 void PackManagerImpl::Initialize(const FilePath& dbFile_,
                                  const FilePath& localPacksDir_,
+                                 const FilePath& readOnlyPacksDir_,
                                  const String& remotePacksURL_,
-                                 const String& packUrlGpu,
-                                 Signal<const PackManager::Pack&, PackManager::Pack::Change>& signal)
+                                 const String& packsUrlGpu_,
+                                 Signal<const PackManager::Pack&>& signal,
+                                 Signal<const PackManager::Pack&>& signalDownload,
+                                 Signal<const PackManager::IRequest&>& signal2)
 {
     dbFile = dbFile_;
     localPacksDir = localPacksDir_;
+    readOnlyPacksDir = readOnlyPacksDir_;
     packsUrlCommon = remotePacksURL_;
+    if (packsUrlCommon.empty() || packsUrlCommon.back() != '/')
+    {
+        throw std::runtime_error("incorrect common url");
+    }
+    packsUrlGpu = packsUrlGpu_;
+    if (packsUrlGpu.empty() || packsUrlGpu.back() != '/')
+    {
+        throw std::runtime_error("incorrect gpu url");
+    }
     requestManager.reset(new RequestManager(*this));
 
     onPackChange = &signal;
+    onRequestChange = &signal2;
+    packDownload = &signalDownload;
 
     // open DB and load packs state then mount all archives to FileSystem
     db.reset(new PacksDB(dbFile));
     db->InitializePacks(packs);
-    MountDownloadedPacks();
+    MountDownloadedPacks(readOnlyPacksDir);
+    MountDownloadedPacks(localPacksDir);
 }
 
 const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, float32 priority)
@@ -44,18 +60,25 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName, fl
     return pack;
 }
 
-void PackManagerImpl::MountDownloadedPacks()
+void PackManagerImpl::MountDownloadedPacks(const FilePath& packsDir)
 {
+    if (packsDir.IsEmpty())
+    {
+        return;
+    }
     FileSystem* fs = FileSystem::Instance();
 
     // build packIndex
-    for (uint32 packIndex = 0; packIndex < packs.size(); ++packIndex)
+    if (packsIndex.empty())
     {
-        PackManager::Pack& pack = packs[packIndex];
-        packsIndex[pack.name] = packIndex;
+        for (uint32 packIndex = 0; packIndex < packs.size(); ++packIndex)
+        {
+            PackManager::Pack& pack = packs[packIndex];
+            packsIndex[pack.name] = packIndex;
+        }
     }
 
-    ScopedPtr<FileList> fileList(new FileList(localPacksDir, false));
+    ScopedPtr<FileList> fileList(new FileList(packsDir, false));
 
     uint32 numFilesAndDirs = fileList->GetCount();
 

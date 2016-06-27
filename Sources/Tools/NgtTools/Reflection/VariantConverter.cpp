@@ -12,9 +12,9 @@
 
 #include "Debug/DVAssert.h"
 
-#include "wg_types/vector2.hpp"
-#include "wg_types/vector3.hpp"
-#include "wg_types/vector4.hpp"
+#include <wg_types/vector2.hpp>
+#include <wg_types/vector3.hpp>
+#include <wg_types/vector4.hpp>
 
 namespace NGTLayer
 {
@@ -23,7 +23,7 @@ namespace VCLocal
 static const DAVA::uint8 maxChannelValue = 255;
 
 template <typename T>
-DAVA::VariantType VtoDV(Variant const& v)
+DAVA::VariantType VtoDV(wgt::Variant const& v)
 {
     T value = T();
     DVVERIFY(v.tryCast(value));
@@ -32,13 +32,13 @@ DAVA::VariantType VtoDV(Variant const& v)
 }
 
 template <>
-DAVA::VariantType VtoDV<void>(Variant const& /*v*/)
+DAVA::VariantType VtoDV<void>(wgt::Variant const& /*v*/)
 {
     return DAVA::VariantType();
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::FastName>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::FastName>(wgt::Variant const& v)
 {
     DAVA::String strValue;
     DVVERIFY(v.tryCast(strValue));
@@ -46,123 +46,123 @@ DAVA::VariantType VtoDV<DAVA::FastName>(Variant const& v)
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::Vector2>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::Vector2>(wgt::Variant const& v)
 {
-    ::Vector2 value;
+    wgt::Vector2 value;
     DVVERIFY(v.tryCast(value));
     return DAVA::VariantType(DAVA::Vector2(value.x, value.y));
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::Vector3>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::Vector3>(wgt::Variant const& v)
 {
-    ::Vector3 value;
+    wgt::Vector3 value;
     DVVERIFY(v.tryCast(value));
     return DAVA::VariantType(DAVA::Vector3(value.x, value.y, value.z));
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::Vector4>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::Vector4>(wgt::Variant const& v)
 {
-    ::Vector4 value;
+    wgt::Vector4 value;
     DVVERIFY(v.tryCast(value));
     return DAVA::VariantType(DAVA::Vector4(value.x, value.y, value.z, value.w));
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::Color>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::Color>(wgt::Variant const& v)
 {
-    ::Vector4 value;
+    wgt::Vector4 value;
     DVVERIFY(v.tryCast(value));
     return DAVA::VariantType(DAVA::Color(value.x / VCLocal::maxChannelValue, value.y / VCLocal::maxChannelValue,
                                          value.z / VCLocal::maxChannelValue, value.w / VCLocal::maxChannelValue));
 }
 
 template <>
-DAVA::VariantType VtoDV<DAVA::FilePath>(Variant const& v)
+DAVA::VariantType VtoDV<DAVA::FilePath>(wgt::Variant const& v)
 {
     DAVA::String filePath;
     DVVERIFY(v.tryCast(filePath));
     return DAVA::VariantType(DAVA::FilePath(filePath));
 }
 
-Variant DVtoV_void(DAVA::VariantType const& v)
+wgt::Variant DVtoV_void(DAVA::VariantType const& v)
 {
-    return Variant();
+    return wgt::Variant();
 }
-Variant DVtoV_bool(DAVA::VariantType const& v)
+wgt::Variant DVtoV_bool(DAVA::VariantType const& v)
 {
-    return Variant(v.AsBool());
+    return wgt::Variant(v.AsBool());
 }
-Variant DVtoV_int8(DAVA::VariantType const& v)
+wgt::Variant DVtoV_int8(DAVA::VariantType const& v)
 {
-    return Variant(v.AsInt8());
+    return wgt::Variant(v.AsInt8());
 }
-Variant DVtoV_uint8(DAVA::VariantType const& v)
+wgt::Variant DVtoV_uint8(DAVA::VariantType const& v)
 {
-    return Variant(v.AsUInt8());
+    return wgt::Variant(v.AsUInt8());
 }
-Variant DVtoV_int16(DAVA::VariantType const& v)
+wgt::Variant DVtoV_int16(DAVA::VariantType const& v)
 {
-    return Variant(v.AsInt16());
+    return wgt::Variant(v.AsInt16());
 }
-Variant DVtoV_uint16(DAVA::VariantType const& v)
+wgt::Variant DVtoV_uint16(DAVA::VariantType const& v)
 {
-    return Variant(v.AsUInt16());
+    return wgt::Variant(v.AsUInt16());
 }
-Variant DVtoV_int32(DAVA::VariantType const& v)
+wgt::Variant DVtoV_int32(DAVA::VariantType const& v)
 {
-    return Variant(v.AsInt32());
+    return wgt::Variant(v.AsInt32());
 }
-Variant DVtoV_uint32(DAVA::VariantType const& v)
+wgt::Variant DVtoV_uint32(DAVA::VariantType const& v)
 {
-    return Variant(v.AsUInt32());
+    return wgt::Variant(v.AsUInt32());
 }
-Variant DVtoV_float(DAVA::VariantType const& v)
+wgt::Variant DVtoV_float(DAVA::VariantType const& v)
 {
-    return Variant(v.AsFloat());
+    return wgt::Variant(v.AsFloat());
 }
-Variant DVtoV_string(DAVA::VariantType const& v)
+wgt::Variant DVtoV_string(DAVA::VariantType const& v)
 {
-    return Variant(v.AsString());
+    return wgt::Variant(v.AsString());
 }
-Variant DVtoV_wideString(DAVA::VariantType const& v)
+wgt::Variant DVtoV_wideString(DAVA::VariantType const& v)
 {
-    return Variant(v.AsWideString());
+    return wgt::Variant(v.AsWideString());
 }
-Variant DVtoV_int64(DAVA::VariantType const& v)
+wgt::Variant DVtoV_int64(DAVA::VariantType const& v)
 {
-    return Variant(v.AsInt64());
+    return wgt::Variant(v.AsInt64());
 }
-Variant DVtoV_uint64(DAVA::VariantType const& v)
+wgt::Variant DVtoV_uint64(DAVA::VariantType const& v)
 {
-    return Variant(v.AsUInt64());
+    return wgt::Variant(v.AsUInt64());
 }
-Variant DVtoV_vector2(DAVA::VariantType const& v)
+wgt::Variant DVtoV_vector2(DAVA::VariantType const& v)
 {
     DAVA::Vector2 davaVec = v.AsVector2();
-    return Variant(::Vector2(davaVec.x, davaVec.y));
+    return wgt::Variant(wgt::Vector2(davaVec.x, davaVec.y));
 }
-Variant DVtoV_vector3(DAVA::VariantType const& v)
+wgt::Variant DVtoV_vector3(DAVA::VariantType const& v)
 {
     DAVA::Vector3 davaVec = v.AsVector3();
-    return Variant(::Vector3(davaVec.x, davaVec.y, davaVec.z));
+    return wgt::Variant(wgt::Vector3(davaVec.x, davaVec.y, davaVec.z));
 }
-Variant DVtoV_vector4(DAVA::VariantType const& v)
+wgt::Variant DVtoV_vector4(DAVA::VariantType const& v)
 {
     DAVA::Vector4 davaVec = v.AsVector4();
-    return Variant(::Vector4(davaVec.x, davaVec.y, davaVec.z, davaVec.w));
+    return wgt::Variant(wgt::Vector4(davaVec.x, davaVec.y, davaVec.z, davaVec.w));
 }
-Variant DVtoV_matrix2(DAVA::VariantType const& v)
+wgt::Variant DVtoV_matrix2(DAVA::VariantType const& v)
 {
     const DAVA::Matrix2& m = v.AsMatrix2();
     DAVA::StringStream ss;
     ss.precision(7);
     ss << "[ " << m._00 << "; " << m._01 << " ]\n[ "
        << m._10 << "; " << m._11 << " ]";
-    return Variant(ss.str());
+    return wgt::Variant(ss.str());
 }
-Variant DVtoV_matrix3(DAVA::VariantType const& v)
+wgt::Variant DVtoV_matrix3(DAVA::VariantType const& v)
 {
     const DAVA::Matrix4& m = v.AsMatrix4();
     DAVA::StringStream ss;
@@ -170,9 +170,9 @@ Variant DVtoV_matrix3(DAVA::VariantType const& v)
     ss << "[ " << m._00 << "; " << m._01 << "; " << m._02 << " ]\n[ "
        << m._10 << "; " << m._11 << "; " << m._12 << " ]\n[ "
        << m._20 << "; " << m._21 << "; " << m._22 << " ]";
-    return Variant(ss.str());
+    return wgt::Variant(ss.str());
 }
-Variant DVtoV_matrix4(DAVA::VariantType const& v)
+wgt::Variant DVtoV_matrix4(DAVA::VariantType const& v)
 {
     const DAVA::Matrix4& m = v.AsMatrix4();
     DAVA::StringStream ss;
@@ -181,43 +181,43 @@ Variant DVtoV_matrix4(DAVA::VariantType const& v)
        << m._10 << "; " << m._11 << "; " << m._12 << ";" << m._13 << " ]\n[ "
        << m._20 << "; " << m._21 << "; " << m._22 << ";" << m._23 << " ]\n[ "
        << m._30 << "; " << m._31 << "; " << m._32 << ";" << m._33 << " ]";
-    return Variant(ss.str());
+    return wgt::Variant(ss.str());
 }
-Variant DVtoV_color(DAVA::VariantType const& v)
+wgt::Variant DVtoV_color(DAVA::VariantType const& v)
 {
     DAVA::Color davaVec = v.AsColor();
-    return Variant(::Vector4(davaVec.r * VCLocal::maxChannelValue, davaVec.g * VCLocal::maxChannelValue,
-                             davaVec.b * VCLocal::maxChannelValue, davaVec.a * VCLocal::maxChannelValue));
+    return wgt::Variant(wgt::Vector4(davaVec.r * VCLocal::maxChannelValue, davaVec.g * VCLocal::maxChannelValue,
+                                     davaVec.b * VCLocal::maxChannelValue, davaVec.a * VCLocal::maxChannelValue));
 }
-Variant DVtoV_fastName(DAVA::VariantType const& v)
+wgt::Variant DVtoV_fastName(DAVA::VariantType const& v)
 {
-    return Variant(v.AsFastName().c_str());
+    return wgt::Variant(v.AsFastName().c_str());
 }
-Variant DVtoV_aabbox3(DAVA::VariantType const& v)
+wgt::Variant DVtoV_aabbox3(DAVA::VariantType const& v)
 {
     const DAVA::AABBox3& m = v.AsAABBox3();
     DAVA::StringStream ss;
     ss.precision(7);
     ss << "[ " << m.min.x << "; " << m.min.y << "; " << m.min.z << " ]\n[ "
        << m.max.x << "; " << m.max.y << "; " << m.max.z << " ]";
-    return Variant(ss.str());
+    return wgt::Variant(ss.str());
 }
 
-Variant DVtoV_filePath(DAVA::VariantType const& v)
+wgt::Variant DVtoV_filePath(DAVA::VariantType const& v)
 {
-    return Variant(v.AsFilePath().GetAbsolutePathname());
+    return wgt::Variant(v.AsFilePath().GetAbsolutePathname());
 }
 
-Variant DVtoV_float64(DAVA::VariantType const& v)
+wgt::Variant DVtoV_float64(DAVA::VariantType const& v)
 {
-    return Variant(v.AsFloat64());
+    return wgt::Variant(v.AsFloat64());
 }
 
 class Converter
 {
 public:
-    using TVtoDV = DAVA::Function<DAVA::VariantType(Variant const&)>;
-    using TDVtoV = DAVA::Function<Variant(DAVA::VariantType const&)>;
+    using TVtoDV = DAVA::Function<DAVA::VariantType(wgt::Variant const&)>;
+    using TDVtoV = DAVA::Function<wgt::Variant(DAVA::VariantType const&)>;
     struct ConvertNode
     {
         TVtoDV vToDvFn;
@@ -226,8 +226,8 @@ public:
 
     Converter();
 
-    DAVA::VariantType Convert(Variant const& v, DAVA::MetaInfo const* info);
-    Variant Convert(DAVA::VariantType const& value);
+    DAVA::VariantType Convert(wgt::Variant const& v, DAVA::MetaInfo const* info);
+    wgt::Variant Convert(DAVA::VariantType const& value);
 
 private:
     DAVA::Array<ConvertNode, DAVA::VariantType::TYPES_COUNT> convertFunctions;
@@ -279,7 +279,7 @@ Converter::Converter()
 #endif
 }
 
-inline DAVA::VariantType Converter::Convert(Variant const& v, DAVA::MetaInfo const* info)
+inline DAVA::VariantType Converter::Convert(wgt::Variant const& v, DAVA::MetaInfo const* info)
 {
     DAVA::VariantType::eVariantType davaType = DAVA::VariantType::TYPE_NONE;
     for (DAVA::VariantType::PairTypeName const& type : DAVA::VariantType::variantNamesMap)
@@ -296,7 +296,7 @@ inline DAVA::VariantType Converter::Convert(Variant const& v, DAVA::MetaInfo con
     return convertFunctions[davaType].vToDvFn(v);
 }
 
-inline Variant Converter::Convert(DAVA::VariantType const& value)
+inline wgt::Variant Converter::Convert(DAVA::VariantType const& value)
 {
     using namespace VCLocal;
 
@@ -312,12 +312,12 @@ Converter g_converter;
 
 namespace VariantConverter
 {
-DAVA::VariantType Convert(Variant const& v, DAVA::MetaInfo const* info)
+DAVA::VariantType Convert(wgt::Variant const& v, DAVA::MetaInfo const* info)
 {
     return VCLocal::g_converter.Convert(v, info);
 }
 
-Variant Convert(const DAVA::VariantType& value)
+wgt::Variant Convert(const DAVA::VariantType& value)
 {
     return VCLocal::g_converter.Convert(value);
 }

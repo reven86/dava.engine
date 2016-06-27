@@ -243,7 +243,8 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+            core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);

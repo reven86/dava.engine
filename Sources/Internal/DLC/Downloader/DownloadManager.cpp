@@ -53,16 +53,6 @@ Downloader* DownloadManager::GetDownloader()
     return downloader;
 }
 
-void DownloadManager::SetNotificationCallback(DownloadManager::NotifyFunctor callbackFn)
-{
-    callNotify = callbackFn;
-}
-
-DownloadManager::NotifyFunctor DownloadManager::GetNotificationCallback() const
-{
-    return callNotify;
-}
-
 void DownloadManager::StartProcessingThread()
 {
     // thread should be stopped
@@ -121,20 +111,77 @@ void DownloadManager::Update()
         {
             CallbackData cbData = (*it);
             it = callbackMessagesQueue.erase(it);
-            if (callNotify != nullptr)
-            {
-                callNotify(cbData.id, cbData.status);
-            }
+            downloadTaskStateChanged.Emit(cbData.id, cbData.status);
         }
     }
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode, const int16 partsCount, int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String& srcUrl,
+                                 const FilePath& storeToFilePath,
+                                 const DownloadType downloadMode,
+                                 const int16 partsCount,
+                                 int32 timeout,
+                                 int32 retriesCount,
+                                 uint64 downloadOffset,
+                                 uint64 downloadSize)
 {
     int16 usePartsCount = (-1 == partsCount) ? (preferredDownloadThreadsCount) : partsCount;
     DVASSERT(usePartsCount > 0);
-    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, static_cast<uint8>(usePartsCount));
+    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl,
+                                                                storeToFilePath,
+                                                                downloadMode,
+                                                                timeout,
+                                                                retriesCount,
+                                                                static_cast<uint8>(usePartsCount),
+                                                                downloadOffset,
+                                                                downloadSize);
+
+    static uint32 prevId = 1;
+    task->id = prevId++;
+
+    PlaceToQueue(pendingTaskQueue, task);
+
+    task->status = DL_PENDING;
+
+    return task->id;
+}
+
+uint32 DownloadManager::DownloadRange(const String& srcUrl,
+                                      const FilePath& storeToFilePath,
+                                      uint64 downloadOffset,
+                                      uint64 downloadSize,
+                                      DownloadType downloadMode,
+                                      int16 partsCount,
+                                      int32 timeout,
+                                      int32 retriesCount)
+{
+    return Download(srcUrl, storeToFilePath, FULL, -1, 30, 3, downloadOffset, downloadSize);
+}
+
+uint32 DownloadManager::DownloadIntoBuffer(const String& srcUrl,
+                                           void* buffer,
+                                           uint32 bufSize,
+                                           uint64 downloadOffset,
+                                           uint64 downloadSize,
+                                           int16 partsCount,
+                                           int32 timeout,
+                                           int32 retriesCount)
+{
+    DVASSERT(bufSize > 0 && buffer != nullptr);
+    DVASSERT(downloadSize <= bufSize);
+
+    int16 usePartsCount = (-1 == partsCount) ? (preferredDownloadThreadsCount) : partsCount;
+    DVASSERT(usePartsCount > 0);
+    DownloadTaskDescription* task = new DownloadTaskDescription(srcUrl,
+                                                                buffer,
+                                                                bufSize,
+                                                                FULL,
+                                                                timeout,
+                                                                retriesCount,
+                                                                static_cast<uint8>(usePartsCount),
+                                                                downloadOffset,
+                                                                downloadSize);
 
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -431,6 +478,18 @@ bool DownloadManager::GetFileErrno(const uint32& taskId, int32& fileErrno)
     return true;
 }
 
+bool DownloadManager::GetBuffer(uint32 taskId, void*& buffer, uint32& nread)
+{
+    DownloadTaskDescription* task = GetTaskForId(taskId);
+    if (task != nullptr)
+    {
+        buffer = task->memoryBuffer;
+        nread = task->memoryBufferContentSize;
+        return true;
+    }
+    return false;
+}
+
 DownloadStatistics DownloadManager::GetStatistics()
 {
     return downloader->GetStatistics();
@@ -541,8 +600,16 @@ void DownloadManager::Interrupt()
 
 DownloadError DownloadManager::Download()
 {
-    FilePath path(currentTask->storePath);
-    FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
+    DownloadType typeForRetry = FULL;
+    DownloadError (DownloadManager::*downloadFunc)() = &DownloadManager::TryDownloadIntoBuffer;
+    if (currentTask->memoryBuffer == nullptr)
+    {
+        FilePath path(currentTask->storePath);
+        FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
+
+        typeForRetry = RESUMED;
+        downloadFunc = &DownloadManager::TryDownload;
+    }
 
     ResetRetriesCount();
     DownloadError error = DLE_NO_ERROR;
@@ -551,14 +618,16 @@ DownloadError DownloadManager::Download()
 
     do
     {
-        error = TryDownload();
+        error = (this->*downloadFunc)();
 
         if (DLE_CONTENT_NOT_FOUND == error
             || DLE_CANCELLED == error
-            || DLE_FILE_ERROR == error)
+            || DLE_FILE_ERROR == error
+            || DLE_NO_RANGE_REQUEST == error
+            || DLE_INVALID_RANGE == error)
             break;
 
-        currentTask->type = RESUMED;
+        currentTask->type = typeForRetry;
 
     } while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
 
@@ -610,7 +679,12 @@ DownloadError DownloadManager::TryDownload()
         return currentTask->error;
     }
 
-    currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+    currentTask->error = downloader->Download(currentTask->url,
+                                              currentTask->downloadOffset,
+                                              currentTask->downloadSize,
+                                              currentTask->storePath,
+                                              currentTask->partsCount,
+                                              currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
@@ -619,11 +693,30 @@ DownloadError DownloadManager::TryDownload()
         MakeFullDownload();
         if (DLE_NO_ERROR == currentTask->error)
         {
-            currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+            currentTask->error = downloader->Download(currentTask->url,
+                                                      currentTask->downloadOffset,
+                                                      currentTask->downloadSize,
+                                                      currentTask->storePath,
+                                                      currentTask->partsCount,
+                                                      currentTask->timeout);
             currentTask->fileErrno = downloader->GetFileErrno();
         }
     }
 
+    return currentTask->error;
+}
+
+DownloadError DownloadManager::TryDownloadIntoBuffer()
+{
+    currentTask->downloadProgress = 0;
+    currentTask->error = downloader->DownloadIntoBuffer(currentTask->url,
+                                                        currentTask->downloadOffset,
+                                                        currentTask->downloadSize,
+                                                        currentTask->memoryBuffer,
+                                                        currentTask->memoryBufferSize,
+                                                        currentTask->partsCount,
+                                                        currentTask->timeout,
+                                                        &currentTask->memoryBufferContentSize);
     return currentTask->error;
 }
 

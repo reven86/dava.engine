@@ -2,6 +2,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include <thread>
 
 #include "WinSystemTimer.h"
 #include "Concurrency/Thread.h"
@@ -179,12 +180,34 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         fullscreenMode.refreshRate = dmi.dmDisplayFrequency;
         ZeroMemory(&dmi, sizeof(dmi));
     }
+    // calculate window area
+    RECT workArea;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
+    int32 workWidth = workArea.right - workArea.left;
+    int32 workHeight = workArea.bottom - workArea.top;
+    // calculate border
+    RECT borderRect = { 0, 0, 0, 0 };
+    AdjustWindowRect(&borderRect, style, 0);
+    int32 borderWidth = borderRect.right - borderRect.left;
+    int32 borderHeight = borderRect.bottom - borderRect.top;
+    int32 maxWidth = workWidth - borderWidth;
+    int32 maxHeight = workHeight - borderHeight;
 
     if (options)
     {
         windowedMode.width = options->GetInt32("width");
         windowedMode.height = options->GetInt32("height");
         windowedMode.bpp = options->GetInt32("bpp");
+
+        //check windowed sizes
+        if (windowedMode.width > maxWidth)
+        {
+            windowedMode.width = maxWidth;
+        }
+        if (windowedMode.height > maxHeight)
+        {
+            windowedMode.height = maxHeight;
+        }
 
         // get values from config in case if they are available
         fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
@@ -217,8 +240,8 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
         realWidth = clientSize.right - clientSize.left;
         realHeight = clientSize.bottom - clientSize.top;
 
-        windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-        windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+        windowLeft = (workWidth - realWidth) / 2 + workArea.left;
+        windowTop = (workHeight - realHeight) / 2 + workArea.top;
 
         MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
     }
@@ -327,28 +350,25 @@ void CoreWin32Platform::Run()
 
         SystemProcessFrame();
 
-        uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-        int32 sleepMs = 1;
-
         int32 fps = Renderer::GetDesiredFPS();
         if (fps > 0)
         {
-            sleepMs = (1000 / fps) - elapsedTime;
-            if (sleepMs < 1)
+            int32 elapsedTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = (1000 / fps) - elapsedTime;
+            if (sleepMs > 0)
             {
-                sleepMs = 1;
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
             }
         }
-
-        TRACE_BEGIN_EVENT(11, "core", "Sleep");
-        Sleep(sleepMs);
-        TRACE_END_EVENT(11, "core", "Sleep");
 
         if (willQuit)
         {
             break;
         }
     }
+
+    Core::Instance()->FocusLost();
+    Core::Instance()->GoBackground(false);
 
     Core::Instance()->SystemAppFinished();
 #if defined(__DAVAENGINE_STEAM__)
@@ -384,7 +404,11 @@ Core::eScreenMode CoreWin32Platform::GetScreenMode()
 
 bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
 {
-    if (GetScreenMode() != screenMode) // check if we try to switch mode
+    // How do I switch a window between normal and fullscreen?
+    // https://blogs.msdn.microsoft.com/oldnewthing/20100412-00/?p=14353/
+
+    static WINDOWPLACEMENT windowPlacement = { sizeof(WINDOWPLACEMENT) };
+    if (GetScreenMode() != screenMode)
     {
         HWND hWindow = static_cast<HWND>(GetNativeView());
         switch (screenMode)
@@ -393,14 +417,22 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         {
             isFullscreen = true;
             currentMode = fullscreenMode;
-            GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
-            MONITORINFO monitor_info;
-            monitor_info.cbSize = sizeof(monitor_info);
-            GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitor_info);
-            RECT window_rect(monitor_info.rcMonitor);
 
-            SetWindowPos(hWindow, NULL, window_rect.left, window_rect.top, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, SWP_NOZORDER);
+            GetWindowPlacement(hWindow, &windowPlacement);
+            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            MONITORINFO monitorInfo;
+            monitorInfo.cbSize = sizeof(monitorInfo);
+            GetMonitorInfo(MonitorFromWindow(hWindow, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+            RECT rect(monitorInfo.rcMonitor);
+
+            SetWindowPos(hWindow,
+                         HWND_TOP,
+                         rect.left,
+                         rect.top,
+                         rect.right - rect.left,
+                         rect.bottom - rect.top,
+                         SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
             break;
         }
         case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
@@ -412,9 +444,13 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         {
             isFullscreen = false;
             currentMode = windowedMode;
+
             SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
-            RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
-            SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowPositionBeforeFullscreen.right - windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.bottom - windowPositionBeforeFullscreen.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            SetWindowPlacement(hWindow, &windowPlacement);
+            SetWindowPos(hWindow,
+                         nullptr,
+                         0, 0, 0, 0,
+                         SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
             break;
         }
         default:
@@ -425,7 +461,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
         }
 
-        Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
+        Logger::FrameworkDebug("[CoreWin32Platform] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
     }
@@ -576,8 +612,19 @@ void CoreWin32Platform::OnGetMinMaxInfo(MINMAXINFO* minmaxInfo)
 {
     if (minWindowWidth > 0.0f && minWindowHeight > 0.0f)
     {
-        minmaxInfo->ptMinTrackSize.x = static_cast<LONG>(minWindowWidth);
-        minmaxInfo->ptMinTrackSize.y = static_cast<LONG>(minWindowHeight);
+        DWORD style = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_STYLE));
+        DWORD exStyle = static_cast<DWORD>(GetWindowLongPtr(hWindow, GWL_EXSTYLE));
+
+        RECT rc = {
+            0, 0,
+            static_cast<LONG>(minWindowWidth),
+            static_cast<LONG>(minWindowHeight)
+        };
+        // dava.engine's clients expect minimum window size for client area not window frame
+        AdjustWindowRectEx(&rc, style, FALSE, exStyle);
+
+        minmaxInfo->ptMinTrackSize.x = rc.right - rc.left;
+        minmaxInfo->ptMinTrackSize.y = rc.bottom - rc.top;
     }
 }
 
@@ -869,7 +916,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
-
         keyboard.OnKeyUnpressed(ev.key);
         // Do not pass message to DefWindowProc to prevent system from sending WM_SYSCOMMAND when Alt is pressed
         return 0;
@@ -921,6 +967,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
         }
+        ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
@@ -987,9 +1034,10 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     case WM_ACTIVATE_POSTED:
     {
         ApplicationCore* appCore = core->GetApplicationCore();
-        WORD loWord = LOWORD(wParam);
-        WORD hiWord = HIWORD(wParam);
-        if (!loWord || hiWord)
+
+        int32 activationType = LOWORD(wParam);
+        bool isMinimized = HIWORD(wParam) != 0;
+        if (activationType == WA_INACTIVE)
         {
             Logger::FrameworkDebug("[PlatformWin32] deactivate application");
             Core::Instance()->FocusLost();
@@ -998,7 +1046,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             if (appCore)
             {
                 // unpress all pressed buttons
-                InputSystem::Instance()->GetKeyboard().ClearAllKeys();
                 core->ClearMouseButtons();
                 appCore->OnSuspend();
             }
@@ -1009,6 +1056,13 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         }
         else
         {
+            if (isMinimized)
+            {
+                // Force set keyboard focus if window is activated from minimized state
+                // See WM_ACTIVATE on MSDN: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646274(v=vs.85).aspx
+                SetFocus(hWnd);
+            }
+
             Logger::FrameworkDebug("[PlatformWin32] activate application");
 
             //We need to activate high-resolution timer
