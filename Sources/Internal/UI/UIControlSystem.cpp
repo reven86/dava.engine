@@ -49,8 +49,8 @@ UIControlSystem::UIControlSystem()
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
-        if (DeviceInfo::GetScreenInfo().scale != 0)
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4.f;
+        if (DeviceInfo::GetScreenInfo().scale != 0.f)
         {
             defaultDoubleClickRadiusSquared = defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale;
         }

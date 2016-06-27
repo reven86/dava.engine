@@ -320,10 +320,10 @@ private:
     bool removeCurrentScreen = false;
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
-    float32 doubleClickRadiusSquared = 0;
+    float32 doubleClickRadiusSquared = 0.f;
     float32 doubleClickTime = 0.f;
     const float32 defaultDoubleClickTime = 0.5f; // seconds
-    float32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
+    float32 defaultDoubleClickRadiusSquared = 0.f; // calculate in constructor
     struct LastClickData
     {
         uint32 touchId = 0;
