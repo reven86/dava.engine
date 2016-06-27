@@ -49,16 +49,16 @@ UIControlSystem::UIControlSystem()
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         //half an inch
-        defaultDoubleClickRadiusSquared = static_cast<int32>(DPIHelper::GetScreenDPI() / 4);
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
         if (DeviceInfo::GetScreenInfo().scale != 0)
         {
-            defaultDoubleClickRadiusSquared = static_cast<int32>(defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale);
+            defaultDoubleClickRadiusSquared = defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale;
         }
         defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
     }
     else
     {
-        defaultDoubleClickRadiusSquared = 4; // default, if touch didn't detect, 4 - default pixels in windows desktop
+        defaultDoubleClickRadiusSquared = 4.f; // default, if touch didn't detect, 4 - default pixels in windows desktop
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
