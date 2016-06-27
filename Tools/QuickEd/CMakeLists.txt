@@ -87,4 +87,6 @@ list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
 
 setup_main_executable()
 
-execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
+                                ${CMAKE_CURRENT_LIST_DIR}/DataSource 
+                                ${DAVA_ROOT_DIR} )

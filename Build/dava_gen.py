@@ -116,10 +116,8 @@ def get_project_type(dst_platform, is_console):
         if not g_is_console:
             project_string += "Eclipse CDT4 - "
 
-        if "MinGW" == current_platform:
-            project_string += "Mingw Makefiles"
         elif "Windows" == current_platform:
-            project_string += "NMake Makefiles"
+            project_string += "Mingw Makefiles"
         else:
             project_string += "Unix Makefiles"
 
@@ -219,7 +217,7 @@ def main():
         call_string.append("-DUNITY_BUILD=true")
     print call_string
 
-    subprocess.check_output(call_string)
+    subprocess.call(call_string, shell=True)
     
     if "android" == destination_platform:
         subprocess.check_output(call_string)    

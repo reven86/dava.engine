@@ -46,3 +46,7 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+
+execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
+                                ${CMAKE_CURRENT_LIST_DIR}/DataSource 
+                                ${DAVA_ROOT_DIR} )
