@@ -704,6 +704,6 @@ void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
 {
     DVASSERT((time > 0.f) && (radius > 0));
     doubleClickTime = time;
-    doubleClickRadiusSquared = radius * radius;
+    doubleClickRadiusSquared = static_cast<float32>(radius * radius);
 }
 };
