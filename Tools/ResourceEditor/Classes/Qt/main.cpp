@@ -102,8 +102,6 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
-    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
-
     QApplication a(argc, argv);
 
     DavaGLWidget glWidget;
@@ -122,6 +120,8 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     //Trick for correct loading of sprites.
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+
+    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
 
     cmdLineManager.Process();
 }
