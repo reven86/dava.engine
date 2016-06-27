@@ -70,6 +70,7 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
 
                       info.relativeFilePath = fileNameLoc;
                       info.originalSize = fileEntry.originalSize;
+                      info.originalCrc32 = fileEntry.originalCrc32;
                       info.compressedSize = fileEntry.compressedSize;
                       info.compressedCrc32 = fileEntry.compressedCrc32;
                       info.compressionType = fileEntry.type;
@@ -81,13 +82,14 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                   });
 }
 
-PackArchive::PackArchive(const FilePath& archiveName)
+PackArchive::PackArchive(const FilePath& archiveName_)
+    : archiveName(archiveName_)
 {
     using namespace PackFormat;
 
+    ScopedPtr<File> file(File::Create(archiveName, File::OPEN | File::READ));
     String fileName = archiveName.GetAbsolutePathname();
 
-    file.Set(File::Create(fileName, File::OPEN | File::READ));
     if (!file)
     {
         throw std::runtime_error("can't Open file: " + fileName);
@@ -193,6 +195,8 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
+
+    ScopedPtr<File> file(File::Create(archiveName, File::OPEN | File::READ));
 
     bool isOk = file->Seek(fileEntry.startPosition, File::SEEK_FROM_START);
     if (!isOk)

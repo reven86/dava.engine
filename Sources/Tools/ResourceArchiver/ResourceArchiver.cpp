@@ -364,27 +364,47 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           const CollectedFile& collectedFile = f;
                           PackFormat::FileTableEntry fileEntry = { 0 };
 
+                          origFileBuffer.clear();
+                          compressedFileBuffer.clear();
+
                           if (fs->ReadFileContents(collectedFile.absPath, origFileBuffer) == false)
                           {
                               throw std::runtime_error("Can't read contents of " + collectedFile.absPath.GetAbsolutePathname());
                           }
 
-                          bool useCompressedBuffer = (compressionType != Compressor::Type::None && !origFileBuffer.empty());
+                          bool useCompressedBuffer = (compressionType != Compressor::Type::None);
+                          Compressor::Type useCompression = compressionType;
+
+                          if (origFileBuffer.empty())
+                          {
+                              useCompressedBuffer = false;
+                              useCompression = Compressor::Type::None;
+                          }
+
                           if (useCompressedBuffer)
                           {
                               if (!compressor->Compress(origFileBuffer, compressedFileBuffer))
                               {
                                   throw std::runtime_error("Can't compress contents of " + collectedFile.absPath.GetAbsolutePathname());
                               }
-                              useCompressedBuffer = (compressedFileBuffer.size() < origFileBuffer.size());
+
+                              if (compressedFileBuffer.size() < origFileBuffer.size())
+                              {
+                                  useCompressedBuffer = true;
+                              }
+                              else
+                              {
+                                  useCompressedBuffer = false;
+                                  useCompression = Compressor::Type::None;
+                              }
                           }
 
                           Vector<uint8>& useBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
 
                           fileEntry.startPosition = dataOffset;
                           fileEntry.originalSize = static_cast<uint32>(origFileBuffer.size());
-                          fileEntry.compressedSize = static_cast<uint32>(compressedFileBuffer.size());
-                          fileEntry.type = (useCompressedBuffer ? compressionType : Compressor::Type::None);
+                          fileEntry.compressedSize = static_cast<uint32>(useBuffer.size());
+                          fileEntry.type = useCompression;
                           fileEntry.compressedCrc32 = CRC32::ForBuffer(useBuffer.data(), useBuffer.size());
                           fileEntry.originalCrc32 = CRC32::ForBuffer(origFileBuffer.data(), origFileBuffer.size());
                           fileEntry.reserved.fill(0); // do it or your crc32 randomly change on same files
@@ -402,12 +422,10 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
                           DateTime dateTime = DateTime::Now();
                           String date = WStringToString(dateTime.GetLocalizedDate());
                           String time = WStringToString(dateTime.GetLocalizedTime());
-                          Logger::Info("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s, crc32: 0x%X",
-                                       deviceName.c_str(), date.c_str(), time.c_str(),
-                                       collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,
-                                       GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.type)), fileEntry.compressedCrc32);
-
-                          compressedFileBuffer.clear();
+                          Logger::Debug("%s | %s %s | Packed %s, orig size %u, compressed size %u, compression: %s, crc32: 0x%X",
+                                        deviceName.c_str(), date.c_str(), time.c_str(),
+                                        collectedFile.archivePath.c_str(), fileEntry.originalSize, fileEntry.compressedSize,
+                                        GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(fileEntry.type)), fileEntry.compressedCrc32);
                       });
     }
     catch (std::exception& ex)

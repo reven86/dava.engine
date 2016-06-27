@@ -21,12 +21,9 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 void PackManagerTest::UpdateDescription()
 {
     String message = DAVA::Format("type name of pack you want to download\n"
-                                  "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n"
-                                  "Url to gpu packs: \"%s\"\n"
-                                  "When you press \"start loading\" full reinitializetion begins",
+                                  "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n",
                                   folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
-                                  urlToServerSuperpack.c_str(),
-                                  urlPacksGpu.c_str());
+                                  urlToServerSuperpack.c_str());
     description->SetText(UTF8Utils::EncodeToWideString(message));
 }
 
@@ -57,12 +54,6 @@ void PackManagerTest::LoadResources()
         break;
     default:
         throw std::runtime_error("unknown gpu famili");
-    }
-
-    auto startPos = urlPacksGpu.find("{gpu}");
-    if (startPos != String::npos)
-    {
-        urlPacksGpu.replace(startPos, 5, gpuArchitecture);
     }
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -238,6 +229,8 @@ void PackManagerTest::OnInitChange(PackManager::IInit& init)
     }
 
     DAVA::Logger::Info("%s", ss.str().c_str());
+
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
 }
 
 void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -273,11 +266,11 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-    String dbFile = sqliteDbFile;
-    dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
+    if (packManager.GetInitialization().GetState() < PackManager::InitState::MountingLocalPacks)
+    {
+        return;
+    }
 
-    // clear and renew all packs state
-    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, urlPacksGpu);
     packManager.EnableRequesting();
 
     packManager.packStateChanged.DisconnectAll();

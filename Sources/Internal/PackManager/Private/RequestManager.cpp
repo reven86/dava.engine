@@ -7,7 +7,6 @@
 namespace DAVA
 {
 const String RequestManager::packPostfix = ".dvpk";
-const String RequestManager::hashPostfix = ".hash";
 
 void RequestManager::Start()
 {

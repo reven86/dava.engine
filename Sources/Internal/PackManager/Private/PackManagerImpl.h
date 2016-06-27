@@ -52,11 +52,13 @@ public:
 
     void DeletePack(const String& packName);
 
+    uint32_t DownloadPack(const String& packName, const FilePath& packPath);
+
     const Vector<PackManager::Pack>& GetAllState() const;
 
     const FilePath& GetLocalPacksDir() const;
 
-    const String& GetRemotePacksURL(bool isGpu) const;
+    const String& GetSuperPackUrl() const;
 
     PackManager& GetPM()
     {
@@ -91,6 +93,10 @@ private:
     Vector<PackManager::Pack> packs;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
+
+    FilePath dbZipInDoc;
+    FilePath dbZipInData;
+    FilePath dbInDoc;
 
     String initLocalDBFileName;
     String initErrorMsg;
@@ -168,12 +174,8 @@ inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
     return localPacksDir;
 }
 
-inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
+inline const String& PackManagerImpl::GetSuperPackUrl() const
 {
-    if (isGpu)
-    {
-        return architecture;
-    }
     return superPackUrl;
 }
 

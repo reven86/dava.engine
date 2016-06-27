@@ -65,7 +65,6 @@ public:
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
         float32 priority = 0.f; // 0.0f to 1.0f
 
-        uint32 hashFromMeta = 0; // example: tanks.pak -> tanks.pak.hash
         uint32 hashFromDB = 0;
 
         uint64 downloadedSize = 0;
@@ -158,7 +157,7 @@ public:
     void DeletePack(const String& packName);
 
     const FilePath& GetLocalPacksDirectory() const;
-    const String& GetRemotePacksUrl(bool isGPU) const;
+    const String& GetSuperPackUrl() const;
 
 private:
     std::unique_ptr<PackManagerImpl> impl;

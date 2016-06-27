@@ -69,27 +69,6 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackMa
     }
 }
 
-void PackRequest::StartLoadingHashFile()
-{
-    DVASSERT(!dependencies.empty());
-
-    SubRequest& subRequest = dependencies.at(0);
-
-    // build url to pack_name_crc32_file
-
-    PackManager::Pack& pack = *subRequest.pack;
-    FilePath archiveCrc32Path = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::hashPostfix;
-    String url = packManagerImpl->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::hashPostfix;
-
-    // start downloading file
-
-    DownloadManager* dm = DownloadManager::Instance();
-    subRequest.taskId = dm->Download(url, archiveCrc32Path, RESUMED, 1);
-
-    // set state to LoadingCRC32File
-    subRequest.status = SubRequest::LoadingHaskFile;
-}
-
 static String DownloadErrorToString(DownloadError e)
 {
     String errorMsg;
@@ -127,6 +106,7 @@ static String DownloadErrorToString(DownloadError e)
         break;
     case DLE_NO_ERROR:
     {
+        errorMsg = "DLE_NO_ERROR";
         break;
     }
     default:
@@ -134,65 +114,6 @@ static String DownloadErrorToString(DownloadError e)
         break;
     } // end switch downloadError
     return errorMsg;
-}
-
-bool PackRequest::IsLoadingHashFileFinished()
-{
-    bool result = false;
-
-    DVASSERT(!dependencies.empty());
-
-    SubRequest& subRequest = dependencies.at(0);
-
-    DownloadManager* dm = DownloadManager::Instance();
-    DownloadStatus status = DL_UNKNOWN;
-    dm->GetStatus(subRequest.taskId, status);
-    uint64 progress = 0;
-    switch (status)
-    {
-    case DL_IN_PROGRESS:
-        break;
-    case DL_FINISHED:
-    {
-        // first test error code
-        DownloadError downloadError = DLE_NO_ERROR;
-        if (dm->GetError(subRequest.taskId, downloadError))
-        {
-            if (DLE_NO_ERROR == downloadError)
-            {
-                result = true;
-            }
-            else
-            {
-                String errorMsg = DownloadErrorToString(downloadError);
-
-                // inform user about error
-                {
-                    PackManager::Pack& currentPack = *subRequest.pack;
-
-                    currentPack.downloadError = downloadError;
-                    currentPack.otherErrorMsg = "can't load CRC32 file for pack: " + currentPack.name + " dlc: " + errorMsg;
-
-                    currentPack.state = PackManager::Pack::Status::ErrorLoading;
-
-                    subRequest.status = SubRequest::Error;
-
-                    packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
-                    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            throw std::runtime_error(Format("can't get download error code for download crc file for pack: %s", subRequest.pack->name.c_str()));
-        }
-    }
-    break;
-    default:
-        break;
-    }
-    return result;
 }
 
 void PackRequest::StartLoadingPackFile()
@@ -206,12 +127,10 @@ void PackRequest::StartLoadingPackFile()
     PackManager::Pack& pack = *subRequest.pack;
 
     FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
-    String url = packManagerImpl->GetRemotePacksURL(pack.isGPU) + pack.name + RequestManager::packPostfix;
+    String url = packManagerImpl->GetSuperPackUrl();
 
     // start downloading
-
-    DownloadManager* dm = DownloadManager::Instance();
-    subRequest.taskId = dm->Download(url, packPath);
+    subRequest.taskId = packManagerImpl->DownloadPack(pack.name, packPath);
 
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
@@ -331,23 +250,6 @@ void PackRequest::StartCheckHash()
 
     PackManager::Pack& currentPack = *subRequest.pack;
 
-    // build crcMetaFilePath
-    FilePath archiveCrc32Path = packManagerImpl->GetLocalPacksDir() + subRequest.pack->name + RequestManager::hashPostfix;
-    // read crc32 from meta file
-    ScopedPtr<File> crcFile(File::Create(archiveCrc32Path, File::OPEN | File::READ));
-    if (!crcFile)
-    {
-        currentPack.state = PackManager::Pack::Status::OtherError;
-        currentPack.otherErrorMsg = "can't read crc meta file";
-        throw std::runtime_error("can't open just downloaded crc meta file: " + archiveCrc32Path.GetStringValue());
-    }
-    String fileContent;
-    if (0 < crcFile->ReadString(fileContent))
-    {
-        StringStream ss;
-        ss << std::hex << fileContent;
-        ss >> currentPack.hashFromMeta;
-    }
     // calculate crc32 from PackFile
     FilePath packPath = packManagerImpl->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
 
@@ -359,13 +261,7 @@ void PackRequest::StartCheckHash()
     // TODO if it take lot of time move to job on other thread and wait
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
-    if (realCrc32FromPack != currentPack.hashFromMeta)
-    {
-        currentPack.otherErrorMsg = "calculated pack crc32 not match with crc32 from meta";
-
-        SetErrorStatusAndFireSignal(subRequest, currentPack);
-    }
-    else if (currentPack.hashFromMeta != currentPack.hashFromDB)
+    if (realCrc32FromPack != currentPack.hashFromDB)
     {
         currentPack.otherErrorMsg = "pack crc32 from meta not match crc32 from local DB";
 
@@ -390,7 +286,7 @@ void PackRequest::MountPack()
 
     PackManager::Pack& pack = *subRequest.pack;
 
-    if (pack.hashFromDB != RequestManager::emptyZipArchiveHash)
+    if (pack.hashFromDB != RequestManager::emptyLZ4HCArchiveCrc32)
     {
         FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
         FileSystem* fs = FileSystem::Instance();
@@ -426,7 +322,6 @@ void PackRequest::Stop()
             SubRequest& subRequest = dependencies.at(0);
             switch (subRequest.status)
             {
-            case SubRequest::LoadingHaskFile:
             case SubRequest::LoadingPackFile:
             {
                 DownloadManager* dm = DownloadManager::Instance();
@@ -453,13 +348,7 @@ void PackRequest::Update()
         switch (subRequest.status)
         {
         case SubRequest::Wait:
-            StartLoadingHashFile();
-            break;
-        case SubRequest::LoadingHaskFile:
-            if (IsLoadingHashFileFinished())
-            {
-                StartLoadingPackFile();
-            }
+            StartLoadingPackFile();
             break;
         case SubRequest::LoadingPackFile:
             if (IsLoadingPackFileFinished())

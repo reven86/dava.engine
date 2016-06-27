@@ -27,7 +27,6 @@ public:
         enum Status : uint32
         {
             Wait = 0,
-            LoadingHaskFile, // download manager thread, wait on main thread
             LoadingPackFile, // download manager thread, wait on main thread
             CheckHash, // on main thread (in future move to job manager)
             Mounted, // on main thread
@@ -62,11 +61,8 @@ public:
 
 private:
     void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
-    const String GetUrl(bool isGpu);
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
 
-    void StartLoadingHashFile();
-    bool IsLoadingHashFileFinished();
     void StartLoadingPackFile();
     bool IsLoadingPackFileFinished();
     void StartCheckHash();

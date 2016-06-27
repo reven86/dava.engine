@@ -300,7 +300,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return (found != ignoredFileNames.end());
     };
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
@@ -370,7 +370,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 DefinitionFile::Collection definitionFileList;
                 definitionFileList.reserve(fileList->GetCount());
-                for (int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
+                for (uint32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
                     if (fileList->IsDirectory(fi))
                         continue;
@@ -471,7 +471,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (fileList->IsDirectory(fi))
         {
@@ -547,7 +547,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     AssetCache::CachedItemValue value;
 
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
-    for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
@@ -577,7 +577,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     }
 
     return false;
-        
+
 #endif
 }
 

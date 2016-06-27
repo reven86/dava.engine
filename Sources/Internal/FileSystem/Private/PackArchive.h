@@ -27,7 +27,8 @@ public:
                               Vector<ResourceArchive::FileInfo>& filesInfo);
 
 private:
-    mutable RefPtr<File> file;
+    const FilePath archiveName;
+    //mutable RefPtr<File> file; // open file on every unpack operation, and close after
     PackFormat::PackFile packFile;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<ResourceArchive::FileInfo> filesInfo;
