@@ -706,7 +706,7 @@ void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
     DVASSERT((time > 0.f) && (inch > 0.f));
     doubleClickTime = time;
     // calculate pixels from inch
-    float32 dpi = DPIHelper::GetScreenDPI();
+    float32 dpi = static_cast<float32>(DPIHelper::GetScreenDPI());
     if (DeviceInfo::GetScreenInfo().scale != 0.f)
     {
         // to look the same on all devices
