@@ -284,7 +284,7 @@ public:
     void SetUseClearPass(bool useClearPass);
 
     void SetDefaultTapCountSettings();
-    void SetTapCountSettings(float32 time, int32 radius);
+    void SetTapCountSettings(float32 time, float32 inch);
 
 private:
     void ProcessScreenLogic();

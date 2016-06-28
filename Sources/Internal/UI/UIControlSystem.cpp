@@ -52,6 +52,7 @@ UIControlSystem::UIControlSystem()
         defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4.f;
         if (DeviceInfo::GetScreenInfo().scale != 0.f)
         {
+            // to look the same on all devices
             defaultDoubleClickRadiusSquared = defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale;
         }
         defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
@@ -700,10 +701,18 @@ void UIControlSystem::SetDefaultTapCountSettings()
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
 }
 
-void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
+void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
 {
-    DVASSERT((time > 0.f) && (radius > 0));
+    DVASSERT((time > 0.f) && (inch > 0.f));
     doubleClickTime = time;
-    doubleClickRadiusSquared = static_cast<float32>(radius * radius);
+    // calculate pixels from inch
+    float32 dpi = DPIHelper::GetScreenDPI();
+    if (DeviceInfo::GetScreenInfo().scale != 0.f)
+    {
+        // to look the same on all devices
+        dpi /= DeviceInfo::GetScreenInfo().scale;
+    }
+    doubleClickRadiusSquared = inch * dpi;
+    doubleClickRadiusSquared *= doubleClickRadiusSquared;
 }
 };
