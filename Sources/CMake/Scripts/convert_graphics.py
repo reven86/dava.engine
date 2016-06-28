@@ -1,12 +1,3 @@
-#!/usr/bin/env python2.5
-#
-#  convert_graphics.py
-#  DAVA SDK
-#
-#  Created by Vitaliy Borodovsky on 10/27/08.
-#  Copyright (c) 2008 DAVA Consulting, LLC. All rights reserved.
-#
-
 import os;
 import sys;
 import os.path;
@@ -17,52 +8,81 @@ import sys;
 import platform;
 import shutil
 import time;
+import argparse;
+from subprocess import call
 
+def _str_to_bool(s):
+    """Convert string to bool (in argparse context)."""
+    if s.lower() not in ['true', 'false', '1', '0']:
+        raise ValueError('Need bool; got %r' % s)
+    return {'true': True, 'false': False, '1': True, '0': False}[s.lower()]
 
+def add_boolean_argument(parser, name, default=False):                                                                                               
+    """Add a boolean argument to an ArgumentParser instance."""
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--' + name, nargs='?', default=default, const=True, type=_str_to_bool)
+    group.add_argument('--no' + name, dest=name, action='store_false')
+    
 def delete_folder(folder_path):
     if os.path.exists( folder_path ):
         print 'delete folder ', folder_path
         shutil.rmtree( folder_path )
 
-arguments = sys.argv[1:]
+def convert_graphics_args( args ):
+    pathDava       = os.path.realpath( args.pathDava )
+    pathDataSource = os.path.realpath( args.pathDataSource )
+    pathTools      = os.path.realpath( os.path.join( args.pathDava, "Tools\Bin" ) )
+    
+    print ''
+    print 'Convert graphics  '
+    print 'Path to Dava Engine -> ', pathDava
+    print 'Path to DataSource -> ', pathDataSource
+    print 'Path to Dava tools ->', pathTools
+    print 'Clear data ->', args.clearData
 
-if len(arguments) != 0:
-    currentDir = arguments[0];
-    framework_path = { "Darwin": arguments[1], "Windows": arguments[1] }
-    os.chdir( currentDir )
-else:
-    currentDir = os.getcwd(); 
-    framework_path = { "Darwin": "./../../../", "Windows": "./../../../" }
+    paramPacker = ''
+    if args.paramPacker :
+        paramPacker = ''.join(args.paramPacker)
+        paramPacker = paramPacker.replace(";", " ")
+        print 'ResourcePacker parameters -> ', paramPacker
+          
+    if args.clearData == True:
+        print ''
+        delete_folder( os.path.join(pathDataSource, "$process")  )
+        delete_folder( os.path.join(pathDataSource, "../Data/Gfx")  )
+        print ''
 
-delete_folder( os.path.join(currentDir, "$process")  )
-delete_folder( os.path.join(currentDir, "../Data/Gfx")  )
-
-# *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
-
-dataDir =  os.path.realpath(currentDir + "/../Data/")
-print "*** DAVA SDK Launching command line packer - data directory:" + dataDir
-
-
-params = filter(lambda x: x[0] != '-', sys.argv[1:]);
-#print params
-
-flags = sys.argv[1:];
-#print flags
-
-gfxDirs = filter(lambda x: x[0:3] == "Gfx", os.listdir(currentDir));
-#print gfxDirs
-
-startTime = time.time()
-
-pvrTexToolPathname = framework_path[platform.system()] + "/Tools/Bin/"
-if (framework_path[platform.system()] != ""):
-    os.chdir(framework_path[platform.system()] + "/Tools/Bin/");
+    gfxDirs = filter(lambda x: x[0:3] == "Gfx", os.listdir(pathDataSource));
+    
+    startTime = time.time()  
+    os.chdir( pathTools );    
     for dir in gfxDirs:
-        params = ["./ResourcePacker", os.path.realpath(currentDir + "/" + dir)] + [pvrTexToolPathname] + flags;
-        os.spawnv(os.P_WAIT, "./ResourcePacker", params);
-else:
-	print "Framework path not defined, please define it in dava_framework_path.py"
+        pathGfx = os.path.join(pathDataSource, dir)
+        xxx_trash_bin_path = os.path.relpath( os.path.join(pathDava,'Tools/Bin' ), pathDataSource )
+        params = ["./ResourcePacker", pathGfx, xxx_trash_bin_path, pathDataSource, pathDava, paramPacker ]
+        print 'Call ->', params, '\n'
+        rc = os.spawnv(os.P_WAIT, "./ResourcePacker", params);
+             
+    deltaTime = time.time() - startTime;
+    
+    print 'End convert graphics. Operation  time ->', deltaTime
+    print ''
 
-deltaTime = time.time() - startTime;
-print "Operation  time", deltaTime; 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '--pathDava', required = True )
+    parser.add_argument( '--pathDataSource', required = True )
+    parser.add_argument('--paramPacker', nargs='*' )
+    add_boolean_argument( parser, 'clearData', default=False )
+
+    parser.set_defaults( func = convert_graphics_args )
+    args = parser.parse_args()
+    args.func( args )           
+
+
+if __name__ == '__main__':
+    main()
+
+
 

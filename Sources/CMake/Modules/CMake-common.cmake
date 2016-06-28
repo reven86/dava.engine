@@ -531,6 +531,33 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
 
 endmacro ()
 
+#CLEAR -> 1 or 0
+#PARAM_PACKER -> -teamcity;-exo;-useCache ...
+macro( convert_graphics )
+    cmake_parse_arguments (ARG "" "CLEAR;PARAM_PACKER" "" ${ARGN})
+
+    if( NOT ARG_CLEAR  )
+        if( DEPLOY )
+            set( ARG_CLEAR 1 )
+        else()
+            set( ARG_CLEAR 0 )
+        endif()
+    endif()
+
+
+    if( NOT ARG_PARAM_PACKER AND DEPLOY )
+        set( ARG_PARAM_PACKER  "-teamcity" )
+    endif()
+
+    execute_process( COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
+                                    --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource 
+                                    --pathDava=${DAVA_ROOT_DIR} 
+                                    --clearData=${ARG_CLEAR}
+                                    --paramPacker=${ARG_PARAM_PACKER}
+                                   )
+
+endmacro()
+
 function (ASSERT VAR_NAME MESSAGE)
     if (NOT ${VAR_NAME})
          message( FATAL_ERROR ${MESSAGE} )
