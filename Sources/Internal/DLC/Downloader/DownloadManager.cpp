@@ -9,6 +9,8 @@
 
 namespace DAVA
 {
+static std::atomic<uint32> prevId = 1;
+
 DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
     : id(_id)
     , status(_status)
@@ -137,8 +139,7 @@ uint32 DownloadManager::Download(const String& srcUrl,
                                                                 downloadOffset,
                                                                 downloadSize);
 
-    static uint32 prevId = 1;
-    task->id = prevId++;
+    task->id = prevId.fetch_add(1);
 
     PlaceToQueue(pendingTaskQueue, task);
 
@@ -183,8 +184,7 @@ uint32 DownloadManager::DownloadIntoBuffer(const String& srcUrl,
                                                                 downloadOffset,
                                                                 downloadSize);
 
-    static uint32 prevId = 1;
-    task->id = prevId++;
+    task->id = prevId.fetch_add(1);
 
     PlaceToQueue(pendingTaskQueue, task);
 

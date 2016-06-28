@@ -693,10 +693,21 @@ void PackManagerImpl::DeletePack(const String& packName)
 
 uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& packPath)
 {
+    PackManager::Pack& pack = GetPack(packName);
     String packFile = packName + RequestManager::packPostfix;
+
+    if (pack.isGPU)
+    {
+        packFile = architecture + "/" + packFile;
+    }
+    else
+    {
+        packFile = "common/" + packFile;
+    }
+
     auto it = initFileData.find(packFile);
 
-    if (it != end(initFileData))
+    if (it == end(initFileData))
     {
         throw std::runtime_error("can't find pack file: " + packFile);
     }

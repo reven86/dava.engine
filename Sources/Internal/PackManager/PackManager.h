@@ -59,7 +59,6 @@ public:
         Vector<String> dependency; // names of dependency packs or empty
 
         String name; // unique pack name
-        String remoteUrl; // url used for download archive or empty
         String otherErrorMsg;
 
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
