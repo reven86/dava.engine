@@ -177,6 +177,9 @@ function StopTest()
     autotestingSystem:OnTestFinished()
 end
 
+function SkipTest()
+    autotestingSystem:OnTestSkipped()
+end
 
 -- DB communication
 function SaveKeyedArchiveToDevice(name, archive)
