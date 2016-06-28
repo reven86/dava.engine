@@ -119,7 +119,6 @@ public:
 
     String GetDeviceName();
     String GetPlatform();
-    String GetDeviceModel();
 
     bool IsPhoneScreen();
 
