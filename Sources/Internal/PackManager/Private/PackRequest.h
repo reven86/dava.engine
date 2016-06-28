@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "PackManager/PackManager.h"
+#include "FileSystem/Private/PackFormatSpec.h"
 
 namespace DAVA
 {
@@ -27,6 +28,8 @@ public:
         enum Status : uint32
         {
             Wait = 0,
+            AskFooter,
+            GetFooter,
             LoadingPackFile, // download manager thread, wait on main thread
             CheckHash, // on main thread (in future move to job manager)
             Mounted, // on main thread
@@ -60,9 +63,12 @@ public:
     const String& GetErrorMessage() const override;
 
 private:
+    void ClearSuperpackData();
     void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
 
+    void AskFooter();
+    void GetFooter();
     void StartLoadingPackFile();
     bool IsLoadingPackFileFinished();
     void StartCheckHash();
@@ -75,5 +81,9 @@ private:
     Set<PackManager::Pack*> dependencySet;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
     uint64 totalAllPacksSize = 0;
+
+    uint64 fullSizeServerData = 0;
+    uint32 downloadTaskId = 0;
+    PackFormat::PackFile::FooterBlock footerOnServer;
 };
 } // end namespace DAVA

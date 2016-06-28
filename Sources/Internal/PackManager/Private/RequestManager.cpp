@@ -45,7 +45,7 @@ void RequestManager::Update()
                 PackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
                 rootPack.state = PackManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
-                                                rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.errorMsg.c_str());
+                                                rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.pack->otherErrorMsg.c_str());
 
                 Pop(); // first pop current request and only then inform user
 

@@ -65,6 +65,11 @@ public:
         return *packManager;
     }
 
+    const PackFormat::PackFile::FooterBlock& GetInitFooter() const
+    {
+        return initFooterOnServer;
+    }
+
 private:
     void ContinueInitialization();
 
@@ -102,7 +107,7 @@ private:
     String initErrorMsg;
     PackManager::InitState initState = PackManager::InitState::FirstInit;
     PackManager::InitError initError = PackManager::InitError::AllGood;
-    PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;

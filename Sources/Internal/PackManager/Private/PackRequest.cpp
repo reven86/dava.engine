@@ -116,6 +116,97 @@ static String DownloadErrorToString(DownloadError e)
     return errorMsg;
 }
 
+void PackRequest::AskFooter()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+
+    if (0 == fullSizeServerData)
+    {
+        if (0 == downloadTaskId)
+        {
+            const String& superPackUrl = packManagerImpl->GetSuperPackUrl();
+            downloadTaskId = dm->Download(superPackUrl, "", GET_SIZE);
+        }
+        else
+        {
+            DownloadStatus status = DL_UNKNOWN;
+            if (dm->GetStatus(downloadTaskId, status))
+            {
+                if (DL_FINISHED == status)
+                {
+                    DownloadError error = DLE_NO_ERROR;
+                    dm->GetError(downloadTaskId, error);
+                    if (DLE_NO_ERROR == error)
+                    {
+                        if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
+                        {
+                            throw std::runtime_error("can't get size of file on server side");
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("can't get size of superpack from server");
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (fullSizeServerData < sizeof(PackFormat::PackFile))
+        {
+            throw std::runtime_error("too small superpack on server");
+        }
+
+        uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
+        uint32 sizeofFooter = static_cast<uint32>(sizeof(footerOnServer));
+        const String& superPackUrl = packManagerImpl->GetSuperPackUrl();
+        downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, &footerOnServer, sizeofFooter, downloadOffset, sizeofFooter);
+
+        SubRequest& subRequest = dependencies.at(0);
+        subRequest.status = SubRequest::Status::GetFooter;
+    }
+}
+
+void PackRequest::GetFooter()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    DownloadStatus status = DL_UNKNOWN;
+    if (dm->GetStatus(downloadTaskId, status))
+    {
+        if (DL_FINISHED == status)
+        {
+            DownloadError error = DLE_NO_ERROR;
+            dm->GetError(downloadTaskId, error);
+            if (DLE_NO_ERROR == error)
+            {
+                uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerOnServer.info), sizeof(footerOnServer.info));
+                if (crc32 != footerOnServer.infoCrc32)
+                {
+                    throw std::runtime_error("downloaded superpack footer is broken: " + packManagerImpl->GetSuperPackUrl());
+                }
+
+                if (packManagerImpl->GetInitFooter().infoCrc32 != footerOnServer.infoCrc32)
+                {
+                    // server Superpack changed during current session
+                    throw std::runtime_error("during pack request server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
+                }
+
+                StartLoadingPackFile();
+            }
+            else
+            {
+                // TODO ask what to do from Client?
+                throw std::runtime_error("not implemented");
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("can't get status for download task");
+    }
+}
+
 void PackRequest::StartLoadingPackFile()
 {
     DVASSERT(!dependencies.empty());
@@ -339,6 +430,16 @@ void PackRequest::Stop()
     }
 }
 
+void PackRequest::ClearSuperpackData()
+{
+    fullSizeServerData = 0;
+    downloadTaskId = 0;
+    std::memset(&footerOnServer, 0, sizeof(footerOnServer));
+
+    SubRequest& subRequest = dependencies.at(0);
+    subRequest.status = SubRequest::AskFooter;
+}
+
 void PackRequest::Update()
 {
     if (!IsDone() && !IsError())
@@ -348,7 +449,13 @@ void PackRequest::Update()
         switch (subRequest.status)
         {
         case SubRequest::Wait:
-            StartLoadingPackFile();
+            ClearSuperpackData();
+            break;
+        case SubRequest::AskFooter:
+            AskFooter(); // continue ask footer
+            break;
+        case SubRequest::GetFooter:
+            GetFooter();
             break;
         case SubRequest::LoadingPackFile:
             if (IsLoadingPackFileFinished())
