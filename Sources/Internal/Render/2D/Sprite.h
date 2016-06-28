@@ -219,12 +219,12 @@ public:
     /**
 	 \brief Reloads the sprite.
 	 */
-    void Reload(eGPUFamily gpu);
+    void Reload(eGPUFamily gpu = Texture::GetDefaultGPU());
 
     /**
 	 \brief Reloads all sprites.
 	 */
-    static void ReloadSprites(eGPUFamily gpu);
+    static void ReloadSprites(eGPUFamily gpu = Texture::GetDefaultGPU());
 
 protected:
     Sprite();
