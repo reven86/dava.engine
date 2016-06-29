@@ -787,7 +787,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     {
         SafeDelete(images);
 
-        Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
+        Logger::Error("[Texture::ReloadAs] Cannot reload from file %s for GPU %s", texDescriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpuFamily));
         MakePink();
     }
     rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
