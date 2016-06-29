@@ -178,8 +178,17 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         FileSystem::Instance()->DeleteFile(tempConvertedPath);
     };
 
+    int32 requestedWidth = tempFileDescriptor.compression[gpuFamily].compressToWidth;
+    int32 requestedHeight = tempFileDescriptor.compression[gpuFamily].compressToHeight;
+
+    bool needSkipImages = (requestedWidth != 0 && requestedHeight != 0);
     for (Image* srcImage : srcImages)
     {
+        if (needSkipImages && (srcImage->width > requestedWidth || srcImage->height > requestedHeight))
+        {
+            continue;
+        }
+
         if (ImageSystem::Save(tempFileDescriptor.GetSourceTexturePathname(), srcImage) != eErrorCode::SUCCESS)
         {
             return FilePath();
