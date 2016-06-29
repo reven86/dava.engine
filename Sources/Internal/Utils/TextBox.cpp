@@ -548,7 +548,7 @@ void TextBox::CleanUpVisualLines()
             // Skip non-printable characters
             if (!StringUtils::IsPrintable(c))
             {
-                ch.skip = true;
+                ch.hiden = true;
             }
 
             if (ch.skip || ch.hiden)
