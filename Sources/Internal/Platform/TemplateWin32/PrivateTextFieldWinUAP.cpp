@@ -729,7 +729,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         // If delegate changes text, set new caret position on the end
         if (curText != oldText)
         {
-            newCaretPos = curText.length();
+            newCaretPos = static_cast<int32>(curText.length());
         }
     });
 
