@@ -196,8 +196,11 @@ void PackRequest::GetFooter()
             }
             else
             {
-                // TODO ask what to do from Client?
-                throw std::runtime_error("not implemented");
+                rootPack->state = PackManager::Pack::Status::ErrorLoading;
+                rootPack->downloadError = error;
+                rootPack->otherErrorMsg = "can't load superpack footer";
+
+                packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
             }
         }
     }
@@ -349,7 +352,6 @@ void PackRequest::StartCheckHash()
         throw std::runtime_error("can't find just downloaded pack: " + packPath.GetStringValue());
     }
 
-    // TODO if it take lot of time move to job on other thread and wait
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
 
     if (realCrc32FromPack != currentPack.hashFromDB)

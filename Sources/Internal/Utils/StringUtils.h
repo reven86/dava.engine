@@ -181,8 +181,11 @@ inline bool IsWhitespace(char8 t)
 
 inline bool StartsWith(const String& str, const String& substr)
 {
-    DVASSERT(substr.empty() == false);
+    if (str.length() < substr.length())
+    {
+        return false;
+    }
     return (str.compare(0, substr.size(), substr) == 0);
 }
-}
-}
+} // end namespace StringUtils
+} // end namespace DAVA

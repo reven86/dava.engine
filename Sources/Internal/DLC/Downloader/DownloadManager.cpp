@@ -7,9 +7,11 @@
 #include "DownloadManager.h"
 #include "Downloader.h"
 
+#include <atomic>
+
 namespace DAVA
 {
-static std::atomic<uint32> prevId = 1;
+static std::atomic<uint32> prevId{ 1 };
 
 DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
     : id(_id)

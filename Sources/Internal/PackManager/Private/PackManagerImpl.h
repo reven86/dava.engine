@@ -3,6 +3,7 @@
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/ResourceArchive.h"
 
 namespace DAVA
 {

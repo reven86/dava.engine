@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Compression/Compressor.h"
+
 namespace DAVA
 {
 namespace PackFormat

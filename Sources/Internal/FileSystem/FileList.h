@@ -30,25 +30,19 @@ public:
 		This function return number of files in directory
 		\returns number of files in this directory
 	 */
-    int32 GetFileCount() const;
+    uint32 GetFileCount() const;
     /**
 		\brief Get total directory count in current list
 		This function return number of files in directory
 		\returns number of subdirectories in this directory
 	 */
-    int32 GetDirectoryCount() const;
-
-    /**
-		\brief Get current path
-
-	 */
-    const FilePath& GetCurrentPath() const;
+    uint32 GetDirectoryCount() const;
 
     //! Get path name
-    const FilePath& GetPathname(int32 index) const;
+    const FilePath& GetPathname(uint32 index) const;
 
     //! Get file or folder name
-    const String& GetFilename(int32 index) const;
+    const String& GetFilename(uint32 index) const;
 
     uint32 GetFileSize(uint32 index) const;
 
@@ -56,16 +50,16 @@ public:
 		\brief is file with given index in this list is a directory
 		\return true if this is directory
 	 */
-    bool IsDirectory(int32 index) const;
+    bool IsDirectory(uint32 index) const;
 
     /*
 		\brief is file with given index, is navigation directory.
 		This funciton checks is directory == "." or directory == ".."
 		\return true if this is ".", or ".." directory
 	 */
-    bool IsNavigationDirectory(int32 index) const;
+    bool IsNavigationDirectory(uint32 index) const;
 
-    bool IsHidden(int32 index) const;
+    bool IsHidden(uint32 index) const;
 
     void Sort();
 

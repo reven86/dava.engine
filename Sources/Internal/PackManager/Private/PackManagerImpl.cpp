@@ -109,6 +109,7 @@ void PackManagerImpl::Retry()
 {
     if (CanRetry())
     {
+        // for now just go to server check
         initState = PackManager::InitState::LoadingRequestAskFooter;
     }
     else
@@ -279,7 +280,8 @@ void PackManagerImpl::MountLocalPacks()
     db.reset(new PacksDB(dbInDoc));
     db->InitializePacks(packs);
 
-    MountPacks(readOnlyPacksDir); // TODO test for android
+    MountPacks(readOnlyPacksDir + "common/");
+    MountPacks(readOnlyPacksDir + architecture + "/");
     MountPacks(localPacksDir);
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));

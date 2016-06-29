@@ -21,7 +21,7 @@ public class JNIFileList {
 	}
 	
 	public static Object[] GetFileList(String path) {
-		ArrayList<Object> listDescriptors = new ArrayList<Object>();
+		ArrayList<FileListDescriptor> listDescriptors = new ArrayList<FileListDescriptor>();
 		
 		if (LocalFileDescriptor.IsLocal(path)) {
 			File filePath = new File(path);
@@ -38,28 +38,24 @@ public class JNIFileList {
 		} else {
 			AssetManager assetManager = JNIActivity.GetActivity().getAssets();
 			try {
-				if (path.length() > 0 && path.charAt(path.length() - 1) == '/')
+				if (path.length() > 0 && path.charAt(path.length() - 1) == '/') {
 					path = path.substring(0, path.length() - 1);
+				}
+				String pathPrefix = !path.isEmpty() ? path + File.separator : "";
 				
 				String [] list = assetManager.list(path);
+				
+				
 				for (String fileName : list) {
-					String filePath = !path.isEmpty() ? (path + File.separator + fileName) : fileName;
+					String filePath = pathPrefix + fileName;
 					
-					boolean isDir = true;
-					long size = 0;
 					try {
-						InputStream inputStream = (AssetManager.AssetInputStream) assetManager.open(filePath);
-						if (inputStream != null) {
-							isDir = false;
-							size = inputStream.available();
-							inputStream.close();
-						}
+						InputStream inputStream = assetManager.open(filePath);
+						listDescriptors.add(new FileListDescriptor(fileName, false, inputStream.available()));
+						inputStream.close();
 					} catch (IOException e) {
+						listDescriptors.add(new FileListDescriptor(fileName, true, 0));
 					}
-					
-					FileListDescriptor descriptor;
-					descriptor = new FileListDescriptor(fileName, isDir, size);
-					listDescriptors.add(descriptor);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

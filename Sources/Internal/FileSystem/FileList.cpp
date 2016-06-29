@@ -166,63 +166,56 @@ uint32 FileList::GetCount() const
     return static_cast<uint32>(fileList.size());
 }
 
-int32 FileList::GetFileCount() const
+uint32 FileList::GetFileCount() const
 {
     return fileCount;
 }
 
-int32 FileList::GetDirectoryCount() const
+uint32 FileList::GetDirectoryCount() const
 {
     return directoryCount;
 }
 
-const FilePath& FileList::GetPathname(int32 index) const
+const FilePath& FileList::GetPathname(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].path;
+    return fileList.at(index).path;
 }
 
-const String& FileList::GetFilename(int32 index) const
+const String& FileList::GetFilename(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].name;
+    return fileList.at(index).name;
 }
 
-bool FileList::IsDirectory(int32 index) const
+bool FileList::IsDirectory(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].isDirectory;
+    return fileList.at(index).isDirectory;
 }
 
-bool FileList::IsNavigationDirectory(int32 index) const
+bool FileList::IsNavigationDirectory(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    //bool isDir = fileList[index].isDirectory;
-    //if (isDir)
-    //{
+    const String& filename = GetFilename(index);
 
-    String filename = GetFilename(index);
     if ((filename == ".") || (filename == ".."))
+    {
         return true;
-    //}
+    }
+
     return false;
 }
 
-bool FileList::IsHidden(int32 index) const
+bool FileList::IsHidden(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].isHidden;
+    return fileList.at(index).isHidden;
 }
 
 uint32 FileList::GetFileSize(uint32 index) const
 {
-    DVASSERT(index < static_cast<uint32>(fileList.size()));
     return fileList[index].size;
 }
 
 void FileList::Sort()
 {
-    std::sort(fileList.begin(), fileList.end());
+    stable_sort(begin(fileList), end(fileList));
 }
 
 }; // end of namespace DAVA
