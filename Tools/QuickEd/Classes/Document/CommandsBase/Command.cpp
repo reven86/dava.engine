@@ -10,7 +10,7 @@ void Command::SetText(const DAVA::String& text_)
     text = text_;
 }
 
-DAVA::String Command::GetText() const
+const DAVA::String& Command::GetText() const
 {
     return text;
 }

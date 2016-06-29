@@ -263,7 +263,7 @@ void DavaGLWidget::OnCleanup()
 void DavaGLWidget::OnFocusWindowChanged(QWindow* focusWindow)
 {
     bool isActive = (focusWindow == davaGLView);
-    for (auto& action : actions())
+    for (QAction* action : actions())
     {
         action->setEnabled(isActive);
     }

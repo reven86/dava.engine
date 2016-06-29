@@ -41,20 +41,19 @@ void CommandStack::Push(Command::CommandPtr&& command)
 
 void CommandStack::BeginMacro(const DAVA::String& name)
 {
-    batches.push(new CommandBatch(name));
+    batches.push(std::make_unique<CommandBatch>(name));
 }
 
 void CommandStack::EndMacro()
 {
     DVASSERT(!batches.empty() && "CommandStack::EndMacro called without BeginMacro");
-    CommandBatch* batch = batches.top();
+    std::unique_ptr<CommandBatch> batch(std::move(batches.top()));
     batches.pop();
     if (batches.empty())
     {
-        Command::CommandPtr commandPtr(batch);
         if (!batch->IsEmpty())
         {
-            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(batch)));
         }
     }
 }
@@ -92,7 +91,7 @@ bool CommandStack::CanRedo() const
     return commandManager->canRedo();
 }
 
-int CommandStack::GetID() const
+DAVA::int32 CommandStack::GetID() const
 {
     return ID;
 }
@@ -107,7 +106,7 @@ void CommandStack::ConnectToCommandManager()
     indexChanged.enable();
 }
 
-void CommandStack::OnHistoryIndexChanged(int currentIndex)
+void CommandStack::OnHistoryIndexChanged(int /*currentIndex*/)
 {
     SetClean(IsClean());
     SetCanUndo(CanUndo());

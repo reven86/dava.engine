@@ -51,7 +51,7 @@ void QEApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) con
     //names.push_back(L"plg_history_ui");
 }
 
-void QEApplication::OnPostLoadPugins()
+void QEApplication::OnPostLoadPlugins()
 {
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("QuickEd");
@@ -66,7 +66,7 @@ void QEApplication::OnPostLoadPugins()
 
     Themes::InitFromQApplication();
 
-    BaseApplication::OnPostLoadPugins();
+    BaseApplication::OnPostLoadPlugins();
 }
 
 void QEApplication::OnPreUnloadPlugins()

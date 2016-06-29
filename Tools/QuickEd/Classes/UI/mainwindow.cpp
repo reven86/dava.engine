@@ -403,7 +403,7 @@ void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const Va
     if (member == backgroundIndexMember)
     {
         uint32 index = value.AsUInt32();
-        DVASSERT(actions.size() > static_cast<int>(index));
+        DVASSERT(static_cast<int>(index) < actions.size());
         actions.at(index)->setChecked(true);
         return;
     }

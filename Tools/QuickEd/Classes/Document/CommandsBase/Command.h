@@ -11,7 +11,7 @@ public:
     Command(const DAVA::String& text);
 
     void SetText(const DAVA::String& text);
-    DAVA::String GetText() const;
+    const DAVA::String& GetText() const;
 
     void Execute() override;
 

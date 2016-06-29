@@ -30,7 +30,7 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
-    int GetID() const;
+    DAVA::int32 GetID() const;
 
     DAVA::Signal<bool> cleanChanged;
     DAVA::Signal<bool> canUndoChanged;
@@ -43,11 +43,11 @@ private:
 
     void OnHistoryIndexChanged(int currentIndex);
 
-    int cleanIndex = -1;
+    DAVA::int32 cleanIndex = -1;
     wgt::ICommandManager* commandManager = nullptr;
-    int ID = 0;
+    DAVA::int32 ID = 0;
     wgt::Connection indexChanged;
-    DAVA::Stack<CommandBatch*> batches;
+    DAVA::Stack<std::unique_ptr<CommandBatch>> batches;
 
     //members to remember stack state and do not emit extra signals
     bool isClean = true;
