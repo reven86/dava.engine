@@ -1448,7 +1448,7 @@ doCommandBySelector:(SEL)commandSelector
     if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
         BOOL clientApply = YES;
-        if ([replString length] > 0)
+        if (correctRange.length > 0 || [replString length] > 0)
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(replString);
             clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(correctRange.location), static_cast<DAVA::int32>(correctRange.length), clientString);
@@ -1548,7 +1548,7 @@ doCommandBySelector:(SEL)commandSelector
     if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
         BOOL clientApply = YES;
-        if ([replStr length] > 0)
+        if (affectedCharRange.length > 0 || [replStr length] > 0)
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
             clientApply = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, static_cast<DAVA::int32>(affectedCharRange.location), static_cast<DAVA::int32>(affectedCharRange.length), clientString);
