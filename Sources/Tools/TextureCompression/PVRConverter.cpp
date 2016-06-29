@@ -178,8 +178,8 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         FileSystem::Instance()->DeleteFile(tempConvertedPath);
     };
 
-    int32 requestedWidth = tempFileDescriptor.compression[gpuFamily].compressToWidth;
-    int32 requestedHeight = tempFileDescriptor.compression[gpuFamily].compressToHeight;
+    uint32 requestedWidth = tempFileDescriptor.compression[gpuFamily].compressToWidth;
+    uint32 requestedHeight = tempFileDescriptor.compression[gpuFamily].compressToHeight;
 
     bool needSkipImages = (requestedWidth != 0 && requestedHeight != 0);
     for (Image* srcImage : srcImages)
