@@ -179,6 +179,7 @@ end
 
 function SkipTest()
     autotestingSystem:OnTestSkipped()
+    Yield()
 end
 
 -- DB communication
