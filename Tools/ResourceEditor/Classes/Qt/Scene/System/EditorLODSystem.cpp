@@ -25,6 +25,12 @@
 
 using namespace DAVA;
 
+LODComponentHolder::LODComponentHolder()
+    : distances(LodComponent::MAX_LOD_LAYERS, std::numeric_limits<DAVA::float32>::max())
+    , isMultiple(LodComponent::MAX_LOD_LAYERS, false)
+{
+}
+
 void LODComponentHolder::BindToSystem(EditorLODSystem* system_, SceneEditor2* scene_)
 {
     DVASSERT(system_ != nullptr);
@@ -36,58 +42,50 @@ void LODComponentHolder::BindToSystem(EditorLODSystem* system_, SceneEditor2* sc
 
 void LODComponentHolder::SummarizeValues()
 {
-    Array<float32, LodComponent::MAX_LOD_LAYERS> lodDistances;
-    lodDistances.fill(0.f);
-
-    Array<uint32, LodComponent::MAX_LOD_LAYERS> lodCounts;
-    lodCounts.fill(0);
-
     maxLodLayerIndex = LodComponent::INVALID_LOD_LAYER;
 
     uint32 count = static_cast<uint32>(lodComponents.size());
     if (count > 0)
     {
-        for (auto& lc : lodComponents)
+        LodComponent* lc = lodComponents.front();
+        for (int32 index = 0; index < LodComponent::MAX_LOD_LAYERS; ++index)
+        {
+            distances[index] = lc->GetLodLayerDistance(index);
+            isMultiple[index] = false;
+        }
+
+        for (DAVA::LodComponent* lc : lodComponents)
         {
             uint32 layersCount = GetLodLayersCount(lc);
-
             maxLodLayerIndex = Max(maxLodLayerIndex, static_cast<int32>(layersCount) - 1);
 
-            for (uint32 i = 0; i < layersCount; ++i)
+            for (int32 index = 0; index < LodComponent::MAX_LOD_LAYERS; ++index)
             {
-                lodDistances[i] += lc->GetLodLayerDistance(i);
-                lodCounts[i]++;
+                if (distances[index] != lc->GetLodLayerDistance(index))
+                {
+                    isMultiple[index] = true;
+                }
             }
         }
-
-        for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
-        {
-            if (lodCounts[i] != 0)
-            {
-                lodDistances[i] /= lodCounts[i];
-            }
-        }
-
-        auto endOfRange = lodDistances.begin();
-        std::advance(endOfRange, maxLodLayerIndex + 1);
-        std::sort(lodDistances.begin(), endOfRange);
     }
-
-    for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    else
     {
-        mergedComponent.SetLodLayerDistance(i, lodDistances[i]);
+        for (int32 index = 0; index < LodComponent::MAX_LOD_LAYERS; ++index)
+        {
+            distances[index] = std::numeric_limits<DAVA::float32>::max();
+            isMultiple[index] = false;
+        }
     }
 }
 
 void LODComponentHolder::PropagateValues()
 {
     scene->BeginBatch("LOD Distance Changed", static_cast<uint32>(lodComponents.size()) * LodComponent::MAX_LOD_LAYERS);
-    for (auto& lc : lodComponents)
+    for (LodComponent* lc : lodComponents)
     {
-        const int32 layersCount = static_cast<int32>(GetLodLayersCount(lc));
-        for (int32 i = 0; i < layersCount; ++i)
+        for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
-            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, mergedComponent.GetLodLayerDistance(i)));
+            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
         }
     }
     scene->EndBatch();
@@ -98,7 +96,7 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     bool wasLayerRemoved = false;
 
     scene->BeginBatch(Format("Delete lod layer %", layer), static_cast<uint32>(lodComponents.size()));
-    for (auto& lc : lodComponents)
+    for (LodComponent* lc : lodComponents)
     {
         if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
@@ -116,7 +114,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
     bool wasCopiedRemoved = false;
 
     scene->BeginBatch(Format("Copy lod layer %d to %d", from, to), static_cast<uint32>(lodComponents.size()));
-    for (auto& lc : lodComponents)
+    for (LodComponent* lc : lodComponents)
     {
         Entity* entity = lc->GetEntity();
         if (HasComponent(entity, Component::PARTICLE_EFFECT_COMPONENT))
@@ -136,7 +134,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
 
 void LODComponentHolder::ApplyForce(const ForceValues& force)
 {
-    for (auto& lc : lodComponents)
+    for (LodComponent* lc : lodComponents)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
@@ -160,9 +158,14 @@ uint32 LODComponentHolder::GetLODLayersCount() const
     return (maxLodLayerIndex + 1);
 }
 
-const LodComponent& LODComponentHolder::GetLODComponent() const
+const DAVA::Vector<DAVA::float32>& LODComponentHolder::GetDistances() const
 {
-    return mergedComponent;
+    return distances;
+}
+
+const DAVA::Vector<bool>& LODComponentHolder::GetMultiple() const
+{
+    return isMultiple;
 }
 
 //SYSTEM
@@ -351,7 +354,7 @@ void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const 
     DVASSERT(activeLodData != nullptr);
 
     planeLODRequests.reserve(activeLodData->lodComponents.size());
-    for (auto& lc : activeLodData->lodComponents)
+    for (LodComponent* lc : activeLodData->lodComponents)
     {
         auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lc, fromLayer, textureSize, texturePath);
         planeLODRequests.push_back(request);
@@ -407,10 +410,10 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
     DVASSERT(activeLodData != nullptr);
     DVASSERT(distances.size() == LodComponent::MAX_LOD_LAYERS);
 
-    int32 layer = 0;
-    for (auto& dist : distances)
+    for (int32 layer = 0; layer < LodComponent::MAX_LOD_LAYERS; ++layer)
     {
-        activeLodData->mergedComponent.SetLodLayerDistance(layer++, dist);
+        activeLodData->distances[layer] = distances[layer];
+        activeLodData->isMultiple[layer] = false;
     }
 
     Guard::ScopedBoolGuard guard(generateCommands, true);
@@ -422,19 +425,19 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
 
 void EditorLODSystem::SolidChanged(const Entity* entity, bool value)
 {
-    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    const auto& selection = sceneEditor->selectionSystem->GetSelection();
-    if (selection.ContainsObject(entity))
-    {
-        SelectionChanged(&selection, nullptr);
-    }
+    //    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    //    const auto& selection = sceneEditor->selectionSystem->GetSelection();
+    //    if (selection.ContainsObject(entity))
+    //    {
+    //        SelectionChanged(&selection, nullptr);
+    //    }
 }
 
 void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
 
-    bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
+    bool recursive = SettingsManager::GetValue(Settings::General_LodEditor_Recursive).AsBool();
 
     uint32 count = selected->GetSize();
     Vector<Entity*> lodEntities;
@@ -442,7 +445,7 @@ void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const Se
 
     for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
     {
-        if (entity->GetSolid() || !ignoreChildren)
+        if (recursive)
         {
             entity->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
         }

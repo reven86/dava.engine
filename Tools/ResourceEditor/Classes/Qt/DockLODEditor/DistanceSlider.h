@@ -1,5 +1,4 @@
-#ifndef __DISTANCE_SLIDER_H__
-#define __DISTANCE_SLIDER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Scene3D/Lod/LodComponent.h"
@@ -62,4 +61,3 @@ inline DAVA::uint32 DistanceSlider::GetFramesCount() const
     return framesCount;
 }
 
-#endif // __DISTANCE_SLIDER_H__

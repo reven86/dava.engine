@@ -25,7 +25,7 @@ struct ForceValues
         APPLY_NONE = 0,
         APPLY_ALL = APPLY_DISTANCE | APPLY_LAYER,
 
-        APPLY_DEFAULT = APPLY_LAYER,
+        APPLY_DEFAULT = APPLY_LAYER
     };
 
     ForceValues(DAVA::float32 distance_ = DAVA::LodComponent::INVALID_DISTANCE,
@@ -35,7 +35,7 @@ struct ForceValues
         , layer(layer_)
         , flag(flag_)
           {
-          };
+          }
 
     DAVA::float32 distance;
     DAVA::int32 layer;
@@ -43,17 +43,19 @@ struct ForceValues
 };
 
 class SceneEditor2;
-class Command2;
 class EditorLODSystem;
 class LODComponentHolder
 {
     friend class EditorLODSystem;
 
 public:
+    LODComponentHolder();
+
     DAVA::int32 GetMaxLODLayer() const;
     DAVA::uint32 GetLODLayersCount() const;
 
-    const DAVA::LodComponent& GetLODComponent() const;
+    const DAVA::Vector<DAVA::float32>& GetDistances() const;
+    const DAVA::Vector<bool>& GetMultiple() const;
 
 protected:
     void BindToSystem(EditorLODSystem* system, SceneEditor2* scene);
@@ -65,10 +67,11 @@ protected:
     bool DeleteLOD(DAVA::int32 layer);
     bool CopyLod(DAVA::int32 from, DAVA::int32 to);
 
-protected:
-    DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
-    DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent*> lodComponents;
+    DAVA::Vector<DAVA::float32> distances;
+    DAVA::Vector<bool> isMultiple;
+
+    DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
 
     EditorLODSystem* system = nullptr;
     SceneEditor2* scene = nullptr;
@@ -96,8 +99,8 @@ public:
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
-    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
-    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component) override;
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component) override;
 
     void Process(DAVA::float32 timeElapsed) override;
     void SceneDidLoaded() override;
@@ -166,10 +169,18 @@ class EditorLODSystemUIDelegate
 public:
     virtual ~EditorLODSystemUIDelegate() = default;
 
-    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode){};
-    virtual void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues){};
-    virtual void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData){};
-    virtual void UpdateActionUI(EditorLODSystem* forSystem){};
+    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode)
+    {
+    }
+    virtual void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues)
+    {
+    }
+    virtual void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData)
+    {
+    }
+    virtual void UpdateActionUI(EditorLODSystem* forSystem)
+    {
+    }
 };
 
 

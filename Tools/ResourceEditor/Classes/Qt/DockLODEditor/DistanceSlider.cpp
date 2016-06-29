@@ -100,7 +100,7 @@ void DistanceSlider::SetLayersCount(DAVA::uint32 count)
     layersCount = count;
     for (DAVA::uint32 i = 0; i < framesCount; ++i)
     {
-        frames[i]->setVisible(i < layersCount);
+        frames[i]->setEnabled(i < layersCount);
     }
 }
 
@@ -174,7 +174,12 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 
 DAVA::float32 DistanceSlider::GetScaleSize() const
 {
-    return DAVA::LodComponent::MAX_LOD_DISTANCE;
+    //    DAVA::float32 minVisualValue = SettingsManager::GetValue(Settings::General_LodEditor_MinEdge).AsFloat();
+    //    DAVA::float32 maxVisualValue = SettingsManager::GetValue(Settings::General_LodEditor_MaxEdge).AsFloat();
+    DAVA::float32 minVisualValue = DAVA::LodComponent::MIN_LOD_DISTANCE;
+    DAVA::float32 maxVisualValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
+
+    return maxVisualValue - minVisualValue;
 }
 
 bool DistanceSlider::eventFilter(QObject* obj, QEvent* e)

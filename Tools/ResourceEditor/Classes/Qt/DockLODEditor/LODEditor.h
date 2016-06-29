@@ -106,7 +106,8 @@ private:
     {
         QLabel* name = nullptr;
         QDoubleSpinBox* distance = nullptr;
-        void SetVisible(bool visible);
+
+        void SetEnabled(bool enabled);
     };
 
     DAVA::Vector<DistanceWidget> distanceWidgets;

@@ -209,7 +209,7 @@ void LODEditor::ForceLayerActivated(int index)
     ForceValues forceValues = system->GetForceValues();
     forceValues.layer = index - 1;
 
-    if (forceValues.layer == lodData->GetLODLayersCount())
+    if (forceValues.layer == LodComponent::MAX_LOD_LAYERS)
     {
         forceValues.layer = LodComponent::LAST_LOD_LAYER;
     }
@@ -221,7 +221,7 @@ void LODEditor::CreateForceLayerValues(uint32 layersCount)
 {
     ui->forceLayer->clear();
     ui->forceLayer->addItem("Auto", LodComponent::INVALID_LOD_LAYER);
-    for (uint32 i = 0; i < layersCount; ++i)
+    for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
     {
         ui->forceLayer->addItem(Format("%u", i).c_str(), QVariant(i));
     }
@@ -241,7 +241,7 @@ void LODEditor::SetupDistancesUI()
     InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
     InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
     InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
-    InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 3);
+    InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
 }
 
 void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index)
@@ -255,20 +255,21 @@ void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int i
 
     distanceWidgets[index].name = name;
     distanceWidgets[index].distance = spinbox;
-    distanceWidgets[index].SetVisible(false);
 }
 
 void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, int32 count)
 {
     DVASSERT(distances.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
-    for (int32 i = 0; i < count; ++i)
+    for (int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         const QSignalBlocker guardWidget(distanceWidgets[i].distance);
 
         float32 minDistance = (i == 0) ? LodComponent::MIN_LOD_DISTANCE : distances[i - 1];
-        float32 maxDistance = (i == count - 1) ? LodComponent::MAX_LOD_DISTANCE : distances[i + 1];
+        float32 maxDistance = (i == count - 1) ? std::numeric_limits<DAVA::float32>::max() : distances[i + 1];
         distanceWidgets[i].distance->setRange(minDistance, maxDistance); //distance
         distanceWidgets[i].distance->setValue(distances[i]);
+
+        distanceWidgets[i].SetEnabled(i < count);
     }
 }
 
@@ -293,7 +294,7 @@ void LODEditor::LODDistanceChangedBySlider()
 
 void LODEditor::LODDistanceChangedBySpinbox(double value)
 {
-    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
+    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, std::numeric_limits<DAVA::float32>::max());
     for (uint32 i = 0; i < distances.size(); ++i)
     {
         distances[i] = distanceWidgets[i].distance->value();
@@ -436,27 +437,14 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentH
 
     const QSignalBlocker guard(ui->distanceSlider);
 
-    const LodComponent& lc = lodData->GetLODComponent();
+    const Vector<float32>& distances = lodData->GetDistances();
+
     int32 count = static_cast<int32>(lodData->GetLODLayersCount());
     ui->distanceSlider->SetLayersCount(count);
-
-    Vector<float32> distances(LodComponent::MAX_LOD_LAYERS, 0.0f);
-    for (int32 i = 0; i < count; ++i)
-    {
-        distances[i] = lc.GetLodLayerDistance(i);
-
-        distanceWidgets[i].SetVisible(true);
-    }
-
     ui->distanceSlider->SetDistances(distances);
 
     UpdateDistanceSpinboxesUI(distances, count);
     UpdateTrianglesUI(GetCurrentEditorStatisticsSystem());
-
-    for (int32 i = count; i < LodComponent::MAX_LOD_LAYERS; ++i)
-    {
-        distanceWidgets[i].SetVisible(false);
-    }
 }
 
 void LODEditor::UpdateActionUI(EditorLODSystem* forSystem)
@@ -485,10 +473,9 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 //ENDOF DELEGATE
 
-void LODEditor::DistanceWidget::SetVisible(bool visible)
+void LODEditor::DistanceWidget::SetEnabled(bool enabled)
 {
-    name->setVisible(visible);
-    distance->setVisible(visible);
+    distance->setEnabled(enabled);
 }
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
