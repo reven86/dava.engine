@@ -696,9 +696,13 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     }
 
     bool textAccepted = true;
+    int32 newCaretPos = -1;
     auto self{ shared_from_this() };
-    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
+
+    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore, &newCaretPos]() {
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
+        WideString oldText = targetAlive ? curText : WideString();
+
         if (programmaticTextChange && targetAlive)
         {
             // Event has originated from SetText() method so only notify delegate about text change
@@ -721,13 +725,19 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         }
         programmaticTextChange = false;
         textAccepted ? curText = newText : textToRestore = curText;
+
+        // If delegate changes text, set new caret position on the end
+        if (curText != oldText)
+        {
+            newCaretPos = curText.length();
+        }
     });
 
     if (!textAccepted)
     {
         // Restore control's text and caret position as before text change
         SetNativeText(textToRestore);
-        SetNativeCaretPosition(savedCaretPosition);
+        SetNativeCaretPosition(newCaretPos != -1 ? newCaretPos : savedCaretPosition);
         ignoreTextChange = true;
     }
 }
