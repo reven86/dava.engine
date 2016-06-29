@@ -180,6 +180,15 @@ void LODEditor::SetupForceUI()
     ui->forceSlider->setRange(LodComponent::INVALID_DISTANCE, LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(LodComponent::INVALID_DISTANCE);
 
+    ui->forceLayer->clear();
+    ui->forceLayer->addItem("Auto", LodComponent::INVALID_LOD_LAYER);
+    for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        ui->forceLayer->addItem(Format("%u", i).c_str(), QVariant(i));
+    }
+    ui->forceLayer->addItem("Last", LodComponent::LAST_LOD_LAYER);
+    ui->forceLayer->setCurrentIndex(0);
+
     connect(ui->forceLayer, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), this, &LODEditor::ForceLayerActivated);
 }
 
@@ -204,7 +213,7 @@ void LODEditor::ForceDistanceChanged(int distance)
 void LODEditor::ForceLayerActivated(int index)
 {
     EditorLODSystem* system = GetCurrentEditorLODSystem();
-    const LODComponentHolder* lodData = system->GetActiveLODData();
+    //    const LODComponentHolder* lodData = system->GetActiveLODData();
 
     ForceValues forceValues = system->GetForceValues();
     forceValues.layer = index - 1;
@@ -215,18 +224,6 @@ void LODEditor::ForceLayerActivated(int index)
     }
 
     system->SetForceValues(forceValues);
-}
-
-void LODEditor::CreateForceLayerValues(uint32 layersCount)
-{
-    ui->forceLayer->clear();
-    ui->forceLayer->addItem("Auto", LodComponent::INVALID_LOD_LAYER);
-    for (uint32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
-    {
-        ui->forceLayer->addItem(Format("%u", i).c_str(), QVariant(i));
-    }
-    ui->forceLayer->addItem("Last", LodComponent::LAST_LOD_LAYER);
-    ui->forceLayer->setCurrentIndex(0);
 }
 
 //ENDOF FORCE
@@ -410,15 +407,6 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
     ui->forceLayer->setEnabled(!distanceModeSelected);
 
     ui->forceSlider->setValue(forceValues.distance);
-
-    static const DAVA::uint32 ADDITIONAL_ROWS_COUNT = 2; // auto + last lod
-
-    const LODComponentHolder* lodData = forSystem->GetActiveLODData();
-    const uint32 layerItemsCount = lodData->GetLODLayersCount();
-    if (ui->forceLayer->count() != layerItemsCount + ADDITIONAL_ROWS_COUNT)
-    {
-        CreateForceLayerValues(layerItemsCount);
-    }
 
     if (forceValues.layer == LodComponent::LAST_LOD_LAYER)
     {

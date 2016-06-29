@@ -69,7 +69,6 @@ private:
     void SetupInternalUI();
 
     void SetupForceUI();
-    void CreateForceLayerValues(DAVA::uint32 layersCount);
 
     void SetupPanelsButtonUI();
     void InvertFrameVisibility(QFrame* frame, QPushButton* frameButton);
