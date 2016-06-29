@@ -350,6 +350,12 @@ void AutotestingSystemLua::OnTestFinished()
     AutotestingSystem::Instance()->OnTestsFinished();
 }
 
+void AutotestingSystemLua::OnTestSkipped()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::OnTestSkipped");
+    AutotestingSystem::Instance()->OnTestSkipped();
+}
+
 size_t AutotestingSystemLua::GetUsedMemory() const
 {
     return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
