@@ -883,9 +883,9 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 
 FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFamily) const
 {
-    ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
-    if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
+    if (GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
+        ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
         return FilePath::CreateWithNewExtension(pathname, postfix);
     }
@@ -895,16 +895,13 @@ FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFam
 
 bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath>& pathes) const
 {
-    if (dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE)
+    if ((dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE) && GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
         ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
-        if (TextureDescriptor::IsSupportedCompressedFormat(imageFormat))
-        {
-            String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
-            pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
+        String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
+        pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
 
-            return true;
-        }
+        return true;
     }
 
     return false;

@@ -620,11 +620,16 @@ void TexturePacker::ExportImage(const PngImageExt& image, const Vector<ImageExpo
         descriptor->dataSettings.sourceFileExtension = srcExtension;
 
         imageForGPU.DitherAlpha();
-        imageForGPU.Write(descriptor->GetSourceTexturePathname(), key.imageQuality);
+        imageForGPU.Write(descriptor->GetSourceTexturePathname(), key.imageQuality); // save source image
 
         if (key.toComressForGPU)
         {
             TextureConverter::ConvertTexture(*descriptor, key.forGPU, false, quality);
+        }
+        else if (key.forGPU != eGPUFamily::GPU_ORIGIN)
+        {
+            FilePath gpuPath = descriptor->CreateMultiMipPathnameForGPU(key.forGPU);
+            FileSystem::Instance()->MoveFile(descriptor->GetSourceTexturePathname(), gpuPath); //create image for gpu (webp/tga ...)
         }
     }
 
