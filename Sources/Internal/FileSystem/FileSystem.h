@@ -226,6 +226,13 @@ public:
     virtual void Unmount(const FilePath& arhiveName);
 
     /**
+    \brief Function to check if ResourceArchive is mounted
+
+    \param[in] archiveName filename of archive we want to attach
+    */
+    virtual bool IsMounted(const FilePath& archiveName) const;
+
+    /**
 	 \brief Invokes the command processor to execute a command
 	 \param[in] command contains the system command to be executed
 	 \returns platform-dependent

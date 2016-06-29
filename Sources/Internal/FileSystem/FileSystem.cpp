@@ -791,6 +791,11 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
     DVASSERT(!attachPath.empty());
 
+    if (IsMounted(archiveName))
+    {
+        throw std::runtime_error("archive already mounted: " + archiveName.GetStringValue());
+    }
+
     ResourceArchiveItem item;
     item.attachPath = attachPath;
     item.archive.reset(new ResourceArchive(archiveName));
@@ -805,6 +810,16 @@ void FileSystem::Unmount(const FilePath& arhiveName)
                                   {
                                       return item.archiveFilePath == arhiveName;
                                   });
+}
+
+bool FileSystem::IsMounted(const FilePath& archiveName) const
+{
+    auto it = std::find_if(begin(resourceArchiveList), end(resourceArchiveList), [&](const ResourceArchiveItem& i)
+                           {
+                               return i.archiveFilePath == archiveName;
+                           });
+
+    return it != end(resourceArchiveList);
 }
 
 int32 FileSystem::Spawn(const String& command)

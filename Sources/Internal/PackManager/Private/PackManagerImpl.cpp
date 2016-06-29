@@ -52,7 +52,7 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     initLocalDBFileName = dbFile_;
 
     dbZipInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbZipInData = FilePath("~res:/" + initLocalDBFileName);
+    dbZipInData = FilePath(readOnlyPacksDir_ + initLocalDBFileName);
 
     dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
     dbInDoc.ReplaceExtension("");
@@ -111,6 +111,10 @@ void PackManagerImpl::Retry()
     {
         // for now just go to server check
         initState = PackManager::InitState::LoadingRequestAskFooter;
+        if (initPaused)
+        {
+            initPaused = false;
+        }
     }
     else
     {
@@ -282,7 +286,6 @@ void PackManagerImpl::MountLocalPacks()
 
     MountPacks(readOnlyPacksDir + "common/");
     MountPacks(readOnlyPacksDir + architecture + "/");
-    MountPacks(localPacksDir);
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::LoadingRequestAskFooter;
