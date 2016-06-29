@@ -24,16 +24,16 @@ namespace Private
 {
 WindowOsX::WindowOsX(EngineBackend* engine_, WindowBackend* window_)
     : engine(engine_)
-    , dispatcher(engine->dispatcher)
+    , dispatcher(engine->GetDispatcher())
     , window(window_)
     , bridge(new WindowOsXObjcBridge(this))
 {
-    hideUnhideSignalId = engine->platformCore->didHideUnhide.Connect(bridge, &WindowOsXObjcBridge::ApplicationDidHideUnhide);
+    hideUnhideSignalId = engine->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowOsXObjcBridge::ApplicationDidHideUnhide);
 }
 
 WindowOsX::~WindowOsX()
 {
-    engine->platformCore->didHideUnhide.Disconnect(hideUnhideSignalId);
+    engine->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
     delete bridge;
 }
 

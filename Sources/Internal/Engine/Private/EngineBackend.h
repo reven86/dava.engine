@@ -45,6 +45,7 @@ public:
     void Quit(int32 exitCode_);
 
     void RunAsyncOnMainThread(const Function<void()>& task);
+    void PostAppTerminate();
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
@@ -72,8 +73,6 @@ private:
     void HandleWindowCreated(const DispatcherEvent& e);
     void HandleWindowDestroyed(const DispatcherEvent& e);
     void HandleAppTerminate(const DispatcherEvent& e);
-
-    void PostAppTerminate();
 
     WindowBackend* CreatePrimaryWindowBackend();
 

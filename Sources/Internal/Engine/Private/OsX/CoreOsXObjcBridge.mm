@@ -121,7 +121,7 @@ void CoreOsXObjcBridge::ApplicationWillFinishLaunching()
 void CoreOsXObjcBridge::ApplicationDidFinishLaunching()
 {
     core->engineBackend->OnGameLoopStarted();
-    core->CreateNativeWindow(core->engineBackend->primaryWindow, 640.0f, 480.0f);
+    core->CreateNativeWindow(core->engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1.0 / 60.0];
@@ -175,7 +175,7 @@ void CoreOsXObjcBridge::ApplicationWillTerminate()
     [appDelegate release];
     [frameTimer release];
 
-    int exitCode = core->engineBackend->exitCode;
+    int exitCode = core->engineBackend->GetExitCode();
     core->engineBackend->OnBeforeTerminate();
     std::exit(exitCode);
 }
