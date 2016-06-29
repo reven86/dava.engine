@@ -702,7 +702,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         if (programmaticTextChange && targetAlive)
         {
             // Event has originated from SetText() method so only notify delegate about text change
-            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
         }
         else if (targetAlive)
         {
@@ -716,7 +716,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
                 static_cast<int32>(diffR.originalStringDiff.length()),
                 diffR.newStringDiff);
                 if (textAccepted)
-                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, UITextFieldDelegate::eInteractionType::USER);
             }
         }
         programmaticTextChange = false;

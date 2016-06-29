@@ -1291,7 +1291,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && nullptr != text->ctrl->davaText->GetDelegate())
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString, UITextFieldDelegate::eInteractionType::USER);
     }
 }
 
@@ -1454,6 +1454,12 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
         (*text).ctrl->SetText(newDAVAString);
         (*text).ctrl->SetCursorPos(correctRange.location + [replString length]);
+        if (nullptr != cppTextField)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
+            DAVA::WideString oldString = cppTextField->GetText();
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+        }
     }
     return applyChanges;
 }
@@ -1502,7 +1508,7 @@ doCommandBySelector:(SEL)commandSelector
 {
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString, UITextFieldDelegate::eInteractionType::USER);
     }
 }
 
@@ -1552,6 +1558,12 @@ doCommandBySelector:(SEL)commandSelector
         DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
         (*text).ctrl->SetText(newDAVAString);
         (*text).ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
+        if (nullptr != cppTextField)
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
+            DAVA::WideString oldString = cppTextField->GetText();
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+        }
     }
     return applyChanges;
 }

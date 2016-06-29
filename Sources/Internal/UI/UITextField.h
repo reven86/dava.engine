@@ -15,6 +15,12 @@ class TextFieldPlatformImpl;
 class UITextFieldDelegate
 {
 public:
+    enum class eInteractionType
+    {
+        USER = 0,
+        PROGRAMMATICALLY = 1,
+    };
+
     virtual ~UITextFieldDelegate() = default;
 
     /**
@@ -51,8 +57,21 @@ public:
         return true;
     }
 
-    virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+    DAVA_DEPRECATED(virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+                    {
+                    });
+
+    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eInteractionType type)
     {
+        if (type == eInteractionType::USER)
+        {
+            Logger::Info("!!!!! TextFieldOnTextChanged eInteractionType::USER");
+        }
+        else if (type == eInteractionType::PROGRAMMATICALLY)
+        {
+            Logger::Info("!!!!! TextFieldOnTextChanged eInteractionType::PROGRAMMATICALLY");
+        }
+        TextFieldOnTextChanged(textField, newText, oldText);
     }
 
     /*
