@@ -18,8 +18,10 @@ namespace Private
 
 ref class UWPApplication sealed : public ::Windows::UI::Xaml::Application
 {
+internal:
+    UWPApplication(const Vector<String>& cmdargs);
+
 public:
-    UWPApplication();
     virtual ~UWPApplication();
 
 protected:

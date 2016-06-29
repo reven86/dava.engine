@@ -1,57 +1,41 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
-#include "Engine/Private/InitEngine.h"
-
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+#include "Engine/Private/CommandArgs.h"
+#include "Engine/Private/EngineStartup.h"
 
 #if defined(__DAVAENGINE_QT__) || defined(__DAVAENGINE_MACOS__)
 
 int main(int argc, char* argv[])
 {
     using namespace DAVA;
-    Vector<String> cmdline = Private::InitializeEngine(argc, argv);
-    int r = GameMain(cmdline);
-    Private::TerminateEngine();
-    return r;
+    Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
+    return Private::EngineStart(cmdargs);
 }
 
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+// Win32
 // To use WinMain in static lib with unicode support set entry point to wWinMainCRTStartup:
 //  1. through linker commandline option /ENTRY:wWinMainCRTStartup
 //  2. property panel Linker -> Advanced -> Entry Point
 //  3. cmake script - set_target_properties(target PROPERTIES LINK_FLAGS "/ENTRY:wWinMainCRTStartup")
 // https://msdn.microsoft.com/en-us/library/dybsewaf.aspx
 // https://support.microsoft.com/en-us/kb/125750
-int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+// Windows Universal Application
+// WinMain should have attribute which specifies threading model
+[Platform::MTAThread]
+#endif
+int APIENTRY
+wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
-    Vector<String> cmdline = Private::InitializeEngine(0, nullptr);
-    int r = GameMain(cmdline);
-    Private::TerminateEngine();
-    return r;
-}
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-
-namespace DAVA
-{
-namespace Private
-{
-extern void StartUWPApplication();
-}
-}
-
-[Platform::MTAThread]
-int CALLBACK
-wWinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
-    DAVA::Private::StartUWPApplication();
-    return 0;
+    Vector<String> cmdargs = Private::GetCommandArgs();
+    return Private::EngineStart(cmdargs);
 }
 
 #endif

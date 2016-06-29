@@ -24,7 +24,7 @@ const wchar_t WindowWin32::windowClassName[] = L"DAVA_WND_CLASS";
 
 WindowWin32::WindowWin32(EngineBackend* engine_, WindowBackend* window_)
     : engine(engine_)
-    , dispatcher(engine->dispatcher)
+    , dispatcher(engine->GetDispatcher())
     , window(window_)
 {
 }

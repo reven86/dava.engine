@@ -90,6 +90,7 @@ private:
     Window* window = nullptr;
     NativeWindow* nativeWindow = nullptr;
     EngineBackend* engineBackend = nullptr;
+    Dispatcher* dispatcher = nullptr;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;

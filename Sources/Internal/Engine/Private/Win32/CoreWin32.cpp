@@ -48,6 +48,25 @@ Vector<String> CoreWin32::GetCommandLine(int argc, char* argv[])
     return cmdargs;
 }
 
+Vector<String> CoreWin32::GetCommandArgs() const
+{
+    Vector<String> cmdargs;
+
+    int nargs = 0;
+    LPWSTR cmdline = ::GetCommandLineW();
+    LPWSTR* arglist = ::CommandLineToArgvW(cmdline, &nargs);
+    if (arglist != nullptr)
+    {
+        cmdargs.reserve(nargs);
+        for (int i = 0; i < nargs; ++i)
+        {
+            cmdargs.push_back(WStringToString(arglist[i]));
+        }
+        LocalFree(arglist);
+    }
+    return cmdargs;
+}
+
 void CoreWin32::Init()
 {
 }
@@ -57,8 +76,8 @@ void CoreWin32::Run()
     MSG msg;
     bool quitLoop = false;
 
-    EngineBackend::instance->OnGameLoopStarted();
-    CreateNativeWindow(engineBackend->primaryWindow, 640.0f, 480.0f);
+    engineBackend->OnGameLoopStarted();
+    CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
 
     for (;;)
     {
@@ -74,7 +93,7 @@ void CoreWin32::Run()
             ::DispatchMessage(&msg);
         }
 
-        int32 fps = EngineBackend::instance->OnFrame();
+        int32 fps = engineBackend->OnFrame();
         uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
         uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
 
@@ -90,13 +109,13 @@ void CoreWin32::Run()
         if (quitLoop)
             break;
     }
-    EngineBackend::instance->OnGameLoopStopped();
-    EngineBackend::instance->OnBeforeTerminate();
+    engineBackend->OnGameLoopStopped();
+    engineBackend->OnBeforeTerminate();
 }
 
 void CoreWin32::Quit()
 {
-    ::PostQuitMessage(engineBackend->exitCode);
+    ::PostQuitMessage(engineBackend->GetExitCode());
 }
 
 WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)

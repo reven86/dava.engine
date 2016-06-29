@@ -23,24 +23,27 @@ Engine::Engine()
     DVASSERT(engineSingleton == nullptr);
 
     engineSingleton = this;
-    engineBackend = Private::EngineBackend::instance;
-    engineBackend->engine = this;
+
+    engineBackend = Private::EngineBackend::Instance();
+    engineBackend->EngineCreated(this);
 }
 
 Engine::~Engine()
 {
+    engineBackend->EngineDestroyed();
     engineBackend = nullptr;
+
     engineSingleton = nullptr;
 }
 
 AppContext* Engine::Context() const
 {
-    return engineBackend->context;
+    return engineBackend->GetEngineContext();
 }
 
 Window* Engine::PrimaryWindow() const
 {
-    return engineBackend->primaryWindow->GetWindow();
+    return engineBackend->GetPrimaryWindow()->GetWindow();
 }
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)
@@ -65,7 +68,7 @@ void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 
 uint32 Engine::GetGlobalFrameIndex() const
 {
-    return engineBackend->globalFrameIndex;
+    return engineBackend->GetGlobalFrameIndex();
 }
 
 const Vector<String>& Engine::GetCommandLine() const
@@ -75,17 +78,17 @@ const Vector<String>& Engine::GetCommandLine() const
 
 bool Engine::IsConsoleMode() const
 {
-    return engineBackend->consoleMode;
+    return engineBackend->IsConsoleMode();
 }
 
 void Engine::SetOptions(KeyedArchive* options)
 {
-    engineBackend->options = options;
+    engineBackend->SetOptions(options);
 }
 
 KeyedArchive* Engine::GetOptions()
 {
-    return engineBackend->options;
+    return engineBackend->GetOptions();
 }
 
 } // namespace DAVA

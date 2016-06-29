@@ -16,17 +16,18 @@ namespace DAVA
 namespace Private
 {
 
-void StartUWPApplication()
+int StartUWPApplication(const Vector<String>& cmdargs)
 {
     using namespace ::Windows::UI::Xaml;
-    auto appStartCallback = ref new ApplicationInitializationCallback([](ApplicationInitializationCallbackParams^) {
-        ref new DAVA::Private::UWPApplication();
+    auto appStartCallback = ref new ApplicationInitializationCallback([cmdargs](ApplicationInitializationCallbackParams^) {
+        ref new DAVA::Private::UWPApplication(cmdargs);
     });
     Application::Start(appStartCallback);
+    return 0;
 }
 
-UWPApplication::UWPApplication()
-    : engineBackend(new EngineBackend(0, nullptr))
+UWPApplication::UWPApplication(const Vector<String>& cmdargs)
+    : engineBackend(new EngineBackend(cmdargs))
 {
 }
 
@@ -44,27 +45,27 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
     Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
     Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
 
-    engineBackend->platformCore->OnLaunched();
+    engineBackend->GetPlatformCore()->OnLaunched();
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
 {
-    engineBackend->platformCore->OnActivated();
+    engineBackend->GetPlatformCore()->OnActivated();
 }
 
 void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args)
 {
-    engineBackend->platformCore->OnWindowCreated(args->Window);
+    engineBackend->GetPlatformCore()->OnWindowCreated(args->Window);
 }
 
 void UWPApplication::OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg)
 {
-    engineBackend->platformCore->OnSuspending();
+    engineBackend->GetPlatformCore()->OnSuspending();
 }
 
 void UWPApplication::OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg)
 {
-    engineBackend->platformCore->OnResuming();
+    engineBackend->GetPlatformCore()->OnResuming();
 }
 
 } // namespace Private

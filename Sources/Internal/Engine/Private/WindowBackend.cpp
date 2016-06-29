@@ -21,6 +21,7 @@ namespace Private
 WindowBackend::WindowBackend(EngineBackend* e, bool primary)
     : window(new Window(this))
     , engineBackend(e)
+    , dispatcher(engineBackend->GetDispatcher())
     , isPrimary(primary)
 {
 }
@@ -139,7 +140,7 @@ void WindowBackend::PostFocusChanged(bool focus)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.type = DispatcherEvent::WINDOW_FOCUS_CHANGED;
     e.stateEvent.state = focus;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostVisibilityChanged(bool visibility)
@@ -149,7 +150,7 @@ void WindowBackend::PostVisibilityChanged(bool visibility)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
     e.stateEvent.state = visibility;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
@@ -163,7 +164,7 @@ void WindowBackend::PostSizeChanged(float32 width, float32 height, float32 scale
     e.sizeEvent.height = height;
     e.sizeEvent.scaleX = scaleX;
     e.sizeEvent.scaleY = scaleY;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostWindowCreated(NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY)
@@ -178,7 +179,7 @@ void WindowBackend::PostWindowCreated(NativeWindow* native, float32 width, float
     e.windowCreatedEvent.size.height = height;
     e.windowCreatedEvent.size.scaleX = scaleX;
     e.windowCreatedEvent.size.scaleY = scaleY;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostWindowDestroyed()
@@ -187,7 +188,7 @@ void WindowBackend::PostWindowDestroyed()
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.type = DispatcherEvent::WINDOW_DESTROYED;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostKeyDown(uint32 key, bool isRepeated)
@@ -198,7 +199,7 @@ void WindowBackend::PostKeyDown(uint32 key, bool isRepeated)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostKeyUp(uint32 key)
@@ -209,7 +210,7 @@ void WindowBackend::PostKeyUp(uint32 key)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = false;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::PostKeyChar(uint32 key, bool isRepeated)
@@ -220,7 +221,7 @@ void WindowBackend::PostKeyChar(uint32 key, bool isRepeated)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    engineBackend->dispatcher->PostEvent(e);
+    dispatcher->PostEvent(e);
 }
 
 void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
@@ -237,9 +238,10 @@ void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
     pendingInitRender = true;
     pendingSizeChanging = true;
 
-    inputSystem = engineBackend->context->inputSystem;
-    uiControlSystem = engineBackend->context->uiControlSystem;
-    virtualCoordSystem = engineBackend->context->virtualCoordSystem;
+    AppContext* context = engineBackend->GetEngineContext();
+    inputSystem = context->inputSystem;
+    uiControlSystem = context->uiControlSystem;
+    virtualCoordSystem = context->virtualCoordSystem;
 
     virtualCoordSystem->EnableReloadResourceOnResize(true);
 }

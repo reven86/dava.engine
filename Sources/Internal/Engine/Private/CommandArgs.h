@@ -2,12 +2,17 @@
 
 #pragma once
 
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
 namespace Private
 {
-Vector<String> InitializeEngine(int argc, char* argv[]);
-void TerminateEngine();
+Vector<String> GetCommandArgs(int argc, char* argv[]);
+
+#if defined(__DAVAENGINE_WINDOWS__)
+Vector<String> GetCommandArgs();
+#endif
 
 } // namespace Private
 } // namespace DAVA

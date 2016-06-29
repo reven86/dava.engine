@@ -53,17 +53,21 @@ namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
 
-EngineBackend::EngineBackend(int argc, char* argv[])
+EngineBackend* EngineBackend::Instance()
+{
+    return instance;
+}
+
+EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
     : dispatcher(new Dispatcher)
     , platformCore(new PlatformCore(this))
     , context(new AppContext)
+    , cmdargs(cmdargs_)
 {
     DVASSERT(instance == nullptr);
     instance = this;
 
     new Logger;
-
-    cmdargs = platformCore->GetCommandLine(argc, argv);
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     CreatePrimaryWindowBackend();
@@ -73,6 +77,26 @@ EngineBackend::EngineBackend(int argc, char* argv[])
 EngineBackend::~EngineBackend()
 {
     instance = nullptr;
+}
+
+void EngineBackend::EngineCreated(Engine* e)
+{
+    engine = e;
+}
+
+void EngineBackend::EngineDestroyed()
+{
+    engine = nullptr;
+}
+
+void EngineBackend::SetOptions(KeyedArchive* options_)
+{
+    options = options_;
+}
+
+KeyedArchive* EngineBackend::GetOptions()
+{
+    return options;
 }
 
 void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
@@ -363,7 +387,7 @@ void EngineBackend::HandleAppTerminate(const DispatcherEvent& e)
 
 void EngineBackend::PostAppTerminate()
 {
-    if (!appTerminateSent)
+    if (!appIsTerminating)
     {
         DispatcherEvent e;
         e.window = nullptr;
@@ -371,23 +395,15 @@ void EngineBackend::PostAppTerminate()
         e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
         dispatcher->PostEvent(e);
 
-        appTerminateSent = true;
+        appIsTerminating = true;
     }
 }
 
 void EngineBackend::InitRenderer(WindowBackend* w)
 {
-    rhi::InitParam rendererParams;
-#if defined(__DAVAENGINE_QT__)
-    rhi::Api renderer = rhi::RHI_GLES2;
-#elif defined(__DAVAENGINE_MACOS__)
-    rhi::Api renderer = rhi::RHI_GLES2;
-#elif defined(__DAVAENGINE_WIN32__)
-    rhi::Api renderer = rhi::RHI_DX9;
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    rhi::Api renderer = rhi::RHI_DX11;
-#endif
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
+    rhi::InitParam rendererParams;
     rendererParams.threadedRenderEnabled = true;
     rendererParams.threadedRenderFrameCount = 2;
 

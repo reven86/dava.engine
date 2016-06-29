@@ -18,7 +18,7 @@ namespace Private
 {
 WindowWinUWP::WindowWinUWP(EngineBackend* e, WindowBackend* w)
     : engine(e)
-    , dispatcher(engine->dispatcher)
+    , dispatcher(engine->GetDispatcher())
     , window(w)
     , bridge(ref new WindowWinUWPBridge(this))
 {

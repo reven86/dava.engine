@@ -30,6 +30,7 @@ public:
     static HINSTANCE Win32AppInstance();
 
     Vector<String> GetCommandLine(int argc, char* argv[]);
+    Vector<String> GetCommandArgs() const;
 
     void Init();
     void Run();

@@ -98,7 +98,7 @@ void CoreWinUWP::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
-    WindowWinUWP* nativeWindow = new WindowWinUWP(engineBackend, engineBackend->primaryWindow);
+    WindowWinUWP* nativeWindow = new WindowWinUWP(engineBackend, engineBackend->GetPrimaryWindow());
     nativeWindow->BindXamlWindow(xamlWindow);
 }
 
