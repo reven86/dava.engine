@@ -397,6 +397,11 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextView setString:text];
+        if (nullptr != davaText)
+        {
+            DAVA::WideString oldString = davaText->GetText();
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+        }
 
         // HACK if user click cleartext button and current
         // native control not in focus - remove focus from dava control too
@@ -721,6 +726,10 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
+        if (nullptr != davaText)
+        {
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldText, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+        }
 
         // HACK if user click cleartext button and current
         // native control not in focus - remove focus from dava control too
