@@ -26,6 +26,7 @@ public:
 
     void OnAppStarted();
     void OnAppFinished();
+    void OnTestSkipped();
 
     void Update(float32 timeElapsed);
     void Draw();
