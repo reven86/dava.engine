@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
+    DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
     int exitCode = 0;
     {

@@ -24,7 +24,7 @@ public:
 
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
-    void OnPostLoadPugins() override;
+    void OnPostLoadPlugins() override;
     void OnPreUnloadPlugins() override;
     bool OnRequestCloseApp() override;
     void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;

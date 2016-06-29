@@ -60,7 +60,7 @@ void BaseApplication::LoadPlugins()
     NGTLayer::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
     wgt::Variant::setMetaTypeManager(NGTLayer::queryInterface<wgt::IMetaTypeManager>());
 
-    OnPostLoadPugins();
+    OnPostLoadPlugins();
 }
 
 wgt::IComponentContext& BaseApplication::GetComponentContext()
@@ -97,7 +97,7 @@ int BaseApplication::StartApplication()
     return app->startApplication();
 }
 
-void BaseApplication::OnPostLoadPugins()
+void BaseApplication::OnPostLoadPlugins()
 {
     if (qApp->applicationState() == Qt::ApplicationActive)
     {
