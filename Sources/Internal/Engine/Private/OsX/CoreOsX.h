@@ -23,17 +23,11 @@ public:
     CoreOsX(EngineBackend* e);
     ~CoreOsX();
 
-    CoreOsX(const CoreOsX&) = delete;
-    CoreOsX& operator=(const CoreOsX&) = delete;
-
     Vector<String> GetCommandLine(int argc, char* argv[]);
 
     void Init();
     void Run();
     void Quit();
-
-    WindowOsX* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
-    void DestroyNativeWindow(WindowBackend* w);
 
     // WindowOsX gets notified about application hidden/unhidden state changing
     // to update its visibility state
@@ -41,6 +35,8 @@ public:
 
 private:
     int OnFrame();
+
+    WindowOsX* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
 
 private:
     EngineBackend* engineBackend = nullptr;

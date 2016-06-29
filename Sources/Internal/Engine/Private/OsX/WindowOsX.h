@@ -13,6 +13,7 @@
 
 #include "Engine/Private/EngineFwd.h"
 #include "Engine/Private/OsX/OsXFwd.h"
+#include "Engine/Private/Dispatcher/PlatformDispatcher.h"
 
 namespace DAVA
 {
@@ -24,23 +25,26 @@ public:
     WindowOsX(EngineBackend* engine_, WindowBackend* window_);
     ~WindowOsX();
 
-    void Resize(float32 width, float32 height);
     void* GetHandle() const;
+
+    bool Create(float32 width, float32 height);
+    void Resize(float32 width, float32 height);
+    void Close();
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-private:
-    bool CreateNWindow(float32 width, float32 height);
-    void DestroyNWindow();
-    void ResizeNWindow(float32 width, float32 height);
+    void TriggerPlatformEvents();
+    void ProcessPlatformEvents();
 
-    //void PostCustomMessage(const EventWin32& e);
-    //void ProcessCustomEvents();
+private:
+    void EventHandler(const PlatformEvent& e);
 
 private:
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
     WindowBackend* window = nullptr;
+
+    PlatformDispatcher platformDispatcher;
 
     WindowOsXObjcBridge* bridge = nullptr;
 

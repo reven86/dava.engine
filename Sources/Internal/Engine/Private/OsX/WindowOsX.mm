@@ -37,35 +37,69 @@ WindowOsX::~WindowOsX()
     delete bridge;
 }
 
-void WindowOsX::Resize(float32 width, float32 height)
-{
-}
-
 void* WindowOsX::GetHandle() const
 {
     return bridge->openGLView;
 }
 
-void WindowOsX::RunAsyncOnUIThread(const Function<void()>& task)
-{
-}
-
-bool WindowOsX::CreateNWindow(float32 width, float32 height)
+bool WindowOsX::Create(float32 width, float32 height)
 {
     NSSize screenSize = [[NSScreen mainScreen] frame].size;
     float32 x = (screenSize.width - width) / 2.0f;
     float32 y = (screenSize.height - height) / 2.0f;
-    return bridge->CreateNSWindow(x, y, width, height);
+    return bridge->DoCreateWindow(x, y, width, height);
 }
 
-void WindowOsX::DestroyNWindow()
+void WindowOsX::Resize(float32 width, float32 height)
 {
-    bridge->DestroyNSWindow();
+    PlatformEvent e;
+    e.type = PlatformEvent::RESIZE_WINDOW;
+    e.resizeEvent.width = width;
+    e.resizeEvent.height = height;
+    platformDispatcher.PostEvent(e);
 }
 
-void WindowOsX::ResizeNWindow(float32 width, float32 height)
+void WindowOsX::Close()
 {
-    bridge->ResizeNSWindow(width, height);
+    PlatformEvent e;
+    e.type = PlatformEvent::CLOSE_WINDOW;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowOsX::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    PlatformEvent e;
+    e.type = PlatformEvent::FUNCTOR;
+    e.functor = task;
+    platformDispatcher.PostEvent(e);
+}
+
+void WindowOsX::TriggerPlatformEvents()
+{
+    bridge->TriggerPlatformEvents();
+}
+
+void WindowOsX::ProcessPlatformEvents()
+{
+    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowOsX::EventHandler));
+}
+
+void WindowOsX::EventHandler(const PlatformEvent& e)
+{
+    switch (e.type)
+    {
+    case PlatformEvent::RESIZE_WINDOW:
+        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        break;
+    case PlatformEvent::CLOSE_WINDOW:
+        bridge->DoCloseWindow();
+        break;
+    case PlatformEvent::FUNCTOR:
+        e.functor();
+        break;
+    default:
+        break;
+    }
 }
 
 } // namespace Private
