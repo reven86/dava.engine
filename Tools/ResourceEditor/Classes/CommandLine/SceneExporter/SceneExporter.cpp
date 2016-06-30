@@ -518,7 +518,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
                 else
                 {
                     DAVA::FilePath compressedName = descriptor.CreateMultiMipPathnameForGPU(gpu);
-                    copied = CopyFile(compressedName);
+                    copied = (compressedName.IsEmpty() ? false : CopyFile(compressedName));
                 }
             }
 

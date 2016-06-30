@@ -107,7 +107,7 @@ namespace TextureDescriptorLocal
 {
 String GetPostfix(eGPUFamily gpuFamily, ImageFormat imageFormat)
 {
-    String postfix = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::GetExtensionsFor(imageFormat)[0];
+    String postfix = GPUFamilyDescriptor::GetGPUPrefix(gpuFamily) + ImageSystem::GetDefaultExtension(imageFormat);
     return postfix;
 }
 
@@ -886,6 +886,9 @@ FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFam
     if (GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
         ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
+        if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+            return FilePath();
+
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
         return FilePath::CreateWithNewExtension(pathname, postfix);
     }
@@ -910,7 +913,11 @@ bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamil
 void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Vector<FilePath>& pathes) const
 {
     CreateSingleMipPathnamesForGPU(gpuFamily, pathes);
-    pathes.emplace_back(CreateMultiMipPathnameForGPU(gpuFamily));
+    FilePath path = CreateMultiMipPathnameForGPU(gpuFamily);
+    if (!path.IsEmpty())
+    {
+        pathes.emplace_back(path);
+    }
 }
 
 PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
