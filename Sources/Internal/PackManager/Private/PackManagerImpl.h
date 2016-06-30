@@ -136,7 +136,10 @@ inline void PackManagerImpl::EnableProcessing()
     if (!isProcessingEnabled)
     {
         isProcessingEnabled = true;
-        requestManager->Start();
+        if (requestManager)
+        {
+            requestManager->Start();
+        }
     }
 }
 
@@ -145,7 +148,10 @@ inline void PackManagerImpl::DisableProcessing()
     if (isProcessingEnabled)
     {
         isProcessingEnabled = false;
-        requestManager->Stop();
+        if (requestManager)
+        {
+            requestManager->Stop();
+        }
     }
 }
 
