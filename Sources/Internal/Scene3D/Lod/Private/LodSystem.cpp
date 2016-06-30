@@ -67,13 +67,9 @@ void LodSystem::Process(float32 timeElapsed)
         else
         {
             int32 newLod = 0;
-            if (forceLodUsed)
+            if (forceLodUsed && (slowVector[index].forceLodLayer != LodComponent::INVALID_LOD_LAYER))
             {
-                SlowStruct& slow = slowVector[index];
-                if (slow.forceLodLayer != LodComponent::INVALID_LOD_LAYER)
-                {
-                    newLod = slow.forceLodLayer;
-                }
+                newLod = slowVector[index].forceLodLayer;
             }
             else
             {
