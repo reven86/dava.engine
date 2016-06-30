@@ -5,6 +5,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
+#include "DLC/DLC.h"
 
 namespace DAVA
 {
@@ -319,7 +320,10 @@ void PackManagerImpl::AskFooter()
                     }
                     else
                     {
-                        throw std::runtime_error("can't get size of superpack from server");
+                        initError = PackManager::InitError::LoadingRequestFailed;
+                        initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error);
+
+                        packManager->initStateChanged.Emit(*this);
                     }
                 }
             }
@@ -361,8 +365,10 @@ void PackManagerImpl::GetFooter()
             }
             else
             {
-                // TODO ask what to do from Client?
-                throw std::runtime_error("not implemented");
+                initError = PackManager::InitError::LoadingRequestFailed;
+                initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error);
+
+                packManager->initStateChanged.Emit(*this);
             }
         }
     }
@@ -410,8 +416,10 @@ void PackManagerImpl::GetFileTable()
             }
             else
             {
-                // TODO ask what to do from Client?
-                throw std::runtime_error("not implemented");
+                initError = PackManager::InitError::LoadingRequestFailed;
+                initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error);
+
+                packManager->initStateChanged.Emit(*this);
             }
         }
     }
@@ -493,8 +501,10 @@ void PackManagerImpl::GetDB()
             }
             else
             {
-                // TODO ask what to do from Client?
-                throw std::runtime_error("not implemented");
+                initError = PackManager::InitError::LoadingRequestFailed;
+                initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error);
+
+                packManager->initStateChanged.Emit(*this);
             }
         }
     }

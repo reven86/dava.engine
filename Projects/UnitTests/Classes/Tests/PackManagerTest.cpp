@@ -39,59 +39,66 @@ DAVA_TESTCLASS (PackManagerTest)
     {
         using namespace DAVA;
 
-        String dbFile("~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db");
-        FilePath folderWithDownloadedPacks("~doc:/UnitTests/PackManagerTest/packs/");
+        String dbFileName("db_{gpu}.db.zip");
+        FilePath downloadedPacksDir("~doc:/UnitTests/PackManagerTest/packs/");
+        FilePath readOnlyPacksDir("~res:/TestData/PackManagerTest/packs/");
 
         // every time clear directory to download once again
-        FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
-        FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+        FileSystem::Instance()->DeleteDirectory(downloadedPacksDir);
+        FileSystem::Instance()->CreateDirectory(downloadedPacksDir, true);
 
-        String commonPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/common/");
-        String gpuPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/{gpu}/");
+        String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
-        String gpuName = "noname";
+        String architecture = "noname";
 
         eGPUFamily gpu = DeviceInfo::GetGPUFamily();
         switch (gpu)
         {
         case GPU_ADRENO:
-            gpuName = "adreno";
+            architecture = "adreno";
             break;
         case GPU_DX11:
-            gpuName = "dx11";
+            architecture = "dx11";
             break;
         case GPU_MALI:
-            gpuName = "mali";
+            architecture = "mali";
             break;
         case GPU_POWERVR_IOS:
-            gpuName = "pvr_ios";
+            architecture = "pvr_ios";
             break;
         case GPU_POWERVR_ANDROID:
-            gpuName = "pvr_android";
+            architecture = "pvr_android";
             break;
         case GPU_TEGRA:
-            gpuName = "tegra";
+            architecture = "tegra";
             break;
         default:
-            throw std::runtime_error("unknown gpu famili");
+            throw std::runtime_error("unknown gpu family");
         }
-
-        dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
-        gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
 
         PackManager& packManager = Core::Instance()->GetPackManager();
 
         FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
 
+        dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
+
         try
         {
-            packManager.Initialize(dbFile,
-                                   folderWithDownloadedPacks,
-                                   "",
-                                   commonPacksUrl,
-                                   gpuPacksUrl);
+            packManager.Initialize(dbFileName,
+                                   downloadedPacksDir,
+                                   readOnlyPacksDir,
+                                   superPackUrl,
+                                   architecture);
 
             GameClient client(packManager);
+
+            // wait till initialization done
+            while (packManager.GetInitialization().GetError() == PackManager::InitError::AllGood
+                   && packManager.GetInitialization().GetState() != PackManager::InitState::Ready)
+            {
+                DownloadManager::Instance()->Update();
+                packManager.Update();
+            }
 
             packManager.EnableRequesting();
 

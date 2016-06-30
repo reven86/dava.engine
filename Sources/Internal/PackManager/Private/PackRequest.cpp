@@ -4,6 +4,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "DLC/DLC.h"
 
 namespace DAVA
 {
@@ -67,53 +68,6 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackMa
 
         CollectDownlodbleDependency(dependName, dependency);
     }
-}
-
-static String DownloadErrorToString(DownloadError e)
-{
-    String errorMsg;
-    switch (e)
-    {
-    case DLE_CANCELLED: // download was cancelled by our side
-        errorMsg = "DLE_CANCELLED";
-        break;
-    case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
-        errorMsg = "DLE_COULDNT_RESUME";
-        break;
-    case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
-        errorMsg = "DLE_COULDNT_RESOLVE_HOST";
-        break;
-    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
-        errorMsg = "DLE_COULDNT_CONNECT";
-        break;
-    case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
-        errorMsg = "DLE_CONTENT_NOT_FOUND";
-        break;
-    case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
-        errorMsg = "DLE_NO_RANGE_REQUEST";
-        break;
-    case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
-        errorMsg = "DLE_COMMON_ERROR";
-        break;
-    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
-        errorMsg = "DLE_INIT_ERROR";
-        break;
-    case DLE_FILE_ERROR: // file read and write errors
-        errorMsg = "DLE_FILE_ERROR";
-        break;
-    case DLE_UNKNOWN: // we cannot determine the error
-        errorMsg = "DLE_UNKNOWN";
-        break;
-    case DLE_NO_ERROR:
-    {
-        errorMsg = "DLE_NO_ERROR";
-        break;
-    }
-    default:
-        DVASSERT(false);
-        break;
-    } // end switch downloadError
-    return errorMsg;
 }
 
 void PackRequest::AskFooter()
@@ -290,7 +244,7 @@ bool PackRequest::IsLoadingPackFileFinished()
             }
             else
             {
-                String errorMsg = DownloadErrorToString(downloadError);
+                String errorMsg = DLC::ToString(downloadError);
                 currentPack.state = PackManager::Pack::Status::ErrorLoading;
                 currentPack.downloadError = downloadError;
                 currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
