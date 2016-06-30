@@ -115,6 +115,12 @@ void TextFieldStbImpl::SetText(const WideString& newText)
         cursorPos = std::min(cursorPos, uint32(newText.length()));
         SetCursorPos(cursorPos);
 
+        UITextFieldDelegate* delegate = control->GetDelegate();
+        if (delegate)
+        {
+            delegate->TextFieldOnTextChanged(control, text, prevText);
+        }
+
         staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
 
         needRedraw = true;

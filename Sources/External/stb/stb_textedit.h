@@ -503,11 +503,15 @@ static void stb_textedit_find_charpos(StbFindState *find, STB_TEXTEDIT_STRING *s
          find->height = r.ymax - r.ymin;
          find->x = r.x1;
       } else {
-         while (i < z) {
-            STB_TEXTEDIT_LAYOUTROW(&r, str, i);
-            prev_first = prev_start;
-            prev_start = i;
-            i += r.num_chars;
+         if (z == 0) {
+             STB_TEXTEDIT_LAYOUTROW(&r, str, 0);
+         } else {
+             while (i < z) {
+                STB_TEXTEDIT_LAYOUTROW(&r, str, i);
+                prev_first = prev_start;
+                prev_start = i;
+                i += r.num_chars;
+             }
          }
          find->y = r.ymin;
          find->x = r.x1;
@@ -862,8 +866,8 @@ retry:
                float x0,x1;
                STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, start, i, &x0, &x1);
                state->cursor = start + i;
-               if (x0 <= goal_x && x1 > goal_x) {
-                  break;
+               if (x0 >= goal_x || goal_x < x1) {
+                   break;
                }
 #else
                float dx = STB_TEXTEDIT_GETWIDTH(str, start, i);
@@ -922,8 +926,8 @@ retry:
                float x0,x1;
                STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, find.prev_first, i, &x0, &x1);
                state->cursor = find.prev_first + i;
-               if (x0 <= goal_x && x1 > goal_x) {
-                  break;
+               if (x0 >= goal_x || goal_x < x1) {
+                   break;
                }
 #else
                float dx = STB_TEXTEDIT_GETWIDTH(str, find.prev_first, i);
