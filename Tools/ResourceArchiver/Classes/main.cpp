@@ -1,3 +1,46 @@
+#if defined(__DAVAENGINE_COREV2__)
+
+#include <Base/BaseTypes.h>
+#include <Engine/Engine.h>
+
+#include "CommandLineApplication.h"
+#include "ArchivePackTool.h"
+#include "ArchiveUnpackTool.h"
+#include "ArchiveListTool.h"
+#include "ResultCodes.h"
+
+int GameMain(DAVA::Vector<DAVA::String> cmdline)
+{
+#if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WIN32__)
+#error "ResourceArchiver compiles only for win32 or macos"
+#endif
+
+    using namespace DAVA;
+
+    Vector<String> modules = {
+        "JobManager",
+        "NetCore",
+        "LocalizationSystem"
+    };
+
+    Engine e;
+    e.Init(true, modules);
+
+    EngineContext* context = e.GetContext();
+    context->logger->SetLogLevel(Logger::LEVEL_INFO);
+    context->logger->EnableConsoleMode();
+
+    CommandLineApplication app("ResourceArchiver");
+    app.SetParseErrorCode(ResourceArchiverResult::ERROR_WRONG_COMMAND_LINE);
+    app.AddTool(std::unique_ptr<CommandLineTool>(new ArchivePackTool));
+    app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
+    app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
+
+    return app.Process(cmdline);
+}
+
+#else
+
 #include "Base/Platform.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/FileSystem.h"
@@ -87,3 +130,4 @@ int main(int argc, char* argv[])
     ReleaseDAVA();
     return resultCode;
 }
+#endif

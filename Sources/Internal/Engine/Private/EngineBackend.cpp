@@ -510,6 +510,14 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
 void EngineBackend::DestroySubsystems()
 {
+    if (context->jobManager != nullptr)
+    {
+        // Wait job completion before releasing singletons
+        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::beforeTerminate
+        context->jobManager->WaitWorkerJobs();
+        context->jobManager->WaitMainJobs();
+    }
+
     if (!consoleMode)
     {
         context->localNotificationController->Release();
