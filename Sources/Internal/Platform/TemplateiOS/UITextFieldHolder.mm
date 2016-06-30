@@ -189,11 +189,11 @@
         caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
         UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
         [textField_ setSelectedTextRange:rangeCaret];
-        if (nullptr != cppTextField)
+        if (nullptr != cppTextField && ![origString isEqualToString:newString])
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
-            DAVA::WideString oldString = cppTextField->GetText();
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
         }
     }
     return applyChanges;
@@ -248,7 +248,7 @@
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
 
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString, UITextFieldDelegate::eInteractionType::USER);
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString, DAVA::UITextFieldDelegate::eInteractionType::USER);
     }
 }
 
