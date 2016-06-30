@@ -1,8 +1,6 @@
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_parser.h>
 
-#include "UI/Private/CEFDavaResourceHandler.h"
+#include "CEFDavaResourceHandler.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
@@ -109,5 +107,3 @@ CefRefPtr<CefResourceHandler> CEFDavaResourceHandlerFactory::Create(CefRefPtr<Ce
 }
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW

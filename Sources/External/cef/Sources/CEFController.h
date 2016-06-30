@@ -1,5 +1,4 @@
 #pragma once
-#if defined(ENABLE_CEF_WEBVIEW)
 
 #include <cef/include/internal/cef_ptr.h>
 #include "Base/RefPtr.h"
@@ -14,8 +13,7 @@ public:
     CEFController(const CefRefPtr<CefClient>& client);
     ~CEFController();
 
-    static bool IsCEFInitialized();
-    void Update();
+    static bool IsCEFAvailable();
 
     static uint32 GetCacheLimitSize();
     static void SetCacheLimitSize(uint32 size);
@@ -25,5 +23,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW
