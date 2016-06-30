@@ -317,6 +317,10 @@ public:
         [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
 
         objcDelegate = [[MultilineDelegate alloc] init];
+        if (nullptr != davaText_)
+        {
+            objcDelegate->maxLength = davaText_->GetMaxLength();
+        }
         objcDelegate->text = wrapper;
 
         [nsTextView setDelegate:objcDelegate];
@@ -600,6 +604,10 @@ public:
         [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
         formatter = [[CustomTextFieldFormatter alloc] init];
         formatter->text = wrapper;
+        if (nullptr != davaText_)
+        {
+            formatter->maxLength = davaText_->GetMaxLength();
+        }
         [nsTextField setFormatter:formatter];
         objcDelegate = [[CustomDelegate alloc] init];
         objcDelegate->text = wrapper;
