@@ -138,7 +138,15 @@ void LODComponentHolder::ApplyForce(const ForceValues& force)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
-            scene->lodSystem->SetForceLodLayer(lc, force.layer);
+            if (force.layer == LodComponent::LAST_LOD_LAYER)
+            {
+                int32 lastLayer = Max(0, static_cast<int32>(GetLodLayersCount(lc)) - 1);
+                scene->lodSystem->SetForceLodLayer(lc, lastLayer);
+            }
+            else
+            {
+                scene->lodSystem->SetForceLodLayer(lc, force.layer);
+            }
         }
 
         if (force.flag & ForceValues::APPLY_DISTANCE)

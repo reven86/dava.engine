@@ -213,11 +213,9 @@ void LODEditor::ForceDistanceChanged(int distance)
 void LODEditor::ForceLayerActivated(int index)
 {
     EditorLODSystem* system = GetCurrentEditorLODSystem();
-    //    const LODComponentHolder* lodData = system->GetActiveLODData();
-
     ForceValues forceValues = system->GetForceValues();
-    forceValues.layer = index - 1;
 
+    forceValues.layer = index - 1;
     if (forceValues.layer == LodComponent::MAX_LOD_LAYERS)
     {
         forceValues.layer = LodComponent::LAST_LOD_LAYER;
