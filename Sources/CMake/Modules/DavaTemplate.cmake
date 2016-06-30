@@ -590,6 +590,22 @@ list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
+if( WIN32 AND NOT WINDOWS_UAP )
+    set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness HighDPIAware )
+
+
+    add_custom_target( VS_MODIFIED_${PROJECT_NAME}  ALL
+         COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY}  )
+
+    set_property( TARGET VS_MODIFIED_${PROJECT_NAME} PROPERTY FOLDER "CMAKE" )
+    add_dependencies( ${PROJECT_NAME}  VS_MODIFIED_${PROJECT_NAME}  )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} VS_MODIFIED_${PROJECT_NAME} )
+    endif()
+ 
+endif() 
+
 file_tree_check( "${DAVA_FOLDERS}" )
 
 set( DAVA_FOLDERS PARENT_SCOPE )
@@ -618,22 +634,6 @@ if( ANDROID )
     endforeach()
 
 endif() 
-
-
-if( WIN32 AND NOT WINDOWS_UAP )
-    set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness HighDPIAware )
-    add_custom_target( VS_MODIFIED_${PROJECT_NAME} 
-         COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY} )
-
-    set_property( TARGET VS_MODIFIED_${PROJECT_NAME} PROPERTY FOLDER "CMAKE" )
-
-    if( DAVA_FOUND )
-        add_dependencies( ${DAVA_LIBRARY} VS_MODIFIED_${PROJECT_NAME} )
-    endif()
-    add_dependencies( ${PROJECT_NAME} VS_MODIFIED_${PROJECT_NAME} )
- 
-endif() 
-
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
