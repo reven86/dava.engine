@@ -48,8 +48,8 @@ void REApplication::Run()
 
 void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
 {
-    names.push_back(L"plg_reflection");
     names.push_back(L"plg_variant");
+    names.push_back(L"plg_reflection");
     names.push_back(L"plg_command_system");
     names.push_back(L"plg_serialization");
     names.push_back(L"plg_file_system");
@@ -59,7 +59,7 @@ void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) con
     names.push_back(L"plg_history_ui");
 }
 
-void REApplication::OnPostLoadPugins()
+void REApplication::OnPostLoadPlugins()
 {
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
@@ -73,6 +73,8 @@ void REApplication::OnPostLoadPugins()
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
+
+    BaseApplication::OnPostLoadPlugins();
 }
 
 void REApplication::OnPreUnloadPlugins()

@@ -7,6 +7,7 @@
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -37,7 +38,7 @@ void Initialize()
     defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
     defaultPass.shaderFileName = FastName("~res:/Materials/Shaders/Default/materials");
     defaultPass.shader = ShaderDescriptorCache::GetShaderDescriptor(defaultPass.shaderFileName, defFlags);
-    defaultPass.templateDefines.insert(FastName("MATERIAL_TEXTURE"));
+    defaultPass.templateDefines[FastName("MATERIAL_TEXTURE")] = 1;
 
     defaultFX.renderPassDescriptors.clear();
     defaultFX.renderPassDescriptors.push_back(defaultPass);
@@ -69,12 +70,14 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
     if (quality.IsValid()) //quality made as part of fx key
         key.push_back(quality.Index());
 
+    //[METAL_COMPLETE] to be able to switch fx depending on metal/non-metal option
+    key.push_back(QualitySettingsSystem::Instance()->GetAllowMetalFeatures() ? 1 : 0);
+
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
 
     //not found - load new
-    //for
     return LoadFXFromOldTemplate(fxName, defines, key, quality);
 }
 
@@ -104,11 +107,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     const YamlNode* renderTechniqueNode = nullptr;
     if (materialTemplateNode) //multy-quality material
     {
-        /*int32 quality = 0;
-        auto it = defines.find(NMaterialQualityName::QUALITY_FLAG_NAME);
-        if (it != defines.end())
-        quality = it->second;*/
-
         const YamlNode* qualityNode = nullptr;
         if (quality.IsValid())
         {
@@ -201,7 +199,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                 for (int32 k = 0; k < count; ++k)
                 {
                     const YamlNode* singleDefineNode = definesNode->Get(k);
-                    passDescriptor.templateDefines.insert(FastName(singleDefineNode->AsString().c_str()));
+                    passDescriptor.templateDefines[FastName(singleDefineNode->AsString().c_str())] = 1;
                 }
             }
 
@@ -337,6 +335,24 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     }
     SafeRelease(parser);
 
+    //add render pass for reflection/refraction - hard coded for now
+    //TODO: rethink how to modify material template without full copy for all passes
+    //do it only for editor or if metal features are allowed - performance issue
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures() || QualitySettingsSystem::Instance()->GetRuntimeQualitySwitching())
+    {
+        for (RenderPassDescriptor& pass : target.renderPassDescriptors)
+        {
+            if (pass.passName == PASS_FORWARD)
+            {
+                RenderPassDescriptor noFog = pass;
+                noFog.passName = PASS_REFLECTION_REFRACTION;
+                noFog.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
+                target.renderPassDescriptors.push_back(noFog);
+                break;
+            }
+        }
+    }
+
     return oldTemplateMap[std::make_pair(fxName, quality)] = target;
 }
 
@@ -350,7 +366,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
     {
         HashMap<FastName, int32> shaderDefines = defines;
         for (auto& templateDefine : pass.templateDefines)
-            shaderDefines[templateDefine] = 1;
+            shaderDefines[templateDefine.first] = templateDefine.second;
         if (pass.hasBlend)
         {
             if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
@@ -361,7 +377,15 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
             shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
         }
 
+        //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+        if (!QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        {
+            shaderDefines.erase(NMaterialFlagName::FLAG_SPECULAR);
+            shaderDefines.erase(NMaterialFlagName::FLAG_FLOWMAP_SKY);
+        }
+
         pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);
+        pass.depthStencilState = rhi::AcquireDepthStencilState(pass.depthStateDescriptor);
     }
 
     return fxDescriptors[key] = target;

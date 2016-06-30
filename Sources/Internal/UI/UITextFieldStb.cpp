@@ -153,7 +153,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             lastCursorPos = stb->GetCursorPosition();
 
             UpdateCursor(lastCursorPos, stb->IsInsertMode());
-            UpdateOffset(cursorRect);
+            UpdateOffset(cursorRect + staticTextOffset);
             // Fix cursor position for multiline if end of some line contains many
             // spaces over control size (same behavior in MS Word)
             if (!stb->IsSingleLineMode())

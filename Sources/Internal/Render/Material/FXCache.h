@@ -11,10 +11,11 @@ struct RenderPassDescriptor
 {
     FastName passName;
     FastName shaderFileName;
-    Set<FastName> templateDefines;
+    HashMap<FastName, int> templateDefines = HashMap<FastName, int>(8);
     ShaderDescriptor* shader = nullptr;
     bool hasBlend = false;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;
+    rhi::HDepthStencilState depthStencilState;
     RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_INVALID_ID;
     rhi::CullMode cullMode = rhi::CULL_NONE;
     bool wireframe = false;
