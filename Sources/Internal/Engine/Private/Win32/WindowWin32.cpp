@@ -356,7 +356,7 @@ LRESULT WindowWin32::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool
     }
     else if (message == WM_MOUSEWHEEL)
     {
-        int32 delta = GET_WHEEL_DELTA_WPARAM(wparam);
+        int32 delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
         uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
         int x = GET_X_LPARAM(lparam);
         int y = GET_Y_LPARAM(lparam);

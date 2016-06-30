@@ -1,10 +1,9 @@
-#if !defined(__DAVAENGINE_COREV2__)
 #include "Tests/FullscreenTest.h"
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest()
-    : BaseScreen("FullscreenTest")
+FullscreenTest::FullscreenTest(GameCore* g)
+    : BaseScreen(g, "FullscreenTest")
 {
 }
 
@@ -102,7 +101,9 @@ void FullscreenTest::LoadResources()
     currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
+#if !defined(__DAVAENGINE_COREV2__)
     currentScaleText->SetText(Format(L"%f", Core::Instance()->GetScreenScaleMultiplier()));
+#endif
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -195,6 +196,7 @@ void FullscreenTest::UnloadResources()
 
 void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     UIButton* btn = static_cast<UIButton*>(sender);
     switch (btn->GetTag())
     {
@@ -211,10 +213,12 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
         UpdateMode();
         break;
     }
+#endif
 }
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     float32 mul = Core::Instance()->GetScreenScaleMultiplier();
     if (mul < 2.0f)
     {
@@ -224,10 +228,12 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     Core::Instance()->SetScreenScaleMultiplier(mul);
 
     currentScaleText->SetText(Format(L"%f", mul));
+#endif
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     float32 mul = Core::Instance()->GetScreenScaleMultiplier();
     if (mul > 0.2f)
     {
@@ -237,6 +243,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     Core::Instance()->SetScreenScaleMultiplier(mul);
 
     currentScaleText->SetText(Format(L"%f", mul));
+#endif
 }
 
 void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void* callerData)
@@ -297,6 +304,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 
 void FullscreenTest::UpdateMode()
 {
+#if !defined(__DAVAENGINE_COREV2__)
     switch (Core::Instance()->GetScreenMode())
     {
     case Core::eScreenMode::WINDOWED:
@@ -331,6 +339,7 @@ void FullscreenTest::UpdateMode()
         pinningMousePosText->SetVisibilityFlag(true);
         break;
     }
+#endif
 }
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
@@ -356,5 +365,3 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
 
     return BaseScreen::SystemInput(currentInput);
 }
-
-#endif // !__DAVAENGINE_COREV2__

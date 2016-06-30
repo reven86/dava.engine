@@ -1,4 +1,3 @@
-#if !defined(__DAVAENGINE_COREV2__)
 #ifndef __FULLSCREENTEST_TEST_H__
 #define __FULLSCREENTEST_TEST_H__
 
@@ -8,10 +7,11 @@
 
 using namespace DAVA;
 
+class GameCore;
 class FullscreenTest : public BaseScreen
 {
 public:
-    FullscreenTest();
+    FullscreenTest(GameCore* g);
 
 protected:
     void LoadResources() override;
@@ -37,5 +37,3 @@ private:
 };
 
 #endif //__FULLSCREENTEST_TEST_H__
-
-#endif // !__DAVAENGINE_COREV2__

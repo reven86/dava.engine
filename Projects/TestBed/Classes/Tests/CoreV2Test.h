@@ -4,6 +4,8 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+#include "Engine/EngineFwd.h"
+
 namespace DAVA
 {
 class UIButton;
@@ -12,10 +14,11 @@ struct Rect;
 class BaseObject;
 };
 
+class GameCore;
 class CoreV2Test : public BaseScreen
 {
 public:
-    CoreV2Test(DAVA::Engine* e);
+    CoreV2Test(GameCore* g);
     ~CoreV2Test();
 
 protected:
@@ -34,6 +37,8 @@ private:
                                    void (CoreV2Test::*onClick)(DAVA::BaseObject*, void*, void*));
 
 private:
+    DAVA::Engine* engine = nullptr;
+
     DAVA::UIButton* buttonQuit = nullptr;
 
     DAVA::UIButton* buttonResize640x480 = nullptr;
@@ -41,8 +46,6 @@ private:
 
     DAVA::UIButton* buttonRunOnMain = nullptr;
     DAVA::UIButton* buttonRunOnUI = nullptr;
-
-    DAVA::Engine* engine = nullptr;
 
     size_t tokenOnWindowCreated = 0;
     size_t tokenOnWindowDestroyed = 0;

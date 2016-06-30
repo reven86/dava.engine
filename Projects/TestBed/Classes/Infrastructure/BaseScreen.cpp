@@ -5,22 +5,24 @@ using namespace DAVA;
 
 int32 BaseScreen::globalScreenId = 1;
 
-BaseScreen::BaseScreen(const String& _screenName, int32 skipBeforeTests)
+BaseScreen::BaseScreen(GameCore* g, const String& _screenName, int32 skipBeforeTests)
     : UIScreen()
+    , gameCore(g)
     , currentScreenId(globalScreenId++)
     , exitButton(nullptr)
 {
     SetName(_screenName);
 
-    GameCore::Instance()->RegisterScreen(this);
+    gameCore->RegisterScreen(this);
 }
 
-BaseScreen::BaseScreen()
+BaseScreen::BaseScreen(GameCore* g)
     : UIScreen()
+    , gameCore(g)
     , currentScreenId(globalScreenId++)
 {
     SetName("BaseScreen");
-    GameCore::Instance()->RegisterScreen(this);
+    gameCore->RegisterScreen(this);
 }
 
 bool BaseScreen::SystemInput(UIEvent* currentInput)
@@ -64,5 +66,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject* obj, void* data, void* callerData)
 {
-    GameCore::Instance()->ShowStartScreen();
+    gameCore->ShowStartScreen();
 }

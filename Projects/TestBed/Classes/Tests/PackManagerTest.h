@@ -1,15 +1,14 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
+class GameCore;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest();
+    PackManagerTest(GameCore* g);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
@@ -49,5 +48,3 @@ private:
     DAVA::UITextField* filePathField = nullptr;
     DAVA::UIButton* checkFile = nullptr;
 };
-
-#endif // !__DAVAENGINE_COREV2__

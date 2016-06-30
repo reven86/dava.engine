@@ -1,15 +1,16 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Tests/CoreV2Test.h"
+#include "Infrastructure/GameCore.h"
 
 #include "Engine/Engine.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;
 
-CoreV2Test::CoreV2Test(DAVA::Engine* e)
-    : BaseScreen("CoreV2Test")
-    , engine(e)
+CoreV2Test::CoreV2Test(GameCore* g)
+    : BaseScreen(g, "CoreV2Test")
+    , engine(g->GetEngine())
 {
     engine->windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
     engine->windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));

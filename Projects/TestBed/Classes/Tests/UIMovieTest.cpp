@@ -5,8 +5,8 @@ namespace
 FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 }
 
-UIMovieTest::UIMovieTest()
-    : BaseScreen("UIMovieTest")
+UIMovieTest::UIMovieTest(GameCore* g)
+    : BaseScreen(g, "UIMovieTest")
 {
 }
 
