@@ -160,6 +160,11 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         FileSystem::Instance()->Init();
 
         Core::Instance()->SystemAppStarted();
+
+        // We are always in foreground when initialize application
+        // This condition avoids render resuming on startup
+        // Render resuming on startup has no sence, but can breaks render
+        foreground = true;
         StartForeground();
     }
 
@@ -207,6 +212,7 @@ void CorePlatformAndroid::StartForeground()
             DAVA::Core::Instance()->SetIsActive(true);
         }
         DAVA::Core::Instance()->GoForeground();
+        DAVA::Core::Instance()->FocusReceived();
 
         if (!foreground)
             rhi::ResumeRendering();
@@ -230,6 +236,7 @@ void CorePlatformAndroid::StopForeground(bool isLock)
         DAVA::Core::Instance()->SetIsActive(false);
     }
     DAVA::Core::Instance()->GoBackground(isLock);
+    DAVA::Core::Instance()->FocusLost();
 
     if (foreground)
         rhi::SuspendRendering();
