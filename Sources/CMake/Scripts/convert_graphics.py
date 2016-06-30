@@ -32,7 +32,7 @@ def delete_folder(folder_path):
 def convert_graphics_args( args ):
     pathDava       = os.path.realpath( args.pathDava )
     pathDataSource = os.path.realpath( args.pathDataSource )
-    pathTools      = os.path.realpath( os.path.join( args.pathDava, "Tools\Bin" ) )
+    pathTools      = os.path.realpath( os.path.join( args.pathDava, "Tools/Bin" ) )
     
     print ''
     print 'Convert graphics  '
@@ -57,10 +57,10 @@ def convert_graphics_args( args ):
     
     startTime = time.time()  
     os.chdir( pathTools );    
+    xxx_trash_bin_path = os.path.relpath( pathTools, pathDataSource )
     for dir in gfxDirs:
         pathGfx = os.path.join(pathDataSource, dir)
-        xxx_trash_bin_path = os.path.relpath( os.path.join(pathDava,'Tools/Bin' ), pathDataSource )
-        params = ["./ResourcePacker", pathGfx, xxx_trash_bin_path, pathDataSource, pathDava, paramPacker ]
+        params = ["./ResourcePacker", pathGfx, xxx_trash_bin_path, paramPacker ]
         print 'Call ->', params, '\n'
         rc = os.spawnv(os.P_WAIT, "./ResourcePacker", params);
              
