@@ -21,7 +21,7 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(fileList->GetDirectoryCount() == 4);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
-        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        for (uint32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
             if (fileList->IsNavigationDirectory(ifo))
                 continue;
@@ -36,7 +36,7 @@ DAVA_TESTCLASS (FileSystemTest)
                 TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
@@ -86,7 +86,7 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(fileList->GetDirectoryCount() == 4);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
-        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        for (uint32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
             if (fileList->IsNavigationDirectory(ifo))
                 continue;
@@ -101,7 +101,7 @@ DAVA_TESTCLASS (FileSystemTest)
                 TEST_VERIFY(pathname == "~doc:/TestData/FileSystemTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;

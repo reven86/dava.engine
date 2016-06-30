@@ -14,7 +14,7 @@ public:
     GameClient(DAVA::PackManager& packManager_)
         : packManager(packManager_)
     {
-        sigConnection = packManager.packState.Connect(this, &GameClient::OnPackStateChange);
+        sigConnection = packManager.packStateChanged.Connect(this, &GameClient::OnPackStateChange);
     }
     void OnPackStateChange(const DAVA::PackManager::Pack& pack)
     {
@@ -93,7 +93,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
             GameClient client(packManager);
 
-            packManager.EnableProcessing();
+            packManager.EnableRequesting();
 
             String packName = "vpack";
 

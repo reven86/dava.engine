@@ -312,8 +312,8 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
 
     FilePath path(fileName);
 
-    File* f = File::Create(path, File::OPEN | File::READ);
-    if (f == nullptr)
+    ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
+    if (!f)
     {
         packNameLoading->SetText(L"can't load file");
     }
