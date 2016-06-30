@@ -8,6 +8,8 @@ set( NAME_MODULE DavaFramework )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
+set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
 
@@ -69,7 +71,7 @@ set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_
 set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
-set( SOURCE_FOLDERS                 "." )
+set( SRC_FOLDERS                    "." )
 
 set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    
@@ -82,13 +84,9 @@ set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
                                     "Compression/ZipCompressor.cpp"
-                                    "UI/Private/CEFController.cpp"
-                                    "UI/Private/CEFWebViewControl.cpp"
-                                    "UI/Private/CEFWebViewControlProxy.cpp"
-                                    "UI/Private/CEFWebPageRender.cpp"
-                                    "UI/Private/CEFDavaResourceHandler.cpp"
                                     "Platform/Steam.cpp"
-                                    "DataStorage/Steam/DataStorageSteam.cpp" )
+                                    "DataStorage/Steam/DataStorageSteam.cpp"
+                                    "UI/Private/CEF/WebViewControl.cpp" )
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
@@ -118,8 +116,8 @@ set( DEFINITIONS_PRIVATE_IOS        -DDDARWIN_NO_CARBON )
 set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )
 set( DEFINITIONS_PRIVATE_ANDROID    -D__ANDROID__ )
 set( DEFINITIONS_PRIVATE_WINUAP     -DSQLITE_OS_WINRT=1 )
+set( DEFINITIONS_PRIVATE_WIN        -DDISABLE_NATIVE_WEBVIEW )
 
-set( DEPLOY_TO_BIN_WIN              ${DAVA_TOOLS_BIN_DIR}/cef/* )
 
 if( DAVA_DISABLE_AUTOTESTS  )
     list( APPEND DEFINITIONS -DDISABLE_AUTOTESTS )
@@ -128,10 +126,6 @@ endif()
 if ( STEAM_SDK_FOUND )#tmp
     list( APPEND INCLUDES ${STEAM_SDK_HEADERS} )
     list( APPEND DEFINITIONS -D__DAVAENGINE_STEAM__ )
-endif ()
-
-if ( ENABLE_CEF )
-    list( APPEND DEFINITIONS -DENABLE_CEF_WEBVIEW -DDISABLE_NATIVE_WEBVIEW )
 endif ()
 
 if( DAVA_USE_RENDERSTATS )

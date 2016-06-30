@@ -153,6 +153,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
+    DAVA::Core::Instance()->FocusReceived();
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application
@@ -166,6 +167,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
+    DAVA::Core::Instance()->FocusLost();
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
@@ -182,6 +184,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     //        NSLog(@"Sent to background by home button/switching to other app");
     //    }
     DAVA::Core::Instance()->GoBackground(isLock);
+    DAVA::Core::Instance()->FocusLost();
 
     rhi::SuspendRendering();
 }
@@ -197,6 +200,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
+    DAVA::Core::Instance()->FocusReceived();
 
     rhi::ResumeRendering();
 }

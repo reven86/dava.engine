@@ -2292,12 +2292,18 @@ void UninitializeRenderThreadGLES2()
 
 void SuspendGLES2()
 {
-    _GLES2_RenderThreadSuspended.Set(true);
-    while (!_GLES2_RenderThreadSuspendSyncReached)
+    if (_GLES2_RenderThreadSuspended.CompareAndSwap(false, true))
     {
-        _GLES2_FramePreparedEvent.Signal(); //avoid stall
+        while (!_GLES2_RenderThreadSuspendSyncReached)
+        {
+            _GLES2_FramePreparedEvent.Signal(); //avoid stall
+        }
+        _GLES2_RenderThreadSuspendSyncReached = false;
     }
-    _GLES2_RenderThreadSuspendSyncReached = false;
+    else
+    {
+        DVASSERT_MSG(false, "[RHI] Render was suspended twice");
+    }
 
     Logger::Error("Render GLES Suspended");
 }
@@ -2307,8 +2313,15 @@ void SuspendGLES2()
 void ResumeGLES2()
 {
     Logger::Error("Render GLES Resumed");
-    _GLES2_RenderThreadSuspended.Set(false);
-    _GLES2_RenderThreadSuspendSync.Post();
+
+    if (_GLES2_RenderThreadSuspended.CompareAndSwap(true, false))
+    {
+        _GLES2_RenderThreadSuspendSync.Post();
+    }
+    else
+    {
+        DVASSERT_MSG(false, "[RHI] Render was resumed twice");
+    }
 }
 
 //------------------------------------------------------------------------------

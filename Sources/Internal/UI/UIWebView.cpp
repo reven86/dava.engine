@@ -5,7 +5,7 @@
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
 #elif defined(ENABLE_CEF_WEBVIEW)
-#include "UI/Private/CEFWebViewControlProxy.h"
+#include "UI/Private/CEF/WebViewControl.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "UI/Private/OSX/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -22,10 +22,6 @@
 
 namespace DAVA
 {
-IWebViewControl::~IWebViewControl()
-{
-}
-
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
     , webViewControl(new WebViewControl(*this))
