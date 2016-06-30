@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATH_CONSTANTS_H__
-#define __DAVAENGINE_MATH_CONSTANTS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -11,5 +10,3 @@ static const float32 PI_2 = 2 * 3.14159265358979323846f;
 static const float32 PI_05 = 3.14159265358979323846f / 2.f;
 };
 
-
-#endif //__DAVAENGINE_MATH_CONSTANTS_H__

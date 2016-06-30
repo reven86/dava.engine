@@ -260,7 +260,8 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& dis
         const QSignalBlocker guardWidget(distanceWidgets[i].distance);
 
         float32 minDistance = (i == 0) ? LodComponent::MIN_LOD_DISTANCE : distances[i - 1];
-        float32 maxDistance = (i == count - 1) ? std::numeric_limits<DAVA::float32>::max() : distances[i + 1];
+        float64 maxDistance = (i == DAVA::LodComponent::MAX_LOD_LAYERS - 1) ? std::numeric_limits<DAVA::float64>::max() : distances[i + 1];
+
         distanceWidgets[i].distance->setRange(minDistance, maxDistance); //distance
         distanceWidgets[i].distance->setValue(distances[i]);
 
@@ -461,7 +462,9 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 void LODEditor::DistanceWidget::SetEnabled(bool enabled)
 {
-    distance->setEnabled(enabled);
+    //TODO: set different text colors for enabled and disabled
+
+    //    distance->setEnabled(enabled);
 }
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
