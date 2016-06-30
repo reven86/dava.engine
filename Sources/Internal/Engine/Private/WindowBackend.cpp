@@ -2,7 +2,7 @@
 
 #include "Engine/Public/Window.h"
 
-#include "Engine/Public/AppContext.h"
+#include "Engine/Public/EngineContext.h"
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/NativeWindow.h"
 #include "Engine/Private/EngineBackend.h"
@@ -238,7 +238,7 @@ void WindowBackend::HandleWindowCreated(const DispatcherEvent& e)
     pendingInitRender = true;
     pendingSizeChanging = true;
 
-    AppContext* context = engineBackend->GetEngineContext();
+    EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
     virtualCoordSystem = context->virtualCoordSystem;

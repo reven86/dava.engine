@@ -1,5 +1,7 @@
 #include "Infrastructure/GameCore.h"
 
+#include "Engine/Engine.h"
+
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
@@ -33,8 +35,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Engine.h"
-
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
     KeyedArchive* appOptions = new KeyedArchive();
@@ -60,7 +60,13 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         console = cmdline[1] == "--console";
     }
 
-    Vector<String> modules;
+    Vector<String> modules = {
+        "JobManager",
+        "NetCore",
+        "LocalizationSystem",
+        "SoundSystem"
+    };
+
     DAVA::Engine e;
     e.SetOptions(appOptions);
     e.Init(console, modules);
@@ -69,15 +75,11 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     return e.Run();
 }
 
-GameCore* GameCore::pthis = nullptr;
-
-GameCore::GameCore(Engine* eng)
-    : engine(eng)
+GameCore::GameCore(Engine* e)
+    : engine(e)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
-    pthis = this;
-
     engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
     engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
     engine->beforeTerminate.Connect(this, &GameCore::OnBeforeTerminate);
@@ -94,11 +96,6 @@ GameCore::GameCore(Engine* eng)
         Window* w = engine->PrimaryWindow();
         w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
     }
-}
-
-void GameCore::RunOnlyThisTest()
-{
-    //runOnlyThisTest = "UIScrollViewTest";
 }
 
 void GameCore::OnGameLoopStarted()
@@ -130,6 +127,7 @@ void GameCore::OnGameLoopStopped()
 void GameCore::OnBeforeTerminate()
 {
     Logger::Debug("****** GameCore::OnBeforeTerminate");
+    netLogger.Uninstall();
 }
 
 void GameCore::OnWindowCreated(DAVA::Window* w)
@@ -163,106 +161,7 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
         engine->Quit();
     }
 }
-
-void GameCore::RegisterScreen(BaseScreen* screen)
-{
-    UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
-    screens.push_back(screen);
-    testListScreen->AddTestScreen(screen);
-}
-
-void GameCore::ShowStartScreen()
-{
-    currentScreen = nullptr;
-    UIScreenManager::Instance()->SetScreen(0);
-}
-
-void GameCore::RegisterTests()
-{
-#if defined(__DAVAENGINE_COREV2__)
-    new CoreV2Test(engine);
 #endif
-    new DlcTest();
-    new UIScrollViewTest();
-    new NotificationScreen();
-    new SpeedLoadImagesTest();
-    new MultilineTest();
-    new StaticTextTest();
-    new StaticWebViewTest();
-    new UIMovieTest();
-    new FontTest();
-    new WebViewTest();
-    new FunctionSignalTest();
-    new KeyboardTest();
-#if !defined(__DAVAENGINE_COREV2__)
-    new FullscreenTest();
-#endif
-    new UIBackgroundTest();
-    new ClipTest();
-    new InputTest();
-    new CoreTest();
-    new FormatsTest();
-    new FloatingPointExceptionTest();
-    //$UNITTEST_CTOR
-}
-
-void GameCore::RunTests()
-{
-    if ("" != runOnlyThisTest)
-    {
-        for (auto screen : screens)
-        {
-            if (!IsNeedSkipTest(*screen))
-            {
-                currentScreen = screen;
-            }
-        }
-    }
-    else
-    {
-        currentScreen = nullptr;
-    }
-    if (nullptr != currentScreen)
-    {
-        UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
-    }
-    else
-    {
-        UIScreenManager::Instance()->SetScreen(0);
-    }
-}
-
-void GameCore::CreateDocumentsFolder()
-{
-    FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "TestBed/";
-    FileSystem::Instance()->CreateDirectory(documentsPath, true);
-    FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
-}
-
-DAVA::File* GameCore::CreateDocumentsFile(const DAVA::String& filePathname)
-{
-    FilePath workingFilepathname = FilePath::FilepathInDocuments(filePathname);
-    FileSystem::Instance()->CreateDirectory(workingFilepathname.GetDirectory(), true);
-    File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
-    return retFile;
-}
-
-void GameCore::OnError()
-{
-    DavaDebugBreak();
-}
-
-bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
-{
-    if (runOnlyThisTest.empty())
-    {
-        return false;
-    }
-    const FastName& name = screen.GetName();
-    return 0 != CompareCaseInsensitive(runOnlyThisTest, name.c_str());
-}
-
-#else
 
 void GameCore::RunOnlyThisTest()
 {
@@ -276,32 +175,36 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-    new DlcTest();
-    new UIScrollViewTest();
-    new NotificationScreen();
-    new SpeedLoadImagesTest();
-    new MultilineTest();
-    new StaticTextTest();
-    new StaticWebViewTest();
-    new UIMovieTest();
-    new FontTest();
-    new WebViewTest();
-    new FunctionSignalTest();
-    new KeyboardTest();
-    new FullscreenTest();
-    new UIBackgroundTest();
-    new ClipTest();
-    new InputTest();
-    new CoreTest();
-    new FormatsTest();
-    new FloatingPointExceptionTest();
-    new PackManagerTest();
+#if defined(__DAVAENGINE_COREV2__)
+    new CoreV2Test(this);
+#endif
+    new DlcTest(this);
+    new UIScrollViewTest(this);
+    new NotificationScreen(this);
+    new SpeedLoadImagesTest(this);
+    new MultilineTest(this);
+    new StaticTextTest(this);
+    new StaticWebViewTest(this);
+    new UIMovieTest(this);
+    new FontTest(this);
+    new WebViewTest(this);
+    new FunctionSignalTest(this);
+    new KeyboardTest(this);
+    new FullscreenTest(this);
+    new UIBackgroundTest(this);
+    new ClipTest(this);
+    new InputTest(this);
+    new CoreTest(this);
+    new FormatsTest(this);
+    new FloatingPointExceptionTest(this);
+    new PackManagerTest(this);
     //$UNITTEST_CTOR
 }
 
 using namespace DAVA;
 using namespace DAVA::Net;
 
+#if !defined(__DAVAENGINE_COREV2__)
 void GameCore::OnAppStarted()
 {
     testListScreen = new TestListScreen();
@@ -322,6 +225,7 @@ GameCore::GameCore()
 GameCore::~GameCore()
 {
 }
+#endif
 
 void GameCore::RegisterScreen(BaseScreen* screen)
 {
@@ -355,6 +259,7 @@ File* GameCore::CreateDocumentsFile(const String& filePathname)
     return retFile;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void GameCore::OnAppFinished()
 {
     for (auto testScreen : screens)
@@ -371,6 +276,7 @@ void GameCore::BeginFrame()
 {
     ApplicationCore::BeginFrame();
 }
+#endif
 
 void GameCore::RunTests()
 {
@@ -461,5 +367,3 @@ size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
     }
     return peerDescr.Serialize(buffer, length);
 }
-
-#endif // defined(__DAVAENGINE_COREV2__)

@@ -5,13 +5,14 @@
 
 using namespace DAVA;
 
+class GameCore;
 class SpeedLoadImagesTest : public BaseScreen
 {
 protected:
     ~SpeedLoadImagesTest() override;
 
 public:
-    SpeedLoadImagesTest();
+    SpeedLoadImagesTest(GameCore* g);
 
     void LoadResources() override;
     void UnloadResources() override;

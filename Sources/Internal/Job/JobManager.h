@@ -14,15 +14,8 @@
 
 namespace DAVA
 {
-#if defined(__DAVAENGINE_COREV2__)
-
-class AppContext;
 class Engine;
-
-class JobManager final
-#else
 class JobManager : public Singleton<JobManager>
-#endif
 {
 public:
     /*! Available types of main-thread job. */
@@ -35,8 +28,9 @@ public:
 
 public:
 #if defined(__DAVAENGINE_COREV2__)
-    static JobManager* Instance();
     JobManager(Engine* e);
+    Engine* engine = nullptr;
+    size_t sigUpdateId = 0;
 #else
     JobManager();
 #endif
@@ -118,11 +112,6 @@ protected:
     Semaphore workerDoneSem;
     JobQueueWorker workerQueue;
     Vector<JobThread*> workerThreads;
-
-#if defined(__DAVAENGINE_COREV2__)
-    Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
-#endif
 };
 }
 

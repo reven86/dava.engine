@@ -6,21 +6,38 @@
 #include <Network/Private/Announcer.h>
 #include <Network/Private/Discoverer.h>
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
 namespace Net
 {
 const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 
+#if defined(__DAVAENGINE_COREV2__)
+NetCore::NetCore(Engine* e)
+    : loop(true)
+    , isFinishing(false)
+    , allStopped(false)
+    , engine(e)
+{
+    sigUpdateId = e->update.Connect(this, &NetCore::Poll);
+}
+#else
 NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
     , allStopped(false)
 {
 }
+#endif
 
 NetCore::~NetCore()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->update.Disconnect(sigUpdateId);
+#endif
+
     DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
 }
 

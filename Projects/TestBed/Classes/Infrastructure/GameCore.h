@@ -1,5 +1,4 @@
-#ifndef __GAMECORE_H__
-#define __GAMECORE_H__
+#pragma once
 
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
@@ -12,66 +11,16 @@
 #include "Network/Services/MMNet/MMNetServer.h"
 #endif
 
+#include "Engine/EngineFwd.h"
+
+class TestData;
+class BaseScreen;
+class TestListScreen;
 #if defined(__DAVAENGINE_COREV2__)
-
-#include "Engine/Engine.h"
-
-class TestData;
-class BaseScreen;
-class TestListScreen;
-
-class GameCore final
-{
-public:
-    GameCore(DAVA::Engine* eng);
-    ~GameCore() = default;
-
-    static GameCore* pthis;
-    static GameCore* Instance()
-    {
-        return pthis;
-    };
-
-    void OnGameLoopStarted();
-    void OnGameLoopStopped();
-    void OnBeforeTerminate();
-
-    void OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
-    void OnWindowCreated(DAVA::Window* w);
-    void OnWindowDestroyed(DAVA::Window* w);
-
-    void RegisterScreen(BaseScreen* screen);
-    void ShowStartScreen();
-
-    void OnUpdateConsole(DAVA::float32 frameDelta);
-
-protected:
-    void RegisterTests();
-    void RunTests();
-
-    void CreateDocumentsFolder();
-    DAVA::File* CreateDocumentsFile(const DAVA::String& filePathname);
-
-private:
-    void RunOnlyThisTest();
-    void OnError();
-    bool IsNeedSkipTest(const BaseScreen& screen) const;
-
-    DAVA::Engine* engine = nullptr;
-    DAVA::String runOnlyThisTest;
-
-    BaseScreen* currentScreen;
-    TestListScreen* testListScreen;
-
-    DAVA::Vector<BaseScreen*> screens;
-};
-
+class GameCore
 #else
-
-class TestData;
-class BaseScreen;
-class TestListScreen;
 class GameCore : public DAVA::ApplicationCore
+#endif
 {
     struct ErrorData
     {
@@ -83,23 +32,33 @@ class GameCore : public DAVA::ApplicationCore
     };
 
 protected:
+#if !defined(__DAVAENGINE_COREV2__)
     virtual ~GameCore();
+#endif
 
 public:
-    GameCore();
+#if defined(__DAVAENGINE_COREV2__)
+    GameCore(DAVA::Engine* e);
 
-    static GameCore* Instance()
-    {
-        return (GameCore*)DAVA::Core::GetApplicationCore();
-    };
+    DAVA::Engine* GetEngine() const;
+
+    void OnGameLoopStarted();
+    void OnGameLoopStopped();
+    void OnBeforeTerminate();
+
+    void OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
+    void OnWindowCreated(DAVA::Window* w);
+    void OnWindowDestroyed(DAVA::Window* w);
+
+    void OnUpdateConsole(DAVA::float32 frameDelta);
+
+#else
+    GameCore();
 
     void OnAppStarted() override;
     void OnAppFinished() override;
 
     void BeginFrame() override;
-
-    void RegisterScreen(BaseScreen* screen);
-    void ShowStartScreen();
 
 protected:
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -109,17 +68,26 @@ protected:
 
     void OnDeviceLocked() override{};
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#endif
 
+public:
+    void RegisterScreen(BaseScreen* screen);
+    void ShowStartScreen();
+
+private:
     void RegisterTests();
     void RunTests();
 
     void CreateDocumentsFolder();
     DAVA::File* CreateDocumentsFile(const DAVA::String& filePathname);
 
-private:
     void RunOnlyThisTest();
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
+
+#if defined(__DAVAENGINE_COREV2__)
+    DAVA::Engine* engine = nullptr;
+#endif
 
     DAVA::String runOnlyThisTest;
 
@@ -146,6 +114,9 @@ private:
     bool loggerInUse = false;
 };
 
-#endif // __DAVAENGINE_COREV2__
-
-#endif // __GAMECORE_H__
+#if defined(__DAVAENGINE_COREV2__)
+inline DAVA::Engine* GameCore::GetEngine() const
+{
+    return engine;
+}
+#endif

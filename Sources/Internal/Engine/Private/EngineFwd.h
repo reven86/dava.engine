@@ -4,7 +4,7 @@ namespace DAVA
 {
 class Engine;
 class Window;
-class AppContext;
+class EngineContext;
 
 namespace Private
 {

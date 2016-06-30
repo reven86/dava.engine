@@ -28,7 +28,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     bool IsConsoleMode() const;
-    AppContext* GetEngineContext() const;
+    EngineContext* GetEngineContext() const;
     WindowBackend* GetPrimaryWindow() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
@@ -76,11 +76,14 @@ private:
 
     WindowBackend* CreatePrimaryWindowBackend();
 
+    void CreateSubsystems(const Vector<String>& modules);
+    void DestroySubsystems();
+
 private:
     // TODO: replace raw pointers with std::unique_ptr after work is done
     Dispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;
-    AppContext* context = nullptr;
+    EngineContext* context = nullptr;
     Vector<String> cmdargs;
 
     Engine* engine = nullptr;
@@ -105,7 +108,7 @@ inline bool EngineBackend::IsConsoleMode() const
     return consoleMode;
 }
 
-inline AppContext* EngineBackend::GetEngineContext() const
+inline EngineContext* EngineBackend::GetEngineContext() const
 {
     return context;
 }

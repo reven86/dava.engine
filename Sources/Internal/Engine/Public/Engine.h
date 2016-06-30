@@ -5,7 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
-#include "Engine/Public/AppContext.h"
+#include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EngineFwd.h"
 
 namespace DAVA
@@ -23,7 +23,7 @@ public:
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
 
-    AppContext* Context() const;
+    EngineContext* GetContext() const;
     Window* PrimaryWindow() const;
 
     void Init(bool consoleMode, const Vector<String>& modules);
