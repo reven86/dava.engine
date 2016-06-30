@@ -735,7 +735,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
 #if ENABLE_CLIPBOARD
         else if (currentInput->key == Key::KEY_X && isCtrl)
         {
-            textChanged = CutToClipboard();
+            textChanged = CutToClipboard(); // Can modify text
         }
         else if (currentInput->key == Key::KEY_C && isCtrl)
         {
@@ -743,7 +743,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::KEY_V && isCtrl)
         {
-            textChanged = PasteFromClipboard();
+            textChanged = PasteFromClipboard(); // Can modify text
         }
 #endif
     }

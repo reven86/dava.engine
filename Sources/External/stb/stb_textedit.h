@@ -684,7 +684,8 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
    stb_textedit_clamp(str, state);
    stb_textedit_delete_selection(str,state);
    // try to insert the characters
-   if (len = STB_TEXTEDIT_INSERTCHARS(str, state->cursor, text, len)) {
+   len = STB_TEXTEDIT_INSERTCHARS(str, state->cursor, text, len);
+   if (len > 0) {
       stb_text_makeundo_insert(state, state->cursor, len);
       state->cursor += len;
       state->has_preferred_x = 0;
@@ -699,6 +700,7 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
 // API key: process a keyboard input
 static int stb_textedit_key(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int key)
 {
+    int ret = 0;
 retry:
    switch (key) {
       default: {
@@ -716,7 +718,7 @@ retry:
                if (STB_TEXTEDIT_INSERTCHARS(str, state->cursor, &ch, 1)) {
                   ++state->cursor;
                   state->has_preferred_x = 0;
-                  return 1; // Content was changed
+                  ret = 1; // Content was changed
                }
             } else {
                stb_textedit_delete_selection(str,state); // implicity clamps
@@ -724,7 +726,7 @@ retry:
                   stb_text_makeundo_insert(state, state->cursor, 1);
                   ++state->cursor;
                   state->has_preferred_x = 0;
-                  return 1; // Content was changed
+                  ret = 1; // Content was changed
                }
             }
          }
@@ -740,12 +742,14 @@ retry:
       case STB_TEXTEDIT_K_UNDO:
          stb_text_undo(str, state);
          state->has_preferred_x = 0;
-         return 1; // Content was changed
+         ret = 1; // Content was changed
+         break;
 
       case STB_TEXTEDIT_K_REDO:
          stb_text_redo(str, state);
          state->has_preferred_x = 0;
-         return 1; // Content was changed
+         ret = 1; // Content was changed
+         break;
 
       case STB_TEXTEDIT_K_LEFT:
          // if currently there's a selection, move cursor to start of selection
@@ -866,7 +870,7 @@ retry:
                float x0,x1;
                STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, start, i, &x0, &x1);
                state->cursor = start + i;
-               if (x0 >= goal_x || goal_x < x1) {
+               if (x0 <= goal_x && goal_x < x1) {
                    break;
                }
 #else
@@ -926,7 +930,7 @@ retry:
                float x0,x1;
                STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, find.prev_first, i, &x0, &x1);
                state->cursor = find.prev_first + i;
-               if (x0 >= goal_x || goal_x < x1) {
+               if (x0 <= goal_x && goal_x < x1) {
                    break;
                }
 #else
@@ -1075,7 +1079,7 @@ retry:
 //    STB_TEXTEDIT_K_PGDOWN    - move cursor down a page
    }
 
-   return 0;
+   return ret;
 }
 
 /////////////////////////////////////////////////////////////////////////////
