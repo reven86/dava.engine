@@ -7,6 +7,8 @@
 #include "DownloadManager.h"
 #include "Downloader.h"
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
 DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
@@ -17,8 +19,20 @@ DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
 
 Mutex DownloadManager::currentTaskMutex;
 
+#if defined(__DAVAENGINE_COREV2__)
+DownloadManager::DownloadManager(Engine* e)
+    : engine(e)
+{
+    sigUpdateId = engine->update.Connect(this, &DownloadManager::Update);
+}
+#endif
+
 DownloadManager::~DownloadManager()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->update.Disconnect(sigUpdateId);
+#endif
+
     isThreadStarted = false;
 
     if (currentTask)
@@ -72,7 +86,11 @@ void DownloadManager::StopProcessingThread()
     SafeRelease(thisThread);
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void DownloadManager::Update(float32 frameDelta)
+#else
 void DownloadManager::Update()
+#endif
 {
     if (!currentTask)
     {

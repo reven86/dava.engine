@@ -12,17 +12,11 @@ namespace DAVA
 {
 #if defined(__DAVAENGINE_COREV2__)
 
-// Emulate Instance method
-JobManager* JobManager::Instance()
-{
-    return Engine::Instance()->Context()->jobManager;
-}
-
 JobManager::JobManager(Engine* e)
-    : mainJobIDCounter(1)
+    : engine(e)
+    , mainJobIDCounter(1)
     , mainJobLastExecutedID(0)
     , workerDoneSem(0)
-    , engine(e)
 {
     uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
     workerThreads.reserve(cpuCoresCount);

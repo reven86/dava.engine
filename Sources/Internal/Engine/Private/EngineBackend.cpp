@@ -2,7 +2,7 @@
 
 #include "Engine/Public/Engine.h"
 
-#include "Engine/Public/AppContext.h"
+#include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
@@ -44,6 +44,7 @@
 #include "Render/Renderer.h"
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
+#include "Network/NetCore.h"
 
 #include "UI/UIEvent.h"
 
@@ -61,13 +62,13 @@ EngineBackend* EngineBackend::Instance()
 EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
     : dispatcher(new Dispatcher)
     , platformCore(new PlatformCore(this))
-    , context(new AppContext)
+    , context(new EngineContext)
     , cmdargs(cmdargs_)
 {
     DVASSERT(instance == nullptr);
     instance = this;
 
-    new Logger;
+    context->logger = new Logger;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     CreatePrimaryWindowBackend();
@@ -111,55 +112,28 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 #endif
     }
 
-    // init modules
+    // For now only next subsystems/modules are created on demand:
+    //  - LocalizationSystem
+    //  - JobManager
+    //  - DownloadManager
+    //  - NetCore
+    // Other subsystems are always created
+    CreateSubsystems(modules);
 
-    new AllocatorFactory();
-    new FileSystem();
     FilePath::InitializeBundleName();
-    FileSystem::Instance()->SetDefaultDocumentsDirectory();
-    FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
+    context->fileSystem->SetDefaultDocumentsDirectory();
+    context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
     if (!consoleMode)
     {
-        new SoundSystem();
-
         DeviceInfo::InitializeScreenInfo();
-        new AnimationManager();
-        new FontManager();
-        new UIControlSystem();
-        new InputSystem();
-        new FrameOcclusionQueryManager();
-        new VirtualCoordinatesSystem();
-        new RenderSystem2D();
-        new UIScreenManager();
 
-        new LocalNotificationController();
+        context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
+        context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
-
-    new LocalizationSystem();
-    new SystemTimer();
-    new Random();
-    new PerformanceSettings();
-    new VersionInfo();
 
     Thread::InitMainThread();
-
-    new DownloadManager();
-    DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-
-    context->jobManager = new JobManager(engine);
-
-    context->inputSystem = InputSystem::Instance();
-    context->uiControlSystem = UIControlSystem::Instance();
-    context->virtualCoordSystem = VirtualCoordinatesSystem::Instance();
-
     RegisterDAVAClasses();
-
-    if (!consoleMode)
-    {
-        VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
-        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-    }
 }
 
 int EngineBackend::Run()
@@ -227,6 +201,7 @@ void EngineBackend::OnBeforeTerminate()
 {
     engine->beforeTerminate.Emit();
 
+    DestroySubsystems();
     delete context;
     delete dispatcher;
     delete platformCore;
@@ -246,23 +221,20 @@ void EngineBackend::DoEvents()
 
 void EngineBackend::OnFrameConsole()
 {
-    SystemTimer::Instance()->Start();
-    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+    context->systemTimer->Start();
+    float32 frameDelta = context->systemTimer->FrameDelta();
+    context->systemTimer->UpdateGlobalTime(frameDelta);
 
     DoEvents();
 
-    DownloadManager::Instance()->Update();
-
-    // JobManager::Update() is invoked through signal update
     engine->update.Emit(frameDelta);
 }
 
 int32 EngineBackend::OnFrame()
 {
-    SystemTimer::Instance()->Start();
-    float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-    SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+    context->systemTimer->Start();
+    float32 frameDelta = context->systemTimer->FrameDelta();
+    context->systemTimer->UpdateGlobalTime(frameDelta);
 
 #if defined(__DAVAENGINE_QT__)
     rhi::InvalidateCache();
@@ -281,43 +253,41 @@ void EngineBackend::OnBeginFrame()
 {
     Renderer::BeginFrame();
 
-    InputSystem::Instance()->OnBeforeUpdate();
+    context->inputSystem->OnBeforeUpdate();
     engine->beginFrame.Emit();
 }
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
-    LocalNotificationController::Instance()->Update();
-    SoundSystem::Instance()->Update(frameDelta);
-    AnimationManager::Instance()->Update(frameDelta);
-    DownloadManager::Instance()->Update();
+    context->localNotificationController->Update();
+    context->animationManager->Update(frameDelta);
 
     for (WindowBackend* w : windows)
     {
         w->Update(frameDelta);
     }
-    // JobManager::Update() is invoked through signal update
+
     engine->update.Emit(frameDelta);
 }
 
 void EngineBackend::OnDraw()
 {
-    RenderSystem2D::Instance()->BeginFrame();
+    context->renderSystem2D->BeginFrame();
 
-    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
+    context->frameOcclusionQueryManager->ResetFrameStats();
     for (WindowBackend* w : windows)
     {
         w->Draw();
     }
-    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
+    context->frameOcclusionQueryManager->ProccesRenderedFrame();
 
     engine->draw.Emit();
-    RenderSystem2D::Instance()->EndFrame();
+    context->renderSystem2D->EndFrame();
 }
 
 void EngineBackend::OnEndFrame()
 {
-    InputSystem::Instance()->OnAfterUpdate();
+    context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();
 }
@@ -392,7 +362,7 @@ void EngineBackend::PostAppTerminate()
         DispatcherEvent e;
         e.window = nullptr;
         e.type = DispatcherEvent::APP_TERMINATE;
-        e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+        e.timestamp = context->systemTimer->FrameStampTimeMS();
         dispatcher->PostEvent(e);
 
         appIsTerminating = true;
@@ -432,7 +402,7 @@ void EngineBackend::InitRenderer(WindowBackend* w)
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
-    RenderSystem2D::Instance()->Init();
+    context->renderSystem2D->Init();
 }
 
 void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
@@ -472,6 +442,114 @@ WindowBackend* EngineBackend::CreatePrimaryWindowBackend()
 
     primaryWindow = window;
     return window;
+}
+
+void EngineBackend::CreateSubsystems(const Vector<String>& modules)
+{
+    context->allocatorFactory = new AllocatorFactory();
+    context->systemTimer = new SystemTimer();
+    context->random = new Random();
+    context->performanceSettings = new PerformanceSettings();
+    context->versionInfo = new VersionInfo();
+    context->fileSystem = new FileSystem();
+
+    if (!consoleMode)
+    {
+        context->animationManager = new AnimationManager();
+        context->fontManager = new FontManager();
+        context->uiControlSystem = new UIControlSystem();
+        context->inputSystem = new InputSystem();
+        context->frameOcclusionQueryManager = new FrameOcclusionQueryManager();
+        context->virtualCoordSystem = new VirtualCoordinatesSystem();
+        context->renderSystem2D = new RenderSystem2D();
+        context->uiScreenManager = new UIScreenManager();
+        context->localNotificationController = new LocalNotificationController();
+    }
+
+    // Naive implementation of on demand module creation
+    for (const String& m : modules)
+    {
+        if (m == "DownloadManager")
+        {
+            if (context->downloadManager == nullptr)
+            {
+                context->downloadManager = new DownloadManager(engine);
+                context->downloadManager->SetDownloader(new CurlDownloader);
+            }
+        }
+        else if (m == "JobManager")
+        {
+            if (context->jobManager == nullptr)
+            {
+                context->jobManager = new JobManager(engine);
+            }
+        }
+        else if (m == "LocalizationSystem")
+        {
+            if (context->localizationSystem == nullptr)
+            {
+                context->localizationSystem = new LocalizationSystem;
+            }
+        }
+        else if (m == "NetCore")
+        {
+            if (context->netCore == nullptr)
+            {
+                context->netCore = new Net::NetCore(engine);
+            }
+        }
+        else if (m == "SoundSystem")
+        {
+            if (context->soundSystem == nullptr)
+            {
+                context->soundSystem = new SoundSystem(engine);
+            }
+        }
+    }
+}
+
+void EngineBackend::DestroySubsystems()
+{
+    if (!consoleMode)
+    {
+        context->localNotificationController->Release();
+        context->uiScreenManager->Release();
+        context->uiControlSystem->Release();
+        context->fontManager->Release();
+        context->animationManager->Release();
+        context->frameOcclusionQueryManager->Release();
+        context->virtualCoordSystem->Release();
+        context->renderSystem2D->Release();
+        context->inputSystem->Release();
+    }
+
+    context->performanceSettings->Release();
+    context->random->Release();
+
+    context->allocatorFactory->Release();
+    context->versionInfo->Release();
+
+    if (context->jobManager != nullptr)
+        context->jobManager->Release();
+    if (context->localizationSystem != nullptr)
+        context->localizationSystem->Release();
+    if (context->downloadManager != nullptr)
+        context->downloadManager->Release();
+    if (context->soundSystem != nullptr)
+        context->soundSystem->Release();
+
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    if (context->netCore != nullptr)
+    {
+        context->netCore->Finish(true);
+        context->netCore->Release();
+    }
+
+    context->fileSystem->Release();
+    context->systemTimer->Release();
+
+    context->logger->Release();
 }
 
 } // namespace Private

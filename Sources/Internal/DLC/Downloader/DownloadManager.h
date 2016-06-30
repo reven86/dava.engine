@@ -10,13 +10,20 @@ namespace DAVA
 {
 class Thread;
 class Downloader;
+class Engine;
 
 class DownloadManager : public Singleton<DownloadManager>
 {
     friend class Downloader;
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    DownloadManager(Engine* e);
+    Engine* engine = nullptr;
+    size_t sigUpdateId = 0;
+#else
     DownloadManager() = default;
+#endif
     virtual ~DownloadManager();
 
     // Downloader for further operations
@@ -24,7 +31,11 @@ public:
     Downloader* GetDownloader();
 
     // Checks tasks status and determine current task and handles tasks queues
+#if defined(__DAVAENGINE_COREV2__)
+    void Update(float32 frameDelta = 0.0f);
+#else
     void Update();
+#endif
 
     // Schedule download content or get content size (indicated by downloadMode)
     uint32 Download(const String& srcUrl,

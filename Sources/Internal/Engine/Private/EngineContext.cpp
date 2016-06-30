@@ -1,16 +1,13 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/AppContext.h"
+#include "Engine/Public/EngineContext.h"
 #include "Job/JobManager.h"
 
 namespace DAVA
 {
-AppContext::AppContext() = default;
+EngineContext::EngineContext() = default;
 
-AppContext::~AppContext()
-{
-    SafeDelete(jobManager);
-}
+EngineContext::~EngineContext() = default;
 
 } // namespace DAVA
 

@@ -36,7 +36,7 @@ Engine::~Engine()
     engineSingleton = nullptr;
 }
 
-AppContext* Engine::Context() const
+EngineContext* Engine::GetContext() const
 {
     return engineBackend->GetEngineContext();
 }
