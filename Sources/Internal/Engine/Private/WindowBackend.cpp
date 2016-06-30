@@ -390,7 +390,14 @@ void WindowBackend::HandleKeyPress(const DispatcherEvent& e)
         uie.phase = UIEvent::Phase::KEY_UP;
 
     uiControlSystem->OnInput(&uie);
-    keyboard.OnKeyPressed(uie.key);
+    if (pressed)
+    {
+        keyboard.OnKeyPressed(uie.key);
+    }
+    else
+    {
+        keyboard.OnKeyUnpressed(uie.key);
+    }
 }
 
 void WindowBackend::HandleKeyChar(const DispatcherEvent& e)
