@@ -1073,9 +1073,9 @@ retry:
 // @TODO:
 //    STB_TEXTEDIT_K_PGUP      - move cursor up a page
 //    STB_TEXTEDIT_K_PGDOWN    - move cursor down a page
-
-      return 0;
    }
+
+   return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
