@@ -239,42 +239,42 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
         {
             return false;
         }
-        }
-        break;
-        case 1: // Compressor::Type::Lz4:
-        case 2: // Compressor::Type::Lz4HC:
+    }
+    break;
+    case 1: // Compressor::Type::Lz4:
+    case 2: // Compressor::Type::Lz4HC:
+    {
+        std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
+
+        file.read(reinterpret_cast<char*>(packedBuf.data()),
+                  fileEntry.compressedSize);
+        if (!file)
         {
-            std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
-
-            file.read(reinterpret_cast<char*>(packedBuf.data()),
-                      fileEntry.compressedSize);
-            if (!file)
-            {
-                return false;
-            }
-
-            if (!LZ4CompressorDecompress(packedBuf, output))
-            {
-                return false;
-            }
-        }
-        break;
-        case 3: // Compressor::Type::RFC1951:
-        {
-            std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
-
-            file.read(reinterpret_cast<char*>(packedBuf.data()),
-                      fileEntry.compressedSize);
-            if (!file)
-            {
-                return false;
-            }
-
-            //TODO if (!ZipCompressor().Decompress(packedBuf, output))
-
             return false;
         }
-        break;
+
+        if (!LZ4CompressorDecompress(packedBuf, output))
+        {
+            return false;
+        }
+    }
+    break;
+    case 3: // Compressor::Type::RFC1951:
+    {
+        std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
+
+        file.read(reinterpret_cast<char*>(packedBuf.data()),
+                  fileEntry.compressedSize);
+        if (!file)
+        {
+            return false;
+        }
+
+        //TODO if (!ZipCompressor().Decompress(packedBuf, output))
+
+        return false;
+    }
+    break;
     } // end switch
     return true;
 }

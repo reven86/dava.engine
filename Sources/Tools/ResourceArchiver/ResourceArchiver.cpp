@@ -233,7 +233,6 @@ bool AddToCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemK
 
 bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool addHiddenFiles, Vector<CollectedFile>& collectedFiles)
 {
-
     for (String source : sources)
     {
         FilePath sourcePath;
