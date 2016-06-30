@@ -728,13 +728,13 @@ retry:
                }
             }
          }
-         return 0;
+         break;
       }
 
 #ifdef STB_TEXTEDIT_K_INSERT
       case STB_TEXTEDIT_K_INSERT:
          state->insert_mode = !state->insert_mode;
-         return 0;
+         break;
 #endif
          
       case STB_TEXTEDIT_K_UNDO:
@@ -755,7 +755,7 @@ retry:
             if (state->cursor > 0)
                --state->cursor;
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_RIGHT:
          // if currently there's a selection, move cursor to end of selection
@@ -765,7 +765,7 @@ retry:
             ++state->cursor;
          stb_textedit_clamp(str, state);
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_LEFT | STB_TEXTEDIT_K_SHIFT:
          stb_textedit_clamp(str, state);
@@ -775,7 +775,7 @@ retry:
             --state->select_end;
          state->cursor = state->select_end;
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
 #ifdef STB_TEXTEDIT_IS_SPACE
       case STB_TEXTEDIT_K_WORDLEFT:
@@ -785,7 +785,7 @@ retry:
             state->cursor = stb_textedit_move_to_word_previous(str, state);
             stb_textedit_clamp( str, state );
          }
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_WORDRIGHT:
          if (STB_TEXT_HAS_SELECTION(state)) 
@@ -794,7 +794,7 @@ retry:
             state->cursor = stb_textedit_move_to_word_next(str, state);
             stb_textedit_clamp( str, state );
          }
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_WORDLEFT | STB_TEXTEDIT_K_SHIFT:
          if( !STB_TEXT_HAS_SELECTION( state ) )
@@ -804,7 +804,7 @@ retry:
          state->select_end = state->cursor;
 
          stb_textedit_clamp( str, state );
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_WORDRIGHT | STB_TEXTEDIT_K_SHIFT:
          if( !STB_TEXT_HAS_SELECTION( state ) )
@@ -814,7 +814,7 @@ retry:
          state->select_end = state->cursor;
 
          stb_textedit_clamp( str, state );
-         return 0;
+         break;
 #endif
 
       case STB_TEXTEDIT_K_RIGHT | STB_TEXTEDIT_K_SHIFT:
@@ -824,7 +824,7 @@ retry:
          stb_textedit_clamp(str, state);
          state->cursor = state->select_end;
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
       case STB_TEXTEDIT_K_DOWN:
       case STB_TEXTEDIT_K_DOWN | STB_TEXTEDIT_K_SHIFT: {
@@ -850,7 +850,7 @@ retry:
          // if last line don't move
          if (find.first_char + find.length >= STB_TEXTEDIT_STRINGLEN(str))
          {
-             return 0;
+             break;
          }
 
          // now find character position down a row
@@ -889,7 +889,7 @@ retry:
             if (sel)
                state->select_end = state->cursor;
          }
-         return 0;
+         break;
       }
          
       case STB_TEXTEDIT_K_UP:
@@ -949,7 +949,7 @@ retry:
             if (sel)
                state->select_end = state->cursor;
          }
-         return 0;
+         break;
       }
 
       case STB_TEXTEDIT_K_DELETE:
@@ -984,7 +984,7 @@ retry:
       case STB_TEXTEDIT_K_TEXTSTART:
          state->cursor = state->select_start = state->select_end = 0;
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
 #ifdef STB_TEXTEDIT_K_TEXTEND2
       case STB_TEXTEDIT_K_TEXTEND2:
@@ -993,7 +993,7 @@ retry:
          state->cursor = STB_TEXTEDIT_STRINGLEN(str);
          state->select_start = state->select_end = 0;
          state->has_preferred_x = 0;
-         return 0;
+         break;
         
 #ifdef STB_TEXTEDIT_K_TEXTSTART2
       case STB_TEXTEDIT_K_TEXTSTART2 | STB_TEXTEDIT_K_SHIFT:
@@ -1002,7 +1002,7 @@ retry:
          stb_textedit_prep_selection_at_cursor(state);
          state->cursor = state->select_end = 0;
          state->has_preferred_x = 0;
-         return 0;
+         break;
 
 #ifdef STB_TEXTEDIT_K_TEXTEND2
       case STB_TEXTEDIT_K_TEXTEND2 | STB_TEXTEDIT_K_SHIFT:
@@ -1011,8 +1011,7 @@ retry:
          stb_textedit_prep_selection_at_cursor(state);
          state->cursor = state->select_end = STB_TEXTEDIT_STRINGLEN(str);
          state->has_preferred_x = 0;
-         return 0;
-
+         break;
 
 #ifdef STB_TEXTEDIT_K_LINESTART2
       case STB_TEXTEDIT_K_LINESTART2:
@@ -1024,7 +1023,7 @@ retry:
          stb_textedit_find_charpos(&find, str, state->cursor, state->single_line);
          state->cursor = find.first_char;
          state->has_preferred_x = 0;
-         return 0;
+         break;
       }
 
 #ifdef STB_TEXTEDIT_K_LINEEND2
@@ -1040,7 +1039,7 @@ retry:
          state->cursor = find.first_char + find.length;
          if (find.length > 0 && STB_TEXTEDIT_GETCHAR(str, state->cursor-1) == STB_TEXTEDIT_NEWLINE)
             --state->cursor;
-         return 0;
+         break;
       }
 
 #ifdef STB_TEXTEDIT_K_LINESTART2
@@ -1053,7 +1052,7 @@ retry:
          stb_textedit_find_charpos(&find, str, state->cursor, state->single_line);
          state->cursor = state->select_end = find.first_char;
          state->has_preferred_x = 0;
-         return 0;
+         break;
       }
 
 #ifdef STB_TEXTEDIT_K_LINEEND2
@@ -1069,12 +1068,13 @@ retry:
          if (find.length > 0 && STB_TEXTEDIT_GETCHAR(str, state->cursor-1) == STB_TEXTEDIT_NEWLINE)
             --state->cursor;
          state->select_end = state->cursor;
-         return 0;
+         break;
       }
-
 // @TODO:
 //    STB_TEXTEDIT_K_PGUP      - move cursor up a page
 //    STB_TEXTEDIT_K_PGDOWN    - move cursor down a page
+
+      return 0;
    }
 }
 
