@@ -142,14 +142,17 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
     YamlNode* testsRootNode = testsParser->GetRootNode();
     YamlNode* mapsRootNode = mapsParser->GetRootNode();
 
-    const auto& maps = testsRootNode->Get(testName)->AsVector();
-
-    for (auto mapNameNode : maps)
+    if (testsRootNode->Get(testName))
     {
-        const String& mapName = mapNameNode->AsString();
-        const String& mapPath = mapsRootNode->Get(mapName)->AsString();
+        const auto& maps = testsRootNode->Get(testName)->AsVector();
 
-        mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+        for (auto mapNameNode : maps)
+        {
+            const String& mapName = mapNameNode->AsString();
+            const String& mapPath = mapsRootNode->Get(mapName)->AsString();
+
+            mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+        }
     }
 
     SafeRelease(mapsParser);
