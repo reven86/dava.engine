@@ -471,7 +471,7 @@ inline float32 Vector2::CrossProduct(const Vector2& b) const
 
 inline float32 Vector2::Angle() const
 {
-    float angle = (fabs(x) > fabs(y)) ? acosf(fabsf(x)) : asinf(fabsf(y));
+    float angle = (fabsf(x) > fabsf(y)) ? acosf(fabsf(x)) : asinf(fabsf(y));
 
     if (x >= 0 && y >= 0)
         return angle; // I

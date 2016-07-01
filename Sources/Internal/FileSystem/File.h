@@ -124,7 +124,7 @@ public:
 
     /** 
 		\brief Read [dataSize] bytes from this file to [pointerToData] 
-		\param[in, out] destinationBuffer function write data to this pointer
+		\param[in,out] destinationBuffer function write data to this pointer
 		\param[in] dataSize size of data we want to read
 		\return number of bytes actually read
 	*/
@@ -132,7 +132,7 @@ public:
 
     /**
 		\brief Read [sizeof(T)] bytes from this file to [value]
-		\param[in, out] value function write data to this pointer
+		\param[in,out] value function write data to this pointer
 		\return number of bytes actually read
 	 */
     template <class T>
@@ -140,7 +140,7 @@ public:
 
     /**
 		\brief Read one line from text file to [pointerToData] buffer
-		\param[in, out] destinationBuffer function write data to this buffer
+		\param[in,out] destinationBuffer function write data to this buffer
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
@@ -153,7 +153,7 @@ public:
 
     /**
 		\brief Read string line from file to destination buffer with destinationBufferSize
-		\param[in, out] destinationBuffer buffer for the data
+		\param[in,out] destinationBuffer buffer for the data
 		\param[in] destinationBufferSize size of the destinationBuffer, for security reasons
 		\returns actual length of the string that was read
 	 */

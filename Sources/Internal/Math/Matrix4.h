@@ -563,9 +563,9 @@ inline bool Matrix4::Decomposition(Vector3& position, Vector3& scale, Vector3& o
         scale.y = sqrtf(_10 * _10 + _11 * _11 + _12 * _12);
         scale.z = sqrtf(_20 * _20 + _21 * _21 + _22 * _22);
 
-        orientation.x = atan2(_21, _22);
-        orientation.y = atan2(-_20, sqrtf(_21 * _21 + _22 * _22));
-        orientation.z = atan2(_10, _00);
+        orientation.x = atan2f(_21, _22);
+        orientation.y = atan2f(-_20, sqrtf(_21 * _21 + _22 * _22));
+        orientation.z = atan2f(_10, _00);
 
         position = Vector3(_data[0][3], _data[1][3], _data[2][3]);
 

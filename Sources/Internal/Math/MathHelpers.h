@@ -196,7 +196,7 @@ inline Vector3& TransformPerserveLength(Vector3& vec, const Matrix4& mat)
 
 inline float32 Round(float32 value)
 {
-    return (value > 0.0f) ? floor(value + 0.5f) : ceil(value - 0.5f);
+    return (value > 0.0f) ? floorf(value + 0.5f) : ceilf(value - 0.5f);
 }
 
 inline Vector3 Polar(DAVA::float32 angle, DAVA::float32 distance)

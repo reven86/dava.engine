@@ -1,8 +1,8 @@
 # next line needed for teamcity special build agent to test ASAN
 MEMORY_SANITIZE := false
 
-APP_STL := gnustl_shared
-APP_CPPFLAGS := -frtti -fexceptions
+APP_STL := c++_shared
+APP_CPPFLAGS := -frtti -fexceptions -w
 
 #APP_CFLAGS = -marm -g
 
@@ -20,13 +20,10 @@ APP_CFLAGS += -O2
 ifeq ($(MEMORY_SANITIZE), true)
 APP_OPTIM := debug
 # https://code.google.com/p/address-sanitizer/wiki/Android
-APP_CFLAGS   := -fsanitize=address -fno-omit-frame-pointer
+APP_CFLAGS   += -fsanitize=address -fno-omit-frame-pointer
 # use -g for MEMORY_SANITIZER and -O1 (no inline)
 APP_CFLAGS   += -O1 -g # Warnign! -O0 - will crush clang++ with memory sanitizer
-APP_STL      := gnustl_shared # work with gnustl_shared or c++_shared, better with gnustl_shared
-                           # but because http://stackoverflow.com/questions/29018310/android-ndk-clang-compiler-cant-find-stdmake-unique
-                           # we have to stick with c++_shared
-APP_LDFLAGS  := -fsanitize=address
+APP_LDFLAGS  += -fsanitize=address
 #LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 

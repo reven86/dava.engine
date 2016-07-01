@@ -199,7 +199,7 @@
 #define DEDUCE_COVERED_CLASS_FROM_TESTCLASS() \
     DAVA::Vector<DAVA::String> ClassesCoveredByTests() const override { \
         DAVA::Vector<DAVA::String> result; \
-        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
+        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(decltype(*this)).name())))); \
         return result; \
     }
 

@@ -24,6 +24,9 @@
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
 
+#include <unistd.h>
+extern unsigned int __page_size = getpagesize();
+
 #include "Render/Renderer.h"
 
 extern "C"

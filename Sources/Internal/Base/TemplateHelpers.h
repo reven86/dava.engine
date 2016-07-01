@@ -306,7 +306,7 @@ bool IsPointerToExactClass(const O* pObject)
     if (pObject)
     {
         static_assert(!std::is_pointer<C>::value, "IsPointerToExactClass doesn't operate on pointers");
-        return &typeid(*pObject) == &typeid(C);
+        return &typeid(decltype(*pObject)) == &typeid(C);
     }
     return false;
 }
@@ -317,7 +317,7 @@ C cast_if_equal(O* pObject)
     if (pObject)
     {
         static_assert(std::is_pointer<C>::value, "cast_if_equal operates on pointers");
-        if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
+        if (typeid(decltype(*pObject)) == typeid(typename PointerTraits<C>::PointerType))
         {
             return static_cast<C>(pObject);
         }

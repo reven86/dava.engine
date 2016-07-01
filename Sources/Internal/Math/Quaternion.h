@@ -117,7 +117,7 @@ inline void Quaternion::Construct(const Vector3& source, const Vector3& dest, co
     }
     else
     {
-        float32 s = sqrt((1 + d) * 2);
+        float32 s = sqrtf((1 + d) * 2);
         float32 invs = 1 / s;
 
         Vector3 c = v0.CrossProduct(v1);

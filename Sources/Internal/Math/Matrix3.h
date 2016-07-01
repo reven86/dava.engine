@@ -402,7 +402,7 @@ inline void Matrix3::Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const
     kQ._data[0][2] * kQ._data[1][0] * kQ._data[2][1] - kQ._data[0][2] * kQ._data[1][1] * kQ._data[2][0] -
     kQ._data[0][1] * kQ._data[1][0] * kQ._data[2][2] - kQ._data[0][0] * kQ._data[1][2] * kQ._data[2][1];
 
-    if (fDet < 0.0)
+    if (fDet < 0.0f)
     {
         for (size_t iRow = 0; iRow < 3; iRow++)
             for (size_t iCol = 0; iCol < 3; iCol++)

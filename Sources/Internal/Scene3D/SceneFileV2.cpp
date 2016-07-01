@@ -988,7 +988,7 @@ bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity* currentNode)
         if (dec)
             c--;
     }
-    if ((currentNode->GetChildrenCount() == 0) && (typeid(*currentNode) == typeid(Entity)))
+    if ((currentNode->GetChildrenCount() == 0) && (typeid(decltype(*currentNode)) == typeid(Entity)))
     {
         KeyedArchive* customProperties = GetCustomPropertiesArchieve(currentNode);
         bool doNotRemove = customProperties && customProperties->IsKeyExists("editor.donotremove");
@@ -1228,10 +1228,10 @@ void SceneFileV2::ConvertShadowVolumes(Entity* entity, NMaterial* shadowMaterial
         for (int32 ri = 0; ri < batchCount; ++ri)
         {
             RenderBatch* batch = ro->GetRenderBatch(ri);
-            if (typeid(*batch) == typeid(ShadowVolume) || entity->GetName().find("_shadow") != String::npos)
+            if (typeid(decltype(*batch)) == typeid(ShadowVolume) || entity->GetName().find("_shadow") != String::npos)
             {
                 RenderBatch* shadowBatch = new RenderBatch();
-                if (typeid(*batch) == typeid(ShadowVolume))
+                if (typeid(decltype(*batch)) == typeid(ShadowVolume))
                 {
                     shadowBatch->SetPolygonGroup(batch->GetPolygonGroup());
                 }
