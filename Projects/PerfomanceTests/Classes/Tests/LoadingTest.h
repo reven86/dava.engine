@@ -1,6 +1,7 @@
 #ifndef __LOADING_TEST_H__
 #define __LOADING_TEST_H__
 
+#include "BaseTest.h"
 #include "Infrastructure/Screen/BaseScreen.h"
 #include "Infrastructure/Utils/ControlHelpers.h"
 #include "MemoryManager/MemoryProfiler.h"
