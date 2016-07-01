@@ -67,7 +67,6 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
 {
     if (0 == imageSet.size())
     {
-        Logger::Error("[TextureValidator] Loaded images count is zero");
         return false;
     }
 
@@ -530,8 +529,6 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
 
     if (!Validator::AreImagesCorrectForTexture(*images))
     {
-        Logger::Error("[Texture::LoadImages] cannot create texture from images");
-
         ReleaseImages(images);
         return false;
     }
