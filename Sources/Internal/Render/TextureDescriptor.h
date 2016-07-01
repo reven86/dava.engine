@@ -205,7 +205,7 @@ public:
     static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
 
-    eGPUFamily gpu = eGPUFamily::GPU_INVALID;
+    eGPUFamily gpu = eGPUFamily::GPU_ORIGIN;
     ImageFormat imageFormat = ImageFormat::IMAGE_FORMAT_UNKNOWN;
     PixelFormat format = PixelFormat::FORMAT_INVALID; // texture format
 
