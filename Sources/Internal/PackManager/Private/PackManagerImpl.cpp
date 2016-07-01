@@ -112,6 +112,8 @@ void PackManagerImpl::Retry()
     {
         // for now just go to server check
         initState = PackManager::InitState::LoadingRequestAskFooter;
+        // clear error state
+        initError = PackManager::InitError::AllGood;
         if (initPaused)
         {
             initPaused = false;
@@ -367,6 +369,8 @@ void PackManagerImpl::GetFooter()
             {
                 initError = PackManager::InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error);
+
+                Logger::FrameworkDebug("%s", initErrorMsg.c_str());
 
                 packManager->initStateChanged.Emit(*this);
             }
