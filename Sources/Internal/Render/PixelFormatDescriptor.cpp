@@ -29,7 +29,7 @@ UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> PixelFormatDe
     { FORMAT_DXT1A, { FORMAT_DXT1A, FastName("DXT1a"), 4, rhi::TEXTURE_FORMAT_DXT1, false, true, Size2i(4, 4) } },
     { FORMAT_DXT3, { FORMAT_DXT3, FastName("DXT3"), 8, rhi::TEXTURE_FORMAT_DXT3, false, true, Size2i(4, 4) } },
     { FORMAT_DXT5, { FORMAT_DXT5, FastName("DXT5"), 8, rhi::TEXTURE_FORMAT_DXT5, false, true, Size2i(4, 4) } },
-    { FORMAT_DXT5NM, { FORMAT_DXT5NM, FastName("DXT5nm"), 8, TEXTURE_FORMAT_INVALID, false, true, Size2i(4, 4) } },
+    { FORMAT_DXT5NM, { FORMAT_DXT5NM, FastName("DXT5nm"), 8, rhi::TEXTURE_FORMAT_DXT5, false, true, Size2i(4, 4) } },
 
     { FORMAT_ETC1, { FORMAT_ETC1, FastName("ETC1"), 4, rhi::TEXTURE_FORMAT_ETC1, false, true, Size2i(4, 4) } },
 
