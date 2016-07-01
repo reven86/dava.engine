@@ -741,12 +741,14 @@ retry:
          
       case STB_TEXTEDIT_K_UNDO:
          stb_text_undo(str, state);
+         stb_textedit_clamp(str, state);
          state->has_preferred_x = 0;
          ret = 1; // Content was changed
          break;
 
       case STB_TEXTEDIT_K_REDO:
          stb_text_redo(str, state);
+         stb_textedit_clamp(str, state);
          state->has_preferred_x = 0;
          ret = 1; // Content was changed
          break;
@@ -966,7 +968,8 @@ retry:
                stb_textedit_delete(str, state, state->cursor, 1);
          }
          state->has_preferred_x = 0;
-         return 1; // Content was changed
+         ret = 1; // Content was changed
+         break;
          
       case STB_TEXTEDIT_K_BACKSPACE:
       case STB_TEXTEDIT_K_BACKSPACE | STB_TEXTEDIT_K_SHIFT:
@@ -980,7 +983,8 @@ retry:
             }
          }
          state->has_preferred_x = 0;
-         return 1; // Content was changed
+         ret =  1; // Content was changed
+         break;
          
 #ifdef STB_TEXTEDIT_K_TEXTSTART2
       case STB_TEXTEDIT_K_TEXTSTART2:
