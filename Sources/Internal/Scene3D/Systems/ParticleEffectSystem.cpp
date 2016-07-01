@@ -153,7 +153,6 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
         return;
     }
 
-    //TODO: force lod here
     if (effect->activeLodLevel != effect->desiredLodLevel)
     {
         UpdateActiveLod(effect);

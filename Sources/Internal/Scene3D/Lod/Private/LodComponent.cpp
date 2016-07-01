@@ -23,37 +23,30 @@ void LodComponent::Serialize(KeyedArchive* archive, SerializationContext* serial
 {
     Component::Serialize(archive, serializationContext);
 
-    if (NULL != archive)
+    if (archive)
     {
-        uint32 i;
-
-        KeyedArchive* lodDistArch = new KeyedArchive();
-        for (i = 0; i < MAX_LOD_LAYERS; ++i)
+        ScopedPtr<KeyedArchive> lodDistArch(new KeyedArchive());
+        for (uint32 i = 0; i < MAX_LOD_LAYERS; ++i)
         {
-            KeyedArchive* lodDistValuesArch = new KeyedArchive();
-            lodDistValuesArch->SetFloat("ld.distance", distances[i]);
-
-            lodDistArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), lodDistValuesArch);
-            lodDistValuesArch->Release();
+            lodDistArch->SetFloat(Format("distance%d", i), distances[i]);
         }
         archive->SetArchive("lc.loddist", lodDistArch);
-        lodDistArch->Release();
     }
 }
 
 void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (NULL != archive)
+    if (archive)
     {
         KeyedArchive* lodDistArch = archive->GetArchive("lc.loddist");
-        if (NULL != lodDistArch)
+        if (lodDistArch)
         {
             if (serializationContext->GetVersion() < 19) //before lodsystem refactoring
             {
                 for (uint32 i = 1; i < MAX_LOD_LAYERS; ++i)
                 {
                     KeyedArchive* lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-                    if (NULL != lodDistValuesArch)
+                    if (lodDistValuesArch)
                     {
                         distances[i - 1] = lodDistValuesArch->GetFloat("ld.distance");
                     }
@@ -71,11 +64,7 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
             {
                 for (uint32 i = 0; i < MAX_LOD_LAYERS; ++i)
                 {
-                    KeyedArchive* lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-                    if (NULL != lodDistValuesArch)
-                    {
-                        distances[i] = lodDistValuesArch->GetFloat("ld.distance");
-                    }
+                    distances[i] = lodDistArch->GetFloat(Format("distance%d", i));
                 }
             }
         }
@@ -83,4 +72,4 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
 
     Component::Deserialize(archive, serializationContext);
 }
-};
+}

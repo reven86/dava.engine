@@ -26,6 +26,13 @@ LodSystem::LodSystem(Scene* scene)
 void LodSystem::Process(float32 timeElapsed)
 {
     SCOPED_NAMED_TIMING("LodSystem::Process");
+
+    Camera* camera = GetScene()->GetCurrentCamera();
+    if (!camera)
+    {
+        return;
+    }
+
     if (timeElapsed == 0.f)
     {
         timeElapsed = 0.000001f;
@@ -41,11 +48,6 @@ void LodSystem::Process(float32 timeElapsed)
     lodOffset *= lodOffset;
     lodMult *= lodMult;
 
-    Camera* camera = GetScene()->GetCurrentCamera();
-    if (!camera)
-    {
-        return;
-    }
     Vector3 cameraPos = camera->GetPosition();
     float32 cameraZoomFactorSq = camera->GetZoomFactor() * camera->GetZoomFactor();
 
@@ -241,7 +243,7 @@ void LodSystem::UnregisterComponent(Entity* entity, Component* component)
         {
             int32 index = iter->second;
             SlowStruct* slow = &slowVector[index];
-            DVASSERT(slow->effect == nullptr);
+            DVASSERT(slow->effect != nullptr);
             slow->effect = nullptr;
             FastStruct* fast = &fastVector[index];
             fast->isEffect = false;
@@ -277,7 +279,7 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
         {
             int32 index = iter->second;
             FastStruct* fast = &fastVector[index];
-            fast->effectStopped = event == EventSystem::STOP_PARTICLE_EFFECT ? true : false;
+            fast->effectStopped = event == EventSystem::STOP_PARTICLE_EFFECT;
         }
     }
     break;
