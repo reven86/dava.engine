@@ -9,6 +9,7 @@
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
+#include "Tests/LoadingTest.h"
 
 using namespace DAVA;
 
@@ -90,7 +91,7 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    // load material test
+    // material test
     Vector<std::pair<String, String>> scenes;
     LoadMaps(MaterialsTest::TEST_NAME, scenes);
 
@@ -103,9 +104,8 @@ void GameCore::RegisterTests()
         testChain.push_back(new MaterialsTest(params));
     }
 
+    // universal test
     scenes.clear();
-
-    // load universal test
     LoadMaps(UniversalTest::TEST_NAME, scenes);
 
     for (const auto& scene : scenes)
@@ -115,6 +115,19 @@ void GameCore::RegisterTests()
         params.scenePath = scene.second;
 
         testChain.push_back(new UniversalTest(params));
+    }
+
+    // loading test
+    scenes.clear();
+    LoadMaps(LoadingTest::TEST_NAME, scenes);
+
+    for (const auto& scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+
+        testChain.push_back(new LoadingTest(params));
     }
 }
 
