@@ -107,6 +107,8 @@ DAVA_TESTCLASS (PackManagerTest)
             while (packManager.GetInitialization().GetError() == PackManager::InitError::AllGood
                    && packManager.GetInitialization().GetState() != PackManager::InitState::Ready)
             {
+                Thread::Sleep(100);
+
                 Logger::Info("update download manager");
 
                 DownloadManager::Instance()->Update();
