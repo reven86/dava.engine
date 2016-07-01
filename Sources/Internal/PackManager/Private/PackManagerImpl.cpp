@@ -151,7 +151,10 @@ void PackManagerImpl::Update()
             }
             else if (isProcessingEnabled)
             {
-                requestManager->Update();
+                if (requestManager)
+                {
+                    requestManager->Update();
+                }
             }
         }
     }
@@ -232,12 +235,15 @@ void PackManagerImpl::ContinueInitialization()
 
 void PackManagerImpl::FirstTimeInit()
 {
+    Logger::FrameworkDebug("pack manager first_time_init");
     DVASSERT(initState == PackManager::InitState::FirstInit);
     initState = PackManager::InitState::Starting;
 }
 
 void PackManagerImpl::InitStarting()
 {
+    Logger::FrameworkDebug("pack manager init_starting");
+
     DVASSERT(initState != PackManager::InitState::FirstInit);
 
     // copy localPackDB from Data to ~doc:/ if not exist
@@ -282,6 +288,7 @@ void PackManagerImpl::InitStarting()
 
 void PackManagerImpl::MountLocalPacks()
 {
+    Logger::FrameworkDebug("pack manager mount_local_packs");
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
     db.reset(new PacksDB(dbInDoc));
@@ -296,6 +303,8 @@ void PackManagerImpl::MountLocalPacks()
 
 void PackManagerImpl::AskFooter()
 {
+    Logger::FrameworkDebug("pack manager ask_footer");
+
     DownloadManager* dm = DownloadManager::Instance();
 
     if (0 == fullSizeServerData)
@@ -347,6 +356,8 @@ void PackManagerImpl::AskFooter()
 
 void PackManagerImpl::GetFooter()
 {
+    Logger::FrameworkDebug("pack manager get_footer");
+
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
     if (dm->GetStatus(downloadTaskId, status))
@@ -384,6 +395,8 @@ void PackManagerImpl::GetFooter()
 
 void PackManagerImpl::AskFileTable()
 {
+    Logger::FrameworkDebug("pack manager ask_file_table");
+
     DownloadManager* dm = DownloadManager::Instance();
     buffer.resize(initFooterOnServer.info.filesTableSize);
 
@@ -396,6 +409,8 @@ void PackManagerImpl::AskFileTable()
 
 void PackManagerImpl::GetFileTable()
 {
+    Logger::FrameworkDebug("pack manager get_file_table");
+
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
     if (dm->GetStatus(downloadTaskId, status))
@@ -435,6 +450,8 @@ void PackManagerImpl::GetFileTable()
 
 void PackManagerImpl::CalcLocalDBWitnRemoteCrc32()
 {
+    Logger::FrameworkDebug("pack manager calc_local_db_with_remote_crc32");
+
     FileSystem* fs = FileSystem::Instance();
 
     if (fs->IsFile(dbInDoc) && fs->IsFile(dbZipInDoc))
@@ -468,6 +485,8 @@ void PackManagerImpl::CalcLocalDBWitnRemoteCrc32()
 
 void PackManagerImpl::AskDB()
 {
+    Logger::FrameworkDebug("pack manager ask_db");
+
     DownloadManager* dm = DownloadManager::Instance();
 
     auto it = initFileData.find(initLocalDBFileName);
@@ -491,6 +510,8 @@ void PackManagerImpl::AskDB()
 
 void PackManagerImpl::GetDB()
 {
+    Logger::FrameworkDebug("pack manager get_db");
+
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
     if (dm->GetStatus(downloadTaskId, status))
@@ -520,6 +541,8 @@ void PackManagerImpl::GetDB()
 
 void PackManagerImpl::UnpackingDB()
 {
+    Logger::FrameworkDebug("pack manager unpacking_db");
+
     uint32 buffCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(buffer.data()), static_cast<uint32>(buffer.size()));
 
     auto it = initFileData.find(initLocalDBFileName);
@@ -558,6 +581,7 @@ void PackManagerImpl::UnpackingDB()
 
 void PackManagerImpl::DeleteOldPacks()
 {
+    Logger::FrameworkDebug("pack manager delete_old_packs");
     // list all packs (dvpk files) downloaded
     // for each file calculate CRC32
     // check CRC32 with value in FileTable
@@ -596,6 +620,8 @@ void PackManagerImpl::DeleteOldPacks()
 
 void PackManagerImpl::LoadPacksDataFromDB()
 {
+    Logger::FrameworkDebug("pack manager load_packs_data_from_db");
+
     // open DB and load packs state then mount all archives to FileSystem
     FilePath path(dbInDoc);
     if (FileSystem::Instance()->IsFile(path))
@@ -613,6 +639,8 @@ void PackManagerImpl::LoadPacksDataFromDB()
 
 void PackManagerImpl::MountDownloadedPacks()
 {
+    Logger::FrameworkDebug("pack manager mount_downloaded_packs);
+    
     MountPacks(localPacksDir);
     initState = PackManager::InitState::Ready;
 }
