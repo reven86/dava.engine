@@ -74,7 +74,6 @@ void JniTextField::UpdateRect(const Rect& controlRect)
 
 void JniTextField::SetText(const char* text)
 {
-    programmaticTextChange = true;
     JNIEnv* env = JNI::GetEnv();
     jstring jStrDefaultText = env->NewStringUTF(text);
     setText(id, jStrDefaultText);
@@ -236,6 +235,7 @@ void TextFieldPlatformImpl::SetText(const WideString& string)
 {
     if (text.compare(string) != 0)
     {
+        programmaticTextChange = true;
         text = TruncateText(string, textField->GetMaxLength());
 
         String utfText = UTF8Utils::EncodeToUTF8(text);
@@ -414,8 +414,12 @@ bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLo
 void TextFieldPlatformImpl::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
 {
     UITextFieldDelegate::eInteractionType type = UITextFieldDelegate::eInteractionType::USER;
-    programmaticTextChange ? type = UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY : 0;
-    UITextFieldDelegate* delegate = textField->GetTeGetDelegate();
+    if (programmaticTextChange)
+    {
+        programmaticTextChange = false;
+        type = UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY;
+    }
+    UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
     {
         delegate->TextFieldOnTextChanged(textField, newText, oldText, type);

@@ -64,14 +64,6 @@ public:
     virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eInteractionType type)
     {
         DVASSERT(newText != oldText);
-        if (type == eInteractionType::USER)
-        {
-            Logger::Info("!!!!! TextFieldOnTextChanged eInteractionType::USER");
-        }
-        else if (type == eInteractionType::PROGRAMMATICALLY)
-        {
-            Logger::Info("!!!!! TextFieldOnTextChanged eInteractionType::PROGRAMMATICALLY");
-        }
         TextFieldOnTextChanged(textField, newText, oldText);
     }
 

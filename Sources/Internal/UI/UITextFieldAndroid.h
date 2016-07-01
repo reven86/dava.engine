@@ -44,7 +44,6 @@ public:
 private:
     uint32_t id;
     JNI::JavaClass jniTextField;
-    bool programmaticTextChange = false;
     Function<void(jint, jfloat, jfloat, jfloat, jfloat)> create;
     Function<void(jint)> destroy;
     Function<void(jint, jfloat, jfloat, jfloat, jfloat)> updateRect;
@@ -140,6 +139,7 @@ protected:
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
+    bool programmaticTextChange = false;
     std::shared_ptr<JniTextField> jniTextField;
     UITextField* textField = nullptr;
     static uint32_t sId;
