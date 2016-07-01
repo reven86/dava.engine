@@ -232,6 +232,8 @@ void LodSystem::RegisterComponent(Entity* entity, Component* component)
             fast->isEffect = slow->effect != nullptr;
         }
     }
+
+    SceneSystem::RegisterComponent(entity, component);
 }
 
 void LodSystem::UnregisterComponent(Entity* entity, Component* component)
@@ -365,14 +367,7 @@ void LodSystem::SetEntityLod(Entity* entity, int32 currentLod)
     RenderObject* ro = GetRenderObject(entity);
     if (ro)
     {
-        if (currentLod == LodComponent::LAST_LOD_LAYER)
-        {
-            ro->SetLodIndex(ro->GetMaxLodIndex());
-        }
-        else
-        {
-            ro->SetLodIndex(currentLod);
-        }
+        ro->SetLodIndex(currentLod);
     }
 }
 
