@@ -113,10 +113,9 @@ void EnumerateRenderObjects(const SelectableGroup& group, Vector<RenderObject*>&
 
     renderObjects.reserve(group.GetSize());
 
-    const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
+    const bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
     for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
-        bool recursive = entity->GetSolid() || !ignoreChildren;
         EnumerateRenderObjectsRecursive(entity, renderObjects, recursive);
     }
 }

@@ -27,6 +27,11 @@
 
 using namespace DAVA;
 
+namespace LODEditorDetail
+{
+const QString multiplePlaceHolder = "multiple values";
+}
+
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LODEditor)
@@ -50,12 +55,12 @@ void LODEditor::SetupSceneSignals()
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &LODEditor::SceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &LODEditor::SceneDeactivated);
     connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &LODEditor::SceneSelectionChanged);
-    connect(SceneSignals::Instance(), &SceneSignals::SolidChanged, this, &LODEditor::SolidChanged);
 }
 
 void LODEditor::SetupInternalUI()
 {
-    connect(ui->checkBoxLodEditorMode, &QCheckBox::clicked, this, &LODEditor::SceneOrSelectionModeSelected);
+    connect(ui->checkboxLodEditorMode, &QCheckBox::clicked, this, &LODEditor::SceneOrSelectionModeSelected);
+    connect(ui->checkboxRecursive, &QCheckBox::clicked, this, &LODEditor::RecursiveModeSelected);
 
     SetupPanelsButtonUI();
     SetupForceUI();
@@ -70,10 +75,19 @@ void LODEditor::SetupInternalUI()
 void LODEditor::SceneOrSelectionModeSelected(bool allSceneModeActivated)
 {
     VariantType value(allSceneModeActivated);
-    SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
+    SettingsManager::SetValue(Settings::Internal_LODEditor_Mode, value);
 
     EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->SetMode(allSceneModeActivated ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION);
+}
+
+void LODEditor::RecursiveModeSelected(bool recursive)
+{
+    VariantType value(recursive);
+    SettingsManager::SetValue(Settings::Internal_LODEditor_Recursive, value);
+
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+    system->SetRecursive(recursive);
 }
 
 //ENDOF MODE
@@ -233,28 +247,36 @@ void LODEditor::SetupDistancesUI()
     connect(ui->distanceSlider, &DistanceSlider::DistanceHandleMoved, this, &LODEditor::LODDistanceIsChangingBySlider);
     connect(ui->distanceSlider, &DistanceSlider::DistanceHandleReleased, this, &LODEditor::LODDistanceChangedBySlider);
 
-    InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
-    InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
-    InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
-    InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
+    InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, ui->lod0Reset, ui->lod0Multiple, 0);
+    InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, ui->lod1Reset, ui->lod1Multiple, 1);
+    InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, ui->lod2Reset, ui->lod2Multiple, 2);
+    InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, ui->lod3Reset, ui->lod3Multiple, 3);
 }
 
-void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index)
+void LODEditor::InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, QPushButton* reset, QLineEdit* edit, int index)
 {
     spinbox->setRange(LodComponent::MIN_LOD_DISTANCE, LodComponent::MAX_LOD_DISTANCE); //distance
     spinbox->setValue(LodComponent::MIN_LOD_DISTANCE);
     spinbox->setFocusPolicy(Qt::WheelFocus);
     spinbox->setKeyboardTracking(false);
-
     connect(spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &LODEditor::LODDistanceChangedBySpinbox);
+
+    edit->setPlaceholderText(LODEditorDetail::multiplePlaceHolder);
+    connect(edit, &QLineEdit::editingFinished, this, &LODEditor::LODDistanceChangedByLineEdit);
+
+    connect(reset, &QPushButton::released, this, &LODEditor::LODDistanceChangedByReset);
 
     distanceWidgets[index].name = name;
     distanceWidgets[index].distance = spinbox;
+    distanceWidgets[index].reset = reset;
+    distanceWidgets[index].multipleText = edit;
 }
 
-void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, int32 count)
+void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, const DAVA::Vector<bool>& multiple, int32 count)
 {
     DVASSERT(distances.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
+    DVASSERT(multiple.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
+
     for (int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         const QSignalBlocker guardWidget(distanceWidgets[i].distance);
@@ -264,6 +286,18 @@ void LODEditor::UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& dis
 
         distanceWidgets[i].distance->setRange(minDistance, maxDistance); //distance
         distanceWidgets[i].distance->setValue(distances[i]);
+
+        distanceWidgets[i].distance->setVisible(!multiple[i]);
+        distanceWidgets[i].multipleText->setVisible(multiple[i]);
+
+        if (multiple[i])
+        {
+            distanceWidgets[i].multipleText->setText("");
+        }
+        else
+        {
+            distanceWidgets[i].multipleText->setText(QString::number(distances[i]));
+        }
 
         distanceWidgets[i].SetEnabled(i < count);
     }
@@ -276,7 +310,7 @@ void LODEditor::LODDistanceIsChangingBySlider()
 
     EditorLODSystem* system = GetCurrentEditorLODSystem();
     const LODComponentHolder* lodData = system->GetActiveLODData();
-    UpdateDistanceSpinboxesUI(distances, lodData->GetLODLayersCount());
+    UpdateDistanceSpinboxesUI(distances, lodData->GetMultiple(), lodData->GetLODLayersCount());
 }
 
 void LODEditor::LODDistanceChangedBySlider()
@@ -298,6 +332,41 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
 
     EditorLODSystem* system = GetCurrentEditorLODSystem();
     system->SetLODDistances(distances);
+}
+
+void LODEditor::LODDistanceChangedByLineEdit()
+{
+    QObject* signalSender = sender();
+
+    for (int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        if (signalSender == distanceWidgets[i].multipleText)
+        {
+            bool ok = false;
+            QString text = distanceWidgets[i].multipleText->text();
+            float32 value = text.toFloat(&ok);
+            if (ok)
+            {
+                distanceWidgets[i].distance->setValue(value);
+            }
+
+            break;
+        }
+    }
+}
+
+void LODEditor::LODDistanceChangedByReset()
+{
+    QObject* signalSender = sender();
+
+    for (int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        if (signalSender == distanceWidgets[i].reset)
+        {
+            distanceWidgets[i].distance->setValue(std::numeric_limits<DAVA::float32>::max());
+            break;
+        }
+    }
 }
 
 //ENDOF DISTANCES
@@ -329,14 +398,6 @@ void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
 
     EditorLODSystem* system = scene->editorLODSystem;
     system->SelectionChanged(selected, deselected);
-}
-
-void LODEditor::SolidChanged(SceneEditor2* scene, const Entity* entity, bool value)
-{
-    DVASSERT(scene != nullptr);
-
-    EditorLODSystem* system = scene->editorLODSystem;
-    system->SolidChanged(entity, value);
 }
 
 //ENDOF SCENE SIGNALS
@@ -387,9 +448,10 @@ void LODEditor::DeleteLastLOD()
 //ENDOF ACTIONS
 
 //DELEGATE
-void LODEditor::UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode)
+void LODEditor::UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode, bool recursive)
 {
-    ui->checkBoxLodEditorMode->setChecked(mode == eEditorMode::MODE_ALL_SCENE);
+    ui->checkboxLodEditorMode->setChecked(mode == eEditorMode::MODE_ALL_SCENE);
+    ui->checkboxRecursive->setChecked(recursive);
 
     panelsUpdater->Update();
 }
@@ -430,7 +492,7 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentH
     ui->distanceSlider->SetLayersCount(count);
     ui->distanceSlider->SetDistances(distances);
 
-    UpdateDistanceSpinboxesUI(distances, count);
+    UpdateDistanceSpinboxesUI(distances, lodData->GetMultiple(), count);
     UpdateTrianglesUI(GetCurrentEditorStatisticsSystem());
 }
 
@@ -462,9 +524,15 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 void LODEditor::DistanceWidget::SetEnabled(bool enabled)
 {
-    //TODO: set different text colors for enabled and disabled
-
-    //    distance->setEnabled(enabled);
+    //TODO: set different text colors for enabled and disabled lods via PALLETE
+    if (enabled)
+    {
+        distance->setStyleSheet("color: rgb(230,230,230); ");
+    }
+    else
+    {
+        distance->setStyleSheet("color: rgb(161,161,161); ");
+    }
 }
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const

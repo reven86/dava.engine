@@ -108,6 +108,9 @@ public:
     eEditorMode GetMode() const;
     void SetMode(eEditorMode mode);
 
+    bool GetRecursive() const;
+    void SetRecursive(bool recursive);
+
     //actions
     bool CanDeleteLOD() const;
     bool CanCreateLOD() const;
@@ -126,7 +129,6 @@ public:
     void SetLODDistances(const DAVA::Vector<DAVA::float32>& distances);
 
     //scene signals
-    void SolidChanged(const DAVA::Entity* entity, bool value);
     void SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void AddDelegate(EditorLODSystemUIDelegate* uiDelegate);
@@ -162,6 +164,8 @@ private:
 
     DAVA::Vector<EditorLODSystemUIDelegate*> uiDelegates;
     DAVA::uint32 invalidateUIFlag = FLAG_NONE;
+
+    bool recursive = false;
 };
 
 class EditorLODSystemUIDelegate
@@ -169,7 +173,7 @@ class EditorLODSystemUIDelegate
 public:
     virtual ~EditorLODSystemUIDelegate() = default;
 
-    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode)
+    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode, bool recursive)
     {
     }
     virtual void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues)

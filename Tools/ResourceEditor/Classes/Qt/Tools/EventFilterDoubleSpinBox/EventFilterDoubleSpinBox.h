@@ -17,5 +17,5 @@ public:
     QString textFromValue(double val) const override;
 
 private:
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 };

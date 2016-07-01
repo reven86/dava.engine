@@ -186,10 +186,11 @@ EditorLODSystem::EditorLODSystem(Scene* scene)
         lodData[m].BindToSystem(this, static_cast<SceneEditor2*>(GetScene()));
     }
 
-    const bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
+    const bool allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditor_Mode).AsBool();
     mode = (allSceneModeEnabled) ? eEditorMode::MODE_ALL_SCENE : eEditorMode::MODE_SELECTION;
-
     activeLodData = &lodData[mode];
+
+    recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
 }
 
 EditorLODSystem::~EditorLODSystem()
@@ -275,6 +276,20 @@ void EditorLODSystem::SetMode(eEditorMode mode_)
     activeLodData->ApplyForce(forceValues);
 
     EmitInvalidateUI(FLAG_ALL);
+}
+
+bool EditorLODSystem::GetRecursive() const
+{
+    return recursive;
+}
+
+void EditorLODSystem::SetRecursive(bool recursive_)
+{
+    recursive = recursive_;
+
+    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
+    const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
+    SelectionChanged(&selection, nullptr);
 }
 
 const ForceValues& EditorLODSystem::GetForceValues() const
@@ -431,21 +446,11 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
     EmitInvalidateUI(FLAG_DISTANCE);
 }
 
-void EditorLODSystem::SolidChanged(const Entity* entity, bool value)
-{
-    //    SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
-    //    const auto& selection = sceneEditor->selectionSystem->GetSelection();
-    //    if (selection.ContainsObject(entity))
-    //    {
-    //        SelectionChanged(&selection, nullptr);
-    //    }
-}
-
 void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
 
-    bool recursive = SettingsManager::GetValue(Settings::General_LodEditor_Recursive).AsBool();
+    bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
 
     uint32 count = selected->GetSize();
     Vector<Entity*> lodEntities;
@@ -489,7 +494,7 @@ void EditorLODSystem::AddDelegate(EditorLODSystemUIDelegate* uiDelegate)
     uiDelegates.push_back(uiDelegate);
     if (uiDelegate != nullptr)
     {
-        uiDelegate->UpdateModeUI(this, mode);
+        uiDelegate->UpdateModeUI(this, mode, recursive);
         uiDelegate->UpdateForceUI(this, forceValues);
         uiDelegate->UpdateDistanceUI(this, activeLodData);
         uiDelegate->UpdateActionUI(this);
@@ -519,7 +524,7 @@ void EditorLODSystem::DispatchSignals()
     {
         if (invalidateUIFlag & FLAG_MODE)
         {
-            d->UpdateModeUI(this, mode);
+            d->UpdateModeUI(this, mode, recursive);
         }
 
         if (invalidateUIFlag & FLAG_FORCE)

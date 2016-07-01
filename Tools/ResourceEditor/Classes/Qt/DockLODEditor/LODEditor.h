@@ -1,5 +1,4 @@
-#ifndef __LOD_EDITOR_H__
-#define __LOD_EDITOR_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -48,15 +47,17 @@ private slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
 
     //distance signals
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceIsChangingBySlider();
     void LODDistanceChangedBySlider();
+    void LODDistanceChangedByLineEdit();
+    void LODDistanceChangedByReset();
 
-    //mode signal
+    //mode signals
     void SceneOrSelectionModeSelected(bool allSceneModeActivated);
+    void RecursiveModeSelected(bool recursive);
 
     //action
     void CopyLastLODToLOD0Clicked();
@@ -76,13 +77,13 @@ private:
     void UpdatePanelsForCurrentScene();
 
     void SetupDistancesUI();
-    void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index);
-    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, DAVA::int32 count);
+    void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, QPushButton* reset, QLineEdit* edit, int index);
+    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, const DAVA::Vector<bool>& multiple, DAVA::int32 count);
 
     void SetupActionsUI();
 
     //EditorLODSystemV2UIDelegate
-    void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode) override;
+    void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode, bool recursive) override;
     void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues) override;
     void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData) override;
     void UpdateActionUI(EditorLODSystem* forSystem) override;
@@ -105,6 +106,8 @@ private:
     {
         QLabel* name = nullptr;
         QDoubleSpinBox* distance = nullptr;
+        QPushButton* reset = nullptr;
+        QLineEdit* multipleText = nullptr;
 
         void SetEnabled(bool enabled);
     };
@@ -114,4 +117,3 @@ private:
     LazyUpdater* panelsUpdater = nullptr;
 };
 
-#endif //#ifndef __LOD_EDITOR_H__

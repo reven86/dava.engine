@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITOR__SETTINGS_H__
-#define __RESOURCEEDITOR__SETTINGS_H__
+#pragma once
 
 #include "Base/FastName.h"
 
@@ -30,7 +29,6 @@ public:
 
     static const DAVA::FastName General_LodEditor_MinEdge;
     static const DAVA::FastName General_LodEditor_MaxEdge;
-    static const DAVA::FastName General_LodEditor_Recursive;
 
     static const DAVA::FastName General_AssetCache_UseCache;
     static const DAVA::FastName General_AssetCache_Ip;
@@ -62,7 +60,6 @@ public:
     static const DAVA::FastName Scene_DebugBoxWaypointScale;
     static const DAVA::FastName Scene_DragAndDropWithShift;
     static const DAVA::FastName Scene_AutoselectNewEntities;
-    static const DAVA::FastName Scene_RefreshLodForNonSolid;
     static const DAVA::FastName Scene_RememberForceParameters;
     static const DAVA::FastName Scene_SaveEmitters;
 
@@ -88,7 +85,9 @@ public:
     static const DAVA::FastName Internal_MaterialsLightViewMode;
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas;
     static const DAVA::FastName Internal_LicenceAccepted;
-    static const DAVA::FastName Internal_LODEditorMode;
+    static const DAVA::FastName Internal_LODEditor_Mode;
+    static const DAVA::FastName Internal_LODEditor_Recursive;
+
     static const DAVA::FastName Internal_ImageSplitterPath;
     static const DAVA::FastName Internal_ImageSplitterPathSpecular;
 
@@ -97,6 +96,3 @@ public:
 
 }; //End of Settings
 
-
-
-#endif //__RESOURCEEDITOR__SETTINGS_H__
