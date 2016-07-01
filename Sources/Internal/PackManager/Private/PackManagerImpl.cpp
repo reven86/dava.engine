@@ -639,8 +639,8 @@ void PackManagerImpl::LoadPacksDataFromDB()
 
 void PackManagerImpl::MountDownloadedPacks()
 {
-    Logger::FrameworkDebug("pack manager mount_downloaded_packs);
-    
+    Logger::FrameworkDebug("pack manager mount_downloaded_packs");
+
     MountPacks(localPacksDir);
     initState = PackManager::InitState::Ready;
 }
