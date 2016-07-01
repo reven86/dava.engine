@@ -962,12 +962,11 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader->IsValid());
     if (activeVariantName != passName)
     {
-        RenderVariantInstance* targetVariant = renderVariants[passName];
-
-        if (targetVariant != nullptr)
+        auto it = renderVariants.find(passName); // [passName];
+        if (it != renderVariants.end())
         {
             activeVariantName = passName;
-            activeVariantInstance = targetVariant;
+            activeVariantInstance = it->second;
 
             res = (activeVariantInstance->shader->IsValid());
         }

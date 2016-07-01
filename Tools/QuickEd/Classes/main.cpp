@@ -44,10 +44,12 @@ protected:
         names.push_back(L"plg_qt_common");
     }
 
-    void OnPostLoadPugins() override
+    void OnPostLoadPlugins() override
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
+
+        BaseApplication::OnPostLoadPlugins();
     }
 
     bool OnRequestCloseApp() override
