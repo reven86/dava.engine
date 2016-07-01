@@ -27,7 +27,7 @@ public:
             ss << '\n' << pack.otherErrorMsg;
         }
 
-        DAVA::Logger::FrameworkDebug("%s", ss.str().c_str());
+        DAVA::Logger::Info("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
     DAVA::PackManager& packManager;
@@ -100,6 +100,12 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
+            if (packManager.GetInitialization().GetError() != PackManager::InitError::AllGood)
+            {
+                Logger::Info("can't initialize packManager(remember on build agents network disabled)");
+                return;
+            }
+
             packManager.EnableRequesting();
 
             String packName = "vpack";
@@ -120,7 +126,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 DownloadManager::Instance()->Update();
                 packManager.Update();
             }
-            // TODO disable test for now - on local server newer packs
+            // disable test for now - on local server newer packs
             if (pack.state != PackManager::Pack::Status::Mounted)
             {
                 return;
@@ -152,7 +158,7 @@ DAVA_TESTCLASS (PackManagerTest)
         }
         catch (std::exception& ex)
         {
-            Logger::Error("%s", ex.what());
+            Logger::Error("PackManagerTest failed: %s", ex.what());
             TEST_VERIFY(false);
         }
     }
