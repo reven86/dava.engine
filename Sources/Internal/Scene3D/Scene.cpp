@@ -671,19 +671,19 @@ void Scene::Draw()
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 
-    //TODO: remove this crap with shadow color
+    //TODO: re-think configuring global dynamic bindings
+    static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
+    static Color defWaterClearColor(0.f, 0.f, 0.f, 0.f);
+
+    const float32* shadowDataPtr = defShadowColor.color;
+    const float32* waterDataPtr = defWaterClearColor.color;
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
-    {
-        const float32* propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
-                                                       propDataPtr, reinterpret_cast<pointer_size>(propDataPtr));
-    }
-    else
-    {
-        static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR,
-                                                       defShadowColor.color, reinterpret_cast<pointer_size>(this));
-    }
+        shadowDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::WATER_CLEAR_COLOR))
+        waterDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::WATER_CLEAR_COLOR);
+
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, shadowDataPtr, reinterpret_cast<pointer_size>(shadowDataPtr));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR, waterDataPtr, reinterpret_cast<pointer_size>(waterDataPtr));
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 

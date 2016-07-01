@@ -10,7 +10,7 @@
 #include <QSet>
 #include <QDebug>
 
-class ListModel;
+class BranchesListModel;
 class QSortFilterProxyModel;
 
 namespace Ui
@@ -29,11 +29,13 @@ public:
 public slots:
     void OnRefreshClicked();
     void OnListItemClicked(QModelIndex);
-    void RefreshApps();
 
     void OnRun(int rowNumber);
     void OnInstall(int rowNumber);
     void OnRemove(int rowNumber);
+
+    void OnInstallAll();
+    void OnRemoveAll();
 
     void OnCellClicked(const QPoint& pos);
     void OnCellDoubleClicked(QModelIndex index);
@@ -43,6 +45,9 @@ public slots:
     void NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
+    void CheckUpdates();
+    void RefreshApps();
+
     void ShowWebpage();
     void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
@@ -65,7 +70,7 @@ private:
     QString selectedBranchID;
 
     QFont tableFont;
-    ListModel* listModel = nullptr;
+    BranchesListModel* listModel = nullptr;
     QSortFilterProxyModel* filterModel = nullptr;
 };
 

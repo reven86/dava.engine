@@ -1,3 +1,4 @@
 [submodule "Sources/External/ngt"]
 	path = Sources/External/ngt
 	url = https://stash.wargaming.net/scm/df/ngt.git
+	branch = dava/development

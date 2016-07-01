@@ -5,11 +5,11 @@
 
 #include "Scene3D/Entity.h"
 
-#include "core_reflection/i_definition_manager.hpp"
-#include "core_reflection/interfaces/i_reflection_controller.hpp"
-#include "core_data_model/reflection/reflected_tree_model.hpp"
-#include "core_data_model/i_tree_model.hpp"
-#include "core_qt_common/helpers/qt_helpers.hpp"
+#include <core_reflection/i_definition_manager.hpp>
+#include <core_reflection/interfaces/i_reflection_controller.hpp>
+#include <core_data_model/reflection/reflected_tree_model.hpp>
+#include <core_data_model/i_tree_model.hpp>
+#include <core_qt_common/helpers/qt_helpers.hpp>
 #include "metainfo/PropertyPanel.mpp"
 
 #include "Debug/DVAssert.h"
@@ -22,18 +22,18 @@ PropertyPanel::~PropertyPanel()
 {
 }
 
-void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
+void PropertyPanel::Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication)
 {
-    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
+    wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defMng != nullptr);
-    defMng->registerDefinition(new TypeClassDefinition<PropertyPanel>());
+    defMng->registerDefinition(std::unique_ptr<wgt::IClassDefinitionDetails>(new wgt::TypeClassDefinition<PropertyPanel>()));
 
-    view = uiFramework.createView("Views/PropertyPanel.qml", IUIFramework::ResourceType::Url, this);
+    view = uiFramework.createView("Views/PropertyPanel.qml", wgt::IUIFramework::ResourceType::Url, this);
     view->registerListener(this);
     uiApplication.addView(*view);
 }
 
-void PropertyPanel::Finalize(IUIApplication& uiApplication)
+void PropertyPanel::Finalize(wgt::IUIApplication& uiApplication)
 {
     SetObject(nullptr);
     uiApplication.removeView(*view);
@@ -41,12 +41,12 @@ void PropertyPanel::Finalize(IUIApplication& uiApplication)
     view.reset();
 }
 
-ObjectHandle PropertyPanel::GetPropertyTree() const
+wgt::ObjectHandle PropertyPanel::GetPropertyTree() const
 {
-    return ObjectHandleT<ITreeModel>(model.get());
+    return wgt::ObjectHandleT<wgt::ITreeModel>(model.get());
 }
 
-void PropertyPanel::SetPropertyTree(const ObjectHandle& /*dummyTree*/)
+void PropertyPanel::SetPropertyTree(const wgt::ObjectHandle& /*dummyTree*/)
 {
 }
 
@@ -76,28 +76,28 @@ void PropertyPanel::SetObject(DAVA::InspBase* object)
 {
     return;
 
-    std::shared_ptr<ITreeModel> tempTreeModel(model);
+    std::shared_ptr<wgt::ITreeModel> tempTreeModel(model);
 
-    IDefinitionManager* defMng = NGTLayer::queryInterface<IDefinitionManager>();
+    wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defMng != nullptr);
-    IReflectionController* controller = NGTLayer::queryInterface<IReflectionController>();
-    ITreeModel* newModel = nullptr;
+    wgt::IReflectionController* controller = NGTLayer::queryInterface<wgt::IReflectionController>();
+    wgt::ITreeModel* newModel = nullptr;
     if (object != nullptr)
     {
         const DAVA::InspInfo* info = object->GetTypeInfo();
         NGTLayer::RegisterType(*defMng, info);
 
-        IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
-        newModel = new ReflectedTreeModel(NGTLayer::CreateObjectHandle(*defMng, info, object), *defMng, controller);
+        wgt::IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
+        newModel = new wgt::ReflectedTreeModel(NGTLayer::CreateObjectHandle(*defMng, info, object), *defMng, controller);
     }
 
     model.reset(newModel);
 
-    IClassDefinition* definition = defMng->getDefinition(getClassIdentifier<PropertyPanel>());
-    definition->bindProperty("PropertyTree", this).setValue(Variant());
+    wgt::IClassDefinition* definition = defMng->getDefinition(wgt::getClassIdentifier<PropertyPanel>());
+    definition->bindProperty("PropertyTree", this).setValue(wgt::Variant());
 }
 
-void PropertyPanel::onFocusIn(IView* view_)
+void PropertyPanel::onFocusIn(wgt::IView* view_)
 {
     DVASSERT(view_ == view.get());
     visible = true;
@@ -108,7 +108,7 @@ void PropertyPanel::onFocusIn(IView* view_)
     }
 }
 
-void PropertyPanel::onFocusOut(IView* view_)
+void PropertyPanel::onFocusOut(wgt::IView* view_)
 {
     DVASSERT(view_ == view.get());
     visible = false;

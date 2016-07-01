@@ -1,8 +1,7 @@
 #pragma once
 
+#include <core_variant/collection.hpp>
 #include "Base/BaseTypes.h"
-
-#include "core_variant/collection.hpp"
 
 namespace DAVA
 {
@@ -13,7 +12,7 @@ struct MetaInfo;
 
 namespace NGTLayer
 {
-class NGTCollection : public CollectionImplBase
+class NGTCollection : public wgt::CollectionImplBase
 {
     class Iterator;
 
@@ -23,30 +22,30 @@ public:
     bool empty() const;
     size_t size() const override;
 
-    CollectionIteratorImplPtr begin() override;
-    CollectionIteratorImplPtr end() override;
+    wgt::CollectionIteratorImplPtr begin() override;
+    wgt::CollectionIteratorImplPtr end() override;
 
-    std::pair<CollectionIteratorImplPtr, bool> get(const Variant& key, GetPolicy policy) override;
+    std::pair<wgt::CollectionIteratorImplPtr, bool> get(const wgt::Variant& key, GetPolicy policy) override;
 
-    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& pos) override;
-    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last) override;
-    size_t erase(const Variant& key) override;
+    wgt::CollectionIteratorImplPtr erase(const wgt::CollectionIteratorImplPtr& pos) override;
+    wgt::CollectionIteratorImplPtr erase(const wgt::CollectionIteratorImplPtr& first, const wgt::CollectionIteratorImplPtr& last) override;
+    size_t erase(const wgt::Variant& key) override;
 
-    const TypeId& keyType() const override;
-    const TypeId& valueType() const override;
-    const TypeId& containerType() const override;
+    const wgt::TypeId& keyType() const override;
+    const wgt::TypeId& valueType() const override;
+    const wgt::TypeId& containerType() const override;
     const void* container() const override;
     int flags() const override;
 
 private:
     void* object;
     const DAVA::InspColl* collectionImpl;
-    TypeId keyId;
-    TypeId valueId;
-    TypeId containerId;
+    wgt::TypeId keyId;
+    wgt::TypeId valueId;
+    wgt::TypeId containerId;
 };
 
-class NGTKeyedArchiveImpl : public CollectionImplBase
+class NGTKeyedArchiveImpl : public wgt::CollectionImplBase
 {
     class Iterator;
 
@@ -56,24 +55,24 @@ public:
     bool empty() const;
     size_t size() const override;
 
-    CollectionIteratorImplPtr begin() override;
-    CollectionIteratorImplPtr end() override;
-    std::pair<CollectionIteratorImplPtr, bool> get(const Variant& key, GetPolicy policy) override;
-    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& pos) override;
-    size_t erase(const Variant& key) override;
-    CollectionIteratorImplPtr erase(const CollectionIteratorImplPtr& first, const CollectionIteratorImplPtr& last) override;
+    wgt::CollectionIteratorImplPtr begin() override;
+    wgt::CollectionIteratorImplPtr end() override;
+    std::pair<wgt::CollectionIteratorImplPtr, bool> get(const wgt::Variant& key, GetPolicy policy) override;
+    wgt::CollectionIteratorImplPtr erase(const wgt::CollectionIteratorImplPtr& pos) override;
+    size_t erase(const wgt::Variant& key) override;
+    wgt::CollectionIteratorImplPtr erase(const wgt::CollectionIteratorImplPtr& first, const wgt::CollectionIteratorImplPtr& last) override;
 
-    const TypeId& keyType() const override;
-    const TypeId& valueType() const override;
-    const TypeId& containerType() const override;
+    const wgt::TypeId& keyType() const override;
+    const wgt::TypeId& valueType() const override;
+    const wgt::TypeId& containerType() const override;
     const void* container() const override;
     int flags() const override;
 
 private:
     DAVA::KeyedArchive* archive;
-    TypeId keyTypeId;
-    TypeId valueTypeId;
-    TypeId containerTypeId;
+    wgt::TypeId keyTypeId;
+    wgt::TypeId valueTypeId;
+    wgt::TypeId containerTypeId;
 };
 
 } // namespace NGTLayer

@@ -16,10 +16,6 @@ public:
     {
     }
 
-    virtual ~RefCounter()
-    {
-    }
-
     void Retain()
     {
         refCount++;
@@ -33,8 +29,11 @@ public:
         }
     }
 
+protected:
+    virtual ~RefCounter() = default;
+
 private:
-    Atomic<int32> refCount;
+    Atomic<uint32> refCount;
 };
 
 // ====================================================================================================================================================

@@ -9,6 +9,7 @@
 
 #include "Commands2/DAEConvertAction.h"
 
+#include "QtTools/Utils/Utils.h"
 
 #include <QToolBar>
 #include <QLineEdit>

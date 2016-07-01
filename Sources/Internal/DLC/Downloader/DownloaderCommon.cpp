@@ -4,7 +4,14 @@
 
 namespace DAVA
 {
-DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl, const FilePath& storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount)
+DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
+                                                 const FilePath& storeToFilePath,
+                                                 DownloadType downloadMode,
+                                                 int32 _timeout,
+                                                 int32 _retriesCount,
+                                                 uint8 _partsCount,
+                                                 uint64 _downloadOffset,
+                                                 uint64 _downloadSize)
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
@@ -18,6 +25,36 @@ DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl, const Fil
     , downloadTotal(0)
     , downloadProgress(0)
     , partsCount(_partsCount)
+    , downloadOffset(_downloadOffset)
+    , downloadSize(_downloadSize)
+{
+}
+
+DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
+                                                 void* buffer,
+                                                 uint32 bufSize,
+                                                 DownloadType downloadMode,
+                                                 int32 _timeout,
+                                                 int32 _retriesCount,
+                                                 uint8 _partsCount,
+                                                 uint64 _downloadOffset,
+                                                 uint64 _downloadSize)
+    : id(0)
+    , url(srcUrl)
+    , fileErrno(0)
+    , timeout(_timeout)
+    , retriesCount(_retriesCount)
+    , retriesLeft(retriesCount)
+    , type(downloadMode)
+    , status(DL_UNKNOWN)
+    , error(DLE_NO_ERROR)
+    , downloadTotal(0)
+    , downloadProgress(0)
+    , partsCount(_partsCount)
+    , downloadOffset(_downloadOffset)
+    , downloadSize(_downloadSize)
+    , memoryBuffer(buffer)
+    , memoryBufferSize(bufSize)
 {
 }
 

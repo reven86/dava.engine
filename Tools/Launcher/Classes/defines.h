@@ -5,7 +5,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 16"
+#define LAUNCHER_VER "0.9 build 17"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
@@ -16,7 +16,7 @@
 #define CONFIG_BRANCHES_KEY "branches"
 
 #define CONFIG_LAUNCHER_VERSION_KEY "version"
-#define CONFIG_LAUNCHER_WEBPAGE_KEY "webpage"
+#define CONFIG_LAUNCHER_WEBPAGE_KEY "News"
 #define CONFIG_LAUNCHER_NEWSID_KEY "newsID"
 #define CONFIG_LAUNCHER_FAVORITES_KEY "favorites"
 

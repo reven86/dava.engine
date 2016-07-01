@@ -60,15 +60,14 @@ dx9_QueryBuffer_Delete(Handle handle)
     if (buf)
     {
         std::vector<DX9Command> cmd;
+        cmd.reserve(buf->query.size());
 
-        for (std::vector<IDirect3DQuery9 *>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
+        for (IDirect3DQuery9* q : buf->query)
         {
-            DX9Command c = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
-
-            cmd.push_back(c);
+            cmd.push_back({ DX9Command::RELEASE, { uint64_t(&q) } });
         }
 
-        ExecDX9(&cmd[0], static_cast<uint32>(cmd.size()));
+        ExecDX9(cmd.data(), static_cast<uint32>(cmd.size()), false);
         buf->query.clear();
     }
 
@@ -100,7 +99,7 @@ dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
             DWORD val;
             DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
 
-            ExecDX9(&cmd, 1);
+            ExecDX9(&cmd, 1, false);
 
             if (SUCCEEDED(cmd.retval))
             {
@@ -127,7 +126,7 @@ dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
             DWORD val = 0;
             DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
 
-            ExecDX9(&cmd, 1);
+            ExecDX9(&cmd, 1, false);
 
             if (cmd.retval == S_OK)
             {
