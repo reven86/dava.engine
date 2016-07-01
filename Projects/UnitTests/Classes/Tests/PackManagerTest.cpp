@@ -39,9 +39,13 @@ DAVA_TESTCLASS (PackManagerTest)
     {
         using namespace DAVA;
 
+        Logger::Info("before init");
+
         String dbFileName("db_{gpu}.db.zip");
         FilePath downloadedPacksDir("~doc:/UnitTests/PackManagerTest/packs/");
         FilePath readOnlyPacksDir("~res:/TestData/PackManagerTest/packs/");
+
+        Logger::Info("clear dirs");
 
         // every time clear directory to download once again
         FileSystem::Instance()->DeleteDirectory(downloadedPacksDir);
@@ -50,6 +54,8 @@ DAVA_TESTCLASS (PackManagerTest)
         String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
         String architecture = "noname";
+
+        Logger::Info("get gpu family");
 
         eGPUFamily gpu = DeviceInfo::GetGPUFamily();
         switch (gpu)
@@ -82,6 +88,8 @@ DAVA_TESTCLASS (PackManagerTest)
 
         dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
 
+        Logger::Info("init packManager");
+
         try
         {
             packManager.Initialize(dbFileName,
@@ -90,8 +98,11 @@ DAVA_TESTCLASS (PackManagerTest)
                                    superPackUrl,
                                    architecture);
 
+            Logger::Info("create game client");
+
             GameClient client(packManager);
 
+            Logger::Info("wait till packManagerInitialization done");
             // wait till initialization done
             while (packManager.GetInitialization().GetError() == PackManager::InitError::AllGood
                    && packManager.GetInitialization().GetState() != PackManager::InitState::Ready)
@@ -106,9 +117,13 @@ DAVA_TESTCLASS (PackManagerTest)
                 return;
             }
 
+            Logger::Info("before enable requesting");
+
             packManager.EnableRequesting();
 
             String packName = "vpack";
+
+            Logger::Info("before request pack");
 
             const PackManager::Pack& pack = packManager.RequestPack(packName);
             if (pack.state != PackManager::Pack::Status::Mounted)
@@ -118,6 +133,8 @@ DAVA_TESTCLASS (PackManagerTest)
 
             uint32 maxIter = 360;
 
+            Logger::Info("wait till pack loading");
+
             while ((pack.state == PackManager::Pack::Status::Requested || pack.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
                 // wait
@@ -126,6 +143,9 @@ DAVA_TESTCLASS (PackManagerTest)
                 DownloadManager::Instance()->Update();
                 packManager.Update();
             }
+
+            Logger::Info("finish loading pack");
+
             // disable test for now - on local server newer packs
             if (pack.state != PackManager::Pack::Status::Mounted)
             {
@@ -134,6 +154,8 @@ DAVA_TESTCLASS (PackManagerTest)
 
             if (pack.state != PackManager::Pack::Status::OtherError)
             {
+                Logger::Info("check pack");
+
                 TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
 
                 ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
@@ -150,11 +172,15 @@ DAVA_TESTCLASS (PackManagerTest)
             }
             else
             {
+                Logger::Info("check if no wifi on device");
+
                 // if device without wifi
                 const Vector<PackManager::Pack>& allPacks = packManager.GetPacks();
                 TEST_VERIFY(allPacks.at(0).name == "pack1");
                 TEST_VERIFY(allPacks.at(0).downloadError == DLE_COULDNT_RESOLVE_HOST);
             }
+
+            Logger::Info("done test");
         }
         catch (std::exception& ex)
         {
