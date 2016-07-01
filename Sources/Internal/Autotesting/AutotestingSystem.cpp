@@ -421,6 +421,21 @@ void AutotestingSystem::OnTestsFinished()
     ExitApp();
 }
 
+void AutotestingSystem::OnTestSkipped()
+{
+    Logger::Info("AutotestingSystem::OnTestSkipped");
+
+    if (isDB && isInitMultiplayer)
+    {
+        AutotestingDB::Instance()->WriteState(deviceName, "State", "skipped");
+    }
+
+    // Mark test as SKIPPED
+    AutotestingDB::Instance()->Log("INFO", "Test skipped.");
+
+    ExitApp();
+}
+
 void AutotestingSystem::OnInput(const UIEvent& input)
 {
     if (UIScreenManager::Instance())
