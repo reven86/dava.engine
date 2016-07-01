@@ -1,15 +1,13 @@
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_app.h>
 #include <cef/include/cef_client.h>
-#include "UI/Private/CEFDavaResourceHandler.h"
+#include "CEFDavaResourceHandler.h"
 
 #include "Base/TypeHolders.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Signal.h"
-#include "UI/Private/CEFController.h"
+#include "CEFController.h"
 
 namespace DAVA
 {
@@ -39,7 +37,7 @@ public:
     CEFControllerImpl();
     ~CEFControllerImpl();
 
-    bool IsCEFInitializedSuccessfully();
+    bool IsCEFAvailable();
     void AddClient(const CefRefPtr<CefClient>& client);
 
     FilePath GetCachePath();
@@ -91,7 +89,7 @@ CEFControllerImpl::CEFControllerImpl()
         cookieMan->SetSupportedSchemes({ "dava" }, nullptr);
     }
 
-    if (IsCEFInitializedSuccessfully())
+    if (isInitialized && schemeRegistered)
     {
         Core* core = Core::Instance();
         auto shutdown = [] { cefControllerGlobal = nullptr; };
@@ -128,7 +126,7 @@ CEFControllerImpl::~CEFControllerImpl()
     }
 }
 
-bool CEFControllerImpl::IsCEFInitializedSuccessfully()
+bool CEFControllerImpl::IsCEFAvailable()
 {
     return isInitialized && schemeRegistered;
 }
@@ -150,7 +148,7 @@ FilePath CEFControllerImpl::GetLogPath()
 
 void CEFControllerImpl::Update()
 {
-    if (IsCEFInitializedSuccessfully() && !clients.empty())
+    if (IsCEFAvailable() && !clients.empty())
     {
         DoUpdate();
     }
@@ -220,7 +218,7 @@ CEFController::CEFController(const CefRefPtr<CefClient>& client)
     }
 
     cefControllerImpl = cefControllerGlobal;
-    if (IsCEFInitialized())
+    if (IsCEFAvailable())
     {
         cefControllerImpl->AddClient(client);
     }
@@ -228,14 +226,9 @@ CEFController::CEFController(const CefRefPtr<CefClient>& client)
 
 CEFController::~CEFController() = default;
 
-bool CEFController::IsCEFInitialized()
+bool CEFController::IsCEFAvailable()
 {
-    return cefControllerGlobal && cefControllerGlobal->IsCEFInitializedSuccessfully();
-}
-
-void CEFController::Update()
-{
-    cefControllerImpl->Update();
+    return cefControllerGlobal && cefControllerGlobal->IsCEFAvailable();
 }
 
 uint32 CEFController::GetCacheLimitSize()
@@ -249,5 +242,3 @@ void CEFController::SetCacheLimitSize(uint32 size)
 }
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW
