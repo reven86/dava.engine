@@ -55,6 +55,10 @@ FPROG_IN_BEGIN
         FPROG_IN_TEXCOORD7(varToCameraVec,3) 
         
     #endif
+	
+	#if FLOWMAP
+		FPROG_IN_TEXCOORD4(varFlowData, 3) //(phase0 phase1 blend)
+	#endif
     
     #if VERTEX_COLOR || SPHERICAL_LIT
         FPROG_IN_COLOR1_LOW(varVertexColor,4)
@@ -103,6 +107,10 @@ FPROG_OUT_END
 
 #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
     DECL_FP_SAMPLER2D(lightmap)
+#endif
+
+#if FLOWMAP
+	DECL_FP_SAMPLER2D(flowmap)
 #endif
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
@@ -176,12 +184,30 @@ FPROG_BEGIN
     #if MATERIAL_TEXTURE
     
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
-            min10float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
+			#if FLOWMAP
+				float3 flowData = FP_IN(varFlowData);
+				min10float2 flowDir = FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy * 2.0 - 1.0;        
+				min10float4 flowSample1 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x);
+				min10float4 flowSample2 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y);				
+				min10float4 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);				
+			#else
+				min10float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );				
+			#endif
+			
             #if ALPHA_MASK 
                 textureColor0.a *= FP_A8(FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ));
-            #endif
+            #endif			
         #else
-            min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
+			#if FLOWMAP
+				float3 flowData = FP_IN(varFlowData);
+				min10float2 flowDir = FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy * 2.0 - 1.0;        
+				min10float3 flowSample1 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x).rgb;
+				min10float3 flowSample2 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y).rgb;				
+				min10float3 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);				
+			#else
+				min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
+				
+			#endif
         #endif
             
         #if FRAME_BLEND
@@ -304,7 +330,12 @@ FPROG_BEGIN
         
             #if VIEW_DIFFUSE
                 #if MATERIAL_LIGHTMAP
-                    color = textureColor1.rgb * 2.0;
+					#if VIEW_ALBEDO
+						color = textureColor1.rgb * 2.0;
+					#else
+						//do not scale lightmap in view diffuse only case. artist request
+						color = textureColor1.rgb; 
+					#endif
                 #else
                     color += FP_IN(varDiffuseColor) * lightColor0;
                 #endif
@@ -431,7 +462,12 @@ FPROG_BEGIN
     
         #if VIEW_DIFFUSE
             #if MATERIAL_LIGHTMAP
-                color = textureColor1.rgb * 2.0;
+                #if VIEW_ALBEDO
+					color = textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color = textureColor1.rgb; 
+				#endif
             #else
                 color += diffuse * lightColor0;
             #endif
@@ -468,7 +504,12 @@ FPROG_BEGIN
 			#endif
 
 			#if VIEW_DIFFUSE
-				color *= textureColor1.rgb * 2.0;
+				#if VIEW_ALBEDO
+					color *= textureColor1.rgb * 2.0;
+				#else
+					//do not scale lightmap in view diffuse only case. artist request
+					color *= textureColor1.rgb; 
+				#endif				
 			#endif
 
 		#elif MATERIAL_TEXTURE

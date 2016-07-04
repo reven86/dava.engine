@@ -301,7 +301,7 @@ void TextFieldPlatformImpl::HideField()
     UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     [textFieldHolder setHidden:YES];
 
-    // Attach to "keyboard shown/keyboard hidden" notifications.
+    // Detach from "keyboard shown/keyboard hidden" notifications.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
     [center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
