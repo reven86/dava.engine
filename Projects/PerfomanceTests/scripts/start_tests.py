@@ -228,8 +228,8 @@ while continue_process_stdout:
                     # append info to build statistic keys for compare on teamcity
                     else:
 
-                        # write fps and memory statistic to file
-                        if line.find("fps") != -1 or line.find("memory") != -1:
+                        # write loading time, fps and memory statistic to file
+                        if line.find("fps") != -1 or line.find("memory") != -1 or line.find("Loading") != -1:
                             statistic_file.write(key + " " + value + "\n")
 
                         #write material metrics
