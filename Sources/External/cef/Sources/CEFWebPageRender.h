@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_render_handler.h>
 
 #include "UI/UIControl.h"
@@ -60,5 +58,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW

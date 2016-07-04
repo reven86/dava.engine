@@ -59,6 +59,7 @@ public:
     // autotesting system api
     void OnError(const String& errorMessage);
     void OnTestFinished();
+    void OnTestSkipped();
 
     size_t GetUsedMemory() const;
 
