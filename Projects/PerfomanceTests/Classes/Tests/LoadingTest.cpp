@@ -103,11 +103,11 @@ void LoadingTest::LoadResources()
     FilePath scenePath("~res:/3d/Maps/" + GetParams().scenePath);
 
     loadJobs.push_back(new LoadJob(scenePath, Format("Loading map '%s' on main thread (0)...", GetParams().sceneName.c_str()), 0));
-    for (int32 i = 0; i < 10; ++i)
+    for (int32 i = 0; i < 5; ++i)
         loadJobs.push_back(new LoadJob(scenePath, Format("Loading map '%s' on main thread (%d)...", GetParams().sceneName.c_str(), i + 1), 1));
 
     loadJobs.push_back(new LoadThreadJob(scenePath, Format("Loading map '%s' on loading thread (0)...", GetParams().sceneName.c_str()), 2));
-    for (int32 i = 0; i < 10; ++i)
+    for (int32 i = 0; i < 5; ++i)
         loadJobs.push_back(new LoadThreadJob(scenePath, Format("Loading map '%s' on loading thread (%d)...", GetParams().sceneName.c_str(), i + 1), 3));
 
     loadingText->SetText(UTF8Utils::EncodeToWideString(loadJobs.front()->GetJobText()));
