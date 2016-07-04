@@ -195,8 +195,8 @@ while continue_process_stdout:
                     if 'statistic_file' in locals():
                         statistic_file.close()
 
-                    frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
-                    statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
+                    frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_device_" + device_name + ".txt", "w")
+                    statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_device_" + device_name + ".txt", "w")
 
                 if line.find("MaterialsTest") != -1:
 
