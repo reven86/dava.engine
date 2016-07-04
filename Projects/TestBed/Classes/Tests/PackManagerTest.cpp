@@ -161,13 +161,31 @@ void PackManagerTest::LoadResources()
     startInit->SetDebugDraw(true);
     startInit->SetStateFont(0xFF, font);
     startInit->SetStateFontColor(0xFF, Color::White);
-    startInit->SetStateText(0xFF, L"start init");
-    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitializeClicked));
+    startInit->SetStateText(0xFF, L"PM init");
+    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitClicked));
     AddControl(startInit);
+
+    UIButton* startSync = new UIButton(Rect(420, 440, 100, 20));
+    startSync->SetDebugDraw(true);
+    startSync->SetStateFont(0xFF, font);
+    startSync->SetStateFontColor(0xFF, Color::White);
+    startSync->SetStateText(0xFF, L"PM sync");
+    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartSyncClicked));
+    AddControl(startSync);
+
+    UIButton* clearDocs = new UIButton(Rect(420, 470, 100, 20));
+    clearDocs->SetDebugDraw(true);
+    clearDocs->SetStateFont(0xFF, font);
+    clearDocs->SetStateFontColor(0xFF, Color::White);
+    clearDocs->SetStateText(0xFF, L"rm dvpk's");
+    clearDocs->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnClearDocsClicked));
+    AddControl(clearDocs);
 }
 
 void PackManagerTest::UnloadResources()
 {
+    SafeRelease(startSync);
+    SafeRelease(clearDocs);
     SafeRelease(packInput);
     SafeRelease(startLoadingButton);
     SafeRelease(startServerButton);
@@ -235,8 +253,10 @@ void PackManagerTest::OnInitChange(PackManager::ISync& init)
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
 }
 
-void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    packNameLoading->SetText(L"done: start init");
+
     PackManager& pm = Core::Instance()->GetPackManager();
 
     pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
@@ -247,7 +267,33 @@ void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* d
     // clear and renew all packs state
     pm.Initialize(dbFile, readOnlyDirWithPacks, gpuArchitecture);
 
+    packNameLoading->SetText(L"done: finish init");
+}
+
+void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    packNameLoading->SetText(L"done: start sync");
+    PackManager& pm = Core::Instance()->GetPackManager();
     pm.SyncWithServer(urlToServerSuperpack, folderWithDownloadedPacks);
+}
+
+void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+    const Vector<PackManager::Pack>& packs = pm.GetPacks();
+
+    std::for_each(begin(packs), end(packs), [&pm](const PackManager::Pack& pack)
+                  {
+                      if (pack.state == PackManager::Pack::Status::Mounted)
+                      {
+                          pm.DeletePack(pack.name);
+                      }
+                  });
+
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
+    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+
+    packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -255,39 +301,26 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    PackManager& packManager = Core::Instance()->GetPackManager();
+    PackManager& pm = Core::Instance()->GetPackManager();
 
-    const Vector<PackManager::Pack>& packs = packManager.GetPacks();
-
-    std::for_each(begin(packs), end(packs), [&packManager](const PackManager::Pack& pack)
-                  {
-                      if (pack.state == PackManager::Pack::Status::Mounted)
-                      {
-                          packManager.DeletePack(pack.name);
-                      }
-                  });
-
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
-
-    if (packManager.GetISync().GetState() < PackManager::InitState::MountingReadOnlyPacks)
+    if (pm.GetISync().GetState() < PackManager::InitState::MountingReadOnlyPacks)
     {
         return;
     }
 
-    packManager.EnableRequesting();
+    pm.EnableRequesting();
 
-    packManager.packStateChanged.DisconnectAll();
+    pm.packStateChanged.DisconnectAll();
 
-    packManager.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
-    packManager.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
+    pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    pm.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
 
-    String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
+    WideString packName = packInput->GetText();
 
     try
     {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + packName));
-        packManager.RequestPack(packName);
+        packNameLoading->SetText(L"loading: " + packName);
+        pm.RequestPack(UTF8Utils::EncodeToUTF8(packName));
     }
     catch (std::exception& ex)
     {

@@ -74,7 +74,8 @@ public:
         DownloadError downloadError = DLE_NO_ERROR;
         Status state = Status::NotRequested;
 
-        bool isGPU = false;
+        bool isGPU = false; // depends on architecture
+        bool isReadOnly = false; // find in build readonly dir assets
     };
 
     class ISync
@@ -130,7 +131,7 @@ public:
     bool IsRequestingEnabled() const;
     // enable user request processing
     void EnableRequesting();
-    // disalbe user request processing
+    // disable user request processing
     void DisableRequesting();
 
     // internal method called per frame in framework (can thow exception)

@@ -76,7 +76,7 @@ private:
 
     void FirstTimeInit();
     void InitStarting();
-    void MountLocalPacks();
+    void MountReadOnlyPacks();
     void AskFooter();
     void GetFooter();
     void AskFileTable();

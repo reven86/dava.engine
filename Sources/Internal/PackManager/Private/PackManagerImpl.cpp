@@ -29,6 +29,11 @@ void PackManagerImpl::Initialize(const String& dbFile_,
                                  const String& architecture_,
                                  PackManager* packManager_)
 {
+    if (initState != PackManager::InitState::FirstInit)
+    {
+        throw std::runtime_error("second time init");
+    }
+
     readOnlyPacksDir = readOnlyPacksDir_;
 
     architecture = architecture_;
@@ -54,7 +59,7 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     // now init all pack in local read only dir
     FirstTimeInit();
     InitStarting();
-    MountLocalPacks();
+    MountReadOnlyPacks();
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir)
@@ -282,7 +287,7 @@ void PackManagerImpl::InitStarting()
     initState = PackManager::InitState::MountingReadOnlyPacks;
 }
 
-void PackManagerImpl::MountLocalPacks()
+void PackManagerImpl::MountReadOnlyPacks()
 {
     Logger::FrameworkDebug("pack manager mount_local_packs");
     // now build all packs from localDB, later after request to server
@@ -292,6 +297,14 @@ void PackManagerImpl::MountLocalPacks()
 
     MountPacks(readOnlyPacksDir + "common/");
     MountPacks(readOnlyPacksDir + architecture + "/");
+
+    for_each(begin(packs), end(packs), [](PackManager::Pack& p)
+             {
+                 if (p.state == PackManager::Pack::Status::Mounted)
+                 {
+                     p.isReadOnly = true;
+                 }
+             });
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::ReadOnlyPacksReady;
