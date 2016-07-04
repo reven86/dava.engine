@@ -93,10 +93,10 @@ DAVA_TESTCLASS (PackManagerTest)
         try
         {
             packManager.Initialize(dbFileName,
-                                   downloadedPacksDir,
                                    readOnlyPacksDir,
-                                   superPackUrl,
                                    architecture);
+
+            packManager.SyncWithServer(superPackUrl, downloadedPacksDir);
 
             Logger::Info("create game client");
 
@@ -104,8 +104,8 @@ DAVA_TESTCLASS (PackManagerTest)
 
             Logger::Info("wait till packManagerInitialization done");
             // wait till initialization done
-            while (packManager.GetInitialization().GetError() == PackManager::InitError::AllGood
-                   && packManager.GetInitialization().GetState() != PackManager::InitState::Ready)
+            while (packManager.GetISync().GetError() == PackManager::InitError::AllGood
+                   && packManager.GetISync().GetState() != PackManager::InitState::Ready)
             {
                 Thread::Sleep(100);
 
@@ -118,7 +118,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 packManager.Update();
             }
 
-            if (packManager.GetInitialization().GetError() != PackManager::InitError::AllGood)
+            if (packManager.GetISync().GetError() != PackManager::InitError::AllGood)
             {
                 Logger::Info("can't initialize packManager(remember on build agents network disabled)");
                 return;
