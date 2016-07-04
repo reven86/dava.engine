@@ -571,7 +571,7 @@ void UIStaticText::RecalculateDebugColoring()
             WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
             // StringUtils::IsWhitespace function has 2 overloads and compiler cannot deduce predicate parameter for std::remove_if
             // So help compiler to choose correct overload of StringUtils::IsWhitespace function using static_cast
-            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), static_cast<bool (*)(WideString::value_type)>(StringUtils::IsWhitespace));
+            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), static_cast<bool (*)(WideString::value_type)>(&StringUtils::IsWhitespace));
             textNoSpaces.erase(res, textNoSpaces.end());
 
             WideString concatinatedStringsNoSpaces = L"";
@@ -579,7 +579,7 @@ void UIStaticText::RecalculateDebugColoring()
                  string != strings.end(); string++)
             {
                 WideString toFilter = *string;
-                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), static_cast<bool (*)(WideString::value_type)>(StringUtils::IsWhitespace)), toFilter.end());
+                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), static_cast<bool (*)(WideString::value_type)>(&StringUtils::IsWhitespace)), toFilter.end());
                 concatinatedStringsNoSpaces += toFilter;
             }
 
