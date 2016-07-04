@@ -620,6 +620,12 @@ void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequested
 void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
     uint32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
+    // hack, windows didn't send key up for win buttons
+    if (VK_LWIN == key || VK_RWIN == key)
+    {
+        // skip all win buttons events
+        return;
+    }
 
     if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
@@ -669,23 +675,6 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
             break;
         }
     });
-    // hack, windows didn't send key up for win buttons
-    uint32 origKey = static_cast<uint32>(keyEventArgs->VirtualKey);
-    if (UIEvent::Phase::KEY_DOWN == phase && (VK_LWIN == origKey || VK_RWIN == origKey))
-    {
-        phase = UIEvent::Phase::KEY_UP;
-        core->RunOnMainThread([this, key, phase]() {
-            auto& keyboard = InputSystem::Instance()->GetKeyboard();
-
-            UIEvent uiEvent;
-            uiEvent.device = UIEvent::Device::KEYBOARD;
-            uiEvent.phase = phase;
-            uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
-            uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-            UIControlSystem::Instance()->OnInput(&uiEvent);
-            keyboard.OnKeyUnpressed(uiEvent.key);
-        });
-    }
 }
 
 void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
