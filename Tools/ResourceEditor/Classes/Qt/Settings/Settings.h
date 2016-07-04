@@ -27,9 +27,6 @@ public:
 
     static const DAVA::FastName General_ColorMultiplyMax;
 
-    static const DAVA::FastName General_LodEditor_MinEdge;
-    static const DAVA::FastName General_LodEditor_MaxEdge;
-
     static const DAVA::FastName General_AssetCache_UseCache;
     static const DAVA::FastName General_AssetCache_Ip;
     static const DAVA::FastName General_AssetCache_Port;

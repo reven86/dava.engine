@@ -1,5 +1,4 @@
-#ifndef __SCENE_LOD_SYSTEM_V2_H__
-#define __SCENE_LOD_SYSTEM_V2_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "Scene3D/Lod/LodComponent.h"
@@ -25,7 +24,7 @@ struct ForceValues
         APPLY_NONE = 0,
         APPLY_ALL = APPLY_DISTANCE | APPLY_LAYER,
 
-        APPLY_DEFAULT = APPLY_LAYER
+        APPLY_DEFAULT = APPLY_DISTANCE
     };
 
     ForceValues(DAVA::float32 distance_ = DAVA::LodComponent::INVALID_DISTANCE,
@@ -70,6 +69,7 @@ protected:
     DAVA::Vector<DAVA::LodComponent*> lodComponents;
     DAVA::Vector<DAVA::float32> distances;
     DAVA::Vector<bool> isMultiple;
+    DAVA::Vector<bool> isChanged;
 
     DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
 
@@ -94,6 +94,9 @@ class EditorLODSystem : public DAVA::SceneSystem
     };
 
 public:
+    static const DAVA::int32 LAST_LOD_LAYER = 0x7fffffff;
+    static const DAVA::float32 LOD_DISTANCE_INFINITY;
+
     EditorLODSystem(DAVA::Scene* scene);
     ~EditorLODSystem() override;
 
@@ -187,5 +190,3 @@ public:
     }
 };
 
-
-#endif // __SCENE_LOD_SYSTEM_V2_H__

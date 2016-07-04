@@ -25,9 +25,15 @@
 
 using namespace DAVA;
 
+namespace LODComponentHolderDetail
+{
+const DAVA::float32 LOD_DISTANCE_EPSILON = 0.009f; //because we have only 2 sign after point in SpinBox (100.00f)
+}
+
 LODComponentHolder::LODComponentHolder()
-    : distances(LodComponent::MAX_LOD_LAYERS, std::numeric_limits<DAVA::float32>::max())
+    : distances(LodComponent::MAX_LOD_LAYERS, EditorLODSystem::LOD_DISTANCE_INFINITY)
     , isMultiple(LodComponent::MAX_LOD_LAYERS, false)
+    , isChanged(LodComponent::MAX_LOD_LAYERS, false)
 {
 }
 
@@ -61,7 +67,8 @@ void LODComponentHolder::SummarizeValues()
 
             for (int32 index = 0; index < LodComponent::MAX_LOD_LAYERS; ++index)
             {
-                if (distances[index] != lc->GetLodLayerDistance(index))
+                DAVA::float32 dist = lc->GetLodLayerDistance(index);
+                if (!isMultiple[index] && (fabs(distances[index] - dist) > LODComponentHolderDetail::LOD_DISTANCE_EPSILON))
                 {
                     isMultiple[index] = true;
                 }
@@ -72,7 +79,7 @@ void LODComponentHolder::SummarizeValues()
     {
         for (int32 index = 0; index < LodComponent::MAX_LOD_LAYERS; ++index)
         {
-            distances[index] = std::numeric_limits<DAVA::float32>::max();
+            distances[index] = EditorLODSystem::LOD_DISTANCE_INFINITY;
             isMultiple[index] = false;
         }
     }
@@ -85,7 +92,10 @@ void LODComponentHolder::PropagateValues()
     {
         for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
-            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
+            if (isChanged[i])
+            {
+                scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
+            }
         }
     }
     scene->EndBatch();
@@ -138,7 +148,7 @@ void LODComponentHolder::ApplyForce(const ForceValues& force)
     {
         if (force.flag & ForceValues::APPLY_LAYER)
         {
-            if (force.layer == LodComponent::LAST_LOD_LAYER)
+            if (force.layer == EditorLODSystem::LAST_LOD_LAYER)
             {
                 int32 lastLayer = Max(0, static_cast<int32>(GetLodLayersCount(lc)) - 1);
                 scene->lodSystem->SetForceLodLayer(lc, lastLayer);
@@ -177,6 +187,7 @@ const DAVA::Vector<bool>& LODComponentHolder::GetMultiple() const
 }
 
 //SYSTEM
+const DAVA::float32 EditorLODSystem::LOD_DISTANCE_INFINITY = std::numeric_limits<DAVA::float32>::max();
 
 EditorLODSystem::EditorLODSystem(Scene* scene)
     : SceneSystem(scene)
@@ -435,8 +446,15 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
 
     for (int32 layer = 0; layer < LodComponent::MAX_LOD_LAYERS; ++layer)
     {
-        activeLodData->distances[layer] = distances[layer];
-        activeLodData->isMultiple[layer] = false;
+        if (fabs(activeLodData->distances[layer] - distances[layer]) > LODComponentHolderDetail::LOD_DISTANCE_EPSILON)
+        {
+            activeLodData->distances[layer] = distances[layer];
+            activeLodData->isChanged[layer] = true;
+        }
+        else
+        {
+            activeLodData->isChanged[layer] = false;
+        }
     }
 
     Guard::ScopedBoolGuard guard(generateCommands, true);

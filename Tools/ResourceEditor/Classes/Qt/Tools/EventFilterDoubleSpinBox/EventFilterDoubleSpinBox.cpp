@@ -66,3 +66,21 @@ QString EventFilterDoubleSpinBox::textFromValue(double val) const
 
     return QDoubleSpinBox::textFromValue(val);
 }
+
+QPalette EventFilterDoubleSpinBox::GetTextPalette() const
+{
+    if (lineEdit())
+    {
+        return lineEdit()->palette();
+    }
+
+    return QPalette();
+}
+
+void EventFilterDoubleSpinBox::SetTextPalette(const QPalette& palette)
+{
+    if (lineEdit())
+    {
+        return lineEdit()->setPalette(palette);
+    }
+}
