@@ -215,6 +215,10 @@
     #define VIEW_ALBEDO 0
 #endif
 
+#if FLOWMAP_SKY
+	#define FLOWMAP 1
+#endif
+
 #if !VIEW_AMBIENT && !VIEW_DIFFUSE && !VIEW_SPECULAR && !VIEW_ALBEDO
     #define VIEW_AMBIENT 1
     #define VIEW_DIFFUSE 1
