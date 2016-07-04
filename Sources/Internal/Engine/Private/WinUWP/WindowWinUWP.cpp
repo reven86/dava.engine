@@ -20,6 +20,7 @@ WindowWinUWP::WindowWinUWP(EngineBackend* e, WindowBackend* w)
     : engine(e)
     , dispatcher(engine->GetDispatcher())
     , window(w)
+    , platformDispatcher(MakeFunction(this, &WindowWinUWP::EventHandler))
     , bridge(ref new WindowWinUWPBridge(this))
 {
 }
@@ -63,7 +64,7 @@ void WindowWinUWP::TriggerPlatformEvents()
 void WindowWinUWP::ProcessPlatformEvents()
 {
     // Method executes in context of XAML::Window's UI thread
-    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowWinUWP::EventHandler));
+    platformDispatcher.ProcessEvents();
 }
 
 void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)

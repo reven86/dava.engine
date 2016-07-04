@@ -60,7 +60,7 @@ EngineBackend* EngineBackend::Instance()
 }
 
 EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
-    : dispatcher(new Dispatcher)
+    : dispatcher(new Dispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
     , cmdargs(cmdargs_)
@@ -83,6 +83,7 @@ EngineBackend::~EngineBackend()
 void EngineBackend::EngineCreated(Engine* e)
 {
     engine = e;
+    dispatcher->LinkToCurrentThread();
 }
 
 void EngineBackend::EngineDestroyed()
@@ -212,7 +213,7 @@ void EngineBackend::OnBeforeTerminate()
 
 void EngineBackend::DoEvents()
 {
-    dispatcher->ProcessEvents(MakeFunction(this, &EngineBackend::EventHandler));
+    dispatcher->ProcessEvents();
     for (WindowBackend* w : windows)
     {
         w->FinishEventHandlingOnCurrentFrame();

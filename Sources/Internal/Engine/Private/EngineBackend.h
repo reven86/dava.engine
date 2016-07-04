@@ -1,5 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
+#pragma once
+
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 

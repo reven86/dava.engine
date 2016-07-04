@@ -26,6 +26,7 @@ WindowOsX::WindowOsX(EngineBackend* engine_, WindowBackend* window_)
     : engine(engine_)
     , dispatcher(engine->GetDispatcher())
     , window(window_)
+    , platformDispatcher(MakeFunction(this, &WindowOsX::EventHandler))
     , bridge(new WindowOsXObjcBridge(this))
 {
     hideUnhideSignalId = engine->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowOsXObjcBridge::ApplicationDidHideUnhide);
@@ -81,7 +82,7 @@ void WindowOsX::TriggerPlatformEvents()
 
 void WindowOsX::ProcessPlatformEvents()
 {
-    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowOsX::EventHandler));
+    platformDispatcher.ProcessEvents();
 }
 
 void WindowOsX::EventHandler(const PlatformEvent& e)
