@@ -358,6 +358,15 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
 
     switch (version)
     {
+    case 6:
+        LoadVersion6(file);
+        break;
+    case 7:
+        LoadVersion7(file);
+        break;
+    case 8:
+        LoadVersion8(file);
+        break;
     case 9:
         LoadVersion9(file);
         break;
@@ -520,6 +529,175 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     {
         DVASSERT_MSG(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
     }
+}
+
+void TextureDescriptor::LoadVersion6(DAVA::File* file)
+{
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
+
+    Validator::ConvertV10orLessToV11(*this);
+
+    if (isCompressedFile)
+    {
+        int8 exportedAsGpuFamily = 0;
+        file->Read(&exportedAsGpuFamily);
+        gpu = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+
+        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        file->Read(&exportedAsPixelFormat);
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
+    }
+    else
+    {
+        for (auto i = 0; i < 5; ++i)
+        {
+            int8 format;
+            file->Read(&format);
+            compression[i].format = static_cast<PixelFormat>(format);
+
+            file->Read(&compression[i].compressToWidth);
+            file->Read(&compression[i].compressToHeight);
+            file->Read(&compression[i].sourceFileCrc);
+        }
+
+        RecalculateCompressionSourceCRC();
+    }
+}
+
+void TextureDescriptor::LoadVersion7(DAVA::File* file)
+{
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
+
+    Validator::ConvertV10orLessToV11(*this);
+
+    if (isCompressedFile)
+    {
+        int8 exportedAsGpuFamily = 0;
+        file->Read(&exportedAsGpuFamily);
+        gpu = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+
+        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        file->Read(&exportedAsPixelFormat);
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
+    }
+    else
+    {
+        for (int32 i = 0; i < 5; ++i)
+        {
+            int8 format;
+            file->Read(&format);
+            compression[i].format = static_cast<PixelFormat>(format);
+
+            file->Read(&compression[i].compressToWidth);
+            file->Read(&compression[i].compressToHeight);
+            file->Read(&compression[i].sourceFileCrc);
+            file->Read(&compression[i].convertedFileCrc);
+        }
+
+        RecalculateCompressionSourceCRC();
+    }
+
+    file->Read(&dataSettings.cubefaceFlags);
+}
+
+void TextureDescriptor::LoadVersion8(File* file)
+{
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
+
+    Validator::ConvertV10orLessToV11(*this);
+
+    if (isCompressedFile)
+    {
+        int8 exportedAsGpuFamily = 0;
+        file->Read(&exportedAsGpuFamily);
+        gpu = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
+
+        uint8 exportedAsPixelFormat = FORMAT_INVALID;
+        file->Read(&exportedAsPixelFormat);
+        format = static_cast<PixelFormat>(exportedAsPixelFormat);
+    }
+    else
+    {
+        uint8 compressionsCount = 0;
+        file->Read(&compressionsCount);
+        for (auto i = 0; i < 6; ++i)
+        {
+            uint8 format;
+            file->Read(&format);
+            compression[i].format = PixelFormat(format);
+
+            file->Read(&compression[i].compressToWidth);
+            file->Read(&compression[i].compressToHeight);
+            file->Read(&compression[i].sourceFileCrc);
+            file->Read(&compression[i].convertedFileCrc);
+        }
+
+        RecalculateCompressionSourceCRC();
+    }
+
+    file->Read(&dataSettings.cubefaceFlags);
+}
+
+void TextureDescriptor::RecalculateCompressionSourceCRC()
+{
+    auto sourceCrcOld = ReadSourceCRC_V8_or_less();
+    auto sourceCrcNew = ReadSourceCRC();
+
+    for (Compression& compr : compression)
+    {
+        if (compr.sourceFileCrc == sourceCrcOld)
+        {
+            compr.sourceFileCrc = sourceCrcNew;
+        }
+    }
+}
+
+uint32 TextureDescriptor::ReadSourceCRC_V8_or_less() const
+{
+    uint32 crc = 0;
+
+    DAVA::File* f = DAVA::File::Create(GetSourceTexturePathname(), DAVA::File::OPEN | DAVA::File::READ);
+    if (f != nullptr)
+    {
+        uint8 buffer[8];
+
+        // Read PNG header
+        f->Read(buffer, 8);
+
+        // read chunk header
+        while (0 != f->Read(buffer, 8))
+        {
+            int32 chunk_size = 0;
+            chunk_size |= (buffer[0] << 24);
+            chunk_size |= (buffer[1] << 16);
+            chunk_size |= (buffer[2] << 8);
+            chunk_size |= buffer[3];
+
+            // jump thought data
+            DVASSERT(chunk_size >= 0);
+            f->Seek(chunk_size, File::SEEK_FROM_CURRENT);
+
+            // read crc
+            f->Read(buffer, 4);
+            crc += (reinterpret_cast<uint32*>(buffer))[0];
+        }
+
+        f->Release();
+    }
+
+    return crc;
 }
 
 void TextureDescriptor::LoadVersion9(File* file)

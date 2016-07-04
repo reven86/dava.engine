@@ -179,6 +179,12 @@ private:
     const Compression* GetCompressionParams(eGPUFamily forGPU) const;
 
     //loading
+    DAVA_DEPRECATED(void RecalculateCompressionSourceCRC());
+    DAVA_DEPRECATED(uint32 ReadSourceCRC_V8_or_less() const);
+
+    DAVA_DEPRECATED(void LoadVersion6(File* file));
+    DAVA_DEPRECATED(void LoadVersion7(File* file));
+    DAVA_DEPRECATED(void LoadVersion8(File* file));
     DAVA_DEPRECATED(void LoadVersion9(File* file));
     DAVA_DEPRECATED(void LoadVersion10(File* file));
 
