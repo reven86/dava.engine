@@ -76,10 +76,10 @@ public:
         bool isGPU = false;
     };
 
-    class IInit
+    class ISync
     {
     public:
-        virtual ~IInit();
+        virtual ~ISync();
 
         virtual InitState GetState() const = 0;
         virtual InitError GetError() const = 0;
@@ -106,7 +106,7 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<IInit&> initStateChanged;
+    Signal<ISync&> asyncConnectStateChanged;
     // signal user about every pack state change
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
@@ -116,19 +116,15 @@ public:
     PackManager();
     ~PackManager();
 
-    // 0. connect to remote server and download DB with info about all packs and files
-    // 1. unpack DB to local write dir
-    // 2. open local database and read all packs info
-    // 3. list all packs on filesystem
-    // 4. mount all packs which found on filesystem and in database
-    // throw exception if can't initialize with deteils
+    // throw exception if can't initialize
     void Initialize(const String& dbFileName,
-                    const FilePath& downloadPacksDir,
-                    const FilePath& readOnlyPacksDir, // can be empty
-                    const String& urlToServerSuperpack,
+                    const FilePath& readOnlyPacksDir,
                     const String& architecture);
 
-    IInit& GetInitialization();
+    // complex async connect to server
+    void SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir);
+
+    ISync& GetISync();
 
     bool IsRequestingEnabled() const;
     // enable user request processing

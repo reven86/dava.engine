@@ -13,27 +13,21 @@ PackManager::~PackManager() = default;
 
 PackManager::IRequest::~IRequest() = default;
 
-PackManager::IInit::~IInit() = default;
+PackManager::ISync::~ISync() = default;
 
 void PackManager::Initialize(const String& dbFileName_,
-                             const FilePath& downloadPacksDir_,
                              const FilePath& readOnlyPacksDir_,
-                             const String& packsUrlCommon_,
                              const String& architecture_)
 {
-    FileSystem* fs = FileSystem::Instance();
-    if (!fs->IsDirectory(downloadPacksDir_))
-    {
-        if (!fs->CreateDirectory(downloadPacksDir_, true))
-        {
-            throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
-        }
-    }
-
-    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, architecture_, this);
+    impl->Initialize(dbFileName_, readOnlyPacksDir_, architecture_, this);
 }
 
-PackManager::IInit& PackManager::GetInitialization()
+void PackManager::SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir)
+{
+    impl->SyncWithServer(urlToServerSuperpack, downloadPacksDir);
+}
+
+PackManager::ISync& PackManager::GetISync()
 {
     return *impl;
 }

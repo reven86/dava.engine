@@ -25,20 +25,11 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 }
 
 void PackManagerImpl::Initialize(const String& dbFile_,
-                                 const FilePath& localPacksDir_,
                                  const FilePath& readOnlyPacksDir_,
-                                 const String& superPackUrl_,
                                  const String& architecture_,
                                  PackManager* packManager_)
 {
-    localPacksDir = localPacksDir_;
     readOnlyPacksDir = readOnlyPacksDir_;
-    superPackUrl = superPackUrl_;
-
-    if (superPackUrl.empty())
-    {
-        throw std::runtime_error("empty url");
-    }
 
     architecture = architecture_;
 
@@ -59,9 +50,22 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     dbInDoc.ReplaceExtension("");
 
     initState = PackManager::InitState::Starting;
+
+    // now init all pack in local read only dir
+    FirstTimeInit();
+    InitStarting();
+    MountLocalPacks();
 }
 
-// start PackManager::IInitialization //////////////////////////////////////
+void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir)
+{
+    superPackUrl = urlToServerSuperpack;
+    localPacksDir = downloadPacksDir;
+
+    initState = PackManager::InitState::LoadingRequestAskFooter;
+}
+
+// start PackManager::ISync //////////////////////////////////////
 PackManager::InitState PackManagerImpl::GetState() const
 {
     return initState;
@@ -164,19 +168,7 @@ void PackManagerImpl::ContinueInitialization()
 {
     const PackManager::InitState beforeState = initState;
 
-    if (PackManager::InitState::FirstInit == initState)
-    {
-        FirstTimeInit();
-    }
-    else if (PackManager::InitState::Starting == initState)
-    {
-        InitStarting();
-    }
-    else if (PackManager::InitState::MountingLocalPacks == initState)
-    {
-        MountLocalPacks();
-    }
-    else if (PackManager::InitState::LoadingRequestAskFooter == initState)
+    if (PackManager::InitState::LoadingRequestAskFooter == initState)
     {
         AskFooter();
     }
@@ -229,14 +221,12 @@ void PackManagerImpl::ContinueInitialization()
 
     if (newState != beforeState)
     {
-        packManager->initStateChanged.Emit(*this);
+        packManager->asyncConnectStateChanged.Emit(*this);
     }
 }
 
 void PackManagerImpl::FirstTimeInit()
 {
-    Logger::FrameworkDebug("pack manager first_time_init");
-    DVASSERT(initState == PackManager::InitState::FirstInit);
     initState = PackManager::InitState::Starting;
 }
 
@@ -334,7 +324,7 @@ void PackManagerImpl::AskFooter()
                         initError = PackManager::InitError::LoadingRequestFailed;
                         initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error);
 
-                        packManager->initStateChanged.Emit(*this);
+                        packManager->asyncConnectStateChanged.Emit(*this);
                     }
                 }
             }
@@ -438,7 +428,7 @@ void PackManagerImpl::GetFileTable()
                 initError = PackManager::InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error);
 
-                packManager->initStateChanged.Emit(*this);
+                packManager->asyncConnectStateChanged.Emit(*this);
             }
         }
     }
@@ -529,7 +519,7 @@ void PackManagerImpl::GetDB()
                 initError = PackManager::InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error);
 
-                packManager->initStateChanged.Emit(*this);
+                packManager->asyncConnectStateChanged.Emit(*this);
             }
         }
     }

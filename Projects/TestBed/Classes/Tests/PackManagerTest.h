@@ -53,7 +53,7 @@ private:
     void OnPackStateChange(const DAVA::PackManager::Pack& pack);
     void OnPackDownloadChange(const DAVA::PackManager::Pack& pack);
     void OnRequestChange(const DAVA::PackManager::IRequest& request);
-    void OnInitChange(DAVA::PackManager::IInit& init);
+    void OnInitChange(DAVA::PackManager::ISync& init);
 
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";

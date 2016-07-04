@@ -9,17 +9,17 @@ namespace DAVA
 {
 struct PackPriorityComparator;
 
-class PackManagerImpl : public PackManager::IInit
+class PackManagerImpl : public PackManager::ISync
 {
 public:
     PackManagerImpl() = default;
 
     void Initialize(const String& dbFile_,
-                    const FilePath& localPacksDir_,
                     const FilePath& readOnlyPacksDir_,
-                    const String& packUrlCommon,
-                    const String& packUrlGpu,
+                    const String& architecture_,
                     PackManager* packManager_);
+
+    void SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir);
 
     // start PackManager::IInitialization ///////////////////////////////
     PackManager::InitState GetState() const override;

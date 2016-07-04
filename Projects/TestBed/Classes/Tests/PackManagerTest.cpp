@@ -211,7 +211,7 @@ void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnInitChange(PackManager::IInit& init)
+void PackManagerTest::OnInitChange(PackManager::ISync& init)
 {
     StringStream ss;
 
@@ -237,13 +237,15 @@ void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* d
 {
     PackManager& pm = Core::Instance()->GetPackManager();
 
-    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+    pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    pm.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, gpuArchitecture);
+    pm.Initialize(dbFile, readOnlyDirWithPacks, gpuArchitecture);
+
+    pm.SyncWithServer(urlToServerSuperpack, folderWithDownloadedPacks);
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -266,7 +268,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-    if (packManager.GetInitialization().GetState() < PackManager::InitState::MountingLocalPacks)
+    if (packManager.GetISync().GetState() < PackManager::InitState::MountingLocalPacks)
     {
         return;
     }
