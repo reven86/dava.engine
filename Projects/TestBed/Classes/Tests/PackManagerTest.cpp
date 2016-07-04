@@ -1,6 +1,8 @@
 #include "Tests/PackManagerTest.h"
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
+#include <FileSystem/DynamicMemoryFile.h>
+#include <typeinfo>
 
 using namespace DAVA;
 
@@ -268,7 +270,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
-    if (packManager.GetISync().GetState() < PackManager::InitState::MountingLocalPacks)
+    if (packManager.GetISync().GetState() < PackManager::InitState::MountingReadOnlyPacks)
     {
         return;
     }
@@ -315,12 +317,13 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
     FilePath path(fileName);
 
     ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
-    if (!f)
+    // if we read file from pack - it will be DynamicMemoryFile
+    if (f && typeid(*f) == typeid(DynamicMemoryFile))
     {
-        packNameLoading->SetText(L"can't load file");
+        packNameLoading->SetText(L"file loaded successfully");
     }
     else
     {
-        packNameLoading->SetText(L"file loaded successfully");
+        packNameLoading->SetText(L"can't load file");
     }
 }

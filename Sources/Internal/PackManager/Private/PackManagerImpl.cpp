@@ -62,6 +62,11 @@ void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack, const F
     superPackUrl = urlToServerSuperpack;
     localPacksDir = downloadPacksDir;
 
+    if (initState != PackManager::InitState::ReadOnlyPacksReady)
+    {
+        throw std::runtime_error("first call Initialize");
+    }
+
     initState = PackManager::InitState::LoadingRequestAskFooter;
 }
 
@@ -87,7 +92,8 @@ bool PackManagerImpl::CanRetry() const
     {
     case PackManager::InitState::FirstInit:
     case PackManager::InitState::Starting:
-    case PackManager::InitState::MountingLocalPacks:
+    case PackManager::InitState::MountingReadOnlyPacks:
+    case PackManager::InitState::ReadOnlyPacksReady:
         return false;
     case PackManager::InitState::LoadingRequestAskFooter:
     case PackManager::InitState::LoadingRequestGetFooter:
@@ -273,7 +279,7 @@ void PackManagerImpl::InitStarting()
             throw std::runtime_error("no local DB file");
         }
     }
-    initState = PackManager::InitState::MountingLocalPacks;
+    initState = PackManager::InitState::MountingReadOnlyPacks;
 }
 
 void PackManagerImpl::MountLocalPacks()
@@ -288,7 +294,7 @@ void PackManagerImpl::MountLocalPacks()
     MountPacks(readOnlyPacksDir + architecture + "/");
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
-    initState = PackManager::InitState::LoadingRequestAskFooter;
+    initState = PackManager::InitState::ReadOnlyPacksReady;
 }
 
 void PackManagerImpl::AskFooter()
@@ -373,7 +379,7 @@ void PackManagerImpl::GetFooter()
 
                 Logger::FrameworkDebug("%s", initErrorMsg.c_str());
 
-                packManager->initStateChanged.Emit(*this);
+                packManager->asyncConnectStateChanged.Emit(*this);
             }
         }
     }

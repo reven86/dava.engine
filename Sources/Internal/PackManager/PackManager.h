@@ -15,8 +15,9 @@ public:
         FirstInit,
         Starting, // if not exist local DB in ~doc copy it from local resources (on first start)
 
-        MountingLocalPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
+        MountingReadOnlyPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
         // now you can load files from local packs
+        ReadOnlyPacksReady,
 
         LoadingRequestAskFooter, // if no connection goto LoadingPacksDataFromDB try using only local packs
         LoadingRequestGetFooter,
