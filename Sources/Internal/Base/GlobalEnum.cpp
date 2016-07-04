@@ -352,7 +352,7 @@ ENUM_DECLARE(KeyboardShortcut::Modifier)
     ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_SHIFT, "SHIFT");
     ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CTRL, "CTRL");
     ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_ALT, "ALT");
-    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_WIN, "WIN");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CMD, "CMD");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)
