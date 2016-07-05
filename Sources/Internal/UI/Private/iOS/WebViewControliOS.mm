@@ -62,11 +62,8 @@
 
 - (void)setDelegate:(DAVA::IUIWebViewDelegate*)d andWebView:(DAVA::UIWebView*)w
 {
-    if (d && w)
-    {
-        delegate = d;
-        webView = w;
-    }
+    delegate = d;
+    webView = w;
 }
 
 - (BOOL)webView:(UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType
