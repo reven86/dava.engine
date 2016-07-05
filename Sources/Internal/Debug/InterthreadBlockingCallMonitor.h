@@ -7,6 +7,7 @@
 
 namespace DAVA
 {
+// Class InterthreadBlockingCallMonitor helps in detection deadlocks when performing interthread blocking calls
 class InterthreadBlockingCallMonitor final : public StaticSingleton<InterthreadBlockingCallMonitor>
 {
 public:

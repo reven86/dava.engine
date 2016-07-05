@@ -9,9 +9,13 @@ InterthreadBlockingCallMonitor::~InterthreadBlockingCallMonitor() = default;
 
 bool InterthreadBlockingCallMonitor::BeginBlockingCall(uint64 callerThreadId, uint64 targetThreadId, Vector<uint64>& callChainIfDeadlock)
 {
+    if (callerThreadId == targetThreadId)
+    {
+        return false;
+    }
+
     LockGuard<Mutex> lock(mutex);
 
-    DVASSERT(callerThreadId != targetThreadId);
     DVASSERT(map.find(callerThreadId) == map.end());
 
     map.emplace(callerThreadId, targetThreadId);
@@ -27,9 +31,12 @@ bool InterthreadBlockingCallMonitor::BeginBlockingCall(uint64 callerThreadId, ui
 
 void InterthreadBlockingCallMonitor::EndBlockingCall(uint64 callerThreadId, uint64 targetThreadId)
 {
-    LockGuard<Mutex> lock(mutex);
+    if (callerThreadId == targetThreadId)
+    {
+        return;
+    }
 
-    DVASSERT(callerThreadId != targetThreadId);
+    LockGuard<Mutex> lock(mutex);
 
     auto it = map.find(callerThreadId);
     DVASSERT(it != map.end());
