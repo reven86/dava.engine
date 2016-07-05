@@ -156,9 +156,9 @@ protected:
         }
     }
 
-    bool IsMultiselect() const
+    DAVA::uint32 GetSelectedItemsCount() const
     {
-        return treeWidget->selectionModel()->selectedRows().size() > 1;
+        return treeWidget->selectionModel()->selectedRows().size();
     }
 
     QWidget* GetParentWidget()
@@ -519,7 +519,7 @@ protected:
     void FillActions(QMenu& menu) override
     {
         Connect(menu.addAction(SharedIcon(":/QtIcons/clone.png"), QStringLiteral("Clone Layer")), this, &ParticleLayerContextMenu::CloneLayer);
-        QString removeLayerText = IsMultiselect() == false ? QStringLiteral("Remove Layer") : QStringLiteral("Remove Layers");
+        QString removeLayerText = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove Layer") : QStringLiteral("Remove Layers");
         Connect(menu.addAction(SharedIcon(":/QtIcons/remove_layer.png"), removeLayerText), this, &ParticleLayerContextMenu::RemoveLayer);
         menu.addSeparator();
         Connect(menu.addAction(SharedIcon(":/QtIcons/force.png"), QStringLiteral("Add Force")), this, &ParticleLayerContextMenu::AddForce);
@@ -536,15 +536,23 @@ private:
     {
         SceneEditor2* sceneEditor = GetScene();
         bool hasSelectedLayers = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Layer, [&sceneEditor, &hasSelectedLayers](SceneTreeItem* item)
+        sceneEditor->BeginBatch("Remove layers", GetSelectedItemsCount());
+        DAVA::Vector<Command2::Pointer> commands;
+        commands.reserve(GetSelectedItemsCount());
+        ForEachSelectedByType(SceneTreeItem::EIT_Layer, [&commands, &hasSelectedLayers](SceneTreeItem* item)
                               {
                                   hasSelectedLayers = true;
                                   SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
-                                  sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layerItem->GetLayer()));
+                                  commands.push_back(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layerItem->GetLayer()));
                               });
 
         DVASSERT(hasSelectedLayers == true);
+        for (Command2::Pointer& command : commands)
+        {
+            sceneEditor->Exec(std::move(command));
+        }
         MarkStructureChanged();
+        sceneEditor->EndBatch();
     }
 
     void AddForce()
@@ -570,7 +578,7 @@ public:
 protected:
     void FillActions(QMenu& menu) override
     {
-        QString removeForce = IsMultiselect() == false ? QStringLiteral("Remove Forces") : QStringLiteral("Remove Force");
+        QString removeForce = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove Forces") : QStringLiteral("Remove Force");
         Connect(menu.addAction(SharedIcon(":/QtIcons/remove_force.png"), removeForce), this, &ParticleForceContextMenu::RemoveForce);
     }
 
@@ -579,14 +587,23 @@ private:
     {
         SceneEditor2* sceneEditor = GetScene();
         bool hasSelectedForces = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Force, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item)
+        sceneEditor->BeginBatch("Remove forces", GetSelectedItemsCount());
+        DAVA::Vector<Command2::Pointer> commands;
+        commands.reserve(GetSelectedItemsCount());
+        ForEachSelectedByType(SceneTreeItem::EIT_Force, [&commands, &hasSelectedForces](SceneTreeItem* item)
                               {
                                   hasSelectedForces = true;
                                   SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
-                                  sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, forceItem->GetForce()));
+                                  commands.push_back(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, forceItem->GetForce()));
                               });
 
+        DVASSERT(hasSelectedForces == true);
+        for (Command2::Pointer& command : commands)
+        {
+            sceneEditor->Exec(std::move(command));
+        }
         MarkStructureChanged();
+        sceneEditor->EndBatch();
     }
 };
 
@@ -616,7 +633,7 @@ protected:
     {
         if (IsRemovable())
         {
-            QString removeEmitterText = IsMultiselect() == false ? QStringLiteral("Remove emitter") : QStringLiteral("Remove emitters");
+            QString removeEmitterText = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove emitter") : QStringLiteral("Remove emitters");
             Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), removeEmitterText), this, &ParticleEmitterContextMenu::RemoveEmitter);
             menu.addSeparator();
         }
@@ -631,11 +648,22 @@ protected:
     {
         SceneEditor2* sceneEditor = GetScene();
         bool hasSelectedForces = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item) {
+        sceneEditor->BeginBatch("Remove Emitters", GetSelectedItemsCount());
+        DAVA::Vector<Command2::Pointer> commands;
+        commands.reserve(GetSelectedItemsCount());
+        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&commands, &hasSelectedForces](SceneTreeItem* item) {
             hasSelectedForces = true;
             SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-            sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->GetEmitterInstance()));
+
+            commands.push_back(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->GetEmitterInstance()));
         });
+
+        DVASSERT(hasSelectedForces == true);
+        for (Command2::Pointer& command : commands)
+        {
+            sceneEditor->Exec(std::move(command));
+        }
+        sceneEditor->EndBatch();
     }
 
     void AddLayer()
@@ -943,8 +971,12 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        treeUpdater->Update();
+        {
+            Guard::ScopedBoolGuard guard(isInSync, true);
+            treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+            treeUpdater->Update();
+        }
+        SyncSelectionFromTree();
     }
 }
 
