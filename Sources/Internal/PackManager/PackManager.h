@@ -146,7 +146,8 @@ public:
     // thow exception if can't find pack
     const Pack& RequestPack(const String& packName);
 
-    void ChangePackPriority(const String& packName, float newPriority);
+    // order - [0..1] - 0 - first, 1 - last
+    void ChangeDownloadOrder(const String& packName, float order);
 
     // all packs state, valid till next call Update()
     const Vector<Pack>& GetPacks() const;

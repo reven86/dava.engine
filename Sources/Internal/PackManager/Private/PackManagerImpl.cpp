@@ -656,8 +656,8 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
         PackManager::Pack& pack = GetPack(packName);
         if (pack.state == PackManager::Pack::Status::NotRequested)
         {
-            float priority = 0.0f;
-            requestManager->Push(packName, priority);
+            float order = 1.0f; // last order by default
+            requestManager->Push(packName, order);
         }
         return pack;
     }

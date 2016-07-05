@@ -68,7 +68,7 @@ const PackManager::Pack& PackManager::RequestPack(const String& packID)
     return impl->RequestPack(packID);
 }
 
-void PackManager::ChangePackPriority(const String& packName, float newPriority)
+void PackManager::ChangeDownloadOrder(const String& packName, float newPriority)
 {
     impl->ChangePackPriority(packName, newPriority);
 }

@@ -159,7 +159,7 @@ uint32 DownloadManager::DownloadRange(const String& srcUrl,
                                       int32 timeout,
                                       int32 retriesCount)
 {
-    return Download(srcUrl, storeToFilePath, FULL, -1, 30, 3, downloadOffset, downloadSize);
+    return Download(srcUrl, storeToFilePath, downloadMode, -1, 30, 3, downloadOffset, downloadSize);
 }
 
 uint32 DownloadManager::DownloadIntoBuffer(const String& srcUrl,

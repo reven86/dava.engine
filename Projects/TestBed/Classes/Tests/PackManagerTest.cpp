@@ -40,16 +40,16 @@ void PackManagerTest::LoadResources()
         gpuArchitecture = "adreno";
         break;
     case GPU_DX11:
-        gpuArchitecture = "dx11";
+        gpuArchitecture = "origin";
         break;
     case GPU_MALI:
         gpuArchitecture = "mali";
         break;
     case GPU_POWERVR_IOS:
-        gpuArchitecture = "pvr_ios";
+        gpuArchitecture = "PowerVR_iOS";
         break;
     case GPU_POWERVR_ANDROID:
-        gpuArchitecture = "pvr_android";
+        gpuArchitecture = "PowerVR_Android";
         break;
     case GPU_TEGRA:
         gpuArchitecture = "tegra";
@@ -63,7 +63,7 @@ void PackManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"vpack");
+    packInput->SetText(L"maps_pack_italy");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -73,15 +73,35 @@ void PackManagerTest::LoadResources()
     packInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(packInput);
 
-    startLoadingButton = new UIButton(Rect(420, 10, 100, 20));
-    startLoadingButton->SetDebugDraw(true);
-    startLoadingButton->SetStateFont(0xFF, font);
-    startLoadingButton->SetStateFontColor(0xFF, Color::White);
-    startLoadingButton->SetStateText(0xFF, L"start loading");
-    startLoadingButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
-    AddControl(startLoadingButton);
+    packNextInput = new UITextField(Rect(5, 40, 400, 20));
+    packNextInput->SetFont(font);
+    packNextInput->SetText(L"other_maps_pack");
+    packNextInput->SetFontSize(14);
+    packNextInput->SetDebugDraw(true);
+    packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    packNextInput->SetInputEnabled(true);
+    packNextInput->GetOrCreateComponent<UIFocusComponent>();
+    packNextInput->SetDelegate(this);
+    packNextInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(packNextInput);
 
-    startServerButton = new UIButton(Rect(420, 40, 100, 20));
+    loadPack = new UIButton(Rect(420, 10, 100, 20));
+    loadPack->SetDebugDraw(true);
+    loadPack->SetStateFont(0xFF, font);
+    loadPack->SetStateFontColor(0xFF, Color::White);
+    loadPack->SetStateText(0xFF, L"start loading");
+    loadPack->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
+    AddControl(loadPack);
+
+    loadNext = new UIButton(Rect(420, 40, 100, 20));
+    loadNext->SetDebugDraw(true);
+    loadNext->SetStateFont(0xFF, font);
+    loadNext->SetStateFontColor(0xFF, Color::White);
+    loadNext->SetStateText(0xFF, L"next loading");
+    loadNext->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartNextPackClicked));
+    AddControl(loadNext);
+
+    startServerButton = new UIButton(Rect(420, 70, 100, 20));
     startServerButton->SetDebugDraw(true);
     startServerButton->SetStateFont(0xFF, font);
     startServerButton->SetStateFontColor(0xFF, Color::White);
@@ -89,7 +109,7 @@ void PackManagerTest::LoadResources()
     startServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
     AddControl(startServerButton);
 
-    stopServerButton = new UIButton(Rect(420, 70, 100, 20));
+    stopServerButton = new UIButton(Rect(420, 100, 100, 20));
     stopServerButton->SetDebugDraw(true);
     stopServerButton->SetStateFont(0xFF, font);
     stopServerButton->SetStateFontColor(0xFF, Color::White);
@@ -116,7 +136,7 @@ void PackManagerTest::LoadResources()
     greenControl->SetDebugDraw(true);
     AddControl(greenControl);
 
-    description = new UIStaticText(Rect(5, 40, 400, 200));
+    description = new UIStaticText(Rect(5, 70, 400, 200));
     description->SetFont(font);
     description->SetTextColor(Color::White);
     description->SetMultiline(true);
@@ -192,11 +212,13 @@ void PackManagerTest::LoadResources()
 
 void PackManagerTest::UnloadResources()
 {
+    SafeRelease(loadNext);
+    SafeRelease(packNextInput);
     SafeRelease(lsDvpks);
     SafeRelease(startSync);
     SafeRelease(clearDocs);
     SafeRelease(packInput);
-    SafeRelease(startLoadingButton);
+    SafeRelease(loadPack);
     SafeRelease(startServerButton);
     SafeRelease(stopServerButton);
     SafeRelease(packNameLoading);
@@ -220,6 +242,11 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack)
     else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
+    }
+    else if (pack.state == PackManager::Pack::Status::Downloading)
+    {
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("downloading: %s %d", pack.name.c_str(), pack.downloadError,
+                                                                            static_cast<int>(100 * pack.downloadProgress))));
     }
 }
 
@@ -257,16 +284,21 @@ void PackManagerTest::OnInitChange(PackManager::ISync& init)
         }
     }
 
-    DAVA::Logger::Info("%s", ss.str().c_str());
+    Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
 }
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    packNameLoading->SetText(L"done: start init");
-
     PackManager& pm = Core::Instance()->GetPackManager();
+
+    if (pm.IsRequestingEnabled())
+    {
+        return;
+    }
+
+    packNameLoading->SetText(L"done: start init");
 
     pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
@@ -275,6 +307,8 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     // clear and renew all packs state
     pm.Initialize(dbFile, readOnlyDirWithPacks, gpuArchitecture);
+
+    pm.EnableRequesting();
 
     packNameLoading->SetText(L"done: finish init");
 }
@@ -293,7 +327,7 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
     std::for_each(begin(packs), end(packs), [&pm](const PackManager::Pack& pack)
                   {
-                      if (pack.state == PackManager::Pack::Status::Mounted)
+                      if (pack.state == PackManager::Pack::Status::Mounted && pack.isReadOnly == false)
                       {
                           pm.DeletePack(pack.name);
                       }
@@ -339,8 +373,6 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
         return;
     }
 
-    pm.EnableRequesting();
-
     pm.packStateChanged.DisconnectAll();
 
     pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
@@ -352,6 +384,24 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(L"loading: " + packName);
         pm.RequestPack(UTF8Utils::EncodeToUTF8(packName));
+    }
+    catch (std::exception& ex)
+    {
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
+    }
+}
+
+void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+    WideString packName = packNextInput->GetText();
+
+    try
+    {
+        packNameLoading->SetText(L"loading: " + packName);
+        String pName = UTF8Utils::EncodeToUTF8(packName);
+        pm.RequestPack(pName);
+        pm.ChangeDownloadOrder(pName, 0.f);
     }
     catch (std::exception& ex)
     {

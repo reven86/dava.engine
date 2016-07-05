@@ -50,6 +50,7 @@ private:
     void OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
@@ -62,17 +63,20 @@ private:
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     DAVA::FilePath readOnlyDirWithPacks = "~res:/TestData/PackManagerTest/packs/read_only_packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk";
+    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/s000001/superpack.dvpk";
+    //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk";
     DAVA::String gpuArchitecture;
 
     DAVA::UIStaticText* packNameLoading = nullptr;
-    DAVA::UIButton* startLoadingButton = nullptr;
+    DAVA::UIButton* loadPack = nullptr;
+    DAVA::UIButton* loadNext = nullptr;
 
     DAVA::UIButton* startServerButton = nullptr;
     DAVA::UIButton* stopServerButton = nullptr;
 
     DAVA::UIControl* progressBar = nullptr;
     DAVA::UITextField* packInput = nullptr;
+    DAVA::UITextField* packNextInput = nullptr;
     DAVA::UIControl* redControl = nullptr;
     DAVA::UIControl* greenControl = nullptr;
     DAVA::UIStaticText* description = nullptr;
