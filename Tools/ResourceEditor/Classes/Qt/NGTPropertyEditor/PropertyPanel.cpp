@@ -28,6 +28,9 @@ PropertyPanel::PropertyPanel()
     model->registerExtension(std::make_shared<EntityInjectDataExtension>(*this, *context));
 }
 
+// for correct deletion of unique_ptr(model);
+PropertyPanel::~PropertyPanel() = default;
+
 void PropertyPanel::Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication)
 {
     wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();

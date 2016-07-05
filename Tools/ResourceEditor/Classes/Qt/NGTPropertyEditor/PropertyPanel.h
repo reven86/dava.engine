@@ -35,6 +35,7 @@ class PropertyPanel : public QObject, public wgt::IViewEventListener, public Ent
 
 public:
     PropertyPanel();
+    ~PropertyPanel();
 
     void Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication);
     void Finalize(wgt::IUIApplication& uiApplication);
