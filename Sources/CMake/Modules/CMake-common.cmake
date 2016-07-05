@@ -67,6 +67,163 @@ macro (enable_pch)
     endif ()
 endmacro ()
 
+
+##
+#in
+#   SOURCE
+#   SOURCE_RECURSE
+#   IGNORE_ITEMS
+#   GROUP_SOURCE
+#out
+#   PROJECT_SOURCE_FILES
+#   PROJECT_SOURCE_FILES_HPP
+#   PROJECT_SOURCE_FILES_CPP
+#   PROJECT_FOLDERS
+#   PROJECT_HEADER_FILE_ONLY
+macro (define_source)
+    cmake_parse_arguments ( ARG ""  "RECURSIVE_CALL" "SOURCE;SOURCE_RECURSE;GROUP_SOURCE;IGNORE_ITEMS" ${ARGN} )
+    
+    get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
+    list( APPEND DEFINE_SOURCE_LIST "define_source" )
+    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} )        
+    
+    if( NOT ARG_RECURSIVE_CALL )
+        set( PROJECT_SOURCE_FILES )
+        set( PROJECT_SOURCE_FILES_CPP )
+        set( PROJECT_SOURCE_FILES_HPP )
+        set( PROJECT_HEADER_FILE_ONLY )
+        
+        if( NOT ARG_SOURCE AND NOT ARG_SOURCE_RECURSE )
+            set( ARG_SOURCE ${CMAKE_CURRENT_LIST_DIR} )
+        endif()
+        
+        list( LENGTH DEFINE_SOURCE_LIST LENGTH_DEFINE_SOURCE_LIST  )
+        
+        if( LENGTH_DEFINE_SOURCE_LIST EQUAL 1 )
+            foreach ( ITEM_ARG_SOURCE ${ARG_SOURCE} ${ARG_SOURCE_RECURSE} )
+                get_filename_component( ITEM_ARG_SOURCE ${ITEM_ARG_SOURCE} ABSOLUTE )
+                if( IS_DIRECTORY ${ITEM_ARG_SOURCE} ) 
+                    set( FOLDER_NAME ${ITEM_ARG_SOURCE} )
+                else()
+                    get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  DIRECTORY    )
+                endif()
+                append_property( PROJECT_FOLDERS ${FOLDER_NAME} )
+            endforeach ()
+        endif()
+    endif()
+    
+    foreach ( ITEM_ARG_SOURCE_RECURSE ${ARG_SOURCE_RECURSE} )
+        get_filename_component( ITEM_ARG_SOURCE_RECURSE ${ITEM_ARG_SOURCE_RECURSE} ABSOLUTE )
+        file( GLOB_RECURSE LIST_SOURCE_RECURSE ${ITEM_ARG_SOURCE_RECURSE} )
+        list( APPEND ARG_SOURCE ${LIST_SOURCE_RECURSE} )
+    endforeach ()
+    
+    set( FILE_EXTENSIONS_CPP .c .cpp  )
+    set( FILE_EXTENSIONS_HPP .h .hpp )        
+    if( APPLE )
+        list( APPEND FILE_EXTENSIONS_CPP .m .mm )
+    endif()  
+    
+    foreach ( ITEM_ARG_SOURCE ${ARG_SOURCE} )
+        get_filename_component( ITEM_ARG_SOURCE ${ITEM_ARG_SOURCE} ABSOLUTE )
+        get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  NAME_WE     )
+        
+        if( IS_DIRECTORY ${ITEM_ARG_SOURCE} )                     
+            file( GLOB FIND_CMAKELIST "${ITEM_ARG_SOURCE}/CMakeLists.txt")
+            if( FIND_CMAKELIST AND ARG_RECURSIVE_CALL )
+                set (${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP )
+                set (${FOLDER_NAME}_PROJECT_SOURCE_FILES_HPP )
+                add_subdirectory ( ${ITEM_ARG_SOURCE} )
+                list( APPEND PROJECT_SOURCE_FILES_CPP ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP}  )
+                list( APPEND PROJECT_SOURCE_FILES_HPP ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_HPP}    )
+                list( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_HPP} ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP} )
+            else()
+                file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE}/* )
+                define_source( SOURCE ${LIST_SOURCE} IGNORE_ITEMS ${ARG_IGNORE_ITEMS} RECURSIVE_CALL true GROUP_SOURCE ${ARG_GROUP_SOURCE})
+            endif()
+        else()
+            file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
+            foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
+                get_filename_component( ITEM_EXT ${ITEM_LIST_SOURCE} EXT )
+                set( IGNORE_FLAG )
+                
+                foreach( IGNORE_MASK ${ARG_IGNORE_ITEMS} )
+                    if( ${ITEM_LIST_SOURCE} MATCHES ${IGNORE_MASK} )
+                        set( IGNORE_FLAG true )
+                        break()
+                    endif()
+                endforeach()
+                
+                if( NOT IGNORE_FLAG AND ITEM_EXT)
+                    foreach( EXT CPP HPP )
+                        list (FIND FILE_EXTENSIONS_${EXT} ${ITEM_EXT} _index)
+                        if (${_index} GREATER -1)
+                            list( APPEND PROJECT_SOURCE_FILES_${EXT} ${ITEM_LIST_SOURCE} )
+                            list( APPEND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} )
+                        endif() 
+                    endforeach()
+                endif()
+            endforeach ()
+        endif()
+    endforeach ()
+    
+    source_group( "" FILES ${PROJECT_SOURCE_FILES} )
+    
+    get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
+    list( REMOVE_AT  DEFINE_SOURCE_LIST 0 )
+    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} )        
+    
+    list( LENGTH DEFINE_SOURCE_LIST LENGTH_DEFINE_SOURCE_LIST  )
+    if ( NOT LENGTH_DEFINE_SOURCE_LIST )
+        #message( "Project ${CMAKE_CURRENT_LIST_DIR}" )
+        get_property( PROJECT_FOLDERS GLOBAL PROPERTY PROJECT_FOLDERS )
+        list ( LENGTH PROJECT_FOLDERS LENGTH_PROJECT_FOLDERS )
+        if ( ${LENGTH_PROJECT_FOLDERS} GREATER "0" )
+           list( REMOVE_DUPLICATES PROJECT_FOLDERS )
+        endif()
+        foreach ( ITEM ${PROJECT_FOLDERS}  )
+            file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${ITEM})
+            #message( "    ${RELATIVE_PATH}")
+            #message( "    ${ITEM}")            
+            file( GLOB_RECURSE LIST_SOURCE ${ITEM}/* )
+            foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
+            
+                string(REGEX REPLACE "${ITEM}/" "" FILE_GROUP ${ITEM_LIST_SOURCE} )
+                
+                if( RELATIVE_PATH )
+                    set( FILE_GROUP ${RELATIVE_PATH}/${FILE_GROUP} )
+                else()
+                    set( FILE_GROUP ${FILE_GROUP} )
+                endif()
+                
+                string(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
+                get_filename_component( FILE_GROUP_NAME ${FILE_GROUP} NAME )
+                string(REGEX REPLACE "\\\\${FILE_GROUP_NAME}" "" FILE_GROUP ${FILE_GROUP})
+                string( REGEX REPLACE "^[..\\\\]+" "_EXT_" FILE_GROUP ${FILE_GROUP} )               
+                
+                get_filename_component( FILE_GROUP_EXT ${FILE_GROUP} EXT )
+                if( FILE_GROUP_EXT )
+                    source_group( "" FILES ${ITEM_LIST_SOURCE} )
+                else()
+                    source_group( "${FILE_GROUP}" FILES ${ITEM_LIST_SOURCE} )
+                    #message( "        ${FILE_GROUP}" )
+                endif()
+                
+                list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
+                if (${_index} MATCHES -1)
+                    set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
+                    list( APPEND PROJECT_HEADER_FILE_ONLY ${ITEM_LIST_SOURCE} )
+                endif() 
+            endforeach ()
+            #message( " ")  
+        endforeach ()  
+        
+        #message( "")
+        reset_property( PROJECT_FOLDERS )    
+    endif()
+
+endmacro ()
+
 # Macro for defining source files with optional arguments as follows:
 #  GLOB_CPP_PATTERNS <list> - Use the provided globbing patterns for CPP_FILES instead of the default *.cpp
 #  GLOB_H_PATTERNS <list> - Use the provided globbing patterns for H_FILES instead of the default *.h
@@ -151,7 +308,7 @@ macro (define_source_files)
 endmacro ()
 
 #
-macro (define_source_folders )
+macro (define_source_folders_ )
 
     cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;ERASE_FOLDERS" ${ARGN})
     
