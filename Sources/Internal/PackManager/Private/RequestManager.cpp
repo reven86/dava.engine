@@ -133,7 +133,7 @@ void RequestManager::Push(const String& packName, float32 priority)
     pack.priority = priority;
 
     items.emplace_back(packManager, pack);
-    std::push_heap(begin(items), end(items));
+    stable_sort(begin(items), end(items));
 
     packManager.GetPM().packStateChanged.Emit(pack);
 
@@ -148,7 +148,7 @@ void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
         if (packRequest.GetPriority() != newPriority)
         {
             packRequest.ChangePriority(newPriority);
-            std::sort_heap(begin(items), end(items));
+            stable_sort(begin(items), end(items));
 
             CheckRestartLoading();
         }
@@ -159,8 +159,8 @@ void RequestManager::Pop()
 {
     DVASSERT(!items.empty());
 
-    std::pop_heap(begin(items), end(items));
-    items.pop_back();
+    items.erase(items.begin());
+    stable_sort(begin(items), end(items));
 }
 
 } // end namespace DAVA
