@@ -10,6 +10,8 @@
 #include "Concurrency/Thread.h"
 #include "Functional/Function.h"
 
+#include "Debug/DeadlockMonitor.h"
+
 #include <atomic>
 
 namespace DAVA
@@ -25,6 +27,9 @@ public:
 
     DispatcherT(const DispatcherT&) = delete;
     DispatcherT& operator=(const DispatcherT&) = delete;
+
+    DispatcherT(DispatcherT&&) = delete;
+    DispatcherT& operator=(DispatcherT&&) = delete;
 
     void LinkToCurrentThread();
     uint64 GetLinkedThread() const;
@@ -94,11 +99,13 @@ void DispatcherT<T>::PostEvent(const T& e)
 template <typename T>
 void DispatcherT<T>::SendEvent(const T& e)
 {
-    DVASSERT(linkedThreadId != 0);
+    DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
     uint64 curThreadId = Thread::GetCurrentIdAsInteger();
     if (linkedThreadId == curThreadId)
     {
+        // If blocking call is made from the same thread as thread that calls ProcessEvents
+        // simply call ProcessEvents
         {
             LockGuard<Mutex> lock(mutex);
             eventQueue.emplace_back(e, nullptr);
@@ -108,25 +115,35 @@ void DispatcherT<T>::SendEvent(const T& e)
     else
     {
         int signalEventIndex = -1;
-        semaphore.Wait();
-        for (int i = 0; i < poolSize; ++i)
+        while (signalEventIndex < 0)
         {
-            if (!signalEventBusyFlag[i].test_and_set(std::memory_order_acquire))
+            for (int i = 0; i < poolSize; ++i)
             {
-                signalEventIndex = i;
-                break;
+                if (!signalEventBusyFlag[i].test_and_set(std::memory_order_acquire))
+                {
+                    signalEventIndex = i;
+                    break;
+                }
+            }
+            if (signalEventIndex < 0)
+            {
+                // Wait till any signal event is released
+                semaphore.Wait();
             }
         }
-        DVASSERT(signalEventIndex >= 0);
 
         {
             LockGuard<Mutex> lock(mutex);
             eventQueue.emplace_back(e, &signalEventPool[signalEventIndex]);
         }
 
+        DAVA_BEGIN_BLOCKING_CALL(linkedThreadId);
+
         signalEventPool[signalEventIndex].Wait();
         signalEventBusyFlag[signalEventIndex].clear(std::memory_order_release);
         semaphore.Post(1);
+
+        DAVA_END_BLOCKING_CALL(linkedThreadId);
     }
 }
 
