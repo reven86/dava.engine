@@ -32,7 +32,7 @@ void GameCore::OnAppStarted()
 
     if (testChain.empty())
     {
-        Core::Instance()->Quit();
+        GameCore::Instance()->Quit();
     }
 }
 
@@ -234,7 +234,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetTime < 0)
         {
             Logger::Error("Incorrect params. TargetTime < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -243,7 +243,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (!endTimeFound)
         {
             Logger::Error("Incorrect params. Set end time for range");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
 
         String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
@@ -257,7 +257,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (timeRange < 100 || params.startTime < 0)
         {
             Logger::Error("Incorrect params. Too small time range");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -269,7 +269,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetFramesCount < 0)
         {
             Logger::Error("Incorrect params. TargetFramesCount < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -281,7 +281,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetFrameDelta < 0.0f)
         {
             Logger::Error("Incorrect params. TargetFrameDelta < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -293,7 +293,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.frameForDebug < 0)
         {
             Logger::Error("Incorrect params. DebugFrame < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -305,7 +305,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.maxDelta < 0.0f)
         {
             Logger::Error("Incorrect params. MaxDelta < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -316,4 +316,10 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
     Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
     Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
+}
+
+void GameCore::Quit()
+{
+    Core::Instance()->ReleaseRenderer();
+    Core::Instance()->Quit();
 }
