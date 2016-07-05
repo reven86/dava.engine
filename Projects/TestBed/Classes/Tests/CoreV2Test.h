@@ -5,6 +5,7 @@
 #include "Infrastructure/BaseScreen.h"
 
 #include "Engine/EngineFwd.h"
+#include "Engine/Private/Dispatcher/DispatcherT.h"
 
 namespace DAVA
 {
@@ -12,6 +13,7 @@ class UIButton;
 class Font;
 struct Rect;
 class BaseObject;
+class Thread;
 };
 
 class GameCore;
@@ -29,6 +31,7 @@ private:
     void OnQuit(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnResize(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnRun(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnWindowCreated(DAVA::Window* w);
     void OnWindowDestroyed(DAVA::Window* w);
@@ -47,8 +50,25 @@ private:
     DAVA::UIButton* buttonRunOnMain = nullptr;
     DAVA::UIButton* buttonRunOnUI = nullptr;
 
+    DAVA::UIButton* buttonDispTrigger1 = nullptr;
+    DAVA::UIButton* buttonDispTrigger2 = nullptr;
+    DAVA::UIButton* buttonDispTrigger3 = nullptr;
+    DAVA::UIButton* buttonDispTrigger1000 = nullptr;
+    DAVA::UIButton* buttonDispTrigger2000 = nullptr;
+    DAVA::UIButton* buttonDispTrigger3000 = nullptr;
+
     size_t tokenOnWindowCreated = 0;
     size_t tokenOnWindowDestroyed = 0;
+
+    //////////////////////////////////////////////////////////////////////////
+    using TestDispatcher = DAVA::Private::DispatcherT<int>;
+
+    DAVA::Vector<DAVA::RefPtr<DAVA::Thread>> dispatcherThreads;
+    DAVA::Vector<std::unique_ptr<TestDispatcher>> dispatchers;
+    bool stopDispatchers = false;
+
+    void DispatcherThread(TestDispatcher* dispatcher, int index);
+    void DispatcherEventHandler(int type);
 };
 
 #endif // __DAVAENGINE_COREV2__
