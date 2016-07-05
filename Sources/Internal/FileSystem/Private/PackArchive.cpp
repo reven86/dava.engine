@@ -196,6 +196,11 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     ScopedPtr<File> file(File::Create(archiveName, File::OPEN | File::READ));
 
+    if (!file)
+    {
+        throw std::runtime_error("can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
+    }
+
     bool isOk = file->Seek(fileEntry.startPosition, File::SEEK_FROM_START);
     if (!isOk)
     {
