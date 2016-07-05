@@ -28,12 +28,7 @@ FilePathBrowser::FilePathBrowser(QWidget* parent)
         l->setContentsMargins(2, 2, 2, 2);
     }
 
-    connect(this, SIGNAL(returnPressed()), SLOT(OnReturnPressed()));
-    connect(this, SIGNAL(textUpdated(const QString&)), SLOT(ValidatePath()));
-}
-
-FilePathBrowser::~FilePathBrowser()
-{
+    connect(this, SIGNAL(textUpdated(const QString&)), SLOT(TryToAcceptPath()));
 }
 
 void FilePathBrowser::SetHint(const QString& hint)
@@ -42,9 +37,14 @@ void FilePathBrowser::SetHint(const QString& hint)
     setPlaceholderText(hintText);
 }
 
-void FilePathBrowser::SetDefaultFolder(const QString& _path)
+void FilePathBrowser::SetCurrentFolder(const QString& _path)
 {
-    defaultFolder = _path;
+    currentFolder = _path;
+}
+
+void FilePathBrowser::AllowInvalidPath(bool allow)
+{
+    allowInvalidPath = allow;
 }
 
 void FilePathBrowser::SetPath(const QString& _path)
@@ -52,6 +52,16 @@ void FilePathBrowser::SetPath(const QString& _path)
     path = _path;
     setText(path);
     setToolTip(path);
+
+    if (type == eFileType::Folder)
+    {
+        SetCurrentFolder(path);
+    }
+}
+
+const QString& FilePathBrowser::GetPath() const
+{
+    return path;
 }
 
 void FilePathBrowser::SetFilter(const QString& _filter)
@@ -80,34 +90,43 @@ QSize FilePathBrowser::sizeHint() const
     return hint;
 }
 
-QString FilePathBrowser::DefaultBrowsePath()
+QString FilePathBrowser::CurrentBrowsePath()
 {
     const QFileInfo pathInfo(text());
-    const QFileInfo defaultInfo(defaultFolder);
+    const QFileInfo defaultInfo(currentFolder);
 
     if (pathInfo.isFile())
         return path;
 
     if (defaultInfo.isDir())
-        return defaultFolder;
+        return currentFolder;
 
     return QString();
 }
 
 void FilePathBrowser::OnBrowse()
 {
-    const QString newPath = FileDialog::getOpenFileName(this, hintText, DefaultBrowsePath(), filter, NULL, 0);
-    TryToAcceptPath(newPath);
+    QString newPath;
+    if (type == eFileType::File)
+    {
+        newPath = FileDialog::getOpenFileName(this, hintText, CurrentBrowsePath(), filter, nullptr, 0);
+    }
+    else
+    {
+        newPath = FileDialog::getExistingDirectory(this, hintText, CurrentBrowsePath());
+    }
+
+    if (!newPath.isEmpty())
+    {
+        TryToAcceptPath(newPath);
+    }
 }
 
-void FilePathBrowser::OnReturnPressed()
+void FilePathBrowser::TryToAcceptPath()
 {
-    TryToAcceptPath(text());
-}
-
-void FilePathBrowser::ValidatePath()
-{
-    const bool isValid = QFileInfo(text()).isFile();
+    QString newPath(text());
+    QFileInfo newInfo(newPath);
+    const bool isValid = (type == eFileType::File ? newInfo.isFile() : newInfo.isDir());
 
     // Icon
     QPixmap* pix = NULL;
@@ -124,8 +143,16 @@ void FilePathBrowser::ValidatePath()
     validIcon->setPixmap(*pix);
 
     // Tooltip
-    const QString toolTip = isValid ? "File exists" : "File doesn't exists";
+    const QString toolTip = (type == eFileType::File ?
+                             (isValid ? "File exists" : "File doesn't exists") :
+                             (isValid ? "Folder exists" : "Folder doesn't exists"));
     validIcon->setToolTip(toolTip);
+
+    if (isValid || allowInvalidPath)
+    {
+        SetPath(newPath);
+        emit pathChanged(newPath);
+    }
 }
 
 void FilePathBrowser::InitButtons()
@@ -146,7 +173,7 @@ void FilePathBrowser::TryToAcceptPath(const QString& _path)
 {
     QFileInfo newInfo(_path);
 
-    if (allowInvalidPath || newInfo.isFile())
+    if (allowInvalidPath || (newInfo.isFile() && type == eFileType::File) || (newInfo.isDir() && type == eFileType::Folder))
     {
         SetPath(_path);
         emit pathChanged(_path);
@@ -173,4 +200,9 @@ void FilePathBrowser::keyPressEvent(QKeyEvent* event)
     default:
         break;
     }
+}
+
+void FilePathBrowser::SetType(eFileType type_)
+{
+    type = type_;
 }

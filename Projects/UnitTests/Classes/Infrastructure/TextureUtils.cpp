@@ -32,23 +32,17 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, cons
         return compareResult;
     }
 
-    int32 imageSizeInBytes = static_cast<int32>(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
+    uint32 step = 1;
+    uint32 startIndex = 0;
 
-    int32 step = 1;
-    int32 startIndex = 0;
-
+    compareResult.bytesCount = first->dataSize;
     if (FORMAT_A8 == format)
     {
-        compareResult.bytesCount = static_cast<int32>(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
         step = 4;
         startIndex = 3;
     }
-    else
-    {
-        compareResult.bytesCount = imageSizeInBytes;
-    }
 
-    for (int32 i = startIndex; i < imageSizeInBytes; i += step)
+    for (uint32 i = startIndex; i < compareResult.bytesCount; i += step)
     {
         compareResult.difference += abs(first->GetData()[i] - second->GetData()[i]);
     }
