@@ -187,6 +187,4 @@ void LoadingTest::OnFinish()
 bool LoadingTest::IsFinished() const
 {
     return (loadJobs.size() == 0);
-
-    return false;
 }
