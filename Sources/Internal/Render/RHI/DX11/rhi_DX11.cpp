@@ -158,17 +158,6 @@ dx11_ResumeRendering()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_TakeScreenshot(ScreenShotCallback callback)
-{
-    _D3D11_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_D3D11_PendingScreenshotCallback);
-    _D3D11_PendingScreenshotCallback = callback;
-    _D3D11_ScreenshotCallbackSync.Unlock();
-}
-
-//------------------------------------------------------------------------------
-
 void _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -362,7 +351,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
-    DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 

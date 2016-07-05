@@ -391,7 +391,14 @@ void AutotestingSystem::MakeScreenShot()
     AutotestingDB::Instance()->Log("INFO", log.c_str());
 
     UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot));
+    if (currentScreen)
+    {
+        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot));
+    }
+    else
+    {
+        Logger::Error("AutotestingSystem::MakeScreenShot no current screen");
+    }
 }
 
 const String& AutotestingSystem::GetScreenShotName()

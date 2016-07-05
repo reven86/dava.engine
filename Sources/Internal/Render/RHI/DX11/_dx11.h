@@ -49,9 +49,6 @@ extern DAVA::Mutex _D3D11_SecondaryContextSync;
 extern ID3D11Debug* _D3D11_Debug;
 extern ID3DUserDefinedAnnotation* _D3D11_UserAnnotation;
 
-extern ScreenShotCallback _D3D11_PendingScreenshotCallback;
-extern DAVA::Mutex _D3D11_ScreenshotCallbackSync;
-
 extern InitParam _DX11_InitParam;
 
 } // namespace rhi

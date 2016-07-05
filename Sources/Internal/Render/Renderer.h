@@ -11,7 +11,6 @@
 
 namespace DAVA
 {
-struct ScreenShotCallbackDelegate;
 struct RenderStats;
 
 namespace Renderer
