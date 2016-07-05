@@ -921,7 +921,9 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
 
         if (mode == BAKE_CENTER_PIVOT)
         {
-            newPivotPos = selectionSystem->GetUntransformedBoundingBox(entity).GetCenter();
+            DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+            DVASSERT(!bbox.IsEmpty());
+            newPivotPos = bbox.GetCenter();
         }
 
         DAVA::uint32 count = static_cast<DAVA::uint32>(entity->GetChildrenCount());
