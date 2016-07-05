@@ -16,6 +16,7 @@
 {
     if (self = [super init])
     {
+        isKeyboardHidden = true;
         DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
 
         DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
@@ -189,7 +190,7 @@
         caret = [textField_ positionFromPosition:caret offset:(range.location + [replStr length])];
         UITextRange* rangeCaret = [textField_ textRangeFromPosition:caret toPosition:caret];
         [textField_ setSelectedTextRange:rangeCaret];
-        if (nullptr != cppTextField && ![origString isEqualToString:newString])
+        if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate() && ![origString isEqualToString:newString])
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
@@ -573,19 +574,21 @@
 
 - (void)keyboardWillHide:(NSNotification*)notification
 {
-    if (cppTextField)
+    if (cppTextField && isKeyboardHidden == false)
     {
         cppTextField->OnKeyboardHidden();
         cppTextField->StopEdit();
+        isKeyboardHidden = true;
     }
 }
 
 - (void)keyboardDidShow:(NSNotification*)notification
 {
-    if (nullptr == cppTextField)
+    if (nullptr == cppTextField || isKeyboardHidden == false)
     {
         return;
     }
+    isKeyboardHidden = false;
 
     // convert own frame to window coordinates, frame is in superview's coordinates
     CGRect ownFrame = [textCtrl.window convertRect:self.frame fromView:textCtrl.superview];
