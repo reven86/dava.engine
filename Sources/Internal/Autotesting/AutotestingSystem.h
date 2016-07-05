@@ -18,7 +18,7 @@ namespace DAVA
 class Image;
 class AutotestingSystemLuaDelegate;
 class AutotestingSystemLua;
-class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
+class AutotestingSystem : public Singleton<AutotestingSystem>
 {
 public:
     AutotestingSystem();
@@ -39,7 +39,7 @@ public:
 
     void InitLua(AutotestingSystemLuaDelegate* _delegate);
 
-    void OnScreenShot(Image* image) override;
+    void OnScreenShot(Texture* texture);
 
     void RunTests();
 
@@ -155,6 +155,7 @@ public:
     UIEvent mouseMove;
 
     String screenShotName;
+    Texture* screenShotTexture;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const
