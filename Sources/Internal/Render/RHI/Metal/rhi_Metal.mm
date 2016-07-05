@@ -15,12 +15,8 @@ id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
-rhi::ScreenShotCallback _Metal_PendingScreenshotCallback = nullptr;
-void* _Metal_ScreenshotData = nullptr;
-DAVA::Mutex _Metal_ScreenshotCallbackSync;
 
-bool _Metal_Suspended = false;
-DAVA::Mutex _Metal_SuspendedSync;
+DAVA::Atomic<bool> _Metal_Suspended(false);
 
 namespace rhi
 {
@@ -122,9 +118,7 @@ metal_NeedRestoreResources()
 static void
 metal_Suspend()
 {
-    _Metal_ScreenshotCallbackSync.Lock();
-    _Metal_Suspended = true;
-    _Metal_ScreenshotCallbackSync.Unlock();
+    _Metal_Suspended.Set(true);
     DAVA::Logger::Info("mtl.render-suspended");
 }
 
@@ -135,21 +129,8 @@ metal_Resume()
 {
     //    TextureMetal::MarkAllNeedRestore();
     //TextureMetal::ReCreateAll();
-    _Metal_ScreenshotCallbackSync.Lock();
-    _Metal_Suspended = false;
-    _Metal_ScreenshotCallbackSync.Unlock();
+    _Metal_Suspended.Set(false);
     DAVA::Logger::Info("mtl.render-resumed");
-}
-
-//------------------------------------------------------------------------------
-
-static void
-metal_TakeScreenshot(ScreenShotCallback callback)
-{
-    _Metal_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_Metal_PendingScreenshotCallback);
-    _Metal_PendingScreenshotCallback = callback;
-    _Metal_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -246,7 +227,6 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;
     DispatchMetal.impl_SuspendRendering = &metal_Suspend;
-    DispatchMetal.impl_TakeScreenshot = &metal_TakeScreenshot;
 
     SetDispatchTable(DispatchMetal);
 

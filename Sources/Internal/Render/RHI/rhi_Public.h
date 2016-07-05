@@ -130,8 +130,6 @@ void ResumeRendering();
 
 void InvalidateCache();
 
-void TakeScreenshot(ScreenShotCallback callback);
-
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
 
