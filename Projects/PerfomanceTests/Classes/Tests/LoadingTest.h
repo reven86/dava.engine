@@ -46,24 +46,12 @@ private:
 
         virtual void Excecute();
         virtual bool IsFinished();
-        bool IsExcecuted()
-        {
-            return excecuted;
-        }
+        bool IsExcecuted();
 
-        uint64 GetLoadTime()
-        {
-            return loadingTime;
-        }
-        const String& GetJobText()
-        {
-            return jobText;
-        };
+        uint64 GetLoadTime();
+        const String& GetJobText();
 
-        uint32 GetGroupIndex()
-        {
-            return groupIndex;
-        };
+        uint32 GetGroupIndex();
 
     protected:
         FilePath scenePath;

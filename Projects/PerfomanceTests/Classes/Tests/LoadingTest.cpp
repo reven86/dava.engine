@@ -11,12 +11,9 @@ const String LoadingTest::TEST_NAME = "LoadingTest";
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 LoadingTest::LoadJob::LoadJob(const DAVA::FilePath& _scenePath, const String& _jobText, uint32 _groupIndex)
-    :
-    scenePath(_scenePath)
-    ,
-    jobText(_jobText)
-    ,
-    groupIndex(_groupIndex)
+    : scenePath(_scenePath)
+    , jobText(_jobText)
+    , groupIndex(_groupIndex)
 {
 }
 
@@ -37,11 +34,30 @@ bool LoadingTest::LoadJob::IsFinished()
     return excecuted;
 }
 
+bool LoadingTest::LoadJob::IsExcecuted()
+{
+    return excecuted;
+}
+
+uint64 LoadingTest::LoadJob::GetLoadTime()
+{
+    return loadingTime;
+}
+
+const String& LoadingTest::LoadJob::GetJobText()
+{
+    return jobText;
+};
+
+uint32 LoadingTest::LoadJob::GetGroupIndex()
+{
+    return groupIndex;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 LoadingTest::LoadThreadJob::LoadThreadJob(const DAVA::FilePath& scenePath, const String& jobText, uint32 groupID)
-    :
-    LoadJob(scenePath, jobText, groupID)
+    : LoadJob(scenePath, jobText, groupID)
 {
 }
 
