@@ -29,11 +29,6 @@ void PackManagerImpl::Initialize(const String& dbFile_,
                                  const String& architecture_,
                                  PackManager* packManager_)
 {
-    if (initState != PackManager::InitState::FirstInit)
-    {
-        throw std::runtime_error("second time init");
-    }
-
     readOnlyPacksDir = readOnlyPacksDir_;
 
     architecture = architecture_;

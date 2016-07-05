@@ -18,14 +18,7 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
     // put it all into vector and put final pack into vector too
     CollectDownlodbleDependency(rootPack->name, dependencySet);
 
-    if (rootPack->hashFromDB != 0) // not fully virtual pack
-    {
-        dependencies.reserve(dependencySet.size() + 1);
-    }
-    else
-    {
-        dependencies.reserve(dependencySet.size());
-    }
+    dependencies.reserve(dependencySet.size() + 1);
 
     for (PackManager::Pack* depPack : dependencySet)
     {
@@ -38,16 +31,13 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
         dependencies.push_back(subRequest);
     }
 
-    // last step download pack itself (if it not virtual)
-    if (rootPack->hashFromDB != 0)
-    {
-        SubRequest subRequest;
+    // last step download pack itself
+    SubRequest subRequest;
 
-        subRequest.pack = rootPack;
-        subRequest.status = SubRequest::Wait;
-        subRequest.taskId = 0;
-        dependencies.push_back(subRequest);
-    }
+    subRequest.pack = rootPack;
+    subRequest.status = SubRequest::Wait;
+    subRequest.taskId = 0;
+    dependencies.push_back(subRequest);
 
     std::for_each(begin(dependencies), end(dependencies), [&](const SubRequest& request)
                   {
@@ -61,12 +51,11 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackMa
     for (const String& dependName : packState.dependency)
     {
         PackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
-        if (dependPack.hashFromDB != 0 && dependPack.state != PackManager::Pack::Status::Mounted)
+        if (dependPack.state != PackManager::Pack::Status::Mounted)
         {
             dependency.insert(&dependPack);
+            CollectDownlodbleDependency(dependName, dependency);
         }
-
-        CollectDownlodbleDependency(dependName, dependency);
     }
 }
 

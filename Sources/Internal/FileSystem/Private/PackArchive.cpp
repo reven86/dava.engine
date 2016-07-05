@@ -188,8 +188,6 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     if (!HasFile(relativeFilePath))
     {
-        Logger::Error("can't load file: %s course: not found\n",
-                      relativeFilePath.c_str());
         return false;
     }
 

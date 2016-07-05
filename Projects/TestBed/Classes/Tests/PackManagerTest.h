@@ -48,6 +48,7 @@ private:
     void OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
@@ -81,4 +82,5 @@ private:
     DAVA::UIButton* startInit = nullptr;
     DAVA::UIButton* startSync = nullptr;
     DAVA::UIButton* clearDocs = nullptr;
+    DAVA::UIButton* lsDvpks = nullptr;
 };

@@ -165,7 +165,7 @@ void PackManagerTest::LoadResources()
     startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitClicked));
     AddControl(startInit);
 
-    UIButton* startSync = new UIButton(Rect(420, 440, 100, 20));
+    startSync = new UIButton(Rect(420, 440, 100, 20));
     startSync->SetDebugDraw(true);
     startSync->SetStateFont(0xFF, font);
     startSync->SetStateFontColor(0xFF, Color::White);
@@ -173,17 +173,26 @@ void PackManagerTest::LoadResources()
     startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartSyncClicked));
     AddControl(startSync);
 
-    UIButton* clearDocs = new UIButton(Rect(420, 470, 100, 20));
+    clearDocs = new UIButton(Rect(420, 470, 100, 20));
     clearDocs->SetDebugDraw(true);
     clearDocs->SetStateFont(0xFF, font);
     clearDocs->SetStateFontColor(0xFF, Color::White);
     clearDocs->SetStateText(0xFF, L"rm dvpk's");
     clearDocs->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnClearDocsClicked));
     AddControl(clearDocs);
+
+    lsDvpks = new UIButton(Rect(420, 500, 100, 20));
+    lsDvpks->SetDebugDraw(true);
+    lsDvpks->SetStateFont(0xFF, font);
+    lsDvpks->SetStateFontColor(0xFF, Color::White);
+    lsDvpks->SetStateText(0xFF, L"ls dvpk's");
+    lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListPacksClicked));
+    AddControl(lsDvpks);
 }
 
 void PackManagerTest::UnloadResources()
 {
+    SafeRelease(lsDvpks);
     SafeRelease(startSync);
     SafeRelease(clearDocs);
     SafeRelease(packInput);
@@ -294,6 +303,28 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
+}
+
+void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+
+    std::stringstream ss;
+
+    for (auto& pack : pm.GetPacks())
+    {
+        if (pack.state == PackManager::Pack::Status::Mounted)
+        {
+            ss << pack.name << ", ";
+        }
+    }
+
+    String s = ss.str();
+    if (!s.empty())
+    {
+        s = s.substr(0, s.size() - 2);
+    }
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
