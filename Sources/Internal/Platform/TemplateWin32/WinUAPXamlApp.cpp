@@ -620,13 +620,6 @@ void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequested
 void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
     uint32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
-    // hack, windows didn't send key up for win buttons
-    if (VK_LWIN == key || VK_RWIN == key)
-    {
-        // skip all win buttons events
-        return;
-    }
-
     if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
         key |= 0x100;
