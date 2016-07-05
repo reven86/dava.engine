@@ -165,6 +165,11 @@ branch = branch.replace("/", "_")
 if not os.path.exists("../artifacts"):
     os.makedirs("../artifacts")
 
+files = glob.glob("../artifacts/*.txt")
+for f in files:
+    if os.path.isfile(f):
+        os.remove(f)
+
 if not os.path.exists("../artifacts/materials"):
     os.makedirs("../artifacts/materials")
 
