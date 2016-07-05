@@ -352,7 +352,7 @@ void TextFieldPlatformImpl::SetText(const WideString& string)
     if (nullptr != textFieldHolder->cppTextField && nullptr != textFieldHolder->cppTextField->GetDelegate() && textChanged)
     {
         DAVA::WideString oldString = WideStringFromNSString(textInField);
-        textFieldHolder->cppTextField->GetDelegate()->TextFieldOnTextChanged(textFieldHolder->cppTextField, string, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+        textFieldHolder->cppTextField->GetDelegate()->TextFieldOnTextChanged(textFieldHolder->cppTextField, string, oldString, UITextFieldDelegate::eReason::CODE);
     }
 
     // Drop cached text in text field holder for correct dispatching OnTextChanged event

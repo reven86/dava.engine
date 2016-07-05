@@ -413,11 +413,11 @@ bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLo
 
 void TextFieldPlatformImpl::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
 {
-    UITextFieldDelegate::eInteractionType type = UITextFieldDelegate::eInteractionType::USER;
+    UITextFieldDelegate::eReason type = UITextFieldDelegate::eReason::USER;
     if (programmaticTextChange)
     {
         programmaticTextChange = false;
-        type = UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY;
+        type = UITextFieldDelegate::eReason::CODE;
     }
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)

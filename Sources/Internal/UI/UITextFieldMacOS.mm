@@ -400,7 +400,7 @@ public:
         [nsTextView setString:text];
         if (nullptr != davaText && string != oldString)
         {
-            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldString, UITextFieldDelegate::eReason::CODE);
         }
 
         // HACK if user click cleartext button and current
@@ -728,7 +728,7 @@ public:
         [nsTextField setStringValue:text];
         if (nullptr != davaText)
         {
-            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldText, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldText, UITextFieldDelegate::eReason::CODE);
         }
 
         // HACK if user click cleartext button and current
@@ -1303,7 +1303,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
         const DAVA::WideString& newText = text->ctrl->davaText->GetText();
         if (newText != lastString)
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eInteractionType::USER);
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eReason::USER);
             lastString = text->ctrl->davaText->GetText();
         }
     }
@@ -1472,7 +1472,7 @@ doCommandBySelector:(SEL)commandSelector
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(inOrigString);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eReason::CODE);
         }
     }
     return applyChanges;
@@ -1525,7 +1525,7 @@ doCommandBySelector:(SEL)commandSelector
         const DAVA::WideString& newText = text->ctrl->davaText->GetText();
         if (newText != lastString)
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eInteractionType::USER);
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eReason::USER);
             lastString = text->ctrl->davaText->GetText();
         }
     }
@@ -1581,7 +1581,7 @@ doCommandBySelector:(SEL)commandSelector
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eReason::CODE);
         }
     }
     return applyChanges;

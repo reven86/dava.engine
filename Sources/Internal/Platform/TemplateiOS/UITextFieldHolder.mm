@@ -193,7 +193,7 @@
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eInteractionType::PROGRAMMATICALLY);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eReason::CODE);
         }
     }
     return applyChanges;
@@ -248,7 +248,7 @@
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
 
-        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString, DAVA::UITextFieldDelegate::eInteractionType::USER);
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString, DAVA::UITextFieldDelegate::eReason::USER);
     }
 }
 

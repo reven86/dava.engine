@@ -15,10 +15,10 @@ class TextFieldPlatformImpl;
 class UITextFieldDelegate
 {
 public:
-    enum class eInteractionType
+    enum class eReason
     {
         USER = 0,
-        PROGRAMMATICALLY = 1,
+        CODE = 1,
     };
 
     virtual ~UITextFieldDelegate() = default;
@@ -61,7 +61,7 @@ public:
                     {
                     });
 
-    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eInteractionType type)
+    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
     {
         DVASSERT(newText != oldText);
         TextFieldOnTextChanged(textField, newText, oldText);
