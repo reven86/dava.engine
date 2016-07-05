@@ -74,7 +74,7 @@ private:
         Thread* loadingThread = nullptr;
     };
 
-    Deque<LoadJob*> loadJobs;
+    List<LoadJob*> loadJobs;
     uint64 loadResults[JOB_GROUP_MAX_COUNT] = {};
     uint32 loadGroupSize[JOB_GROUP_MAX_COUNT] = {};
 
