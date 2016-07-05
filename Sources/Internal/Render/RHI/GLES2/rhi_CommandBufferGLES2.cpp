@@ -57,8 +57,7 @@ enum CommandGLES2Type
     GLES2__NOP = 77
 };
 
-struct
-RenderPassGLES2_t
+struct RenderPassGLES2_t
 {
     std::vector<Handle> cmdBuf;
     int priority;
