@@ -28,10 +28,6 @@ PropertyPanel::PropertyPanel()
     model->registerExtension(std::make_shared<EntityInjectDataExtension>(*this, *context));
 }
 
-PropertyPanel::~PropertyPanel()
-{
-}
-
 void PropertyPanel::Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication)
 {
     wgt::IDefinitionManager* defMng = NGTLayer::queryInterface<wgt::IDefinitionManager>();

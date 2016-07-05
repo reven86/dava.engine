@@ -35,7 +35,6 @@ class PropertyPanel : public QObject, public wgt::IViewEventListener, public Ent
 
 public:
     PropertyPanel();
-    ~PropertyPanel();
 
     void Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication);
     void Finalize(wgt::IUIApplication& uiApplication);
@@ -68,5 +67,5 @@ private:
 
     bool visible = false;
     bool isSelectionDirty = false;
-    std::vector<DAVA::InspBase*> selectedObjects;
+    DAVA::Vector<DAVA::InspBase*> selectedObjects;
 };
