@@ -14,6 +14,8 @@ public:
     {
         TEST_OPTION = 0,
 
+        PREVIEW_METAL_ON_GL,
+
         LANDSCAPE_DRAW,
         WATER_REFLECTION_REFRACTION_DRAW,
         OPAQUE_DRAW,

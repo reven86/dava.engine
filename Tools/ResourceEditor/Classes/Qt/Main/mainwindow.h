@@ -25,15 +25,9 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-
-namespace wgt
-{
-class IComponentContext;
-}
-#if defined(UVR_NOT_IMPLEMENTED)
+#if defined(NEW_PROPERTY_PANEL)
 class PropertyPanel;
 #endif
-
 class DeviceListController;
 class SpritesPackerModule;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
@@ -294,7 +288,7 @@ private:
     RecentMenuItems recentProjects;
 
     wgt::IComponentContext& ngtContext;
-#if defined(UVR_NOT_IMPLEMENTED)
+#if defined(NEW_PROPERTY_PANEL)
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;

@@ -37,7 +37,7 @@ add_definitions       (
 )
 
 if (UVR_DEV)
-    add_definitions (-DUVR_NOT_IMPLEMENTED )
+    add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
 # Ngt tool sshould be found before DavaFramework to force specific for NGT defines 

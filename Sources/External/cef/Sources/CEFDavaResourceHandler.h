@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_scheme.h>
 #include "Base/RefPtr.h"
 #include "FileSystem/FilePath.h"
@@ -44,5 +42,3 @@ class CEFDavaResourceHandlerFactory : public CefSchemeHandlerFactory
 };
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW
