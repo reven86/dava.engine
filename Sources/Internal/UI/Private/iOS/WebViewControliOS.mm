@@ -110,7 +110,7 @@
     DVASSERT(webViewControl);
     DVASSERT(webView);
 
-    if (webViewControl->IsRenderToTexture())
+    if (webViewControl && webView && webViewControl->IsRenderToTexture())
     {
         webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(
         *webView);
