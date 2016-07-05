@@ -1,6 +1,4 @@
-#ifndef __WEBVIEW_CONTROL_STUB_H__
-#define __WEBVIEW_CONTROL_STUB_H__
-
+#pragma once
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
 #include "UI/IWebViewControl.h"
@@ -42,5 +40,3 @@ public:
 };
 
 #endif //DISABLE_NATIVE_WEBVIEW && !ENABLE_CEF_WEBVIEW
-
-#endif //__WEBVIEW_CONTROL_STUB_H__

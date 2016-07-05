@@ -1,12 +1,10 @@
 #pragma once
 
-#if defined(ENABLE_CEF_WEBVIEW)
-
 #include <cef/include/cef_client.h>
 
 #include "UI/IWebViewControl.h"
-#include "UI/Private/CEFController.h"
-#include "UI/Private/CEFWebPageRender.h"
+#include "CEFController.h"
+#include "CEFWebPageRender.h"
 
 namespace DAVA
 {
@@ -105,5 +103,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // ENABLE_CEF_WEBVIEW
