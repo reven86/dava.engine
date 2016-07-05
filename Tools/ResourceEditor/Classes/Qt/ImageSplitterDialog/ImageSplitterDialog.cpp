@@ -27,14 +27,14 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget* parent)
 
     ui->path->SetFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
-    DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
-    if (defaultPath.IsEmpty())
+    DAVA::FilePath currentPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
+    if (currentPath.IsEmpty())
     {
-        defaultPath = GetDefaultPath();
+        currentPath = GetDefaultPath();
     }
 
-    ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
-    ui->path->SetPath(QString::fromStdString(defaultPath.GetAbsolutePathname()));
+    ui->path->SetCurrentFolder(QString::fromStdString(currentPath.GetDirectory().GetAbsolutePathname()));
+    ui->path->SetPath(QString::fromStdString(currentPath.GetAbsolutePathname()));
     ui->saveBtn->setFocus();
     lastSelectedFile = "";
     ConnectSignals();
@@ -50,7 +50,7 @@ ImageSplitterDialog::~ImageSplitterDialog()
 
 void ImageSplitterDialog::ConnectSignals()
 {
-    connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathSelected(const QString&)));
+    connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathChanged(const QString&)));
 
     connect(ui->redImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     connect(ui->greenImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
@@ -72,7 +72,7 @@ void ImageSplitterDialog::ConnectSignals()
     connect(ui->reloadSpecular, SIGNAL(clicked()), SLOT(OnReloadSpecularMap()));
 }
 
-void ImageSplitterDialog::PathSelected(const QString& path)
+void ImageSplitterDialog::PathChanged(const QString& path)
 {
     if (path.isEmpty())
     {
@@ -87,15 +87,13 @@ void ImageSplitterDialog::PathSelected(const QString& path)
     SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(defaultPath.GetAbsolutePathname()));
 
     DAVA::FilePath imagePath(path.toStdString());
-    DAVA::Image* image = CreateTopLevelImage(imagePath);
-    if (NULL != image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(imagePath));
+    if (image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
     {
         lastSelectedFile = imagePath.GetAbsolutePathname();
         SetAcceptableImageSize(DAVA::Vector2(image->GetWidth(), image->GetHeight()));
 
         Channels channels = ImageTools::CreateSplittedImages(image);
-        DAVA::SafeRelease(image);
-
         ui->redImgLbl->SetImage(channels.red);
         ui->greenImgLbl->SetImage(channels.green);
         ui->blueImgLbl->SetImage(channels.blue);
@@ -105,9 +103,9 @@ void ImageSplitterDialog::PathSelected(const QString& path)
     }
     else
     {
-        ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
+        ui->path->SetCurrentFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
         ui->path->SetPath(QString());
-        if (NULL == image)
+        if (!image)
         {
             QMessageBox::warning(this, "File error", "Couldn't load image.", QMessageBox::Ok);
         }
@@ -123,7 +121,7 @@ void ImageSplitterDialog::ImageAreaChanged()
     ImageArea* sender = dynamic_cast<ImageArea*>(QObject::sender());
     DAVA::Image* image = sender->GetImage();
     DAVA::Vector2 senderImageSize;
-    if (image != NULL)
+    if (image != nullptr)
     {
         senderImageSize.Set(image->GetWidth(), image->GetHeight());
     }
@@ -158,7 +156,7 @@ void ImageSplitterDialog::OnRestoreClicked()
     ui->blueSpinBox->setValue(0);
     ui->alphaSpinBox->setValue(0);
 
-    PathSelected(QString::fromStdString(lastSelectedFile));
+    PathChanged(QString::fromStdString(lastSelectedFile));
 }
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
@@ -267,7 +265,7 @@ void ImageSplitterDialog::OnFillBtnClicked()
 void ImageSplitterDialog::OnReload()
 {
     const DAVA::FilePath path = ui->path->text().toStdString();
-    PathSelected(QString::fromStdString(path.GetAbsolutePathname()));
+    PathChanged(QString::fromStdString(path.GetAbsolutePathname()));
 }
 
 void ImageSplitterDialog::OnReloadSpecularMap()

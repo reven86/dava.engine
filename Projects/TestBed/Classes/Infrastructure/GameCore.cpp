@@ -23,6 +23,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
+#include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
 //$UNITTEST_INCLUDE
 
@@ -60,6 +61,7 @@ void GameCore::RegisterTests()
     new InputTest();
     new CoreTest();
     new FormatsTest();
+    new GPUTest();
     new FloatingPointExceptionTest();
     new PackManagerTest();
     //$UNITTEST_CTOR

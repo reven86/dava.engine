@@ -28,7 +28,7 @@ void SaveImage(Image* image, const FilePath& pathname)
 
 Image* LoadImage(const FilePath& pathname)
 {
-    return CreateTopLevelImage(pathname);
+    return ImageSystem::LoadSingleMip(pathname);
 }
 
 uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
@@ -51,25 +51,22 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
     }
     else
     {
-        FilePath imagePathname = descriptor->CreatePathnameForGPU(forGPU);
-        files.push_back(imagePathname);
+        descriptor->CreateLoadPathnamesForGPU(forGPU, files);
     }
 
-    for (size_t i = 0; i < files.size(); ++i)
+    for (const FilePath& imagePathname : files)
     {
-        const FilePath& imagePathname = files[i];
         ImageInfo info = ImageSystem::GetImageInfo(imagePathname);
-        if (!info.isEmpty())
+        if (!info.IsEmpty())
         {
             const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
 
-            auto m = Min(baseMipMaps, info.mipmapsCount - 1);
+            uint32 m = Min(baseMipMaps, info.mipmapsCount - 1);
             for (; m < info.mipmapsCount; ++m)
             {
-                const auto w = (info.width >> m);
-                const auto h = (info.height >> m);
-
-                size += (w * h * formatSizeBits / 8);
+                uint32 w = Max(info.width >> m, 1u);
+                uint32 h = Max(info.height >> m, 1u);
+                size += Image::GetSizeInBytes(w, h, info.format);
             }
         }
         else
@@ -93,7 +90,7 @@ void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFam
 
 bool SplitImage(const FilePath& pathname)
 {
-    Image* loadedImage = CreateTopLevelImage(pathname);
+    ScopedPtr<Image> loadedImage(DAVA::ImageSystem::LoadSingleMip(pathname));
     if (!loadedImage)
     {
         Logger::Error("Can't load image %s", pathname.GetAbsolutePathname().c_str());
@@ -116,7 +113,6 @@ bool SplitImage(const FilePath& pathname)
     SaveImage(channels.alpha, folder + "a.png");
 
     channels.ReleaseImages();
-    SafeRelease(loadedImage);
     return true;
 }
 
@@ -147,11 +143,10 @@ bool MergeImages(const FilePath& folder)
         return false;
     }
 
-    Image* mergedImage = CreateMergedImage(channels);
+    ScopedPtr<Image> mergedImage(CreateMergedImage(channels));
 
     ImageSystem::Save(folder + "merged.png", mergedImage);
     channels.ReleaseImages();
-    SafeRelease(mergedImage);
     return true;
 }
 

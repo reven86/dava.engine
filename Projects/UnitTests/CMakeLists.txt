@@ -9,6 +9,9 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+# Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
+add_definitions(-DLOCALIZATION_DEBUG)
+
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
