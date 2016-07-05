@@ -233,12 +233,18 @@ public:
 
     void Emit(Args... args) override
     {
-        for (auto&& con : Base::connections)
+        auto iter = Base::connections.begin();
+        while (iter != Base::connections.end())
         {
-            if (!con.second.blocked)
+            auto next = iter;
+            ++next;
+
+            if (!iter->second.blocked)
             {
-                con.second.fn(args...);
+                iter->second.fn(args...);
             }
+
+            iter = next;
         }
     }
 };

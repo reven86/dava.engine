@@ -10,7 +10,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Platform/TemplateiOS/WebViewControliOS.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
@@ -74,7 +74,14 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
     UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
     UIView* view = textFieldHolder->textCtrl;
-    [view setValue:col forKey:@"textColor"];
+    UILabel* label = static_cast<UILabel*>(view);
+    if (nullptr != label)
+    {
+        if (![label.textColor isEqual:col])
+        {
+            label.textColor = col;
+        }
+    }
 
     isNeedToUpdateTexture = true;
 }
@@ -294,7 +301,7 @@ void TextFieldPlatformImpl::HideField()
     UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
     [textFieldHolder setHidden:YES];
 
-    // Attach to "keyboard shown/keyboard hidden" notifications.
+    // Detach from "keyboard shown/keyboard hidden" notifications.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
     [center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];

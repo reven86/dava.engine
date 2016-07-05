@@ -320,6 +320,34 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     return fileCount;
 }
 
+Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, bool isRecursive)
+{
+    ScopedPtr<FileList> fileList(new FileList(path));
+    Vector<FilePath> result;
+
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsNavigationDirectory(i))
+        {
+            continue;
+        }
+        else if (fileList->IsDirectory(i))
+        {
+            if (isRecursive)
+            {
+                Vector<FilePath> subDirList = EnumerateFilesInDirectory(fileList->GetPathname(i));
+                std::move(subDirList.begin(), subDirList.end(), std::back_inserter(result));
+            }
+        }
+        else
+        {
+            result.push_back(fileList->GetPathname(i));
+        }
+    }
+
+    return result;
+}
+
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
     return File::CreateFromSystemPath(frameworkPath, attributes);
@@ -419,13 +447,12 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     }
 #endif
 
-    struct stat s;
-
-    const String& cs = pathToCheck.GetAbsolutePathname();
-    int result = stat(cs.c_str(), &s);
+    FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
+    FileAPI::Stat fileStat;
+    int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
     if (result == 0)
     {
-        return (0 != (s.st_mode & S_IFREG));
+        return (0 != (fileStat.st_mode & S_IFREG));
     }
     else
     {

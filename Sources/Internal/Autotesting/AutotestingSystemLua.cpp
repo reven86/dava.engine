@@ -330,7 +330,7 @@ void AutotestingSystemLua::Update(float32 timeElapsed)
 
 float32 AutotestingSystemLua::GetTimeElapsed()
 {
-    return SystemTimer::FrameDelta();
+    return SystemTimer::RealFrameDelta();
 }
 
 void AutotestingSystemLua::OnError(const String& errorMessage)
@@ -348,6 +348,12 @@ void AutotestingSystemLua::OnTestFinished()
 {
     Logger::FrameworkDebug("AutotestingSystemLua::OnTestFinished");
     AutotestingSystem::Instance()->OnTestsFinished();
+}
+
+void AutotestingSystemLua::OnTestSkipped()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::OnTestSkipped");
+    AutotestingSystem::Instance()->OnTestSkipped();
 }
 
 size_t AutotestingSystemLua::GetUsedMemory() const

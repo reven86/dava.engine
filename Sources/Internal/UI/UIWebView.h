@@ -58,10 +58,10 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
     void SystemDraw(const UIGeometricData& geometricData) override;
+    void Draw(const UIGeometricData& geometricData) override;
+    void Input(UIEvent* currentInput) override;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
     void Update(float32 timeElapsed) override;
-#endif
 
 protected:
     void OnVisible() override;
@@ -94,7 +94,7 @@ protected:
     void UpdateControlRect();
 
     // Platform-specific implementation of the Web View Control.
-    IWebViewControl* webViewControl;
+    std::unique_ptr<IWebViewControl> webViewControl;
 
 private:
     bool isNativeControlVisible;

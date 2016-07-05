@@ -242,6 +242,8 @@ public:
     bool IsFocused();
     rhi::InitParam rendererParams;
     Signal<bool> focusChanged;
+    Signal<> systemAppFinished;
+    Signal<float32> updated;
 
     PackManager& GetPackManager();
 

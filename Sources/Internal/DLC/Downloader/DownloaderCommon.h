@@ -44,6 +44,7 @@ enum DownloadError
     DLE_INIT_ERROR, // any handles initialisation was unsuccessful
     DLE_FILE_ERROR, // file read and write errors
     DLE_UNKNOWN, // we cannot determine the error
+    DLE_INVALID_RANGE, // download range is outside file or already downloaded part is greater than download size
 };
 
 /*
@@ -74,7 +75,24 @@ struct DownloadStatistics
  */
 struct DownloadTaskDescription
 {
-    DownloadTaskDescription(const String& srcUrl, const FilePath& storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount);
+    DownloadTaskDescription(const String& srcUrl,
+                            const FilePath& storeToFilePath,
+                            DownloadType downloadMode,
+                            int32 _timeout,
+                            int32 _retriesCount,
+                            uint8 _partsCount,
+                            uint64 _downloadOffset,
+                            uint64 _downloadSize);
+
+    DownloadTaskDescription(const String& srcUrl,
+                            void* buffer,
+                            uint32 bufSize,
+                            DownloadType downloadMode,
+                            int32 _timeout,
+                            int32 _retriesCount,
+                            uint8 _partsCount,
+                            uint64 _downloadOffset,
+                            uint64 _downloadSize);
 
     uint32 id;
     String url;
@@ -89,6 +107,12 @@ struct DownloadTaskDescription
     uint64 downloadTotal;
     uint64 downloadProgress;
     uint8 partsCount;
+
+    uint64 downloadOffset;
+    uint64 downloadSize;
+    void* memoryBuffer = nullptr;
+    uint32 memoryBufferSize = 0;
+    uint32 memoryBufferContentSize = 0;
 };
 
 /*

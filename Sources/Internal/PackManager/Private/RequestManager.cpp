@@ -50,7 +50,7 @@ void RequestManager::Update()
 
                 Pop(); // first pop current request and only then inform user
 
-                packManager.onPackChange->Emit(rootPack, PackManager::Pack::Change::State);
+                packManager.onPackChange->Emit(rootPack);
             }
             else
             {
@@ -136,8 +136,7 @@ void RequestManager::Push(const String& packName, float32 priority)
     items.emplace_back(packManager, pack);
     std::push_heap(begin(items), end(items));
 
-    packManager.onPackChange->Emit(pack, PackManager::Pack::Change::State);
-    packManager.onPackChange->Emit(pack, PackManager::Pack::Change::Priority);
+    packManager.onPackChange->Emit(pack);
 
     CheckRestartLoading();
 }

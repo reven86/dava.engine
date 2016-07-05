@@ -219,12 +219,12 @@ public:
     /**
 	 \brief Reloads the sprite.
 	 */
-    void Reload();
+    void Reload(eGPUFamily gpu = Texture::GetDefaultGPU());
 
     /**
 	 \brief Reloads all sprites.
 	 */
-    static void ReloadSprites();
+    static void ReloadSprites(eGPUFamily gpu = Texture::GetDefaultGPU());
 
 protected:
     Sprite();
@@ -237,7 +237,7 @@ protected:
 
     static File* GetSpriteFile(const FilePath& spriteName, int32& resourceSizeIndex);
 
-    void ReloadExistingTextures();
+    void ReloadExistingTextures(eGPUFamily gpu);
 
     void SetRelativePathname(const FilePath& path);
 

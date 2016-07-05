@@ -11,21 +11,24 @@ PackManager::PackManager()
 
 PackManager::~PackManager() = default;
 
-void PackManager::Initialize(const FilePath& filesDB_,
+PackManager::IRequest::~IRequest() = default;
+
+void PackManager::Initialize(const String& dbFileName_,
                              const FilePath& downloadPacksDir_,
+                             const FilePath& readOnlyPacksDir_,
                              const String& packsUrlCommon_,
                              const String& packsUrlGpu_)
 {
-    if (!FileSystem::Instance()->IsFile(filesDB_))
+    if (!FileSystem::Instance()->IsFile(dbFileName_))
     {
-        throw std::runtime_error("can't find: " + filesDB_.GetAbsolutePathname());
+        throw std::runtime_error("can't find: " + dbFileName_);
     }
     if (!FileSystem::Instance()->IsDirectory(downloadPacksDir_))
     {
         throw std::runtime_error("can't find dir: " + downloadPacksDir_.GetAbsolutePathname());
     }
 
-    impl->Initialize(filesDB_, downloadPacksDir_, packsUrlCommon_, packsUrlGpu_, onPackStateChanged);
+    impl->Initialize(dbFileName_, downloadPacksDir_, readOnlyPacksDir_, packsUrlCommon_, packsUrlGpu_, packState, packDownload, requestProgress);
 }
 
 bool PackManager::IsProcessingEnabled() const
@@ -74,9 +77,9 @@ const FilePath& PackManager::GetLocalPacksDirectory() const
     return impl->GetLocalPacksDir();
 }
 
-const String& PackManager::GetRemotePacksUrl() const
+const String& PackManager::GetRemotePacksUrl(bool isGPU) const
 {
-    return impl->GetRemotePacksURL();
+    return impl->GetRemotePacksURL(isGPU);
 }
 
 } // end namespace DAVA

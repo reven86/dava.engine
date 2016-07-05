@@ -3,7 +3,7 @@ RenderTechnique:
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Default/materials"
-        UniqueDefines: ["MATERIAL_TEXTURE", "PIXEL_LIT", "NORMALIZED_BLINN_PHONG", "ALPHATESTVALUE 0.3", "FAST_NORMALIZATION", "FAST_METAL"]
+        UniqueDefines: ["MATERIAL_TEXTURE", "PIXEL_LIT", "NORMALIZED_BLINN_PHONG", "ALPHATEST", "FAST_NORMALIZATION", "FAST_METAL", "ALPHATESTVALUE"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000

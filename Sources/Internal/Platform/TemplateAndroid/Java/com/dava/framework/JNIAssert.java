@@ -22,6 +22,13 @@ public class JNIAssert {
 	    }
 	    
 		Activity activity = JNIActivity.GetActivity();
+
+        if (activity == null || activity.isFinishing())
+        {
+            // skip if activity will be destroyed
+            return false;
+        }
+
 		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
 		alertDialog.setMessage(message);
 		if (isModal)

@@ -5,6 +5,7 @@
 #include "Commands2/NGTCommand.h"
 
 #include "NgtTools/Common/GlobalContext.h"
+#include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
@@ -24,7 +25,7 @@ REApplication::~REApplication() = default;
 
 void REApplication::Run()
 {
-    IHistoryPanel* historyPanel = NGTLayer::queryInterface<IHistoryPanel>();
+    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
     {
         historyPanel->setClearButtonVisible(false);
@@ -47,8 +48,8 @@ void REApplication::Run()
 
 void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
 {
-    names.push_back(L"plg_reflection");
     names.push_back(L"plg_variant");
+    names.push_back(L"plg_reflection");
     names.push_back(L"plg_command_system");
     names.push_back(L"plg_serialization");
     names.push_back(L"plg_file_system");
@@ -58,12 +59,12 @@ void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) con
     names.push_back(L"plg_history_ui");
 }
 
-void REApplication::OnPostLoadPugins()
+void REApplication::OnPostLoadPlugins()
 {
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
 
-    commandManager = NGTLayer::queryInterface<ICommandManager>();
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(ngtCommand.get());
 
@@ -72,6 +73,8 @@ void REApplication::OnPostLoadPugins()
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
+
+    BaseApplication::OnPostLoadPlugins();
 }
 
 void REApplication::OnPreUnloadPlugins()
@@ -82,4 +85,9 @@ void REApplication::OnPreUnloadPlugins()
 bool REApplication::OnRequestCloseApp()
 {
     return mainWindow->CanBeClosed();
+}
+
+void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
+{
+    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
 }

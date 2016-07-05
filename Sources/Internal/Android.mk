@@ -390,11 +390,12 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Render/Image/DDS/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/Image/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \

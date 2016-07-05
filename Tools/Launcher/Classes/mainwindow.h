@@ -10,7 +10,7 @@
 #include <QSet>
 #include <QDebug>
 
-class ListModel;
+class BranchesListModel;
 class QSortFilterProxyModel;
 
 namespace Ui
@@ -29,12 +29,13 @@ public:
 public slots:
     void OnRefreshClicked();
     void OnListItemClicked(QModelIndex);
-    void RefreshApps();
-    void OnURLClicked();
 
     void OnRun(int rowNumber);
     void OnInstall(int rowNumber);
     void OnRemove(int rowNumber);
+
+    void OnInstallAll();
+    void OnRemoveAll();
 
     void OnCellClicked(const QPoint& pos);
     void OnCellDoubleClicked(QModelIndex index);
@@ -44,11 +45,12 @@ public slots:
     void NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr);
 
 private:
+    void CheckUpdates();
+    void RefreshApps();
+
     void ShowWebpage();
     void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
-
-    void UpdateURLValue();
 
     void RefreshBranchesList();
     void UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState state);
@@ -59,18 +61,17 @@ private:
     QWidget* CreateAppInstalledTableItem(const QString& stringID);
     QWidget* CreateAppAvalibleTableItem(Application* app);
 
-    Ui::MainWindow* ui;
-    ApplicationManager* appManager;
+    Ui::MainWindow* ui = nullptr;
+    ApplicationManager* appManager = nullptr;
 
-    QNetworkAccessManager* networkManager;
-    FileDownloader* newsDownloader;
+    FileDownloader* newsDownloader = nullptr;
 
     QPersistentModelIndex selectedListItem;
     QString selectedBranchID;
 
     QFont tableFont;
-    ListModel* listModel;
-    QSortFilterProxyModel* filterModel;
+    BranchesListModel* listModel = nullptr;
+    QSortFilterProxyModel* filterModel = nullptr;
 };
 
 #endif // MAINWINDOW_H

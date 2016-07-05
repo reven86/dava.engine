@@ -14,16 +14,18 @@
 #include <QDockWidget>
 #include <QPointer>
 
+namespace wgt
+{
+class IComponentContext;
+}
+
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-
-class IComponentContext;
 class PropertyPanel;
-
 class DeviceListController;
 class SpritesPackerModule;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
@@ -38,7 +40,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -76,7 +78,7 @@ public slots:
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
     void OnRecentProjectsTriggered(QAction* recentAction);
-    void ExportMenuTriggered(QAction* exportAsAction);
+    void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
 
@@ -236,7 +238,7 @@ private slots:
     void OnConsoleItemClicked(const QString& data);
 
 private:
-    Ui::MainWindow* ui;
+    std::unique_ptr<Ui::MainWindow> ui;
     QtWaitDialog* waitDialog;
     QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
@@ -283,8 +285,10 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    IComponentContext& ngtContext;
+    wgt::IComponentContext& ngtContext;
+#if defined(NEW_PROPERTY_PANEL)
     std::unique_ptr<PropertyPanel> propertyPanel;
+#endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
