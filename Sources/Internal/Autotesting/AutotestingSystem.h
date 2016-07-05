@@ -100,7 +100,7 @@ public:
     static String ResolvePathToAutomation(const String& automationPath);
 
 protected:
-    void OnScreenShotInternal(Image* image);
+    void OnScreenShotInternal(Texture* texture);
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();

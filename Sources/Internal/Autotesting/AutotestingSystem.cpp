@@ -409,19 +409,19 @@ const String& AutotestingSystem::GetScreenShotName()
 
 void AutotestingSystem::OnScreenShot(Texture* texture)
 {
-    DAVA::Image* image = texture->CreateImageFromMemory();
-    Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, image);
+    Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, texture);
     JobManager::Instance()->CreateWorkerJob(fn);
     isScreenShotSaving = true;
 }
 
-void AutotestingSystem::OnScreenShotInternal(Image* image)
+void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 {
-    DVASSERT(image);
+    DVASSERT(texture);
 
     Logger::Info("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
+    DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
     const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
@@ -429,7 +429,6 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
     isScreenShotSaving = false;
-    SafeRelease(image);
 }
 
 void AutotestingSystem::OnTestsFinished()
