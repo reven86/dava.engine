@@ -25,7 +25,7 @@ void PathDescriptor::InitializePathDescriptors()
         {
             if (fileTypeString.isEmpty())
             {
-                fileTypeString = QString(DAVA::ImageSystem::GetImageFormatInterface(formatType)->GetFormatName().c_str()) + " (*";
+                fileTypeString = QString::fromStdString(DAVA::ImageSystem::GetImageFormatInterface(formatType)->GetName()) + " (*";
             }
             else
             {

@@ -16,23 +16,32 @@ signals:
     void pathChanged(const QString& path);
 
 public:
+    enum eFileType
+    {
+        File,
+        Folder
+    };
+
     explicit FilePathBrowser(QWidget* parent = NULL);
-    ~FilePathBrowser();
 
     void SetHint(const QString& hint);
-    void SetDefaultFolder(const QString& path);
+    void SetCurrentFolder(const QString& path);
     void SetPath(const QString& path);
+    const QString& GetPath() const;
+
     void SetFilter(const QString& filter);
+
+    void SetType(eFileType type);
+    void AllowInvalidPath(bool allow);
 
     QSize sizeHint() const;
 
 protected:
-    QString DefaultBrowsePath();
+    QString CurrentBrowsePath();
 
 private slots:
     void OnBrowse();
-    void OnReturnPressed();
-    void ValidatePath();
+    void TryToAcceptPath();
 
 private:
     void InitButtons();
@@ -47,9 +56,11 @@ private:
     bool allowInvalidPath;
 
     QString hintText;
-    QString defaultFolder;
+    QString currentFolder;
     QString path;
     QString filter;
+
+    eFileType type = eFileType::File;
 };
 
 

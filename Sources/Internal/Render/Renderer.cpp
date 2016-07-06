@@ -9,6 +9,8 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/Image/Image.h"
+#include "Render/Texture.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -71,6 +73,8 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     resetParams.fullScreen = params.fullScreen;
 
     ininialized = true;
+    //must be called after setting ininialized in true
+    Texture::SetDefaultGPU(DeviceInfo::GetGPUFamily());
 }
 
 void Uninitialize()

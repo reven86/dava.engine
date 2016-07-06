@@ -44,20 +44,11 @@ void jpegErrorExit(j_common_ptr cinfo)
 }
 
 LibJpegHelper::LibJpegHelper()
-    : ImageFormatInterface(
-      IMAGE_FORMAT_JPEG, // image format type
-      "JPG", // image format name
-      { ".jpg", ".jpeg" }, // image format extensions
-      { FORMAT_RGB888, FORMAT_A8 }) // supported pixel formats
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_JPEG, "JPG", { ".jpg", ".jpeg" }, { FORMAT_RGB888, FORMAT_A8 })
 {
 }
 
-bool LibJpegHelper::CanProcessFile(const ScopedPtr<File>& infile) const
-{
-    return GetImageInfo(infile).dataSize != 0;
-}
-
-eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibJpegHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
@@ -83,6 +74,7 @@ eErrorCode LibJpegHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
     jerr.pub.error_exit = jpegErrorExit;
 
     ScopedPtr<Image> image(new Image());
+    image->mipmapLevel = loadingParams.firstMipmapIndex;
 
     //set error handling block, which will be called in case of fail of jpeg_start_decompress,jpeg_read_scanlines...
     if (setjmp(jerr.setjmp_buffer))
@@ -277,7 +269,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath& fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-DAVA::ImageInfo LibJpegHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(File* infile) const
 {
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;

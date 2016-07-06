@@ -1,6 +1,7 @@
 #include "Render/Image/LibWebPHelper.h"
-
 #include "Render/Image/Image.h"
+#include "Render/PixelFormatDescriptor.h"
+
 
 #include "FileSystem/File.h"
 
@@ -10,20 +11,11 @@
 namespace DAVA
 {
 LibWebPHelper::LibWebPHelper()
-    : ImageFormatInterface(
-      IMAGE_FORMAT_WEBP, // image format type
-      "WEBP", // image format name
-      { ".webp" }, // image format extension
-      { FORMAT_RGB888, FORMAT_RGBA8888 }) // supported pixel formats
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_WEBP, "WEBP", { ".webp" }, { FORMAT_RGB888, FORMAT_RGBA8888 })
 {
 }
 
-bool LibWebPHelper::CanProcessFile(const ScopedPtr<File>& infile) const
-{
-    return GetImageInfo(infile).dataSize != 0;
-}
-
-eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -88,7 +80,8 @@ eErrorCode LibWebPHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>
     image->height = bitstream->height;
     image->data = newData;
     image->customDeleter = ::free;
-    image->dataSize = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
+    image->dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, image->format);
+    image->mipmapLevel = loadingParams.firstMipmapIndex;
 
     imageSet.push_back(image);
 
@@ -165,7 +158,7 @@ eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vec
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibWebPHelper::GetImageInfo(File* infile) const
 {
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);
@@ -200,8 +193,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(const ScopedPtr<File>& infile) const
     {
         info.format = FORMAT_RGB888;
     }
-    auto size = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
-    info.dataSize = size;
+    info.dataSize = Image::GetSizeInBytes(bitstream->width, bitstream->height, info.format);
     info.mipmapsCount = 1;
     info.faceCount = 1;
 

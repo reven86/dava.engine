@@ -831,19 +831,19 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& pa
     frame = localState.frame;
 }
 
-void Sprite::ReloadSprites()
+void Sprite::ReloadSprites(eGPUFamily gpu)
 {
     for (SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
     {
-        (it->second)->Reload();
+        (it->second)->Reload(gpu);
     }
 }
 
-void Sprite::Reload()
+void Sprite::Reload(eGPUFamily gpu)
 {
     if (type == SPRITE_FROM_FILE)
     {
-        ReloadExistingTextures();
+        ReloadExistingTextures(gpu);
         Clear();
 
         File* fp = GetSpriteFile(relativePathname, resourceSizeIndex);
@@ -891,7 +891,7 @@ File* Sprite::GetSpriteFile(const FilePath& spriteName, int32& resourceSizeIndex
     return fp;
 }
 
-void Sprite::ReloadExistingTextures()
+void Sprite::ReloadExistingTextures(eGPUFamily gpu)
 {
     //this function need to be sure that textures really would reload
     for (int32 i = 0; i < textureCount; ++i)
@@ -900,7 +900,7 @@ void Sprite::ReloadExistingTextures()
         {
             if (FileSystem::Instance()->Exists(textures[i]->GetPathname()))
             {
-                textures[i]->Reload();
+                textures[i]->ReloadAs(gpu);
             }
         }
         else

@@ -140,11 +140,8 @@ using namespace DAVA;
 - (void)setDelegate:(IUIWebViewDelegate*)d
          andWebView:(UIWebView*)w
 {
-    if (d && w)
-    {
-        delegate = d;
-        webView = w;
-    }
+    delegate = d;
+    webView = w;
 }
 
 - (void)onExecuteJScript:(NSString*)result
