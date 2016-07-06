@@ -139,6 +139,11 @@ Thread::Id Thread::GetCurrentId()
     return pthread_self();
 }
 
+uint64 Thread::GetCurrentIdAsInteger()
+{
+    return reinterpret_cast<uint64>(GetCurrentId());
+}
+
 #if defined(__DAVAENGINE_APPLE__)
 
 bool BindToProcessorApple(pthread_t thread, unsigned proc_n)

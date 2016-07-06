@@ -26,6 +26,7 @@ WindowWin32::WindowWin32(EngineBackend* engine_, WindowBackend* window_)
     : engine(engine_)
     , dispatcher(engine->GetDispatcher())
     , window(window_)
+    , platformDispatcher(MakeFunction(this, &WindowWin32::EventHandler))
 {
 }
 
@@ -319,7 +320,7 @@ LRESULT WindowWin32::OnDestroy()
 
 LRESULT WindowWin32::OnCustomMessage()
 {
-    platformDispatcher.ProcessEvents(MakeFunction(this, &WindowWin32::EventHandler));
+    platformDispatcher.ProcessEvents();
     return 0;
 }
 

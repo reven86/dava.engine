@@ -12,11 +12,23 @@ CoreV2Test::CoreV2Test(GameCore* g)
     : BaseScreen(g, "CoreV2Test")
     , engine(g->GetEngine())
 {
+    for (int i = 0; i < 4; ++i)
+    {
+        dispatchers.push_back(std::unique_ptr<TestDispatcher>(new TestDispatcher(MakeFunction(this, &CoreV2Test::DispatcherEventHandler))));
+        dispatcherThreads.emplace_back(Thread::Create([this, i]() {
+            DispatcherThread(dispatchers[i].get(), i);
+        }));
+        dispatcherThreads.back()->Start();
+    }
+
     engine->windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
     engine->windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
 }
 
-CoreV2Test::~CoreV2Test() = default;
+CoreV2Test::~CoreV2Test()
+{
+    stopDispatchers = true;
+}
 
 void CoreV2Test::LoadResources()
 {
@@ -35,6 +47,14 @@ void CoreV2Test::LoadResources()
 
     buttonRunOnMain = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Run on main", &CoreV2Test::OnRun);
     buttonRunOnUI = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Run on UI", &CoreV2Test::OnRun);
+
+    y = 10.0f;
+    buttonDispTrigger1 = CreateUIButton(font, Rect(250, y, 200, h), "Trigger 1", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger2 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger3 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger1000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 1000", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger2000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2000", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3000", &CoreV2Test::OnDispatcherTest);
 }
 
 void CoreV2Test::UnloadResources()
@@ -47,6 +67,13 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonResize1024x768);
     SafeRelease(buttonRunOnMain);
     SafeRelease(buttonRunOnUI);
+
+    SafeRelease(buttonDispTrigger1);
+    SafeRelease(buttonDispTrigger2);
+    SafeRelease(buttonDispTrigger3);
+    SafeRelease(buttonDispTrigger1000);
+    SafeRelease(buttonDispTrigger2000);
+    SafeRelease(buttonDispTrigger3000);
 
     BaseScreen::UnloadResources();
 }
@@ -75,6 +102,8 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
 {
+    using DAVA::Private::DispatcherEvent;
+
     if (obj == buttonRunOnMain)
     {
         engine->RunAsyncOnMainThread([]() {
@@ -86,6 +115,96 @@ void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
         engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
             Logger::Error("******** KABOOM on UI thread********");
         });
+    }
+}
+
+void CoreV2Test::OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    TestDispatcher* disp = dispatchers[0].get();
+    if (obj == buttonDispTrigger1)
+    {
+        disp->PostEvent(1);
+    }
+    else if (obj == buttonDispTrigger2)
+    {
+        disp->PostEvent(2);
+    }
+    else if (obj == buttonDispTrigger3)
+    {
+        disp->PostEvent(3);
+    }
+    else if (obj == buttonDispTrigger1000)
+    {
+        disp->PostEvent(1000);
+    }
+    else if (obj == buttonDispTrigger2000)
+    {
+        disp->PostEvent(2000);
+    }
+    else if (obj == buttonDispTrigger3000)
+    {
+        disp->PostEvent(3000);
+    }
+}
+
+void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
+{
+    dispatcher->LinkToCurrentThread();
+    Logger::Debug("###### CoreV2Test::DispatcherThread enter: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+    while (!stopDispatchers)
+    {
+        dispatcher->ProcessEvents();
+        Thread::Sleep(50);
+    }
+    Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+}
+
+void CoreV2Test::DispatcherEventHandler(int type)
+{
+    Logger::Debug("###### CoreV2Test::EventHandler: thread=%llu, type=%d", Thread::GetCurrentIdAsInteger(), type);
+    if (type == 1 || type == 2 || type == 3)
+    {
+        // 1: post to even dispatchers
+        // 2: post to odd dispatchers
+        // 3: broadcast
+        for (size_t i = 0, n = dispatchers.size(); i < n; ++i)
+        {
+            if ((type == 1 && (i & 1) == 0) || (type == 2 && (i & 1) == 1) || type == 3)
+            {
+                dispatchers[i]->PostEvent(4);
+            }
+        }
+    }
+    else if (type >= 3000)
+    {
+        // chained send event with deadlock
+        size_t index = type - 3000;
+        if (index < dispatchers.size())
+        {
+            dispatchers[index]->SendEvent(type + 1);
+        }
+        else
+        {
+            dispatchers[0]->SendEvent(10000);
+        }
+    }
+    else if (type >= 2000)
+    {
+        // chained send event
+        size_t index = type - 2000;
+        if (index < dispatchers.size())
+        {
+            dispatchers[index]->SendEvent(type + 1);
+        }
+    }
+    else if (type >= 1000)
+    {
+        // chained post event
+        size_t index = type - 1000;
+        if (index < dispatchers.size())
+        {
+            dispatchers[index]->PostEvent(type + 1);
+        }
     }
 }
 
