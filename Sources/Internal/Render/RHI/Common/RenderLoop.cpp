@@ -128,9 +128,9 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
             DispatchPlatform::ProcessImmediateCommands();
 
-            frameSync.Lock();
-            do_wait = !(frames.size() && frames.begin()->readyToExecute) && !renderThreadSuspended.Get();
-            frameSync.Unlock();
+            FrameLoop::frameSync.Lock();
+            do_wait = !(FrameLoop::frames.size() && FrameLoop::frames.begin()->readyToExecute) && !renderThreadSuspended.Get();
+            FrameLoop::frameSync.Unlock();
 
             if (do_wait)
             {
