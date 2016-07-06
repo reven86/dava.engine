@@ -1313,7 +1313,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && nullptr != text->ctrl->davaText->GetDelegate())
     {
-        const WideString& oldText = text->ctrl->davaText->GetText();
+        const DAVA::WideString& oldText = text->ctrl->davaText->GetText();
         text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, oldText, lastString);
     }
 }
