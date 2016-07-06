@@ -154,7 +154,7 @@ void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
     while (!stopDispatchers)
     {
         dispatcher->ProcessEvents();
-        Sleep(100);
+        Thread::Sleep(50);
     }
     Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
 }

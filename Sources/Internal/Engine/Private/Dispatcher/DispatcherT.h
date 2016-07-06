@@ -39,7 +39,6 @@ public:
     void ProcessEvents();
 
 private:
-    template <typename T>
     struct EventWrapper
     {
         EventWrapper(const T& x, AutoResetEvent* sigEvent)
@@ -51,7 +50,7 @@ private:
         T e;
         AutoResetEvent* signalEvent = nullptr;
     };
-    using EventType = EventWrapper<T>;
+    using EventType = EventWrapper;
 
 private:
     Mutex mutex; // Mutex to guard event queue
