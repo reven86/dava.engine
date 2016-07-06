@@ -487,11 +487,11 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
             //            Logger::FrameworkDebug("vertex added: (%f, %f, %f) - (%f, %f)",
             //                          tvj->position.x, tvj->position.y, tvj->position.z,
             //                          tvj->texCoords[0].x, tvj->texCoords[0].y);
-            indexArray[index] = optSize;
+            indexArray[index] = static_cast<int>(optSize);
             optVertexArray.push_back(*tvj);
         }
         else
-            indexArray[index] = oIndex;
+            indexArray[index] = static_cast<int>(oIndex);
     }
 
     /*	for (int i = 0; i < triangleCount; ++i)
@@ -546,7 +546,7 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh* _parentMesh, FCDGeometryPo
 	}
 	*/
 
-    vertexIndexCount = optVertexArray.size();
+    vertexIndexCount = static_cast<int>(optVertexArray.size());
     unoptimizedVerteces.clear();
     for (int k = 0; k < vertexIndexCount; ++k)
         unoptimizedVerteces.push_back(optVertexArray[k]);

@@ -14,6 +14,7 @@
 #include "AssetCache/AssetCache.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
+#include "Render/TextureDescriptor.h"
 
 #include "AssetCache/AssetCacheClient.h"
 
@@ -21,7 +22,7 @@
 
 namespace DAVA
 {
-const String ResourcePacker2D::VERSION = "0.0.3";
+const String ResourcePacker2D::VERSION = "0.0.4";
 const String ResourcePacker2D::INTERNAL_LIBPSD_VERSION = "0.0.1";
 
 String ResourcePacker2D::GetProcessFolderName()
@@ -51,7 +52,7 @@ void ResourcePacker2D::InitFolders(const FilePath& inputPath, const FilePath& ou
     rootDirectory = inputPath + "../";
 }
 
-void ResourcePacker2D::PackResources(eGPUFamily forGPU)
+void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
 {
     SetRunning(true);
     Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
@@ -59,7 +60,10 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
                            outputGfxDirectory.GetAbsolutePathname().c_str(),
                            rootDirectory.GetAbsolutePathname().c_str());
 
-    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
+    for (eGPUFamily gpu : forGPUs)
+    {
+        Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != gpu) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu) : "Unknown");
+    }
 
     Vector<PackingAlgorithm> packAlgorithms;
 
@@ -86,7 +90,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         return;
     }
 
-    requestedGPUFamily = forGPU;
+    requestedGPUs = forGPUs;
     outputDirModified = false;
 
     gfxDirName = inputGfxDirectory.GetLastDirectoryName();
@@ -94,6 +98,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     FilePath processDirectoryPath = rootDirectory + GetProcessFolderName();
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
+
+    FileSystem::Instance()->CreateDirectory(outputGfxDirectory, true);
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
@@ -280,7 +286,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
     Merge(currentFlags, ' ', mergedFlags);
 
     String packingParams = mergedFlags;
-    packingParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+
+    for (eGPUFamily gpu : requestedGPUs)
+    {
+        packingParams += String("GPU = ") + GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu);
+    }
+
     packingParams += String("PackerVersion = ") + VERSION;
     packingParams += String("LibPSDVersion = ") + INTERNAL_LIBPSD_VERSION;
     for (const auto& algorithm : packAlgorithms)
@@ -326,6 +337,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     packingParams += Format("FilesSize = %llu", allFilesSize);
     packingParams += Format("FilesCount = %u", allFilesCount);
+    packingParams += Format("DescriptorVersion = %i", TextureDescriptor::CURRENT_VERSION);
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDir + "dir.md5", false);
     bool paramsModified = RecalculateParamsMD5(packingParams, processDir + "params.md5");
@@ -436,11 +448,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                     if (CommandLineParser::Instance()->IsFlagSet("--split"))
                     {
-                        packer.PackToTexturesSeparate(outputPath, definitionFileList, requestedGPUFamily);
+                        packer.PackToTexturesSeparate(outputPath, definitionFileList, requestedGPUs);
                     }
                     else
                     {
-                        packer.PackToTextures(outputPath, definitionFileList, requestedGPUFamily);
+                        packer.PackToTextures(outputPath, definitionFileList, requestedGPUs);
                     }
 
                     Set<String> currentErrors = packer.GetErrors();

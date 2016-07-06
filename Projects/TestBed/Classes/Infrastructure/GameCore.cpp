@@ -25,6 +25,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
+#include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
 #include "Tests/CoreV2Test.h"
 //$UNITTEST_INCLUDE
@@ -195,6 +196,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest(this);
     new ClipTest(this);
     new InputTest(this);
+    new GPUTest();
     new CoreTest(this);
     new FormatsTest(this);
     new FloatingPointExceptionTest(this);

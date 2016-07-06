@@ -17,7 +17,12 @@ endif()
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-find_package( DavaFramework REQUIRED )
+set ( DAVA_COMPONENTS "Sound" )
+if ( WIN32 AND NOT WIN_UAP )
+    list ( APPEND DAVA_COMPONENTS "CEFWebview" )
+endif ()
+
+find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )

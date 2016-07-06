@@ -327,6 +327,8 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
     properties.textChanged = true;
     properties.textAssigned = true;
     properties.anyPropertyChanged = true;
+    properties.caretPosition = static_cast<int32>(text.length());
+    properties.caretPositionChanged = true;
 
     curText = text;
     if (text.empty())
