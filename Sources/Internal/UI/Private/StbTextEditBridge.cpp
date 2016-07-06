@@ -178,19 +178,19 @@ void StbTextEditBridge::CopyStbStateFrom(const StbTextEditBridge& c)
     Memcpy(stb_state, c.stb_state, sizeof(StbState));
 }
 
-void StbTextEditBridge::SendKey(uint32 codePoint)
+bool StbTextEditBridge::SendKey(uint32 codePoint)
 {
-    stb_textedit_key(this, stb_state, codePoint);
+    return stb_textedit_key(this, stb_state, codePoint) != 0;
 }
 
-void StbTextEditBridge::Cut()
+bool StbTextEditBridge::Cut()
 {
-    stb_textedit_cut(this, stb_state);
+    return stb_textedit_cut(this, stb_state) != 0;
 }
 
-void StbTextEditBridge::Paste(const WideString& str)
+bool StbTextEditBridge::Paste(const WideString& str)
 {
-    stb_textedit_paste(this, stb_state, str.c_str(), int(str.length()));
+    return stb_textedit_paste(this, stb_state, str.c_str(), int(str.length())) != 0;
 }
 
 void StbTextEditBridge::Click(const Vector2& point)

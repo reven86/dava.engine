@@ -320,12 +320,14 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
     // Do not set same text again as TextChanged event not fired after setting equal text
     if (text.length() == curText.length() && text == curText)
         return;
-
     properties.text = text;
     properties.textChanged = true;
     properties.textAssigned = true;
     properties.anyPropertyChanged = true;
+    properties.caretPosition = static_cast<int32>(text.length());
+    properties.caretPositionChanged = true;
 
+    lastProgrammaticText = curText;
     curText = text;
     if (text.empty())
     { // Immediatly remove sprite image if new text is empty to get rid of some flickering
@@ -699,10 +701,10 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     auto self{ shared_from_this() };
     core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
-        if (programmaticTextChange && targetAlive)
+        if (programmaticTextChange && targetAlive && newText != lastProgrammaticText)
         {
             // Event has originated from SetText() method so only notify delegate about text change
-            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, lastProgrammaticText, UITextFieldDelegate::eReason::CODE);
         }
         else if (targetAlive)
         {
@@ -716,7 +718,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
                 static_cast<int32>(diffR.originalStringDiff.length()),
                 diffR.newStringDiff);
                 if (textAccepted)
-                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, UITextFieldDelegate::eReason::USER);
             }
         }
         programmaticTextChange = false;

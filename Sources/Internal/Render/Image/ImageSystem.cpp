@@ -1,12 +1,4 @@
-#include "ImageSystem.h"
-
-#include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
-#include "Render/RenderBase.h"
-
-#include "Platform/SystemTimer.h"
-#include "Utils/Utils.h"
-
+#include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageFormatInterface.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/LibDdsHelper.h"
@@ -16,48 +8,67 @@
 #include "Render/Image/LibWebPHelper.h"
 #include "Render/Image/LibPSDHelper.h"
 
+#include "Render/Image/ImageConvert.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderBase.h"
+
 #include "Base/ScopedPtr.h"
+
+#include "FileSystem/FileSystem.h"
+
+#include "Platform/SystemTimer.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
 namespace ImageSystem
 {
-static UnorderedMap<ImageFormat, std::shared_ptr<ImageFormatInterface>, std::hash<uint8>> wrappers = {
-    { IMAGE_FORMAT_PNG, std::shared_ptr<ImageFormatInterface>(new LibPngHelper) },
-    { IMAGE_FORMAT_DDS, std::shared_ptr<ImageFormatInterface>(new LibDdsHelper) },
-    { IMAGE_FORMAT_PVR, std::shared_ptr<ImageFormatInterface>(new LibPVRHelper) },
-    { IMAGE_FORMAT_JPEG, std::shared_ptr<ImageFormatInterface>(new LibJpegHelper) },
-    { IMAGE_FORMAT_TGA, std::shared_ptr<ImageFormatInterface>(new LibTgaHelper) },
-    { IMAGE_FORMAT_WEBP, std::shared_ptr<ImageFormatInterface>(new LibWebPHelper) }
-};
-
-eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+const Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COUNT>& GetWrappers()
 {
-    ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
-    if (!fileRead)
+    static Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COUNT> wrappers =
     {
-        return eErrorCode::ERROR_FILE_NOTFOUND;
-    }
+      std::unique_ptr<ImageFormatInterface>(new LibPngHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibDdsHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibPVRHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()),
+      std::unique_ptr<ImageFormatInterface>(new LibPSDHelper())
+    };
 
-    eErrorCode result = Load(fileRead, imageSet, loadingParams);
-    return result;
+    return wrappers;
 }
 
-eErrorCode Load(const ScopedPtr<File>& file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+Image* LoadSingleMip(const FilePath& pathname, uint32 mip)
 {
-    ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
-    if (nullptr == properWrapper)
+    Vector<Image*> images;
+    ImageSystem::Load(pathname, images, LoadingParams(0, 0, mip, 0));
+
+    Image* image = nullptr;
+    if (images.empty() == false)
     {
-        // Retry by content.
-        properWrapper = GetImageFormatInterface(file); //slow by content
+        image = SafeRetain(images[0]);
+        for (Image* img : images)
+        {
+            SafeRelease(img);
+        }
     }
 
-    if (nullptr == properWrapper)
-    {
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
+    return image;
+}
 
-    return properWrapper->ReadFile(file, imageSet, loadingParams);
+ImageFormatInterface* GetImageFormatInterface(File* file)
+{
+    for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
+    {
+        if (wrapper->CanProcessFile(file))
+        {
+            return wrapper.get();
+        }
+    }
+    Logger::Error("Can't determinate image format of %s", file->GetFilename().GetAbsolutePathname().c_str());
+
+    return nullptr;
 }
 
 Image* EnsurePowerOf2Image(Image* image)
@@ -89,6 +100,35 @@ void EnsurePowerOf2Images(Vector<Image*>& images)
             SafeRelease(image);
         }
     }
+}
+
+eErrorCode Load(const FilePath& pathname, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+{
+    ScopedPtr<File> fileRead(File::Create(pathname, File::READ | File::OPEN));
+    if (!fileRead)
+    {
+        return eErrorCode::ERROR_FILE_NOTFOUND;
+    }
+
+    eErrorCode result = Load(fileRead, imageSet, loadingParams);
+    return result;
+}
+
+eErrorCode Load(File* file, Vector<Image*>& imageSet, const LoadingParams& loadingParams)
+{
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename()); //fast by filename
+    if (nullptr == properWrapper)
+    {
+        // Retry by content.
+        properWrapper = GetImageFormatInterface(file); //slow by content
+    }
+
+    if (nullptr == properWrapper)
+    {
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    return properWrapper->ReadFile(file, imageSet, loadingParams);
 }
 
 eErrorCode SaveAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality)
@@ -125,27 +165,13 @@ eErrorCode Save(const FilePath& fileName, Image* image, PixelFormat compressionF
 ImageFormatInterface* GetImageFormatInterface(const FilePath& pathName)
 {
     const String extension = pathName.GetExtension();
-    for (const auto& wrapper : wrappers)
+    for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
     {
-        if (wrapper.second->IsFileExtensionSupported(extension))
+        if (wrapper->IsFileExtensionSupported(extension))
         {
-            return wrapper.second.get();
+            return wrapper.get();
         }
     }
-
-    return nullptr;
-}
-
-ImageFormatInterface* GetImageFormatInterface(const ScopedPtr<File>& file)
-{
-    for (const auto& wrapper : wrappers)
-    {
-        if (wrapper.second->CanProcessFile(file))
-        {
-            return wrapper.second.get();
-        }
-    }
-    DVASSERT_MSG(false, "Can't get image format wrapper for passed file");
 
     return nullptr;
 }
@@ -157,10 +183,10 @@ ImageFormat GetImageFormatForExtension(const FilePath& pathname)
 
 ImageFormat GetImageFormatForExtension(const String& extension)
 {
-    for (const auto& wrapper : wrappers)
+    for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
     {
-        if (wrapper.second->IsFileExtensionSupported(extension))
-            return wrapper.first;
+        if (wrapper->IsFileExtensionSupported(extension))
+            return wrapper->GetImageFormat();
     }
 
     return IMAGE_FORMAT_UNKNOWN;
@@ -168,32 +194,44 @@ ImageFormat GetImageFormatForExtension(const String& extension)
 
 ImageFormat GetImageFormatByName(const String& name)
 {
-    for (const auto& wrapper : wrappers)
+    for (const std::unique_ptr<ImageFormatInterface>& wrapper : GetWrappers())
     {
-        if (CompareCaseInsensitive(wrapper.second->GetFormatName(), name) == 0)
-            return wrapper.first;
+        if (CompareCaseInsensitive(wrapper->GetName(), name) == 0)
+            return wrapper->GetImageFormat();
     }
 
     return IMAGE_FORMAT_UNKNOWN;
 }
 
+ImageInfo GetImageInfo(File* infile)
+{
+    DVASSERT(infile != nullptr);
+
+    const ImageFormatInterface* properWrapper = GetImageFormatInterface(infile);
+    if (nullptr != properWrapper)
+    {
+        infile->Seek(0, File::SEEK_FROM_START); //reset file state after GetImageFormatInterface
+        return properWrapper->GetImageInfo(infile);
+    }
+
+    return ImageInfo();
+}
+
 ImageInfo GetImageInfo(const FilePath& pathName)
 {
-    ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
-    if (infile)
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName); //fast by pathname
+    if (nullptr == properWrapper)
     {
-        ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
-        if (!properWrapper)
+        ScopedPtr<File> infile(File::Create(pathName, File::OPEN | File::READ));
+        if (infile)
         {
-            properWrapper = GetImageFormatInterface(infile);
+            return GetImageInfo(infile);
         }
 
-        if (properWrapper)
-        {
-            return properWrapper->GetImageInfo(infile);
-        }
+        return ImageInfo();
     }
-    return ImageInfo();
+
+    return properWrapper->GetImageInfo(pathName);
 }
 
 uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams& loadingParams)
@@ -218,7 +256,7 @@ uint32 GetBaseMipmap(const LoadingParams& sourceImageParams, const LoadingParams
 ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat)
 {
     DVASSERT(fileFormat < IMAGE_FORMAT_COUNT);
-    return wrappers[fileFormat].get();
+    return GetWrappers()[fileFormat].get();
 }
 
 const Vector<String>& GetExtensionsFor(ImageFormat format)
@@ -226,5 +264,9 @@ const Vector<String>& GetExtensionsFor(ImageFormat format)
     return GetImageFormatInterface(format)->GetExtensions();
 }
 
-} // namespace ImageSystem
-} // namespace DAVA
+const String& GetDefaultExtension(ImageFormat format)
+{
+    return GetExtensionsFor(format)[0];
+}
+}
+}
