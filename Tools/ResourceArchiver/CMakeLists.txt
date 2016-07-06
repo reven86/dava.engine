@@ -1,6 +1,15 @@
 cmake_minimum_required (VERSION 3.0)
 
 project      ( ResourceArchiver )
+
+if (DAVA_COREV2)
+    add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+    add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+    add_definitions(-DCONSOLE)
+    add_definitions(-D_CONSOLE)
+    set (NO_CEF 1)
+endif()
  
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
@@ -21,7 +30,7 @@ set( DISABLE_SOUNDS         true)
 setup_main_executable()
 
 if( MSVC )
-	set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE " /SUBSYSTEM:CONSOLE" )
 endif()
 
 install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_TOOLS_BIN_DIR} CONFIGURATIONS Release )

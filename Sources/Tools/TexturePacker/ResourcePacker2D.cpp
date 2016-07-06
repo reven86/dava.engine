@@ -97,7 +97,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
-#if defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_COREV2__)
         if (Engine::Instance()->IsConsoleMode())
 #else
         if (Core::Instance()->IsConsoleMode())
@@ -452,7 +452,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
-#if defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_COREV2__)
                 if (Engine::Instance()->IsConsoleMode())
 #else
                 if (Core::Instance()->IsConsoleMode())

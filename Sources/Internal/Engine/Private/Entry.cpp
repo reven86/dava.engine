@@ -4,7 +4,10 @@
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineStartup.h"
 
-#if defined(__DAVAENGINE_QT__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_QT__) || \
+defined(__DAVAENGINE_MACOS__) || \
+\
+(defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])
 {
