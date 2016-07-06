@@ -791,17 +791,15 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
     DVASSERT(!attachPath.empty());
 
-    if (IsMounted(archiveName))
+    if (!IsMounted(archiveName))
     {
-        throw std::runtime_error("archive already mounted: " + archiveName.GetStringValue());
+        ResourceArchiveItem item;
+        item.attachPath = attachPath;
+        item.archive.reset(new ResourceArchive(archiveName));
+        item.archiveFilePath = archiveName;
+
+        resourceArchiveList.push_back(std::move(item));
     }
-
-    ResourceArchiveItem item;
-    item.attachPath = attachPath;
-    item.archive.reset(new ResourceArchive(archiveName));
-    item.archiveFilePath = archiveName;
-
-    resourceArchiveList.push_back(std::move(item));
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
