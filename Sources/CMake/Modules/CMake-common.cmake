@@ -186,8 +186,11 @@ macro (define_source)
             #message( "    ${RELATIVE_PATH}")
             #message( "    ${ITEM}")            
             file( GLOB_RECURSE LIST_SOURCE ${ITEM}/* )
+
             foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
-            
+
+                get_filename_component( ITEM_LIST_SOURCE ${ITEM_LIST_SOURCE} REALPATH )
+
                 string(REGEX REPLACE "${ITEM}/" "" FILE_GROUP ${ITEM_LIST_SOURCE} )
                 
                 if( RELATIVE_PATH )
@@ -196,8 +199,8 @@ macro (define_source)
                     set( FILE_GROUP ${FILE_GROUP} )
                 endif()
                 
-                string(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
                 get_filename_component( FILE_GROUP_NAME ${FILE_GROUP} NAME )
+                string(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
                 string(REGEX REPLACE "\\\\${FILE_GROUP_NAME}" "" FILE_GROUP ${FILE_GROUP})
                 string( REGEX REPLACE "^[..\\\\]+" "_EXT_" FILE_GROUP ${FILE_GROUP} )               
                 
@@ -206,9 +209,9 @@ macro (define_source)
                     source_group( "" FILES ${ITEM_LIST_SOURCE} )
                 else()
                     source_group( "${FILE_GROUP}" FILES ${ITEM_LIST_SOURCE} )
-                    #message( "        ${FILE_GROUP}" )
+                    #message( "    ${FILE_GROUP}")                     
                 endif()
-                
+
                 list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
                 if (${_index} MATCHES -1)
                     set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY TRUE )
@@ -226,7 +229,7 @@ macro (define_source)
                 source_group( "${ITEM_ARG_GROUP_SOURCE}" FILES ${${ITEM_ARG_GROUP_SOURCE}} )
             endif()
         endforeach () 
-        
+
         #message( "")
         reset_property( PROJECT_FOLDERS )    
     endif()
