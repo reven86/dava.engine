@@ -316,7 +316,8 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
-                                                IGNORE_LIST_MACOS ${UNIFIED_IGNORE_LIST_APPLE} ${MACOS_PLATFORM_SRC}
+                                                IGNORE_LIST_MACOS ${UNIFIED_IGNORE_LIST_MACOS} ${MACOS_PLATFORM_SRC}
+                                                IGNORE_LIST_IOS   ${UNIFIED_IGNORE_LIST_IOS} 
                                                 CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
                                                 CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
                                                 CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
