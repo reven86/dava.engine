@@ -5,6 +5,10 @@
 #include "UI/UIControl.h"
 #include "Render/2D/Sprite.h"
 
+#include "Functional/SignalBase.h"
+
+#include "Engine/EngineFwd.h"
+
 namespace DAVA
 {
 class CEFWebPageRender : public CefRenderHandler
@@ -54,6 +58,10 @@ private:
     bool isVisible = true;
     CursorType currentCursorType = CursorType::CT_POINTER;
     SigConnectionID focusConnection = SigConnectionID();
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+    SigConnectionID windowDestroyedConnection = SigConnectionID();
+#endif
     unsigned webViewID = 0;
 };
 
