@@ -250,6 +250,8 @@ void WindowBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 {
     Logger::Error("****** WINDOW_DESTROYED: this=%p", this);
 
+    window->destroyed.Emit(window);
+
     inputSystem = nullptr;
     uiControlSystem = nullptr;
     virtualCoordSystem = nullptr;

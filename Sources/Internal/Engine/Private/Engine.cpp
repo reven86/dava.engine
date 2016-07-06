@@ -43,7 +43,11 @@ EngineContext* Engine::GetContext() const
 
 Window* Engine::PrimaryWindow() const
 {
-    return engineBackend->GetPrimaryWindow()->GetWindow();
+    if (engineBackend->GetPrimaryWindow() != nullptr)
+    {
+        return engineBackend->GetPrimaryWindow()->GetWindow();
+    }
+    return nullptr;
 }
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)

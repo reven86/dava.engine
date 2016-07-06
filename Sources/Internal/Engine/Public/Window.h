@@ -47,6 +47,7 @@ public:
     // Signals
     Signal<Window*, bool> visibilityChanged;
     Signal<Window*, bool> focusChanged;
+    Signal<Window*> destroyed;
     Signal<Window*, float32, float32, float32, float32> sizeScaleChanged;
     Signal<Window*, float32> update;
 
