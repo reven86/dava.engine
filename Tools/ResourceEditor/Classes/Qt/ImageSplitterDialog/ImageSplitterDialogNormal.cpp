@@ -1,7 +1,10 @@
 #include "ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
+#include "Render/PixelFormatDescriptor.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
 #include "ImageTools/ImageTools.h"
 #include "Main/mainwindow.h"
-#include "Scene3D/Components/ComponentHelpers.h"
 #include "Main/QtUtils.h"
 
 #include <QMessageBox>
