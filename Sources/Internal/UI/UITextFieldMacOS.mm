@@ -1321,7 +1321,7 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
         const DAVA::WideString& newText = text->ctrl->davaText->GetText();
         if (newText != lastString)
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eReason::USER);
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, DAVA::UITextFieldDelegate::eReason::USER);
             lastString = text->ctrl->davaText->GetText();
         }
     }
@@ -1489,7 +1489,7 @@ doCommandBySelector:(SEL)commandSelector
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(inOrigString);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eReason::CODE);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eReason::CODE);
         }
     }
     return applyChanges;
@@ -1542,7 +1542,7 @@ doCommandBySelector:(SEL)commandSelector
         const DAVA::WideString& newText = text->ctrl->davaText->GetText();
         if (newText != lastString)
         {
-            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, UITextFieldDelegate::eReason::USER);
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, DAVA::UITextFieldDelegate::eReason::USER);
             lastString = text->ctrl->davaText->GetText();
         }
     }
@@ -1600,7 +1600,7 @@ doCommandBySelector:(SEL)commandSelector
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
             DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
-            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, UITextFieldDelegate::eReason::CODE);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eReason::CODE);
         }
     }
     return applyChanges;
