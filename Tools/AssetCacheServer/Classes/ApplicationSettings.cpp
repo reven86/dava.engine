@@ -91,7 +91,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetBool("AutoStart", autoStart);
     archive->SetBool("SystemStartup", launchOnSystemStartup);
 
-    auto size = remoteServers.size();
+    uint32 size = static_cast<uint32>(remoteServers.size());
     archive->SetUInt32("ServersSize", size);
 
     uint32 index = 0;

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
-#define __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
+#pragma once 
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -8,24 +7,25 @@
 namespace DAVA
 {
 /**
-	\ingroup render
-	\brief Class that represents pixel format for internal using in our SDK. 
+    \ingroup render
+    \brief Class that represents pixel format for internal using in our SDK. 
  */
-
-#if defined(__DAVAENGINE_OPENGL__)
 
 class PixelFormatDescriptor
 {
 public:
     static void SetHardwareSupportedFormats();
 
-    static int32 GetPixelFormatSizeInBytes(const PixelFormat formatID);
-    static int32 GetPixelFormatSizeInBits(const PixelFormat formatID);
+    static int32 GetPixelFormatSizeInBytes(PixelFormat format);
+    static int32 GetPixelFormatSizeInBits(PixelFormat format);
+    static Size2i GetPixelFormatBlockSize(PixelFormat format);
 
     static const char* GetPixelFormatString(const PixelFormat format);
     static PixelFormat GetPixelFormatByName(const FastName& formatName);
 
-    static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat formatID);
+    static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat format);
+
+    static bool IsCompressedFormat(PixelFormat format);
 
 private:
     static UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> pixelDescriptors;
@@ -33,21 +33,23 @@ private:
 public:
     static rhi::TextureFormat TEXTURE_FORMAT_INVALID;
 
-    PixelFormat formatID;
-    FastName name;
-    uint8 pixelSize;
-    rhi::TextureFormat format;
-    bool isHardwareSupported;
+    PixelFormat formatID; // compile-time: pixel format for DAVA::Image
+    FastName name; // compile-time: name for logging/console tools
+    uint8 pixelSize; // compile-time: size of pixel in bits
+    rhi::TextureFormat format; // compile-time: pixel format for texture and rendering of the DAVA::Image
+    bool isHardwareSupported; // run-time: is true for rhi::TextureFormat that are supported by GPU on every device
+    bool isCompressed; // compile-time: is true for PVR2/4, DXT[n], ATC_[] formats
+    Size2i blockSize; // compile-time: size of block for compressed formats, should be 1x1 for uncompressed formats
 };
 
-inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat formatID)
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat format)
 {
-    return GetPixelFormatDescriptor(formatID).pixelSize;
+    return GetPixelFormatDescriptor(format).pixelSize;
 }
 
-inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat formatID)
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat format)
 {
-    int32 bits = GetPixelFormatSizeInBits(formatID);
+    int32 bits = GetPixelFormatSizeInBits(format);
     if (bits < 8)
     { // To detect wrong situations
         Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
@@ -55,7 +57,4 @@ inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat 
 
     return bits / 8;
 }
-
-#endif //#if defined (__DAVAENGINE_OPENGL__)
-};
-#endif // __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
+}

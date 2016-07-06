@@ -135,13 +135,13 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         }
     }
 
-    // enumerate drscriptor pathnames
+    // enumerate descriptor pathnames
     for (const auto& matTex : materialTextures)
     {
         descriptorPathnames.insert(matTex->path);
     }
 
-    // create pathames for textures
+    // create pathnames for textures
     for (const auto& descriptorPath : descriptorPathnames)
     {
         DVASSERT(descriptorPath.IsEmpty() == false);
@@ -153,8 +153,9 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         {
             if (descriptor->IsCompressedFile())
             {
-                FilePath compressedTexureName = descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily));
-                links.insert(compressedTexureName);
+                Vector<FilePath> compressedTexureNames;
+                descriptor->CreateLoadPathnamesForGPU(descriptor->gpu, compressedTexureNames);
+                links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
             }
             else
             {
@@ -176,7 +177,9 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
                     const auto& compression = descriptor->compression[gpu];
                     if (compression.format != FORMAT_INVALID)
                     {
-                        links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+                        Vector<FilePath> compressedTexureNames;
+                        descriptor->CreateLoadPathnamesForGPU(static_cast<eGPUFamily>(gpu), compressedTexureNames);
+                        links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
                     }
                 }
             }
