@@ -9,6 +9,7 @@
 #include "Platform/TemplateiOS/UITextFieldHolder.h"
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Utils/NSStringUtils.h"
 
 #include "UI/Private/iOS/WebViewControliOS.h"
 
@@ -347,6 +348,13 @@ void TextFieldPlatformImpl::SetText(const WideString& string)
     bool textChanged = ![textInField isEqualToString:truncatedText];
 
     [view setValue:truncatedText forKey:@"text"];
+
+    if (nullptr != textFieldHolder->cppTextField && nullptr != textFieldHolder->cppTextField->GetDelegate() && textChanged)
+    {
+        DAVA::WideString oldString = WideStringFromNSString(textInField);
+        textFieldHolder->cppTextField->GetDelegate()->TextFieldOnTextChanged(textFieldHolder->cppTextField, string, oldString, UITextFieldDelegate::eReason::CODE);
+    }
+
     // Drop cached text in text field holder for correct dispatching OnTextChanged event
     [textFieldHolder dropCachedText];
 
