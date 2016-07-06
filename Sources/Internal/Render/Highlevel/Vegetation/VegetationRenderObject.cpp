@@ -1249,7 +1249,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
 
     FilePath imagePath = descriptor->GetSourceTexturePathname();
 
-    ScopedPtr<Image> lightmapImage(LoadSingleImage(imagePath));
+    ScopedPtr<Image> lightmapImage(ImageSystem::LoadSingleMip(imagePath, 0));
     if (lightmapImage)
     {
         uint32 ratio = lightmapImage->width / DENSITY_MAP_SIZE;
@@ -1305,26 +1305,6 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
     outputImage->Save(lightmapPath);
     
     SafeRelease(outputImage);*/
-}
-
-Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
-{
-    Vector<Image*> images;
-
-    ImageSystem::Load(path, images);
-
-    Image* image = nullptr;
-    if (images.size() > 0)
-    {
-        image = SafeRetain(images[0]);
-        size_t imageCount = images.size();
-        for (size_t i = 0; i < imageCount; ++i)
-        {
-            SafeRelease(images[i]);
-        }
-    }
-
-    return image;
 }
 
 float32 VegetationRenderObject::GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const

@@ -113,6 +113,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
         {
             TextureDescriptor::Compression compression;
             compression.format = pixelFormat;
+            compression.imageFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpuFamily, pixelFormat);
             compression.compressToWidth = compression.compressToHeight = 0;
             if (options.GetOptionValuesCount(optionName) > 2)
             {

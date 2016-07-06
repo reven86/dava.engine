@@ -18,7 +18,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
 
     if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
-        Logger::Error("[DXTConverter::ConvertToDxt] can't open %s", fileToConvert.GetAbsolutePathname().c_str());
+        Logger::Error("[DXTConverter::ConvertToDxt] can't open %s", fileToConvert.GetStringValue().c_str());
         return FilePath();
     }
 
@@ -35,8 +35,13 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
 
         if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
-            Logger::Warning("[DXTConverter::ConvertToDxt] convert to compression size");
-            image->ResizeImage(compression->compressToWidth, compression->compressToHeight);
+            Logger::FrameworkDebug("[DXTConverter::ConvertToDxt] downscale to compression size");
+            bool resized = image->ResizeImage(compression->compressToWidth, compression->compressToHeight);
+            if (resized == false)
+            {
+                Logger::Error("[DXTConverter::ConvertToDxt] can't resize image %s", fileToConvert.GetStringValue().c_str());
+                return FilePath();
+            }
         }
 
         if (descriptor.dataSettings.GetGenerateMipMaps())
@@ -55,7 +60,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
 
         if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
-            Logger::Warning("[DXTConverter::ConvertToDxt] downscale to compression size");
+            Logger::FrameworkDebug("[DXTConverter::ConvertToDxt] downscale to compression size");
 
             uint32 i = 0;
             for (; i < inputImages.size(); ++i)
@@ -92,15 +97,12 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor& descriptor, eGPUFam
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
     if (eErrorCode::SUCCESS == retCode)
     {
-        LibDdsHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
+        LibDdsHelper::AddCRCIntoMetaData(outputName);
         return outputName;
     }
-    else
-    {
-        Logger::Error("[DXTConverter::ConvertToDxt] can't save %s", outputName.GetAbsolutePathname().c_str());
-        return FilePath();
-    }
+
+    Logger::Error("[DXTConverter::ConvertToDxt] can't save %s", outputName.GetAbsolutePathname().c_str());
+    return FilePath();
 }
 
 FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
@@ -158,7 +160,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
         {
             if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
             {
-                Logger::Warning("[DXTConverter::ConvertCubemapToDxt] convert to compression size");
+                Logger::FrameworkDebug("[DXTConverter::ConvertCubemapToDxt] convert to compression size");
 
                 for (auto& imageSet : imageSets)
                 {
@@ -182,7 +184,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
             auto firstImageIndex = 0;
             if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
             {
-                Logger::Warning("[DXTConverter::ConvertCubemapToDxt] downscale to compression size");
+                Logger::FrameworkDebug("[DXTConverter::ConvertCubemapToDxt] downscale to compression size");
 
                 uint32 i = 0;
                 for (; i < imageSets[0].size(); ++i)
@@ -226,8 +228,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
         auto saveResult = ImageSystem::SaveAsCubeMap(outputName, imageSets, static_cast<PixelFormat>(compression->format));
         if (saveResult == eErrorCode::SUCCESS)
         {
-            LibDdsHelper helper;
-            helper.AddCRCIntoMetaData(outputName);
+            LibDdsHelper::AddCRCIntoMetaData(outputName);
         }
         else
         {
@@ -245,6 +246,6 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor& descriptor, 
 
 FilePath DXTConverter::GetDXTOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    return descriptor.CreateMultiMipPathnameForGPU(gpuFamily);
 }
 };

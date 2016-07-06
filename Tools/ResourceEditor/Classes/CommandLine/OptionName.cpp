@@ -36,6 +36,7 @@ const DAVA::String OptionName::GPU("-gpu");
 const DAVA::String OptionName::Quality("-quality");
 const DAVA::String OptionName::Force("-f");
 const DAVA::String OptionName::Mipmaps("-m");
+const DAVA::String OptionName::HDTextures("-hd");
 
 const DAVA::String OptionName::SaveNormals("-saveNormals");
 const DAVA::String OptionName::CopyConverted("-copyconverted");
