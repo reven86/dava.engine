@@ -287,7 +287,8 @@ if( DAVA_FOUND )
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
         elseif( MACOS )
-        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+            set( MACOS_PLATFORM_SRC  
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
@@ -298,8 +299,7 @@ if( DAVA_FOUND )
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
                         )
 
-
-
+            list( APPEND ADDED_SRC ${MACOS_PLATFORM_SRC} )
         endif()
 
     endif()
@@ -316,6 +316,7 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                IGNORE_LIST_MACOS ${UNIFIED_IGNORE_LIST_APPLE} ${MACOS_PLATFORM_SRC}
                                                 CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
                                                 CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
                                                 CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
