@@ -317,7 +317,7 @@ macro (define_source_files)
 endmacro ()
 
 #
-macro (define_source_folders_ )
+macro (define_source_folders )
 
     cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;ERASE_FOLDERS" ${ARGN})
     
