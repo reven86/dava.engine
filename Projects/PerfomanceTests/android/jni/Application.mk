@@ -1,5 +1,8 @@
-APP_STL := gnustl_static
-APP_GNUSTL_FORCE_CPP_FEATURES := rtti
+APP_STL := c++_static
+APP_CPPFLAGS := -frtti -fexceptions
+
+# TODO: fix this warning suppression with libc++_abi on x86
+APP_LDFLAGS += -Wl,--no-warn-shared-textrel
 
 #APP_CFLAGS = -marm -g
 
@@ -16,7 +19,7 @@ APP_OPTIM := debug
 APP_CFLAGS += -Wno-invalid-offsetof
 APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 
-APP_ABI := armeabi-v7a #x86
+APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-14
 
 NDK_TOOLCHAIN_VERSION=clang
