@@ -1,5 +1,8 @@
-APP_STL := gnustl_shared
+APP_STL := c++_shared
 APP_CPPFLAGS := -frtti -fexceptions
+
+# TODO: fix this warning suppression with libc++_abi on x86
+APP_LDFLAGS += -Wl,--no-warn-shared-textrel
 
 #APP_CFLAGS = -marm -g
 
