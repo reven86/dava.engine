@@ -62,7 +62,8 @@ void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack, const F
     superPackUrl = urlToServerSuperpack;
     localPacksDir = downloadPacksDir;
 
-    if (initState != PackManager::InitState::ReadOnlyPacksReady)
+    if (initState != PackManager::InitState::ReadOnlyPacksReady
+        && initState != PackManager::InitState::Ready)
     {
         throw std::runtime_error("first call Initialize");
     }
