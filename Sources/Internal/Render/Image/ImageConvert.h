@@ -307,6 +307,22 @@ struct ConvertABGR4444toRGBA4444
     }
 };
 
+struct ConvertRGBA4444toABGR4444
+{
+    inline void operator()(const uint16* input, uint16* output)
+    {
+        const uint8* in = reinterpret_cast<const uint8*>(input);
+        uint8* out = reinterpret_cast<uint8*>(output);
+
+        //rrrr gggg bbbb aaaa --> aaaa bbbb gggg rrrr
+        uint8 rg = in[0];
+        uint8 ba = in[1];
+
+        out[0] = ((ba & 0x0f) << 4) | ((ba & 0xf0) >> 4); //ab
+        out[1] = ((rg & 0x0f) << 4) | ((rg & 0xf0) >> 4); //gr
+    }
+};
+
 struct ConvertARGB4444toRGBA4444
 {
     inline void operator()(const uint16* input, uint16* output)
@@ -354,6 +370,22 @@ struct ConvertABGR1555toRGBA5551
         uint16 a = (in & 0x0001) << 15;
 
         *output = r | g | b | a;
+    }
+};
+
+struct ConvertRGBA5551toABGR1555
+{
+    inline void operator()(const uint16* input, uint16* output)
+    { //-----based on ConvertABGR1555toRGBA5551
+        //rrrr rggg ggbb bbba --> abbb bbgg gggr rrrr
+        const uint16 in = *input;
+
+        uint16 a = (in >> 15) & 0x01;
+        uint16 b = (in >> 10) & 0x1F;
+        uint16 g = (in >> 5) & 0x1F;
+        uint16 r = (in >> 0) & 0x1F;
+
+        *output = a | (b << 1) | (g << 6) | (r << 11);
     }
 };
 

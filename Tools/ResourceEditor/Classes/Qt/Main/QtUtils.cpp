@@ -64,27 +64,13 @@ WideString SizeInBytesToWideString(float32 size)
     return StringToWString(SizeInBytesToString(size));
 }
 
-Image* CreateTopLevelImage(const FilePath& imagePathname)
-{
-    Image* image = NULL;
-    Vector<Image*> imageSet;
-    ImageSystem::Load(imagePathname, imageSet);
-    if (0 != imageSet.size())
-    {
-        image = SafeRetain(imageSet[0]);
-        for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-    }
-
-    return image;
-}
-
 void ShowErrorDialog(const Set<String>& errors, const String& title /* = "" */)
 {
     if (errors.empty())
         return;
 
     const uint32 maxErrorsPerDialog = 6;
-    uint32 totalErrors = errors.size();
+    uint32 totalErrors = static_cast<uint32>(errors.size());
 
     const String dialogTitle = title + Format(" %u error(s) occured.", totalErrors);
     const String errorDivideLine("\n--------------------\n");
@@ -184,4 +170,10 @@ void SaveTextureToFile(Texture* texture, const FilePath& path)
 void SaveImageToFile(Image* image, const FilePath& path)
 {
     ImageSystem::Save(path, image);
+}
+
+DAVA::Texture* CreateSingleMipTexture(const DAVA::FilePath& imagePath)
+{
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(imagePath));
+    return Texture::CreateFromData(image, false);
 }

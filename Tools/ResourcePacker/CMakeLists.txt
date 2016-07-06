@@ -4,6 +4,7 @@ project               ( ResourcePacker )
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set 				  ( NO_CEF true )
 include               ( CMake-common )
 
 find_package          ( DavaFramework REQUIRED )
