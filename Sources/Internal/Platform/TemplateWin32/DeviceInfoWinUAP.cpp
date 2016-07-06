@@ -70,21 +70,23 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     version = versionStream.str();
     platformString = RTStringToString(versionInfo->DeviceFamily);
 
-    EasClientDeviceInformation deviceInfo;
-    manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
-    modelName = RTStringToString(deviceInfo.SystemSku);
-    deviceName = WideString(deviceInfo.FriendlyName->Data());
-    gpu = GPUFamily();
-
+    manufacturer = "";
+    modelName = "";
+    deviceName = L"";
+    uDID = "";
     try
     {
+        EasClientDeviceInformation deviceInfo;
+        manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
+        modelName = RTStringToString(deviceInfo.SystemSku);
+        deviceName = WideString(deviceInfo.FriendlyName->Data());
         uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
     }
     catch (Platform::Exception ^ e)
     {
         Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
-        uDID = "";
     }
+    gpu = GPUFamily();
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
