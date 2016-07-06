@@ -248,8 +248,8 @@ void AnimationManager::DumpState()
 
         String ownerName = "no owner";
         if (animation->owner)
-            ownerName = typeid(decltype(*animation->owner)).name();
-        Logger::FrameworkDebug("addr:0x%08x state:%d class: %s ownerClass: %s", animation, animation->state, typeid(decltype(*animation)).name(), ownerName.c_str());
+            ownerName = typeid(*animation->owner).name();
+        Logger::FrameworkDebug("addr:0x%08x state:%d class: %s ownerClass: %s", animation, animation->state, typeid(*animation).name(), ownerName.c_str());
     }
 
     Logger::FrameworkDebug("============================================================");

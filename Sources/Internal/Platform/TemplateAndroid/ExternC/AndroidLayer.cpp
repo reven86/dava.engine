@@ -25,7 +25,7 @@
 #include <dirent.h>
 
 #include <unistd.h>
-extern unsigned int __page_size = getpagesize();
+unsigned int __page_size = getpagesize();
 
 #include "Render/Renderer.h"
 

@@ -207,6 +207,12 @@ DV_LOCAL_CPPFLAGS += -Wno-unused-value
 DV_LOCAL_CPPFLAGS += -Wno-self-assign-field
 DV_LOCAL_CPPFLAGS += -Wno-undefined-reinterpret-cast
 
+# These warnings were added after switch ndk 12
+DV_LOCAL_CPPFLAGS += -Wno-documentation-unknown-command
+DV_LOCAL_CPPFLAGS += -Wno-double-promotion
+DV_LOCAL_CPPFLAGS += -Wno-over-aligned
+DV_LOCAL_CPPFLAGS += -Wno-shift-negative-value
+
 DV_LOCAL_CPP_FEATURES += exceptions
 
 ifeq ($(DAVA_PROFILE), true)
@@ -229,6 +235,7 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
 DV_LOCAL_STATIC_LIBRARIES += liblz4
+DV_LOCAL_STATIC_LIBRARIES += libc++abi
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
