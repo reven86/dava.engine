@@ -85,11 +85,6 @@ ApiIsSupported(Api api)
 
 void Initialize(Api api, const InitParam& param)
 {
-// CRAP: hardcoded api, for testing
-#if defined(__DAVAENGINE_IPHONE__)
-    api = (ApiIsSupported(rhi::RHI_METAL)) ? RHI_METAL : RHI_GLES2;
-#endif
-
     switch (api)
     {
 #if defined(__DAVAENGINE_WIN32__)
