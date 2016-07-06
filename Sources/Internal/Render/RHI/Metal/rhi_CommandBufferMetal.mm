@@ -257,8 +257,6 @@ RenderPassMetal_t
     MTLRenderPassDescriptor* desc;
     id<MTLCommandBuffer> buf;
     id<MTLParallelRenderCommandEncoder> encoder;
-    id<MTLCommandBuffer> blit_buf;
-    id<MTLBlitCommandEncoder> blit_encoder;
     std::vector<Handle> cmdBuf;
     int priority;
     uint32 do_present:1;
@@ -337,7 +335,6 @@ RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, f
 
 static bool _Metal_NextDrawablePending = false;
 static bool _Metal_PresentDrawablePending = false;
-static id<MTLTexture> _ScreenshotTexture = nil;
 
 static std::vector<FrameMetal_t> _Metal_Frame;
 static bool _Metal_NewFramePending = true;
@@ -838,12 +835,6 @@ RenderPassMetal_t::Initialize()
         }
     }
 
-    //    pass->blit_buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-    blit_buf = [_Metal_DefCmdQueue commandBuffer];
-    [blit_buf retain];
-    blit_encoder = [blit_buf blitCommandEncoder];
-    [blit_encoder retain];
-
     return true;
 }
 
@@ -854,13 +845,7 @@ RenderPassMetal_t::Initialize()
 static Handle
 metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    bool suspended = false;
-
-    _Metal_ScreenshotCallbackSync.Lock();
-    suspended = _Metal_Suspended;
-    _Metal_ScreenshotCallbackSync.Unlock();
-
-    if (suspended)
+    if (_Metal_Suspended.GetRelaxed())
     {
         for (unsigned i = 0; i != cmdBufCount; ++i)
             cmdBuf[i] = InvalidHandle;
@@ -1035,12 +1020,6 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
                 pbuf = cb->buf;
         }
     }
-
-    //    pass->blit_buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
-    pass->blit_buf = [_Metal_DefCmdQueue commandBuffer];
-    [pass->blit_buf retain];
-    pass->blit_encoder = [pass->blit_buf blitCommandEncoder];
-    [pass->blit_encoder retain];
 
     return pass_h;
     
@@ -1847,10 +1826,8 @@ metal_Present(Handle syncObject)
 
     bool do_discard = TextureMetal::NeedRestoreCount();
 
-    _Metal_ScreenshotCallbackSync.Lock();
-    if (_Metal_Suspended)
+    if (_Metal_Suspended.GetRelaxed())
         do_discard = true;
-    _Metal_ScreenshotCallbackSync.Unlock();
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 
@@ -1877,17 +1854,10 @@ metal_Present(Handle syncObject)
 
             rp->desc = nullptr;
 
-            [rp->blit_encoder endEncoding];
-
             [rp->buf release];
             rp->buf = nil;
             [rp->encoder release];
             rp->encoder = nil;
-
-            [rp->blit_encoder release];
-            rp->blit_encoder = nil;
-            [rp->blit_buf release];
-            rp->blit_buf = nil;
 
             rp->cmdBuf.clear();
         }
@@ -1987,38 +1957,6 @@ metal_Present(Handle syncObject)
         CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
         id<MTLTexture> back_buf = _Metal_DefFrameBuf;
 
-        _Metal_ScreenshotCallbackSync.Lock();
-        {
-            if (_Metal_PendingScreenshotCallback)
-            {
-                if (!_ScreenshotTexture)
-                {
-                    MTLPixelFormat pf = MTLPixelFormatBGRA8Unorm;
-                    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:_Metal_DefFrameBuf.width height:_Metal_DefFrameBuf.height mipmapped:NO];
-
-                    desc.textureType = MTLTextureType2D;
-                    desc.mipmapLevelCount = 1;
-                    desc.sampleCount = 1;
-
-                    _ScreenshotTexture = [_Metal_Device newTextureWithDescriptor:desc];
-                }
-
-                if (!_Metal_ScreenshotData)
-                {
-                    MTLOrigin org;
-                    MTLSize sz;
-                    org.x = 0;
-                    org.y = 0;
-                    org.z = 0;
-                    sz.width = _Metal_DefFrameBuf.width;
-                    sz.height = _Metal_DefFrameBuf.height;
-                    sz.depth = 1;
-                    [pass.back()->blit_encoder copyFromTexture:back_buf sourceSlice:0 sourceLevel:0 sourceOrigin:org sourceSize:sz toTexture:_ScreenshotTexture destinationSlice:0 destinationLevel:0 destinationOrigin:org];
-                }
-            }
-        }
-        _Metal_ScreenshotCallbackSync.Unlock();
-
         [last_cb->buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
                                           {
                                             if (syncObject != InvalidHandle)
@@ -2029,48 +1967,6 @@ metal_Present(Handle syncObject)
                                             }
 
                                           }];
-
-        _Metal_ScreenshotCallbackSync.Lock();
-        if (_Metal_PendingScreenshotCallback)
-        {
-            [pass.back()
-             ->blit_buf addCompletedHandler:^(id<MTLCommandBuffer> cmdb)
-                                            {
-                                              _Metal_ScreenshotCallbackSync.Lock();
-                                              if (_Metal_PendingScreenshotCallback)
-                                              {
-                                                  uint32 stride = _Metal_DefFrameBuf.width * sizeof(uint32);
-                                                  uint32 sz = stride * _Metal_DefFrameBuf.height;
-                                                  _Metal_ScreenshotData = ::malloc(sz);
-                                                  MTLRegion rgn;
-
-                                                  rgn.origin.x = 0;
-                                                  rgn.origin.y = 0;
-                                                  rgn.origin.z = 0;
-                                                  rgn.size.width = _Metal_DefFrameBuf.width;
-                                                  rgn.size.height = _Metal_DefFrameBuf.height;
-                                                  rgn.size.depth = 1;
-
-                                                  [_ScreenshotTexture getBytes:_Metal_ScreenshotData bytesPerRow:stride bytesPerImage:sz fromRegion:rgn mipmapLevel:0 slice:0];
-                                                  for (uint8 *p = (uint8 *)_Metal_ScreenshotData, *p_end = (uint8 *)_Metal_ScreenshotData + _Metal_DefFrameBuf.width * _Metal_DefFrameBuf.height * 4; p != p_end; p += 4)
-                                                  {
-                                                      uint8 tmp = p[0];
-                                                      p[0] = p[2];
-                                                      p[2] = tmp;
-                                                      p[3] = 0xFF;
-                                                  }
-
-                                                  (*_Metal_PendingScreenshotCallback)(_Metal_DefFrameBuf.width, _Metal_DefFrameBuf.height, _Metal_ScreenshotData);
-                                                  ::free(_Metal_ScreenshotData);
-                                                  _Metal_PendingScreenshotCallback = nullptr;
-                                                  _Metal_ScreenshotData = nullptr;
-                                                  _ScreenshotTexture = nil;
-                                              }
-
-                                              _Metal_ScreenshotCallbackSync.Unlock();
-                                            }];
-        };
-        _Metal_ScreenshotCallbackSync.Unlock();
     }
 
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
@@ -2112,18 +2008,10 @@ metal_Present(Handle syncObject)
 
         rp->desc = nullptr;
 
-        [rp->blit_encoder endEncoding];
-        [rp->blit_buf commit];
-
         [rp->buf release];
         rp->buf = nil;
         [rp->encoder release];
         rp->encoder = nil;
-
-        [rp->blit_encoder release];
-        rp->blit_encoder = nil;
-        [rp->blit_buf release];
-        rp->blit_buf = nil;
 
         rp->cmdBuf.clear();
     }

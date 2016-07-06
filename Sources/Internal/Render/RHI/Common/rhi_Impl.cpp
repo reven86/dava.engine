@@ -176,12 +176,6 @@ void InvalidateCache()
         (*_Impl.impl_InvalidateCache)();
 }
 
-void TakeScreenshot(ScreenShotCallback callback)
-{
-    if (_Impl.impl_TakeScreenshot)
-        (*_Impl.impl_TakeScreenshot)(callback);
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
