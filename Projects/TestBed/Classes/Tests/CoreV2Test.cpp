@@ -12,6 +12,7 @@ CoreV2Test::CoreV2Test(GameCore* g)
     : BaseScreen(g, "CoreV2Test")
     , engine(g->GetEngine())
 {
+    dispatchers.reserve(4);
     for (int i = 0; i < 4; ++i)
     {
         dispatchers.push_back(std::unique_ptr<TestDispatcher>(new TestDispatcher(MakeFunction(this, &CoreV2Test::DispatcherEventHandler))));

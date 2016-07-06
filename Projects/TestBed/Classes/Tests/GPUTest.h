@@ -5,10 +5,11 @@
 
 using namespace DAVA;
 
+class GameCore;
 class GPUTest : public BaseScreen
 {
 public:
-    GPUTest();
+    GPUTest(GameCore* g);
 
 public:
     void LoadResources() override;

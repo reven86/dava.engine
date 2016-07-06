@@ -196,7 +196,7 @@ void GameCore::RegisterTests()
     new UIBackgroundTest(this);
     new ClipTest(this);
     new InputTest(this);
-    new GPUTest();
+    new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
     new FloatingPointExceptionTest(this);
