@@ -27,6 +27,12 @@ struct is_best_argument_type : std::integral_constant<bool,
 {
 };
 
+// Explicit specialization for reference types
+template <typename T>
+struct is_best_argument_type<T&> : std::integral_constant<bool, true>
+{
+};
+
 class Closure
 {
 public:
