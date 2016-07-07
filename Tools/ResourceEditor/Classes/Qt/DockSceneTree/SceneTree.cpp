@@ -764,14 +764,8 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 
-    QAction* deleteSelection = new QAction(tr(""), this);
-    deleteSelection->setShortcut(QKeySequence(Qt::Key_Delete));
-    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
-    connect(deleteSelection, &QAction::triggered, this, &SceneTree::RemoveSelection);
-    addAction(deleteSelection);
-
-    deleteSelection = new QAction(tr(""), this);
-    deleteSelection->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace));
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
     deleteSelection->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteSelection, &QAction::triggered, this, &SceneTree::RemoveSelection);
     addAction(deleteSelection);

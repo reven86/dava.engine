@@ -93,6 +93,7 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QShortcut>
+#include <QList>
 
 #include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 
@@ -922,14 +923,8 @@ void QtMainWindow::SetupShortCuts()
     DavaGLWidget* glWidget = GetSceneWidget()->GetDavaWidget();
 
     // delete
-    QAction* deleteSelection = new QAction(tr(""), this);
-    deleteSelection->setShortcut(QKeySequence(Qt::Key_Delete));
-    deleteSelection->setShortcutContext(Qt::WindowShortcut);
-    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
-    glWidget->addAction(deleteSelection);
-
-    deleteSelection = new QAction(tr(""), this);
-    deleteSelection->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace));
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
     deleteSelection->setShortcutContext(Qt::WindowShortcut);
     connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
     glWidget->addAction(deleteSelection);
