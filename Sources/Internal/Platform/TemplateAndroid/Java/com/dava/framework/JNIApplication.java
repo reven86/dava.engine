@@ -125,7 +125,12 @@ public class JNIApplication extends Application
 	}
 	
 	static {
-        System.loadLibrary("c++_shared");
+        // TODO: after total migration on NDK 12 remove this try-catch block
+        try {
+            System.loadLibrary("c++_shared");
+        } catch (UnsatisfiedLinkError e) {
+        }
+        
 		System.loadLibrary("fmodex");
 		System.loadLibrary("fmodevent");
 	}
