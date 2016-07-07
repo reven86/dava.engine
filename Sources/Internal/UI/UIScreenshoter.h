@@ -65,7 +65,7 @@ public:
     * \param screenshot pointer to target Texture
     * \param callback function which be called after render
     */
-    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha = false);
+    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha = false, const rhi::Viewport& viewport = rhi::Viewport());
 
     /**
      * \brief Unsubscribe callback by texture pointer after making screenshot 
@@ -82,7 +82,7 @@ private:
         Function<void(Texture*)> callback;
     };
 
-    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha);
+    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport = rhi::Viewport());
 
     List<ScreenshotWaiter> waiters;
 };
