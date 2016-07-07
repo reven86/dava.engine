@@ -191,13 +191,13 @@ void UIList::ResetScrollPosition()
 
 void UIList::FullRefresh()
 {
+    needRefresh = false;
+
     RemoveAllCells();
     if (!delegate)
     {
         return;
     }
-
-    needRefresh = false;
 
     addPos = 0.0f;
     float32 scrollAdd;
@@ -267,14 +267,14 @@ void UIList::Refresh()
 
 void UIList::Update(float32 timeElapsed)
 {
-    if (!delegate)
-    {
-        return;
-    }
-
     if (needRefresh)
     {
         FullRefresh();
+    }
+
+    if (!delegate)
+    {
+        return;
     }
 
     float32 d = newPos - oldPos;
