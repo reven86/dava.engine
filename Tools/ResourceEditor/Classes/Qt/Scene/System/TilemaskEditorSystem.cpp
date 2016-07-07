@@ -419,7 +419,7 @@ void TilemaskEditorSystem::SetTileColor(DAVA::int32 index, const DAVA::Color& co
     if (curColor != color)
     {
         SceneEditor2* scene = (SceneEditor2*)(GetScene());
-        scene->Exec(Command2::Create<SetTileColorCommand>(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
+        scene->Exec(DAVA::Command::Create<SetTileColorCommand>(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
     }
 }
 
@@ -477,7 +477,7 @@ void TilemaskEditorSystem::CreateUndoPoint()
 {
     SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
     DVASSERT(scene);
-    scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    scene->Exec(DAVA::Command::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
 }
 
 DAVA::int32 TilemaskEditorSystem::GetBrushSize()

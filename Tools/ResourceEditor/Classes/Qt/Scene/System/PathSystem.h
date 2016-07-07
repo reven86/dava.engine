@@ -44,7 +44,7 @@ protected:
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color);
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     DAVA::FastName GeneratePathName() const;
     const DAVA::Color& GetNextPathColor() const;

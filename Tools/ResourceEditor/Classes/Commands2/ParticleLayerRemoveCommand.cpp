@@ -1,7 +1,7 @@
 #include "Commands2/ParticleLayerRemoveCommand.h"
 
 ParticleLayerRemoveCommand::ParticleLayerRemoveCommand(DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer* _layer)
-    : Command2(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle layer")
+    : RECommand(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle layer")
     , layer(_layer)
     , before(NULL)
     , emitter(_emitter)

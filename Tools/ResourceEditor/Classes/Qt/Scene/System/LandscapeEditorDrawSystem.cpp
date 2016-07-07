@@ -8,7 +8,7 @@
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
@@ -627,13 +627,13 @@ DAVA::String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
     return ret;
 }
 
-void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool redo)
+void LandscapeEditorDrawSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+        auto ProcessSingleCommand = [this](const RECommand* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
                 const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
@@ -662,9 +662,10 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
 
         };
 
-        if (command->GetId() == CMDID_BATCH)
+        if (command->GetID() == DAVA::CMDID_BATCH)
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {

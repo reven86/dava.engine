@@ -1,16 +1,17 @@
 #ifndef __QUICKED_ADD_COMPONENT_COMMAND_H__
 #define __QUICKED_ADD_COMPONENT_COMMAND_H__
 
-#include "Document/CommandsBase/Command.h"
+#include "Document/CommandsBase/QECommand.h"
 
 class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AddComponentCommand : public Command
+class AddComponentCommand : public QECommand
 {
 public:
     AddComponentCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* section);
+
     virtual ~AddComponentCommand();
 
     void Redo() override;

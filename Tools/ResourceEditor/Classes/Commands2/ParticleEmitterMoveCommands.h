@@ -1,11 +1,11 @@
 #ifndef __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 #define __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Particles/ParticleEmitter.h"
 
-class ParticleEmitterMoveCommand : public Command2
+class ParticleEmitterMoveCommand : public RECommand
 {
 public:
     ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleEffectComponent* newEffect, int newIndex);

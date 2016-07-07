@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request_)
-    : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
+    : RECommand(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
     , request(request_)
 {
     DVASSERT(GetRenderObject(GetEntity()));

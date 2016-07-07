@@ -1,8 +1,9 @@
+#include "Commands/WGTCommand.h"
+
 #include "Debug/DVAssert.h"
 
-#include "Document/CommandsBase/WGTCommand.h"
-#include "Document/CommandsBase/Command.h"
-#include "Document/CommandsBase/CommandBatch.h"
+#include "Command/Command.h"
+#include "Command/CommandBatch.h"
 
 #include "NgtTools/Common/GlobalContext.h"
 
@@ -15,7 +16,7 @@ const char* WGTCommand::getId() const
 
 wgt::ObjectHandle WGTCommand::execute(const wgt::ObjectHandle& arguments) const
 {
-    DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
+    DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(command != nullptr);
     command->Execute();
     return wgt::CommandErrorCode::COMMAND_NO_ERROR;
@@ -33,22 +34,23 @@ bool WGTCommand::customUndo() const
 
 bool WGTCommand::canUndo(const wgt::ObjectHandle& arguments) const
 {
-    DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
+    DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(command != nullptr);
-    return true;
+    return command->CanUndo();
 }
 
 bool WGTCommand::undo(const wgt::ObjectHandle& arguments) const
 {
-    DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
+    DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(command != nullptr);
+    DVASSERT(command->CanUndo());
     command->Undo();
     return true;
 }
 
 bool WGTCommand::redo(const wgt::ObjectHandle& arguments) const
 {
-    DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
+    DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(command != nullptr);
     command->Redo();
     return true;
@@ -57,16 +59,16 @@ bool WGTCommand::redo(const wgt::ObjectHandle& arguments) const
 wgt::ObjectHandle WGTCommand::getCommandDescription(const wgt::ObjectHandle& arguments) const
 {
     DAVA::String text;
-    DAVA::ICommand* command = arguments.getBase<DAVA::ICommand>();
+    DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(nullptr != command);
-    ::Command* qeCommand = dynamic_cast<::Command*>(command);
+    DAVA::Command* qeCommand = dynamic_cast<DAVA::Command*>(command);
     if (qeCommand != nullptr)
     {
         text = qeCommand->GetText();
     }
     else
     {
-        CommandBatch* batch = dynamic_cast<CommandBatch*>(command);
+        DAVA::CommandBatch* batch = dynamic_cast<DAVA::CommandBatch*>(command);
         DVASSERT(nullptr != batch);
         text = batch->GetText();
     }

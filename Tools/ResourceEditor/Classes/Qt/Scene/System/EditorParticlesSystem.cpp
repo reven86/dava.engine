@@ -16,7 +16,8 @@
 // particles-related commands
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/ParticleLayerCommands.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommand.h"
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
@@ -232,18 +233,19 @@ void EditorParticlesSystem::RestartParticleEffects()
     }
 }
 
-void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
+void EditorParticlesSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command == nullptr)
         return;
 
     // Notify that the Particles-related value is changed.
     SceneEditor2* activeScene = (SceneEditor2*)GetScene();
-    switch (command->GetId())
+    switch (command->GetID())
     {
-    case CMDID_BATCH:
+    case DAVA::CMDID_BATCH:
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+        const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
         if (batch->MatchCommandIDs({ CMDID_PARTICLE_EMITTER_UPDATE, CMDID_PARTICLE_LAYER_UPDATE, CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES,
                                      CMDID_PARTILCE_LAYER_UPDATE_TIME, CMDID_PARTICLE_LAYER_UPDATE_ENABLED, CMDID_PARTICLE_FORCE_UPDATE,
                                      CMDID_PARTICLE_EFFECT_START_STOP, CMDID_PARTICLE_EFFECT_RESTART, CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,

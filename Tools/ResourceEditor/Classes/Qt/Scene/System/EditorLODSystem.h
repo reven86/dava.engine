@@ -12,7 +12,7 @@ class Entity;
 class RenderObject;
 }
 
-class Command2;
+class RECommand;
 class SelectableGroup;
 
 struct ForceValues
@@ -43,7 +43,6 @@ struct ForceValues
 };
 
 class SceneEditor2;
-class Command2;
 class EditorLODSystem;
 class LODComponentHolder
 {
@@ -132,7 +131,7 @@ public:
     DAVA::FilePath GetPathForPlaneEntity() const;
 
 protected:
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
 private:
     void RecalculateData();

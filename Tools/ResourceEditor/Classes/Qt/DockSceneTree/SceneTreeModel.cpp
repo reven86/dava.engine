@@ -570,7 +570,7 @@ void SceneTreeModel::ItemChanged(QStandardItem* item)
             bool isLayerEnabled = (item->checkState() == Qt::Checked);
             SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)treeItem;
 
-            curScene->Exec(Command2::Create<CommandUpdateParticleLayerEnabled>(itemLayer->GetLayer(), isLayerEnabled));
+            curScene->Exec(DAVA::Command::Create<CommandUpdateParticleLayerEnabled>(itemLayer->GetLayer(), isLayerEnabled));
             curScene->MarkAsChanged();
         }
     }

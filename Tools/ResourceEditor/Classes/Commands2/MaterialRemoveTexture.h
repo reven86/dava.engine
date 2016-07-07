@@ -1,9 +1,9 @@
 #ifndef __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 #define __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class MaterialRemoveTexture : public Command2
+class MaterialRemoveTexture : public RECommand
 {
 public:
     MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_);

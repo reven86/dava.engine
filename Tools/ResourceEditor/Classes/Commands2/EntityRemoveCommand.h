@@ -1,9 +1,9 @@
 #ifndef __ENTITY_REMOVE_COMMAND_H__
 #define __ENTITY_REMOVE_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityRemoveCommand : public Command2
+class EntityRemoveCommand : public RECommand
 {
 public:
     EntityRemoveCommand(DAVA::Entity* entity);

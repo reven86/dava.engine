@@ -1,11 +1,11 @@
 #ifndef __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 #define __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Render/Material/NMaterial.h"
 
-class MaterialConfigModify : public Command2
+class MaterialConfigModify : public RECommand
 {
 public:
     MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = DAVA::String());

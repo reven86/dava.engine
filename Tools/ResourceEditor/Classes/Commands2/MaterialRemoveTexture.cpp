@@ -5,7 +5,7 @@
 #include "Render/Material/NMaterial.h"
 
 MaterialRemoveTexture::MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_)
-    : Command2(CMDID_MATERIAL_REMOVE_TEXTURE, "Remove invalid texture from material")
+    : RECommand(CMDID_MATERIAL_REMOVE_TEXTURE, "Remove invalid texture from material")
 {
     DVASSERT(material_ != nullptr);
     DVASSERT(textureSlot_.IsValid());

@@ -1,7 +1,7 @@
 #include "Commands2/ParticleForceMoveCommand.h"
 
 ParticleForceMoveCommand::ParticleForceMoveCommand(DAVA::ParticleForce* _force, DAVA::ParticleLayer* _oldLayer, DAVA::ParticleLayer* _newLayer)
-    : Command2(CMDID_PARTICLE_FORCE_MOVE, "Move particle force")
+    : RECommand(CMDID_PARTICLE_FORCE_MOVE, "Move particle force")
     , force(_force)
     , oldLayer(_oldLayer)
     , newLayer(_newLayer)

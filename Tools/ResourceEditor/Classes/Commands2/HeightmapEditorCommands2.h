@@ -3,7 +3,7 @@
 
 #include "Base/BaseTypes.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/CommandAction.h"
 
 namespace DAVA
@@ -15,7 +15,7 @@ class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ModifyHeightmapCommand : public Command2
+class ModifyHeightmapCommand : public RECommand
 {
 public:
     ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);

@@ -1,7 +1,7 @@
 #include "MaterialConfigCommands.h"
 
 MaterialConfigModify::MaterialConfigModify(DAVA::NMaterial* material_, int id, const DAVA::String& text)
-    : Command2(id, text)
+    : RECommand(id, text)
     , material(DAVA::SafeRetain(material_))
 {
     DVASSERT(material);

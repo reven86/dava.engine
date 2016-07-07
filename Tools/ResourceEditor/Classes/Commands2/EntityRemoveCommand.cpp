@@ -1,7 +1,7 @@
 #include "Commands2/EntityRemoveCommand.h"
 
 EntityRemoveCommand::EntityRemoveCommand(DAVA::Entity* _entity)
-    : Command2(CMDID_ENTITY_REMOVE, "Remove entity")
+    : RECommand(CMDID_ENTITY_REMOVE, "Remove entity")
     , entity(_entity)
     , before(NULL)
     , parent(NULL)

@@ -1,7 +1,7 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "SystemDelegates.h"
 
 #include "Entity/SceneSystem.h"

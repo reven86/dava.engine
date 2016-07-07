@@ -1,5 +1,6 @@
 #include "ChangePropertyValueCommand.h"
 
+#include "Document/CommandsBase/QECommandIDs.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -8,7 +9,7 @@
 using namespace DAVA;
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const VariantType& newVal)
-    : Command(DAVA::String("changed property: ") + prop->GetName().c_str())
+    : QECommand(CMDID_CHANGE_PROPERTY_VALUE, DAVA::String("changed property: ") + prop->GetName().c_str())
     , root(root_)
     , node(node_)
     , property(prop)

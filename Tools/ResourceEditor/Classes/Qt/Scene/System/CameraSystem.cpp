@@ -565,12 +565,12 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
             snapComponent = static_cast<DAVA::SnapToLandscapeControllerComponent*>(DAVA::Component::CreateByType(DAVA::Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            scene->Exec(Command2::Create<AddComponentCommand>(entity, snapComponent));
+            scene->Exec(DAVA::Command::Create<AddComponentCommand>(entity, snapComponent));
         }
     }
     else if (snapComponent)
     {
-        scene->Exec(Command2::Create<RemoveComponentCommand>(entity, snapComponent));
+        scene->Exec(DAVA::Command::Create<RemoveComponentCommand>(entity, snapComponent));
     }
 
     return true;

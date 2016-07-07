@@ -68,7 +68,7 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
 LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor,
                                                          const DAVA::String& commandDescr, bool isEnabling,
                                                          DAVA::uint32 _allowedTools, DAVA::String _disablingError)
-    : Command2(identifier, commandDescr + ((isEnabling == true) ? "Enabled" : "Disabled"))
+    : RECommand(identifier, commandDescr + ((isEnabling == true) ? "Enabled" : "Disabled"))
     , sceneEditor(_sceneEditor)
     , disablingError(_disablingError)
     , allowedTools(_allowedTools)

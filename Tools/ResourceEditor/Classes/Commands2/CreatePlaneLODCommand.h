@@ -1,11 +1,11 @@
 #ifndef __CREATE_PLANE_LOD_COOMAND_H__
 #define __CREATE_PLANE_LOD_COOMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "CreatePlaneLODCommandHelper.h"
 #include "DAVAEngine.h"
 
-class CreatePlaneLODCommand : public Command2
+class CreatePlaneLODCommand : public RECommand
 {
 public:
     CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);

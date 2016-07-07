@@ -20,7 +20,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -60,7 +60,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
     {
         QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const RECommand*, bool)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
         QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &PropertyEditor::ResetProperties);
     }
@@ -722,7 +722,7 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     SetEntities(selected);
 }
 
-void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -743,8 +743,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* comman
     CMDID_COLLAPSE_PATH,
     } };
 
-    auto ShouldResetPanel = [this](const Command2* cmd) {
-        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetId()) > 0)
+    auto ShouldResetPanel = [this](const RECommand* cmd) {
+        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetID()) > 0)
         {
             DAVA::Entity* entity = cmd->GetEntity();
             if ((entity == nullptr) || curNodes.ContainsObject(entity))
@@ -755,10 +755,11 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* comman
 
     bool resetPropertyPanel = false;
 
-    DAVA::int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    DAVA::int32 commandID = command->GetID();
+    if (commandID == DAVA::CMDID_BATCH)
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+        const RECommandBatch* batch = DAVA::DynamicTypeCheck<const RECommandBatch*>(commandBase);
         const DAVA::uint32 count = batch->Size();
         for (DAVA::uint32 i = 0; !resetPropertyPanel && i < count; ++i)
         {
@@ -899,7 +900,7 @@ void PropertyEditor::ActionEditComponent()
 
         if (editor.IsModified())
         {
-            curScene->SetChanged(true);
+            curScene->SetChanged();
         }
     }
 }
@@ -934,14 +935,14 @@ void PropertyEditor::ConvertToShadow()
 
     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
     curScene->BeginBatch("ConvertToShadow batch", 1);
-    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+    curScene->Exec(DAVA::Command::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
     data->ForeachMergedItem([&findEntityFn, curScene](QtPropertyData* item)
                             {
                                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
                                 if (dynamicData != nullptr)
                                 {
                                     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
-                                    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+                                    curScene->Exec(DAVA::Command::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
                                 }
                                 return true;
                             });
@@ -958,7 +959,7 @@ void PropertyEditor::RebuildTangentSpace()
         if (nullptr != data && nullptr != curScene)
         {
             DAVA::RenderBatch* batch = static_cast<DAVA::RenderBatch*>(data->object);
-            curScene->Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
+            curScene->Exec(DAVA::Command::Create<RebuildTangentSpaceCommand>(batch, true));
         }
     }
 }
@@ -995,7 +996,7 @@ void PropertyEditor::DeleteRenderBatch()
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);
                     if (b == batch)
                     {
-                        curScene->Exec(Command2::Create<DeleteRenderBatchCommand>(node, batch->GetRenderObject(), i));
+                        curScene->Exec(DAVA::Command::Create<DeleteRenderBatchCommand>(node, batch->GetRenderObject(), i));
                         break;
                     }
                 }
@@ -1336,7 +1337,7 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
             SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
             if (curScene && renderObject)
             {
-                curScene->Exec(Command2::Create<CloneLastBatchCommand>(renderObject));
+                curScene->Exec(DAVA::Command::Create<CloneLastBatchCommand>(renderObject));
             }
         }
     }
@@ -1352,7 +1353,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component::eType type)
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
         auto c = DAVA::Component::CreateByType(type);
-        curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
+        curScene->Exec(DAVA::Command::Create<AddComponentCommand>(entity, c));
     }
     curScene->EndBatch();
 }
@@ -1371,7 +1372,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
         if (entity->GetComponentCount(component->GetType()) == 0)
         {
             DAVA::Component* c = component->Clone(entity);
-            curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
+            curScene->Exec(DAVA::Command::Create<AddComponentCommand>(entity, c));
         }
     }
 
@@ -1421,7 +1422,7 @@ void PropertyEditor::OnAddPathComponent()
         if ((entity->GetComponentCount(DAVA::Component::PATH_COMPONENT) == 0) && (entity->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) == 0))
         {
             DAVA::PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-            curScene->Exec(Command2::Create<AddComponentCommand>(entity, pathComponent));
+            curScene->Exec(DAVA::Command::Create<AddComponentCommand>(entity, pathComponent));
         }
     }
 
@@ -1469,7 +1470,7 @@ void PropertyEditor::OnRemoveComponent()
 
             DAVA::Component* component = static_cast<DAVA::Component*>(data->object);
             PropEditorUserData* userData = GetUserData(data);
-            curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
+            curScene->Exec(DAVA::Command::Create<RemoveComponentCommand>(userData->entity, component));
 
             data->ForeachMergedItem([&curScene, this](QtPropertyData* item) {
                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
@@ -1477,7 +1478,7 @@ void PropertyEditor::OnRemoveComponent()
                 {
                     DAVA::Component* component = static_cast<DAVA::Component*>(dynamicData->object);
                     PropEditorUserData* userData = GetUserData(dynamicData);
-                    curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
+                    curScene->Exec(DAVA::Command::Create<RemoveComponentCommand>(userData->entity, component));
                 }
 
                 return true;

@@ -3,6 +3,7 @@
 
 #include <QObject>
 
+#include "Commands2/Base/RECommand.h"
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"
@@ -28,7 +29,7 @@ signals:
     void Deactivated(SceneEditor2* scene);
 
     void UndoRedoStateChanged(SceneEditor2* scene);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
@@ -102,7 +103,7 @@ public:
         emit UndoRedoStateChanged(scene);
     }
 
-    void EmitCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+    void EmitCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
     {
         emit CommandExecuted(scene, command, redo);
     };

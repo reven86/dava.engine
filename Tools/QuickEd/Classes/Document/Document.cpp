@@ -1,5 +1,5 @@
 #include "Document/Document.h"
-#include "Document/CommandsBase/CommandStack.h"
+#include "NgtTools/Commands/CommandStack.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"

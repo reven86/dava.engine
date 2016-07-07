@@ -2,7 +2,7 @@
 #include "DAVAEngine.h"
 
 AddComponentCommand::AddComponentCommand(DAVA::Entity* _entity, DAVA::Component* _component)
-    : Command2(CMDID_COMPONENT_ADD, "Add Component")
+    : RECommand(CMDID_COMPONENT_ADD, "Add Component")
     , entity(_entity)
     , component(_component)
 {

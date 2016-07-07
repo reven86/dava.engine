@@ -1,5 +1,13 @@
 #include "Commands2/Base/CommandNotify.h"
 
+void CommandNotify::CleanChanged(bool /*clean*/)
+{
+}
+
+void CommandNotify::UndoRedoStateChanged()
+{
+}
+
 CommandNotifyProvider::~CommandNotifyProvider()
 {
     SafeRelease(curNotify);
@@ -14,7 +22,7 @@ void CommandNotifyProvider::SetNotify(CommandNotify* notify)
     }
 }
 
-void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
+void CommandNotifyProvider::EmitNotify(const RECommand* command, bool redo)
 {
     if (nullptr != curNotify)
     {

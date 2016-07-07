@@ -2,7 +2,7 @@
 
 ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect_, DAVA::ParticleEmitterInstance* emitter_,
                                                        DAVA::ParticleEffectComponent* newEffect_, int newIndex_)
-    : Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
+    : RECommand(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
     , oldEffect(oldEffect_)
     , newEffect(newEffect_)
     , oldIndex(-1)

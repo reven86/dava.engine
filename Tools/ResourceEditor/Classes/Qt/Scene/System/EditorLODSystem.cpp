@@ -8,13 +8,13 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
+#include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
-#include "Commands2/Base/CommandBatch.h"
 
 #include "Main/Guards.h"
 
@@ -86,7 +86,7 @@ void LODComponentHolder::PropagateValues()
         const int32 layersCount = static_cast<int32>(GetLodLayersCount(lc));
         for (int32 i = 0; i < layersCount; ++i)
         {
-            scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, mergedComponent.GetLodLayerDistance(i)));
+            scene->Exec(DAVA::Command::Create<ChangeLODDistanceCommand>(lc, i, mergedComponent.GetLodLayerDistance(i)));
         }
     }
     scene->EndBatch();
@@ -101,7 +101,7 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     {
         if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
-            scene->Exec(Command2::Create<DeleteLODCommand>(lc, layer, -1));
+            scene->Exec(DAVA::Command::Create<DeleteLODCommand>(lc, layer, -1));
             wasLayerRemoved = true;
         }
     }
@@ -125,7 +125,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
 
         if (GetLodLayersCount(entity) < LodComponent::MAX_LOD_LAYERS)
         {
-            scene->Exec(Command2::Create<CopyLastLODToLod0Command>(lc));
+            scene->Exec(DAVA::Command::Create<CopyLastLODToLod0Command>(lc));
             wasCopiedRemoved = true;
         }
     }
@@ -531,7 +531,7 @@ void EditorLODSystem::DispatchSignals()
     invalidateUIFlag = FLAG_NONE;
 }
 
-void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
+void EditorLODSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (generateCommands)
     {
@@ -570,13 +570,14 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
             return false;
         };
 
-        if (command->GetId() == CMDID_BATCH)
+        if (command->GetID() == CMDID_BATCH)
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const Command2* cmd = batch->GetCommand(i);
+                const RECommand* cmd = batch->GetCommand(i);
                 if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
                 {
                     break;
@@ -640,7 +641,7 @@ void EditorLODSystem::ProcessPlaneLODs()
         sceneEditor2->BeginBatch("Create plane lods", static_cast<DAVA::uint32>(planeLODRequests.size()));
         for (const auto& req : planeLODRequests)
         {
-            sceneEditor2->Exec(Command2::Create<CreatePlaneLODCommand>(req));
+            sceneEditor2->Exec(Command::Create<CreatePlaneLODCommand>(req));
         }
         sceneEditor2->EndBatch();
         planeLODRequests.clear();

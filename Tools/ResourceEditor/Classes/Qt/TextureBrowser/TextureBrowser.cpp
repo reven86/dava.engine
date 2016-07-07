@@ -1056,7 +1056,7 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     }
 }
 
-void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (curScene != scene || command == nullptr)
     {

@@ -1,9 +1,9 @@
 #ifndef __ENTITY_PARENT_CHANGE_COMMAND_H__
 #define __ENTITY_PARENT_CHANGE_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityParentChangeCommand : public Command2
+class EntityParentChangeCommand : public RECommand
 {
 public:
     EntityParentChangeCommand(DAVA::Entity* entity, DAVA::Entity* newParent, DAVA::Entity* newBefore = NULL);

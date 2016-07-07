@@ -13,7 +13,7 @@ public:
     virtual ~QtPropertyDataMetaObject();
 
     const DAVA::MetaInfo* MetaInfo() const override;
-    Command2::Pointer CreateLastCommand() const override;
+    DAVA::Command::Pointer CreateLastCommand() const override;
 
     void* object;
     const DAVA::MetaInfo* meta;

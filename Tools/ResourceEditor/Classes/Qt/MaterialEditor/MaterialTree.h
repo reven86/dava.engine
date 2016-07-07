@@ -9,6 +9,7 @@
 
 class SelectableGroup;
 class MaterialFilteringModel;
+class RECommand;
 
 class MaterialTree : public QTreeView
 {
@@ -35,7 +36,7 @@ signals:
 
 public slots:
     void ShowContextMenu(const QPoint& pos);
-    void OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
     void OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSelectEntities();

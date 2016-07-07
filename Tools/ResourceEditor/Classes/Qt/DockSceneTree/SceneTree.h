@@ -35,7 +35,7 @@ private slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
 
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 

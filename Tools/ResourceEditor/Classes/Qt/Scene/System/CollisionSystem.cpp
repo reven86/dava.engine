@@ -11,7 +11,7 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 
 #include "Settings/SettingsManager.h"
 
@@ -381,7 +381,7 @@ void SceneCollisionSystem::Draw()
     }
 }
 
-void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
+void SceneCollisionSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
@@ -400,7 +400,7 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
     if (command->MatchCommandIDs(acceptableCommands) == false)
         return;
 
-    auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+    auto ProcessSingleCommand = [this](const RECommand* command, bool redo) {
         if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
             static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
@@ -426,9 +426,10 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
         }
     };
 
-    if (command->GetId() == CMDID_BATCH)
+    if (command->GetID() == DAVA::CMDID_BATCH)
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+        const RECommandBatch* batch = DAVA::DynamicTypeCheck<const RECommandBatch*>(commandBase);
         for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
         {
             ProcessSingleCommand(batch->GetCommand(i), redo);

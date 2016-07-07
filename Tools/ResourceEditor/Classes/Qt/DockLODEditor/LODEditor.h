@@ -19,7 +19,6 @@ class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
 class SelectableGroup;
-class Command2;
 class QPushButton;
 class QFrame;
 

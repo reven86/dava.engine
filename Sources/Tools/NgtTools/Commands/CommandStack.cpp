@@ -1,0 +1,198 @@
+#include "NgtTools/Commands/CommandStack.h"
+
+#include "Command/CommandBatch.h"
+
+#include "NgtTools/Commands/WGTCommand.h"
+
+#include "NgtTools/Common/GlobalContext.h"
+
+#include <core_command_system/i_command_manager.hpp>
+#include <core_command_system/i_env_system.hpp>
+#include <core_data_model/variant_list.hpp>
+
+CommandStack::CommandStack()
+{
+    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
+    DVASSERT(commandManager != nullptr);
+
+    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&CommandStack::OnHistoryIndexChanged, this, std::placeholders::_1));
+
+    wgt::IEnvManager* envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
+    DVASSERT(envManager != nullptr);
+    ID = envManager->addEnv("");
+}
+
+CommandStack::~CommandStack()
+{
+    wgt::IEnvManager* envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
+    DVASSERT(envManager != nullptr);
+    envManager->removeEnv(ID);
+
+    indexChanged.disconnect();
+}
+
+void CommandStack::Push(DAVA::Command::Pointer&& command)
+{
+    DVASSERT(command != nullptr);
+    if (command == nullptr)
+    {
+        return;
+    }
+    if (!batchesStack.empty())
+    {
+        //when the macro started command without undo will cause undefined state of application
+        DVASSERT_MSG(command->CanUndo(),
+                     DAVA::Format("Command %s, which can not make undo passed to CommandStack within macro %s",
+                                  command->GetText().c_str(),
+                                  batchesStack.top()->GetText().c_str())
+                     .c_str()
+                     );
+        if (command->CanUndo())
+        {
+            batchesStack.top()->AddAndExec(std::move(command));
+            return;
+        }
+    }
+    commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(command)));
+}
+
+void CommandStack::BeginMacro(const DAVA::String& name, DAVA::uint32 commandsCount)
+{
+    //we call BeginMacro first time
+    if (batchesStack.empty())
+    {
+        //own first item before we move it to the command manager
+        batchesStack.push(new DAVA::CommandBatch(name, commandsCount));
+    }
+    //we already create one or more batches
+    else
+    {
+        DAVA::Command::Pointer newCommandBatch = DAVA::Command::Create<DAVA::CommandBatch>(name, commandsCount);
+        DAVA::CommandBatch* newCommandBatchPtr = static_cast<DAVA::CommandBatch*>(newCommandBatch.get());
+        batchesStack.top()->AddAndExec(std::move(newCommandBatch));
+        batchesStack.push(newCommandBatchPtr);
+    }
+}
+
+void CommandStack::EndMacro()
+{
+    DVASSERT(!batchesStack.empty() && "CommandStack::EndMacro called without BeginMacro");
+    if (batchesStack.size() == 1)
+    {
+        DAVA::Command::Pointer commandPtr(batchesStack.top());
+        commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+    }
+    if (!batchesStack.empty())
+    {
+        batchesStack.pop();
+    }
+}
+
+bool CommandStack::IsClean() const
+{
+    return isClean;
+}
+
+void CommandStack::SetClean()
+{
+    int commandIndex = commandManager->commandIndex();
+    cleanIndex = commandIndex;
+    UpdateCleanState();
+}
+
+void CommandStack::Undo()
+{
+    DVASSERT(commandManager->canUndo());
+    if (CanUndo())
+    {
+        commandManager->undo();
+    }
+}
+
+void CommandStack::Redo()
+{
+    DVASSERT(commandManager->canRedo());
+    if (CanRedo())
+    {
+        commandManager->redo();
+    }
+}
+
+bool CommandStack::CanUndo() const
+{
+    return commandManager->canUndo();
+}
+
+bool CommandStack::CanRedo() const
+{
+    return commandManager->canRedo();
+}
+
+DAVA::int32 CommandStack::GetID() const
+{
+    return ID;
+}
+
+void CommandStack::DisconnectFromCommandManager()
+{
+    indexChanged.disable();
+}
+
+void CommandStack::ConnectToCommandManager()
+{
+    indexChanged.enable();
+}
+
+void CommandStack::OnHistoryIndexChanged(int /*currentIndex*/)
+{
+    UpdateCleanState();
+    SetCanUndo(CanUndo());
+    SetCanRedo(CanRedo());
+}
+
+void CommandStack::UpdateCleanState()
+{
+    int currentIndex = commandManager->commandIndex();
+    int begin = std::min(cleanIndex, currentIndex);
+    int end = std::max(cleanIndex, currentIndex);
+    bool containsModifiedCommands = false;
+    const wgt::VariantList& commandHistory = commandManager->getHistory();
+    for (int commandIndex = begin; commandIndex != end && !containsModifiedCommands; ++commandIndex)
+    {
+        wgt::Variant var = commandHistory[commandIndex];
+        if (var.typeIs<wgt::CommandInstancePtr>())
+        {
+            DAVA::Command* cmd = var.value<wgt::CommandInstancePtr>()->getArguments().getBase<DAVA::Command>();
+            DVASSERT(cmd != nullptr);
+            containsModifiedCommands |= cmd->IsModifying();
+        }
+    }
+    SetClean(!containsModifiedCommands);
+}
+
+void CommandStack::SetClean(bool isClean_)
+{
+    if (isClean != isClean_)
+    {
+        isClean = isClean_;
+        cleanChanged.Emit(isClean);
+    }
+}
+
+void CommandStack::SetCanUndo(bool canUndo_)
+{
+    if (canUndo != canUndo_)
+    {
+        canUndo = canUndo_;
+        canUndoChanged.Emit(canUndo);
+    }
+}
+
+void CommandStack::SetCanRedo(bool canRedo_)
+{
+    if (canRedo != canRedo_)
+    {
+        canRedo = canRedo_;
+        canRedoChanged.Emit(canRedo);
+    }
+}

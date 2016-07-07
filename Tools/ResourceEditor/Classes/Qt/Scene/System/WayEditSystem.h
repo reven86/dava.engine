@@ -4,7 +4,7 @@
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "SystemDelegates.h"
 
 // framework
@@ -51,7 +51,7 @@ public:
 protected:
     void Draw();
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
 

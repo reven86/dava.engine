@@ -1,10 +1,10 @@
 #ifndef __EDITOR_PARTICLES_SYSTEM_H__
 #define __EDITOR_PARTICLES_SYSTEM_H__
 
-#include "Commands2/Base/Command2.h"
-
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
+
+class RECommand;
 
 class EditorParticlesSystem : public DAVA::SceneSystem
 {
@@ -21,7 +21,7 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
     void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected);

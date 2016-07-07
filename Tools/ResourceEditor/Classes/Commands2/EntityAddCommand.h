@@ -1,9 +1,9 @@
 #ifndef __ENTITY_ADD_COMMAND_H__
 #define __ENTITY_ADD_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityAddCommand : public Command2
+class EntityAddCommand : public RECommand
 {
 public:
     EntityAddCommand(DAVA::Entity* entityToAdd, DAVA::Entity* toParent);

@@ -55,7 +55,7 @@ private:
 };
 
 SaveEntityAsAction::SaveEntityAsAction(const SelectableGroup* entities_, const FilePath& path_)
-    : CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
+    : CommandAction(CMDID_ENTITY_SAVE_AS, DAVA::String("Save Entities As"))
     , entities(entities_)
     , sc2Path(path_)
 {

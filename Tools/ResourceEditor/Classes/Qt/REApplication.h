@@ -3,7 +3,7 @@
 #include "NgtTools/Application/NGTApplication.h"
 
 class QtMainWindow;
-class NGTCommand;
+class WGTCommand;
 namespace NGTLayer
 {
 class NGTCmdLineParser;
@@ -31,6 +31,6 @@ protected:
 
 private:
     wgt::ICommandManager* commandManager = nullptr;
-    std::unique_ptr<NGTCommand> ngtCommand;
+    std::unique_ptr<WGTCommand> wgtCommand;
     QtMainWindow* mainWindow = nullptr;
 };

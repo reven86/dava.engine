@@ -3,7 +3,7 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Commands2/Base/CommandStack.h"
+#include "Commands2/Base/RECommandStack.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
@@ -37,7 +37,7 @@ const DAVA::FastName MATERIAL_FOR_REBIND = DAVA::FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , commandStack(new CommandStack())
+    , commandStack(new RECommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
@@ -203,7 +203,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack->SetClean(true);
+        commandStack->SetClean();
     }
 
     if (needToRestoreTilemask)
@@ -339,12 +339,12 @@ void SceneEditor2::Redo()
 
 void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
 {
-    commandStack->BeginBatch(text, commandsCount);
+    commandStack->BeginMacro(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
 {
-    commandStack->EndBatch();
+    commandStack->EndMacro();
 }
 
 void SceneEditor2::ActivateCommandStack()
@@ -352,15 +352,15 @@ void SceneEditor2::ActivateCommandStack()
     commandStack->Activate();
 }
 
-void SceneEditor2::Exec(Command2::Pointer&& command)
+void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
 {
     if (command)
     {
-        commandStack->Exec(std::move(command));
+        commandStack->Push(std::move(command));
     }
 }
 
-void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
+void SceneEditor2::RemoveCommands(DAVA::CommandID_t commandId)
 {
     commandStack->RemoveCommands(commandId);
 }
@@ -370,7 +370,7 @@ void SceneEditor2::ClearAllCommands()
     commandStack->Clear();
 }
 
-const CommandStack* SceneEditor2::GetCommandStack() const
+const RECommandStack* SceneEditor2::GetCommandStack() const
 {
     return commandStack.get();
 }
@@ -396,9 +396,9 @@ bool SceneEditor2::IsChanged() const
     return ((!commandStack->IsClean()) || wasChanged);
 }
 
-void SceneEditor2::SetChanged(bool changed)
+void SceneEditor2::SetChanged()
 {
-    commandStack->SetClean(!changed);
+    commandStack->SetClean();
 }
 
 void SceneEditor2::Update(float timeElapsed)
@@ -449,7 +449,7 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -498,7 +498,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const RECommand* command, bool redo)
 {
     if (nullptr != editor)
     {

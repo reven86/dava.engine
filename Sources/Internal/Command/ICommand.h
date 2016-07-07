@@ -1,5 +1,4 @@
-#ifndef __DAVAFRAMEWORK_ICOMMAND_H__
-#define __DAVAFRAMEWORK_ICOMMAND_H__
+#pragma once
 
 namespace DAVA
 {
@@ -12,5 +11,3 @@ public:
     virtual void Undo() = 0;
 };
 }
-
-#endif // __DAVAFRAMEWORK_ICOMMAND_H__

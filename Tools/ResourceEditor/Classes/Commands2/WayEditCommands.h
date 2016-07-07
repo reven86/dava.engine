@@ -1,13 +1,13 @@
 #ifndef __WAYEDIT_COMMANDS_H__
 #define __WAYEDIT_COMMANDS_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EnableWayEditCommand : public Command2
+class EnableWayEditCommand : public RECommand
 {
 public:
     EnableWayEditCommand()
-        : Command2(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
+        : RECommand(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
     {
     }
     void Undo() override
@@ -22,11 +22,11 @@ public:
     }
 };
 
-class DisableWayEditCommand : public Command2
+class DisableWayEditCommand : public RECommand
 {
 public:
     DisableWayEditCommand()
-        : Command2(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
+        : RECommand(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
     {
     }
     void Undo() override

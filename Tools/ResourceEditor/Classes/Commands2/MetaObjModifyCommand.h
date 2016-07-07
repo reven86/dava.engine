@@ -1,9 +1,9 @@
 #ifndef __META_OBJ_MODIFY_COMMAND_H__
 #define __META_OBJ_MODIFY_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class MetaObjModifyCommand : public Command2
+class MetaObjModifyCommand : public RECommand
 {
 public:
     MetaObjModifyCommand(const DAVA::MetaInfo* info, void* object, const DAVA::VariantType& value);

@@ -1,7 +1,7 @@
 #include "Commands2/EntityParentChangeCommand.h"
 
 EntityParentChangeCommand::EntityParentChangeCommand(DAVA::Entity* _entity, DAVA::Entity* _newParent, DAVA::Entity* _newBefore /* = NULL */)
-    : Command2(CMDID_ENTITY_CHANGE_PARENT, "Move entity")
+    : RECommand(CMDID_ENTITY_CHANGE_PARENT, "Move entity")
     , entity(_entity)
     , oldParent(NULL)
     , oldBefore(NULL)

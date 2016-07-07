@@ -3,7 +3,7 @@
 #include "Render/Image/ImageSystem.h"
 
 ImageRegionCopyCommand::ImageRegionCopyCommand(DAVA::Image* _dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect& srcRect, DAVA::FilePath _savePath, DAVA::Image* _orig)
-    : Command2(CMDID_IMAGE_REGION_COPY, "Remove entity")
+    : RECommand(CMDID_IMAGE_REGION_COPY, "Remove entity")
     , dst(_dst)
     , orig(NULL)
     , copy(NULL)

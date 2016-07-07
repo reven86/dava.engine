@@ -8,6 +8,7 @@
 
 #include "Main/Request.h"
 #include "Settings/SettingsManager.h"
+#include "Command/Command.h"
 
 //TODO: move all includes to .cpp file
 #include "Scene/System/GridSystem.h"
@@ -34,6 +35,9 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+#include "Commands2/Base/CommandNotify.h"
+#include "Commands2/RECommandIDs.h"
+
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
@@ -41,7 +45,7 @@ class EditorLODSystem;
 class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
-class CommandStack;
+class RECommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -114,16 +118,16 @@ public:
     void EndBatch();
 
     void ActivateCommandStack();
-    void Exec(Command2::Pointer&& command);
-    void RemoveCommands(DAVA::int32 commandId);
+    void Exec(DAVA::Command::Pointer&& command);
+    void RemoveCommands(DAVA::CommandID_t commandId);
 
     void ClearAllCommands();
-    const CommandStack* GetCommandStack() const;
+    const RECommandStack* GetCommandStack() const;
 
     // checks whether the scene changed since the last save
     bool IsLoaded() const;
     bool IsChanged() const;
-    void SetChanged(bool changed);
+    void SetChanged();
 
     // enable/disable drawing custom HUD
     void SetHUDVisible(bool visible);
@@ -172,12 +176,12 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    std::unique_ptr<CommandStack> commandStack;
+    std::unique_ptr<RECommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    void EditorCommandProcess(const Command2* command, bool redo);
+    void EditorCommandProcess(const RECommand* command, bool redo);
 
     void Draw() override;
 
@@ -199,7 +203,7 @@ private:
     {
     public:
         EditorCommandNotify(SceneEditor2* _editor);
-        void Notify(const Command2* command, bool redo) override;
+        void Notify(const RECommand* command, bool redo) override;
         void CleanChanged(bool clean) override;
         void UndoRedoStateChanged() override;
 

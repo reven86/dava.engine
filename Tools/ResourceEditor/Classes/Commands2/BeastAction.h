@@ -16,7 +16,7 @@ public:
     BeastAction(SceneEditor2* scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog);
     ~BeastAction();
 
-    virtual void Redo();
+    void Redo() override;
 
 private:
     void Start();

@@ -2,9 +2,9 @@
 #define __SOUND_COMPONENT_COMMANDS_H__
 
 #include "DAVAEngine.h"
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class AddSoundEventCommand : public Command2
+class AddSoundEventCommand : public RECommand
 {
 public:
     AddSoundEventCommand(DAVA::Entity* entity, DAVA::SoundEvent* sEvent);
@@ -20,7 +20,7 @@ private:
     DAVA::SoundEvent* savedEvent;
 };
 
-class RemoveSoundEventCommand : public Command2
+class RemoveSoundEventCommand : public RECommand
 {
 public:
     RemoveSoundEventCommand(DAVA::Entity* entity, DAVA::SoundEvent* sEvent);
@@ -36,7 +36,7 @@ private:
     DAVA::SoundEvent* savedEvent;
 };
 
-class SetSoundEventFlagsCommand : public Command2
+class SetSoundEventFlagsCommand : public RECommand
 {
 public:
     SetSoundEventFlagsCommand(DAVA::Entity* entity, DAVA::uint32 eventIndex, DAVA::uint32 flags);

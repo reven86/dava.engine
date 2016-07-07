@@ -5,7 +5,7 @@
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 #include <QLabel>
 #include <QLayout>
@@ -87,7 +87,7 @@ void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void StatusBar::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_TRANSFORM))
     {

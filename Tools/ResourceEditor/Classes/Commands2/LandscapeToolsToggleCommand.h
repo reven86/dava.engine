@@ -2,12 +2,12 @@
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
 #include "Functional/Function.h"
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
 
 class SceneEditor2;
 
-class LandscapeToolsToggleCommand : public Command2
+class LandscapeToolsToggleCommand : public RECommand
 {
 public:
     LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,

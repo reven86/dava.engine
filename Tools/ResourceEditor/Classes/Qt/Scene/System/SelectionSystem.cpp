@@ -448,11 +448,11 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
+void SceneSelectionSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (nullptr != command)
     {
-        auto commandId = command->GetId();
+        auto commandId = command->GetID();
 
         if ((CMDID_ENTITY_REMOVE == commandId))
         {

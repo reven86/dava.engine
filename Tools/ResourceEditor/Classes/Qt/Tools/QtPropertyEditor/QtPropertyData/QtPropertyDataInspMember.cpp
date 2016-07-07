@@ -90,12 +90,12 @@ bool QtPropertyDataInspMember::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-Command2::Pointer QtPropertyDataInspMember::CreateLastCommand() const
+DAVA::Command::Pointer QtPropertyDataInspMember::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return Command2::Create<InspMemberModifyCommand>(*lastCommand);
+        return DAVA::Command::Create<InspMemberModifyCommand>(*lastCommand);
     }
 
-    return Command2::CreateEmptyCommand();
+    return RECommand::CreateEmptyCommand();
 }

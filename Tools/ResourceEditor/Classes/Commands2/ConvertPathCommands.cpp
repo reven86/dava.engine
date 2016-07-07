@@ -3,7 +3,7 @@
 #include "Commands2/ConvertPathCommands.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
-    : Command2(CMDID_EXPAND_PATH, "Expand entity path")
+    : RECommand(CMDID_EXPAND_PATH, "Expand entity path")
     , pathEntity(nullptr)
 {
     DVASSERT(pathComponent);
@@ -99,7 +99,7 @@ void ExpandPathCommand::Undo()
     DAVA::uint32 count = entityAddCommands.size();
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
-        UndoInternalCommand(entityAddCommands[i]);
+        entityAddCommands[i]->Undo();
     }
 }
 
@@ -108,7 +108,7 @@ void ExpandPathCommand::Redo()
     DAVA::uint32 count = entityAddCommands.size();
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        RedoInternalCommand(entityAddCommands[i]);
+        entityAddCommands[i]->Redo();
     }
 }
 
@@ -123,7 +123,7 @@ DAVA::PathComponent::Waypoint* NewWaypoint()
 }
 
 CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
-    : Command2(CMDID_COLLAPSE_PATH, "Collapse path entities")
+    : RECommand(CMDID_COLLAPSE_PATH, "Collapse path entities")
     , pathEntity(nullptr)
     , origPathComponent(pathComponent)
     , destPathComponent(nullptr)
@@ -246,22 +246,20 @@ void CollapsePathCommand::Redo()
     DAVA::uint32 count = entityRemoveCommands.size();
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        RedoInternalCommand(entityRemoveCommands[i]);
+        entityRemoveCommands[i]->Redo();
     }
-
-    RedoInternalCommand(addNextComponent);
-    RedoInternalCommand(removePrevComponent);
+    addNextComponent->Redo();
+    removePrevComponent->Redo();
 }
 
 void CollapsePathCommand::Undo()
 {
-    UndoInternalCommand(removePrevComponent);
-    UndoInternalCommand(addNextComponent);
-
+    removePrevComponent->Undo();
+    addNextComponent->Undo();
     DAVA::uint32 count = entityRemoveCommands.size();
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
-        UndoInternalCommand(entityRemoveCommands[i]);
+        entityRemoveCommands[i]->Undo();
     }
 }
 

@@ -399,7 +399,7 @@ void LibraryWidget::OnConvertDae()
 
     QtMainWindow::Instance()->WaitStart("DAE to SC2 conversion", fileInfo.absoluteFilePath());
 
-    Command2* daeCmd = new DAEConvertAction(fileInfo.absoluteFilePath().toStdString());
+    DAEConvertAction* daeCmd = new DAEConvertAction(fileInfo.absoluteFilePath().toStdString());
     daeCmd->Redo();
     delete daeCmd;
 

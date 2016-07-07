@@ -1,13 +1,13 @@
 #ifndef __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
 #define __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
 
-#include "Document/CommandsBase/Command.h"
+#include "Document/CommandsBase/QECommand.h"
 
 class PackageNode;
 class StyleSheetNode;
 class StyleSheetProperty;
 
-class AddRemoveStylePropertyCommand : public Command
+class AddRemoveStylePropertyCommand : public QECommand
 {
 public:
     AddRemoveStylePropertyCommand(PackageNode* root, StyleSheetNode* node, StyleSheetProperty* property, bool add);

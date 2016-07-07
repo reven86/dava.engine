@@ -1,9 +1,9 @@
 #ifndef __ENTITY_LOCK_COMMAND_H__
 #define __ENTITY_LOCK_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityLockCommand : public Command2
+class EntityLockCommand : public RECommand
 {
 public:
     EntityLockCommand(DAVA::Entity* entity, bool lock);

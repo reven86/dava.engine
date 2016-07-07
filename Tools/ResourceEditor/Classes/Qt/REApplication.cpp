@@ -2,8 +2,9 @@
 
 #include "Main/mainwindow.h"
 #include "ResourceEditorLauncher.h"
-#include "Commands2/NGTCommand.h"
+#include "NgtTools/Commands/WGTCommand.h"
 
+#include "NgtTools/Commands/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
 #include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
@@ -17,7 +18,7 @@
 
 REApplication::REApplication(int argc, char** argv)
     : BaseApplication(argc, argv)
-    , ngtCommand(new NGTCommand())
+    , wgtCommand(new WGTCommand())
 {
 }
 
@@ -67,7 +68,7 @@ void REApplication::OnPostLoadPlugins()
 
     commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
-    commandManager->registerCommand(ngtCommand.get());
+    commandManager->registerCommand(wgtCommand.get());
 
     const char* settingsPath = "ResourceEditorSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
@@ -80,7 +81,7 @@ void REApplication::OnPostLoadPlugins()
 
 void REApplication::OnPreUnloadPlugins()
 {
-    commandManager->deregisterCommand(ngtCommand->getId());
+    commandManager->deregisterCommand(wgtCommand->getId());
 }
 
 bool REApplication::OnRequestCloseApp()

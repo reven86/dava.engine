@@ -1,10 +1,10 @@
 #ifndef __COPY_LAST_LOD_COMMAND_H__
 #define __COPY_LAST_LOD_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class CopyLastLODToLod0Command : public Command2
+class CopyLastLODToLod0Command : public RECommand
 {
 public:
     //TODO: remove after lod editing implementation

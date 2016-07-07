@@ -1,9 +1,9 @@
 #ifndef __INSP_MEMEBER_MODIFY_COMMAND_H__
 #define __INSP_MEMEBER_MODIFY_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class InspMemberModifyCommand : public Command2
+class InspMemberModifyCommand : public RECommand
 {
 public:
     InspMemberModifyCommand(const DAVA::InspMember* member, void* object, const DAVA::VariantType& value);

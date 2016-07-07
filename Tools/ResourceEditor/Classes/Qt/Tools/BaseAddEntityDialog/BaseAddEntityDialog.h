@@ -39,7 +39,7 @@ public:
 
 protected slots:
     virtual void OnItemEdited(const QModelIndex&);
-    virtual void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    virtual void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
 
 protected:
     virtual void FillPropertyEditorWithContent() = 0;

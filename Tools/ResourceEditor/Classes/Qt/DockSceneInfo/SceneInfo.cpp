@@ -589,9 +589,9 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool /*isRedo*/)
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommand* command, bool /*isRedo*/)
 {
-    switch (command->GetId())
+    switch (command->GetID())
     {
     case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
     case CMDID_MATERIAL_CREATE_CONFIG:

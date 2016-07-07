@@ -1,7 +1,7 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Scene/SelectableGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
@@ -51,7 +51,7 @@ private:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;

@@ -25,7 +25,7 @@
 #include "Commands2/MaterialGlobalCommand.h"
 #include "Commands2/MaterialRemoveTexture.h"
 #include "Commands2/MaterialConfigCommands.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -508,7 +508,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const Command2*, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const RECommand*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(autoExpand()));
 
     // material tree
@@ -739,7 +739,7 @@ void MaterialEditor::materialSelected(const QItemSelection& selected, const QIte
     SetCurMaterial(materials);
 }
 
-void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (scene != QtMainWindow::Instance()->GetCurrentScene())
     {
@@ -769,7 +769,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo)
+        auto ProcessSingleCommand = [this](const RECommand* command, bool redo)
         {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
@@ -814,9 +814,10 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const Command2* comman
             }
         };
 
-        if (command->GetId() == CMDID_BATCH)
+        if (command->GetID() == DAVA::CMDID_BATCH)
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {
@@ -1009,8 +1010,8 @@ void MaterialEditor::OnTemplateChanged(int index)
 
             if (nullptr != templateMember)
             {
-                QtMainWindow::Instance()->GetCurrentScene()->Exec(Command2::Create<InspMemberModifyCommand>(templateMember, material,
-                                                                                                            DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
+                QtMainWindow::Instance()->GetCurrentScene()->Exec(DAVA::Command::Create<InspMemberModifyCommand>(templateMember, material,
+                                                                                                                 DAVA::VariantType(DAVA::FastName(newTemplatePath.toStdString().c_str()))));
             }
         }
     }
@@ -1032,12 +1033,12 @@ void MaterialEditor::OnTemplateButton()
             if (material->HasLocalFXName())
             {
                 // has local fxname, so button shoud remove it (by setting empty value)
-                scene->Exec(Command2::Create<InspMemberModifyCommand>(templateMember, material, DAVA::VariantType(DAVA::FastName())));
+                scene->Exec(DAVA::Command::Create<InspMemberModifyCommand>(templateMember, material, DAVA::VariantType(DAVA::FastName())));
             }
             else
             {
                 // no local fxname, so button should add it
-                scene->Exec(Command2::Create<InspMemberModifyCommand>(templateMember, material, DAVA::VariantType(material->GetEffectiveFXName())));
+                scene->Exec(DAVA::Command::Create<InspMemberModifyCommand>(templateMember, material, DAVA::VariantType(material->GetEffectiveFXName())));
             }
 
             RefreshMaterialProperties();
@@ -1089,7 +1090,7 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex& index)
             curScene->BeginBatch("Property multiedit", propData->GetMergedItemCount() + 1);
 
             auto commandsAccumulateFn = [&curScene](QtPropertyData* item) {
-                Command2::Pointer command = item->CreateLastCommand();
+                DAVA::Command::Pointer command = item->CreateLastCommand();
                 if (command)
                 {
                     curScene->Exec(std::move(command));
@@ -1113,7 +1114,7 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
         DAVA::ScopedPtr<DAVA::NMaterial> global(new DAVA::NMaterial());
 
         global->SetMaterialName(DAVA::FastName("Scene_Global_Material"));
-        curScene->Exec(Command2::Create<MaterialGlobalSetCommand>(curScene, global));
+        curScene->Exec(DAVA::Command::Create<MaterialGlobalSetCommand>(curScene, global));
 
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
@@ -1125,7 +1126,7 @@ void MaterialEditor::OnMaterialRemoveGlobal(bool checked)
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
-        curScene->Exec(Command2::Create<MaterialGlobalSetCommand>(curScene, nullptr));
+        curScene->Exec(DAVA::Command::Create<MaterialGlobalSetCommand>(curScene, nullptr));
         sceneActivated(curScene);
     }
 }
@@ -1170,7 +1171,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& po
                         if (nullptr != resultAction)
                         {
                             globalMaterial->SetPropertyValue(propertyName, material->GetLocalPropValue(propertyName));
-                            sceneEditor->SetChanged(true);
+                            sceneEditor->SetChanged();
                         }
                     }
                 }
@@ -1240,7 +1241,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
                 UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
                 materialContext.ResolveMaterialBindings();
-                curScene->SetChanged(true);
+                curScene->SetChanged();
             }
             else
             {
@@ -1535,7 +1536,7 @@ void MaterialEditor::removeInvalidTexture()
         {
             if (material->HasLocalTexture(textureSlot))
             {
-                curScene->Exec(Command2::Create<MaterialRemoveTexture>(textureSlot, material));
+                curScene->Exec(DAVA::Command::Create<MaterialRemoveTexture>(textureSlot, material));
                 break;
             }
 
@@ -1589,7 +1590,7 @@ void MaterialEditor::onTabNameChanged(int index)
     const DAVA::InspMember* configNameProperty = material->GetTypeInfo()->Member(DAVA::FastName("configName"));
     DVASSERT(configNameProperty != nullptr);
     DAVA::VariantType newValue(DAVA::FastName(ui->tabbar->tabText(index).toStdString()));
-    scene->Exec(Command2::Create<InspMemberModifyCommand>(configNameProperty, material, newValue));
+    scene->Exec(DAVA::Command::Create<InspMemberModifyCommand>(configNameProperty, material, newValue));
 }
 
 void MaterialEditor::onCreateConfig(int index)
@@ -1621,7 +1622,7 @@ void MaterialEditor::onCreateConfig(int index)
     {
         newConfig.name = DAVA::FastName(DAVA::String(newConfig.name.c_str()) + std::to_string(counter));
     }
-    scene->Exec(Command2::Create<MaterialCreateConfig>(material, newConfig));
+    scene->Exec(DAVA::Command::Create<MaterialCreateConfig>(material, newConfig));
 }
 
 void MaterialEditor::onCurrentConfigChanged(int index)
@@ -1640,7 +1641,7 @@ void MaterialEditor::onCurrentConfigChanged(int index)
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
     DVASSERT(static_cast<DAVA::uint32>(index) < material->GetConfigCount());
-    curScene->Exec(Command2::Create<MaterialChangeCurrentConfig>(material, static_cast<DAVA::uint32>(index)));
+    curScene->Exec(DAVA::Command::Create<MaterialChangeCurrentConfig>(material, static_cast<DAVA::uint32>(index)));
 }
 
 void MaterialEditor::onTabRemove(int index)
@@ -1650,7 +1651,7 @@ void MaterialEditor::onTabRemove(int index)
     DVASSERT(curMaterials.size() == 1);
     DAVA::NMaterial* material = curMaterials.front();
 
-    curScene->Exec(Command2::Create<MaterialRemoveConfig>(material, static_cast<DAVA::uint32>(index)));
+    curScene->Exec(DAVA::Command::Create<MaterialRemoveConfig>(material, static_cast<DAVA::uint32>(index)));
 }
 
 void MaterialEditor::onTabContextMenuRequested(const QPoint& pos)

@@ -2,8 +2,8 @@
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Commands2/Base/Command2.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommand.h"
+#include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteLODCommand.h"
@@ -232,12 +232,13 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
     UpdateFlags(material, LIGHTVIEW_AMBIENT, DAVA::NMaterialFlagName::FLAG_VIEWAMBIENT);
 }
 
-void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
+void EditorMaterialSystem::ProcessCommand(const RECommand* command, bool redo)
 {
-    const DAVA::int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    const DAVA::int32 commandID = command->GetID();
+    if (commandID == DAVA::CMDID_BATCH)
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+        const RECommandBatch* batch = DAVA::DynamicTypeCheck<const RECommandBatch*>(commandBase);
         if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))
         {
             const DAVA::uint32 count = batch->Size();

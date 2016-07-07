@@ -1,12 +1,10 @@
-#ifndef __COMMAND_ID_H__
-#define __COMMAND_ID_H__
+#pragma once 
+ 
+#include "Command/CommandIDs.h"
 
-#include "Base/BaseTypes.h"
-
-enum CommandID : DAVA::int32
+enum CommandID : DAVA::CommandID_t
 {
-    CMDID_UNKNOWN = -1,
-    CMDID_BATCH = 0,
+    CMDID_UNKNOWN = DAVA::CMDID_USER,
 
     CMDID_TRANSFORM,
 
@@ -113,8 +111,4 @@ enum CommandID : DAVA::int32
     CMDID_COLLAPSE_PATH,
     CMDID_ENABLE_WAYEDIT,
     CMDID_DISABLE_WAYEDIT,
-
-    CMDID_USER = 0xF000
 };
-
-#endif // __COMMAND_ID_H__

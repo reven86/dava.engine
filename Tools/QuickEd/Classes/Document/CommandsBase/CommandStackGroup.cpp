@@ -1,6 +1,6 @@
 #include "Debug/DVAssert.h"
 #include "Document/CommandsBase/CommandStackGroup.h"
-#include "Document/CommandsBase/CommandStack.h"
+#include "NgtTools/Commands/CommandStack.h"
 
 #include "NgtTools/Common/GlobalContext.h"
 #include <core_command_system/i_env_system.hpp>
@@ -39,7 +39,7 @@ void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
     if (commandStack != nullptr)
     {
         DVASSERT(stacks.find(commandStack) != stacks.end());
-        envManager->selectEnv(activeStack->ID);
+        envManager->selectEnv(activeStack->GetID());
         activeStack->ConnectToCommandManager();
 
         activeStack->cleanChanged.Connect(&cleanChanged, &DAVA::Signal<bool>::Emit);

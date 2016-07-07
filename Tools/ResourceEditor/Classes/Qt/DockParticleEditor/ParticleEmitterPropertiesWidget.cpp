@@ -1,5 +1,5 @@
 #include "ParticleEmitterPropertiesWidget.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/TransformCommand.h"
 #include "Qt/Scene/SceneSignals.h"
@@ -160,18 +160,18 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     auto newTransform = DAVA::Matrix4::MakeTranslation(position);
 
     Selectable wrapper(GetEmitterInstance(activeScene));
-    GetActiveScene()->Exec(Command2::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
+    GetActiveScene()->Exec(DAVA::Command::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
 
     Init(GetActiveScene(), GetEffect(activeScene), GetEmitterInstance(activeScene), false, false);
     emit ValueChanged();
 }
 
-void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Command2* command, bool redo)
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (blockSignals || (GetActiveScene() != scene))
         return;
 
-    auto tryRemoveSelectedEmitter = [this, scene](const Command2* inCommand) {
+    auto tryRemoveSelectedEmitter = [this, scene](const RECommand* inCommand) {
         if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
             auto cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
@@ -182,9 +182,10 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Comma
         }
     };
 
-    if (command->GetId() == CMDID_BATCH)
+    if (command->GetID() == DAVA::CMDID_BATCH)
     {
-        auto batch = static_cast<const CommandBatch*>(command);
+        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+        const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
         for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)
         {
             tryRemoveSelectedEmitter(batch->GetCommand(i));
@@ -246,7 +247,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(instance);
+    auto commandUpdateEmitter = DAVA::Command::Create<CommandUpdateEmitter>(instance);
     commandUpdateEmitter->Init(DAVA::FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),

@@ -1,12 +1,12 @@
 #ifndef __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 #define __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 
-#include "Document/CommandsBase/Command.h"
+#include "Document/CommandsBase/QECommand.h"
 
 class PackageNode;
 class PackageControlsNode;
 
-class RemoveImportedPackageCommand : public Command
+class RemoveImportedPackageCommand : public QECommand
 {
 public:
     RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage);

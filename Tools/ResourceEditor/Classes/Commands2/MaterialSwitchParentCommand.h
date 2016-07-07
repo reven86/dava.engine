@@ -1,12 +1,12 @@
 #ifndef __MATERIAL_ASSIGN_COMMAND_H__
 #define __MATERIAL_ASSIGN_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Render/Material/NMaterial.h"
 #include "Base/FastName.h"
 
 class SelectableGroup;
-class MaterialSwitchParentCommand : public Command2
+class MaterialSwitchParentCommand : public RECommand
 {
 public:
     MaterialSwitchParentCommand(DAVA::NMaterial* instance, DAVA::NMaterial* newParent);

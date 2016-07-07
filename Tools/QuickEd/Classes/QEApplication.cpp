@@ -5,7 +5,7 @@
 
 #include "QtTools/Utils/Themes/Themes.h"
 
-#include "Document/CommandsBase/WGTCommand.h"
+#include "NgtTools/Commands/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
 
 #include <core_command_system/i_command_manager.hpp>

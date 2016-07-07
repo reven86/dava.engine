@@ -51,7 +51,7 @@ void StructureSystem::Move(const SelectableGroup& objects, DAVA::Entity* newPare
     sceneEditor->BeginBatch("Move entities", objects.GetSize());
     for (auto entity : objects.ObjectsOfType<DAVA::Entity>())
     {
-        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(entity, newParent, newBefore));
+        sceneEditor->Exec(DAVA::Command::Create<EntityParentChangeCommand>(entity, newParent, newBefore));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -94,7 +94,7 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
         {
             delegate->WillRemove(entity);
         }
-        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(entity));
+        sceneEditor->Exec(DAVA::Command::Create<EntityRemoveCommand>(entity));
         for (auto delegate : delegates)
         {
             delegate->DidRemoved(entity);
@@ -128,7 +128,7 @@ void StructureSystem::MoveEmitter(const DAVA::Vector<DAVA::ParticleEmitterInstan
     sceneEditor->BeginBatch("Move particle emitter", emitters.size());
     for (size_t i = 0; i < emitters.size(); ++i)
     {
-        sceneEditor->Exec(Command2::Create<ParticleEmitterMoveCommand>(oldEffects[i], emitters[i], newEffect, dropAfter++));
+        sceneEditor->Exec(DAVA::Command::Create<ParticleEmitterMoveCommand>(oldEffects[i], emitters[i], newEffect, dropAfter++));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -143,7 +143,7 @@ void StructureSystem::MoveLayer(const DAVA::Vector<DAVA::ParticleLayer*>& layers
     sceneEditor->BeginBatch("Move particle layers", layers.size());
     for (size_t i = 0; i < layers.size(); ++i)
     {
-        sceneEditor->Exec(Command2::Create<ParticleLayerMoveCommand>(oldEmitters[i], layers[i], newEmitter, newBefore));
+        sceneEditor->Exec(DAVA::Command::Create<ParticleLayerMoveCommand>(oldEmitters[i], layers[i], newEmitter, newBefore));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -158,7 +158,7 @@ void StructureSystem::MoveForce(const DAVA::Vector<DAVA::ParticleForce*>& forces
     sceneEditor->BeginBatch("Move particle force", forces.size());
     for (size_t i = 0; i < forces.size(); ++i)
     {
-        sceneEditor->Exec(Command2::Create<ParticleForceMoveCommand>(forces[i], oldLayers[i], newLayer));
+        sceneEditor->Exec(DAVA::Command::Create<ParticleForceMoveCommand>(forces[i], oldLayers[i], newLayer));
     }
     sceneEditor->EndBatch();
     EmitChanged();
@@ -272,8 +272,8 @@ void StructureSystem::ReloadInternal(InternalMapping& mapping, const DAVA::FileP
                             CopyLightmapSettings(origEntity, newEntityInstance);
                         }
 
-                        sceneEditor->Exec(Command2::Create<EntityParentChangeCommand>(newEntityInstance, origEntity->GetParent(), before));
-                        sceneEditor->Exec(Command2::Create<EntityRemoveCommand>(origEntity));
+                        sceneEditor->Exec(DAVA::Command::Create<EntityParentChangeCommand>(newEntityInstance, origEntity->GetParent(), before));
+                        sceneEditor->Exec(DAVA::Command::Create<EntityRemoveCommand>(origEntity));
                     }
                 }
 
@@ -327,7 +327,7 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             }
             else
             {
-                sceneEditor->Exec(Command2::Create<EntityAddCommand>(loadedEntity, sceneEditor));
+                sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(loadedEntity, sceneEditor));
             }
 
             // TODO: move this code to some another place (into command itself or into ProcessCommand function)
@@ -368,7 +368,7 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void StructureSystem::ProcessCommand(const Command2* command, bool redo)
+void StructureSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {

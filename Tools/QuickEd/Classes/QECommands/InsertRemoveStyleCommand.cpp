@@ -1,5 +1,6 @@
 #include "InsertRemoveStyleCommand.h"
 
+#include "Document/CommandsBase/QECommandIDs.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -7,7 +8,7 @@
 using namespace DAVA;
 
 InsertRemoveStyleCommand::InsertRemoveStyleCommand(PackageNode* _root, StyleSheetNode* _node, StyleSheetsNode* _dest, int _index, bool _insert)
-    : Command("InsertRemoveStyle")
+    : QECommand(CMDID_INSERT_REMOVE_STYLE, "InsertRemoveStyle")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , dest(SafeRetain(_dest))

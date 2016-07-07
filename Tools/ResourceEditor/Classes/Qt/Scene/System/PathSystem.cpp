@@ -6,7 +6,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Commands2/ConvertPathCommands.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/Entity.h"
@@ -62,7 +62,7 @@ PathSystem::~PathSystem()
 void PathSystem::AddPath(DAVA::Entity* entity)
 {
     sceneEditor->BeginBatch("Add path at scene", 1);
-    sceneEditor->Exec(Command2::Create<EntityAddCommand>(entity, sceneEditor));
+    sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(entity, sceneEditor));
 
     if (isEditingEnabled)
         ExpandPathEntity(entity);
@@ -255,7 +255,7 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void PathSystem::ProcessCommand(const Command2* command, bool redo)
+void PathSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
@@ -299,13 +299,14 @@ void PathSystem::ProcessCommand(const Command2* command, bool redo)
             }
         };
 
-        if (command->GetId() == CMDID_BATCH)
+        if (command->GetID() == DAVA::CMDID_BATCH)
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {
-                const Command2* cmd = batch->GetCommand(i);
+                const RECommand* cmd = batch->GetCommand(i);
                 if (cmd->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
                 {
                     ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(cmd), redo);
@@ -359,7 +360,7 @@ void PathSystem::EnablePathEdit(bool enable)
     if (enable)
     {
         sceneEditor->BeginBatch("Enable waypoints edit", pathes.size() + 1);
-        sceneEditor->Exec(Command2::Create<EnableWayEditCommand>());
+        sceneEditor->Exec(DAVA::Command::Create<EnableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -371,7 +372,7 @@ void PathSystem::EnablePathEdit(bool enable)
     else
     {
         sceneEditor->BeginBatch("Disable waypoints edit", pathes.size() + 1);
-        sceneEditor->Exec(Command2::Create<DisableWayEditCommand>());
+        sceneEditor->Exec(DAVA::Command::Create<DisableWayEditCommand>());
 
         for (auto path : pathes)
         {
@@ -391,7 +392,7 @@ void PathSystem::ExpandPathEntity(const DAVA::Entity* pathEntity)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(Command2::Create<ExpandPathCommand>(pathComponent));
+        sceneEditor->Exec(DAVA::Command::Create<ExpandPathCommand>(pathComponent));
     }
 
     sceneEditor->EndBatch();
@@ -405,7 +406,7 @@ void PathSystem::CollapsePathEntity(const DAVA::Entity* pathEntity)
     {
         DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(pathEntity->GetComponent(DAVA::Component::PATH_COMPONENT, i));
         DVASSERT(pathComponent);
-        sceneEditor->Exec(Command2::Create<CollapsePathCommand>(pathComponent));
+        sceneEditor->Exec(DAVA::Command::Create<CollapsePathCommand>(pathComponent));
     }
 
     sceneEditor->EndBatch();

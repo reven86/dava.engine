@@ -3,7 +3,6 @@
 
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
-#include "Commands2/Base/Command2.h"
 
 // bullet
 #include "bullet/btBulletCollisionCommon.h"
@@ -16,6 +15,7 @@
 
 class CollisionBaseObject;
 class SceneCollisionDebugDrawer;
+class RECommand;
 
 enum CollisionSystemDrawMode
 {
@@ -65,7 +65,7 @@ public:
 private:
     void Draw();
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     void AddEntity(DAVA::Entity* entity) override;

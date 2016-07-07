@@ -1,9 +1,9 @@
 #ifndef __REMOVE_COMPONENT_COMMAND_H__
 #define __REMOVE_COMPONENT_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class RemoveComponentCommand : public Command2
+class RemoveComponentCommand : public RECommand
 {
 public:
     RemoveComponentCommand(DAVA::Entity* entity, DAVA::Component* component);

@@ -6,7 +6,7 @@
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/Base/CommandBatch.h"
+#include "Classes/Commands2/Base/RECommandBatch.h"
 #include "Entity/Component.h"
 
 #include <QDragMoveEvent>
@@ -24,7 +24,7 @@ MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
 
     QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const RECommand*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), this, SLOT(OnStructureChanged(SceneEditor2*, DAVA::Entity*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
 
@@ -197,7 +197,7 @@ void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row
     }
 }
 
-void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -217,7 +217,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
         }
         else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
         {
-            auto ProcessRemoveCommand = [this](const Command2* command, bool redo)
+            auto ProcessRemoveCommand = [this](const RECommand* command, bool redo)
             {
                 const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
                 DVASSERT(removeCommand->GetComponent() != nullptr);
@@ -227,14 +227,15 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* comman
                 }
             };
 
-            if (command->GetId() == CMDID_BATCH)
+            if (command->GetID() == DAVA::CMDID_BATCH)
             {
-                const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+                const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
+                const RECommandBatch* batch = DAVA::DynamicTypeCheck<const RECommandBatch*>(commandBase);
                 const DAVA::uint32 count = batch->Size();
                 for (DAVA::uint32 i = 0; i < count; ++i)
                 {
-                    const Command2* cmd = batch->GetCommand(i);
-                    if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
+                    const RECommand* cmd = batch->GetCommand(i);
+                    if (cmd->GetID() == CMDID_COMPONENT_REMOVE)
                     {
                         ProcessRemoveCommand(cmd, redo);
                     }

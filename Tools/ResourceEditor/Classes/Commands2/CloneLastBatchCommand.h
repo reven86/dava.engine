@@ -1,12 +1,12 @@
 #ifndef __CLONE_LAST_BATCH_COMMAND_H__
 #define __CLONE_LAST_BATCH_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 
-class CloneLastBatchCommand : public Command2
+class CloneLastBatchCommand : public RECommand
 {
 public:
     CloneLastBatchCommand(DAVA::RenderObject* renderObject);
