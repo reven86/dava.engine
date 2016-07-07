@@ -80,7 +80,7 @@ public slots:
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
     void OnRecentProjectsTriggered(QAction* recentAction);
-    void ExportMenuTriggered(QAction* exportAsAction);
+    void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
 
@@ -240,7 +240,7 @@ private slots:
     void OnConsoleItemClicked(const QString& data);
 
 private:
-    Ui::MainWindow* ui;
+    std::unique_ptr<Ui::MainWindow> ui;
     QtWaitDialog* waitDialog;
     QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;

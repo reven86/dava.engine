@@ -133,10 +133,14 @@ void SpritesPackerModule::CloseWaitDialog()
 
 void SpritesPackerModule::ReloadObjects()
 {
-    DAVA::Sprite::ReloadSprites();
+    DAVA::Sprite::ReloadSprites(DAVA::Texture::GetDefaultGPU());
 
-    DAVA::uint32 gpu = spritesPacker->GetResourcePacker().requestedGPUFamily;
-    SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, DAVA::VariantType(gpu));
+    const DAVA::Vector<DAVA::eGPUFamily>& gpus = spritesPacker->GetResourcePacker().requestedGPUs;
+    if (gpus.empty() == false)
+    {
+        DAVA::uint32 gpu = gpus[0];
+        SettingsManager::SetValue(Settings::Internal_SpriteViewGPU, DAVA::VariantType(gpu));
+    }
 
     emit SpritesReloaded();
 }

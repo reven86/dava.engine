@@ -1,8 +1,8 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/Image.h"
-#include "Render/Image/DDS/NvttHelper.h"
-#include "Render/Image/DDS/QualcommHelper.h"
-#include "Render/Image/DDS/DDSHandlers.h"
+#include "Render/Image/Private/NvttHelper.h"
+#include "Render/Image/Private/QualcommHelper.h"
+#include "Render/Image/Private/DDSHandlers.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Render/Texture.h"
@@ -12,32 +12,27 @@
 namespace DAVA
 {
 LibDdsHelper::LibDdsHelper()
-    : ImageFormatInterface(
-      IMAGE_FORMAT_DDS, // image format type
-      "DDS", // image format name
-      { ".dds" }, // image format extension
-      { FORMAT_ATC_RGB, // supported pixel formats
-        FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
-        FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
-        FORMAT_DXT1,
-        FORMAT_REMOVED_DXT_1N,
-        FORMAT_DXT1A,
-        FORMAT_DXT3,
-        FORMAT_DXT5,
-        FORMAT_DXT5NM,
-        FORMAT_RGBA8888 })
+    : ImageFormatInterface(IMAGE_FORMAT_DDS, "DDS", { ".dds" },
+                           { FORMAT_ATC_RGB, // supported pixel formats
+                             FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
+                             FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+                             FORMAT_DXT1,
+                             FORMAT_REMOVED_DXT_1N,
+                             FORMAT_DXT1A,
+                             FORMAT_DXT3,
+                             FORMAT_DXT5,
+                             FORMAT_DXT5NM,
+                             FORMAT_RGBA8888 })
 {
 }
 
-bool LibDdsHelper::CanProcessFile(const ScopedPtr<File>& infile) const
+bool LibDdsHelper::CanProcessFileInternal(File* infile) const
 {
-    DVASSERT(infile);
     std::unique_ptr<DDSReader> reader = DDSReader::CreateReader(infile);
-    infile->Seek(0, File::SEEK_FROM_START);
     return (reader.get() != nullptr);
 }
 
-eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibDdsHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -46,57 +41,21 @@ eErrorCode LibDdsHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>&
     {
         return eErrorCode::SUCCESS;
     }
-    else
-    {
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
+
+    return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
 }
 
 eErrorCode LibDdsHelper::WriteFileInternal(const FilePath& outFileName, const Vector<Vector<Image*>>& imageSet, PixelFormat dstFormat, ImageQuality quality) const
 {
-    if (!IsFileExtensionSupported(outFileName.GetExtension()))
-    {
-        Logger::Error("[LibDdsHelper::WriteFile] Wrong output file name specified: %s", outFileName.GetStringValue().c_str());
-        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
-    }
-
-    FilePath tmpFileName = FilePath::CreateWithNewExtension(outFileName, "_dds");
-    ScopedPtr<File> file(File::Create(tmpFileName, File::CREATE | File::WRITE));
+    ScopedPtr<File> file(File::Create(outFileName, File::CREATE | File::WRITE));
     std::unique_ptr<DDSWriter> ddsWriter = DDSWriter::CreateWriter(file);
 
     if (ddsWriter && ddsWriter->Write(imageSet, dstFormat))
     {
-        ddsWriter.reset();
-        file.reset();
-
-        bool err = false;
-        if (FileSystem::Instance()->Exists(outFileName) && !FileSystem::Instance()->DeleteFile(outFileName))
-        {
-            Logger::Error("[LibDdsHelper::WriteFile] Can't delete previous dds file %s", outFileName.GetStringValue().c_str());
-            err = true;
-        }
-
-        if (err == false && !FileSystem::Instance()->MoveFile(tmpFileName, outFileName, true))
-        {
-            Logger::Error("[LibDdsHelper::WriteFile] Temporary dds file %s renaming failed", tmpFileName.GetStringValue().c_str());
-            err = true;
-        }
-
-        if (err == true)
-        {
-            if (FileSystem::Instance()->Exists(tmpFileName) && !FileSystem::Instance()->DeleteFile(tmpFileName))
-            {
-                Logger::Error("[LibDdsHelper::WriteFile] Can't delete temporary dds file %s", tmpFileName.GetStringValue().c_str());
-            }
-            return DAVA::eErrorCode::ERROR_WRITE_FAIL;
-        }
-
         return DAVA::eErrorCode::SUCCESS;
     }
-    else
-    {
-        return DAVA::eErrorCode::ERROR_WRITE_FAIL;
-    }
+
+    return DAVA::eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibDdsHelper::WriteFile(const FilePath& outFileName, const Vector<Image*>& imageSet, PixelFormat dstFormat, ImageQuality quality) const
@@ -115,13 +74,13 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath& outFileName, const V
     return WriteFileInternal(outFileName, imageSet, dstFormat, quality);
 }
 
-ImageInfo LibDdsHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+ImageInfo LibDdsHelper::GetImageInfo(File* infile) const
 {
     std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(infile));
     return (reader ? reader->GetImageInfo() : ImageInfo());
 }
 
-bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
+bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname)
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::OPEN | File::READ | File::WRITE));
     if (!ddsFile)
@@ -142,7 +101,7 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname) const
     }
 }
 
-uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
+uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname)
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
     if (!ddsFile)
@@ -154,25 +113,26 @@ uint32 LibDdsHelper::GetCRCFromFile(const FilePath& filePathname) const
     std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(ddsFile));
     if (reader)
     {
-        uint32 crc;
+        uint32 crc = 0;
         if (reader->GetCRC(crc))
         {
             return crc;
-        }
-        else
-        {
-            reader.reset();
-            return CRC32::ForFile(filePathname);
         }
     }
     else
     {
         Logger::Error("[LibDdsHelper::GetCRCFromFile] %s is not a DDS file", filePathname.GetStringValue().c_str());
-        return false;
     }
+
+    return 0;
 }
 
-bool LibDdsHelper::CanCompressAndDecompress(PixelFormat format)
+bool LibDdsHelper::CanCompressTo(PixelFormat format)
+{
+    return (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format));
+}
+
+bool LibDdsHelper::CanDecompressFrom(PixelFormat format)
 {
     return (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format));
 }
@@ -191,10 +151,8 @@ bool LibDdsHelper::DecompressToRGBA(const Image* srcImage, Image* dstImage)
     {
         return QualcommHelper::DecompressAtcToRgba(srcImage, dstImage);
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
@@ -211,9 +169,7 @@ bool LibDdsHelper::CompressFromRGBA(const Image* srcImage, Image* dstImage)
     {
         return QualcommHelper::CompressRgbaToAtc(srcImage, dstImage);
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 }

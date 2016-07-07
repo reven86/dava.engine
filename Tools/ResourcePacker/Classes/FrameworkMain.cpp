@@ -1,5 +1,7 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
+
+#include "Utils/Utils.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "CommandLine/CommandLineParser.h"
 
@@ -27,6 +29,7 @@ void PrintUsage()
     printf("\t-ip - asset cache ip\n");
     printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
+    printf("\t-output - output folder for .../Project/Data/Gfx/\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
@@ -58,8 +61,13 @@ void ProcessRecourcePacker()
     inputDir.MakeDirectoryPathname();
 
     String lastDir = inputDir.GetDirectory().GetLastDirectoryName();
-    FilePath outputDir = inputDir + ("../../Data/" + lastDir + "/");
 
+    FilePath outputDir = CommandLineParser::GetCommandParam("-output");
+    if (outputDir.IsEmpty())
+    {
+        outputDir = inputDir + ("../../Data/" + lastDir + "/");
+    }
+    outputDir.MakeDirectoryPathname();
     resourcePacker.InitFolders(inputDir, outputDir);
 
     if (resourcePacker.rootDirectory.IsEmpty())
@@ -92,15 +100,22 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
 
-    eGPUFamily exportForGPU = GPU_ORIGIN;
+    Vector<eGPUFamily> exportForGPUs;
     if (CommandLineParser::CommandIsFound(String("-gpu")))
     {
-        String gpuName = CommandLineParser::GetCommandParam("-gpu");
-        exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
-        if (GPU_INVALID == exportForGPU)
+        String gpuNamesString = CommandLineParser::GetCommandParam("-gpu");
+        Vector<String> gpuNames;
+        Split(gpuNamesString, ",", gpuNames);
+
+        for (String& name : gpuNames)
         {
-            exportForGPU = GPU_ORIGIN;
+            exportForGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(name));
         }
+    }
+
+    if (exportForGPUs.empty())
+    {
+        exportForGPUs.push_back(GPU_ORIGIN);
     }
 
     AssetCacheClient cacheClient(true);
@@ -136,7 +151,7 @@ void ProcessRecourcePacker()
     }
     else
     {
-        resourcePacker.PackResources(exportForGPU);
+        resourcePacker.PackResources(exportForGPUs);
     }
 
     if (shouldDisconnect)
