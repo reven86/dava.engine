@@ -141,8 +141,6 @@ void AutotestingSystem::OnAppStarted()
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
 
     Size2i size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-    EnsurePowerOf2(size.dx);
-    EnsurePowerOf2(size.dy);
 
     Texture::FBODescriptor desc;
     desc.width = uint32(size.dx);
@@ -393,7 +391,13 @@ void AutotestingSystem::MakeScreenShot()
     UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
     if (currentScreen)
     {
-        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot));
+        const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+        rhi::Viewport viewport;
+        viewport.x = viewport.y = 0;
+        viewport.width = size.dx;
+        viewport.height = size.dy;
+        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, viewport);
     }
     else
     {

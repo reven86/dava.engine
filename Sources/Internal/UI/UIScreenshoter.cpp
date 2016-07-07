@@ -69,9 +69,9 @@ void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, boo
     MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport)
 {
-    MakeScreenshotInternal(control, screenshot, callback, clearAlpha);
+    MakeScreenshotInternal(control, screenshot, callback, clearAlpha, viewport);
 }
 
 void UIScreenshoter::Unsubscribe(Texture* screenshot)
@@ -85,7 +85,7 @@ void UIScreenshoter::Unsubscribe(Texture* screenshot)
     }
 }
 
-void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport)
 {
     if (control == nullptr)
         return;
@@ -102,8 +102,8 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.colorAttachment = screenshot->handle;
     desc.depthAttachment = screenshot->handleDepthStencil;
-    desc.width = screenshot->GetWidth();
-    desc.height = screenshot->GetHeight();
+    desc.width = viewport.width ? viewport.width : screenshot->GetWidth();
+    desc.height = viewport.height ? viewport.height : screenshot->GetHeight();
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = true;
