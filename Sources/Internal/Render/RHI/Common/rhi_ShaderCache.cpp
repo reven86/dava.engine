@@ -455,16 +455,6 @@ static const char* _ShaderHeader_GLES2 =
 "#define min10float2            lowp vec2\n"
 "#define min10float3            lowp vec3\n"
 "#define min10float4            lowp vec4\n"
-"#define i_half                 mediump float\n"
-"#define i_half1                mediump float\n"
-"#define i_half2                mediump vec2\n"
-"#define i_half3                mediump vec3\n"
-"#define i_half4                mediump vec4\n"
-"#define i_min10float           lowp float\n"
-"#define i_min10float1          lowp float\n"
-"#define i_min10float2          lowp vec2\n"
-"#define i_min10float3          lowp vec3\n"
-"#define i_min10float4          lowp vec4\n"
 #else
 "#define half                   float\n"
 "#define half1                  float\n"
@@ -476,7 +466,19 @@ static const char* _ShaderHeader_GLES2 =
 "#define min10float2            vec2\n"
 "#define min10float3            vec3\n"
 "#define min10float4            vec4\n"
-
+#endif
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define i_half                 mediump float\n"
+"#define i_half1                mediump float\n"
+"#define i_half2                mediump vec2\n"
+"#define i_half3                mediump vec3\n"
+"#define i_half4                mediump vec4\n"
+"#define i_min10float           lowp float\n"
+"#define i_min10float1          lowp float\n"
+"#define i_min10float2          lowp vec2\n"
+"#define i_min10float3          lowp vec3\n"
+"#define i_min10float4          lowp vec4\n"
+#else
 "#define i_half                 float\n"
 "#define i_half1                float\n"
 "#define i_half2                vec2\n"
