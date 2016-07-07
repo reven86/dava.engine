@@ -25,6 +25,8 @@
 #include <dirent.h>
 
 #include <unistd.h>
+// __page_size is not defined in runtime library, so we do it
+// http://stackoverflow.com/questions/36002823/ndk-build-fails-to-build-superpowered-audio-library-after-recent-ndk-update/36019586
 unsigned int __page_size = getpagesize();
 
 #include "Render/Renderer.h"
