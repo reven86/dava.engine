@@ -65,7 +65,7 @@ void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily
         }
     }
 
-    resourcePacker.PackResources(gpu);
+    resourcePacker.PackResources({ gpu });
     if (shouldDisconnectClient)
     {
         cacheClient.Disconnect();

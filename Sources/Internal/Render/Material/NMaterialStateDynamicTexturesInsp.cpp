@@ -152,7 +152,6 @@ void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata,
     VariantType ret;
 
     Set<FastName>* textures = static_cast<Set<FastName>*>(ddata.data.get());
-    ;
     DVASSERT(textures);
 
     NMaterial* material = static_cast<NMaterial*>(ddata.object);
