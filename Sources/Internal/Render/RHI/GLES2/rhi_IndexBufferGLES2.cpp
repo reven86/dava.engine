@@ -86,32 +86,26 @@ bool IndexBufferGLES2_t::Create(const IndexBuffer::Descriptor& desc, bool force_
         }
         else
         {
-            GLCommand cmd1 = { GLCommand::GEN_BUFFERS, { 1, reinterpret_cast<uint64>(&b) } };
-
-            ExecGL(&cmd1, 1, force_immediate);
-
-            if (cmd1.status == GL_NO_ERROR)
+            GLCommand cmd[] =
             {
-                GLCommand cmd2[] =
-                {
-                  { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
-                  { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, reinterpret_cast<uint64>(desc.initialData), usage } },
-                  { GLCommand::RESTORE_INDEX_BUFFER, {} }
-                };
+              { GLCommand::GEN_BUFFERS, { 1, reinterpret_cast<uint64>(&b) } },
+              { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
+              { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, reinterpret_cast<uint64>(desc.initialData), usage } },
+              { GLCommand::RESTORE_INDEX_BUFFER, {} }
+            };
 
-                if (!desc.initialData)
-                {
-                    DVASSERT(desc.usage != USAGE_STATICDRAW);
-                    cmd2[1].func = GLCommand::NOP;
-                }
+            if (!desc.initialData)
+            {
+                DVASSERT(desc.usage != USAGE_STATICDRAW);
+                cmd[2].func = GLCommand::NOP;
+            }
 
-                ExecGL(cmd2, countof(cmd2), force_immediate);
+            ExecGL(cmd, countof(cmd), force_immediate);
 
-                if (cmd2[0].status == GL_NO_ERROR)
-                {
-                    success = true;
-                    mappedData = nullptr;
-                }
+            if (cmd[1].status == GL_NO_ERROR)
+            {
+                success = true;
+                mappedData = nullptr;
             }
         }
 

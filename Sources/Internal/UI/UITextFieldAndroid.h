@@ -139,6 +139,7 @@ protected:
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
+    bool programmaticTextChange = false;
     std::shared_ptr<JniTextField> jniTextField;
     UITextField* textField = nullptr;
     static uint32_t sId;
