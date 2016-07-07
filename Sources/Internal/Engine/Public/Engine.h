@@ -45,8 +45,8 @@ public:
     Signal<> gameLoopStarted;
     Signal<> gameLoopStopped;
     Signal<> beforeTerminate;
-    Signal<Window*> windowCreated;
-    Signal<Window*> windowDestroyed;
+    Signal<Window&> windowCreated;
+    Signal<Window&> windowDestroyed;
     Signal<> beginFrame;
     Signal<float32> update;
     Signal<> draw;

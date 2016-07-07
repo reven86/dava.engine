@@ -6,8 +6,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/WinUWP/WindowWinUWP.h"
 
 #include "Logger/Logger.h"
@@ -36,7 +36,7 @@ void WindowWinUWPBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
     float32 h = xamlWindow->Bounds.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindowBackend()->PostWindowCreated(uwpWindow, w, h, scaleX, scaleY);
+    uwpWindow->GetWindow()->PostWindowCreated(uwpWindow, w, h, scaleX, scaleY);
 
     xamlWindow->Activate();
 }
@@ -62,13 +62,13 @@ void WindowWinUWPBridge::DoCloseWindow()
     // WinRT does not permit to close main window, so for primary window pretend that window has been closed.
     // For secondary window invoke Close() method, and also do not wait Closed event as stated in MSDN:
     //      Apps are typically suspended, not terminated. As a result, this event (Closed) is rarely fired, if ever.
-    if (!uwpWindow->GetWindowBackend()->IsPrimary())
+    if (!uwpWindow->GetWindow()->IsPrimary())
     {
         xamlWindow->CoreWindow->Close();
     }
-    uwpWindow->GetWindowBackend()->PostFocusChanged(false);
-    uwpWindow->GetWindowBackend()->PostVisibilityChanged(false);
-    uwpWindow->GetWindowBackend()->PostWindowDestroyed();
+    uwpWindow->GetWindow()->PostFocusChanged(false);
+    uwpWindow->GetWindow()->PostVisibilityChanged(false);
+    uwpWindow->GetWindow()->PostWindowDestroyed();
     UninstallEventHandlers();
 }
 
@@ -81,17 +81,17 @@ void WindowWinUWPBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
 {
     using namespace ::Windows::UI::Core;
     bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
-    uwpWindow->GetWindowBackend()->PostFocusChanged(hasFocus);
+    uwpWindow->GetWindow()->PostFocusChanged(hasFocus);
 }
 
 void WindowWinUWPBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
-    uwpWindow->GetWindowBackend()->PostVisibilityChanged(arg->Visible);
+    uwpWindow->GetWindow()->PostVisibilityChanged(arg->Visible);
 }
 
 void WindowWinUWPBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
-    uwpWindow->GetWindowBackend()->PostKeyChar(arg->KeyCode, arg->KeyStatus.WasKeyDown);
+    uwpWindow->GetWindow()->PostKeyChar(arg->KeyCode, arg->KeyStatus.WasKeyDown);
 }
 
 void WindowWinUWPBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
@@ -109,11 +109,11 @@ void WindowWinUWPBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     {
     case CoreAcceleratorKeyEventType::KeyDown:
     case CoreAcceleratorKeyEventType::SystemKeyDown:
-        uwpWindow->GetWindowBackend()->PostKeyDown(key, status.WasKeyDown);
+        uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         break;
     case CoreAcceleratorKeyEventType::KeyUp:
     case CoreAcceleratorKeyEventType::SystemKeyUp:
-        uwpWindow->GetWindowBackend()->PostKeyUp(key);
+        uwpWindow->GetWindow()->PostKeyUp(key);
         break;
     default:
         break;
@@ -126,7 +126,7 @@ void WindowWinUWPBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
     float32 h = arg->NewSize.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindowBackend()->PostSizeChanged(w, h, scaleX, scaleY);
+    uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
 void WindowWinUWPBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
@@ -135,7 +135,7 @@ void WindowWinUWPBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindowBackend()->PostSizeChanged(w, h, scaleX, scaleY);
+    uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
 void WindowWinUWPBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
@@ -149,7 +149,7 @@ void WindowWinUWPBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
 
     DispatcherEvent e;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindowBackend();
+    e.window = uwpWindow->GetWindow();
 
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
@@ -181,7 +181,7 @@ void WindowWinUWPBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
 
     DispatcherEvent e;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindowBackend();
+    e.window = uwpWindow->GetWindow();
 
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
@@ -211,7 +211,7 @@ void WindowWinUWPBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
 
     DispatcherEvent e;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindowBackend();
+    e.window = uwpWindow->GetWindow();
 
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
@@ -254,10 +254,10 @@ void WindowWinUWPBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     DispatcherEvent e;
     e.type = DispatcherEvent::MOUSE_WHEEL;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindowBackend();
+    e.window = uwpWindow->GetWindow();
     e.mwheelEvent.x = pointerPoint->Position.X;
     e.mwheelEvent.y = pointerPoint->Position.Y;
-    e.mwheelEvent.delta = pointerPoint->Properties->MouseWheelDelta;
+    e.mwheelEvent.delta = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
     uwpWindow->GetDispatcher()->PostEvent(e);
 }
 

@@ -7,7 +7,6 @@
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/WinUWP/CoreWinUWP.h"
 #include "Engine/Private/WinUWP/WindowWinUWPBridge.h"
@@ -16,11 +15,11 @@ namespace DAVA
 {
 namespace Private
 {
-WindowWinUWP::WindowWinUWP(EngineBackend* e, WindowBackend* w)
+WindowWinUWP::WindowWinUWP(EngineBackend* e, Window* w)
     : engine(e)
     , dispatcher(engine->GetDispatcher())
     , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowWinUWP::EventHandler))
+    , platformDispatcher(MakeFunction(this, &WindowWinUWP::PlatformEventHandler))
     , bridge(ref new WindowWinUWPBridge(this))
 {
 }
@@ -73,7 +72,7 @@ void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
     bridge->BindToXamlWindow(xamlWindow);
 }
 
-void WindowWinUWP::EventHandler(const PlatformEvent& e)
+void WindowWinUWP::PlatformEventHandler(const PlatformEvent& e)
 {
     // Method executes in context of XAML::Window's UI thread
     switch (e.type)

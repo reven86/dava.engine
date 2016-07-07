@@ -132,7 +132,7 @@ void GameCore::OnBeforeTerminate()
     netLogger.Uninstall();
 }
 
-void GameCore::OnWindowCreated(DAVA::Window* w)
+void GameCore::OnWindowCreated(DAVA::Window& w)
 {
     Logger::Error("****** GameCore::OnWindowCreated");
 
@@ -142,12 +142,12 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     RunTests();
 }
 
-void GameCore::OnWindowDestroyed(DAVA::Window* w)
+void GameCore::OnWindowDestroyed(DAVA::Window& w)
 {
     Logger::Error("****** GameCore::OnWindowDestroyed");
 }
 
-void GameCore::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
     Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }

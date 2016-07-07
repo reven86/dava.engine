@@ -3,7 +3,6 @@
 #include "Engine/Public/Engine.h"
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 
 namespace DAVA
@@ -43,11 +42,7 @@ EngineContext* Engine::GetContext() const
 
 Window* Engine::PrimaryWindow() const
 {
-    if (engineBackend->GetPrimaryWindow() != nullptr)
-    {
-        return engineBackend->GetPrimaryWindow()->GetWindow();
-    }
-    return nullptr;
+    return engineBackend->GetPrimaryWindow();
 }
 
 void Engine::Init(bool consoleMode, const Vector<String>& modules)

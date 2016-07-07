@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
@@ -20,12 +20,12 @@ namespace Private
 class WindowWinUWP final
 {
 public:
-    WindowWinUWP(EngineBackend* e, WindowBackend* w);
+    WindowWinUWP(EngineBackend* e, Window* w);
     ~WindowWinUWP();
 
     void* GetHandle() const;
     Dispatcher* GetDispatcher() const;
-    WindowBackend* GetWindowBackend() const;
+    Window* GetWindow() const;
 
     void Resize(float32 width, float32 height);
     void Close();
@@ -38,12 +38,12 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
 private:
-    void EventHandler(const PlatformEvent& e);
+    void PlatformEventHandler(const PlatformEvent& e);
 
 private:
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
-    WindowBackend* window = nullptr;
+    Window* window = nullptr;
 
     PlatformDispatcher platformDispatcher;
 
@@ -55,7 +55,7 @@ inline Dispatcher* WindowWinUWP::GetDispatcher() const
     return dispatcher;
 }
 
-inline WindowBackend* WindowWinUWP::GetWindowBackend() const
+inline Window* WindowWinUWP::GetWindow() const
 {
     return window;
 }

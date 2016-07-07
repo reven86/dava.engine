@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
@@ -84,7 +84,7 @@ struct DispatcherEvent final
 
     eType type = DUMMY;
     uint64 timestamp = 0;
-    WindowBackend* window = nullptr;
+    Window* window = nullptr;
     Function<void()> functor;
     union
     {

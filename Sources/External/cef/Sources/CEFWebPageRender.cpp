@@ -33,15 +33,15 @@ CEFWebPageRender::CEFWebPageRender()
 #endif
 {
 #if defined(__DAVAENGINE_COREV2__)
-    auto focusChanged = [this](Window*, bool isFocused) -> void
+    auto focusChanged = [this](Window&, bool isFocused) -> void
     {
         if (!isFocused)
         {
             ResetCursor();
         }
     };
-    auto windowDestroyed = [this](Window* w) -> void {
-        if (w == window)
+    auto windowDestroyed = [this](Window& w) -> void {
+        if (&w == window)
         {
             window->focusChanged.Disconnect(focusConnection);
             window->destroyed.Disconnect(windowDestroyedConnection);

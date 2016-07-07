@@ -7,7 +7,6 @@
 #elif defined(__DAVAENGINE_WIN32__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Win32/CoreWin32.h"
 
@@ -22,10 +21,10 @@ namespace Private
 bool WindowWin32::windowClassRegistered = false;
 const wchar_t WindowWin32::windowClassName[] = L"DAVA_WND_CLASS";
 
-WindowWin32::WindowWin32(EngineBackend* engine_, WindowBackend* window_)
-    : engine(engine_)
+WindowWin32::WindowWin32(EngineBackend* e, Window* w)
+    : engine(e)
     , dispatcher(engine->GetDispatcher())
-    , window(window_)
+    , window(w)
     , platformDispatcher(MakeFunction(this, &WindowWin32::EventHandler))
 {
 }

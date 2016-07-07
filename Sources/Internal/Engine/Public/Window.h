@@ -1,15 +1,21 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
 
+#include "UI/UIEvent.h"
+
 #include "Engine/Private/EngineFwd.h"
 
 namespace DAVA
 {
+class InputSystem;
+class UIControlSystem;
+class VirtualCoordinatesSystem;
+
 class Window final
 {
 public:
@@ -38,33 +44,153 @@ public:
 
     void Resize(float32 w, float32 h);
     void Resize(Vector2 size);
+    void Close();
 
     void* GetNativeHandle() const;
+    Private::NativeWindow* GetNativeWindow() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 public:
+    // For now these methods are public
+    void PostFocusChanged(bool focus);
+    void PostVisibilityChanged(bool visibility);
+    void PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowCreated(Private::NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowDestroyed();
+
+    void PostKeyDown(uint32 key, bool isRepeated);
+    void PostKeyUp(uint32 key);
+    void PostKeyChar(uint32 key, bool isRepeated);
+
+public:
     // Signals
-    Signal<Window*, bool> visibilityChanged;
-    Signal<Window*, bool> focusChanged;
-    Signal<Window*> destroyed;
-    Signal<Window*, float32, float32, float32, float32> sizeScaleChanged;
-    Signal<Window*, float32> update;
+    Signal<Window&, bool> visibilityChanged;
+    Signal<Window&, bool> focusChanged;
+    Signal<Window&> destroyed;
+    Signal<Window&, float32, float32, float32, float32> sizeScaleChanged;
+    //Signal<Window&> beginUpdate;
+    //Signal<Window&> beginDraw;
+    Signal<Window&, float32> update;
+    //Signal<Window&> endDraw;
+    //Signal<Window&> endUpdate;
 
 private:
-    Window(Private::WindowBackend* backend);
+    Window(Private::EngineBackend* engine, bool primary);
     ~Window();
 
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
 private:
-    Private::WindowBackend* windowBackend = nullptr;
+    void Update(float32 frameDelta);
+    void Draw();
+
+    void EventHandler(const Private::DispatcherEvent& e);
+    void FinishEventHandlingOnCurrentFrame();
+
+    void HandleWindowCreated(const Private::DispatcherEvent& e);
+    void HandleWindowDestroyed(const Private::DispatcherEvent& e);
+    void HandleSizeChanged(const Private::DispatcherEvent& e);
+    void HandleFocusChanged(const Private::DispatcherEvent& e);
+    void HandleVisibilityChanged(const Private::DispatcherEvent& e);
+    void HandleMouseClick(const Private::DispatcherEvent& e);
+    void HandleMouseWheel(const Private::DispatcherEvent& e);
+    void HandleMouseMove(const Private::DispatcherEvent& e);
+    void HandleKeyPress(const Private::DispatcherEvent& e);
+    void HandleKeyChar(const Private::DispatcherEvent& e);
+
+    void HandlePendingSizeChanging();
+
+    void ClearMouseButtons();
+
+private:
+    Private::EngineBackend* engineBackend = nullptr;
+    Private::Dispatcher* dispatcher = nullptr;
+    Private::NativeWindow* nativeWindow = nullptr;
+
+    InputSystem* inputSystem = nullptr;
+    UIControlSystem* uiControlSystem = nullptr;
+    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
+
+    bool isPrimary = false;
+    bool isVisible = false;
+    bool hasFocus = false;
+    float32 width = 0.0f;
+    float32 height = 0.0f;
+    float32 scaleX = 1.0f;
+    float32 scaleY = 1.0f;
+    float32 userScale = 1.0f;
+
+    bool pendingInitRender = false;
+    bool pendingSizeChanging = false;
+
+    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
     // Friends
     friend class Private::EngineBackend;
-    friend class Private::WindowBackend;
+    friend Private::NativeWindow;
 };
+
+inline bool Window::IsPrimary() const
+{
+    return isPrimary;
+}
+
+inline bool Window::IsVisible() const
+{
+    return isVisible;
+}
+
+inline bool Window::HasFocus() const
+{
+    return hasFocus;
+}
+
+inline float32 Window::GetWidth() const
+{
+    return width;
+}
+
+inline float32 Window::GetHeight() const
+{
+    return height;
+}
+
+inline float32 Window::GetRenderSurfaceWidth() const
+{
+    return width * scaleX * userScale;
+}
+
+inline float32 Window::GetRenderSurfaceHeight() const
+{
+    return height * scaleY * userScale;
+}
+
+inline float32 Window::GetScaleX() const
+{
+    return scaleX;
+}
+
+inline float32 Window::GetScaleY() const
+{
+    return scaleY;
+}
+
+inline float32 Window::GetUserScale() const
+{
+    return userScale;
+}
+
+inline float32 Window::GetRenderSurfaceScaleX() const
+{
+    return scaleX * userScale;
+}
+
+inline float32 Window::GetRenderSurfaceScaleY() const
+{
+    return scaleY * userScale;
+}
 
 inline Vector2 Window::GetSize() const
 {
@@ -79,6 +205,11 @@ inline Vector2 Window::GetScale() const
 inline void Window::Resize(Vector2 size)
 {
     Resize(size.dx, size.dy);
+}
+
+inline Private::NativeWindow* Window::GetNativeWindow() const
+{
+    return nativeWindow;
 }
 
 } // namespace DAVA

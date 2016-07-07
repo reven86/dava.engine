@@ -9,7 +9,6 @@
 #include <shellapi.h>
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Win32/WindowWin32.h"
 
 #include "Platform/SystemTimer.h"
@@ -118,7 +117,7 @@ void CoreWin32::Quit()
     ::PostQuitMessage(engineBackend->GetExitCode());
 }
 
-WindowWin32* CoreWin32::CreateNativeWindow(WindowBackend* w, float32 width, float32 height)
+WindowWin32* CoreWin32::CreateNativeWindow(Window* w, float32 width, float32 height)
 {
     WindowWin32* nativeWindow = new WindowWin32(engineBackend, w);
     if (!nativeWindow->Create(width, height))

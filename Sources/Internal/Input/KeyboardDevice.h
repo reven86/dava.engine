@@ -160,7 +160,7 @@ private:
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
     friend class QtLayer;
-    friend class Private::WindowBackend;
+    friend class Window;
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif

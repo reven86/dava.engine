@@ -23,7 +23,7 @@ namespace Private
 class WindowWin32 final
 {
 public:
-    WindowWin32(EngineBackend* engine_, WindowBackend* window_);
+    WindowWin32(EngineBackend* e, Window* w);
     ~WindowWin32();
 
     WindowWin32(const WindowWin32&) = delete;
@@ -65,7 +65,7 @@ private:
     HWND hwnd = nullptr;
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
-    WindowBackend* window = nullptr;
+    Window* window = nullptr;
 
     bool isMinimized = false;
 

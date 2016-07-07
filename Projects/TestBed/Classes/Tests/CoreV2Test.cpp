@@ -209,12 +209,12 @@ void CoreV2Test::DispatcherEventHandler(int type)
     }
 }
 
-void CoreV2Test::OnWindowCreated(DAVA::Window* w)
+void CoreV2Test::OnWindowCreated(DAVA::Window& w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowCreated");
 }
 
-void CoreV2Test::OnWindowDestroyed(DAVA::Window* w)
+void CoreV2Test::OnWindowDestroyed(DAVA::Window& w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowDestroyed");
 }

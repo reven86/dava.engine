@@ -7,7 +7,6 @@
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/WinUWP/WindowWinUWP.h"
 
 #include "Platform/SystemTimer.h"

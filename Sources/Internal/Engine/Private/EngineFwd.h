@@ -17,7 +17,6 @@ using Dispatcher = DispatcherT<DispatcherEvent>;
 using PlatformDispatcher = DispatcherT<PlatformEvent>;
 
 class EngineBackend;
-class WindowBackend;
 
 #if defined(__DAVAENGINE_QT__)
 class CoreQt;

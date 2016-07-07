@@ -37,7 +37,7 @@ public:
     void Quit();
 
 private:
-    WindowWin32* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
+    WindowWin32* CreateNativeWindow(Window* w, float32 width, float32 height);
 
 private:
     EngineBackend* engineBackend = nullptr;

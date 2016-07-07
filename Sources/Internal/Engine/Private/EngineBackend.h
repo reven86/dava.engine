@@ -31,7 +31,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     bool IsConsoleMode() const;
     EngineContext* GetEngineContext() const;
-    WindowBackend* GetPrimaryWindow() const;
+    Window* GetPrimaryWindow() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
@@ -55,9 +55,9 @@ public:
 
     int32 OnFrame();
 
-    void InitRenderer(WindowBackend* w);
-    void ResetRenderer(WindowBackend* w, bool resetToNull);
-    void DeinitRender(WindowBackend* w);
+    void InitRenderer(Window* w);
+    void ResetRenderer(Window* w, bool resetToNull);
+    void DeinitRender(Window* w);
 
 private:
     void RunConsole();
@@ -76,7 +76,7 @@ private:
     void HandleWindowDestroyed(const DispatcherEvent& e);
     void HandleAppTerminate(const DispatcherEvent& e);
 
-    WindowBackend* CreatePrimaryWindowBackend();
+    Window* CreatePrimaryWindowBackend();
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
@@ -90,8 +90,8 @@ private:
 
     Engine* engine = nullptr;
 
-    WindowBackend* primaryWindow = nullptr;
-    Set<WindowBackend*> windows;
+    Window* primaryWindow = nullptr;
+    Set<Window*> windows;
 
     bool consoleMode = false;
     bool quitConsole = false;
@@ -115,7 +115,7 @@ inline EngineContext* EngineBackend::GetEngineContext() const
     return context;
 }
 
-inline WindowBackend* EngineBackend::GetPrimaryWindow() const
+inline Window* EngineBackend::GetPrimaryWindow() const
 {
     return primaryWindow;
 }

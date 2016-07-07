@@ -4,7 +4,6 @@
 
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 
@@ -214,7 +213,7 @@ void EngineBackend::OnBeforeTerminate()
 void EngineBackend::DoEvents()
 {
     dispatcher->ProcessEvents();
-    for (WindowBackend* w : windows)
+    for (Window* w : windows)
     {
         w->FinishEventHandlingOnCurrentFrame();
     }
@@ -263,7 +262,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
-    for (WindowBackend* w : windows)
+    for (Window* w : windows)
     {
         w->Update(frameDelta);
     }
@@ -276,7 +275,7 @@ void EngineBackend::OnDraw()
     context->renderSystem2D->BeginFrame();
 
     context->frameOcclusionQueryManager->ResetFrameStats();
-    for (WindowBackend* w : windows)
+    for (Window* w : windows)
     {
         w->Draw();
     }
@@ -321,13 +320,13 @@ void EngineBackend::EventHandler(const DispatcherEvent& e)
 void EngineBackend::HandleWindowCreated(const DispatcherEvent& e)
 {
     e.window->EventHandler(e);
-    engine->windowCreated.Emit(e.window->GetWindow());
+    engine->windowCreated.Emit(*e.window);
 }
 
 void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 {
-    engine->windowDestroyed.Emit(e.window->GetWindow());
     e.window->EventHandler(e);
+    engine->windowDestroyed.Emit(*e.window);
 
     size_t nerased = windows.erase(e.window);
     DVASSERT(nerased == 1);
@@ -350,7 +349,7 @@ void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
 
 void EngineBackend::HandleAppTerminate(const DispatcherEvent& e)
 {
-    for (WindowBackend* w : windows)
+    for (Window* w : windows)
     {
         w->Close();
     }
@@ -370,7 +369,7 @@ void EngineBackend::PostAppTerminate()
     }
 }
 
-void EngineBackend::InitRenderer(WindowBackend* w)
+void EngineBackend::InitRenderer(Window* w)
 {
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
@@ -406,7 +405,7 @@ void EngineBackend::InitRenderer(WindowBackend* w)
     context->renderSystem2D->Init();
 }
 
-void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
+void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 {
     rhi::ResetParam rendererParams;
     if (resetToNull)
@@ -430,15 +429,15 @@ void EngineBackend::ResetRenderer(WindowBackend* w, bool resetToNull)
     Renderer::Reset(rendererParams);
 }
 
-void EngineBackend::DeinitRender(WindowBackend* w)
+void EngineBackend::DeinitRender(Window* w)
 {
 }
 
-WindowBackend* EngineBackend::CreatePrimaryWindowBackend()
+Window* EngineBackend::CreatePrimaryWindowBackend()
 {
     DVASSERT(primaryWindow == nullptr);
 
-    WindowBackend* window = new WindowBackend(this, true);
+    Window* window = new Window(this, true);
     windows.insert(window);
 
     primaryWindow = window;
