@@ -7,6 +7,7 @@
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 #include <Metal/Metal.h>
 #include <QuartzCore/CAMetalLayer.h>
+#include "Concurrency/Atomic.h"
 
 extern id<MTLDevice> _Metal_Device;
 extern id<MTLCommandQueue> _Metal_DefCmdQueue;
