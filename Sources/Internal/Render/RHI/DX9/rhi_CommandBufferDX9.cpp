@@ -1864,7 +1864,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
 void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 {
-    if (DAVA::Thread::GetCurrentId() == _DX9_ThreadId)
+    if ((DAVA::Thread::GetCurrentId() == _DX9_ThreadId) && (_DX9_RenderThreadFrameCount > 0))
     {
         DVASSERT_MSG(force_immediate, "Call to ExecDX9 from render thread without force_immediate");
     }
@@ -1975,6 +1975,10 @@ void InitializeRenderThreadDX9(uint32 frameCount)
     }
     else
     {
+        _DX9_ThreadId = DAVA::Thread::GetCurrentId();
+        _DX9_FramePreparedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        _DX9_FrameDoneEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
         _InitDX9();
     }
 }
@@ -1988,6 +1992,11 @@ void UninitializeRenderThreadDX9()
         _DX9_RenderThreadRunning = false;
         SetEvent(_DX9_FramePreparedEvent);
         _DX9_RenderThread->Join();
+    }
+    else
+    {
+        CloseHandle(_DX9_FramePreparedEvent);
+        CloseHandle(_DX9_FrameDoneEvent);
     }
 }
 
