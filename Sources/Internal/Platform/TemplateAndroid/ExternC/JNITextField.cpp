@@ -47,8 +47,10 @@ void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jo
     lengthOfArray = env->GetArrayLength(oldText);
     DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
     env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
-
-    DAVA::TextFieldPlatformImpl::TextFieldOnTextChanged(id, newString, oldString);
+    if (newString != oldString)
+    {
+        DAVA::TextFieldPlatformImpl::TextFieldOnTextChanged(id, newString, oldString);
+    }
 }
 
 void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)

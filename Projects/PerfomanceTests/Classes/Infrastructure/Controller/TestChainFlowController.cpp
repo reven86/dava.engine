@@ -1,4 +1,5 @@
 #include "TestChainFlowController.h"
+#include "Infrastructure/GameCore.h"
 
 TestChainFlowController::TestChainFlowController(bool _showUI)
     : reportScreen(new ReportScreen())
@@ -63,7 +64,7 @@ void TestChainFlowController::EndFrame()
         else
         {
             Logger::Info("Finish all tests.");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 }

@@ -1133,6 +1133,7 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glEnable(GL_DEPTH_TEST));
             GL_CALL(glDepthFunc(GL_LEQUAL));
             GL_CALL(glDepthMask(GL_TRUE));
+            GL_CALL(glDisable(GL_SCISSOR_TEST));
 
             if (isFirstInPass)
             {
@@ -2359,6 +2360,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GEN_BUFFERS:
         {
             GL_CALL(glGenBuffers(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
@@ -2408,6 +2410,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GEN_TEXTURES:
         {
             GL_CALL(glGenTextures(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;

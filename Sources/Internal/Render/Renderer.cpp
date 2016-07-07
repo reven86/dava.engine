@@ -8,7 +8,6 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RenderCallbacks.h"
-#include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Platform/DeviceInfo.h"
 
