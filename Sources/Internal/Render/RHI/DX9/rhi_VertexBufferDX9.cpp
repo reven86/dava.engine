@@ -89,6 +89,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
         {
             size = desc.size;
             success = true;
+            isReleased = false;
         }
         else
         {
@@ -103,16 +104,16 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 
 void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
-    if (buffer)
+    if (buffer == nullptr)
+    {
+        SetRecreatePending(false);
+    }
+    else
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
-    }
-    else
-    {
-        SetRecreatePending(false);
     }
 
     if (!RecreatePending() && mappedData)
@@ -122,6 +123,8 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         mappedData = nullptr;
         updatePending = false;
     }
+
+    isReleased = true;
 }
 
 //==============================================================================
@@ -150,6 +153,8 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->SetRecreatePending(false);
     self->MarkRestored();
@@ -299,6 +304,11 @@ void ReleaseAll()
 void ReCreateAll()
 {
     VertexBufferDX9Pool::ReCreateAll();
+}
+
+void VerifyReleased()
+{
+    VertexBufferDX9Pool::VerifyReleased();
 }
 
 unsigned

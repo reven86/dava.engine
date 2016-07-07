@@ -51,8 +51,18 @@ static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
 static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
-static std::atomic<bool> _DX9_ResetPending = false;
 
+enum class _DX9_ResetState : DAVA::uint32
+{
+    NotRequired,
+    Pending,
+    ReleasingResources,
+    InProgress,
+    RecreatingResources
+};
+
+static std::atomic<_DX9_ResetState> _DX9_ResetStateValue{ _DX9_ResetState::NotRequired };
+static std::atomic<_DX9_ResetState> _DX9_ResetScheduledStateValue{ _DX9_ResetState::NotRequired };
 static DAVA::Thread::Id _DX9_ThreadId = 0;
 
 HANDLE _DX9_FramePreparedEvent;
@@ -1299,103 +1309,65 @@ _DX9_ExecuteQueuedCommands()
 {
     unsigned frame_n = 0;
 
-    if (_DX9_ResetPending || rhi::NeedRestoreResources())
+    if (_DX9_ResetStateValue == _DX9_ResetState::NotRequired)
     {
-        _RejectAllFrames();
-    }
-
-    std::vector<Handle> pass_h;
-    std::vector<RenderPassDX9_t*> pass;
-
-    _DX9_FrameSync.Lock();
-    bool shouldExecute = !(_DX9_Frame.empty() || _DX9_ResetPending);
-    if (shouldExecute)
-    {
-        _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
-    }
-    _DX9_FrameSync.Unlock();
-
-    if (shouldExecute)
-    {
-        for (RenderPassDX9_t* pp : pass)
-        {
-            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
-            {
-                Handle cb_h = pp->cmdBuf[b];
-
-                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
-                cb->Execute();
-
-                if (cb->sync != InvalidHandle)
-                {
-                    SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
-                    sync->frame = frame_n;
-                    sync->is_signaled = false;
-                    sync->is_used = true;
-                }
-
-                CommandBufferPoolDX9::Free(cb_h);
-            }
-        }
+        std::vector<Handle> pass_h;
+        std::vector<RenderPassDX9_t*> pass;
 
         _DX9_FrameSync.Lock();
-        _DX9_Frame.erase(_DX9_Frame.begin());
+        bool shouldExecute = !_DX9_Frame.empty();
+        if (shouldExecute)
+        {
+            _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
+        }
         _DX9_FrameSync.Unlock();
 
-        for (Handle p : pass_h)
-            RenderPassPoolDX9::Free(p);
-    }
-
-    if (_DX9_ResetPending)
-    {
-        HRESULT hr = _D3D9_Device->TestCooperativeLevel();
-        if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
+        if (shouldExecute)
         {
-            D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
-
-            param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
-
-            Logger::Info("DX9 device reset: releasing resources...");
-            TextureDX9::ReleaseAll();
-            VertexBufferDX9::ReleaseAll();
-            IndexBufferDX9::ReleaseAll();
-
-            Logger::Info("DX9 device reset: reseting device...");
-            hr = _D3D9_Device->Reset(&param);
-
-            if (SUCCEEDED(hr))
+            for (RenderPassDX9_t* pp : pass)
             {
-                Logger::Info("Device reset, restoring resources...");
+                for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+                {
+                    Handle cb_h = pp->cmdBuf[b];
 
-                TextureDX9::ReCreateAll();
-                VertexBufferDX9::ReCreateAll();
-                IndexBufferDX9::ReCreateAll();
+                    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
+                    cb->Execute();
 
-                Logger::Info("Device reset completed");
+                    if (cb->sync != InvalidHandle)
+                    {
+                        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
+                        sync->frame = frame_n;
+                        sync->is_signaled = false;
+                        sync->is_used = true;
+                    }
 
-                _DX9_ResetPending = false;
+                    CommandBufferPoolDX9::Free(cb_h);
+                }
             }
-            else
-            {
-                Logger::Error("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+
+            _DX9_FrameSync.Lock();
+            _DX9_Frame.erase(_DX9_Frame.begin());
+            _DX9_FrameSync.Unlock();
+
+            for (Handle p : pass_h)
+                RenderPassPoolDX9::Free(p);
         }
-        else
-        {
-            Logger::Error("Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-    else
-    {
+
         HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
         if (FAILED(hr))
         {
             if (hr == D3DERR_DEVICELOST)
             {
                 _RejectAllFrames();
-                _DX9_ResetPending = true;
+                if (_DX9_ResetStateValue == _DX9_ResetState::NotRequired)
+                {
+                    _DX9_ResetStateValue = _DX9_ResetState::Pending;
+                }
+                else
+                {
+                    DAVA::Logger::Info("DX9 Reset in progress, scheduling next one...");
+                    _DX9_ResetScheduledStateValue = _DX9_ResetState::Pending;
+                }
             }
             else if (hr == 0x88760872)
             {
@@ -1407,9 +1379,80 @@ _DX9_ExecuteQueuedCommands()
             }
         }
     }
+    else
+    {
+        _RejectAllFrames();
+
+        switch (_DX9_ResetStateValue)
+        {
+        case _DX9_ResetState::ReleasingResources:
+        {
+            Logger::Info("[DX9 RESET] releasing resources...");
+            TextureDX9::ReleaseAll();
+            VertexBufferDX9::ReleaseAll();
+            IndexBufferDX9::ReleaseAll();
+            Logger::Info("[DX9 RESET] resources released");
+            _DX9_ResetStateValue = _DX9_ResetState::InProgress;
+            break;
+        }
+
+        case _DX9_ResetState::RecreatingResources:
+        {
+            Logger::Info("[DX9 RESET] recreating resources...");
+            TextureDX9::ReCreateAll();
+            VertexBufferDX9::ReCreateAll();
+            IndexBufferDX9::ReCreateAll();
+            Logger::Info("[DX9 RESET] end, scheduled state: %u", _DX9_ResetScheduledStateValue.load());
+            _DX9_ResetStateValue = _DX9_ResetScheduledStateValue.load();
+            _DX9_ResetScheduledStateValue = _DX9_ResetState::NotRequired;
+            break;
+        }
+
+        case _DX9_ResetState::InProgress:
+        {
+            Logger::Info("[DX9 RESET] trying to reset...");
+
+            TextureDX9::VerifyReleased();
+            VertexBufferDX9::VerifyReleased();
+            IndexBufferDX9::VerifyReleased();
+            HRESULT hr = _D3D9_Device->TestCooperativeLevel();
+            if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
+            {
+                Logger::Info("[DX9 RESET] actually reseting device...");
+                D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
+                param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
+                hr = _D3D9_Device->Reset(&param);
+                if (SUCCEEDED(hr))
+                {
+                    _DX9_ResetStateValue = _DX9_ResetState::RecreatingResources;
+                }
+                else
+                {
+                    Logger::Error("[DX9 RESET] Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+            }
+            else
+            {
+                Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            break;
+        }
+
+        case _DX9_ResetState::Pending:
+        {
+            Logger::Info("[DX9 RESET] begin");
+            _DX9_ResetStateValue = _DX9_ResetState::ReleasingResources;
+            break;
+        }
+
+        default:
+            DVASSERT_MSG(0, "Invalid DX9 Reset State");
+        }
+    }
 
     // update sync-objects
-
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
@@ -1897,7 +1940,8 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         _DX9_PendingImmediateCmdSync.Unlock();
 
         _DX9_FrameSync.Lock();
-        bool shouldExecute = (!_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute) || _DX9_ResetPending;
+        bool shouldReset = _DX9_ResetStateValue != _DX9_ResetState::NotRequired;
+        bool shouldExecute = shouldReset || (!_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute);
         _DX9_FrameSync.Unlock();
 
         if (shouldExecute)
@@ -1949,7 +1993,16 @@ void UninitializeRenderThreadDX9()
 
 void ScheduleDeviceReset()
 {
-    _DX9_ResetPending = true;
+    if (_DX9_ResetStateValue == _DX9_ResetState::NotRequired)
+    {
+        _DX9_ResetStateValue = _DX9_ResetState::Pending;
+    }
+    else
+    {
+        DAVA::Logger::Info("DX9 Reset in progress, scheduling next one...");
+        _DX9_ResetScheduledStateValue = _DX9_ResetState::Pending;
+    }
+
     DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
     SetEvent(_DX9_FramePreparedEvent);
     CommandBufferDX9::BlockNonRenderThreads();
@@ -1959,9 +2012,12 @@ namespace CommandBufferDX9
 {
 void BlockNonRenderThreads()
 {
-    while (_DX9_ResetPending && (DAVA::Thread::GetCurrentId() != _DX9_ThreadId))
+    if (DAVA::Thread::GetCurrentId() != _DX9_ThreadId)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (_DX9_ResetStateValue != _DX9_ResetState::NotRequired)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
     }
 }
 

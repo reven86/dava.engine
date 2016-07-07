@@ -239,6 +239,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
     break;
     }
 
+    isReleased = false;
     isRenderTarget = desc.isRenderTarget;
 
     return success;
@@ -291,6 +292,8 @@ void TextureDX9_t::Destroy(bool force_immediate)
         ::free(mappedData);
         mappedData = nullptr;
     }
+
+    isReleased = true;
 }
 
 //------------------------------------------------------------------------------
@@ -317,6 +320,8 @@ dx9_Texture_Create(const Texture::Descriptor& desc)
 static void
 dx9_Texture_Delete(Handle tex)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
     self->SetRecreatePending(false);
     self->MarkRestored();
@@ -552,6 +557,11 @@ unsigned
 NeedRestoreCount()
 {
     return TextureDX9Pool::PendingRestoreCount();
+}
+
+void VerifyReleased()
+{
+    TextureDX9Pool::VerifyReleased();
 }
 }
 

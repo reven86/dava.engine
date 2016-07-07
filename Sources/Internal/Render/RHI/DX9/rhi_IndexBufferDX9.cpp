@@ -92,6 +92,7 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
         {
             size = desc.size;
             success = true;
+            isReleased = false;
         }
         else
         {
@@ -126,6 +127,8 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         updatePending = false;
         isMapped = false;
     }
+
+    isReleased = true;
 }
 
 //------------------------------------------------------------------------------
@@ -152,6 +155,8 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 static void
 dx9_IndexBuffer_Delete(Handle ib)
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->SetRecreatePending(false);
     self->MarkRestored();
@@ -300,6 +305,11 @@ void ReleaseAll()
 void ReCreateAll()
 {
     IndexBufferDX9Pool::ReCreateAll();
+}
+
+void VerifyReleased()
+{
+    IndexBufferDX9Pool::VerifyReleased();
 }
 
 unsigned

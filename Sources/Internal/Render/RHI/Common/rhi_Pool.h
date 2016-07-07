@@ -39,6 +39,7 @@ public:
     static void Reserve(unsigned maxCount);
     static unsigned ReleaseAll();
     static unsigned ReCreateAll();
+    static void VerifyReleased();
 
     static uint32 PendingRestoreCount();
 
@@ -262,6 +263,17 @@ ResourcePool<T, RT, DT, nr>::ReleaseAll()
     return count;
 }
 
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::VerifyReleased()
+{
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+    for (auto i = Begin(), i_end = End(); i != i_end; ++i)
+    {
+        DVASSERT(i->isReleased);
+    }
+}
+
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
@@ -358,6 +370,8 @@ public:
     {
         return ObjectsToRestore.Get();
     }
+
+    bool isReleased = false;
 
 private:
     DT creationDesc;
