@@ -1133,6 +1133,7 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glEnable(GL_DEPTH_TEST));
             GL_CALL(glDepthFunc(GL_LEQUAL));
             GL_CALL(glDepthMask(GL_TRUE));
+            GL_CALL(glDisable(GL_SCISSOR_TEST));
 
             if (isFirstInPass)
             {
