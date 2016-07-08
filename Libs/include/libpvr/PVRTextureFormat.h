@@ -64,10 +64,6 @@ namespace pvrtexture
 		uint64	PixelTypeID;
 		uint8	PixelTypeChar[8];
 	};
-
-	static const PixelType PVRStandard8PixelType = PixelType('r','g','b','a',8,8,8,8);
-	static const PixelType PVRStandard16PixelType = PixelType('r','g','b','a',16,16,16,16);
-	static const PixelType PVRStandard32PixelType = PixelType('r','g','b','a',32,32,32,32);
 }
 
 #endif

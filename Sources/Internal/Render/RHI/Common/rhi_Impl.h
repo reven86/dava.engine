@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __RHI_IMPL_H__
 #define __RHI_IMPL_H__
 
@@ -51,6 +22,7 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
+    void (*impl_TakeScreenshot)(ScreenShotCallback);
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
 
@@ -74,6 +46,16 @@ Dispatch
     bool (*impl_QueryBuffer_IsReady)(Handle buf);
     bool (*impl_QueryBuffer_ObjectIsReady)(Handle buf, uint32 objectIndex);
     int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
+
+    Handle (*impl_PerfQuerySet_Create)(uint32 maxQueryCount);
+    void (*impl_PerfQuerySet_Delete)(Handle set);
+    void (*impl_PerfQuerySet_Reset)(Handle set);
+    void (*impl_PerfQuerySet_SetCurrent)(Handle set);
+    void (*impl_PerfQuerySet_GetStatus)(Handle set, bool* isReady, bool* isValid);
+    bool (*impl_PerfQuerySet_IsValid)(Handle handle);
+    bool (*impl_PerfQuerySet_GetFreq)(Handle set, uint64* freq);
+    bool (*impl_PerfQuerySet_GetTimestamp)(Handle set, uint32 timestampIndex, uint64* time);
+    bool (*impl_PerfQuerySet_GetFrameTimestamps)(Handle set, uint64* t0, uint64* t1);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);
     void (*impl_Texture_Delete)(Handle);
@@ -125,12 +107,15 @@ Dispatch
     void (*impl_CommandBuffer_SetIndices)(Handle, Handle);
     void (*impl_CommandBuffer_SetQueryIndex)(Handle, uint32);
     void (*impl_CommandBuffer_SetQueryBuffer)(Handle, Handle);
+    void (*impl_CommandBuffer_IssueTimestampQuery)(Handle, Handle, uint32);
     void (*impl_CommandBuffer_SetFragmentConstBuffer)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetFragmentTexture)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetDepthStencilState)(Handle, Handle);
     void (*impl_CommandBuffer_SetSamplerState)(Handle, const Handle);
     void (*impl_CommandBuffer_DrawPrimitive)(Handle, PrimitiveType, uint32);
     void (*impl_CommandBuffer_DrawIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32);
+    void (*impl_CommandBuffer_DrawInstancedPrimitive)(Handle, PrimitiveType, uint32, uint32);
+    void (*impl_CommandBuffer_DrawInstancedIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32, uint32, uint32);
     void (*impl_CommandBuffer_SetMarker)(Handle, const char*);
     void (*impl_CommandBuffer_SetSync)(Handle, Handle);
 };

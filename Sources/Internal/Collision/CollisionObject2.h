@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_COLLISION_OBJECT2_H__
 #define __DAVAENGINE_COLLISION_OBJECT2_H__
 
@@ -36,32 +7,32 @@
 #include "Render/2D/Sprite.h"
 #include "Collision/Collisions.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
-class CollisionObject2 : public BaseObject 
+class CollisionObject2 : public BaseObject
 {
 protected:
-	virtual ~CollisionObject2();
+    virtual ~CollisionObject2();
+
 public:
-	enum eType
-	{
-		TYPE_CIRCLE,
-		TYPE_POLYGON,
-	};
-	
-	CollisionObject2(eType type);
-	
-	/*
+    enum eType
+    {
+        TYPE_CIRCLE,
+        TYPE_POLYGON,
+    };
+
+    CollisionObject2(eType type);
+
+    /*
 		Collision object do not hold polygon inside his body
 		So you should give him polygon that will be alive till the end of live of collision object
 	 */
-	void SetType(eType type);
-	
-	/// NOTE! Polygon2 pointer must be valid as long as CollisionObject2 lives!
-	void SetPolygon(Polygon2 * p);
-		
-	void Update(const Sprite::DrawState & state);
+    void SetType(eType type);
+
+    /// NOTE! Polygon2 pointer must be valid as long as CollisionObject2 lives!
+    void SetPolygon(Polygon2* p);
+
+    void Update(const Sprite::DrawState& state);
     void DebugDraw();
 
     bool IsCollideWith(CollisionObject2* collObject);
@@ -87,36 +58,10 @@ public:
 
     uint32 updateFrameIndex;
     bool collisionOnLastFrame;
-    
     bool forceUpdate;
-	
-/*	int pointsCount;
-	float *points;
-	
-	DAVA::AABBox bbox;
-	
-	float collisionRadius;
-	float centerX, centerY;
-	
-	// info from base game object	
-	float *collisionVertices;
-	float collX;
-	float collY;
-	
-	float xCoord;
-	float yCoord;
-	float angle; */
-		
-	/*bool IsPointsInsidePoints(float* points1, int cnt1, float*points2, int cnt2);
-	void CalcCollisionPoints();
-	bool IsCollideWith(CollisionObject2 * collObject);
-	void DrawCollision(); */
-    
+
     void UpdatePosition(Vector2 newPos);
 };
-
-
-	
 };
 
-#endif 
+#endif

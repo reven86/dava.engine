@@ -53,102 +53,131 @@ class FCDObjectWithId;
 class FCOLLADA_EXPORT FCDEntityReference : public FCDObject, FUTracker
 {
 private:
-	DeclareObjectType(FCDObject);
+    DeclareObjectType(FCDObject);
 
-	FCDEntity* entity;
-	FCDPlaceHolder* placeHolder;
-	fm::string entityId;
+    FCDEntity* entity;
+    FCDPlaceHolder* placeHolder;
+    fm::string entityId;
 
-	// Pointer back to the nearest object with id that references
-	// us down the hierarchy.  This is because the references from the
-	// actual object with the link are irrelevant in terms of the hierarchy,
-	// it is only objects with id's (ie FCDEntities) that actually matter in terms
-	// of object durability etc.
-	FCDObjectWithId* baseObject;
+    // Pointer back to the nearest object with id that references
+    // us down the hierarchy.  This is because the references from the
+    // actual object with the link are irrelevant in terms of the hierarchy,
+    // it is only objects with id's (ie FCDEntities) that actually matter in terms
+    // of object durability etc.
+    FCDObjectWithId* baseObject;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		@param document The FCollada document that owns the reference.
 		@param baseObject The parent object. */
-	FCDEntityReference(FCDocument* document, FCDObjectWithId* parent);
+    FCDEntityReference(FCDocument* document, FCDObjectWithId* parent);
 
-	/** Destructor. */
-	virtual ~FCDEntityReference();
+    /** Destructor. */
+    virtual ~FCDEntityReference();
 
-	/** Retrieves the placeholder if this references an entity
+    /** Retrieves the placeholder if this references an entity
 		from an external COLLADA document.
 		@return The COLLADA document placeholder. */
-	FCDPlaceHolder* GetPlaceHolder() { return placeHolder; }
-	const FCDPlaceHolder* GetPlaceHolder() const { return placeHolder; } /**< See above. */
+    FCDPlaceHolder* GetPlaceHolder()
+    {
+        return placeHolder;
+    }
+    const FCDPlaceHolder* GetPlaceHolder() const
+    {
+        return placeHolder;
+    } /**< See above. */
 
-	/** Retrieves the COLLADA id of the entity that is externally referenced.
+    /** Retrieves the COLLADA id of the entity that is externally referenced.
 		@return The COLLADA id of the referenced entity. */
-	const fm::string& GetEntityId() const { return entityId; }
+    const fm::string& GetEntityId() const
+    {
+        return entityId;
+    }
 
-	/** Retrieves whether this entity reference is an external entity reference.
+    /** Retrieves whether this entity reference is an external entity reference.
 		This function intentionally hides the FCDObject::IsExternal function.
 		@return Whether the entity reference is an external entity reference. */
-	inline bool IsExternal() const { return placeHolder != NULL; }
+    inline bool IsExternal() const
+    {
+        return placeHolder != NULL;
+    }
 
-	/** Retrieves whether this entity reference is a local entity reference.
+    /** Retrieves whether this entity reference is a local entity reference.
 		This function intentionally hides the FCDObject::IsLocal function.
 		@return Whether the entity reference is a local entity reference. */
-	inline bool IsLocal() const { return placeHolder == NULL; }
+    inline bool IsLocal() const
+    {
+        return placeHolder == NULL;
+    }
 
-	/** Sets the COLLADA id of the referenced entity.
+    /** Sets the COLLADA id of the referenced entity.
 		@param id The COLLADA id of the referenced entity. */
-	void SetEntityId(const fm::string& id) { entityId = id; SetDirtyFlag(); }
+    void SetEntityId(const fm::string& id)
+    {
+        entityId = id;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the full URI of the external reference.
+    /** Retrieves the full URI of the external reference.
 		This points to the COLLADA document and the id of the referenced entity.
 		@return The referenced entity URI. */
-	FUUri GetUri() const;
+    FUUri GetUri() const;
 
-	/** Sets the URI of the external reference.
+    /** Sets the URI of the external reference.
 		This points to the COLLADA document and the id of the referenced entity.
 		@param uri The referenced entity URL. */
-	void SetUri(const FUUri& uri);
-	
-	/** Get the entity this external reference points to.  This may cause the entity to
+    void SetUri(const FUUri& uri);
+
+    /** Get the entity this external reference points to.  This may cause the entity to
 		load if it is not present already!
 		See the FCollada::GetDereferenceFlag() for more information.
 		@return the entity */
-	FCDEntity* GetEntity() { return const_cast<FCDEntity*>(const_cast<const FCDEntityReference*>(this)->GetEntity()); }
-	const FCDEntity* GetEntity() const; /**< See above. */
+    FCDEntity* GetEntity()
+    {
+        return const_cast<FCDEntity*>(const_cast<const FCDEntityReference*>(this)->GetEntity());
+    }
+    const FCDEntity* GetEntity() const; /**< See above. */
 
-	/** Get a pointer to the entity that either directly or indirectly 
+    /** Get a pointer to the entity that either directly or indirectly 
 		exclusively contains this reference.  This is not necessarily the class
 		that contains the actual pointer, but it is the class that is responsible for
 		managing the link to the entity referenced (ie, not an FCDEntityInstance, but the
 		containing FCDEntity).
 		@return A pointer the object that uses this class to reference an entity */
-	inline const FCDObjectWithId* GetClosestObjectWithId() const { return baseObject; }
+    inline const FCDObjectWithId* GetClosestObjectWithId() const
+    {
+        return baseObject;
+    }
 
-	/** Set the pointer to the closest entity upstream that contains this reference.
+    /** Set the pointer to the closest entity upstream that contains this reference.
 		@param obj An object with Id that either directly or indirectly exclusively
 				   contains this reference */
-	inline void SetClosestObjectWithId(FCDObjectWithId* obj) { FUAssert(baseObject == NULL,); baseObject = obj; }
+    inline void SetClosestObjectWithId(FCDObjectWithId* obj)
+    {
+        FUAssert(baseObject == NULL, );
+        baseObject = obj;
+    }
 
-	/** Set the entity we are referencing.  If this is from an external document, it will
+    /** Set the entity we are referencing.  If this is from an external document, it will
 		create the appropriate FCDPlaceholder etc.
 		@entity The new entity to reference */
-	void SetEntity(FCDEntity* entity);
+    void SetEntity(FCDEntity* entity);
 
 private:
-	// Attempt to find the entity based on the set URL etc. 
-	// This can cause an external document to load if the reference is external.
-	void LoadEntity();
+    // Attempt to find the entity based on the set URL etc.
+    // This can cause an external document to load if the reference is external.
+    void LoadEntity();
 
-	//	Sets the COLLADA document referenced by the entity instance.
-	// 	@param document The COLLADA document referenced by the entity instance.
-	void SetEntityDocument(FCDocument* document);
+    //	Sets the COLLADA document referenced by the entity instance.
+    // 	@param document The COLLADA document referenced by the entity instance.
+    void SetEntityDocument(FCDocument* document);
 
-	// Sets the COLLADA document place holder that replaces the
-	// external COLLADA document for this reference.
-	// @param placeHolder The COLLADA document place holder.
-	void SetPlaceHolder(FCDPlaceHolder* placeHolder);
+    // Sets the COLLADA document place holder that replaces the
+    // external COLLADA document for this reference.
+    // @param placeHolder The COLLADA document place holder.
+    void SetPlaceHolder(FCDPlaceHolder* placeHolder);
 
-	virtual void OnObjectReleased(FUTrackable* object);
+    virtual void OnObjectReleased(FUTrackable* object);
 };
 
 #endif // _FCD_ENTITY_REFERENCE_H_

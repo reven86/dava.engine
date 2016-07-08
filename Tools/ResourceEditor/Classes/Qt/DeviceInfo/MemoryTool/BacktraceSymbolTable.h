@@ -19,9 +19,9 @@ public:
     size_t SymbolCount() const;
     size_t BacktraceCount() const;
 
-    template<typename F>
+    template <typename F>
     void IterateOverSymbols(F fn) const;
-    template<typename F>
+    template <typename F>
     void IterateOverBacktraces(F fn) const;
 
 private:
@@ -47,16 +47,16 @@ inline size_t BacktraceSymbolTable::BacktraceCount() const
     return bktraceMap.size();
 }
 
-template<typename F>
+template <typename F>
 void BacktraceSymbolTable::IterateOverSymbols(F fn) const
 {
     std::for_each(uniqueNames.cbegin(), uniqueNames.cend(), fn);
 }
 
-template<typename F>
+template <typename F>
 void BacktraceSymbolTable::IterateOverBacktraces(F fn) const
 {
-    std::for_each(bktraceMap.cbegin(), bktraceMap.cend(), [fn](const std::pair<DAVA::uint32, DAVA::Vector<const DAVA::String*>>& x) { fn(x.first, x.second);});
+    std::for_each(bktraceMap.cbegin(), bktraceMap.cend(), [fn](const std::pair<DAVA::uint32, DAVA::Vector<const DAVA::String*>>& x) { fn(x.first, x.second); });
 }
 
-#endif  // __BACKTRACESYMBOLTABLE_H_
+#endif // __BACKTRACESYMBOLTABLE_H_

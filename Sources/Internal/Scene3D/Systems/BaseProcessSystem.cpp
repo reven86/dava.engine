@@ -1,84 +1,52 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Systems/BaseProcessSystem.h"
 #include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
 {
-
-BaseProcessSystem::BaseProcessSystem(uint32 componentId, Scene * scene)
-:	SceneSystem(scene),
-	processingComponentId(componentId)
+BaseProcessSystem::BaseProcessSystem(uint32 componentId, Scene* scene)
+    : SceneSystem(scene)
+    ,
+    processingComponentId(componentId)
 {
-
 }
 
-void BaseProcessSystem::AddComponent( Entity * entity, Component * component )
+void BaseProcessSystem::AddComponent(Entity* entity, Component* component)
 {
-	components.push_back(component);
+    components.push_back(component);
 }
 
-void BaseProcessSystem::RemoveComponent( Entity * entity, Component * component )
+void BaseProcessSystem::RemoveComponent(Entity* entity, Component* component)
 {
-	uint32 size = static_cast<uint32>(components.size());
-	for(uint32 i = 0; i < size; ++i)
-	{
-		if(components[i] == component)
-		{
-			components[i] = components[size-1];
-			components.pop_back();
-			return;
-		}
-	}
+    uint32 size = static_cast<uint32>(components.size());
+    for (uint32 i = 0; i < size; ++i)
+    {
+        if (components[i] == component)
+        {
+            components[i] = components[size - 1];
+            components.pop_back();
+            return;
+        }
+    }
 
-	DVASSERT(0);
+    DVASSERT(0);
 }
 
-void BaseProcessSystem::AddEntity( Entity * entity )
+void BaseProcessSystem::AddEntity(Entity* entity)
 {
-	uint32 size = entity->GetComponentCount(processingComponentId);
-	for(uint32 i = 0; i < size; ++i)
-	{
-		AddComponent(entity, entity->GetComponent(processingComponentId, i));
-	}
+    uint32 size = entity->GetComponentCount(processingComponentId);
+    for (uint32 i = 0; i < size; ++i)
+    {
+        AddComponent(entity, entity->GetComponent(processingComponentId, i));
+    }
 }
 
-void BaseProcessSystem::RemoveEntity( Entity * entity )
+void BaseProcessSystem::RemoveEntity(Entity* entity)
 {
-	uint32 size = entity->GetComponentCount(processingComponentId);
-	for(uint32 i = 0; i < size; ++i)
-	{
-		RemoveComponent(entity, entity->GetComponent(processingComponentId, i));
-	}
+    uint32 size = entity->GetComponentCount(processingComponentId);
+    for (uint32 i = 0; i < size; ++i)
+    {
+        RemoveComponent(entity, entity->GetComponent(processingComponentId, i));
+    }
 }
-
-
 }

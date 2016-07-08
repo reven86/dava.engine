@@ -1,126 +1,82 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#include "SceneSaverTool.h"
-#include "SceneSaver.h"
-
-#include "CommandLine/CommandLineParser.h"
+#include "CommandLine/SceneSaver/SceneSaverTool.h"
+#include "CommandLine/SceneSaver/SceneSaver.h"
+#include "CommandLine/OptionName.h"
 
 using namespace DAVA;
 
-void SceneSaverTool::PrintUsage() const
+SceneSaverTool::SceneSaverTool()
+    : CommandLineTool("-scenesaver")
 {
-    printf("\n");
-    printf("-scenesaver -save [-indir [directory]] [-outdir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave [-indir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave -yaml [-indir [directory]]\n");
-    printf("\twill save scene file from DataSource/3d to any Data or DataSource folder\n");
-    printf("\t-save - will save level to selected Data/3d/\n");
-    printf("\t-resave - will open and save level\n");
-    printf("\t-yaml - will open and save yaml file\n");
-    printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
-    printf("\t-outdir - path for Poject/Data/3d/ folder\n");
-    printf("\t-processfile - filename from DataSource/3d/ for saving\n");
-    printf("\t-copyconverted - copy *.pvr and *.dds files too\n");
-
-    printf("\n");
-    printf("Samples:\n");
-    printf("-scenesaver -save -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -copyconverted\n");
-    printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2\n");
-    printf("-scenesaver -resave -yaml -indir /Users/User/Project/Data/Configs/Particles/\n");
+    options.AddOption(OptionName::Save, VariantType(false), "Saving scene from indir to outdir");
+    options.AddOption(OptionName::Resave, VariantType(false), "Resave file into indir");
+    options.AddOption(OptionName::Yaml, VariantType(false), "Target is *.yaml file");
+    options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
+    options.AddOption(OptionName::OutDir, VariantType(String("")), "Path for Project/Data/3d/ folder");
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for exporting");
+    options.AddOption(OptionName::CopyConverted, VariantType(false), "Enables copying of converted image files");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
-DAVA::String SceneSaverTool::GetCommandLineKey() const
+void SceneSaverTool::ConvertOptionsToParamsInternal()
 {
-    return "-scenesaver";
+    inFolder = options.GetOption(OptionName::InDir).AsString();
+    outFolder = options.GetOption(OptionName::OutDir).AsString();
+    filename = options.GetOption(OptionName::ProcessFile).AsString();
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
+
+    if (options.GetOption(OptionName::Save).AsBool())
+    {
+        commandAction = ACTION_SAVE;
+    }
+    else if (options.GetOption(OptionName::Resave).AsBool())
+    {
+        if (options.GetOption(OptionName::Yaml).AsBool())
+        {
+            commandAction = ACTION_RESAVE_YAML;
+        }
+        else
+        {
+            commandAction = ACTION_RESAVE_SCENE;
+        }
+    }
+
+    copyConverted = options.GetOption(OptionName::CopyConverted).AsBool();
 }
 
-bool SceneSaverTool::InitializeFromCommandLine()
+bool SceneSaverTool::InitializeInternal()
 {
-    commandAction = eAction::ACTION_NONE;
-    
-    inFolder = CommandLineParser::GetCommandParam(String("-indir"));
     if (inFolder.IsEmpty())
     {
-        errors.emplace("[SceneSaverTool] Incorrect indir parameter");
+        Logger::Error("Input folder was not selected");
         return false;
     }
     inFolder.MakeDirectoryPathname();
 
-    if (CommandLineParser::CommandIsFound(String("-save")))
+    if (commandAction == ACTION_SAVE)
     {
-        commandAction = eAction::ACTION_SAVE;
-        outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
         if (outFolder.IsEmpty())
         {
-            errors.emplace("[SceneSaverTool] Incorrect outdir parameter");
+            Logger::Error("Output folder was not selected");
             return false;
         }
         outFolder.MakeDirectoryPathname();
-
-        copyConverted = CommandLineParser::CommandIsFound(String("-copyconverted"));
     }
-    else if (CommandLineParser::CommandIsFound(String("-resave")))
+    else if (commandAction == ACTION_NONE)
     {
-        if (CommandLineParser::CommandIsFound("-yaml"))
-        {
-            commandAction = eAction::ACTION_RESAVE_YAML;
-        }
-        else
-        {
-            commandAction = eAction::ACTION_RESAVE_SCENE;
-        }
-    }
-    else
-    {
-        errors.emplace("[SceneSaverTool] Incorrect action");
+        Logger::Error("Wrong action was selected");
         return false;
     }
 
-    
-    filename = CommandLineParser::GetCommandParam(String("-processfile"));
     if (filename.empty() && (commandAction != eAction::ACTION_RESAVE_YAML))
     {
-        errors.emplace("[SceneSaverTool] Filename is not set");
+        Logger::Error("Filename was not selected");
         return false;
     }
-    
+
     return true;
 }
 
-void SceneSaverTool::DumpParams() const
-{
-    Logger::Info("SceneSaver started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tFilename: %s\n\tCopy converted: %d",
-                 inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), filename.c_str(), copyConverted);
-}
-
-void SceneSaverTool::Process()
+void SceneSaverTool::ProcessInternal()
 {
     switch (commandAction)
     {
@@ -130,7 +86,7 @@ void SceneSaverTool::Process()
         saver.SetInFolder(inFolder);
         saver.SetOutFolder(outFolder);
         saver.EnableCopyConverted(copyConverted);
-        saver.SaveFile(filename, errors);
+        saver.SaveFile(filename);
 
         break;
     }
@@ -138,13 +94,13 @@ void SceneSaverTool::Process()
     {
         SceneSaver saver;
         saver.SetInFolder(inFolder);
-        saver.ResaveFile(filename, errors);
+        saver.ResaveFile(filename);
         break;
     }
     case SceneSaverTool::eAction::ACTION_RESAVE_YAML:
     {
         SceneSaver saver;
-        saver.ResaveYamlFilesRecursive(inFolder, errors);
+        saver.ResaveYamlFilesRecursive(inFolder);
         break;
     }
 
@@ -156,6 +112,10 @@ void SceneSaverTool::Process()
 
 DAVA::FilePath SceneSaverTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(inFolder);
-}
+    if (qualityConfigPath.IsEmpty())
+    {
+        return CreateQualityConfigPath(inFolder);
+    }
 
+    return qualityConfigPath;
+}

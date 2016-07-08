@@ -65,7 +65,7 @@ public:
 
 	virtual const UIGeometricData &GetGeometricData();
 
-	virtual bool GetVisible() const;
+	inline bool GetVisibilityFlag() const;
 
 	virtual bool GetInputEnabled() const;
 
@@ -75,9 +75,7 @@ public:
 
 	virtual bool GetSelected() const;
 
-	const String & GetName() const;
-	
-	bool IsOnScreen() const;
+	bool IsVisible() const;
 
 	int32 GetTag() const;
     

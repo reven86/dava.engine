@@ -30,17 +30,17 @@
 class FCOLLADA_EXPORT FUSynchronizableObject
 {
 private:
-	FUCriticalSection criticalSection;
+    FUCriticalSection criticalSection;
 
 public:
-	/** Destructor. */
-	virtual ~FUSynchronizableObject();
+    /** Destructor. */
+    virtual ~FUSynchronizableObject();
 
-	/** Locks the object, blocking if another thread has locked it. */
-	virtual void Lock();
+    /** Locks the object, blocking if another thread has locked it. */
+    virtual void Lock();
 
-	/** Unlocks the object, allowing other threads to lock it. */
-	virtual void Unlock();
+    /** Unlocks the object, allowing other threads to lock it. */
+    virtual void Unlock();
 };
 
 #endif // _FU_SYNCHRONIZABLE_OBJECT_H_

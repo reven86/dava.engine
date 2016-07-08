@@ -35,108 +35,106 @@ using namespace nvtt;
 	#endif
 #endif
 
-
 struct ilOutputHandlerMem : public nvtt::OutputHandler
 {
-	ilOutputHandlerMem(ILuint Width, ILuint Height, ILenum DxtType)
-	{
-		Width = Width + (4 - (Width % 4)) % 4;    // Operates on 4x4 blocks,
-		Height = Height + (4 - (Height % 4)) % 4; //  so gives extra room.
-		
-		switch (DxtType)
-		{
-			case IL_DXT1:
-			case IL_DXT1A:
-				Size = Width * Height / 2;
-				break;
-			case IL_DXT3:
-			case IL_DXT5:
-				Size = Width * Height;
-				break;
+    ilOutputHandlerMem(ILuint Width, ILuint Height, ILenum DxtType)
+    {
+        Width = Width + (4 - (Width % 4)) % 4; // Operates on 4x4 blocks,
+        Height = Height + (4 - (Height % 4)) % 4; //  so gives extra room.
 
-			default:  // NVTT does not accept DXT2 or DXT4.
-				// Should error somehow...
-				break;
-		}
-		NewData = (ILubyte*)ialloc(Size);
-		if (NewData == NULL)
-			return;
-		Temp = NewData;
-	}
+        switch (DxtType)
+        {
+        case IL_DXT1:
+        case IL_DXT1A:
+            Size = Width * Height / 2;
+            break;
+        case IL_DXT3:
+        case IL_DXT5:
+            Size = Width * Height;
+            break;
 
-	virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel)
-	{
-		// ignore.
-	}
-	virtual bool writeData(const void *data, int size)
-	{
-		memcpy(Temp, data, size);
-		Temp += size;
-		return true;
-	}
+        default: // NVTT does not accept DXT2 or DXT4.
+            // Should error somehow...
+            break;
+        }
+        NewData = (ILubyte*)ialloc(Size);
+        if (NewData == NULL)
+            return;
+        Temp = NewData;
+    }
 
-	ILubyte	*NewData, *Temp;
-	ILuint	Size;
+    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel)
+    {
+        // ignore.
+    }
+    virtual bool writeData(const void* data, int size)
+    {
+        memcpy(Temp, data, size);
+        Temp += size;
+        return true;
+    }
+
+    ILubyte *NewData, *Temp;
+    ILuint Size;
 };
-
 
 //! Compresses data to a DXT format using nVidia's Texture Tools library.
 //  The data must be in unsigned byte RGBA format.  The alpha channel will be ignored if DxtType is IL_DXT1.
 //  DxtSize is used to return the size in bytes of the DXTC data returned.
-ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte *Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat, ILuint *DxtSize)
+ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte* Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat, ILuint* DxtSize)
 {
-	if (Data == NULL) {  // We cannot operate on a null pointer.
-		ilSetError(IL_INVALID_PARAM);
-		return NULL;
-	}
+    if (Data == NULL)
+    { // We cannot operate on a null pointer.
+        ilSetError(IL_INVALID_PARAM);
+        return NULL;
+    }
 
-	// The nVidia Texture Tools library does not support volume textures yet.
-	if (Depth != 1) {
-		ilSetError(IL_INVALID_PARAM);
-		return NULL;
-	}
+    // The nVidia Texture Tools library does not support volume textures yet.
+    if (Depth != 1)
+    {
+        ilSetError(IL_INVALID_PARAM);
+        return NULL;
+    }
 
-	InputOptions inputOptions;
-	inputOptions.setTextureLayout(TextureType_2D, Width, Height);
-	inputOptions.setMipmapData(Data, Width, Height);
-	inputOptions.setMipmapGeneration(false, -1);  //@TODO: Use this in certain cases.
+    InputOptions inputOptions;
+    inputOptions.setTextureLayout(TextureType_2D, Width, Height);
+    inputOptions.setMipmapData(Data, Width, Height);
+    inputOptions.setMipmapGeneration(false, -1); //@TODO: Use this in certain cases.
 
-	OutputOptions outputOptions;
-	ilOutputHandlerMem outputHandler(Width, Height, DxtFormat);
-	outputOptions.setOutputHeader(false);
-	outputOptions.setOutputHandler(&outputHandler);
+    OutputOptions outputOptions;
+    ilOutputHandlerMem outputHandler(Width, Height, DxtFormat);
+    outputOptions.setOutputHeader(false);
+    outputOptions.setOutputHandler(&outputHandler);
 
-	if (outputHandler.NewData == NULL)
-		return NULL;
+    if (outputHandler.NewData == NULL)
+        return NULL;
 
-	CompressionOptions compressionOptions;
-	switch (DxtFormat)
-	{
-		case IL_DXT1:
-			compressionOptions.setFormat(Format_DXT1);
-			break;
-		case IL_DXT1A:
-			compressionOptions.setFormat(Format_DXT1a);
-			break;
-		case IL_DXT3:
-			compressionOptions.setFormat(Format_DXT1);
-			break;
-		case IL_DXT5:
-			compressionOptions.setFormat(Format_DXT5);
-			break;
-		default:  // Does not support DXT2 or DXT4.
-			ilSetError(IL_INVALID_PARAM);
-			break;
-	}
+    CompressionOptions compressionOptions;
+    switch (DxtFormat)
+    {
+    case IL_DXT1:
+        compressionOptions.setFormat(Format_DXT1);
+        break;
+    case IL_DXT1A:
+        compressionOptions.setFormat(Format_DXT1a);
+        break;
+    case IL_DXT3:
+        compressionOptions.setFormat(Format_DXT1);
+        break;
+    case IL_DXT5:
+        compressionOptions.setFormat(Format_DXT5);
+        break;
+    default: // Does not support DXT2 or DXT4.
+        ilSetError(IL_INVALID_PARAM);
+        break;
+    }
 
-	Compressor compressor;
-	compressor.process(inputOptions, compressionOptions, outputOptions);
+    Compressor compressor;
+    compressor.process(inputOptions, compressionOptions, outputOptions);
 
-	*DxtSize = outputHandler.Size;
-	return outputHandler.NewData;
+    *DxtSize = outputHandler.Size;
+    return outputHandler.NewData;
 }
-
-
 
 //
 //
@@ -145,83 +143,81 @@ ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte *Data, ILuint Width, ILuin
 //
 //
 
-
 struct ilOutputHandlerFile : public nvtt::OutputHandler
 {
-	ilOutputHandlerFile(ILuint Width, ILuint Height, ILenum DxtType)
-	{
-		return;
-	}
+    ilOutputHandlerFile(ILuint Width, ILuint Height, ILenum DxtType)
+    {
+        return;
+    }
 
-	virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel)
-	{
-		// ignore.
-	}
-	virtual bool writeData(const void *data, int size)
-	{
-		if (iwrite(data, 1, size) == size)
-			return true;
-		return false;
-	}
-
+    virtual void beginImage(int size, int width, int height, int depth, int face, int miplevel)
+    {
+        // ignore.
+    }
+    virtual bool writeData(const void* data, int size)
+    {
+        if (iwrite(data, 1, size) == size)
+            return true;
+        return false;
+    }
 };
-
 
 //! Compresses data to a DXT format using nVidia's Texture Tools library.
 //  This version is supposed to be completely internal to DevIL.
 //  The data must be in unsigned byte RGBA format.  The alpha channel will be ignored if DxtType is IL_DXT1.
-ILuint ilNVidiaCompressDXTFile(ILubyte *Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat)
+ILuint ilNVidiaCompressDXTFile(ILubyte* Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat)
 {
-	ILuint FilePos = itellw();
+    ILuint FilePos = itellw();
 
-	// The nVidia Texture Tools library does not support volume textures yet.
-	if (Depth != 1) {
-		ilSetError(IL_INVALID_PARAM);
-		return 0;
-	}
+    // The nVidia Texture Tools library does not support volume textures yet.
+    if (Depth != 1)
+    {
+        ilSetError(IL_INVALID_PARAM);
+        return 0;
+    }
 
-	InputOptions inputOptions;
-	inputOptions.setTextureLayout(TextureType_2D, Width, Height);
-	inputOptions.setMipmapData(Data, Width, Height);
-	inputOptions.setMipmapGeneration(false, -1);  //@TODO: Use this in certain cases.
+    InputOptions inputOptions;
+    inputOptions.setTextureLayout(TextureType_2D, Width, Height);
+    inputOptions.setMipmapData(Data, Width, Height);
+    inputOptions.setMipmapGeneration(false, -1); //@TODO: Use this in certain cases.
 
-	OutputOptions outputOptions;
-	ilOutputHandlerFile outputHandler(Width, Height, DxtFormat);
-	outputOptions.setOutputHeader(false);
-	outputOptions.setOutputHandler(&outputHandler);
+    OutputOptions outputOptions;
+    ilOutputHandlerFile outputHandler(Width, Height, DxtFormat);
+    outputOptions.setOutputHeader(false);
+    outputOptions.setOutputHandler(&outputHandler);
 
-	CompressionOptions compressionOptions;
-	switch (DxtFormat)
-	{
-		case IL_DXT1:
-			compressionOptions.setFormat(Format_DXT1);
-			break;
-		case IL_DXT1A:
-			compressionOptions.setFormat(Format_DXT1a);
-			break;
-		case IL_DXT3:
-			compressionOptions.setFormat(Format_DXT1);
-			break;
-		case IL_DXT5:
-			compressionOptions.setFormat(Format_DXT5);
-			break;
-		default:  // Does not support DXT2 or DXT4.
-			ilSetError(IL_INVALID_PARAM);
-			break;
-	}
+    CompressionOptions compressionOptions;
+    switch (DxtFormat)
+    {
+    case IL_DXT1:
+        compressionOptions.setFormat(Format_DXT1);
+        break;
+    case IL_DXT1A:
+        compressionOptions.setFormat(Format_DXT1a);
+        break;
+    case IL_DXT3:
+        compressionOptions.setFormat(Format_DXT1);
+        break;
+    case IL_DXT5:
+        compressionOptions.setFormat(Format_DXT5);
+        break;
+    default: // Does not support DXT2 or DXT4.
+        ilSetError(IL_INVALID_PARAM);
+        break;
+    }
 
-	Compressor compressor;
-	compressor.process(inputOptions, compressionOptions, outputOptions);
+    Compressor compressor;
+    compressor.process(inputOptions, compressionOptions, outputOptions);
 
-	return itellw() - FilePos;  // Return the number of characters written.
+    return itellw() - FilePos; // Return the number of characters written.
 }
 
 #else
 // Let's have this so that the function is always created and exported, even if it does nothing.
-ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte *Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat, ILuint *DxtSize)
+ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte* Data, ILuint Width, ILuint Height, ILuint Depth, ILenum DxtFormat, ILuint* DxtSize)
 {
-	//@TODO: Do we need to set an error message?
-	return NULL;
+    //@TODO: Do we need to set an error message?
+    return NULL;
 }
 
-#endif//IL_NO_DXTC_NVIDIA
+#endif //IL_NO_DXTC_NVIDIA

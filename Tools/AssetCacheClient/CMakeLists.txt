@@ -20,6 +20,7 @@ set( APP_DATA                    )
 set( LIBRARIES                   )
 
 set( MAC_DISABLE_BUNDLE     true )
+set( DISABLE_SOUNDS         true)
 
 setup_main_executable()
 
@@ -28,5 +29,3 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTE
 endif ()
 
 install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_TOOLS_BIN_DIR} CONFIGURATIONS Release )
-install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data CONFIGURATIONS Release )
-install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_ROOT_DIR}/Tools/QuickEd/Data CONFIGURATIONS Release )

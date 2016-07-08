@@ -1,76 +1,25 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ColorPropertyDelegate.h"
+#include "QtTools/Utils/Utils.h"
+
 #include <QToolButton>
 #include <QPainter>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QAction>
 #include <QColorDialog>
+#include <QApplication>
 
 #include "PropertiesTreeItemDelegate.h"
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 
-namespace
-{
-QPixmap CreateIcon(const QColor& color)
-{
-    QPixmap pix(16, 16);
-    QPainter p(&pix);
-    p.setPen(QColor(0, 0, 0, 0));
-
-    if (color.alpha() < 255)
-    {
-        p.setBrush(QColor(250, 250, 250));
-        p.drawRect(QRect(0, 0, 15, 15));
-        p.setPen(QColor(200, 200, 200));
-        p.setBrush(QColor(150, 150, 150));
-        p.drawRect(QRect(0, 0, 7, 7));
-        p.drawRect(QRect(8, 8, 15, 15));
-    }
-
-    p.setBrush(QBrush(color));
-    p.drawRect(QRect(0, 0, 15, 15));
-    return pix;
-}
-}
-
-ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate *delegate)
+ColorPropertyDelegate::ColorPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
 }
 
 ColorPropertyDelegate::~ColorPropertyDelegate()
 {
-
 }
 
 QWidget* ColorPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -95,7 +44,7 @@ void ColorPropertyDelegate::enumEditorActions(QWidget* parent, const QModelIndex
     actions.push_front(chooseColorAction);
 }
 
-void ColorPropertyDelegate::setEditorData( QWidget * editor, const QModelIndex & index ) const 
+void ColorPropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     DVASSERT(nullptr != lineEdit);
     QColor color = ColorToQColor(index.data(Qt::EditRole).value<DAVA::VariantType>().AsColor());
@@ -103,7 +52,7 @@ void ColorPropertyDelegate::setEditorData( QWidget * editor, const QModelIndex &
     lineEdit->setProperty("color", color);
 }
 
-bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const 
+bool ColorPropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     if (BasePropertyDelegate::setModelData(editor, model, index))
         return true;
@@ -111,7 +60,7 @@ bool ColorPropertyDelegate::setModelData( QWidget * editor, QAbstractItemModel *
     DVASSERT(nullptr != lineEdit);
 
     QColor newColor = HexToQColor(lineEdit->text());
-    DAVA::VariantType color( QColorToColor(newColor) );
+    DAVA::VariantType color(QColorToColor(newColor));
     QVariant colorVariant;
     colorVariant.setValue<DAVA::VariantType>(color);
     return model->setData(index, colorVariant, Qt::EditRole);
@@ -140,7 +89,7 @@ void ColorPropertyDelegate::OnChooseColorClicked()
 void ColorPropertyDelegate::OnEditingFinished()
 {
     DVASSERT(nullptr != lineEdit);
-    QWidget *editor = lineEdit->parentWidget();
+    QWidget* editor = lineEdit->parentWidget();
     DVASSERT(nullptr != editor);
 
     BasePropertyDelegate::SetValueModified(editor, lineEdit->isModified());
@@ -153,12 +102,14 @@ void ColorPropertyDelegate::OnTextChanged(const QString& text)
     int pos = -1;
     QString textCopy(text);
     bool valid = lineEdit->validator()->validate(textCopy, pos) == QValidator::Acceptable;
-    palette.setColor(QPalette::Text, valid ? Qt::black : Qt::red);
+    QColor globalTextColor = qApp->palette().color(QPalette::Text);
+    QColor nextColor = valid ? globalTextColor : Qt::red;
+    palette.setColor(QPalette::Text, nextColor);
     lineEdit->setPalette(palette);
 
     if (valid)
     {
         QColor color(HexToQColor(text));
-        chooseColorAction->setIcon(CreateIcon(color));
+        chooseColorAction->setIcon(CreateIconFromColor(color));
     }
 }

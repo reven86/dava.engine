@@ -33,37 +33,46 @@ class FCDForce;
 class FCOLLADA_EXPORT FCDForceField : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
-	DeclareParameterRef(FCDExtra, information, FC("Information"));
+    DeclareObjectType(FCDEntity);
+    DeclareParameterRef(FCDExtra, information, FC("Information"));
 
 public:
-	/** Constructor.
+    /** Constructor.
 		@param document The COLLADA document that owns the force field. */
-	FCDForceField(FCDocument* document);
+    FCDForceField(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDForceField();
+    /** Destructor. */
+    virtual ~FCDForceField();
 
-	/** Retrieves the extra tree for all the force field information.
+    /** Retrieves the extra tree for all the force field information.
 		@return The extra tree. */
-	inline FCDExtra* GetInformation() { return const_cast<FCDExtra*>(const_cast<const FCDForceField*>(this)->GetInformation()); }
-	const FCDExtra* GetInformation() const;
+    inline FCDExtra* GetInformation()
+    {
+        return const_cast<FCDExtra*>(const_cast<const FCDForceField*>(this)->GetInformation());
+    }
+    const FCDExtra* GetInformation() const;
 
-	/** [INTERNAL] Set the information.
+    /** [INTERNAL] Set the information.
 		@param info The new information to set. */
-	inline void SetInformation(FCDExtra* info){ information = info; }
+    inline void SetInformation(FCDExtra* info)
+    {
+        information = info;
+    }
 
-	/** Retrieves the entity class type.
+    /** Retrieves the entity class type.
 		@return The entity class type: FORCE_FIELD */
-	virtual Type GetType() const { return FORCE_FIELD; }
+    virtual Type GetType() const
+    {
+        return FORCE_FIELD;
+    }
 
-	/** Clones the force field information.
+    /** Clones the force field information.
 		@param clone The cloned force field.
 			If this pointer is NULL, a new force field is created and
 			you will need to release it manually.
 		@param cloneChildren Whether to recursively clone this entity's children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif // _FCD_FORCE_FIELD_H_

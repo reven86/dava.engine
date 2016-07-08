@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVA_SIGNAL_H__
 #define __DAVA_SIGNAL_H__
 
@@ -39,50 +11,59 @@
 
 // #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
 
-namespace DAVA  {
-namespace Sig11 {
-
+namespace DAVA
+{
+namespace Sig11
+{
 struct DummyMutex
 {
-    void Lock() { }
-    void Unlock() { }
-    bool TryLock() { return true; }
+    void Lock()
+    {
+    }
+    void Unlock()
+    {
+    }
+    bool TryLock()
+    {
+        return true;
+    }
 };
 
 struct DymmyThreadID
-{ };
+{
+};
 
-template<typename MutexType, typename ThreadIDType, typename... Args>
+template <typename MutexType, typename ThreadIDType, typename... Args>
 class SignalImpl : public SignalBase
 {
 public:
-    using Func = Function < void(Args...) > ;
+    using Func = Function<void(Args...)>;
 
     SignalImpl() = default;
-    SignalImpl(const SignalImpl &) = delete;
-    SignalImpl& operator=(const SignalImpl &) = delete;
+    SignalImpl(const SignalImpl&) = delete;
+    SignalImpl& operator=(const SignalImpl&) = delete;
 
     ~SignalImpl()
     {
         DisconnectAll();
     }
 
-    template<typename Fn>
+    template <typename Fn>
     SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(nullptr, Func(fn), tid);
     }
 
-    template<typename Obj, typename Cls>
-    SigConnectionID Connect(Obj *obj, void (Cls::* const& fn)(Args...), ThreadIDType tid = ThreadIDType())
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
-    template<typename Obj, typename Cls>
-    SigConnectionID Connect(Obj *obj, void (Cls::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
@@ -95,7 +76,7 @@ public:
         auto it = connections.find(id);
         if (it != connections.end())
         {
-            TrackedObject *obj = it->second.obj;
+            TrackedObject* obj = it->second.obj;
             if (nullptr != obj)
             {
                 obj->Untrack(this);
@@ -105,7 +86,7 @@ public:
         }
     }
 
-    void Disconnect(TrackedObject *obj) override final
+    void Disconnect(TrackedObject* obj) override final
     {
         if (nullptr != obj)
         {
@@ -135,7 +116,7 @@ public:
 
         for (auto&& con : connections)
         {
-            TrackedObject *obj = con.second.obj;
+            TrackedObject* obj = con.second.obj;
             if (nullptr != obj)
             {
                 obj->Untrack(this);
@@ -207,8 +188,12 @@ protected:
     struct ConnData
     {
         ConnData(Func&& fn_, TrackedObject* obj_, ThreadIDType tid_)
-            : fn(std::move(fn_)), obj(obj_), tid(tid_), blocked(false)
-        { }
+            : fn(std::move(fn_))
+            , obj(obj_)
+            , tid(tid_)
+            , blocked(false)
+        {
+        }
 
         Func fn;
         TrackedObject* obj;
@@ -236,33 +221,38 @@ private:
 
 } // namespace Sig11
 
-
-template<typename... Args>
+template <typename... Args>
 class Signal final : public Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>
 {
 public:
     using Base = Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>;
-    
+
     Signal() = default;
-    Signal(const Signal &) = delete;
-    Signal& operator=(const Signal &) = delete;
+    Signal(const Signal&) = delete;
+    Signal& operator=(const Signal&) = delete;
 
     void Emit(Args... args) override
     {
-        for (auto&& con : Base::connections)
+        auto iter = Base::connections.begin();
+        while (iter != Base::connections.end())
         {
-            if (!con.second.blocked)
+            auto next = iter;
+            ++next;
+
+            if (!iter->second.blocked)
             {
-                con.second.fn(std::forward<Args>(args)...);
+                iter->second.fn(args...);
             }
+
+            iter = next;
         }
     }
 };
 
 #ifdef ENABLE_MULTITHREADED_SIGNALS
 
-template<typename... Args>
-class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...> 
+template <typename... Args>
+class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 {
     using Base = Sig11::SignalImpl<Mutex, Thread::Id, Args...>;
 
@@ -281,11 +271,11 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
             {
                 if (con.second.tid == thisTid)
                 {
-                    con.second.fn(std::move(args)...);
+                    con.second.fn(args...);
                 }
                 else
                 {
-                    Function<void()> fn = Bind(con.second.fn, std::forward<Args>(args)...);
+                    Function<void()> fn = Bind(con.second.fn, args...);
 
                     // TODO:
                     // add implementation
@@ -298,7 +288,6 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 };
 
 #endif
-
 
 } // namespace DAVA
 

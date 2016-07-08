@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <cfloat>
 
 #include "Render/Material/NMaterial.h"
@@ -279,21 +250,11 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial* mat, KeyedArch
         String heightmapKeyName = NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str();
         if (props->IsKeyExists(heightmapKeyName))
         {
-            Texture* heightmap = (Texture*)props->GetUInt64(heightmapKeyName);
+            Texture* heightmap = reinterpret_cast<Texture*>(props->GetUInt64(heightmapKeyName));
             if (mat->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
                 mat->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
             else
                 mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
-        }
-
-        String heightmapScaleKeyName = VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str();
-        if (props->IsKeyExists(heightmapScaleKeyName))
-        {
-            Vector2 heightmapScale = props->GetVector2(heightmapScaleKeyName);
-            if (mat->HasLocalProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE))
-                mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data);
-            else
-                mat->AddProperty(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE, heightmapScale.data, rhi::ShaderProp::TYPE_FLOAT2);
         }
     }
 }
@@ -344,8 +305,8 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
             uint32 matrixCellX = cellX / layerMaxClusters;
             uint32 matrixCellY = cellY / layerMaxClusters;
 
-            float32 randomX = unitSize.x * (float32)Random::Instance()->RandFloat();
-            float32 randomY = unitSize.y * (float32)Random::Instance()->RandFloat();
+            float32 randomX = unitSize.x * float32(Random::Instance()->RandFloat());
+            float32 randomY = unitSize.y * float32(Random::Instance()->RandFloat());
 
             clusters.push_back(ClusterPositionData());
             ClusterPositionData& cluster = clusters[clusters.size() - 1];
@@ -353,8 +314,8 @@ void VegetationGeometry::GenerateClusterPositionData(const Vector<VegetationLaye
             cluster.pos = Vector3((matrixCellX * unitSize.x) + randomX,
                                   (matrixCellY * unitSize.y) + randomY,
                                   0.0f);
-            cluster.rotation = layerParamsData.instanceRotationVariation * ((float32)Random::Instance()->RandFloat() - 0.5f);
-            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * (float32)Random::Instance()->RandFloat();
+            cluster.rotation = layerParamsData.instanceRotationVariation * (float32(Random::Instance()->RandFloat()) - 0.5f);
+            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * float32(Random::Instance()->RandFloat());
             cluster.densityId = densityId[clusterIndex];
             cluster.layerId = static_cast<uint32>(layerIndex);
 
@@ -477,8 +438,8 @@ void VegetationGeometry::GenerateVertexData(const Vector<CustomGeometryEntityDat
 
             //vertex.normal = transformedNormals[vertexIndex]; uncomment, when normals will be used for vertex lit implementation
 
-            vertex.texCoord1.x = (float32)clusterData.resolutionId;
-            vertex.texCoord1.y = (float32)clusterData.position.layerId;
+            vertex.texCoord1.x = float32(clusterData.resolutionId);
+            vertex.texCoord1.y = float32(clusterData.position.layerId);
             vertex.texCoord1.z = Max(0.0f, ((vertex.coord.z - clusterGeometry.pivot.z) / (clusterGeometry.bbox.max.z - clusterGeometry.pivot.z)));
 
             vertex.texCoord2.x = clusterData.position.pos.x + clusterGeometry.pivot.x;
@@ -561,7 +522,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
         {
             uint32 index = rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i];
 
-            sourceCellIndices.push_back((VegetationIndex)index);
+            sourceCellIndices.push_back(VegetationIndex(index));
         }
 
         vertexIndexOffset += static_cast<uint32>(layerGeometry.sourcePositions.size());

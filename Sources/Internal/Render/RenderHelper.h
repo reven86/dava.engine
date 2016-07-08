@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_RENDER_HELPER_H__
 #define __DAVAENGINE_RENDER_HELPER_H__
 
@@ -85,9 +56,9 @@ public:
     void DrawBSpline(BezierSpline3* bSpline, int segments, float ts, float te, const Color& color, eDrawType drawType);
     void DrawInterpolationFunc(Interpolation::Func func, const Rect& destRect, const Color& color, eDrawType drawType);
 
-    static void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport);
+    static void CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture depthBuffer, int32 passPriority, const Color& clearColor, const rhi::Viewport& viewport);
 
-protected:
+private:
     enum eDrawCommandID
     {
         COMMAND_DRAW_LINE = 0,
@@ -102,10 +73,15 @@ protected:
     };
     struct DrawCommand
     {
-        DrawCommand(eDrawCommandID _id, eDrawType _drawType, const Vector<float32>& _params)
+        DrawCommand(eDrawCommandID _id)
+            : id(_id)
+        {
+        }
+
+        DrawCommand(eDrawCommandID _id, eDrawType _drawType, Vector<float32>&& _params)
             : id(_id)
             , drawType(_drawType)
-            , params(_params)
+            , params(std::move(_params))
         {
         }
 
@@ -119,7 +95,24 @@ protected:
         uint32 color;
     };
 
-    void QueueCommand(const DrawCommand&& command);
+    struct RenderStruct
+    {
+        rhi::HPacketList packetList;
+        rhi::Packet packet[DRAW_TYPE_COUNT];
+        ColoredVertex* vBufferPtr[DRAW_TYPE_COUNT];
+        uint16* iBufferPtr[DRAW_TYPE_COUNT];
+        uint32 vBufferOffset[DRAW_TYPE_COUNT];
+        bool valid = true;
+
+        RenderStruct()
+        {
+            memset(vBufferPtr, 0, sizeof(vBufferPtr));
+            memset(iBufferPtr, 0, sizeof(iBufferPtr));
+            memset(vBufferOffset, 0, sizeof(vBufferOffset));
+        }
+    };
+
+    void QueueCommand(const DrawCommand& command);
     void GetRequestedVertexCount(const DrawCommand& command, uint32& vertexCount, uint32& indexCount);
     bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
@@ -133,13 +126,21 @@ protected:
     void FillCircleVBuffer(ColoredVertex* buffer, const Vector3& center, const Vector3& direction, float32 radius, uint32 pointCount, uint32 nativeColor);
     void FillArrowVBuffer(ColoredVertex* buffer, const Vector3& from, const Vector3& to, uint32 nativeColor);
 
+    RenderStruct AllocateRenderStruct(rhi::HPacketList packetList);
+    void CommitRenderStruct(const RenderStruct&);
+
     uint32 coloredVertexLayoutUID;
 
     Vector<DrawCommand> commandQueue;
-    std::array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
+    Array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
     NMaterial* materials[DRAW_TYPE_COUNT];
+
+    DrawCommand drawLineCommand;
+    DrawCommand drawIcosahedronCommand;
+    DrawCommand drawArrowCommand;
+    DrawCommand drawCircleCommand;
+    DrawCommand drawBoxCommand;
 };
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__
-

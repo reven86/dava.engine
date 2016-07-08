@@ -1,34 +1,5 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
-#define	__DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+#define __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -36,10 +7,10 @@
 #include "Render/2D/Sprite.h"
 
 #include "UI/UIControlBackground.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
-
 class Font;
 class Sprite;
 class TextBlock;
@@ -47,16 +18,20 @@ class UIGeometricData;
 
 struct TiledDrawData
 {
-    Vector< Vector2 > vertices;
-    Vector< Vector2 > texCoords;
-    Vector< uint16  > indeces;
-    void GenerateTileData();
-    void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+    struct Unit
+    {
+        Vector<Vector2> vertices;
+        Vector<Vector2> texCoords;
+        Vector<Vector2> transformedVertices;
+        Vector<uint16> indeces;
+    };
+    Vector<Unit> units;
 
-    Vector< Vector2 > transformedVertices;
+    void GenerateTileData();
+    void GenerateAxisData(float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector<Vector3>& axisData);
     void GenerateTransformData();
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     Vector2 stretchCap;
@@ -74,7 +49,7 @@ struct StretchDrawData
     void GenerateTransformData();
     uint32 GetVertexInTrianglesCount() const;
 
-    Sprite *sprite;
+    Sprite* sprite;
     int32 frame;
     Vector2 size;
     int32 type;
@@ -82,8 +57,62 @@ struct StretchDrawData
     Matrix3 transformMatr;
 };
 
+struct TiledMultilayerData
+{
+    Vector<Vector2> vertices;
+    Vector<Vector2> transformedVertices;
+    Vector<Vector2> texCoordsMask;
+    Vector<Vector2> texCoordsDetail;
+    Vector<Vector2> texCoordsGradient;
+    Vector<Vector2> texCoordsContour;
+    Vector<uint16> indices;
+
+    rhi::HTextureSet textureSet;
+    rhi::HSamplerState samplerState;
+
+    Sprite* mask = nullptr;
+    Sprite* detail = nullptr;
+    Sprite* gradient = nullptr;
+    Sprite* contour = nullptr;
+
+    Vector2 size;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+    bool usePerPixelAccuracy;
+
+    void GenerateTileData();
+    void GenerateTransformData(bool usePerPixelAccuracy);
+    ~TiledMultilayerData();
+
+private:
+    struct AxisData
+    {
+        float32 pos;
+        float32 texCoordsMask;
+        float32 texCoordsDetail;
+        float32 texCoordsGradient;
+        float32 texCoordsContour;
+    };
+
+    struct SingleStretchData
+    {
+        Vector2 uvBase;
+        Vector2 uvCapMin;
+        Vector2 uvCapMax;
+        Vector2 uvMax;
+    };
+
+    SingleStretchData GenerateStretchData(Sprite* sprite);
+    Vector<AxisData> GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
+                                            float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
+                                            float32 contourBase, float32 contourStretchBase, float32 contourStretchMax, float32 contourMax,
+                                            float32 maskBase, float32 maskStretchBase, float32 maskStretchMax, float32 maskMax); //unlike in TileData, this method generates actual vertices info along the axis
+};
+
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
+    static const uint32 MAX_TEXTURE_STREAMS_COUNT = 4;
+
 public:
     struct BatchDescriptor
     {
@@ -92,8 +121,9 @@ public:
         uint32 indexCount = 0;
         const float32* vertexPointer = nullptr;
         uint32 vertexStride = 0;
-        const float32* texCoordPointer = nullptr;
+        Array<const float32*, MAX_TEXTURE_STREAMS_COUNT> texCoordPointer = {};
         uint32 texCoordStride = 0;
+        uint32 texCoordCount = 1;
         const uint32* colorPointer = nullptr;
         uint32 colorStride = 0;
         const uint16* indexPointer = nullptr;
@@ -102,6 +132,17 @@ public:
         rhi::HSamplerState samplerStateHandle;
         rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         Matrix4* worldMatrix = nullptr;
+    };
+
+    struct RenderTargetPassDescriptor
+    {
+        rhi::HTexture colorAttachment, depthAttachment;
+        uint32 width = 0;
+        uint32 height = 0;
+        Color clearColor = Color::Clear;
+        int32 priority = 0; // PRIORITY_SERVICE_2D;
+        bool transformVirtualToPhysical = true;
+        bool clearTarget = true;
     };
 
     enum ColorOperations
@@ -114,22 +155,27 @@ public:
 
     static const FastName RENDER_PASS_NAME;
     static const FastName FLAG_COLOR_OP;
+    static const FastName FLAG_GRADIENT_MODE;
 
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
     static NMaterial* DEFAULT_2D_FILL_ALPHA_MATERIAL;
+    static NMaterial* DEFAULT_COMPOSIT_MATERIAL[GRADIENT_BLEND_MODE_COUNT];
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
-    
+
     void Init();
 
     void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
     void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
     void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
+    void DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
+                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color);
 
     void SetViewMatrix(const Matrix4& viewMatrix);
 
@@ -158,19 +204,20 @@ public:
     void BeginFrame();
     void EndFrame();
     void Flush();
-    
-    void SetClip(const Rect &rect);
-	void IntersectClipRect(const Rect &rect);
-	void RemoveClip();
-    
-	void PushClip();
-	void PopClip();
+
+    void SetClip(const Rect& rect);
+    void IntersectClipRect(const Rect& rect);
+    void RemoveClip();
+
+    void PushClip();
+    void PopClip();
 
     void ScreenSizeChanged();
 
     void SetSpriteClipping(bool clipping);
 
     void BeginRenderTargetPass(Texture* target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
+    void BeginRenderTargetPass(const RenderTargetPassDescriptor&);
     void EndRenderTargetPass();
 
     /* 2D DRAW HELPERS */
@@ -265,10 +312,20 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2& polygon, bool closed, const Matrix3& transform, const Color& color);
 
-    void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(Texture* texture, NMaterial* material, const Color& color,
+                     const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
+    void DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect, const Rect& srcRect);
+
+    const RenderTargetPassDescriptor& GetActiveTargetDescriptor();
+    const RenderTargetPassDescriptor& GetMainTargetDescriptor();
+    void SetMainTargetDescriptor(const RenderTargetPassDescriptor& descriptor);
+
+    Vector2 GetAlignedVertex(const Vector2& vertex);
 
 private:
-    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+    void UpdateVirtualToPhysicalMatrix(bool);
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
     void Setup2DMatrices();
 
     Rect TransformClipRect(const Rect& rect, const Matrix4& transformMatrix);
@@ -276,13 +333,27 @@ private:
     inline bool IsRenderTargetPass()
     {
         return (currentPacketListHandle != packetList2DHandle);
-    };
+    }
 
-    Matrix4 virtualToPhysicalMatrix;
+    const Matrix4& VirtualToPhysicalMatrix() const;
+
+    float32 AlignToX(float32 value);
+    float32 AlignToY(float32 value);
+
+    uint32 GetVertexLayoutId(uint32 texCoordStreamCount);
+    uint32 GetVBOStride(uint32 texCoordStreamCount);
+
+private:
+    Matrix4 currentVirtualToPhysicalMatrix;
+    Vector2 currentPhysicalToVirtualScale;
+
+    Matrix4 actualVirtualToPhysicalMatrix;
+    Vector2 actualPhysicalToVirtualScale;
+
     Matrix4 projMatrix;
     Matrix4 viewMatrix;
-    uint32 projMatrixSemantic;
-    uint32 viewMatrixSemantic;
+    uint32 projMatrixSemantic = 0;
+    uint32 viewMatrixSemantic = 0;
     std::stack<Rect> clipStack;
     Rect currentClip;
 
@@ -291,48 +362,46 @@ private:
     Vector<Vector2> spriteClippedTexCoords;
     Vector<Vector2> spriteClippedVertices;
 
-    int32 spriteVertexCount;
-    int32 spriteIndexCount;
+    int32 spriteVertexCount = 0;
+    int32 spriteIndexCount = 0;
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    bool spriteClipping;
+    bool spriteClipping = true;
 
-    struct BatchVertex
-    {
-        Vector3 pos;
-        Vector2 uv;
-        uint32 color;
-    };
-
-    BatchVertex* currentVertexBuffer;
-    uint16* currentIndexBuffer;
+    uint8* currentVertexBuffer = nullptr;
+    uint16* currentIndexBuffer = nullptr;
     rhi::Packet currentPacket;
-    uint32 currentIndexBase;
-    uint32 vertexIndex;
-    uint32 indexIndex;
-    NMaterial* lastMaterial;
+    uint32 currentTexcoordStreamCount = 1; //1 is for default draw
+    uint32 currentIndexBase = 0;
+    uint32 vertexIndex = 0;
+    uint32 indexIndex = 0;
+    NMaterial* lastMaterial = nullptr;
     Rect lastClip;
     Matrix4 lastCustomWorldMatrix;
-    bool lastUsedCustomWorldMatrix;
-    uint32 lastCustomMatrixSematic;
+    bool lastUsedCustomWorldMatrix = false;
+    uint32 lastCustomMatrixSematic = 0;
+
+    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT + 1];
+    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT + 1];
 
     // Batching errors handling
-    uint32 prevFrameErrorsFlags;
-    uint32 currFrameErrorsFlags;
-    enum ErrorFlag {
+    enum ErrorFlag
+    {
         NO_ERRORS = 0,
         BUFFER_OVERFLOW_ERROR = 1,
     };
-    uint32 highlightControlsVerticesLimit;
+    uint32 prevFrameErrorsFlags = NO_ERRORS;
+    uint32 currFrameErrorsFlags = NO_ERRORS;
+    uint32 highlightControlsVerticesLimit = 0;
 
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;
     rhi::HPacketList currentPacketListHandle;
 
-    int32 renderTargetWidth;
-    int32 renderTargetHeight;
+    RenderTargetPassDescriptor mainTargetDescriptor;
+    RenderTargetPassDescriptor renderPassTargetDescriptor;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
@@ -340,7 +409,30 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
     highlightControlsVerticesLimit = verticesCount;
 }
 
+inline uint32 RenderSystem2D::GetVertexLayoutId(uint32 texCoordStreamCount)
+{
+    return vertexLayouts2d[texCoordStreamCount];
+}
+inline uint32 RenderSystem2D::GetVBOStride(uint32 texCoordStreamCount)
+{
+    return VBO_STRIDE[texCoordStreamCount];
+}
+
+inline float32 RenderSystem2D::AlignToX(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.x + 0.5f) * currentPhysicalToVirtualScale.x;
+}
+
+inline float32 RenderSystem2D::AlignToY(float32 value)
+{
+    return std::floor(value / currentPhysicalToVirtualScale.y + 0.5f) * currentPhysicalToVirtualScale.y;
+}
+
+inline Vector2 RenderSystem2D::GetAlignedVertex(const Vector2& vertex)
+{
+    return Vector2(AlignToX(vertex.x), AlignToY(vertex.y));
+}
+
 } // ns
 
-#endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */
-
+#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

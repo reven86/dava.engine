@@ -29,30 +29,29 @@ class FCOLLADA_EXPORT FUCriticalSection
 {
 private:
 #ifdef WIN32
-	CRITICAL_SECTION criticalSection; // WIN32
-#elif defined (__APPLE__)
-	//Do something here.
-	MPCriticalRegionID criticalSection;
-#elif defined (LINUX)
+    CRITICAL_SECTION criticalSection; // WIN32
+#elif defined(__APPLE__)
+    //Do something here.
+    MPCriticalRegionID criticalSection;
+#elif defined(LINUX)
 #else
 #warning "FUCriticalSection: Critical section not implemented for other platforms."
 #endif
 
 public:
-	/** Constructor. */
-	FUCriticalSection();
+    /** Constructor. */
+    FUCriticalSection();
 
-	/** Destructor. */
-	~FUCriticalSection();
+    /** Destructor. */
+    ~FUCriticalSection();
 
-	/** Enters the critical section, blocking if another thread is already in.
+    /** Enters the critical section, blocking if another thread is already in.
 		Note: a thread may call Enter multiple times and it will still enter to prevent it from deadlocking itself. It
 				must then call Leave the same number of times. */
-	void Enter();
+    void Enter();
 
-	/** Leaves the critical section, allowing other threads to enter. */
-	void Leave();
+    /** Leaves the critical section, allowing other threads to enter. */
+    void Leave();
 };
 
 #endif // _FU_CRITICAL_SECTION_H_
-

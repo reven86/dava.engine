@@ -1,45 +1,87 @@
-Scrollview:
-    bottomAlign: 20
-    clip: "true"
-    drawType: "DRAW_ALIGNED"
-    leftAlign: 0
-    rect: [0.0000, 0.0000, 940.0000, 120.0000]
-    rightAlign: 20
-    topAlign: 0
-    type: "UIScrollView"
-    scrollContainerControl:
-        drawType: "DRAW_ALIGNED"
-        rect: [0.0000, 0.0000, 1500.0000, 2000.0000]
-        type: "UIScrollViewContainer"
-        BigContent:
-            drawType: "DRAW_FILL"
-            noInput: "true"
-            rect: [0.0000, 0.0000, 1500.0000, 2000.0000]
-            type: "UIControl"
-            UIControl1:
-                color: [0.6431, 0.0627, 1.0000, 1.0000]
-                drawType: "DRAW_FILL"
-                noInput: "true"
-                rect: [420.0000, 336.0000, 201.0000, 173.0000]
-                type: "UIControl"
-
-VerticalScrollbar:
-    UIScrollBarDelegate: "Scrollview"
-    baseType: "UIControl"
-    bottomAlign: 20
-    drawType: "DRAW_ALIGNED"
-    rect: [940.0000, 0.0000, 20.0000, 620.0000]
-    rightAlign: 0
-    topAlign: 0
-    type: "UIScrollBar"
-
-HorizontalScrollbar:
-    UIScrollBarDelegate: "Scrollview"
-    baseType: "UIControl"
-    bottomAlign: 0
-    drawType: "DRAW_ALIGNED"
-    leftAlign: 0
-    rect: [0.0000, 620.0000, 940.0000, 20.0000]
-    rightAlign: 20
-    type: "UIScrollBar"
-
+Header:
+    version: "1"
+Controls:
+-   class: "UIControl"
+    name: "ScreenContent"
+    size: [960.000000, 640.000000]
+    components:
+        Anchor:
+            leftAnchorEnabled: true
+            rightAnchorEnabled: true
+            topAnchorEnabled: true
+            bottomAnchorEnabled: true
+    children:
+    -   class: "UIScrollView"
+        name: "Scrollview"
+        position: [0.000000, 0.000000]
+        size: [940.000000, 620.000000]
+        clip: true
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 0.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+                topAnchorEnabled: true
+                topAnchor: 0.000000
+                bottomAnchorEnabled: true
+                bottomAnchor: 20.000000
+            Background:
+                drawType: "DRAW_ALIGNED"
+        children:
+        -   class: "UIScrollViewContainer"
+            name: "scrollContainerControl"
+            position: [0.000000, 0.000000]
+            size: [1500.000000, 2000.000000]
+            components:
+                Background:
+                    drawType: "DRAW_ALIGNED"
+            children:
+            -   class: "UIControl"
+                name: "BigContent"
+                position: [0.000000, 0.000000]
+                size: [1500.000000, 2000.000000]
+                noInput: true
+                components:
+                    Background:
+                        drawType: "DRAW_FILL"
+                children:
+                -   class: "UIControl"
+                    name: "UIControl1"
+                    position: [420.000000, 336.000000]
+                    size: [201.000000, 173.000000]
+                    noInput: true
+                    components:
+                        Background:
+                            drawType: "DRAW_FILL"
+                            color: [0.643100, 0.062700, 1.000000, 1.000000]
+    -   class: "UIControl"
+        customClass: "UIScrollBar"
+        name: "VerticalScrollbar"
+        position: [940.000000, 0.000000]
+        size: [20.000000, 620.000000]
+        components:
+            Anchor:
+                rightAnchorEnabled: true
+                rightAnchor: 0.000000
+                topAnchorEnabled: true
+                topAnchor: 0.000000
+                bottomAnchorEnabled: true
+                bottomAnchor: 20.000000
+            Background:
+                drawType: "DRAW_ALIGNED"
+    -   class: "UIControl"
+        customClass: "UIScrollBar"
+        name: "HorizontalScrollbar"
+        position: [0.000000, 620.000000]
+        size: [940.000000, 20.000000]
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 0.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+                bottomAnchorEnabled: true
+                bottomAnchor: 0.000000
+            Background:
+                drawType: "DRAW_ALIGNED"

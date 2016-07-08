@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ControlNode.h"
 
 #include "UI/UIControl.h"
@@ -40,7 +11,7 @@ using namespace DAVA;
 
 static const Set<String> ControlClassesWithoutChildren = { "UI3DView" };
 
-ControlNode::ControlNode(UIControl *control, bool recursively)
+ControlNode::ControlNode(UIControl* control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
     , rootProperty(nullptr)
@@ -48,13 +19,13 @@ ControlNode::ControlNode(UIControl *control, bool recursively)
     , creationType(CREATED_FROM_CLASS)
 {
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
-    
+
     if (recursively)
     {
-        const List<UIControl*> &children = control->GetChildren();
-        for (UIControl *child : children)
+        const List<UIControl*>& children = control->GetChildren();
+        for (UIControl* child : children)
         {
-            ControlNode *childNode(new ControlNode(child, recursively));
+            ControlNode* childNode(new ControlNode(child, recursively));
             childNode->SetParent(this);
             childNode->SetPackageContext(GetPackageContext());
             nodes.push_back(childNode);
@@ -62,7 +33,7 @@ ControlNode::ControlNode(UIControl *control, bool recursively)
     }
 }
 
-ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
+ControlNode::ControlNode(ControlNode* node, eCreationType _creationType)
     : ControlsContainerNode(nullptr)
     , control(nullptr)
     , rootProperty(nullptr)
@@ -71,7 +42,7 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
 {
     control = ObjectFactory::Instance()->New<UIControl>(node->GetControl()->GetClassName());
     control->SetLocalPropertySet(node->GetControl()->GetLocalPropertySet());
-    
+
     eCreationType childCreationType;
     if (creationType == CREATED_FROM_CLASS)
     {
@@ -86,9 +57,8 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
         rootProperty = new RootProperty(this, node->GetRootProperty(), RootProperty::CT_INHERIT);
         childCreationType = CREATED_FROM_PROTOTYPE_CHILD;
     }
-    
 
-    for (ControlNode *sourceChild : node->nodes)
+    for (ControlNode* sourceChild : node->nodes)
     {
         ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));
         Add(childNode);
@@ -100,43 +70,43 @@ ControlNode::~ControlNode()
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
         (*it)->Release();
     nodes.clear();
-    
+
     SafeRelease(control);
     SafeRelease(rootProperty);
 
     if (prototype)
         prototype->RemoveControlFromInstances(this);
     SafeRelease(prototype);
-    
+
     DVASSERT(instances.empty());
 }
 
-ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
+ControlNode* ControlNode::CreateFromControl(DAVA::UIControl* control)
 {
     return new ControlNode(control, false);
 }
 
-ControlNode *ControlNode::CreateFromControlWithChildren(UIControl *control)
+ControlNode* ControlNode::CreateFromControlWithChildren(UIControl* control)
 {
     return new ControlNode(control, true);
 }
 
-ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode)
+ControlNode* ControlNode::CreateFromPrototype(ControlNode* sourceNode)
 {
     return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE);
 }
 
-ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode)
+ControlNode* ControlNode::CreateFromPrototypeChild(ControlNode* sourceNode)
 {
     return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE_CHILD);
 }
 
-ControlNode *ControlNode::Clone()
+ControlNode* ControlNode::Clone()
 {
     return new ControlNode(this, CREATED_FROM_CLASS);
 }
 
-void ControlNode::Add(ControlNode *node)
+void ControlNode::Add(ControlNode* node)
 {
     DVASSERT(node->GetParent() == nullptr);
     node->SetParent(this);
@@ -145,7 +115,7 @@ void ControlNode::Add(ControlNode *node)
     node->SetPackageContext(GetPackageContext());
 }
 
-void ControlNode::InsertAtIndex(int index, ControlNode *node)
+void ControlNode::InsertAtIndex(int index, ControlNode* node)
 {
     if (index >= static_cast<int>(nodes.size()))
     {
@@ -155,16 +125,16 @@ void ControlNode::InsertAtIndex(int index, ControlNode *node)
     {
         DVASSERT(node->GetParent() == nullptr);
         node->SetParent(this);
-        
-        UIControl *belowThis = nodes[index]->GetControl();
-        
+
+        UIControl* belowThis = nodes[index]->GetControl();
+
         nodes.insert(nodes.begin() + index, SafeRetain(node));
         control->InsertChildBelow(node->GetControl(), belowThis);
         node->SetPackageContext(GetPackageContext());
     }
 }
 
-void ControlNode::Remove(ControlNode *node)
+void ControlNode::Remove(ControlNode* node)
 {
     auto it = find(nodes.begin(), nodes.end(), node);
     if (it != nodes.end())
@@ -188,17 +158,17 @@ int ControlNode::GetCount() const
     return static_cast<int>(nodes.size());
 }
 
-ControlNode *ControlNode::Get(int index) const
+ControlNode* ControlNode::Get(int index) const
 {
     return nodes[index];
 }
 
-void ControlNode::Accept(PackageVisitor *visitor)
+void ControlNode::Accept(PackageVisitor* visitor)
 {
     visitor->VisitControl(this);
 }
 
-ControlNode *ControlNode::FindByName(const DAVA::String &name) const
+ControlNode* ControlNode::FindByName(const DAVA::String& name) const
 {
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
     {
@@ -210,47 +180,55 @@ ControlNode *ControlNode::FindByName(const DAVA::String &name) const
 
 String ControlNode::GetName() const
 {
-    return control->GetName();
+    const FastName& name = control->GetName();
+    if (name.IsValid())
+    {
+        return control->GetName().c_str();
+    }
+    else
+    {
+        return "";
+    }
 }
 
-UIControl *ControlNode::GetControl() const
+UIControl* ControlNode::GetControl() const
 {
     return control;
 }
 
-UIControlPackageContext *ControlNode::GetPackageContext() const
+UIControlPackageContext* ControlNode::GetPackageContext() const
 {
     return control->GetPackageContext();
 }
 
-void ControlNode::SetPackageContext(UIControlPackageContext *context)
+void ControlNode::SetPackageContext(UIControlPackageContext* context)
 {
     control->SetPackageContext(context);
-    for (ControlNode *child : nodes)
+    for (ControlNode* child : nodes)
         child->SetPackageContext(context);
 }
 
-ControlNode *ControlNode::GetPrototype() const
+ControlNode* ControlNode::GetPrototype() const
 {
     return prototype;
 }
 
-const Vector<ControlNode*> &ControlNode::GetInstances() const
+const Vector<ControlNode*>& ControlNode::GetInstances() const
 {
     return instances;
 }
 
-bool ControlNode::IsDependsOnPackage(PackageNode *package) const
+bool ControlNode::IsDependsOnPackage(PackageNode* package) const
 {
     if (prototype && prototype->GetPackage() == package)
         return true;
-    
-    for (ControlNode *child : nodes)
+
+    for (ControlNode* child : nodes)
     {
         if (child->IsDependsOnPackage(package))
             return true;
     }
-    
+
     return false;
 }
 
@@ -264,17 +242,35 @@ bool ControlNode::IsInsertingControlsSupported() const
     return !IsReadOnly() && !ControlClassesWithoutChildren.count(control->GetClassName());
 }
 
-bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+bool ControlNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
 {
+    if (node == nullptr)
+    {
+        return false;
+    }
+    const PackageBaseNode* parent = this;
+    while (parent != nullptr)
+    {
+        const ControlNode* parentNode = dynamic_cast<const ControlNode*>(parent);
+        if (parentNode == nullptr)
+        {
+            break;
+        }
+        if (parentNode == node || parentNode->IsInstancedFrom(node))
+        {
+            return false;
+        }
+        parent = parent->GetParent();
+    }
     if (!IsInsertingControlsSupported())
         return false;
-    
+
     if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
         return false;
-    
-    if (node && node->IsInstancedFrom(this))
+
+    if (node->IsInstancedFrom(this))
         return false;
-    
+
     return true;
 }
 
@@ -291,7 +287,7 @@ bool ControlNode::CanCopy() const
 void ControlNode::RefreshProperties()
 {
     rootProperty->Refresh(AbstractProperty::REFRESH_FONT | AbstractProperty::REFRESH_LOCALIZATION);
-    for (ControlNode *node : nodes)
+    for (ControlNode* node : nodes)
         node->RefreshProperties();
 }
 
@@ -299,7 +295,7 @@ void ControlNode::MarkAsRemoved()
 {
     if (prototype)
         prototype->RemoveControlFromInstances(this);
-    for (ControlNode *node : nodes)
+    for (ControlNode* node : nodes)
         node->MarkAsRemoved();
 }
 
@@ -307,7 +303,7 @@ void ControlNode::MarkAsAlive()
 {
     if (prototype)
         prototype->AddControlToInstances(this);
-    for (ControlNode *node : nodes)
+    for (ControlNode* node : nodes)
         node->MarkAsAlive();
 }
 
@@ -316,22 +312,22 @@ String ControlNode::GetPathToPrototypeChild() const
     if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
         String path = GetName();
-        PackageBaseNode *p = GetParent();
+        PackageBaseNode* p = GetParent();
         while (p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() != CREATED_FROM_PROTOTYPE)
         {
             path = p->GetName() + "/" + path;
             p = p->GetParent();
         }
-        
+
         return path;
     }
     return "";
 }
 
-bool ControlNode::IsInstancedFrom(const ControlNode *prototype) const
+bool ControlNode::IsInstancedFrom(const ControlNode* prototype) const
 {
-    const ControlNode *test = this;
-    
+    const ControlNode* test = this;
+
     while (test)
     {
         if (test->GetPrototype() != nullptr)
@@ -345,24 +341,24 @@ bool ControlNode::IsInstancedFrom(const ControlNode *prototype) const
             test = nullptr;
         }
     }
-    
-    for (const ControlNode *child : nodes)
+
+    for (const ControlNode* child : nodes)
     {
         if (child->IsInstancedFrom(prototype))
             return true;
     }
-    
+
     return false;
 }
 
-void ControlNode::AddControlToInstances(ControlNode *control)
+void ControlNode::AddControlToInstances(ControlNode* control)
 {
     auto it = std::find(instances.begin(), instances.end(), control);
     if (it == instances.end())
         instances.push_back(control);
 }
 
-void ControlNode::RemoveControlFromInstances(ControlNode *control)
+void ControlNode::RemoveControlFromInstances(ControlNode* control)
 {
     auto it = std::find(instances.begin(), instances.end(), control);
     if (it != instances.end())

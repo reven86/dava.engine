@@ -18,19 +18,19 @@ FMAngleAxis::FMAngleAxis()
 }
 
 FMAngleAxis::FMAngleAxis(const FMVector3& _axis, float _angle)
-:	axis(_axis), angle(_angle)
+    : axis(_axis)
+    , angle(_angle)
 {
 }
 
 bool operator==(const FMAngleAxis& first, const FMAngleAxis& other)
 {
-	if (IsEquivalent(first.angle, other.angle))
-	{
-		return IsEquivalent(first.axis, other.axis);
-	}
-	else
-	{
-		return IsEquivalent(first.angle, -other.angle) && IsEquivalent(first.axis, -other.axis);
-	}
+    if (IsEquivalent(first.angle, other.angle))
+    {
+        return IsEquivalent(first.axis, other.axis);
+    }
+    else
+    {
+        return IsEquivalent(first.angle, -other.angle) && IsEquivalent(first.axis, -other.axis);
+    }
 }
-

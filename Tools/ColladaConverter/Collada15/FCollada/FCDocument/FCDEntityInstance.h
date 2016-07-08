@@ -32,7 +32,8 @@ class FCDEntityReference;
 class FCDEntityInstance;
 class FUUri;
 
-template <class T> class FUUniqueStringMapT;
+template <class T>
+class FUUniqueStringMapT;
 typedef FUUniqueStringMapT<char> FUSUniqueStringMap; /**< A set of unique strings. */
 
 /**
@@ -49,158 +50,191 @@ typedef FUUniqueStringMapT<char> FUSUniqueStringMap; /**< A set of unique string
 class FCOLLADA_EXPORT FCDEntityInstance : public FCDObject, FUTracker
 {
 public:
-	/** The class type of the entity instance class.
+    /** The class type of the entity instance class.
 		Used this information to up-cast an entity instance. */
-	enum Type
-	{
-		SIMPLE, /**< A simple entity instance that has no per-instance information.
+    enum Type
+    {
+        SIMPLE, /**< A simple entity instance that has no per-instance information.
 					This is used for lights, cameras, physics materials and force fields: there is no up-class. */
-		GEOMETRY, /**< A geometry entity(FCDGeometryInstance). */
-		CONTROLLER, /**< A controller entity(FCDControllerInstance). */
-		MATERIAL, /**< A material entity(FCDMaterialInstance). */
-		PHYSICS_MODEL, /**< A physics model(FCDPhysicsModelInstance). */
-		PHYSICS_RIGID_BODY, /**< A physics rigid body(FCDPhysicsRigidBodyInstance). */
-		PHYSICS_RIGID_CONSTRAINT, /**< A physics rigid constraint(FCDPhysicsRigidConstraintInstance). */
-		PHYSICS_FORCE_FIELD, /**< A physics force field (FCDPhysicsForceFieldInstance). */
-		TYPE_COUNT
-	};
+        GEOMETRY, /**< A geometry entity(FCDGeometryInstance). */
+        CONTROLLER, /**< A controller entity(FCDControllerInstance). */
+        MATERIAL, /**< A material entity(FCDMaterialInstance). */
+        PHYSICS_MODEL, /**< A physics model(FCDPhysicsModelInstance). */
+        PHYSICS_RIGID_BODY, /**< A physics rigid body(FCDPhysicsRigidBodyInstance). */
+        PHYSICS_RIGID_CONSTRAINT, /**< A physics rigid constraint(FCDPhysicsRigidConstraintInstance). */
+        PHYSICS_FORCE_FIELD, /**< A physics force field (FCDPhysicsForceFieldInstance). */
+        TYPE_COUNT
+    };
 
 private:
-	DeclareObjectType(FCDObject);
-	friend class FCDEntityInstanceFactory;
+    DeclareObjectType(FCDObject);
+    friend class FCDEntityInstanceFactory;
 
-	FCDSceneNode* parent; // May be NULL for non-scene graph instances.
-	FCDEntity::Type entityType;
-	DeclareParameterPtr(FCDEntityReference, entityReference, FC("Entity Reference"));
+    FCDSceneNode* parent; // May be NULL for non-scene graph instances.
+    FCDEntity::Type entityType;
+    DeclareParameterPtr(FCDEntityReference, entityReference, FC("Entity Reference"));
 
-	// common attributes for instances
-	fstring name;
-	DeclareParameter(fm::string, FUParameterQualifiers::SIMPLE, wantedSubId, FC("Instance Sub-id"));
-	
-	// Extra information for the entity instance.
-	DeclareParameterRef(FCDExtra, extra, FC("Extra Tree"));
+    // common attributes for instances
+    fstring name;
+    DeclareParameter(fm::string, FUParameterQualifiers::SIMPLE, wantedSubId, FC("Instance Sub-id"));
+
+    // Extra information for the entity instance.
+    DeclareParameterRef(FCDExtra, extra, FC("Extra Tree"));
 
 protected:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead, use the appropriate allocation function.
 		For scene node instance: FCDSceneNode::AddInstance.
 		@param document The COLLADA document that owns the entity instance.
 		@param parent The visual scene node that contains the entity instance. This pointer will be NULL for
 			instances that are not directly under a visual scene node.
 		@param type The type of entity to instantiate. */
-	FCDEntityInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type type);
+    FCDEntityInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type type);
 
 public:
-	/** Destructor. */
-	virtual ~FCDEntityInstance();
+    /** Destructor. */
+    virtual ~FCDEntityInstance();
 
-	/** Retrieves the entity instance class type.
+    /** Retrieves the entity instance class type.
 		This is used to determine the up-class for the entity instance object.
 		@deprecated Instead use: FCDEntityInstance::HasType().
 		@return The class type: SIMPLE for entity instances with no up-class. */
-	virtual Type GetType() const { return SIMPLE; }
+    virtual Type GetType() const
+    {
+        return SIMPLE;
+    }
 
-	/** Retrieves the instantiated entity type.
+    /** Retrieves the instantiated entity type.
 		The instantiated entity type will never change.
 		@return The instantiated entity type. */
-	inline FCDEntity::Type GetEntityType() const { return entityType; }
+    inline FCDEntity::Type GetEntityType() const
+    {
+        return entityType;
+    }
 
-	/** Retrieves the instantiated entity.  If the entity is an external reference,
+    /** Retrieves the instantiated entity.  If the entity is an external reference,
 		this may load the external document and retrieve the entity.
 		@return The instantiated entity. */
-	FCDEntity* GetEntity();
+    FCDEntity* GetEntity();
 
-	/** Retrieves the instantiated entity.  If the entity is an external reference,
+    /** Retrieves the instantiated entity.  If the entity is an external reference,
 		this function will load the entity.  Be careful when using this function
 		since it will change the object.
 		@return The instantiated entity, if loaded. */
-	inline const FCDEntity* GetEntity() const { return ((FCDEntityInstance*)(this))->GetEntity(); }
+    inline const FCDEntity* GetEntity() const
+    {
+        return ((FCDEntityInstance*)(this))->GetEntity();
+    }
 
-	/** Retrieves the Uri to the skin target.
+    /** Retrieves the Uri to the skin target.
 		This can be an internal or external link
 		@return The uri to the target */
-	const FUUri GetEntityUri() const;
+    const FUUri GetEntityUri() const;
 
-	/** Sets the URI of the target mesh.
+    /** Sets the URI of the target mesh.
 		@param uri The Uri to a local or external controller or geometry */
-	void SetEntityUri(const FUUri& uri);
+    void SetEntityUri(const FUUri& uri);
 
-	/** Sets the instantiated entity.
+    /** Sets the instantiated entity.
 		The type of the entity will be verified.
 		@param entity The instantiated entity. */
-	void SetEntity(FCDEntity* entity);
+    void SetEntity(FCDEntity* entity);
 
-	/** Get the contained EntityReference object. */
-	inline FCDEntityReference* GetEntityReference() { return entityReference; }
-	inline const FCDEntityReference* GetEntityReference() const { return entityReference; } /**< See above */
+    /** Get the contained EntityReference object. */
+    inline FCDEntityReference* GetEntityReference()
+    {
+        return entityReference;
+    }
+    inline const FCDEntityReference* GetEntityReference() const
+    {
+        return entityReference;
+    } /**< See above */
 
-	/** Retrieves the name of the entity instance. This value has no direct use
+    /** Retrieves the name of the entity instance. This value has no direct use
 		in COLLADA but is useful to track the user-friendly name of an entity
 		instance.
 		@return The name. */
-	inline const fstring& GetName() const { return name; }
+    inline const fstring& GetName() const
+    {
+        return name;
+    }
 
-	/** Sets the name of the entity instance. This value has no direct use in 
+    /** Sets the name of the entity instance. This value has no direct use in 
 		COLLADA but is useful to track the user-friendly name of an entity
 		instance.
 		@param name The name. */
-	void SetName(const fstring& name);
+    void SetName(const fstring& name);
 
-	/** Retrieves the optional sub id and is not garanteed to exist. 
+    /** Retrieves the optional sub id and is not garanteed to exist. 
 		This id is the same as that given in SetSubId or from the COLLADA document using LoadFromXML unless it clashes with another id and 
 		CleanSubId has been called.
 		@return The set sub id of the node. */
-	inline const fm::string& GetWantedSubId() const { return wantedSubId; }
+    inline const fm::string& GetWantedSubId() const
+    {
+        return wantedSubId;
+    }
 
-	/** Sets the sub id for this object. 
+    /** Sets the sub id for this object. 
 		This id must be unique within the scope of the parent element. If it is not, it can be corrected by calling CleanSubId.
 		@param _wantedSubId The new sub id of the object. */
-	inline void SetWantedSubId(const fm::string& _wantedSubId) { wantedSubId = _wantedSubId; }
+    inline void SetWantedSubId(const fm::string& _wantedSubId)
+    {
+        wantedSubId = _wantedSubId;
+    }
 
-	/** Retrieves the extra information tree for this entity instance. The 
+    /** Retrieves the extra information tree for this entity instance. The 
 		prefered way to save extra information in FCollada is at the entity 
 		level. Use this extra information tree to store any information you 
 		want exported and imported back.
 		@return The extra information tree. */
-	FCDExtra* GetExtra();
-	inline const FCDExtra* GetExtra() const { return const_cast<FCDEntityInstance*>(this)->GetExtra(); } /**< See above. */
+    FCDExtra* GetExtra();
+    inline const FCDExtra* GetExtra() const
+    {
+        return const_cast<FCDEntityInstance*>(this)->GetExtra();
+    } /**< See above. */
 
-	/** Retrieves whether this entity instance points to an external entity.
+    /** Retrieves whether this entity instance points to an external entity.
 		@return Whether this is an external entity instantiation. */
-	bool IsExternalReference() const;
+    bool IsExternalReference() const;
 
-	/** Retrieves the parent of the entity instance.
+    /** Retrieves the parent of the entity instance.
 		@return the parent visual scene node. This pointer will be NULL
 			when the instance is not created in the visual scene graph. */
-	inline FCDSceneNode* GetParent() { return parent; }
-	inline const FCDSceneNode* GetParent() const { return parent; } /**< See above. */
+    inline FCDSceneNode* GetParent()
+    {
+        return parent;
+    }
+    inline const FCDSceneNode* GetParent() const
+    {
+        return parent;
+    } /**< See above. */
 
-	/** Checks whether or not this instance is below the given scene node in
+    /** Checks whether or not this instance is below the given scene node in
 		the scene hierarchy.
 		@param node The scene node.
 		@return True if parent is above this instance in the hierarchy, false otherwise.*/
-	bool HasForParent(FCDSceneNode* node) const;
+    bool HasForParent(FCDSceneNode* node) const;
 
-	/** [INTERNAL] Cleans up the sub identifiers.
+    /** [INTERNAL] Cleans up the sub identifiers.
 		The sub identifiers must be unique with respect to its parent. This method corrects the sub ids if there are conflicts.
 		@param parentStringMap The string map from the parent of this instance in which the sub ids must be unique. */
-	virtual void CleanSubId(FUSUniqueStringMap* parentStringMap = NULL);
+    virtual void CleanSubId(FUSUniqueStringMap* parentStringMap = NULL);
 
-	/** Clones the entity instance.
+    /** Clones the entity instance.
 		@param clone The entity instance to become the clone.
 		@return The cloned entity instance. */
-	virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
+    virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
 
 protected:
-	/** [INTERNAL] Retrieves the COLLADA name for the instantiation of a given entity type.
+    /** [INTERNAL] Retrieves the COLLADA name for the instantiation of a given entity type.
 		Children can override this method to easily add more class types.
 		@param type The entity class type.
 		@return The COLLADA name to instantiate an entity of the given class type. */
-	//virtual const char* GetInstanceClassType(FCDEntity::Type type) const;
+    //virtual const char* GetInstanceClassType(FCDEntity::Type type) const;
 
-	/** Callback when the instantiated entity is being released.
+    /** Callback when the instantiated entity is being released.
 		@param object A tracked object. */
-	virtual void OnObjectReleased(FUTrackable* object);
+    virtual void OnObjectReleased(FUTrackable* object);
 };
 
 /**
@@ -211,24 +245,26 @@ protected:
 class FCOLLADA_EXPORT FCDEntityInstanceFactory
 {
 private:
-	FCDEntityInstanceFactory() {} // Static class: do not instantiate.
+    FCDEntityInstanceFactory()
+    {
+    } // Static class: do not instantiate.
 
 public:
-	/** Creates a new COLLADA instance, given a entity type.
+    /** Creates a new COLLADA instance, given a entity type.
 		@param document The COLLADA document that will own the new instance.
 		@param parent The visual scene node that will contain the instance.
 		@param type The type of instance object to create.
 		@return The new COLLADA instance. This pointer will be NULL
 			if the given type is invalid. */
-	static FCDEntityInstance* CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type type);
+    static FCDEntityInstance* CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type type);
 
-	/** Creates a new COLLADA instance of a given entity.
+    /** Creates a new COLLADA instance of a given entity.
 		@param document The COLLADA document that will own the new instance.
 		@param parent The visual scene node that will contain the instance.
 		@param entity The entity to create an instance of.
 		@return The new COLLADA instance. This pointer will be NULL
 			if the given type is invalid. */
-	static FCDEntityInstance* CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity *entity);
+    static FCDEntityInstance* CreateInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity* entity);
 };
 
 

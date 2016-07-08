@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include <cstdarg>
 #include <cstdio>
 #include <cmath>
@@ -35,10 +7,8 @@
 
 namespace DAVA
 {
-
 namespace
 {
-
 // Special class used in Vsnwprintf for counting neccesary buffer size and preventing buffer overrun
 class BufferState
 {
@@ -47,7 +17,8 @@ public:
         : bufEnd(buf_ + size_ - 1)
         , curPtr(buf_)
         , ntotal(0)
-    {}
+    {
+    }
 
     void PlaceChar(char16 c)
     {
@@ -77,7 +48,7 @@ public:
             ptr = buf + n - 1;
             inc = -1;
         }
-        while (n --> 0 && curPtr < bufEnd)
+        while (n-- > 0 && curPtr < bufEnd)
         {
             *curPtr++ = *ptr;
             ptr += inc;
@@ -94,7 +65,7 @@ public:
             ptr = buf + n - 1;
             inc = -1;
         }
-        while (n--> 0 && curPtr < bufEnd)
+        while (n-- > 0 && curPtr < bufEnd)
         {
             *curPtr++ = *ptr;
             ptr += inc;
@@ -103,11 +74,15 @@ public:
 
     void Finish()
     {
-        curPtr < bufEnd ? *curPtr = L'\0'
-                        : *bufEnd = L'\0';
+        curPtr < bufEnd ? * curPtr = L'\0'
+                          :
+                          * bufEnd = L'\0';
     }
 
-    size_t Total() const { return ntotal; }
+    size_t Total() const
+    {
+        return ntotal;
+    }
 
 private:
     char16* bufEnd;
@@ -115,14 +90,17 @@ private:
     size_t ntotal;
 };
 
-int32 DoDiv(int64 &n, int32 base)
+int32 DoDiv(int64& n, int32 base)
 {
-    int32 result = ((unsigned long long) n) % (unsigned)base;
-    n = ((unsigned long long) n) / (unsigned)base;
+    unsigned long long unsN = static_cast<unsigned long long>(n);
+    unsigned unsBase = static_cast<unsigned>(base);
+
+    int32 result = unsN % unsBase;
+    n = unsN / unsBase;
     return result;
 }
 
-int32 SkipAtoi(const char16 **s)
+int32 SkipAtoi(const char16** s)
 {
     int32 i = 0;
     while (iswdigit(**s))
@@ -135,19 +113,19 @@ int32 SkipAtoi(const char16 **s)
 // Flags used by Vsnwprintf and friends
 enum
 {
-    ZEROPAD = 1,            /* pad with zero */
-    SIGN = 2,               /* unsigned/signed long */
-    PLUS = 4,               /* show plus */
-    SPACE = 8,              /* space if plus */
-    LEFT = 16,              /* left justified */
-    SPECIAL = 32,           /* 0x */
-    LARGE = 64,             /* use 'ABCDEF' instead of 'abcdef' */
-    LONG_LONG = 128         /* use to convert long long '%lld' */
+    ZEROPAD = 1, /* pad with zero */
+    SIGN = 2, /* unsigned/signed long */
+    PLUS = 4, /* show plus */
+    SPACE = 8, /* space if plus */
+    LEFT = 16, /* left justified */
+    SPECIAL = 32, /* 0x */
+    LARGE = 64, /* use 'ABCDEF' instead of 'abcdef' */
+    LONG_LONG = 128 /* use to convert long long '%lld' */
 };
 
 void Number(int64 num, int32 base, int32 size, int32 precision, int32 type, BufferState* state)
 {
-    const char16 *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
+    const char16* digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
     if (type & LARGE)
         digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if (type & LEFT)
@@ -221,7 +199,7 @@ void Number(int64 num, int32 base, int32 size, int32 precision, int32 type, Buff
         else if (base == 16)
         {
             state->PlaceChar(L'0');
-            state->PlaceChar(digits[33]);   // X or x
+            state->PlaceChar(digits[33]); // X or x
         }
     }
 
@@ -252,13 +230,13 @@ void Numberf(float64 num, int32 base, int32 size, int32 precision, int32 type, B
     num -= fracPart;
 
     if (
-        // tested on gcc 4.8.1, msvc2013, Apple LLVM version 6.0
+// tested on gcc 4.8.1, msvc2013, Apple LLVM version 6.0
 #ifdef _MSC_VER
-        num >= 0.5f
+    num >= 0.5f
 #else
-        num > 0.5f
+    num > 0.5f
 #endif
-        )
+    )
     {
         if (precision > 0)
             fracPart++;
@@ -306,18 +284,18 @@ void Numberf(float64 num, int32 base, int32 size, int32 precision, int32 type, B
         state->PlaceBuffer(tempBuf, len);
 }
 
-int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
+int32 Vsnwprintf(char16* buf, size_t size, const char16* format, va_list& args)
 {
     int32 len = 0;
     int32 base = 0;
     int64 num = 0;
-    const char8 *s = nullptr;
-    const char16 *sw = nullptr;
+    const char8* s = nullptr;
+    const char16* sw = nullptr;
 
-    int32 flags = 0;        /* flags to Number() */
-    int32 field_width = 0;  /* width of output field */
-    int32 precision = 0;    /* min. # of digits for integers; max number of chars for from string */
-    int32 qualifier = 0;    /* 'h', 'l', 'L', 'w' or 'I' for integer fields */
+    int32 flags = 0; /* flags to Number() */
+    int32 field_width = 0; /* width of output field */
+    int32 precision = 0; /* min. # of digits for integers; max number of chars for from string */
+    int32 qualifier = 0; /* 'h', 'l', 'L', 'w' or 'I' for integer fields */
 
     if (buf != nullptr && 0 == size)
         return -1;
@@ -331,7 +309,7 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
 
     BufferState state(buf, size);
     const char16* fmt = format;
-    for (;*fmt; ++fmt)
+    for (; *fmt; ++fmt)
     {
         if (*fmt != L'%')
         {
@@ -342,15 +320,25 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
         /* process flags */
         flags = 0;
     repeat:
-        ++fmt;      /* this also skips first '%' */
+        ++fmt; /* this also skips first '%' */
 
         switch (*fmt)
         {
-        case L'-': flags |= LEFT; goto repeat;
-        case L'+': flags |= PLUS; goto repeat;
-        case L' ': flags |= SPACE; goto repeat;
-        case L'#': flags |= SPECIAL; goto repeat;
-        case L'0': flags |= ZEROPAD; goto repeat;
+        case L'-':
+            flags |= LEFT;
+            goto repeat;
+        case L'+':
+            flags |= PLUS;
+            goto repeat;
+        case L' ':
+            flags |= SPACE;
+            goto repeat;
+        case L'#':
+            flags |= SPECIAL;
+            goto repeat;
+        case L'0':
+            flags |= ZEROPAD;
+            goto repeat;
         }
 
         /* get field width */
@@ -402,7 +390,7 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
             fmt += 3;
         }
 
-        base = 10;      /* default base */
+        base = 10; /* default base */
         switch (*fmt)
         {
         case L'c':
@@ -513,13 +501,13 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
                 state.PlaceCharN(L' ', field_width - len);
             }
             continue;
-        case L'Z':      // %Z is not supported
+        case L'Z': // %Z is not supported
             DVASSERT(0);
             continue;
         case L'p':
             if (field_width == -1)
             {
-                field_width = 2 * sizeof(void *);
+                field_width = 2 * sizeof(void*);
                 flags |= ZEROPAD;
             }
             {
@@ -528,9 +516,9 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
             }
             continue;
         case L'n':
-            DVASSERT(0);    // %n is not supported
+            DVASSERT(0); // %n is not supported
             continue;
-            /* integer number formats - set up the flags and "break" */
+        /* integer number formats - set up the flags and "break" */
         case L'o':
             base = 8;
             break;
@@ -551,23 +539,23 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
             if (*fmt == L'l')
             {
                 char16 next = *(fmt + 1);
-                if (next == L'd')   // %lld
+                if (next == L'd') // %lld
                 {
                     flags |= LONG_LONG | SIGN;
                     fmt++;
                 }
-                else if (next == L'u')  // %llu
+                else if (next == L'u') // %llu
                 {
                     flags |= LONG_LONG;
                     fmt++;
                 }
-                else if (next == L'X')  // %llX
+                else if (next == L'X') // %llX
                 {
                     base = 16;
                     flags |= LONG_LONG | LARGE;
                     fmt++;
                 }
-                else if (next == L'x')  // %llx
+                else if (next == L'x') // %llx
                 {
                     base = 16;
                     flags |= LONG_LONG;
@@ -576,12 +564,12 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
             }
             break;
         case L'f':
-            {
-                base = -1;
-                qualifier = 'f';
-                flags |= SIGN;
-            }
-            break;
+        {
+            base = -1;
+            qualifier = 'f';
+            flags |= SIGN;
+        }
+        break;
         default:
             if (*fmt != L'%')
                 state.PlaceChar(L'%');
@@ -650,7 +638,7 @@ int FormattedLengthV(const char16* format, va_list& args)
     return result;
 }
 
-}   // unnamed namespace
+} // unnamed namespace
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -661,7 +649,7 @@ String FormatVL(const char8* format, va_list& args)
     int32 length = 0;
     {
         va_list xargs;
-        va_copy(xargs, args);   // args cannot be used twice without copying
+        va_copy(xargs, args); // args cannot be used twice without copying
         length = FormattedLengthV(format, xargs);
         va_end(xargs);
     }
@@ -680,7 +668,7 @@ WideString FormatVL(const char16* format, va_list& args)
     int32 length = 0;
     {
         va_list xargs;
-        va_copy(xargs, args);   // args cannot be used twice without copying
+        va_copy(xargs, args); // args cannot be used twice without copying
         length = FormattedLengthV(format, xargs);
         va_end(xargs);
     }
@@ -714,4 +702,4 @@ WideString Format(const char16* format, ...)
     return result;
 }
 
-}   // namespace DAVA
+} // namespace DAVA

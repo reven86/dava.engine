@@ -1,43 +1,14 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 //use these names for children buttons to define UISpinner in .yaml
-static const String UISPINNER_BUTTON_NEXT_NAME = "buttonNext";
-static const String UISPINNER_BUTTON_PREVIOUS_NAME = "buttonPrevious";
-static const String UISPINNER_CONTENT_NAME = "content";
+static const FastName UISPINNER_BUTTON_NEXT_NAME("buttonNext");
+static const FastName UISPINNER_BUTTON_PREVIOUS_NAME("buttonPrevious");
+static const FastName UISPINNER_CONTENT_NAME("content");
+
 static const float32 UISPINNER_ANIRMATION_TIME = 0.1f;
 static const int32 UISPINNER_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISPINNER_X_UNDEFINED = 10000;
@@ -79,7 +50,7 @@ bool SpinnerAdapter::Previous()
     return completedOk;
 }
 
-void SpinnerAdapter::DisplaySelectedData(UISpinner * spinner)
+void SpinnerAdapter::DisplaySelectedData(UISpinner* spinner)
 {
     FillScrollableContent(spinner->GetContent(), EIO_CURRENT);
 }
@@ -136,8 +107,8 @@ void UISpinner::Update(DAVA::float32 timeElapsed)
         previousTouchX = currentTouchX;
     }
 }
-    
-void UISpinner::Input(UIEvent *currentInput)
+
+void UISpinner::Input(UIEvent* currentInput)
 {
     if (NULL == adapter)
     {
@@ -148,7 +119,7 @@ void UISpinner::Input(UIEvent *currentInput)
     {
         return;
     }
-    
+
     Vector2 touchPos = currentInput->point;
     if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
@@ -156,7 +127,7 @@ void UISpinner::Input(UIEvent *currentInput)
         {
             content->relativePosition = Vector2();
             content->SetPivot(Vector2());
-            
+
             contentViewport->AddControl(content.Get());
             AddControl(contentViewport.Get());
             dragAnchorX = touchPos.x - content->relativePosition.x;
@@ -166,7 +137,7 @@ void UISpinner::Input(UIEvent *currentInput)
         else
         {
             dragAnchorX = UISPINNER_X_UNDEFINED;
-        }    
+        }
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
@@ -190,7 +161,7 @@ void UISpinner::Input(UIEvent *currentInput)
                 }
                 content->relativePosition.x = contentNewX;
                 nextContent->relativePosition.x = contentNewX; //for this to work we adjust pivotPoint above
-                
+
                 if (Abs(content->relativePosition.x) > content->size.dx / 2)
                 {
                     OnSelectWithSlide(content->relativePosition.x > 0);
@@ -232,13 +203,13 @@ void UISpinner::Input(UIEvent *currentInput)
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
-    
+
 void UISpinner::OnSelectWithSlide(bool isPrevious)
 {
     RefPtr<UIControl> temp = content;
     content = nextContent;
     nextContent = temp;
-    
+
     //save display position but change pivot points
     Vector2 newPivotPoint = nextContent->GetPivotPoint();
     newPivotPoint.x -= content->GetPivotPoint().x;
@@ -250,14 +221,14 @@ void UISpinner::OnSelectWithSlide(bool isPrevious)
     newPivotPoint = content->GetPivotPoint();
     newPivotPoint.x = 0;
     content->SetPivotPoint(newPivotPoint);
-    
+
     if (isPrevious)
         adapter->Previous();
     else
         adapter->Next();
 }
-    
-void UISpinner::OnScrollAnimationEnd(BaseObject * caller, void * param, void *callerData)
+
+void UISpinner::OnScrollAnimationEnd(BaseObject* caller, void* param, void* callerData)
 {
     DVASSERT(NULL != contentViewport->GetParent());
     content->SetPivotPoint(contentViewport->GetPivotPoint());
@@ -266,30 +237,22 @@ void UISpinner::OnScrollAnimationEnd(BaseObject * caller, void * param, void *ca
     AddControl(content.Get());
 }
 
-void UISpinner::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
-{
-    //release default buttons - they have to be loaded from yaml
-    RemoveAllControls();
-    content = nullptr;
-    UIControl::LoadFromYamlNode(node, loader);
-}
-
-void UISpinner::CopyDataFrom(UIControl *srcControl)
+void UISpinner::CopyDataFrom(UIControl* srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
     SetupInternalControls();
-    UISpinner *src = DynamicTypeCheck<UISpinner *>(srcControl);
+    UISpinner* src = DynamicTypeCheck<UISpinner*>(srcControl);
     SetAdapter(src->GetAdater());
 }
 
 UISpinner* UISpinner::Clone()
 {
-    UISpinner *control = new UISpinner(GetRect());
+    UISpinner* control = new UISpinner(GetRect());
     control->CopyDataFrom(this);
     return control;
 }
 
-void UISpinner::AddControl(UIControl *control)
+void UISpinner::AddControl(UIControl* control)
 {
     UIControl::AddControl(control);
 
@@ -303,7 +266,7 @@ void UISpinner::AddControl(UIControl *control)
     }
 }
 
-void UISpinner::RemoveControl(UIControl *control)
+void UISpinner::RemoveControl(UIControl* control)
 {
     if (control == buttonNext.Get())
     {
@@ -313,7 +276,7 @@ void UISpinner::RemoveControl(UIControl *control)
     {
         buttonPrevious = nullptr;
     }
-    
+
     UIControl::RemoveControl(control);
 }
 
@@ -323,17 +286,7 @@ void UISpinner::LoadFromYamlNodeCompleted()
     SetAdapter(nullptr);
 }
 
-YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
-{
-    buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
-	buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
-	content->SetName(UISPINNER_CONTENT_NAME);
-
-	YamlNode *node = UIControl::SaveToYamlNode(loader);
-	return node;
-}
-	
-void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
+void UISpinner::SetAdapter(SpinnerAdapter* anAdapter)
 {
     buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnNextPressed));
     buttonPrevious->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UISpinner::OnPreviousPressed));
@@ -358,7 +311,7 @@ void UISpinner::SetAdapter(SpinnerAdapter * anAdapter)
     buttonPrevious->SetDisabled(!adapter || adapter->IsSelectedFirst());
 }
 
-void UISpinner::OnNextPressed(DAVA::BaseObject * caller, void * param, void *callerData)
+void UISpinner::OnNextPressed(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     if (content->IsAnimating(UISPINNER_MOVE_ANIMATION_TRACK))
     {
@@ -366,9 +319,9 @@ void UISpinner::OnNextPressed(DAVA::BaseObject * caller, void * param, void *cal
     }
     //buttonNext is disabled if we have no adapter or selected adapter element is last, so we don't need checks here
     adapter->Next();
-}    
+}
 
-void UISpinner::OnPreviousPressed(DAVA::BaseObject * caller, void * param, void *callerData)
+void UISpinner::OnPreviousPressed(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     if (content->IsAnimating(UISPINNER_MOVE_ANIMATION_TRACK))
     {
@@ -391,7 +344,7 @@ void UISpinner::OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, boo
 
 void UISpinner::SetupInternalControls()
 {
-    content = FindByPath(UISPINNER_CONTENT_NAME);
+    content = FindByName(UISPINNER_CONTENT_NAME, false);
     content->SetInputEnabled(false);
     contentViewport->SetRect(content->GetRect());
     contentViewport->SetPivotPoint(content->GetPivotPoint());
@@ -401,5 +354,4 @@ void UISpinner::SetupInternalControls()
     newPivotPoint.x = content->size.dx;
     nextContent->SetPivotPoint(newPivotPoint);
 }
-
 }

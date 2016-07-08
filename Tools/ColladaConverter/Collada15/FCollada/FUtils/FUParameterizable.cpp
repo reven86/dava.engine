@@ -17,11 +17,11 @@
 ImplementObjectType(FUParameterizable)
 
 FUParameterizable::FUParameterizable()
-:	FUTrackable(), flags(0)
+    : FUTrackable()
+    , flags(0)
 {
 }
 
 FUParameterizable::~FUParameterizable()
 {
 }
-

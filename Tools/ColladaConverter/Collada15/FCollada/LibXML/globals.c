@@ -56,9 +56,10 @@ void xmlInitGlobals()
  */
 void xmlCleanupGlobals()
 {
-    if (xmlThrDefMutex != NULL) {
-	xmlFreeMutex(xmlThrDefMutex);
-	xmlThrDefMutex = NULL;
+    if (xmlThrDefMutex != NULL)
+    {
+        xmlFreeMutex(xmlThrDefMutex);
+        xmlThrDefMutex = NULL;
     }
 }
 
@@ -71,18 +72,18 @@ void xmlCleanupGlobals()
 /*
  * Memory allocation routines
  */
-#undef	xmlFree
-#undef	xmlMalloc
-#undef	xmlMallocAtomic
-#undef	xmlMemStrdup
-#undef	xmlRealloc
+#undef xmlFree
+#undef xmlMalloc
+#undef xmlMallocAtomic
+#undef xmlMemStrdup
+#undef xmlRealloc
 
 #if defined(DEBUG_MEMORY_LOCATION) || defined(DEBUG_MEMORY)
-xmlFreeFunc xmlFree = (xmlFreeFunc) xmlMemFree;
-xmlMallocFunc xmlMalloc = (xmlMallocFunc) xmlMemMalloc;
-xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc) xmlMemMalloc;
-xmlReallocFunc xmlRealloc = (xmlReallocFunc) xmlMemRealloc;
-xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc) xmlMemoryStrdup;
+xmlFreeFunc xmlFree = (xmlFreeFunc)xmlMemFree;
+xmlMallocFunc xmlMalloc = (xmlMallocFunc)xmlMemMalloc;
+xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc)xmlMemMalloc;
+xmlReallocFunc xmlRealloc = (xmlReallocFunc)xmlMemRealloc;
+xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc)xmlMemoryStrdup;
 #else
 /**
  * xmlFree:
@@ -90,7 +91,7 @@ xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc) xmlMemoryStrdup;
  *
  * The variable holding the libxml free() implementation
  */
-xmlFreeFunc xmlFree = (xmlFreeFunc) free;
+xmlFreeFunc xmlFree = (xmlFreeFunc)free;
 /**
  * xmlMalloc:
  * @size:  the size requested in bytes
@@ -99,7 +100,7 @@ xmlFreeFunc xmlFree = (xmlFreeFunc) free;
  *
  * Returns a pointer to the newly allocated block or NULL in case of error
  */
-xmlMallocFunc xmlMalloc = (xmlMallocFunc) malloc;
+xmlMallocFunc xmlMalloc = (xmlMallocFunc)malloc;
 /**
  * xmlMallocAtomic:
  * @size:  the size requested in bytes
@@ -110,7 +111,7 @@ xmlMallocFunc xmlMalloc = (xmlMallocFunc) malloc;
  *
  * Returns a pointer to the newly allocated block or NULL in case of error
  */
-xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc) malloc;
+xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc)malloc;
 /**
  * xmlRealloc:
  * @mem: an already allocated block of memory
@@ -120,7 +121,7 @@ xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc) malloc;
  *
  * Returns a pointer to the newly reallocated block or NULL in case of error
  */
-xmlReallocFunc xmlRealloc = (xmlReallocFunc) realloc;
+xmlReallocFunc xmlRealloc = (xmlReallocFunc)realloc;
 /**
  * xmlMemStrdup:
  * @str: a zero terminated string
@@ -129,47 +130,47 @@ xmlReallocFunc xmlRealloc = (xmlReallocFunc) realloc;
  *
  * Returns the copy of the string or NULL in case of error
  */
-xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc) xmlStrdup;
+xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc)xmlStrdup;
 #endif /* DEBUG_MEMORY_LOCATION || DEBUG_MEMORY */
 
 #include <libxml/threads.h>
 #include <libxml/globals.h>
 #include <libxml/SAX.h>
 
-#undef	docbDefaultSAXHandler
-#undef	htmlDefaultSAXHandler
-#undef	oldXMLWDcompatibility
-#undef	xmlBufferAllocScheme
-#undef	xmlDefaultBufferSize
-#undef	xmlDefaultSAXHandler
-#undef	xmlDefaultSAXLocator
-#undef	xmlDoValidityCheckingDefaultValue
-#undef	xmlGenericError
-#undef	xmlStructuredError
-#undef	xmlGenericErrorContext
-#undef	xmlGetWarningsDefaultValue
-#undef	xmlIndentTreeOutput
-#undef  xmlTreeIndentString
-#undef	xmlKeepBlanksDefaultValue
-#undef	xmlLineNumbersDefaultValue
-#undef	xmlLoadExtDtdDefaultValue
-#undef	xmlParserDebugEntities
-#undef	xmlParserVersion
-#undef	xmlPedanticParserDefaultValue
-#undef	xmlSaveNoEmptyTags
-#undef	xmlSubstituteEntitiesDefaultValue
-#undef	xmlRegisterNodeDefaultValue
-#undef	xmlDeregisterNodeDefaultValue
-#undef	xmlLastError
+#undef docbDefaultSAXHandler
+#undef htmlDefaultSAXHandler
+#undef oldXMLWDcompatibility
+#undef xmlBufferAllocScheme
+#undef xmlDefaultBufferSize
+#undef xmlDefaultSAXHandler
+#undef xmlDefaultSAXLocator
+#undef xmlDoValidityCheckingDefaultValue
+#undef xmlGenericError
+#undef xmlStructuredError
+#undef xmlGenericErrorContext
+#undef xmlGetWarningsDefaultValue
+#undef xmlIndentTreeOutput
+#undef xmlTreeIndentString
+#undef xmlKeepBlanksDefaultValue
+#undef xmlLineNumbersDefaultValue
+#undef xmlLoadExtDtdDefaultValue
+#undef xmlParserDebugEntities
+#undef xmlParserVersion
+#undef xmlPedanticParserDefaultValue
+#undef xmlSaveNoEmptyTags
+#undef xmlSubstituteEntitiesDefaultValue
+#undef xmlRegisterNodeDefaultValue
+#undef xmlDeregisterNodeDefaultValue
+#undef xmlLastError
 
-#undef  xmlParserInputBufferCreateFilenameValue
-#undef  xmlOutputBufferCreateFilenameValue
+#undef xmlParserInputBufferCreateFilenameValue
+#undef xmlOutputBufferCreateFilenameValue
 /**
  * xmlParserVersion:
  *
  * Constant string describing the internal version of the library
  */
-const char *xmlParserVersion = LIBXML_VERSION_STRING LIBXML_VERSION_EXTRA;
+const char* xmlParserVersion = LIBXML_VERSION_STRING LIBXML_VERSION_EXTRA;
 
 /**
  * xmlBufferAllocScheme:
@@ -289,9 +290,9 @@ static xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValueThrDe
 
 /* xmlGenericErrorFunc xmlGenericError = xmlGenericErrorDefaultFunc; */
 /* Must initialize xmlGenericError in xmlInitParser */
-void xmlGenericErrorDefaultFunc	(void *ctx ATTRIBUTE_UNUSED,
-				 const char *msg,
-				 ...);
+void xmlGenericErrorDefaultFunc(void* ctx ATTRIBUTE_UNUSED,
+                                const char* msg,
+                                ...);
 /**
  * xmlGenericError:
  *
@@ -311,8 +312,8 @@ static xmlStructuredErrorFunc xmlStructuredErrorThrDef = NULL;
  *
  * Global setting passed to generic error callbacks
  */
-void *xmlGenericErrorContext = NULL;
-static void *xmlGenericErrorContextThrDef = NULL;
+void* xmlGenericErrorContext = NULL;
+static void* xmlGenericErrorContextThrDef = NULL;
 xmlError xmlLastError;
 
 /*
@@ -332,8 +333,8 @@ static int xmlIndentTreeOutputThrDef = 1;
  *
  * The string used to do one-level indent. By default is equal to "  " (two spaces)
  */
-const char *xmlTreeIndentString = "  ";
-static const char *xmlTreeIndentStringThrDef = "  ";
+const char* xmlTreeIndentString = "  ";
+static const char* xmlTreeIndentStringThrDef = "  ";
 
 /**
  * xmlSaveNoEmptyTags:
@@ -485,7 +486,7 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
 {
 #ifdef DEBUG_GLOBALS
     fprintf(stderr, "Initializing globals at %lu for thread %d\n",
-	    (unsigned long) gs, xmlGetThreadId());
+            (unsigned long)gs, xmlGetThreadId());
 #endif
 
     /*
@@ -513,20 +514,20 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
     gs->xmlDefaultSAXLocator.getSystemId = xmlSAX2GetSystemId;
     gs->xmlDefaultSAXLocator.getLineNumber = xmlSAX2GetLineNumber;
     gs->xmlDefaultSAXLocator.getColumnNumber = xmlSAX2GetColumnNumber;
-    gs->xmlDoValidityCheckingDefaultValue = 
-         xmlDoValidityCheckingDefaultValueThrDef;
+    gs->xmlDoValidityCheckingDefaultValue =
+    xmlDoValidityCheckingDefaultValueThrDef;
 #if defined(DEBUG_MEMORY_LOCATION) | defined(DEBUG_MEMORY)
-    gs->xmlFree = (xmlFreeFunc) xmlMemFree;
-    gs->xmlMalloc = (xmlMallocFunc) xmlMemMalloc;
-    gs->xmlMallocAtomic = (xmlMallocFunc) xmlMemMalloc;
-    gs->xmlRealloc = (xmlReallocFunc) xmlMemRealloc;
-    gs->xmlMemStrdup = (xmlStrdupFunc) xmlMemoryStrdup;
+    gs->xmlFree = (xmlFreeFunc)xmlMemFree;
+    gs->xmlMalloc = (xmlMallocFunc)xmlMemMalloc;
+    gs->xmlMallocAtomic = (xmlMallocFunc)xmlMemMalloc;
+    gs->xmlRealloc = (xmlReallocFunc)xmlMemRealloc;
+    gs->xmlMemStrdup = (xmlStrdupFunc)xmlMemoryStrdup;
 #else
-    gs->xmlFree = (xmlFreeFunc) free;
-    gs->xmlMalloc = (xmlMallocFunc) malloc;
-    gs->xmlMallocAtomic = (xmlMallocFunc) malloc;
-    gs->xmlRealloc = (xmlReallocFunc) realloc;
-    gs->xmlMemStrdup = (xmlStrdupFunc) xmlStrdup;
+    gs->xmlFree = (xmlFreeFunc)free;
+    gs->xmlMalloc = (xmlMallocFunc)malloc;
+    gs->xmlMallocAtomic = (xmlMallocFunc)malloc;
+    gs->xmlRealloc = (xmlReallocFunc)realloc;
+    gs->xmlMemStrdup = (xmlStrdupFunc)xmlStrdup;
 #endif
     gs->xmlGetWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
     gs->xmlIndentTreeOutput = xmlIndentTreeOutputThrDef;
@@ -538,8 +539,8 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
     gs->xmlParserVersion = LIBXML_VERSION_STRING;
     gs->xmlPedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
     gs->xmlSaveNoEmptyTags = xmlSaveNoEmptyTagsThrDef;
-    gs->xmlSubstituteEntitiesDefaultValue = 
-        xmlSubstituteEntitiesDefaultValueThrDef;
+    gs->xmlSubstituteEntitiesDefaultValue =
+    xmlSubstituteEntitiesDefaultValueThrDef;
 
     gs->xmlGenericError = xmlGenericErrorThrDef;
     gs->xmlStructuredError = xmlStructuredErrorThrDef;
@@ -547,8 +548,8 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
     gs->xmlRegisterNodeDefaultValue = xmlRegisterNodeDefaultValueThrDef;
     gs->xmlDeregisterNodeDefaultValue = xmlDeregisterNodeDefaultValueThrDef;
 
-	gs->xmlParserInputBufferCreateFilenameValue = xmlParserInputBufferCreateFilenameValueThrDef;
-	gs->xmlOutputBufferCreateFilenameValue = xmlOutputBufferCreateFilenameValueThrDef;
+    gs->xmlParserInputBufferCreateFilenameValue = xmlParserInputBufferCreateFilenameValueThrDef;
+    gs->xmlOutputBufferCreateFilenameValue = xmlOutputBufferCreateFilenameValueThrDef;
     memset(&gs->xmlLastError, 0, sizeof(xmlError));
 
     xmlMutexUnlock(xmlThrDefMutex);
@@ -559,18 +560,20 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
  *               those are really internal work
  */
 void
-xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
+xmlThrDefSetGenericErrorFunc(void* ctx, xmlGenericErrorFunc handler)
+{
     xmlMutexLock(xmlThrDefMutex);
     xmlGenericErrorContextThrDef = ctx;
     if (handler != NULL)
-	xmlGenericErrorThrDef = handler;
+        xmlGenericErrorThrDef = handler;
     else
-	xmlGenericErrorThrDef = xmlGenericErrorDefaultFunc;
+        xmlGenericErrorThrDef = xmlGenericErrorDefaultFunc;
     xmlMutexUnlock(xmlThrDefMutex);
 }
 
 void
-xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
+xmlThrDefSetStructuredErrorFunc(void* ctx, xmlStructuredErrorFunc handler)
+{
     xmlMutexLock(xmlThrDefMutex);
     xmlGenericErrorContextThrDef = ctx;
     xmlStructuredErrorThrDef = handler;
@@ -589,25 +592,25 @@ xmlRegisterNodeFunc
 xmlRegisterNodeDefault(xmlRegisterNodeFunc func)
 {
     xmlRegisterNodeFunc old = xmlRegisterNodeDefaultValue;
-    
+
     __xmlRegisterCallbacks = 1;
     xmlRegisterNodeDefaultValue = func;
-    return(old);
+    return (old);
 }
 
 xmlRegisterNodeFunc
 xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
 {
     xmlRegisterNodeFunc old;
-    
+
     xmlMutexLock(xmlThrDefMutex);
     old = xmlRegisterNodeDefaultValueThrDef;
-    
+
     __xmlRegisterCallbacks = 1;
     xmlRegisterNodeDefaultValueThrDef = func;
     xmlMutexUnlock(xmlThrDefMutex);
 
-    return(old);
+    return (old);
 }
 
 /**
@@ -622,10 +625,10 @@ xmlDeregisterNodeFunc
 xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func)
 {
     xmlDeregisterNodeFunc old = xmlDeregisterNodeDefaultValue;
-    
+
     __xmlRegisterCallbacks = 1;
     xmlDeregisterNodeDefaultValue = func;
-    return(old);
+    return (old);
 }
 
 xmlDeregisterNodeFunc
@@ -635,78 +638,83 @@ xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
 
     xmlMutexLock(xmlThrDefMutex);
     old = xmlDeregisterNodeDefaultValueThrDef;
-    
+
     __xmlRegisterCallbacks = 1;
     xmlDeregisterNodeDefaultValueThrDef = func;
     xmlMutexUnlock(xmlThrDefMutex);
 
-    return(old);
+    return (old);
 }
 
 xmlParserInputBufferCreateFilenameFunc
 xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilenameFunc func)
 {
     xmlParserInputBufferCreateFilenameFunc old;
-    
+
     xmlMutexLock(xmlThrDefMutex);
     old = xmlParserInputBufferCreateFilenameValueThrDef;
-    if (old == NULL) {
-		old = __xmlParserInputBufferCreateFilename;
-	}
+    if (old == NULL)
+    {
+        old = __xmlParserInputBufferCreateFilename;
+    }
 
     xmlParserInputBufferCreateFilenameValueThrDef = func;
     xmlMutexUnlock(xmlThrDefMutex);
 
-    return(old);
+    return (old);
 }
 
 xmlOutputBufferCreateFilenameFunc
 xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func)
 {
     xmlOutputBufferCreateFilenameFunc old;
-    
+
     xmlMutexLock(xmlThrDefMutex);
     old = xmlOutputBufferCreateFilenameValueThrDef;
 #ifdef LIBXML_OUTPUT_ENABLED
-    if (old == NULL) {
-		old = __xmlOutputBufferCreateFilename;
-	}
+    if (old == NULL)
+    {
+        old = __xmlOutputBufferCreateFilename;
+    }
 #endif
     xmlOutputBufferCreateFilenameValueThrDef = func;
     xmlMutexUnlock(xmlThrDefMutex);
 
-    return(old);
+    return (old);
 }
 
 #ifdef LIBXML_DOCB_ENABLED
-#undef	docbDefaultSAXHandler
-xmlSAXHandlerV1 *
-__docbDefaultSAXHandler(void) {
+#undef docbDefaultSAXHandler
+xmlSAXHandlerV1*
+__docbDefaultSAXHandler(void)
+{
     if (IS_MAIN_THREAD)
-	return (&docbDefaultSAXHandler);
+        return (&docbDefaultSAXHandler);
     else
-	return (&xmlGetGlobalState()->docbDefaultSAXHandler);
+        return (&xmlGetGlobalState()->docbDefaultSAXHandler);
 }
 #endif
 
 #ifdef LIBXML_HTML_ENABLED
-#undef	htmlDefaultSAXHandler
-xmlSAXHandlerV1 *
-__htmlDefaultSAXHandler(void) {
+#undef htmlDefaultSAXHandler
+xmlSAXHandlerV1*
+__htmlDefaultSAXHandler(void)
+{
     if (IS_MAIN_THREAD)
-	return (&htmlDefaultSAXHandler);
+        return (&htmlDefaultSAXHandler);
     else
-	return (&xmlGetGlobalState()->htmlDefaultSAXHandler);
+        return (&xmlGetGlobalState()->htmlDefaultSAXHandler);
 }
 #endif
 
 #undef xmlLastError
-xmlError *
-__xmlLastError(void) {
+xmlError*
+__xmlLastError(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlLastError);
+        return (&xmlLastError);
     else
-	return (&xmlGetGlobalState()->xmlLastError);
+        return (&xmlGetGlobalState()->xmlLastError);
 }
 
 /*
@@ -716,17 +724,19 @@ __xmlLastError(void) {
  */
 #if defined(LIBXML_THREAD_ALLOC_ENABLED) && defined(LIBXML_THREAD_ENABLED)
 #undef xmlMalloc
-xmlMallocFunc *
-__xmlMalloc(void){
+xmlMallocFunc*
+__xmlMalloc(void)
+{
     if (IS_MAIN_THREAD)
         return (&xmlMalloc);
     else
-    	return (&xmlGetGlobalState()->xmlMalloc);
+        return (&xmlGetGlobalState()->xmlMalloc);
 }
 
 #undef xmlMallocAtomic
-xmlMallocFunc *
-__xmlMallocAtomic(void){
+xmlMallocFunc*
+__xmlMallocAtomic(void)
+{
     if (IS_MAIN_THREAD)
         return (&xmlMallocAtomic);
     else
@@ -734,8 +744,9 @@ __xmlMallocAtomic(void){
 }
 
 #undef xmlRealloc
-xmlReallocFunc *
-__xmlRealloc(void){
+xmlReallocFunc*
+__xmlRealloc(void)
+{
     if (IS_MAIN_THREAD)
         return (&xmlRealloc);
     else
@@ -743,16 +754,18 @@ __xmlRealloc(void){
 }
 
 #undef xmlFree
-xmlFreeFunc *
-__xmlFree(void){
+xmlFreeFunc*
+__xmlFree(void)
+{
     if (IS_MAIN_THREAD)
         return (&xmlFree);
     else
         return (&xmlGetGlobalState()->xmlFree);
 }
 
-xmlStrdupFunc *
-__xmlMemStrdup(void){
+xmlStrdupFunc*
+__xmlMemStrdup(void)
+{
     if (IS_MAIN_THREAD)
         return (&xmlMemStrdup);
     else
@@ -768,24 +781,27 @@ __xmlMemStrdup(void){
  */
 
 
-#undef	oldXMLWDcompatibility
-int *
-__oldXMLWDcompatibility(void) {
+#undef oldXMLWDcompatibility
+int*
+__oldXMLWDcompatibility(void)
+{
     if (IS_MAIN_THREAD)
-	return (&oldXMLWDcompatibility);
+        return (&oldXMLWDcompatibility);
     else
-	return (&xmlGetGlobalState()->oldXMLWDcompatibility);
+        return (&xmlGetGlobalState()->oldXMLWDcompatibility);
 }
 
-#undef	xmlBufferAllocScheme
-xmlBufferAllocationScheme *
-__xmlBufferAllocScheme(void) {
+#undef xmlBufferAllocScheme
+xmlBufferAllocationScheme*
+__xmlBufferAllocScheme(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlBufferAllocScheme);
+        return (&xmlBufferAllocScheme);
     else
-	return (&xmlGetGlobalState()->xmlBufferAllocScheme);
+        return (&xmlGetGlobalState()->xmlBufferAllocScheme);
 }
-xmlBufferAllocationScheme xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v) {
+xmlBufferAllocationScheme xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v)
+{
     xmlBufferAllocationScheme ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlBufferAllocSchemeThrDef;
@@ -794,15 +810,17 @@ xmlBufferAllocationScheme xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v
     return ret;
 }
 
-#undef	xmlDefaultBufferSize
-int *
-__xmlDefaultBufferSize(void) {
+#undef xmlDefaultBufferSize
+int*
+__xmlDefaultBufferSize(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlDefaultBufferSize);
+        return (&xmlDefaultBufferSize);
     else
-	return (&xmlGetGlobalState()->xmlDefaultBufferSize);
+        return (&xmlGetGlobalState()->xmlDefaultBufferSize);
 }
-int xmlThrDefDefaultBufferSize(int v) {
+int xmlThrDefDefaultBufferSize(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlDefaultBufferSizeThrDef;
@@ -812,34 +830,38 @@ int xmlThrDefDefaultBufferSize(int v) {
 }
 
 #ifdef LIBXML_SAX1_ENABLED
-#undef	xmlDefaultSAXHandler
-xmlSAXHandlerV1 *
-__xmlDefaultSAXHandler(void) {
+#undef xmlDefaultSAXHandler
+xmlSAXHandlerV1*
+__xmlDefaultSAXHandler(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlDefaultSAXHandler);
+        return (&xmlDefaultSAXHandler);
     else
-	return (&xmlGetGlobalState()->xmlDefaultSAXHandler);
+        return (&xmlGetGlobalState()->xmlDefaultSAXHandler);
 }
 #endif /* LIBXML_SAX1_ENABLED */
 
-#undef	xmlDefaultSAXLocator
-xmlSAXLocator *
-__xmlDefaultSAXLocator(void) {
+#undef xmlDefaultSAXLocator
+xmlSAXLocator*
+__xmlDefaultSAXLocator(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlDefaultSAXLocator);
+        return (&xmlDefaultSAXLocator);
     else
-	return (&xmlGetGlobalState()->xmlDefaultSAXLocator);
+        return (&xmlGetGlobalState()->xmlDefaultSAXLocator);
 }
 
-#undef	xmlDoValidityCheckingDefaultValue
-int *
-__xmlDoValidityCheckingDefaultValue(void) {
+#undef xmlDoValidityCheckingDefaultValue
+int*
+__xmlDoValidityCheckingDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlDoValidityCheckingDefaultValue);
+        return (&xmlDoValidityCheckingDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlDoValidityCheckingDefaultValue);
+        return (&xmlGetGlobalState()->xmlDoValidityCheckingDefaultValue);
 }
-int xmlThrDefDoValidityCheckingDefaultValue(int v) {
+int xmlThrDefDoValidityCheckingDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlDoValidityCheckingDefaultValueThrDef;
@@ -848,42 +870,47 @@ int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlGenericError
-xmlGenericErrorFunc *
-__xmlGenericError(void) {
+#undef xmlGenericError
+xmlGenericErrorFunc*
+__xmlGenericError(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlGenericError);
+        return (&xmlGenericError);
     else
-	return (&xmlGetGlobalState()->xmlGenericError);
+        return (&xmlGetGlobalState()->xmlGenericError);
 }
 
-#undef	xmlStructuredError
-xmlStructuredErrorFunc *
-__xmlStructuredError(void) {
+#undef xmlStructuredError
+xmlStructuredErrorFunc*
+__xmlStructuredError(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlStructuredError);
+        return (&xmlStructuredError);
     else
-	return (&xmlGetGlobalState()->xmlStructuredError);
+        return (&xmlGetGlobalState()->xmlStructuredError);
 }
 
-#undef	xmlGenericErrorContext
-void * *
-__xmlGenericErrorContext(void) {
+#undef xmlGenericErrorContext
+void**
+__xmlGenericErrorContext(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlGenericErrorContext);
+        return (&xmlGenericErrorContext);
     else
-	return (&xmlGetGlobalState()->xmlGenericErrorContext);
+        return (&xmlGetGlobalState()->xmlGenericErrorContext);
 }
 
-#undef	xmlGetWarningsDefaultValue
-int *
-__xmlGetWarningsDefaultValue(void) {
+#undef xmlGetWarningsDefaultValue
+int*
+__xmlGetWarningsDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlGetWarningsDefaultValue);
+        return (&xmlGetWarningsDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlGetWarningsDefaultValue);
+        return (&xmlGetGlobalState()->xmlGetWarningsDefaultValue);
 }
-int xmlThrDefGetWarningsDefaultValue(int v) {
+int xmlThrDefGetWarningsDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlGetWarningsDefaultValueThrDef;
@@ -892,15 +919,17 @@ int xmlThrDefGetWarningsDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlIndentTreeOutput
-int *
-__xmlIndentTreeOutput(void) {
+#undef xmlIndentTreeOutput
+int*
+__xmlIndentTreeOutput(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlIndentTreeOutput);
+        return (&xmlIndentTreeOutput);
     else
-	return (&xmlGetGlobalState()->xmlIndentTreeOutput);
+        return (&xmlGetGlobalState()->xmlIndentTreeOutput);
 }
-int xmlThrDefIndentTreeOutput(int v) {
+int xmlThrDefIndentTreeOutput(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlIndentTreeOutputThrDef;
@@ -910,15 +939,17 @@ int xmlThrDefIndentTreeOutput(int v) {
 }
 
 #undef xmlTreeIndentString
-const char * *
-__xmlTreeIndentString(void) {
+const char**
+__xmlTreeIndentString(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlTreeIndentString);
+        return (&xmlTreeIndentString);
     else
-	return (&xmlGetGlobalState()->xmlTreeIndentString);
+        return (&xmlGetGlobalState()->xmlTreeIndentString);
 }
-const char * xmlThrDefTreeIndentString(const char * v) {
-    const char * ret;
+const char* xmlThrDefTreeIndentString(const char* v)
+{
+    const char* ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlTreeIndentStringThrDef;
     xmlTreeIndentStringThrDef = v;
@@ -926,15 +957,17 @@ const char * xmlThrDefTreeIndentString(const char * v) {
     return ret;
 }
 
-#undef	xmlKeepBlanksDefaultValue
-int *
-__xmlKeepBlanksDefaultValue(void) {
+#undef xmlKeepBlanksDefaultValue
+int*
+__xmlKeepBlanksDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlKeepBlanksDefaultValue);
+        return (&xmlKeepBlanksDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlKeepBlanksDefaultValue);
+        return (&xmlGetGlobalState()->xmlKeepBlanksDefaultValue);
 }
-int xmlThrDefKeepBlanksDefaultValue(int v) {
+int xmlThrDefKeepBlanksDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlKeepBlanksDefaultValueThrDef;
@@ -943,15 +976,17 @@ int xmlThrDefKeepBlanksDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlLineNumbersDefaultValue
-int *
-__xmlLineNumbersDefaultValue(void) {
+#undef xmlLineNumbersDefaultValue
+int*
+__xmlLineNumbersDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlLineNumbersDefaultValue);
+        return (&xmlLineNumbersDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlLineNumbersDefaultValue);
+        return (&xmlGetGlobalState()->xmlLineNumbersDefaultValue);
 }
-int xmlThrDefLineNumbersDefaultValue(int v) {
+int xmlThrDefLineNumbersDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlLineNumbersDefaultValueThrDef;
@@ -960,15 +995,17 @@ int xmlThrDefLineNumbersDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlLoadExtDtdDefaultValue
-int *
-__xmlLoadExtDtdDefaultValue(void) {
+#undef xmlLoadExtDtdDefaultValue
+int*
+__xmlLoadExtDtdDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlLoadExtDtdDefaultValue);
+        return (&xmlLoadExtDtdDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlLoadExtDtdDefaultValue);
+        return (&xmlGetGlobalState()->xmlLoadExtDtdDefaultValue);
 }
-int xmlThrDefLoadExtDtdDefaultValue(int v) {
+int xmlThrDefLoadExtDtdDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlLoadExtDtdDefaultValueThrDef;
@@ -977,15 +1014,17 @@ int xmlThrDefLoadExtDtdDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlParserDebugEntities
-int *
-__xmlParserDebugEntities(void) {
+#undef xmlParserDebugEntities
+int*
+__xmlParserDebugEntities(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlParserDebugEntities);
+        return (&xmlParserDebugEntities);
     else
-	return (&xmlGetGlobalState()->xmlParserDebugEntities);
+        return (&xmlGetGlobalState()->xmlParserDebugEntities);
 }
-int xmlThrDefParserDebugEntities(int v) {
+int xmlThrDefParserDebugEntities(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlParserDebugEntitiesThrDef;
@@ -994,24 +1033,27 @@ int xmlThrDefParserDebugEntities(int v) {
     return ret;
 }
 
-#undef	xmlParserVersion
-const char * *
-__xmlParserVersion(void) {
+#undef xmlParserVersion
+const char**
+__xmlParserVersion(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlParserVersion);
+        return (&xmlParserVersion);
     else
-	return (&xmlGetGlobalState()->xmlParserVersion);
+        return (&xmlGetGlobalState()->xmlParserVersion);
 }
 
-#undef	xmlPedanticParserDefaultValue
-int *
-__xmlPedanticParserDefaultValue(void) {
+#undef xmlPedanticParserDefaultValue
+int*
+__xmlPedanticParserDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlPedanticParserDefaultValue);
+        return (&xmlPedanticParserDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlPedanticParserDefaultValue);
+        return (&xmlGetGlobalState()->xmlPedanticParserDefaultValue);
 }
-int xmlThrDefPedanticParserDefaultValue(int v) {
+int xmlThrDefPedanticParserDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlPedanticParserDefaultValueThrDef;
@@ -1020,15 +1062,17 @@ int xmlThrDefPedanticParserDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlSaveNoEmptyTags
-int *
-__xmlSaveNoEmptyTags(void) {
+#undef xmlSaveNoEmptyTags
+int*
+__xmlSaveNoEmptyTags(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlSaveNoEmptyTags);
+        return (&xmlSaveNoEmptyTags);
     else
-	return (&xmlGetGlobalState()->xmlSaveNoEmptyTags);
+        return (&xmlGetGlobalState()->xmlSaveNoEmptyTags);
 }
-int xmlThrDefSaveNoEmptyTags(int v) {
+int xmlThrDefSaveNoEmptyTags(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlSaveNoEmptyTagsThrDef;
@@ -1037,15 +1081,17 @@ int xmlThrDefSaveNoEmptyTags(int v) {
     return ret;
 }
 
-#undef	xmlSubstituteEntitiesDefaultValue
-int *
-__xmlSubstituteEntitiesDefaultValue(void) {
+#undef xmlSubstituteEntitiesDefaultValue
+int*
+__xmlSubstituteEntitiesDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlSubstituteEntitiesDefaultValue);
+        return (&xmlSubstituteEntitiesDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlSubstituteEntitiesDefaultValue);
+        return (&xmlGetGlobalState()->xmlSubstituteEntitiesDefaultValue);
 }
-int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
+int xmlThrDefSubstituteEntitiesDefaultValue(int v)
+{
     int ret;
     xmlMutexLock(xmlThrDefMutex);
     ret = xmlSubstituteEntitiesDefaultValueThrDef;
@@ -1054,40 +1100,44 @@ int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     return ret;
 }
 
-#undef	xmlRegisterNodeDefaultValue
-xmlRegisterNodeFunc *
-__xmlRegisterNodeDefaultValue(void) {
+#undef xmlRegisterNodeDefaultValue
+xmlRegisterNodeFunc*
+__xmlRegisterNodeDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlRegisterNodeDefaultValue);
+        return (&xmlRegisterNodeDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlRegisterNodeDefaultValue);
+        return (&xmlGetGlobalState()->xmlRegisterNodeDefaultValue);
 }
 
-#undef	xmlDeregisterNodeDefaultValue
-xmlDeregisterNodeFunc *
-__xmlDeregisterNodeDefaultValue(void) {
+#undef xmlDeregisterNodeDefaultValue
+xmlDeregisterNodeFunc*
+__xmlDeregisterNodeDefaultValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlDeregisterNodeDefaultValue);
+        return (&xmlDeregisterNodeDefaultValue);
     else
-	return (&xmlGetGlobalState()->xmlDeregisterNodeDefaultValue);
+        return (&xmlGetGlobalState()->xmlDeregisterNodeDefaultValue);
 }
 
-#undef	xmlParserInputBufferCreateFilenameValue
-xmlParserInputBufferCreateFilenameFunc *
-__xmlParserInputBufferCreateFilenameValue(void) {
+#undef xmlParserInputBufferCreateFilenameValue
+xmlParserInputBufferCreateFilenameFunc*
+__xmlParserInputBufferCreateFilenameValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlParserInputBufferCreateFilenameValue);
+        return (&xmlParserInputBufferCreateFilenameValue);
     else
-	return (&xmlGetGlobalState()->xmlParserInputBufferCreateFilenameValue);
+        return (&xmlGetGlobalState()->xmlParserInputBufferCreateFilenameValue);
 }
 
-#undef	xmlOutputBufferCreateFilenameValue
-xmlOutputBufferCreateFilenameFunc *
-__xmlOutputBufferCreateFilenameValue(void) {
+#undef xmlOutputBufferCreateFilenameValue
+xmlOutputBufferCreateFilenameFunc*
+__xmlOutputBufferCreateFilenameValue(void)
+{
     if (IS_MAIN_THREAD)
-	return (&xmlOutputBufferCreateFilenameValue);
+        return (&xmlOutputBufferCreateFilenameValue);
     else
-	return (&xmlGetGlobalState()->xmlOutputBufferCreateFilenameValue);
+        return (&xmlGetGlobalState()->xmlOutputBufferCreateFilenameValue);
 }
 
 #define bottom_globals

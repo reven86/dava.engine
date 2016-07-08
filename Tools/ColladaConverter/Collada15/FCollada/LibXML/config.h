@@ -42,7 +42,8 @@
    function. */
 #ifndef isinf
 #define isinf(d) ((_fpclass(d) == _FPCLASS_PINF) ? 1 \
-	: ((_fpclass(d) == _FPCLASS_NINF) ? -1 : 0))
+                                                   : \
+                                                   ((_fpclass(d) == _FPCLASS_NINF) ? -1 : 0))
 #endif
 /* _isnan(x) returns nonzero if (x == NaN) and zero otherwise. */
 #ifndef isnan
@@ -50,35 +51,53 @@
 #endif
 #else /* _MSC_VER */
 #ifndef isinf
-static int isinf (double d) {
+static int isinf(double d)
+{
     int expon = 0;
-    double val = frexp (d, &expon);
-    if (expon == 1025) {
-        if (val == 0.5) {
+    double val = frexp(d, &expon);
+    if (expon == 1025)
+    {
+        if (val == 0.5)
+        {
             return 1;
-        } else if (val == -0.5) {
+        }
+        else if (val == -0.5)
+        {
             return -1;
-        } else {
+        }
+        else
+        {
             return 0;
         }
-    } else {
+    }
+    else
+    {
         return 0;
     }
 }
 #endif
 #ifndef isnan
-static int isnan (double d) {
+static int isnan(double d)
+{
     int expon = 0;
-    double val = frexp (d, &expon);
-    if (expon == 1025) {
-        if (val == 0.5) {
+    double val = frexp(d, &expon);
+    if (expon == 1025)
+    {
+        if (val == 0.5)
+        {
             return 0;
-        } else if (val == -0.5) {
+        }
+        else if (val == -0.5)
+        {
             return 0;
-        } else {
+        }
+        else
+        {
             return 1;
         }
-    } else {
+    }
+    else
+    {
         return 0;
     }
 }
@@ -87,9 +106,9 @@ static int isnan (double d) {
 #endif // WIN32
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#define mkdir(p,m) _mkdir(p)
+#define mkdir(p, m) _mkdir(p)
 #define snprintf _snprintf
-#define vsnprintf(b,c,f,a) _vsnprintf(b,c,f,a)
+#define vsnprintf(b, c, f, a) _vsnprintf(b, c, f, a)
 #endif
 
 /* Threading API to use should be specified here for compatibility reasons.
@@ -110,4 +129,3 @@ static int isnan (double d) {
 #endif
 
 #endif /* __LIBXML_WIN32_CONFIG__ */
-

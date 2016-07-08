@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #pragma once
 
 #include "../rhi_Type.h"
@@ -38,6 +10,8 @@
     #include "GL/wglew.h"
     
     #define GetGLErrorString gluErrorString
+
+    #include "win_gl.h"
 
 #elif defined(__DAVAENGINE_MACOS__)
 
@@ -60,6 +34,7 @@
 
 #elif defined(__DAVAENGINE_ANDROID__)
 
+	#include <EGL/egl.h>
 	#include <GLES2/gl2.h>
 	#include <GLES2/gl2ext.h>
 
@@ -67,9 +42,30 @@
 
 	#include "android_gl.h"
 
+#ifdef __arm__
+    #include <machine/cpu-features.h>
+    #if __ARM_ARCH__ == 7
+        #ifdef USE_NEON
+            #define __DAVAENGINE_ARM_7__
+        #endif
+    #endif
+#endif
+
 #else
 
     #include <GL/GL.h>
+
+#endif
+
+#if defined(__DAVAENGINE_ANDROID__)
+
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
+typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+
+extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced;
+extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced;
+extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 #endif
 
@@ -197,23 +193,99 @@
 #define GL_QUERY_RESULT GL_QUERY_RESULT_EXT
 #endif
 
+#if !defined(GL_RED)
+#define GL_RED 0x1903
+#endif
+
+#if !defined(GL_RG)
+#define GL_RG 0x8227
+#endif
+
+#if !defined(GL_R8)
+#define GL_R8 0x8229
+#endif
+
+#if !defined(GL_R16)
+#define GL_R16 0x822A
+#endif
+
+#if !defined(GL_RG8)
+#define GL_RG8 0x822B
+#endif
+
+#if !defined(GL_RG16)
+#define GL_RG16 0x822C
+#endif
+
+#if !defined(GL_R16F)
+#define GL_R16F 0x822D
+#endif
+
+#if !defined(GL_R32F)
+#define GL_R32F 0x822E
+#endif
+
+#if !defined(GL_RG16F)
+#define GL_RG16F 0x822F
+#endif
+
+#if !defined(GL_RG32F)
+#define GL_RG32F 0x8230
+#endif
+
+#if !defined(GL_RGBA32F)
+#define GL_RGBA32F 0x8814
+#endif
+
+#if !defined(GL_RGB32F)
+#define GL_RGB32F 0x8815
+#endif
+
+#if !defined(GL_RGBA16F)
+#define GL_RGBA16F 0x881A
+#endif
+
+#if !defined(GL_RGB16F)
+#define GL_RGB16F 0x881B
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
     expr; \
     int err = glGetError(); \
     if (err != GL_NO_ERROR) \
-        Log::Error("gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err)); \
+        Logger::Error("gl", "FAILED  %s (%i)\n", #expr, err); \
 }
+
 #else
-#define GL_CALL(expr) expr
-/*
+
+#if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
+
+extern volatile DAVA::uint8 pre_call_registers[64];
+
 #define GL_CALL(expr) \
 { \
-profiler::ScopedTiming( PROF_STRING_ID("gl-call"), "gl-call" ); \
-    expr ; \
+	if (_GLES2_ValidateNeonCalleeSavedRegisters) \
+	{ \
+		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "memory"); \
+        expr; \
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                         : "q4", "q5", "q6", "q7"); \
+	} \
+	else \
+	{ \
+		expr; \
+	}\
 }
-*/
+
+#else
+
+#define GL_CALL(expr) expr;
+
+#endif
+
 #endif
 
 extern GLuint _GLES2_Binded_FrameBuffer;
@@ -227,16 +299,21 @@ extern int _GLES2_DefaultFrameBuffer_Width;
 extern int _GLES2_DefaultFrameBuffer_Height;
 
 extern GLuint _GLES2_LastSetIB;
+extern DAVA::uint8* _GLES2_LastSetIndices;
 extern GLuint _GLES2_LastSetVB;
 extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
+extern rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback;
+extern DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
 #endif
 
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
+extern bool _GLES2_UseUserProvidedIndices;
+extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

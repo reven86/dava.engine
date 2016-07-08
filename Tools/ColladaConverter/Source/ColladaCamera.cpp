@@ -3,20 +3,16 @@
 
 namespace DAVA
 {
-
-ColladaCamera::ColladaCamera(FCDCamera * cam) : camera(cam)
+ColladaCamera::ColladaCamera(FCDCamera* cam)
+    : camera(cam)
 {
-
 }
 
 ColladaCamera::~ColladaCamera()
 {
-	
 }
 
 void ColladaCamera::Set()
 {
-	
 }
-
 };

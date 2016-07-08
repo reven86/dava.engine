@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "ApplicationSettings.h"
 
 #include "FileSystem/FileSystem.h"
@@ -64,7 +36,7 @@ bool ServerData::operator<(const ServerData& right) const
     return ip < right.ip;
 }
 
-const String ApplicationSettings::DEFAULT_FOLDER = "";
+const String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
 const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
 
 void ApplicationSettings::Save() const
@@ -117,8 +89,9 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
     archive->SetUInt32("Port", listenPort);
     archive->SetBool("AutoStart", autoStart);
+    archive->SetBool("SystemStartup", launchOnSystemStartup);
 
-    auto size = remoteServers.size();
+    uint32 size = static_cast<uint32>(remoteServers.size());
     archive->SetUInt32("ServersSize", size);
 
     uint32 index = 0;
@@ -135,7 +108,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 {
     DVASSERT(nullptr != archive);
 
-    DVASSERT(remoteServers.size() == 0);
+    DVASSERT(remoteServers.empty());
 
     folder = archive->GetString("FolderPath", DEFAULT_FOLDER);
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
@@ -143,6 +116,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
     listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
+    launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
 
     auto count = archive->GetUInt32("ServersSize");
     for (uint32 i = 0; i < count; ++i)
@@ -214,6 +188,16 @@ const bool ApplicationSettings::IsAutoStart() const
 void ApplicationSettings::SetAutoStart(bool val)
 {
     autoStart = val;
+}
+
+const bool ApplicationSettings::IsLaunchOnSystemStartup() const
+{
+    return launchOnSystemStartup;
+}
+
+void ApplicationSettings::SetLaunchOnSystemStartup(bool val)
+{
+    launchOnSystemStartup = val;
 }
 
 const List<ServerData>& ApplicationSettings::GetServers() const

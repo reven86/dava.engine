@@ -63,18 +63,18 @@
 #include <windows.h>
 #ifdef CGD3D8DLL_EXPORTS
 #define CGD3D8DLL_API __declspec(dllexport)
-#elif defined (CG_LIB)
+#elif defined(CG_LIB)
 #define CGD3D8DLL_API
 #else
 #define CGD3D8DLL_API __declspec(dllimport)
 #endif
 
 #ifndef CGD3D8ENTRY
-# ifdef _WIN32
-#  define CGD3D8ENTRY __cdecl
-# else
-#  define CGD3D8ENTRY
-# endif
+#ifdef _WIN32
+#define CGD3D8ENTRY __cdecl
+#else
+#define CGD3D8ENTRY
+#endif
 #endif
 
 /*---------------------------------------------------------------------------
@@ -92,18 +92,18 @@ enum cgD3D8Errors
 // cgD3D8GetLastError will return an HRESULT that could be one these.
 // Use cgD3D8TranslateHRESULT() to translate these errors into strings.
 ---------------------------------------------------------------------------*/
-static const HRESULT CGD3D8ERR_NOTLOADED       = MAKE_HRESULT(1, 0x877,  1);
-static const HRESULT CGD3D8ERR_NODEVICE        = MAKE_HRESULT(1, 0x877,  2);
-static const HRESULT CGD3D8ERR_NOTSAMPLER      = MAKE_HRESULT(1, 0x877,  3);
-static const HRESULT CGD3D8ERR_INVALIDPROFILE  = MAKE_HRESULT(1, 0x877,  4);
-static const HRESULT CGD3D8ERR_NULLVALUE       = MAKE_HRESULT(1, 0x877,  5);
-static const HRESULT CGD3D8ERR_OUTOFRANGE      = MAKE_HRESULT(1, 0x877,  6);
-static const HRESULT CGD3D8ERR_NOTUNIFORM      = MAKE_HRESULT(1, 0x877,  7);
-static const HRESULT CGD3D8ERR_NOTMATRIX       = MAKE_HRESULT(1, 0x877,  8);
-static const HRESULT CGD3D8ERR_INVALIDPARAM    = MAKE_HRESULT(1, 0x877,  9);
+static const HRESULT CGD3D8ERR_NOTLOADED = MAKE_HRESULT(1, 0x877, 1);
+static const HRESULT CGD3D8ERR_NODEVICE = MAKE_HRESULT(1, 0x877, 2);
+static const HRESULT CGD3D8ERR_NOTSAMPLER = MAKE_HRESULT(1, 0x877, 3);
+static const HRESULT CGD3D8ERR_INVALIDPROFILE = MAKE_HRESULT(1, 0x877, 4);
+static const HRESULT CGD3D8ERR_NULLVALUE = MAKE_HRESULT(1, 0x877, 5);
+static const HRESULT CGD3D8ERR_OUTOFRANGE = MAKE_HRESULT(1, 0x877, 6);
+static const HRESULT CGD3D8ERR_NOTUNIFORM = MAKE_HRESULT(1, 0x877, 7);
+static const HRESULT CGD3D8ERR_NOTMATRIX = MAKE_HRESULT(1, 0x877, 8);
+static const HRESULT CGD3D8ERR_INVALIDPARAM = MAKE_HRESULT(1, 0x877, 9);
 
-static const HRESULT CGD3D8ERR_INVALIDSAMPLERSTATE       = MAKE_HRESULT(1, 0x877, 100);
-static const HRESULT CGD3D8ERR_INVALIDVEREXDECL          = MAKE_HRESULT(1, 0x877, 101);
+static const HRESULT CGD3D8ERR_INVALIDSAMPLERSTATE = MAKE_HRESULT(1, 0x877, 100);
+static const HRESULT CGD3D8ERR_INVALIDVEREXDECL = MAKE_HRESULT(1, 0x877, 101);
 
 /*---------------------------------------------------------------------------
 // Other error return values
@@ -121,24 +121,24 @@ extern "C"
 
 CGD3D8DLL_API DWORD CGD3D8ENTRY
 cgD3D8TypeToSize(
-  CGtype type
+CGtype type
 );
 
 CGD3D8DLL_API DWORD CGD3D8ENTRY
 cgD3D8ResourceToInputRegister(
-  CGresource resource
+CGresource resource
 );
 
 CGD3D8DLL_API CGbool CGD3D8ENTRY
 cgD3D8GetVertexDeclaration(
-  CGprogram prog,
-  DWORD     decl[MAX_FVF_DECL_SIZE]
+CGprogram prog,
+DWORD decl[MAX_FVF_DECL_SIZE]
 );
 
 CGD3D8DLL_API CGbool CGD3D8ENTRY
 cgD3D8ValidateVertexDeclaration(
-  CGprogram    prog,
-  const DWORD* decl
+CGprogram prog,
+const DWORD* decl
 );
 
 /*---------------------------------------------------------------------------
@@ -146,97 +146,97 @@ cgD3D8ValidateVertexDeclaration(
 ---------------------------------------------------------------------------*/
 
 /* ----- D3D Device Control ----------- */
-CGD3D8DLL_API IDirect3DDevice8 * CGD3D8ENTRY
+CGD3D8DLL_API IDirect3DDevice8* CGD3D8ENTRY
 cgD3D8GetDevice();
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetDevice(
-  IDirect3DDevice8* pDevice
+IDirect3DDevice8* pDevice
 );
 
 /* ----- Shader Management ----------- */
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8LoadProgram(
-  CGprogram    prog,
-  CGbool       paramShadowing,
-  DWORD        assemFlags,
-  DWORD        vshaderUsage,
-  const DWORD* vertexDecl
+CGprogram prog,
+CGbool paramShadowing,
+DWORD assemFlags,
+DWORD vshaderUsage,
+const DWORD* vertexDecl
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8UnloadProgram(
-  CGprogram prog
+CGprogram prog
 );
 
 CGD3D8DLL_API CGbool CGD3D8ENTRY
 cgD3D8IsProgramLoaded(
-  CGprogram prog
+CGprogram prog
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8BindProgram(
-  CGprogram prog
+CGprogram prog
 );
 
 /* ----- Parameter Management ----------- */
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetUniform(
-  CGparameter param,
-  const void* floats
+CGparameter param,
+const void* floats
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetUniformArray(
-  CGparameter param,
-  DWORD       offset,
-  DWORD       numItems,
-  const void* values
+CGparameter param,
+DWORD offset,
+DWORD numItems,
+const void* values
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetUniformMatrix(
-  CGparameter      param,
-  const D3DMATRIX* matrix
+CGparameter param,
+const D3DMATRIX* matrix
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetUniformMatrixArray(
-  CGparameter      param,
-  DWORD            offset,
-  DWORD            numItems,
-  const D3DMATRIX* matrices
+CGparameter param,
+DWORD offset,
+DWORD numItems,
+const D3DMATRIX* matrices
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetTexture(
-  CGparameter            param,
-  IDirect3DBaseTexture8* tex
+CGparameter param,
+IDirect3DBaseTexture8* tex
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetTextureStageState(
-  CGparameter              param,
-  D3DTEXTURESTAGESTATETYPE type,
-  DWORD                    value 
+CGparameter param,
+D3DTEXTURESTAGESTATETYPE type,
+DWORD value
 );
 
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8SetTextureWrapMode(
-  CGparameter param,
-  DWORD       value 
+CGparameter param,
+DWORD value
 );
 
 /* ----- Parameter Management (Shadowing) ----------- */
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8EnableParameterShadowing(
-  CGprogram prog,
-  CGbool enable
+CGprogram prog,
+CGbool enable
 );
 
 CGD3D8DLL_API CGbool CGD3D8ENTRY
 cgD3D8IsParameterShadowingEnabled(
-  CGprogram prog
+CGprogram prog
 );
 
 /* --------- Profile Options ----------------- */
@@ -246,28 +246,28 @@ cgD3D8GetLatestVertexProfile();
 CGD3D8DLL_API CGprofile CGD3D8ENTRY
 cgD3D8GetLatestPixelProfile();
 
-CGD3D8DLL_API const char * CGD3D8ENTRY
+CGD3D8DLL_API const char* CGD3D8ENTRY
 cgD3D8GetOptimalOptions(
-  CGprofile profile
+CGprofile profile
 );
 
 /* --------- Error reporting ----------------- */
 CGD3D8DLL_API HRESULT CGD3D8ENTRY
 cgD3D8GetLastError();
 
-CGD3D8DLL_API const char * CGD3D8ENTRY
+CGD3D8DLL_API const char* CGD3D8ENTRY
 cgD3D8TranslateCGerror(
-  CGerror error
+CGerror error
 );
 
-CGD3D8DLL_API const char * CGD3D8ENTRY
+CGD3D8DLL_API const char* CGD3D8ENTRY
 cgD3D8TranslateHRESULT(
-  HRESULT hr
+HRESULT hr
 );
 
 CGD3D8DLL_API void CGD3D8ENTRY
 cgD3D8EnableDebugTracing(
-  CGbool enable
+CGbool enable
 );
 
 #ifdef __cplusplus

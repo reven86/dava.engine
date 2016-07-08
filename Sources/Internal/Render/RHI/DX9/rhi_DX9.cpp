@@ -1,36 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "rhi_DX9.h"
+#include "rhi_DX9.h"
     #include "../Common/rhi_Impl.h"
     
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "Core/Core.h"
 using DAVA::Logger;
 
@@ -150,6 +122,21 @@ dx9_Uninitialize()
 static void
 dx9_Reset(const ResetParam& param)
 {
+    UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+
+    if (param.width != _DX9_PresentParam.BackBufferWidth
+        || param.height != _DX9_PresentParam.BackBufferHeight
+        || param.fullScreen != !_DX9_PresentParam.Windowed
+        || interval != _DX9_PresentParam.PresentationInterval
+        )
+    {
+        _DX9_PresentParam.BackBufferWidth = param.width;
+        _DX9_PresentParam.BackBufferHeight = param.height;
+        _DX9_PresentParam.Windowed = !param.fullScreen;
+        _DX9_PresentParam.PresentationInterval = interval;
+
+        ScheduleDeviceReset();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -157,9 +144,9 @@ dx9_Reset(const ResetParam& param)
 static bool
 dx9_NeedRestoreResources()
 {
-    bool needRestore = TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount();
+    bool needRestore = (TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount());
     if (needRestore)
-        Logger::Debug("Restore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
+        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
     return needRestore;
 }
 
@@ -175,7 +162,7 @@ void _InitDX9()
         HWND wnd = (HWND)_DX9_InitParam.window;
         unsigned backbuf_width = _DX9_InitParam.width;
         unsigned backbuf_height = _DX9_InitParam.height;
-        bool use_vsync = true; //(vsync)  ? (bool)(*vsync)  : false;
+        bool use_vsync = _DX9_InitParam.vsyncEnabled;
         D3DADAPTER_IDENTIFIER9 info = { 0 };
         D3DCAPS9 caps;
         DWORD vertex_processing = E_FAIL;
@@ -261,7 +248,7 @@ void _InitDX9()
         _DX9_PresentParam.BackBufferWidth = backbuf_width;
         _DX9_PresentParam.BackBufferHeight = backbuf_height;
         _DX9_PresentParam.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        _DX9_PresentParam.BackBufferCount = 1;
+        _DX9_PresentParam.BackBufferCount = use_vsync ? 2 : 1;
         _DX9_PresentParam.EnableAutoDepthStencil = TRUE;
         _DX9_PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
         _DX9_PresentParam.PresentationInterval = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
@@ -352,6 +339,7 @@ void dx9_Initialize(const InitParam& param)
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
     QueryBufferDX9::SetupDispatch(&DispatchDX9);
+    PerfQuerySetDX9::SetupDispatch(&DispatchDX9);
     TextureDX9::SetupDispatch(&DispatchDX9);
     PipelineStateDX9::SetupDispatch(&DispatchDX9);
     ConstBufferDX9::SetupDispatch(&DispatchDX9);
@@ -392,6 +380,7 @@ void dx9_Initialize(const InitParam& param)
     _DeviceCapsDX9.is32BitIndicesSupported = true;
     _DeviceCapsDX9.isFramebufferFetchSupported = true;
     _DeviceCapsDX9.isVertexTextureUnitsSupported = true;
+    _DeviceCapsDX9.isInstancingSupported = true;
     _DeviceCapsDX9.isUpperLeftRTOrigin = true;
     _DeviceCapsDX9.isZeroBaseClipRange = true;
     _DeviceCapsDX9.isCenterPixelMapping = true;

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_UISCROLLVIEW_H__
 #define __DAVAENGINE_UISCROLLVIEW_H__
 
@@ -36,7 +7,6 @@
 
 namespace DAVA
 {
-
 class UIScrollViewContainer;
 class ScrollHelper;
 
@@ -49,17 +19,17 @@ protected:
     virtual ~UIScrollView();
 
 public:
-	virtual void AddControl(UIControl *control);
-    virtual void RemoveControl(UIControl *control);
-    
-	// Add the control directly to the Scroll View Container.
-	void AddControlToContainer(UIControl* control);
+    void AddControl(UIControl* control) override;
+    void RemoveControl(UIControl* control) override;
 
-	// Access to the Scroll View Container.
-	UIScrollViewContainer* GetContainer();
-	ScrollHelper* GetHorizontalScroll();
-	ScrollHelper* GetVerticalScroll();
-	
+    // Add the control directly to the Scroll View Container.
+    void AddControlToContainer(UIControl* control);
+
+    // Access to the Scroll View Container.
+    UIScrollViewContainer* GetContainer();
+    ScrollHelper* GetHorizontalScroll();
+    ScrollHelper* GetVerticalScroll();
+
     // Scroll Position getter/setters.
     float32 GetHorizontalScrollPosition() const;
     float32 GetVerticalScrollPosition() const;
@@ -74,10 +44,10 @@ public:
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
     UIScrollView* Clone() override;
-    virtual void CopyDataFrom(UIControl* srcControl);
+    void CopyDataFrom(UIControl* srcControl) override;
 
-    virtual void SetRect(const Rect& rect);
-    virtual void SetSize(const Vector2& newSize);
+    void SetRect(const Rect& rect) override;
+    void SetSize(const Vector2& newSize) override;
 
     void SetPadding(const Vector2& padding);
     const Vector2 GetPadding() const;
@@ -92,13 +62,13 @@ public:
     void SetScrollSpeed(float32 speedInSeconds);
 
     // UIScrollBarDelegate implementation.
-    virtual float32 VisibleAreaSize(UIScrollBar* forScrollBar);
-    virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
-    virtual float32 ViewPosition(UIScrollBar *forScrollBar);
-    virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
+    float32 VisibleAreaSize(UIScrollBar* forScrollBar) override;
+    float32 TotalAreaSize(UIScrollBar* forScrollBar) override;
+    float32 ViewPosition(UIScrollBar* forScrollBar) override;
+    void OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition) override;
     void OnScrollViewContainerSizeChanged();
 
-    virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
+    const String GetDelegateControlPath(const UIControl* rootControl) const override;
 
     bool IsAutoUpdate() const;
     void SetAutoUpdate(bool auto_);
@@ -107,26 +77,24 @@ public:
     void SetCenterContent(bool center_);
 
 protected:
-	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual void LoadFromYamlNodeCompleted();
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    void LoadFromYamlNodeCompleted() override;
 
-	Vector2 GetMaxSize(UIControl *control, Vector2 currentMaxSize, Vector2 parentShift);	
-	void PushContentToBounds(UIControl *control);
-	Vector2 GetControlOffset(UIControl *control, Vector2 currentContentOffset);
+    Vector2 GetMaxSize(UIControl* control, Vector2 currentMaxSize, Vector2 parentShift);
+    void PushContentToBounds(UIControl* control);
+    Vector2 GetControlOffset(UIControl* control, Vector2 currentContentOffset);
 
-	// Get the X or Y parameter from the vector depending on the scrollbar orientation.
-	float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);
+    // Get the X or Y parameter from the vector depending on the scrollbar orientation.
+    float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);
 
-	UIScrollViewContainer *scrollContainer;
-	ScrollHelper *scrollHorizontal;
-	ScrollHelper *scrollVertical;
+    UIScrollViewContainer* scrollContainer;
+    ScrollHelper* scrollHorizontal;
+    ScrollHelper* scrollVertical;
 
     bool autoUpdate;
     bool centerContent;
 
 private:
-	void FindRequiredControls();
+    void FindRequiredControls();
 
 public:
     INTROSPECTION_EXTEND(UIScrollView, UIControl,

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PreviewWidget.h"
 
 #include "ScrollAreaController.h"
@@ -35,18 +6,32 @@
 #include <QScreen>
 #include <QMenu>
 #include <QShortCut>
+#include <QFileInfo>
+
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Updaters/ContinuousUpdater.h"
 
 #include "Document.h"
+#include "EditorSystems/EditorSystemsManager.h"
+
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/HUDSystem.h"
+#include "Ruler/RulerWidget.h"
+#include "Ruler/RulerController.h"
+#include "UI/Package/PackageMimeData.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 
 using namespace DAVA;
 
 namespace
 {
-QString ScaleStringFromInt(qreal scale)
+QString ScaleStringFromReal(qreal scale)
 {
     return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
@@ -55,48 +40,122 @@ struct PreviewContext : WidgetContext
 {
     QPoint canvasPosition;
 };
+
+struct SystemsContext : WidgetContext
+{
+    SelectedNodes selection;
+};
 }
 
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
+    , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
+    , rulerController(new RulerController(this))
+    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
+    qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     setupUi(this);
-    davaGLWidget = new DavaGLWidget();
+
+    connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
+    connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
+
+    connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
+    connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
+
+    connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
+
+    verticalRuler->SetRulerOrientation(Qt::Vertical);
     frame->layout()->addWidget(davaGLWidget);
     davaGLWidget->GetGLView()->installEventFilter(this);
 
     davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 
-    connect( davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized );
-
+    connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
+    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
-        scaleCombo->addItem(ScaleStringFromInt(percentage));
+        scaleCombo->addItem(ScaleStringFromReal(percentage));
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
     connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::OnScaleChanged);
 
-    connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
+    connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
-
-    connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //100%
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
+    CreateActions();
+}
 
+PreviewWidget::~PreviewWidget()
+{
+    continuousUpdater->Stop();
+}
+
+ScrollAreaController* PreviewWidget::GetScrollAreaController()
+{
+    return scrollAreaController;
+}
+
+RulerController* PreviewWidget::GetRulerController()
+{
+    return rulerController;
+}
+
+float PreviewWidget::GetScale() const
+{
+    // Firstly verify whether the value is already set.
+    QString curTextValue = scaleCombo->currentText();
+    curTextValue.remove('%');
+    curTextValue.remove(' ');
+    bool ok;
+    float scaleValue = curTextValue.toFloat(&ok);
+    DVASSERT_MSG(ok, "can not parse text to float");
+    return scaleValue;
+}
+
+ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
+{
+    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y));
+    QMenu menu;
+    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
+    {
+        ControlNode* controlNode = *it;
+        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
+        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
+        action->setCheckable(true);
+        menu.addAction(action);
+        void* ptr = static_cast<void*>(controlNode);
+        action->setData(QVariant::fromValue(ptr));
+        if (selectionContainer.IsSelected(controlNode))
+        {
+            action->setChecked(true);
+        }
+    }
+    QAction* selectedAction = menu.exec(globalPos);
+    if (nullptr != selectedAction)
+    {
+        void* ptr = selectedAction->data().value<void*>();
+        return static_cast<ControlNode*>(ptr);
+    }
+    return nullptr;
+}
+
+void PreviewWidget::CreateActions()
+{
     QAction* importPackageAction = new QAction(tr("Import package"), this);
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WindowShortcut);
@@ -127,133 +186,133 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
     davaGLWidget->addAction(deleteAction);
 
-    QAction* selectAllAction = new QAction(tr("Select all"), this);
+    selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     selectAllAction->setShortcutContext(Qt::WindowShortcut);
-    connect(selectAllAction, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
     davaGLWidget->addAction(selectAllAction);
 
-    QAction* focusNextChildAction = new QAction(tr("Focus next child"), this);
+    focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
-    connect(focusNextChildAction, &QAction::triggered, this, &PreviewWidget::FocusNextChild);
     davaGLWidget->addAction(focusNextChildAction);
 
-    QAction* focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
-    focusPreviousChildAction->setShortcut(Qt::ShiftModifier + Qt::Key_Tab);
+    focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
+    focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
-    connect(focusPreviousChildAction, &QAction::triggered, this, &PreviewWidget::FocusPreviousChild);
     davaGLWidget->addAction(focusPreviousChildAction);
-}
-
-ScrollAreaController* PreviewWidget::GetScrollAreaController()
-{
-    return scrollAreaController;
-}
-
-float PreviewWidget::GetScale() const
-{
-    // Firstly verify whether the value is already set.
-    QString curTextValue = scaleCombo->currentText();
-    curTextValue.remove('%');
-    curTextValue.remove(' ');
-    bool ok;
-    float scaleValue = curTextValue.toFloat(&ok);
-    DVASSERT_MSG(ok, "can not parse text to float");
-    return scaleValue;
-}
-
-qreal PreviewWidget::GetDPR() const
-{
-    return davaGLWidget->devicePixelRatio();
-}
-
-ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
-{
-    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y) / davaGLWidget->devicePixelRatio());
-    QMenu menu;
-    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
-    {
-        ControlNode* controlNode = *it;
-        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
-        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
-        action->setCheckable(true);
-        menu.addAction(action);
-        void* ptr = static_cast<void*>(controlNode);
-        action->setData(QVariant::fromValue(ptr));
-        if (selectionContainer.IsSelected(controlNode))
-        {
-            action->setChecked(true);
-        }
-    }
-    QAction* selectedAction = menu.exec(globalPos);
-    if (nullptr != selectedAction)
-    {
-        void* ptr = selectedAction->data().value<void*>();
-        return static_cast<ControlNode*>(ptr);
-    }
-    return nullptr;
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
+    DVASSERT(nullptr != systemsManager);
+    continuousUpdater->Stop();
+    SaveContext();
     document = arg;
-    if (nullptr != document)
+    if (document.isNull())
     {
-        EditorSystemsManager* systemManager = document->GetSystemManager();
-        UIControl* root = systemManager->GetRootControl();
-        DVASSERT(nullptr != root);
-        scrollAreaController->SetNestedControl(root);
+        systemsManager->PackageNodeChanged.Emit(nullptr);
     }
     else
     {
-        scrollAreaController->SetNestedControl(nullptr);
+        systemsManager->PackageNodeChanged.Emit(document->GetPackage());
+        LoadContext();
     }
 }
 
-void PreviewWidget::OnDocumentActivated(Document* document)
+void PreviewWidget::SaveSystemsContextAndClear()
 {
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
+    if (!document.isNull())
+    {
+        SystemsContext* systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
+        systemsContext->selection = selectionContainer.selectedNodes;
+    }
+    if (!selectionContainer.selectedNodes.empty())
+    {
+        DVASSERT(!document.isNull());
+        systemsManager->ClearSelection();
+        continuousUpdater->Stop();
+        DVASSERT(selectionContainer.selectedNodes.empty());
+    }
+}
+
+void PreviewWidget::LoadSystemsContext(Document* arg)
+{
+    DVASSERT(arg == document.data());
+    if (document.isNull())
+    {
+        return;
+    }
+    SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
     if (nullptr == context)
     {
-        context = new PreviewContext();
-        document->SetContext(this, context);
-        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-        scrollAreaController->SetPosition(position);
-        document->GetSystemManager()->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
+        document->SetContext(systemsManager.get(), new SystemsContext());
     }
     else
     {
-        scrollAreaController->SetPosition(context->canvasPosition);
+        selectionContainer.selectedNodes = context->selection;
+        if (!selectionContainer.selectedNodes.empty())
+        {
+            systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        }
     }
 }
 
-void PreviewWidget::OnDocumentDeactivated(Document* document)
+void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    context->canvasPosition = scrollAreaController->GetPosition();
+    systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
 {
-    selectionContainer.MergeSelection(selected, deselected);
+    rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    ApplyPosChanges();
 }
 
-void PreviewWidget::OnMonitorChanged()
+void PreviewWidget::OnNestedControlPositionChanged(const QPoint& pos)
 {
-    SetDPR(davaGLWidget->devicePixelRatio());
+    canvasPos = pos;
+    ApplyPosChanges();
+}
+
+void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
+{
+    systemsManager->SetEmulationMode(emulationMode);
+
+    if (emulationMode)
+    {
+        focusNextChildAction->setShortcut(0);
+        focusNextChildAction->setEnabled(false);
+
+        focusPreviousChildAction->setShortcut(0);
+        focusPreviousChildAction->setEnabled(false);
+    }
+    else
+    {
+        focusNextChildAction->setShortcut(Qt::Key_Tab);
+        focusNextChildAction->setEnabled(true);
+
+        focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
+        focusPreviousChildAction->setEnabled(true);
+    }
+}
+
+void PreviewWidget::ApplyPosChanges()
+{
+    QPoint viewPos = canvasPos + rootControlPos;
+    rulerController->SetViewPos(-viewPos);
 }
 
 void PreviewWidget::UpdateScrollArea()
 {
     QSize areaSize = scrollAreaController->GetViewSize();
-    QSize contentSize = scrollAreaController->GetCanvasSize();
 
     verticalScrollBar->setPageStep(areaSize.height());
     horizontalScrollBar->setPageStep(areaSize.width());
 
-    verticalScrollBar->setRange(0, contentSize.height() - areaSize.height());
-    horizontalScrollBar->setRange(0, contentSize.width() - areaSize.width());
+    QPoint minPos = scrollAreaController->GetMinimumPos();
+    QPoint maxPos = scrollAreaController->GetMaximumPos();
+    horizontalScrollBar->setRange(minPos.x(), maxPos.x());
+    verticalScrollBar->setRange(minPos.y(), maxPos.y());
 }
 
 void PreviewWidget::OnPositionChanged(const QPoint& position)
@@ -262,28 +321,49 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
     verticalScrollBar->setSliderPosition(position.y());
 }
 
+void PreviewWidget::OnGLInitialized()
+{
+    DVASSERT(nullptr == systemsManager);
+    systemsManager.reset(new EditorSystemsManager());
+    systemsManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
+    scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
+    scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
+    systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+    systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
+    systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
+    systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
+    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
+    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
+}
+
 void PreviewWidget::OnScaleChanged(qreal scale)
 {
-    scaleCombo->lineEdit()->setText(ScaleStringFromInt((scale + EPSILON) / davaGLWidget->devicePixelRatio()));
-    emit ScaleChanged(scale);
+    scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
+    rulerController->SetScale(scale);
+    DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
+    if (systemsManager)
+    {
+        systemsManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
+    }
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     float scale = static_cast<float>(percentages.at(index));
-    scrollAreaController->SetScale(scale * davaGLWidget->devicePixelRatio());
+    scrollAreaController->SetScale(scale);
 }
 
 void PreviewWidget::OnScaleByComboText()
 {
     float scale = GetScale();
-    scrollAreaController->SetScale(scale / 100.0f * davaGLWidget->devicePixelRatio());
+    scrollAreaController->SetScale(scale / 100.0f);
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
+void PreviewWidget::OnGLWidgetResized(int width, int height)
 {
-    scrollAreaController->SetViewSize(QSize(width * dpr, height * dpr));
+    scrollAreaController->SetViewSize(QSize(width, height));
     UpdateScrollArea();
 }
 
@@ -308,15 +388,32 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         switch (event->type())
         {
         case QEvent::Wheel:
-            OnWheelEvent(DynamicTypeCheck<QWheelEvent*>(event));
+            OnWheelEvent(static_cast<QWheelEvent*>(event));
             break;
         case QEvent::NativeGesture:
-            OnNativeGuestureEvent(DynamicTypeCheck<QNativeGestureEvent*>(event));
+            OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
             break;
         case QEvent::MouseMove:
-            OnMoveEvent(DynamicTypeCheck<QMouseEvent*>(event));
+            OnMoveEvent(static_cast<QMouseEvent*>(event));
+            break;
         case QEvent::MouseButtonPress:
-            lastMousePos = DynamicTypeCheck<QMouseEvent*>(event)->pos();
+            OnPressEvent(static_cast<QMouseEvent*>(event));
+            break;
+        case QEvent::MouseButtonRelease:
+            OnReleaseEvent(static_cast<QMouseEvent*>(event));
+            break;
+        case QEvent::DragEnter:
+            return true;
+        case QEvent::DragMove:
+            OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
+            return true;
+        case QEvent::DragLeave:
+            OnDragLeaveEvent(static_cast<QDragLeaveEvent*>(event));
+            return true;
+        case QEvent::Drop:
+            OnDropEvent(static_cast<QDropEvent*>(event));
+            davaGLWidget->GetGLView()->requestActivate();
+            break;
         default:
             break;
         }
@@ -324,9 +421,35 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
     return QWidget::eventFilter(obj, event);
 }
 
+void PreviewWidget::LoadContext()
+{
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
+    if (nullptr == context)
+    {
+        context = new PreviewContext();
+        document->SetContext(this, context);
+        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+        scrollAreaController->SetPosition(position);
+    }
+    else
+    {
+        scrollAreaController->SetPosition(context->canvasPosition);
+    }
+}
+
+void PreviewWidget::SaveContext()
+{
+    if (document.isNull())
+    {
+        return;
+    }
+    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
+    context->canvasPosition = scrollAreaController->GetPosition();
+}
+
 void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 {
-    if (document == nullptr)
+    if (document.isNull())
     {
         return;
     }
@@ -342,13 +465,10 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 #endif //Q_OS_WIN
         //scroll view up and down
         static const qreal wheelDelta = 0.002f;
-        int horizontalScrollBarValue = horizontalScrollBar->value();
-        horizontalScrollBarValue -= delta.x() * horizontalScrollBar->pageStep() * wheelDelta;
-        horizontalScrollBar->setValue(horizontalScrollBarValue);
-
-        int verticalScrollBarValue = verticalScrollBar->value();
-        verticalScrollBarValue -= delta.y() * verticalScrollBar->pageStep() * wheelDelta;
-        verticalScrollBar->setValue(verticalScrollBarValue);
+        QPoint position = scrollAreaController->GetPosition();
+        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+        scrollAreaController->SetPosition(position - additionalPos);
     }
 #ifdef Q_OS_WIN
     else
@@ -361,7 +481,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
             return;
         }
         qreal scale = GetScaleFromWheelEvent(ticksCount);
-        QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+        QPoint pos = event->pos();
         scrollAreaController->AdjustScale(scale, pos);
     }
 #endif //Q_OS_WIN
@@ -369,21 +489,21 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 {
-    if (document == nullptr)
+    if (document.isNull())
     {
         return;
     }
     const qreal normalScale = 1.0f;
     const qreal expandedScale = 1.5f;
     qreal scale = scrollAreaController->GetScale();
-    QPoint pos = event->pos() * davaGLWidget->devicePixelRatio();
+    QPoint pos = event->pos();
     switch (event->gestureType())
     {
     case Qt::ZoomNativeGesture:
-        scrollAreaController->AdjustScale(scale + event->value() * davaGLWidget->devicePixelRatio(), pos);
+        scrollAreaController->AdjustScale(scale + event->value(), pos);
         break;
     case Qt::SmartZoomNativeGesture:
-        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale) * davaGLWidget->devicePixelRatio(), pos);
+        scrollAreaController->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
         //event->value() returns 1 or 0
         break;
     default:
@@ -391,12 +511,31 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     }
 }
 
+void PreviewWidget::OnPressEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        lastCursor = davaGLWidget->GetCursor();
+        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        lastMousePos = event->pos();
+    }
+}
+
+void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() & Qt::MiddleButton)
+    {
+        davaGLWidget->SetCursor(lastCursor);
+    }
+}
+
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
+    DVASSERT(nullptr != event);
+    rulerController->UpdateRulerMarkers(event->pos());
     if (event->buttons() & Qt::MiddleButton)
     {
         QPoint delta(event->pos() - lastMousePos);
-        delta *= davaGLWidget->devicePixelRatio();
         lastMousePos = event->pos();
 
         int horizontalScrollBarValue = horizontalScrollBar->value();
@@ -406,6 +545,111 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
         int verticalScrollBarValue = verticalScrollBar->value();
         verticalScrollBarValue -= delta.y();
         verticalScrollBar->setValue(verticalScrollBarValue);
+    }
+}
+
+void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+{
+    DVASSERT(nullptr != event);
+    ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
+}
+
+bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
+{
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList strList = mimeData->text().split("\n");
+        for (const auto& str : strList)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                QString path = url.toLocalFile();
+                QFileInfo fileInfo(path);
+                return fileInfo.isFile() && fileInfo.suffix() == "yaml";
+            }
+        }
+    }
+    else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DVASSERT(nullptr != document);
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        auto node = systemsManager->ControlNodeUnderPoint(pos);
+        systemsManager->NodesHovered.Emit({ node });
+        if (nullptr != node)
+        {
+            if (node->IsReadOnly())
+            {
+                return false;
+            }
+            else
+            {
+                if (mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+                {
+                    const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(mimeData);
+                    const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
+                    for (const auto& srcNode : srcControls)
+                    {
+                        if (srcNode == node)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        else
+        {
+            //root node will be added
+            return true;
+        }
+    }
+    return false;
+}
+
+void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+}
+
+void PreviewWidget::OnDropEvent(QDropEvent* event)
+{
+    systemsManager->NodesHovered.Emit({ nullptr });
+    DVASSERT(nullptr != event);
+    auto mimeData = event->mimeData();
+    if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
+        String string = mimeData->text().toStdString();
+        auto action = event->dropAction();
+        uint32 index = 0;
+        if (node == nullptr)
+        {
+            node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+            index = systemsManager->GetIndexOfNearestControl(pos - systemsManager->GetScalableControl()->GetPosition());
+        }
+        else
+        {
+            index = node->GetCount();
+        }
+        emit DropRequested(mimeData, action, node, index, &pos);
+    }
+    else if (mimeData->hasFormat("text/uri-list"))
+    {
+        QStringList list = mimeData->text().split("\n");
+        Vector<FilePath> packages;
+        for (const QString& str : list)
+        {
+            QUrl url(str);
+            if (url.isLocalFile())
+            {
+                emit OpenPackageFile(url.toLocalFile());
+            }
+        }
     }
 }
 
@@ -437,6 +681,39 @@ qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
     return iter != percentages.end() ? *iter : percentages.last();
 }
 
+void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    for (const auto& node : deselected)
+    {
+        tmpSelected.erase(node);
+        tmpDeselected.insert(node);
+    }
+    for (const auto& node : selected)
+    {
+        tmpSelected.insert(node);
+        tmpDeselected.erase(node);
+    }
+    selectionContainer.MergeSelection(selected, deselected);
+    continuousUpdater->Update();
+}
+
+void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
+{
+    DVASSERT(!document.isNull());
+    auto commandExecutor = document->GetCommandExecutor();
+    commandExecutor->ChangeProperty(propertyActions, hash);
+}
+
+void PreviewWidget::NotifySelectionChanged()
+{
+    if (!tmpSelected.empty() || !tmpDeselected.empty())
+    {
+        emit SelectionChanged(tmpSelected, tmpDeselected);
+    }
+    tmpSelected.clear();
+    tmpDeselected.clear();
+}
+
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
 {
     auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
@@ -448,13 +725,4 @@ qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
     ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
-}
-
-void PreviewWidget::SetDPR(qreal arg)
-{
-    if (dpr != arg)
-    {
-        dpr = arg;
-        DPRChanged(dpr);
-    }
 }

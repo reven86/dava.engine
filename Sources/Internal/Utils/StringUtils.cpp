@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 #include "StringUtils.h"
 #include "Utils/UTF8Utils.h"
@@ -35,8 +6,9 @@
 
 namespace DAVA
 {
-
-void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
+namespace StringUtils
+{
+void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
 #if defined(__DAVAENGINE_WINDOWS__) // sizeof(wchar_t) == 2
@@ -46,51 +18,22 @@ void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks,
 #endif
 }
 
-WideString StringUtils::Trim(const WideString& string)
-{
-    WideString::const_iterator it = string.begin();
-    WideString::const_iterator end = string.end();
-    WideString::const_reverse_iterator rit = string.rbegin();
-    while (it != end && IsWhitespace(*it)) ++it;
-    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
-    return WideString(it, rit.base());
-}
-
-WideString StringUtils::TrimLeft(const WideString& string)
-{
-    WideString::const_iterator it = string.begin();
-    WideString::const_iterator end = string.end();
-    while (it != end && IsWhitespace(*it)) ++it;
-    return WideString(it, end);
-}
-
-WideString StringUtils::TrimRight(const WideString& string)
-{
-    WideString::const_reverse_iterator rit = string.rbegin();
-    WideString::const_reverse_iterator rend = string.rend();
-    while (rit != rend && IsWhitespace(*rit)) ++rit;
-    return WideString(rend.base(), rit.base());
-}
-
-WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8 tabRule /*= -1*/)
+WideString RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -1*/)
 {
     WideString out;
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
     for (; it != end; ++it)
     {
+        if (!IsPrintable(*it))
+        {
+            continue;
+        }
+
         switch (*it)
         {
-        case L'\n':
-        case L'\r':
-        case 0x200B: // Zero-width space
-        case 0x200E: // Zero-width Left-to-right zero-width character
-        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            // Skip this characters (remove it)
-            break;
         case L'\t':
-            if(tabRule < 0)
+            if (tabRule < 0)
             {
                 out.push_back(*it); // Leave tab symbol
             }
@@ -110,4 +53,67 @@ WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8
     return out;
 }
 
+bool IsEmoji(int32 sym)
+{
+    // ranges of symbol codes with unicode emojies.
+    static Vector<std::pair<int32, int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
+    for (auto range : ranges)
+    {
+        if (sym >= range.first && sym <= range.second)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool RemoveEmoji(WideString& string)
+{
+    WideString ret;
+    bool isChanged = false;
+
+    auto data = string.data();
+    size_t length = string.length();
+    for (size_t i = 0; i < length; ++i)
+    {
+        int32 sym;
+        Memcpy(&sym, data + i, sizeof(int32));
+
+        if (!IsEmoji(sym))
+        {
+            ret += sym;
+        }
+        else
+        {
+            while (i + 1 < length)
+            {
+                i++;
+                Memcpy(&sym, data + i, sizeof(int32));
+                if (sym != 0x200D && sym != 0xFE0F)
+                {
+                    i--;
+                    break;
+                }
+            }
+            isChanged = true;
+        }
+    }
+
+    string = ret;
+
+    // true means "we removed some emojies".
+    return isChanged;
+}
+
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
+{
+    size_t pos = 0;
+    size_t oldSubStringLength = search.length();
+    while ((pos = string.find(search, pos)) != WideString::npos)
+    {
+        string.replace(pos, oldSubStringLength, replacement);
+        pos += 1;
+    }
+}
+}
 }

@@ -1,31 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Tests/Utils/TankUtils.h"
 
 using namespace DAVA;
@@ -39,7 +11,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
 {
     ScopedPtr<Entity> skinnedTank(new Entity());
     skinnedTank->SetName(TankUtils::TankNode::SKINNED_TANK);
-    
+
     Entity* lWheelsRoot = sourceTank->FindByName(TankNode::L_WHEELS);
     Entity* rWheelsRoot = sourceTank->FindByName(TankNode::R_WHEELS);
 
@@ -51,7 +23,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
     Vector<SkeletonComponent::JointConfig> tankJoints;
     ScopedPtr<RenderObject> skinnedRo(MeshUtils::CreateSkinnedMesh(sourceTank, tankJoints));
     skinnedRo->AddFlag(RenderObject::VISIBLE_REFLECTION | RenderObject::VISIBLE_REFRACTION);
-    
+
     RenderComponent* renderComponent = static_cast<RenderComponent*>(skinnedTank->GetOrCreateComponent(Component::RENDER_COMPONENT));
     renderComponent->SetRenderObject(skinnedRo);
 
@@ -69,7 +41,6 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
                 outJointIndexes.push_back(i);
                 tankJoints[i].position = centerPos;
             }
-
         }
     }
 
@@ -79,7 +50,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
         {
             Entity* turret = sourceTank->FindByName(TankNode::TURRET);
             RenderComponent* renderComponent = static_cast<RenderComponent*>(turret->GetComponent(Component::RENDER_COMPONENT));
-            
+
             tankJoints[i].position = renderComponent->GetRenderObject()->GetBoundingBox().GetCenter();
         }
     }
@@ -87,13 +58,13 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
     SkeletonComponent* conquerorSkeleton = new SkeletonComponent();
     conquerorSkeleton->SetConfigJoints(tankJoints);
     conquerorSkeleton->RebuildFromConfig();
-    
+
     skinnedTank->AddComponent(conquerorSkeleton);
 
     Vector<Entity*> sourceTankChildren;
     sourceTank->GetChildEntitiesWithComponent(sourceTankChildren, Component::RENDER_COMPONENT);
 
-    for (auto *child : sourceTankChildren)
+    for (auto* child : sourceTankChildren)
     {
         child->RemoveComponent(Component::RENDER_COMPONENT);
     }

@@ -11,33 +11,32 @@
 
 FUSemaphore::FUSemaphore(uint32 initialValue, uint32 maximumValue)
 #ifdef WIN32
-:	semaphoreHandle(NULL)
+    : semaphoreHandle(NULL)
 #endif // WIN32
 {	
 #ifdef WIN32
-	FUAssert(initialValue <= maximumValue, ;);
-	semaphoreHandle = CreateSemaphore(NULL, initialValue, maximumValue, NULL);
+    FUAssert(initialValue <= maximumValue, ;);
+    semaphoreHandle = CreateSemaphore(NULL, initialValue, maximumValue, NULL);
 #endif
 }
 
 FUSemaphore::~FUSemaphore()
 {
 #ifdef WIN32
-	CloseHandle(semaphoreHandle);
+    CloseHandle(semaphoreHandle);
 #endif
 }
 
 void FUSemaphore::Up()
 {
 #ifdef WIN32
-	ReleaseSemaphore(semaphoreHandle, 1, NULL);
+    ReleaseSemaphore(semaphoreHandle, 1, NULL);
 #endif
 }
 
 void FUSemaphore::Down()
 {
 #ifdef WIN32
-	WaitForSingleObject(semaphoreHandle, INFINITE);
+    WaitForSingleObject(semaphoreHandle, INFINITE);
 #endif
 }
-

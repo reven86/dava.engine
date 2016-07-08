@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "Logger/Logger.h"
 
 #ifdef __DAVAENGINE_ANDROID__
 
@@ -16,6 +17,10 @@ static EGLContext _context = EGL_NO_CONTEXT;
 static EGLint _format = 0;
 static EGLConfig _config = 0;
 static ANativeWindow* _nativeWindow = nullptr;
+
+PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
+PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
+PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor = nullptr;
 
 static bool needRecreateSurface = false;
 
@@ -126,6 +131,7 @@ bool android_gl_end_frame()
 
     if (!ret && eglGetError() == EGL_CONTEXT_LOST)
     {
+        DAVA::Logger::Error("Context Lost");
         eglDestroyContext(_display, _context);
         _GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
 

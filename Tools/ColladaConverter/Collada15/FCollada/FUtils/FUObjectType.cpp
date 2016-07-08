@@ -10,20 +10,23 @@
 #include "FUObjectType.h"
 
 FUObjectType::FUObjectType(const char* _typeName)
-: parent(NULL)
+    : parent(NULL)
 {
-	typeName = _typeName;
+    typeName = _typeName;
 }
 
 FUObjectType::FUObjectType(const FUObjectType& _parent, const char* _typeName)
-: parent(&_parent)
+    : parent(&_parent)
 {
-	typeName = _typeName;
+    typeName = _typeName;
 }
 
 bool FUObjectType::Includes(const FUObjectType& otherType) const
 {
-	if (otherType == *this) return true;
-	else if (parent != NULL) return parent->Includes(otherType);
-	else return false;
+    if (otherType == *this)
+        return true;
+    else if (parent != NULL)
+        return parent->Includes(otherType);
+    else
+        return false;
 }

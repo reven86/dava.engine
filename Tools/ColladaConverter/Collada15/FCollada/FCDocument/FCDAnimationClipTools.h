@@ -18,9 +18,9 @@ class FCDocument;
 
 namespace FCDAnimationClipTools
 {
-	/** Resets the times for the animation clips to a given value.
+/** Resets the times for the animation clips to a given value.
 		@param document A COLLADA document that contains animation clips. */
-	FCOLLADA_EXPORT void ResetAnimationClipTimes(FCDocument* document, float startValue);
+FCOLLADA_EXPORT void ResetAnimationClipTimes(FCDocument* document, float startValue);
 };
 
 #endif // _FCD_ANIMATION_CLIP_TOOLS_H_

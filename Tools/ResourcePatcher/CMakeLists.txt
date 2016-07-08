@@ -19,8 +19,7 @@ set( APP_DATA                    )
 set( LIBRARIES                   )
 
 set( MAC_DISABLE_BUNDLE     true )
-
-set( MACOS_DYLIB      ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
+set( DISABLE_SOUNDS         true)
 
 setup_main_executable()
 

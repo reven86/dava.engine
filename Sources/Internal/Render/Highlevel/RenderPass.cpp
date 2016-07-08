@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -42,6 +13,7 @@
 #include "Render/Texture.h"
 
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -95,13 +67,13 @@ void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID 
         layersBatchArrays[layer->GetRenderLayerID()].SetSortingFlags(layer->GetSortingFlags());
     }
 }
-    
-void RenderPass::RemoveRenderLayer(RenderLayer * layer)
-{
-	Vector<RenderLayer*>::iterator it = std::find(renderLayers.begin(), renderLayers.end(), layer);
-	DVASSERT(it != renderLayers.end());
 
-	renderLayers.erase(it);
+void RenderPass::RemoveRenderLayer(RenderLayer* layer)
+{
+    Vector<RenderLayer*>::iterator it = std::find(renderLayers.begin(), renderLayers.end(), layer);
+    DVASSERT(it != renderLayers.end());
+
+    renderLayers.erase(it);
 }
 
 void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4* externalClipPlane)
@@ -135,11 +107,11 @@ void RenderPass::Draw(RenderSystem* renderSystem)
     EndRenderPass();
 }
 
-void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
+void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
-        currVisibilityCriteria&=~RenderObject::VISIBLE_STATIC_OCCLUSION;
+        currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
 
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, visibilityArray, currVisibilityCriteria);
@@ -182,9 +154,9 @@ void RenderPass::DrawLayers(Camera* camera)
     viewportSize = Vector2(viewport.dx, viewport.dy);
     rcpViewportSize = Vector2(1.0f / viewport.dx, 1.0f / viewport.dy);
     viewportOffset = Vector2(viewport.x, viewport.y);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, (pointer_size)&viewportSize);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, reinterpret_cast<pointer_size>(&viewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, reinterpret_cast<pointer_size>(&rcpViewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, reinterpret_cast<pointer_size>(&viewportOffset));
 
     size_t size = renderLayers.size();
     for (size_t k = 0; k < size; ++k)
@@ -279,26 +251,26 @@ void MainForwardRenderPass::InitReflectionRefraction()
 {
     DVASSERT(!reflectionPass);
 
-    reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD);
+    reflectionPass = new WaterReflectionRenderPass(PASS_REFLECTION_REFRACTION);
     reflectionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
     reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     reflectionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    reflectionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFLECTION_TEX_SIZE, (float32)RuntimeTextures::REFLECTION_TEX_SIZE));
+    reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
 
-    refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
+    refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     refractionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    refractionPass->SetViewport(Rect(0, 0, (float32)RuntimeTextures::REFRACTION_TEX_SIZE, (float32)RuntimeTextures::REFRACTION_TEX_SIZE));
+    refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
 }
 
-void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
+void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
@@ -318,10 +290,22 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         }
     }
 
+    const float32* clearColor = Color::Black.color;
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        clearColor = static_cast<const float32*>(Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR));
+
+    for (int32 i = 0; i < 4; ++i)
+    {
+        reflectionPass->GetPassConfig().colorBuffer[0].clearColor[i] = clearColor[i];
+        refractionPass->GetPassConfig().colorBuffer[0].clearColor[i] = clearColor[i];
+    }
+
     reflectionPass->SetWaterLevel(waterBox.max.z);
+    reflectionPass->GetPassConfig().priority = passConfig.priority + PRIORITY_SERVICE_3D;
     reflectionPass->Draw(renderSystem);
 
     refractionPass->SetWaterLevel(waterBox.min.z);
+    refractionPass->GetPassConfig().priority = passConfig.priority + PRIORITY_SERVICE_3D;
     refractionPass->Draw(renderSystem);
 }
 
@@ -339,6 +323,8 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     PrepareVisibilityArrays(mainCamera, renderSystem);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
+    passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
+    passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
     BeginRenderPass();
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
@@ -380,10 +366,10 @@ WaterPrePass::~WaterPrePass()
 
 WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName& name)
     : WaterPrePass(name)
-{	
+{
 }
 
-void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
+void WaterReflectionRenderPass::UpdateCamera(Camera* camera)
 {
     Vector3 v;
     v = camera->GetPosition();
@@ -391,35 +377,34 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
     camera->SetPosition(v);
     v = camera->GetTarget();
     v.z = waterLevel - (v.z - waterLevel);
-    camera->SetTarget(v);        
+    camera->SetTarget(v);
 }
 
 void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
-{    
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();    
-            
+{
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     if (!passDrawCamera)
     {
-        passMainCamera = new Camera();    
-        passDrawCamera = new Camera();            
+        passMainCamera = new Camera();
+        passDrawCamera = new Camera();
     }
 
-    passMainCamera->CopyMathOnly(*mainCamera);        
+    passMainCamera->CopyMathOnly(*mainCamera);
     UpdateCamera(passMainCamera);
 
     Vector4 clipPlane(0, 0, 1, -(waterLevel - 0.1f));
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
-    
-    if (drawCamera==mainCamera)
+
+    if (drawCamera == mainCamera)
     {
-        currDrawCamera = currMainCamera;    
+        currDrawCamera = currMainCamera;
     }
     else
     {
-        passDrawCamera->CopyMathOnly(*drawCamera);        
+        passDrawCamera->CopyMathOnly(*drawCamera);
         UpdateCamera(passDrawCamera);
         currDrawCamera = passDrawCamera;
     }
@@ -431,6 +416,12 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
 
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
+
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
 
     BeginRenderPass();
     DrawLayers(currMainCamera);
@@ -446,9 +437,8 @@ WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName& name)
 
 void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();    
-
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
 
     if (!passDrawCamera)
     {
@@ -465,9 +455,9 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
 
-    if (drawCamera==mainCamera)
+    if (drawCamera == mainCamera)
     {
-        currDrawCamera = currMainCamera;    
+        currDrawCamera = currMainCamera;
     }
     else
     {
@@ -483,10 +473,14 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
+    //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
+    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
+        passName = PASS_REFLECTION_REFRACTION;
+    else
+        passName = PASS_FORWARD;
+
     BeginRenderPass();
     DrawLayers(currMainCamera);
     EndRenderPass();
 }
-
-
 };

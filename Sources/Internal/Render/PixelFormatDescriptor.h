@@ -1,34 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
-#define __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
+#pragma once 
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -37,8 +7,8 @@
 namespace DAVA
 {
 /**
-	\ingroup render
-	\brief Class that represents pixel format for internal using in our SDK. 
+    \ingroup render
+    \brief Class that represents pixel format for internal using in our SDK. 
  */
 
 class PixelFormatDescriptor
@@ -46,13 +16,16 @@ class PixelFormatDescriptor
 public:
     static void SetHardwareSupportedFormats();
 
-    static int32 GetPixelFormatSizeInBytes(const PixelFormat formatID);
-    static int32 GetPixelFormatSizeInBits(const PixelFormat formatID);
+    static int32 GetPixelFormatSizeInBytes(PixelFormat format);
+    static int32 GetPixelFormatSizeInBits(PixelFormat format);
+    static Size2i GetPixelFormatBlockSize(PixelFormat format);
 
-    static const char * GetPixelFormatString(const PixelFormat format);
-    static PixelFormat GetPixelFormatByName(const FastName &formatName);
+    static const char* GetPixelFormatString(const PixelFormat format);
+    static PixelFormat GetPixelFormatByName(const FastName& formatName);
 
-    static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat formatID);
+    static const PixelFormatDescriptor& GetPixelFormatDescriptor(const PixelFormat format);
+
+    static bool IsCompressedFormat(PixelFormat format);
 
 private:
     static UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> pixelDescriptors;
@@ -60,12 +33,28 @@ private:
 public:
     static rhi::TextureFormat TEXTURE_FORMAT_INVALID;
 
-    PixelFormat formatID;
-    FastName name;
-    uint8 pixelSize;
-    rhi::TextureFormat format;
-    bool isHardwareSupported;
+    PixelFormat formatID; // compile-time: pixel format for DAVA::Image
+    FastName name; // compile-time: name for logging/console tools
+    uint8 pixelSize; // compile-time: size of pixel in bits
+    rhi::TextureFormat format; // compile-time: pixel format for texture and rendering of the DAVA::Image
+    bool isHardwareSupported; // run-time: is true for rhi::TextureFormat that are supported by GPU on every device
+    bool isCompressed; // compile-time: is true for PVR2/4, DXT[n], ATC_[] formats
+    Size2i blockSize; // compile-time: size of block for compressed formats, should be 1x1 for uncompressed formats
 };
 
-};
-#endif // __DAVAENGINE_PIXEL_FORMAT_DESCRIPTOR_H__
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat format)
+{
+    return GetPixelFormatDescriptor(format).pixelSize;
+}
+
+inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat format)
+{
+    int32 bits = GetPixelFormatSizeInBits(format);
+    if (bits < 8)
+    { // To detect wrong situations
+        Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
+    }
+
+    return bits / 8;
+}
+}

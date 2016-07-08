@@ -1,61 +1,29 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "DAVAEngine.h"
 
 #include <QApplication>
 #include <QCryptographicHash>
-#include <QFont>
-#include <QSysInfo>
 
 #include "version.h"
 #include "Main/mainwindow.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
-#include "TeamcityOutput/TeamcityOutput.h"
-#include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
-#include "LicenceDialog/LicenceDialog.h"
+#include "Render/Texture.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
+#include "QtTools/Utils/AssertGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
 #include "Platform/Qt5/QtLayer.h"
+#include "REApplication.h"
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
@@ -63,212 +31,171 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include <QDebug>
-
 void UnpackHelpDoc();
 void FixOSXFonts();
 
-void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine );
-void RunGui( int argc, char *argv[], CommandLineManager& cmdLine );
+void RunConsole(int argc, char* argv[], CommandLineManager& cmdLine);
+void RunGui(int argc, char* argv[], CommandLineManager& cmdLine);
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-#if defined (__DAVAENGINE_MACOS__)
-    const String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined (__DAVAENGINE_WIN32__)
-    const String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+#if defined(__DAVAENGINE_MACOS__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
+#elif defined(__DAVAENGINE_WIN32__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
 #endif
 
-    DAVA::Core::Run( argc, argv );
-    new DAVA::QtLayer();
-    DAVA::PVRConverter::Instance()->SetPVRTexTool( pvrTexToolPath );
+    DAVA::Core::Run(argc, argv);
+    DAVA::QtLayer qtLayer;
+    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
-	DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
+    DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
 
 #ifdef __DAVAENGINE_BEAST__
-	new BeastProxyImpl();
-#else 
-	new BeastProxy();
+    BeastProxyImpl beastProxyImpl;
+#else
+    BeastProxy beastProxy;
 #endif //__DAVAENGINE_BEAST__
 
-	new SettingsManager();
-    SettingsManager::UpdateGPUSettings();
-    
-	new EditorConfig();
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-    QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
+    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
+    DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
+    DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
+    DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-	CommandLineManager cmdLine;
-
-	if(cmdLine.IsEnabled())
-	{
-        RunConsole( argc, argv, cmdLine );
-	}
-    else
+    int exitCode = 0;
     {
-        RunGui( argc, argv, cmdLine );
+        EditorConfig config;
+        SettingsManager settingsManager;
+        SettingsManager::UpdateGPUSettings();
+        SceneValidator sceneValidator;
+
+        CommandLineManager cmdLine(argc, argv);
+        if (cmdLine.IsEnabled())
+        {
+            RunConsole(argc, argv, cmdLine);
+        }
+        else if (argc == 1
+#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+                 )
+        {
+            RunGui(argc, argv, cmdLine);
+        }
+        else
+        {
+            exitCode = 1; //wrong commandLine
+        }
     }
 
-    return 0;
+    return exitCode;
 }
 
-void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
+void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
 {
-#ifdef Q_OS_MAC
+#if defined(__DAVAENGINE_MACOS__)
     DAVA::QtLayer::MakeAppForeground(false);
-#endif
-    
-    Core::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->SetLogLevel( DAVA::Logger::LEVEL_WARNING );
+#elif defined(__DAVAENGINE_WIN32__)
+//    WinConsoleIOLocker locker; //temporary disabled because of freezes of Windows Console
+#endif //platforms
 
-    QApplication a( argc, argv );
+    DAVA::Core::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
-    new SceneValidator();
+    QApplication a(argc, argv);
 
-    auto glWidget = new DavaGLWidget();
-    glWidget->MakeInvisible();
+    DavaGLWidget glWidget;
+    glWidget.MakeInvisible();
 
-    DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+    DAVA::Logger::Info(QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     // Delayed initialization throught event loop
-    glWidget->show();
+    glWidget.show();
 #ifdef Q_OS_WIN
-    QObject::connect( glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit );
+    QObject::connect(&glWidget, &DavaGLWidget::Initialized, &a, &QApplication::quit);
     a.exec();
 #endif
-    glWidget->hide();
+    glWidget.hide();
 
-    cmdLine.InitalizeTool();
-    if ( !cmdLine.IsToolInitialized() )
-    {
-		cmdLine.PrintResults();
-        cmdLine.PrintUsageForActiveTool();
-    }
-    else
-    {
-        //Trick for correct loading of sprites.
-        VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
+    //Trick for correct loading of sprites.
+    DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
-        cmdLine.Process();
-        cmdLine.PrintResults();
-    }
+    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
 
-    SceneValidator::Instance()->Release();
-    EditorConfig::Instance()->Release();
-    SettingsManager::Instance()->Release();
-    BeastProxy::Instance()->Release();
-    Core::Instance()->Release();
-
-    delete glWidget;
+    cmdLineManager.Process();
 }
 
-void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
+void RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 {
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
- 
-    QApplication a( argc, argv );
+
+    ToolsAssetGuard::Instance()->Init();
+
+    REApplication a(argc, argv);
+    a.LoadPlugins();
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
-    const QString appUidPath = QCryptographicHash::hash( ( appUid + QApplication::applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
-    RunGuard runGuard( appUidPath );
-    if ( !runGuard.tryToRun() )
+    const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+    RunGuard runGuard(appUidPath);
+    if (!runGuard.tryToRun())
         return;
 
-    a.setAttribute( Qt::AA_UseHighDpiPixmaps );
-    a.setAttribute( Qt::AA_ShareOpenGLContexts );
+    Q_INIT_RESOURCE(QtToolsResources);
 
-    Q_INIT_RESOURCE( QtToolsResources );
+    TextureCache textureCache;
 
-    new SceneValidator();
-    new TextureCache();
-
-    LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
-    LocalizationSystem::Instance()->SetCurrentLocale( "en" );
-
-    int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    eGPUFamily family = static_cast<eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
+    DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+    DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
 
     // check and unpack help documents
     UnpackHelpDoc();
 
 #ifdef Q_OS_MAC
-    QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
-    QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
+    QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
+    QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
-    
-    DavaGLWidget *glWidget = nullptr;
-    QtMainWindow *mainWindow = nullptr;
 
-    QTimer::singleShot(0, [&]
-    {
-        // create and init UI
-        mainWindow = new QtMainWindow();
-        
-        mainWindow->EnableGlobalTimeout( true );
-        glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+    DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
-        ProjectManager::Instance()->OpenLastProject();
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
-        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
-
-        mainWindow->show();
-        
-        DAVA::Logger::Instance()->Log( DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
-    } );
-    
-    
-    // start app
-    QApplication::exec();
- 
-    glWidget->setParent( nullptr );
-    mainWindow->Release();
-
-    TextureCache::Instance()->Release();
-    SceneValidator::Instance()->Release();
-    EditorConfig::Instance()->Release();
-    SettingsManager::Instance()->Release();
-    BeastProxy::Instance()->Release();
-    Core::Instance()->Release();
-
-    ControlsFactory::ReleaseFonts();
-
-    delete glWidget;
+    a.Run();
 }
 
 void UnpackHelpDoc()
 {
-    DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
-    DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
-    if (editorVer != APPLICATION_BUILD_VERSION || !FileSystem::Instance()->Exists(docsPath))
+    DAVA::String editorVer = SettingsManager::GetValue(Settings::Internal_EditorVersion).AsString();
+    DAVA::FilePath docsPath = DAVA::FilePath(ResourceEditor::DOCUMENTATION_PATH);
+    if (editorVer != APPLICATION_BUILD_VERSION || !DAVA::FileSystem::Instance()->Exists(docsPath))
     {
-        DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
-        DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
-        if ( helpRA->Open( "~res:/Help.docs" ) )
+        DAVA::Logger::FrameworkDebug("Unpacking Help...");
+        try
         {
-            DAVA::FileSystem::Instance()->DeleteDirectory( docsPath );
-            DAVA::FileSystem::Instance()->CreateDirectory( docsPath, true );
-            helpRA->UnpackToFolder( docsPath );
+            DAVA::ResourceArchive helpRA("~res:/Help.docs");
+            DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
+            DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
+            helpRA.UnpackToFolder(docsPath);
         }
-        DAVA::SafeRelease( helpRA );
+        catch (std::exception& ex)
+        {
+            DAVA::Logger::Error("can't unpack Help.docs: %s", ex.what());
+            DVASSERT(false && "can't upack Help.docs");
+        }
     }
-    SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(APPLICATION_BUILD_VERSION)));
+    SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
 
 void FixOSXFonts()
 {
 #ifdef Q_OS_MAC
-    if ( QSysInfo::MacintoshVersion > QSysInfo::MV_10_8 )
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
     {
         // fix Mac OS X 10.9 (mavericks) font issue
-        QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
+        QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
     }
 #endif
 }

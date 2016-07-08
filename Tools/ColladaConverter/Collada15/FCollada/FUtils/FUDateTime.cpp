@@ -13,19 +13,19 @@
 
 FUDateTime::FUDateTime(const FUDateTime& time)
 {
-	seconds = time.seconds;
-	minutes = time.minutes;
-	hour = time.hour;
-	day = time.day;
-	month = time.month;
-	year = time.year;
+    seconds = time.seconds;
+    minutes = time.minutes;
+    hour = time.hour;
+    day = time.day;
+    month = time.month;
+    year = time.year;
 }
 
 FUDateTime::FUDateTime()
 {
-	seconds = minutes = hour = 0;
-	day = month = 1;
-	year = 1900;
+    seconds = minutes = hour = 0;
+    day = month = 1;
+    year = 1900;
 }
 
 FUDateTime::~FUDateTime()
@@ -34,23 +34,23 @@ FUDateTime::~FUDateTime()
 
 FUDateTime FUDateTime::GetNow()
 {
-	FUDateTime dateTime;
+    FUDateTime dateTime;
 
 #ifndef __PPU__ // causes link errors on PS3, not supported.
-	// Get current UTC time
-	time_t currentTime;
+    // Get current UTC time
+    time_t currentTime;
 
-	time(&currentTime);
-	tm* utcTime = gmtime(&currentTime);	
+    time(&currentTime);
+    tm* utcTime = gmtime(&currentTime);
 
-	// Convert to our own data structure
-	dateTime.SetSeconds(utcTime->tm_sec);
-	dateTime.SetMinutes(utcTime->tm_min);
-	dateTime.SetHour(utcTime->tm_hour);
-	dateTime.SetDay(utcTime->tm_mday);
-	dateTime.SetMonth(utcTime->tm_mon + 1);
-	dateTime.SetYear(utcTime->tm_year + 1900);
+    // Convert to our own data structure
+    dateTime.SetSeconds(utcTime->tm_sec);
+    dateTime.SetMinutes(utcTime->tm_min);
+    dateTime.SetHour(utcTime->tm_hour);
+    dateTime.SetDay(utcTime->tm_mday);
+    dateTime.SetMonth(utcTime->tm_mon + 1);
+    dateTime.SetYear(utcTime->tm_year + 1900);
 #endif // __PPU__
 
-	return dateTime;
+    return dateTime;
 }

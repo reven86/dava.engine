@@ -18,7 +18,7 @@ property float4x4 worldViewProjMatrix : dynamic,instance : ;
 
 VPROG_BEGIN
 
-    float3 in_pos      = VP_IN_POSITION;
+    float3 in_pos      = VP_IN_POSITION.xyz;
 #if TEXTURED
     float2 in_texcoord = VP_IN_TEXCOORD;
 #endif //TEXTURED

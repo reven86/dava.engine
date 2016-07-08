@@ -2,6 +2,6 @@
 
 int main()
 {
-	Test::RunAll();
-	return 0;
+    Test::RunAll();
+    return 0;
 }

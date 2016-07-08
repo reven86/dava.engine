@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-const uint64 INVALID_ADDRESS = 0xFFFF;
+const uint64 INVALID_ADDRESS = 0x1000;
 
 const DAVA::String* BacktraceSymbolTable::AddSymbol(uint64 stackAddr, const String& name)
 {
@@ -26,7 +26,7 @@ const DAVA::String* BacktraceSymbolTable::AddSymbol(uint64 stackAddr, const Stri
         iterAddr = addrToNameMap.emplace(stackAddr, namePointer).first;
     }
     else
-    {   // TODO: remove, for debug purpose
+    { // TODO: remove, for debug purpose
         const String& nameInMap = *iterAddr->second;
         DVASSERT(nameInMap == name);
     }
@@ -43,7 +43,7 @@ void BacktraceSymbolTable::AddBacktrace(uint32 hash, const uint64* stackFrames, 
         bktraceMap.emplace(hash, ResolveFrameNames(stackFrames, stackDepth));
     }
     else
-    {   // TODO: remove, for debug purpose
+    { // TODO: remove, for debug purpose
         const Vector<const String*> y = iter->second;
         Vector<const String*> x = ResolveFrameNames(stackFrames, stackDepth);
         if (x != y)
@@ -86,7 +86,7 @@ Vector<const String*> BacktraceSymbolTable::ResolveFrameNames(const uint64* stac
 
     Vector<const String*> names;
     names.reserve(n);
-    for (size_t i = 0;i < n;++i)
+    for (size_t i = 0; i < n; ++i)
     {
         const DAVA::String* name = GetSymbol(stackFrames[i]);
         if (nullptr == name)

@@ -1,33 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-    #include "MCPP/mcpp_lib.h"
+#include "MCPP/mcpp_lib.h"
 
     #include "../rhi_ShaderCache.h"
 
@@ -54,7 +25,7 @@ _mcpp__fputc(int ch, OUTDEST dst)
     case MCPP_OUT:
     {
         if (_PreprocessedText)
-            _PreprocessedText->push_back((char)ch);
+            _PreprocessedText->push_back(char(ch));
     }
     break;
 
@@ -204,10 +175,20 @@ static const char* _ShaderHeader_Metal =
 "using namespace metal;\n\n"
 
 "#define min10float  half\n"
+"#define min10float1 half\n"
+"#define min10float2 half2\n"
+"#define min10float3 half3\n"
+"#define min10float4 half4\n"
+
+"#define half1 half\n"
+"#define half2 half2\n"
+"#define half3 half3\n"
+"#define half4 half4\n"
 
 "#define float1 float\n"
-"#define half1 half\n"
-"#define min10float1 half\n"
+"#define float2 vector_float2\n"
+"#define float3 vector_float3\n"
+"#define float4 vector_float4\n"
 
 "float4 mul( float4 v, float4x4 m );\n"
 "float4 mul( float4 v, float4x4 m ) { return m*v; }\n"
@@ -467,7 +448,15 @@ static const char* _ShaderHeader_GLES2 =
 //"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 "#define mul( v, m ) ((m)*(v))\n"
 
+#if defined(__DAVAENGINE_MACOS__)
+"#define lerp(a,b,t) ( ( (b) - (a) ) * (t) + (a) )\n"
+#else
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
+#endif
+
+"#define  frac(a) fract(a)\n"
+
+"#define fmod(x, y) mod( (x), (y) )\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
 "#define FP_A8(t) t.a\n"
@@ -476,7 +465,7 @@ static const char* _ShaderHeader_GLES2 =
 
 static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_BEGIN          \n"
-"#define VPROG_IN_POSITION       attribute vec3 attr_position;\n"
+"#define VPROG_IN_POSITION       attribute vec4 attr_position;\n"
 "#define VPROG_IN_NORMAL         attribute vec3 attr_normal;\n"
 "#define VPROG_IN_TEXCOORD       attribute vec2 attr_texcoord0;\n"
 "#define VPROG_IN_TEXCOORD0(sz)  attribute vec##sz attr_texcoord0;\n"
@@ -558,7 +547,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2DLod( VertexTexture##unit, uv, 0.0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   texture2DLod( VertexTexture##unit, uv, lod)\n"
 
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         varying vec##size var_##name;\n"
@@ -718,7 +707,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,lod) )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input {\n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
@@ -883,8 +872,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-//"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
-"#define VP_TEXTURE2D(unit,uv)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, 0 )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, lod )\n"
 
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
@@ -976,6 +964,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
         for (unsigned i = 0; i != countof(vattr); ++i)
             src_len += sprintf(src + src_len, "#define %s %i \n", vattr[i].name, vattr[i].value);
     }
+
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_VERTEX \n");
+    src_len += sprintf(src + src_len, "#define VPROG_IN_STREAM_INSTANCE \n");
 
     switch (targetApi)
     {
@@ -1075,7 +1066,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
             sscanf(decl, "DECL_VPROG_BUFFER(%i,", &i);
 
-            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1 + i);
+            src_len += sprintf(src + src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, MAX_VERTEX_STREAM_COUNT + i);
             src_len += sprintf(src + src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i);
             vp_buf_declared[i] = true;
 
@@ -1111,7 +1102,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
         mcpp__startup();
         mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
         mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
-        mcpp_lib_main(countof(argv), (char**)argv);
+        mcpp_lib_main(countof(argv), const_cast<char**>(argv));
         mcpp__cleanup();
         mcpp__shutdown();
     }
@@ -1168,7 +1159,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     }
 
     bin->clear();
-    bin->insert(bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length() - 1]) + 1));
+    bin->insert(bin->begin(), reinterpret_cast<const uint8*>(&(txt[0])), reinterpret_cast<const uint8*>(&(txt[txt.length() - 1]) + 1));
     bin->push_back(0);
 }
 
@@ -1196,7 +1187,7 @@ void UpdateProgBinary(Api targetApi, ProgType progType, const DAVA::FastName& ui
     }
 
     pbin->clear();
-    pbin->insert(pbin->begin(), (const uint8*)(bin), (const uint8*)(bin) + binSize);
+    pbin->insert(pbin->begin(), reinterpret_cast<const uint8*>(bin), reinterpret_cast<const uint8*>(bin) + binSize);
     pbin->push_back(0);
 }
 

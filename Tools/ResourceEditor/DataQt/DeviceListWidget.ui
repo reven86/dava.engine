@@ -64,6 +64,32 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QLineEdit" name="ipaddr">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="maxLength">
+        <number>21</number>
+       </property>
+       <property name="placeholderText">
+        <string>ipaddress[:port]</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="discoverDevice">
+       <property name="text">
+        <string>Discover device</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

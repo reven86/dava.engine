@@ -21,18 +21,18 @@
 
 namespace FUBase64
 {
-	/** Encodes the given input string in Base64, and stores the result in
+/** Encodes the given input string in Base64, and stores the result in
 		the output string.
 		@param input The string to encode.
 		@param output The encoded output.*/
-	FCOLLADA_EXPORT void encode(const UInt8List& input, UInt8List& output);
+FCOLLADA_EXPORT void encode(const UInt8List& input, UInt8List& output);
 
-	/** Decodes the given input string from the Base64 format, and stores
+/** Decodes the given input string from the Base64 format, and stores
 		the result in the output string. This method will decode the input string
 		as long as it is in Base64 format.
 		@param input The string to decode.
 		@param output The decoded output.*/
-	FCOLLADA_EXPORT void decode(const UInt8List& input, UInt8List& output);
+FCOLLADA_EXPORT void decode(const UInt8List& input, UInt8List& output);
 
 } // namespace FUBase64
 

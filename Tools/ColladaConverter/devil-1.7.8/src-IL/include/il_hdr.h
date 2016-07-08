@@ -22,8 +22,8 @@
 
 typedef struct HDRHEADER
 {
-	char Signature[10]; //must be "#?RADIANCE"
-	ILuint Width, Height;
+    char Signature[10]; //must be "#?RADIANCE"
+    ILuint Width, Height;
 } IL_PACKSTRUCT HDRHEADER;
 
 #ifdef _WIN32
@@ -33,11 +33,11 @@ typedef struct HDRHEADER
 // Internal functions
 ILboolean ilIsValidHdrF(ILHANDLE file);
 ILboolean iIsValidHdr();
-ILboolean iCheckHdr(HDRHEADER *Header);
+ILboolean iCheckHdr(HDRHEADER* Header);
 ILboolean ilLoadHdrF(ILHANDLE file);
 ILboolean iLoadHdrInternal();
 ILboolean iSaveHdrInternal();
 
-void ReadScanline(ILubyte *scanline, ILuint w);
+void ReadScanline(ILubyte* scanline, ILuint w);
 
-#endif//HDR_H
+#endif //HDR_H

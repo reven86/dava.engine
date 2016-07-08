@@ -1,32 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Tests/FullscreenTest.h"
 
 using namespace DAVA;
@@ -45,37 +16,7 @@ void FullscreenTest::LoadResources()
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
     // Screen mode test
-
-    currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
-    currentModeText->SetFont(font);
-    currentModeText->SetTextColor(Color::White);
-    AddControl(currentModeText);
-
-    ScopedPtr<UIButton> btn(new UIButton(Rect(10, 40, 300, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Windowed");
-    btn->SetDebugDraw(true);
-    btn->SetTag(0);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
-    AddControl(btn);
-
-    btn.reset(new UIButton(Rect(10, 70, 300, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Fullsreen");
-    btn->SetDebugDraw(true);
-    btn->SetTag(1);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
-    AddControl(btn);
-
-    btn.reset(new UIButton(Rect(10, 100, 300, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Windowed fullscreen (borderless)");
-    btn->SetDebugDraw(true);
-    btn->SetTag(2);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
-    AddControl(btn);
-
-    btn.reset(new UIButton(Rect(10, 10, 300, 20)));
+    ScopedPtr<UIButton> btn(new UIButton(Rect(10, 10, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Refresh status");
     btn->SetDebugDraw(true);
@@ -83,16 +24,74 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
+    btn.reset(new UIButton(Rect(10, 35, 300, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Windowed");
+    btn->SetDebugDraw(true);
+    btn->SetTag(0);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(10, 60, 300, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Fullsreen");
+    btn->SetDebugDraw(true);
+    btn->SetTag(1);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(10, 85, 300, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Windowed fullscreen (borderless)");
+    btn->SetDebugDraw(true);
+    btn->SetTag(2);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
+    AddControl(btn);
+
+    currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
+    currentModeText->SetFont(font);
+    currentModeText->SetTextColor(Color::White);
+    AddControl(currentModeText);
+
+    // pinning mode
+    btn.reset(new UIButton(Rect(10, 110, 300, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Mouse Capute: Frame");
+    btn->SetDebugDraw(true);
+    btn->SetTag(0);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
+    AddControl(btn);
+
+    btn.reset(new UIButton(Rect(10, 135, 300, 20)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Mouse Capute: Pining");
+    btn->SetDebugDraw(true);
+    btn->SetTag(1);
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
+    AddControl(btn);
+
+    pinningText = new UIStaticText(Rect(310, 30, 300, 35));
+    pinningText->SetFont(font);
+    pinningText->SetMultiline(true);
+    pinningText->SetTextColor(Color::White);
+    AddControl(pinningText);
+
+    pinningMousePosText = new UIStaticText(Rect(310, 70, 300, 20));
+    pinningMousePosText->SetFont(font);
+    pinningMousePosText->SetTextColor(Color(0.5f, 0.5f, .0f, 1.0f));
+    pinningMousePosText->SetVisibilityFlag(false);
+    AddControl(pinningMousePosText);
+
     // Scale factor test
 
-    btn.reset(new UIButton(Rect(10, 150, 145, 30)));
+    btn.reset(new UIButton(Rect(10, 160, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul +0.1");
     btn->SetDebugDraw(true);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(155, 150, 145, 30)));
+    btn.reset(new UIButton(Rect(155, 160, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul -0.1");
     btn->SetDebugDraw(true);
@@ -188,6 +187,8 @@ void FullscreenTest::UnloadResources()
     SafeRelease(ui3dview);
     SafeRelease(currect3dScaleText);
     SafeRelease(currentModeText);
+    SafeRelease(pinningText);
+    SafeRelease(pinningMousePosText);
     BaseScreen::UnloadResources();
 }
 
@@ -273,6 +274,26 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
     }
 }
 
+void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    UIButton* btn = static_cast<UIButton*>(sender);
+    switch (btn->GetTag())
+    {
+    case 0:
+        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::FRAME);
+        break;
+
+    case 1:
+        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
+        break;
+
+    default:
+        break;
+    }
+
+    UpdateMode();
+}
+
 void FullscreenTest::UpdateMode()
 {
     switch (Core::Instance()->GetScreenMode())
@@ -290,4 +311,47 @@ void FullscreenTest::UpdateMode()
         currentModeText->SetText(L"Unknown");
         break;
     }
+
+    eCaptureMode captureMode = InputSystem::Instance()->GetMouseDevice().GetMode();
+    switch (captureMode)
+    {
+    case eCaptureMode::OFF:
+        pinningText->SetText(L"Mouse capture mode: OFF");
+        pinningMousePosText->SetVisibilityFlag(false);
+        break;
+
+    case eCaptureMode::FRAME:
+        pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
+        pinningMousePosText->SetVisibilityFlag(true);
+        break;
+
+    case eCaptureMode::PINING:
+        pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
+        pinningMousePosText->SetVisibilityFlag(true);
+        break;
+    }
+}
+
+bool FullscreenTest::SystemInput(UIEvent* currentInput)
+{
+    if ((InputSystem::Instance()->GetMouseDevice().GetMode() != eCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    {
+        switch (currentInput->phase)
+        {
+        case UIEvent::Phase::BEGAN:
+            InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::OFF);
+            break;
+
+        case UIEvent::Phase::MOVE:
+            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
+            break;
+
+        default:
+            break;
+        }
+
+        UpdateMode();
+    }
+
+    return BaseScreen::SystemInput(currentInput);
 }

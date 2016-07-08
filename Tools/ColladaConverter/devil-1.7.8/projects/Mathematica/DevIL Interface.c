@@ -3,26 +3,26 @@
 #include <IL/ILUT.h>
 #include <mathlink.h>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	int retval;
-	int image;
+    int retval;
+    int image;
 
-	ilInit();
-	iluInit();
-	ilutInit();
+    ilInit();
+    iluInit();
+    ilutInit();
 
-	ilGenImages(1, &image);
-	ilBindImage(image);
-	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+    ilGenImages(1, &image);
+    ilBindImage(image);
+    ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
 
-	retval = MLMain(argc, argv);
+    retval = MLMain(argc, argv);
 
-	ilDeleteImages(1, &image);
+    ilDeleteImages(1, &image);
 
-	ilShutDown();  // Only need to shut down DevIL, not ILU or ILUT
+    ilShutDown(); // Only need to shut down DevIL, not ILU or ILUT
 
-	return retval;
+    return retval;
 }
 
 /*int f(int x, int y)
@@ -45,28 +45,28 @@ void bits(int i)
 	return;
 }*/
 
-int mlLoad(char *Filename)
+int mlLoad(char* Filename)
 {
-	int ret = ilLoadImage(Filename);
-	if (ilGetInteger(IL_ORIGIN_MODE) != IL_ORIGIN_UPPER_LEFT)
-		iluFlipImage();
-	ilConvertImage(IL_RGBA, IL_DOUBLE);
-	return ret;
+    int ret = ilLoadImage(Filename);
+    if (ilGetInteger(IL_ORIGIN_MODE) != IL_ORIGIN_UPPER_LEFT)
+        iluFlipImage();
+    ilConvertImage(IL_RGBA, IL_DOUBLE);
+    return ret;
 }
 
 int mlWidth(void)
 {
-	return ilGetInteger(IL_IMAGE_WIDTH);
+    return ilGetInteger(IL_IMAGE_WIDTH);
 }
 
 int mlHeight(void)
 {
-	return ilGetInteger(IL_IMAGE_HEIGHT);
+    return ilGetInteger(IL_IMAGE_HEIGHT);
 }
 
 void mlData(void)
 {
-	/*int		x, y, c;
+    /*int		x, y, c;
 	int		*Data;
 	ILubyte	*OrigData = ilGetData();
 
@@ -83,8 +83,7 @@ void mlData(void)
 
 	free(Data);*/
 
-	MLPutReal64List(stdlink, (ILdouble*)ilGetData(), ilGetInteger(IL_IMAGE_WIDTH) * ilGetInteger(IL_IMAGE_HEIGHT) * 4);
+    MLPutReal64List(stdlink, (ILdouble*)ilGetData(), ilGetInteger(IL_IMAGE_WIDTH) * ilGetInteger(IL_IMAGE_HEIGHT) * 4);
 
-	return;
+    return;
 }
-

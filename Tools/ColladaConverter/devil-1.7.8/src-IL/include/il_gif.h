@@ -24,34 +24,34 @@
 #endif
 typedef struct GIFHEAD
 {
-	char		Sig[6];
-	ILushort	Width;
-	ILushort	Height;
-	ILubyte		ColourInfo;
-	ILubyte		Background;
-	ILubyte		Aspect;
+    char Sig[6];
+    ILushort Width;
+    ILushort Height;
+    ILubyte ColourInfo;
+    ILubyte Background;
+    ILubyte Aspect;
 } IL_PACKSTRUCT GIFHEAD;
 
 typedef struct IMAGEDESC
 {
-	ILubyte		Separator;
-	ILushort	OffX;
-	ILushort	OffY;
-	ILushort	Width;
-	ILushort	Height;
-	ILubyte		ImageInfo;
+    ILubyte Separator;
+    ILushort OffX;
+    ILushort OffY;
+    ILushort Width;
+    ILushort Height;
+    ILubyte ImageInfo;
 } IL_PACKSTRUCT IMAGEDESC;
 
 typedef struct GFXCONTROL
 {
-	ILubyte		Size;
-	ILubyte		Packed;
-	ILushort	Delay;
-	ILubyte		Transparent;
-	ILubyte		Terminator;
-	ILboolean	Used; //this stores if a gfxcontrol was read - it is IL_FALSE (!)
+    ILubyte Size;
+    ILubyte Packed;
+    ILushort Delay;
+    ILubyte Transparent;
+    ILubyte Terminator;
+    ILboolean Used; //this stores if a gfxcontrol was read - it is IL_FALSE (!)
 
-			//if a gfxcontrol was read from the file, IL_TRUE otherwise
+    //if a gfxcontrol was read from the file, IL_TRUE otherwise
 } IL_PACKSTRUCT GFXCONTROL;
 #ifdef _WIN32
 	#pragma pack(pop, gif_struct)
@@ -61,11 +61,11 @@ typedef struct GFXCONTROL
 ILboolean iLoadGifInternal(void);
 ILboolean ilLoadGifF(ILHANDLE File);
 ILboolean iIsValidGif(void);
-ILboolean iGetPalette(ILubyte Info, ILpal *Pal, ILboolean UsePrevPal, ILimage *PrevImage);
-ILboolean GetImages(ILpal *GlobalPal, GIFHEAD *GifHead);
-ILboolean SkipExtensions(GFXCONTROL *Gfx);
-ILboolean GifGetData(ILimage *Image, ILubyte *Data, ILuint ImageSize, ILuint Width, ILuint Height, ILuint Stride, ILuint PalOffset, GFXCONTROL *Gfx);
-ILboolean RemoveInterlace(ILimage *image);
-ILboolean ConvertTransparent(ILimage *Image, ILubyte TransColour);
+ILboolean iGetPalette(ILubyte Info, ILpal* Pal, ILboolean UsePrevPal, ILimage* PrevImage);
+ILboolean GetImages(ILpal* GlobalPal, GIFHEAD* GifHead);
+ILboolean SkipExtensions(GFXCONTROL* Gfx);
+ILboolean GifGetData(ILimage* Image, ILubyte* Data, ILuint ImageSize, ILuint Width, ILuint Height, ILuint Stride, ILuint PalOffset, GFXCONTROL* Gfx);
+ILboolean RemoveInterlace(ILimage* image);
+ILboolean ConvertTransparent(ILimage* Image, ILubyte TransColour);
 
-#endif//GIF_H
+#endif //GIF_H

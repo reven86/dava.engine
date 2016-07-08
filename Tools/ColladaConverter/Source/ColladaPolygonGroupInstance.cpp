@@ -3,16 +3,14 @@
 
 namespace DAVA
 {
-
-ColladaPolygonGroupInstance::ColladaPolygonGroupInstance( ColladaPolygonGroup * _polyGroup, ColladaMaterial * _material )
+ColladaPolygonGroupInstance::ColladaPolygonGroupInstance(ColladaPolygonGroup* _polyGroup, ColladaMaterial* _material)
 {
-	polyGroup = _polyGroup;
-	material = _material;
+    polyGroup = _polyGroup;
+    material = _material;
 }
 
 void ColladaPolygonGroupInstance::Render()
 {
-	polyGroup->Render(material);
+    polyGroup->Render(material);
 }
-
 };

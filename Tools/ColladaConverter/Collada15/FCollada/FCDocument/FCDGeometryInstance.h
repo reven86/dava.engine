@@ -37,105 +37,149 @@ class FCDEffectParameter;
 class FCOLLADA_EXPORT FCDGeometryInstance : public FCDEntityInstance
 {
 private:
-	DeclareObjectType(FCDEntityInstance);
-	DeclareParameterContainer(FCDMaterialInstance, materials, FC("Materials Bound"));
-	DeclareParameterContainer(FCDEffectParameter, parameters, FC("Effect Parameters"));
+    DeclareObjectType(FCDEntityInstance);
+    DeclareParameterContainer(FCDMaterialInstance, materials, FC("Materials Bound"));
+    DeclareParameterContainer(FCDEffectParameter, parameters, FC("Effect Parameters"));
 
-	friend class FCDEntityInstanceFactory;
+    friend class FCDEntityInstanceFactory;
 
 protected:
-	/** Constructor.
+    /** Constructor.
 		@param document The FCollada document that owns this instance.
 		@param parent The visual scene node that contains this instance. This pointer will be NULL for
 			instances that are not directly under a visual scene node.
 		@param entityType The type of entity to instantiate. */
-	FCDGeometryInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::GEOMETRY);
+    FCDGeometryInstance(FCDocument* document, FCDSceneNode* parent, FCDEntity::Type entityType = FCDEntity::GEOMETRY);
 
 public:
-	/** Destructor. */
-	virtual ~FCDGeometryInstance();
+    /** Destructor. */
+    virtual ~FCDGeometryInstance();
 
-	/** Retrieves the entity instance class type.
+    /** Retrieves the entity instance class type.
 		This is used to determine the up-class for the entity instance object.
 		@deprecated Instead use: FCDEntityInstance::HasType(FCDGeometryInstance::GetClassType())
 		@return The class type: GEOMETRY. */
-	virtual Type GetType() const { return GEOMETRY; }
+    virtual Type GetType() const
+    {
+        return GEOMETRY;
+    }
 
-	/** Retrieves the number of local effect parameters
+    /** Retrieves the number of local effect parameters
 		@return The number of local effect parameters. */
-	inline size_t GetEffectParameterCount() const { return parameters.size(); }
+    inline size_t GetEffectParameterCount() const
+    {
+        return parameters.size();
+    }
 
-	/** Retrieves a given local effect parameter.
+    /** Retrieves a given local effect parameter.
 		@param index An index.
 		@return The local effect parameter at the given index. */
-	inline FCDEffectParameter* GetEffectParameter(size_t index) { FUAssert(index < parameters.size(), return NULL); return parameters.at(index); }
-	inline const FCDEffectParameter* GetEffectParameter(size_t index) const { FUAssert(index < parameters.size(), return NULL); return parameters.at(index); }
+    inline FCDEffectParameter* GetEffectParameter(size_t index)
+    {
+        FUAssert(index < parameters.size(), return NULL);
+        return parameters.at(index);
+    }
+    inline const FCDEffectParameter* GetEffectParameter(size_t index) const
+    {
+        FUAssert(index < parameters.size(), return NULL);
+        return parameters.at(index);
+    }
 
-	/** Adds a local effect parameter to the local list.
+    /** Adds a local effect parameter to the local list.
 		@see FCDEffectParameter::Type
 		@param type The value type of the effect parameter to create.
 		@return The new local effect parameter. */
-	FCDEffectParameter* AddEffectParameter(uint32 type);
+    FCDEffectParameter* AddEffectParameter(uint32 type);
 
-	/** Retrieves a material instance bound to the given material semantic.
+    /** Retrieves a material instance bound to the given material semantic.
 		@param semantic A material semantic.
 		@return The material instance bound to the given material semantic.
 			This pointer will be NULL if the material semantic has no material
 			instance binding to it. */
-	inline FCDMaterialInstance* FindMaterialInstance(const fchar* semantic) { return const_cast<FCDMaterialInstance*>(const_cast<const FCDGeometryInstance*>(this)->FindMaterialInstance(semantic)); }
-	inline FCDMaterialInstance* FindMaterialInstance(const fstring& semantic) { return FindMaterialInstance(semantic.c_str()); } /**< See above. */
-	const FCDMaterialInstance* FindMaterialInstance(const fchar* semantic) const; /**< See above. */
-	inline const FCDMaterialInstance* FindMaterialInstance(const fstring& semantic) const { return FindMaterialInstance(semantic.c_str()); } /**< See above. */
+    inline FCDMaterialInstance* FindMaterialInstance(const fchar* semantic)
+    {
+        return const_cast<FCDMaterialInstance*>(const_cast<const FCDGeometryInstance*>(this)->FindMaterialInstance(semantic));
+    }
+    inline FCDMaterialInstance* FindMaterialInstance(const fstring& semantic)
+    {
+        return FindMaterialInstance(semantic.c_str());
+    } /**< See above. */
+    const FCDMaterialInstance* FindMaterialInstance(const fchar* semantic) const; /**< See above. */
+    inline const FCDMaterialInstance* FindMaterialInstance(const fstring& semantic) const
+    {
+        return FindMaterialInstance(semantic.c_str());
+    } /**< See above. */
 
-	/** Retrieves the number of material instances.
+    /** Retrieves the number of material instances.
 		@return The number of material instances. */
-	inline size_t GetMaterialInstanceCount() const { return materials.size(); }
+    inline size_t GetMaterialInstanceCount() const
+    {
+        return materials.size();
+    }
 
-	/** Retrieves a material instance.
+    /** Retrieves a material instance.
 		@param index The index of the material instance.
 		@return The material instance at the given index. */
-	inline FCDMaterialInstance* GetMaterialInstance(size_t index) { FUAssert(index < materials.size(), return NULL); return materials.at(index); }
-	inline const FCDMaterialInstance* GetMaterialInstance(size_t index) const { FUAssert(index < materials.size(), return NULL); return materials.at(index); } /**< See above. */
+    inline FCDMaterialInstance* GetMaterialInstance(size_t index)
+    {
+        FUAssert(index < materials.size(), return NULL);
+        return materials.at(index);
+    }
+    inline const FCDMaterialInstance* GetMaterialInstance(size_t index) const
+    {
+        FUAssert(index < materials.size(), return NULL);
+        return materials.at(index);
+    } /**< See above. */
 
-	/** Retrieves the material instances.
+    /** Retrieves the material instances.
 		@return The list of material instances. */
-	DEPRECATED(3.05A, GetMaterialInstance) inline FCDMaterialInstance** GetMaterialInstances() { return const_cast<FCDMaterialInstance**>(materials.begin()); }
-	DEPRECATED(3.05A, GetMaterialInstance) inline const FCDMaterialInstance** GetMaterialInstances() const { return materials.begin(); } /**< See above. */
+    DEPRECATED(3.05A, GetMaterialInstance)
+    inline FCDMaterialInstance** GetMaterialInstances()
+    {
+        return const_cast<FCDMaterialInstance**>(materials.begin());
+    }
+    DEPRECATED(3.05A, GetMaterialInstance)
+    inline const FCDMaterialInstance** GetMaterialInstances() const
+    {
+        return materials.begin();
+    } /**< See above. */
 
-	/** Adds an empty material instance to the geometry.
+    /** Adds an empty material instance to the geometry.
 		This new material instance will be unbound.
 		@return The empty material instance. */
-	FCDMaterialInstance* AddMaterialInstance();
+    FCDMaterialInstance* AddMaterialInstance();
 
-	/** Binds a material with a polygons set for this geometry instance.
+    /** Binds a material with a polygons set for this geometry instance.
 		No verification is done to ensure that the polygons set is not
 		already bound to another material.
 		@param material A material.
 		@param polygons A polygons set that belongs to the instanced geometry.
 		@return The new material instance. */
-	FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, FCDGeometryPolygons* polygons);
+    FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, FCDGeometryPolygons* polygons);
 
-
-	/** Binds a material to a material semantic token.
+    /** Binds a material to a material semantic token.
 		No verification is done to ensure that the material semantic token
 		is used within the instanced geometry or that a material is not already bound
 		to this token.
 		@param material A material.
 		@param semantic A material semantic token.
 		@return The new material instance. */
-	FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, const fchar* semantic);
-	inline FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, const fstring& semantic) { return AddMaterialInstance(material, semantic.c_str()); } /**< See above. */
+    FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, const fchar* semantic);
+    inline FCDMaterialInstance* AddMaterialInstance(FCDMaterial* material, const fstring& semantic)
+    {
+        return AddMaterialInstance(material, semantic.c_str());
+    } /**< See above. */
 
-	/** Clones the geometry instance.
+    /** Clones the geometry instance.
 		@param clone The geometry instance to become the clone. If this pointer
 			is NULL, a new geometry instance will be created.
 		@return The cloned geometry instance. */
-	virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
+    virtual FCDEntityInstance* Clone(FCDEntityInstance* clone = NULL) const;
 
-	/** [INTERNAL] Cleans up the sub identifiers.
+    /** [INTERNAL] Cleans up the sub identifiers.
 		The sub identifiers must be unique with respect to its parent. This method corrects the sub ids if there are conflicts.
 		@param parentStringMap The string map from the parent of this instance in which the sub ids must be unique. */
-	virtual void CleanSubId(FUSUniqueStringMap* parentStringMap);
+    virtual void CleanSubId(FUSUniqueStringMap* parentStringMap);
 };
 
 #endif // _FCD_GEOMETRY_ENTITY_H_

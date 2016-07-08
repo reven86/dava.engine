@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_KEYFRAME_ANIMATION_H__
 #define __DAVAENGINE_KEYFRAME_ANIMATION_H__
 
@@ -35,51 +6,53 @@
 #include "Animation/Animation.h"
 #include "Animation/AnimatedObject.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 class KeyframeData : public BaseObject
 {
 public:
-	struct Keyframe
-	{
-		Keyframe(int32 _frame, float32 _time)
-		{
-			frame = _frame;
-			time = _time;
-			next = 0;
-		};
-		
-		int		frame;
-		float32 time;
-		Keyframe * next;
-	};
-protected:
-	virtual ~KeyframeData();
-public:
-	KeyframeData();
-	
-	void AddKeyframe(int32 frame, float32 time);
-	float32 GetLength();
+    struct Keyframe
+    {
+        Keyframe(int32 _frame, float32 _time)
+        {
+            frame = _frame;
+            time = _time;
+            next = 0;
+        }
 
-	Keyframe * head;
-	Keyframe * tail;
-};	
+        int32 frame;
+        float32 time;
+        Keyframe* next;
+    };
+
+protected:
+    virtual ~KeyframeData();
+
+public:
+    KeyframeData();
+
+    void AddKeyframe(int32 frame, float32 time);
+    float32 GetLength();
+
+    Keyframe* head;
+    Keyframe* tail;
+};
 
 class KeyframeAnimation : public Animation
 {
 protected:
-	virtual ~KeyframeAnimation();
+    virtual ~KeyframeAnimation();
+
 public:
-	KeyframeAnimation(AnimatedObject * _owner, int32 * _var, KeyframeData * data, float32 _animationTimeLength);
-	
-	virtual void Update(float32 timeElapsed);
-	virtual void OnStart();
+    KeyframeAnimation(AnimatedObject* _owner, int32* _var, KeyframeData* data, float32 _animationTimeLength);
+
+    virtual void Update(float32 timeElapsed);
+    virtual void OnStart();
+
 private:
-	int32 * var;
-	KeyframeData * data;
-	KeyframeData::Keyframe * currentFrame;
-};	
-	
+    int32* var;
+    KeyframeData* data;
+    KeyframeData::Keyframe* currentFrame;
+};
 };
 #endif // __DAVAENGINE_KEYFRAME_ANIMATION_H__

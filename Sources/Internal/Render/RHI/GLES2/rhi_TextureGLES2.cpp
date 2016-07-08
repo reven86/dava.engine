@@ -1,39 +1,11 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_FormatConversion.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
     #include "Debug/Profiler.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 
     #include "_gl.h"
@@ -60,13 +32,14 @@ public:
     unsigned width;
     unsigned height;
     TextureFormat format;
-    void* mappedData;
     uint32 mappedLevel;
     GLenum mappedFace;
+    void* mappedData = nullptr;
+    uint32 isMapped : 1;
+    uint32 updatePending : 1;
     uint32 isCubeMap : 1;
     uint32 isRenderTarget : 1;
     uint32 isRenderBuffer : 1;
-    uint32 isMapped : 1;
 
     struct
     fbo_t
@@ -83,7 +56,11 @@ public:
     SamplerState::Descriptor::Sampler samplerState;
     uint32 forceSetSamplerState : 1;
 };
-RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor);
+
+RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor)
+
+typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
+RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 TextureGLES2_t::TextureGLES2_t()
     : uid(0)
@@ -91,11 +68,11 @@ TextureGLES2_t::TextureGLES2_t()
     , fbo(0)
     , width(0)
     , height(0)
+    , isMapped(0)
+    , updatePending(0)
     , isCubeMap(false)
     , isRenderTarget(false)
     , isRenderBuffer(false)
-    , mappedData(nullptr)
-    , isMapped(false)
     , forceSetSamplerState(true)
 {
 }
@@ -107,13 +84,14 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     DVASSERT(desc.levelCount);
 
     bool success = false;
+    UpdateCreationDesc(desc);
+
     GLuint uid[2] = { 0, 0 };
     bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
-    //    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
 
     if (is_depth)
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), (uint64)(uid) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), reinterpret_cast<uint64>(uid) } };
 
         ExecGL(&cmd1, 1);
 
@@ -169,95 +147,83 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     }
     else
     {
-        GLCommand cmd1 = { GLCommand::GEN_TEXTURES, { 1, (uint64)(uid) } };
-
-        ExecGL(&cmd1, 1, force_immediate);
-
-        if (cmd1.status == GL_NO_ERROR)
+        GLenum target = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+        uint32 cmd2_cnt = 2;
+        GLCommand cmd2[4 + countof(desc.initialData)] =
         {
-            GLenum target = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-            uint32 cmd2_cnt = 2;
-            GLCommand cmd2[4 + countof(desc.initialData)] =
-            {
-              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } } //,
-              //                { GLCommand::BIND_TEXTURE, { target, uid[0] } }
-            };
+          { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(uid) } },
+          { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
+        };
 
-            if (desc.autoGenMipmaps && !desc.isRenderTarget)
+        if (desc.autoGenMipmaps && !desc.isRenderTarget)
+        {
+            cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+            ++cmd2_cnt;
+        }
+
+        // process initial-data, if any
+        {
+            uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
+            GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+            GLint int_fmt;
+            GLint fmt;
+            GLenum type;
+            bool compressed;
+
+            GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
+
+            DVASSERT(desc.levelCount <= countof(desc.initialData));
+            for (unsigned s = 0; s != array_sz; ++s)
             {
-                cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+                cmd2[cmd2_cnt].func = GLCommand::BIND_TEXTURE;
+                cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+                cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
                 ++cmd2_cnt;
-            }
 
-            // process initial-data, if any
-            //            if( desc.type == TEXTURE_TYPE_CUBE )
-            {
-                uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
-                GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
-                GLint int_fmt;
-                GLint fmt;
-                GLenum type;
-                bool compressed;
+                target = (desc.type == TEXTURE_TYPE_CUBE) ? face[s] : GL_TEXTURE_2D;
 
-                GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
-
-                DVASSERT(desc.levelCount <= countof(desc.initialData));
-                for (unsigned s = 0; s != array_sz; ++s)
+                for (unsigned m = 0; m != desc.levelCount; ++m)
                 {
-                    cmd2[cmd2_cnt].func = GLCommand::BIND_TEXTURE;
-                    cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-                    cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
-                    ++cmd2_cnt;
+                    GLCommand* cmd = cmd2 + cmd2_cnt;
+                    void* data = desc.initialData[s * desc.levelCount + m];
 
-                    target = (desc.type == TEXTURE_TYPE_CUBE) ? face[s] : GL_TEXTURE_2D;
-
-                    for (unsigned m = 0; m != desc.levelCount; ++m)
+                    if (data)
                     {
-                        GLCommand* cmd = cmd2 + cmd2_cnt;
-                        void* data = desc.initialData[s * desc.levelCount + m];
+                        Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
+                        uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
 
-                        if (data)
-                        {
-                            Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
-                            uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
+                        cmd->func = GLCommand::TEX_IMAGE2D;
+                        cmd->arg[0] = target;
+                        cmd->arg[1] = m;
+                        cmd->arg[2] = uint64(int_fmt);
+                        cmd->arg[3] = uint64(sz.dx);
+                        cmd->arg[4] = uint64(sz.dy);
+                        cmd->arg[5] = 0;
+                        cmd->arg[6] = uint64(fmt);
+                        cmd->arg[7] = type;
+                        cmd->arg[8] = uint64(data_sz);
+                        cmd->arg[9] = reinterpret_cast<uint64>(data);
+                        cmd->arg[10] = compressed;
 
-                            cmd->func = GLCommand::TEX_IMAGE2D;
-                            cmd->arg[0] = target;
-                            cmd->arg[1] = m;
-                            cmd->arg[2] = uint64(int_fmt);
-                            cmd->arg[3] = uint64(sz.dx);
-                            cmd->arg[4] = uint64(sz.dy);
-                            cmd->arg[5] = 0;
-                            cmd->arg[6] = uint64(fmt);
-                            cmd->arg[7] = type;
-                            cmd->arg[8] = uint64(data_sz);
-                            cmd->arg[9] = (uint64)(data);
-                            cmd->arg[10] = compressed;
+                        if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
+                            _FlipRGBA4_ABGR4(data, data, data_sz);
+                        else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                            _RGBA5551toABGR1555(data, data, data_sz);
 
-                            if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(data, data_sz);
-                            else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(data, data_sz);
-
-                            ++cmd2_cnt;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        ++cmd2_cnt;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
-
-                cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
-                ++cmd2_cnt;
             }
-            //            else
-            //            {
-            //                DVASSERT(desc.initialData[0]==nullptr);
-            //            }
 
-            ExecGL(cmd2, cmd2_cnt, force_immediate);
+            cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
+            ++cmd2_cnt;
         }
+
+        ExecGL(cmd2, cmd2_cnt, force_immediate);
     }
 
     if (uid[0])
@@ -277,7 +243,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         if (desc.isRenderTarget)
         {
             isRenderTarget = true;
-            forceSetSamplerState = false;
 
             GLint int_fmt, fmt;
             GLenum type;
@@ -332,7 +297,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
     GLCommand cmd[16];
-    unsigned cmd_cnt = 1;
+    size_t cmd_cnt = 1;
 
     if (isRenderTarget)
     {
@@ -372,7 +337,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, cmd_cnt, force_immediate);
+    ExecGL(cmd, static_cast<uint32>(cmd_cnt), force_immediate);
 
     fbo.clear();
 
@@ -387,9 +352,6 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         height = 0;
     }
 }
-
-typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
-RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
 //------------------------------------------------------------------------------
 
@@ -411,13 +373,7 @@ gles2_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = TextureGLES2Pool::Alloc();
     TextureGLES2_t* tex = TextureGLES2Pool::Get(handle);
 
-    if (tex->Create(desc))
-    {
-        Texture::Descriptor creationDesc(desc);
-        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
-        tex->UpdateCreationDesc(creationDesc);
-    }
-    else
+    if (tex->Create(desc) == false)
     {
         TextureGLES2Pool::Free(handle);
         handle = InvalidHandle;
@@ -438,7 +394,7 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
     DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
 
-    self->mappedData = ::realloc(self->mappedData, data_sz);
+    self->mappedData = reinterpret_cast<uint8*>(::realloc(self->mappedData, data_sz));
 
     if (self->mappedData)
     {
@@ -492,11 +448,11 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, data_sz);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, data_sz);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _ABGR1555toRGBA5551(self->mappedData, data_sz);
+        _ABGR1555toRGBA5551(self->mappedData, self->mappedData, data_sz);
     }
 
     return data;
@@ -520,11 +476,11 @@ gles2_Texture_Unmap(Handle tex)
     DVASSERT(self->isMapped);
     if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        _FlipRGBA4_ABGR4(self->mappedData, textureDataSize);
+        _FlipRGBA4_ABGR4(self->mappedData, self->mappedData, textureDataSize);
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _RGBA5551toABGR1555(self->mappedData, textureDataSize);
+        _RGBA5551toABGR1555(self->mappedData, self->mappedData, textureDataSize);
     }
 
     GLenum ttarget = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
@@ -559,7 +515,7 @@ gles2_Texture_Unmap(Handle tex)
     {
       { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } },
       { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
-      { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
+      { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), reinterpret_cast<uint64>(self->mappedData), compressed } },
       { GLCommand::RESTORE_TEXTURE0, {} }
     };
 
@@ -627,7 +583,7 @@ void gles2_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
         {
           { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } },
           { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
-          { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
+          { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), reinterpret_cast<uint64>(data), compressed } },
           { GLCommand::RESTORE_TEXTURE0, {} }
         };
 
@@ -678,14 +634,6 @@ gles2_SamplerState_Create(const SamplerState::Descriptor& desc)
     for (unsigned i = 0; i != desc.vertexSamplerCount; ++i)
     {
         state->vertexSampler[i] = desc.vertexSampler[i];
-    }
-
-    // force no-filtering on vertex-textures
-    for (uint32 s = 0; s != MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s)
-    {
-        state->vertexSampler[s].minFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].magFilter = TEXFILTER_NEAREST;
-        state->vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
     }
 
     return handle;
@@ -749,20 +697,20 @@ _TextureFilterGLES2(TextureFilter filter)
 //------------------------------------------------------------------------------
 
 static GLenum
-_TextureMipFilterGLES2(TextureMipFilter filter)
+_TextureMinMipFilterGLES2(TextureFilter minfilter, TextureMipFilter mipfilter)
 {
     GLenum f = GL_LINEAR_MIPMAP_LINEAR;
 
-    switch (filter)
+    switch (mipfilter)
     {
     case TEXMIPFILTER_NONE:
-        f = GL_NEAREST_MIPMAP_NEAREST;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST : GL_LINEAR;
         break;
     case TEXMIPFILTER_NEAREST:
-        f = GL_LINEAR_MIPMAP_NEAREST;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_NEAREST;
         break;
     case TEXMIPFILTER_LINEAR:
-        f = GL_LINEAR_MIPMAP_LINEAR;
+        f = (minfilter == TEXFILTER_NEAREST) ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR;
         break;
     }
 
@@ -811,6 +759,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_NeedRestore = &gles2_Texture_NeedRestore;
 }
 
+void InvalidateCache()
+{
+    _GLES2_LastActiveTexture = -1;
+}
+
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
@@ -820,7 +773,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 
     const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
 
-    if (_GLES2_LastActiveTexture != GL_TEXTURE0 + sampler_i)
+    if (uint32(_GLES2_LastActiveTexture) != GL_TEXTURE0 + sampler_i)
     {
         GL_CALL(glActiveTexture(GL_TEXTURE0 + sampler_i));
         _GLES2_LastActiveTexture = GL_TEXTURE0 + sampler_i;
@@ -837,15 +790,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 
     if (_CurSamplerState && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
     {
-        if (sampler->mipFilter != TEXMIPFILTER_NONE)
-        {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMipFilterGLES2(TextureMipFilter(sampler->mipFilter))));
-        }
-        else
-        {
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureFilterGLES2(TextureFilter(sampler->minFilter))));
-        }
-
+        GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMinMipFilterGLES2(TextureFilter(sampler->minFilter), TextureMipFilter(sampler->mipFilter))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));
 
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
@@ -872,7 +817,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 
     if (!fb)
     {
-        glGenFramebuffers(1, &fb);
+        GL_CALL(glGenFramebuffers(1, &fb));
 
         if (fb)
         {
@@ -904,27 +849,28 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
                 }
             }
 
-            glBindFramebuffer(GL_FRAMEBUFFER, fb);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level);
+            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
+            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level));
             if (ds)
             {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
                 if (ds->uid2)
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2);
+                    GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2));
 #else
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid);
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
 #endif
             }
 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
 #else
             GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
 
-            glDrawBuffers(1, b);
+            GL_CALL(glDrawBuffers(1, b));
 #endif
 
-            int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            int status;
+            GL_CALL(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
+            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             if (status == GL_FRAMEBUFFER_COMPLETE)
             {
@@ -945,7 +891,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
         }
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
     _GLES2_Binded_FrameBuffer = fb;
 }
 
@@ -965,7 +911,7 @@ void ReCreateAll()
 unsigned
 NeedRestoreCount()
 {
-    return TextureGLES2_t::NeedRestoreCount();
+    return TextureGLES2Pool::PendingRestoreCount();
 }
 
 } // namespace TextureGLES2

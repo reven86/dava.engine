@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 #define __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 
@@ -38,34 +9,37 @@
 
 namespace DAVA
 {
-
 class AndroidSystemDelegate
 {
 public:
-	AndroidSystemDelegate(JavaVM *vm);
-	virtual ~AndroidSystemDelegate() = default;
+    AndroidSystemDelegate(JavaVM* vm);
+    virtual ~AndroidSystemDelegate() = default;
 
-	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
+    virtual bool DownloadHttpFile(const String& url, const String& documentsPathname) = 0;
 
-	JNIEnv* GetEnvironment() const {return environment;};
-	JavaVM* GetVM() const {return vm;};
+    JNIEnv* GetEnvironment() const
+    {
+        return environment;
+    };
+    JavaVM* GetVM() const
+    {
+        return vm;
+    };
+
 protected:
-	JNIEnv* environment;
-	JavaVM* vm;
+    JNIEnv* environment;
+    JavaVM* vm;
 };
 
-
-
 class Thread;
-class CorePlatformAndroid: public Core
+class CorePlatformAndroid : public Core
 {
 public:
+    CorePlatformAndroid(const DAVA::String& cmdLine);
 
-	CorePlatformAndroid(const DAVA::String& cmdLine);
+    virtual void CreateAndroidWindow(const char8* docPathEx, const char8* docPathIn, const char8* assets, const char8* logTag, AndroidSystemDelegate* sysDelegate);
 
-	virtual void CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
-
-	void Quit() override;
+    void Quit() override;
 
     void RenderReset(int32 w, int32 h);
     void ProcessFrame();
@@ -83,7 +57,7 @@ public:
     void KeyUp(int32 keyCode);
     void KeyDown(int32 keyCode);
 
-    void OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs);
+    void OnInput(Vector<UIEvent>& allInputs);
     void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
 
     void OnGamepadAvailable(bool isAvailable);
@@ -91,41 +65,46 @@ public:
 
     bool IsMultitouchEnabled();
 
-	bool DownloadHttpFile(const String & url, const String & documentsPathname);
+    bool DownloadHttpFile(const String& url, const String& documentsPathname);
 
-	AAssetManager * GetAssetManager();
-	void SetAssetManager(AAssetManager * mngr);
+    AAssetManager* GetAssetManager();
+    void SetAssetManager(AAssetManager* mngr);
 
-	const String& GetExternalStoragePathname() const {return externalStorage;};
-	const String& GetInternalStoragePathname() const {return internalStorage;};
-	
-	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
+    const String& GetExternalStoragePathname() const
+    {
+        return externalStorage;
+    };
+    const String& GetInternalStoragePathname() const
+    {
+        return internalStorage;
+    };
 
-    int32 GetViewWidth() const { return width; };
-    int32 GetViewHeight() const { return height; };
+    AndroidSystemDelegate* GetAndroidSystemDelegate() const;
+
+    int32 GetViewWidth() const;
+    int32 GetViewHeight() const;
 
     void SetNativeWindow(void* nativeWindow);
 
 private:
+    void QuitAction();
+    void ProcessWithoutDrawing();
 
-	void QuitAction();
-	void ProcessWithoutDrawing();
-
-	void UpdateScreenMode();
-
-    void ProcessResizeView();
+    void ApplyPendingViewSize();
 
 private:
-	int32 width;
-	int32 height;
+    int32 pendingWidth = 0;
+    int32 pendingHeight = 0;
+    int32 backbufferWidth = 0;
+    int32 backbufferHeight = 0;
 
-	bool wasCreated;
-	bool renderIsActive;
-    bool viewSizeChanged;
+    bool wasCreated = false;
+    bool renderIsActive = false;
+    bool viewSizeChanged = false;
 
-    bool foreground;
+    bool foreground = false;
 
-    AndroidSystemDelegate* androidDelegate;
+    AndroidSystemDelegate* androidDelegate = nullptr;
 
     String externalStorage;
     String internalStorage;

@@ -2,7 +2,9 @@ cmake_minimum_required( VERSION 3.0 )
 
 project               ( ResourcePacker )
 
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set 				  ( NO_CEF true )
 include               ( CMake-common )
 
 find_package          ( DavaFramework REQUIRED )
@@ -19,8 +21,7 @@ set( APP_DATA                    )
 set( LIBRARIES                   )
 
 set( MAC_DISABLE_BUNDLE     true )
-
-set( MACOS_DYLIB      ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
+set( DISABLE_SOUNDS         true)
 
 setup_main_executable()
 

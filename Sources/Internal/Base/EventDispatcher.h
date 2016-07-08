@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_EVENTDISPATCHER_H__
 #define __DAVAENGINE_EVENTDISPATCHER_H__
 
@@ -43,32 +14,32 @@ namespace DAVA
 class EventDispatcher : public BaseObject
 {
 protected:
-	virtual ~EventDispatcher();
-public:
-	EventDispatcher(); 
+    virtual ~EventDispatcher();
 
-	/**
+public:
+    EventDispatcher();
+
+    /**
 		\brief Function to add event to event dispatcher.
 		\param[in] eventId	event id we will use to perform messages
 		\param[in] msg		message we assign for this eventId
 	 */
-	void AddEvent(int32 eventId, const Message &msg);
-	/**
+    void AddEvent(int32 eventId, const Message& msg);
+    /**
 		\brief Function to remove event from event dispatcher.
 		\param[in] eventId	event id 
 		\param[in] msg		message we want to delete for given eventId
 		\returns true if we removed something, false if not
 	 */
-	bool RemoveEvent(int32 eventId, const Message &msg);
-	
-	/**
+    bool RemoveEvent(int32 eventId, const Message& msg);
+
+    /**
 	 \brief Function to remove all events from event dispatcher.
 	 \returns true if we removed something, false if not
 	 */
-	bool RemoveAllEvents();
-	
+    bool RemoveAllEvents();
 
-	/**
+    /**
 		\brief Function to perform all events with given id from this event dispatcher.
 	 
 		When this function called, it perform all messages linked to given eventId.
@@ -78,11 +49,10 @@ public:
 		\param[in] eventId	event id 
 		\param[in] eventParam this param is used when we want to replace caller in message with another class 
 	 */
-	void PerformEvent(int32 eventId);	
-	void PerformEvent(int32 eventId, BaseObject *caller);
+    void PerformEvent(int32 eventId);
+    void PerformEvent(int32 eventId, BaseObject* caller);
 
-	
-	/**
+    /**
 	 \brief Function to perform all events with given id from this event dispatcher.
 	 
 	 When this function called, it perform all messages linked to given eventId.
@@ -93,40 +63,46 @@ public:
 	 \param[in] eventParam this param is used when we want to replace caller in message with another class 
 	 \param[in] callerData this param is used when we want to send some data from the caller
 	 */
-	void PerformEventWithData(int32 eventId, void *callerData);
-	void PerformEventWithData(int32 eventId, BaseObject *caller, void *callerData);
+    void PerformEventWithData(int32 eventId, void* callerData);
+    void PerformEventWithData(int32 eventId, BaseObject* caller, void* callerData);
 
-	/**
+    /**
 		\brief Clone dispatcher make 100% copy of this dispatcher with reference count equal to 1
 		\returns new EventDispatcher that contains the same data as first one
 	 */
-	EventDispatcher *CloneDispatcher();
-	
-	/**
+    EventDispatcher* CloneDispatcher();
+
+    /**
 		\brief This function copy all date from another dispatcher to this dispatcher
 	 */
-	void CopyDataFrom(EventDispatcher *srcDispatcher);
+    void CopyDataFrom(EventDispatcher* srcDispatcher);
 
     int32 GetEventsCount() const;
 
 protected:
+    class Event
+    {
+    public:
+        Event()
+            : eventType(0)
+            , needDelete(false)
+        {
+        }
+        static bool IsEventToDelete(const Event& event)
+        {
+            return event.needDelete;
+        }
 
-	class Event 
-	{
-	public:
-        Event() : eventType(0), needDelete(false){}
-        static bool IsEventToDelete(const Event &event){ return event.needDelete; }
-
-        int32   eventType : 31;
-        bool    needDelete : 1;
+        int32 eventType : 31;
+        bool needDelete : 1;
         Message msg;
-	};
-	
-	List<Event> events;
+    };
+
+    List<Event> events;
     bool eraseLocked = false;
     int32 eventsCount = 0; // actual events count
 };
-	
+
 /**
 	\ingroup baseobjects
 	\brief	Helper to implement event dispatchers.
@@ -138,16 +114,12 @@ protected:
  */
 #define IMPLEMENT_EVENT_DISPATCHER(eventDispatcherName)	\
 public:\
-	void AddEvent(int32 eventType, const Message &msg){eventDispatcherName->AddEvent(eventType, msg); }; \
-	bool RemoveEvent(int32 eventType, const Message &msg){return eventDispatcherName->RemoveEvent(eventType, msg); };\
+	void AddEvent(int32 eventType, const Message& msg){eventDispatcherName->AddEvent(eventType, msg); }; \
+	bool RemoveEvent(int32 eventType, const Message& msg){return eventDispatcherName->RemoveEvent(eventType, msg); };\
 	bool RemoveAllEvents(){return eventDispatcherName->RemoveAllEvents(); };\
     int32 GetEventsCount(){return eventDispatcherName->GetEventsCount(); };\
 protected:\
 	RefPtr<EventDispatcher> eventDispatcherName;
-	
-	
-	
-	
 };
 
 #endif

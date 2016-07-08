@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -53,35 +24,34 @@ using namespace DAVA;
 
 namespace
 {
-    struct PngImageRawData
-    {
-        File *file;
-    };
+struct PngImageRawData
+{
+    File* file;
+};
 
-    void PngImageRead(png_structp pngPtr, png_bytep data, png_size_t size)
-    {
-        PngImageRawData *self = static_cast<PngImageRawData*>(png_get_io_ptr(pngPtr));
-        self->file->Read(data, static_cast<uint32>(size));
-    }
-
-    void ReleaseWriteData(png_struct *& png_ptr, png_info *& info_ptr, unsigned char**& row_pointers, FILE *& fp, Image*& convertedImage)
-    {
-        free(row_pointers);
-        row_pointers = nullptr;
-        png_destroy_write_struct(&png_ptr, &info_ptr);
-        png_ptr = nullptr;
-        info_ptr = nullptr;
-        if (fp != nullptr)
-        {
-            fclose(fp);
-            fp = nullptr;
-        }
-        SafeRelease(convertedImage);
-    }
+void PngImageRead(png_structp pngPtr, png_bytep data, png_size_t size)
+{
+    PngImageRawData* self = static_cast<PngImageRawData*>(png_get_io_ptr(pngPtr));
+    self->file->Read(data, static_cast<uint32>(size));
 }
 
+void ReleaseWriteData(png_struct*& png_ptr, png_info*& info_ptr, unsigned char**& row_pointers, FILE*& fp, Image*& convertedImage)
+{
+    free(row_pointers);
+    row_pointers = nullptr;
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    png_ptr = nullptr;
+    info_ptr = nullptr;
+    if (fp != nullptr)
+    {
+        fclose(fp);
+        fp = nullptr;
+    }
+    SafeRelease(convertedImage);
+}
+}
 
-void abort_(const char * s, ...)
+void abort_(const char* s, ...)
 {
     va_list args;
     va_start(args, s);
@@ -91,35 +61,27 @@ void abort_(const char * s, ...)
     abort();
 }
 
-
 LibPngHelper::LibPngHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PNG, "PNG", { ".png" }, { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 })
 {
-    name.assign("PNG");
-    supportedExtensions.push_back(".png");
-    supportedFormats = { {FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16} };
 }
 
-bool LibPngHelper::CanProcessFile(File* infile) const
+bool LibPngHelper::CanProcessFileInternal(File* infile) const
 {
-    if (nullptr == infile)
-    {
-        return false;
-    }
-
     unsigned char sig[8];
     infile->Read(sig, 8);
     bool retValue = (0 != png_check_sig(sig, 8));
-    infile->Seek(0, File::SEEK_FROM_START);
     return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
 
     if (innerRetCode == eErrorCode::SUCCESS)
     {
+        image->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(image);
     }
     else
@@ -130,7 +92,7 @@ eErrorCode LibPngHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return innerRetCode;
 }
 
-eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format, ImageQuality quality) const
+eErrorCode LibPngHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat format, ImageQuality quality) const
 {
     // printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
     DVASSERT(imageSet.size());
@@ -142,7 +104,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         convertedImage = Image::Create(width, height, FORMAT_RGBA8888);
         ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
-        convert(imageData, width, height, sizeof(RGB888)*width, convertedImage->data, width, height, sizeof(uint32)*width);
+        convert(imageData, width, height, sizeof(RGB888) * width, convertedImage->data, width, height, sizeof(uint32) * width);
         imageData = convertedImage->data;
     }
 
@@ -167,16 +129,16 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
         bytes_for_color = 2;
     }
 
-    png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    png_bytep* row_pointers = static_cast<png_bytep*>(malloc(sizeof(png_bytep) * height));
 
     for (int y = 0; y < height; y++)
     {
         // row_pointers[y] = (png_byte*) &data[y * width * 4];
-        row_pointers[y] = (png_byte*)&imageData[y * width * bytes_for_color];
+        row_pointers[y] = reinterpret_cast<png_byte*>(&imageData[y * width * bytes_for_color]);
     }
 
     // create file
-    FILE *fp = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
+    FILE* fp = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
     if (nullptr == fp)
     {
         Logger::Error("[LibPngHelper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
@@ -279,22 +241,22 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
+eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibPngHelper::WriteFileAsCubeMap] For png cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-ImageInfo LibPngHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(File* infile) const
 {
-    if (nullptr == infile)
+    if (!infile)
     {
         return ImageInfo();
     }
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
-    if (!png_check_sig((unsigned char *)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return ImageInfo();
     }
@@ -308,7 +270,7 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return ImageInfo();
     }
 
@@ -318,7 +280,7 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
         return ImageInfo();
     }
 
-    PngImageRawData	raw;
+    PngImageRawData raw;
     raw.file = infile;
     png_set_read_fn(png_ptr, &raw, PngImageRead);
 
@@ -339,85 +301,102 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
 
     switch (color_type)
     {
-        case PNG_COLOR_TYPE_RGB_ALPHA:
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+    {
+        switch (bit_depth)
         {
-            switch (bit_depth)
-            {
-                case 4: info.format = FORMAT_RGBA4444; break;
-                case 8: info.format = FORMAT_RGBA8888; break;
-                case 16: info.format = FORMAT_RGBA16161616; break;
-                case 32: info.format = FORMAT_RGBA32323232; break;
-                default: info.format = FORMAT_INVALID; break;
-            }
+        case 4:
+            info.format = FORMAT_RGBA4444;
             break;
-        }
-        case PNG_COLOR_TYPE_RGB:
-        {
-            switch (bit_depth)
-            {
-                case 5:
-                case 6: info.format = FORMAT_RGB565; break;
-                case 8: info.format = FORMAT_RGB888; break;
-                default: info.format = FORMAT_INVALID; break;
-            }
-            break;
-        }
-        case PNG_COLOR_TYPE_GRAY:
-        {
-            info.format = FORMAT_A8;
-            break;
-        }
-        case PNG_COLOR_TYPE_GRAY_ALPHA:
-        {
-            info.format = FORMAT_A16;
-            break;
-        }
-            
-        case PNG_COLOR_TYPE_PALETTE:
-        {
+        case 8:
             info.format = FORMAT_RGBA8888;
             break;
-        }
+        case 16:
+            info.format = FORMAT_RGBA16161616;
+            break;
+        case 32:
+            info.format = FORMAT_RGBA32323232;
+            break;
         default:
-        {
             info.format = FORMAT_INVALID;
             break;
         }
+        break;
+    }
+    case PNG_COLOR_TYPE_RGB:
+    {
+        switch (bit_depth)
+        {
+        case 5:
+        case 6:
+            info.format = FORMAT_RGB565;
+            break;
+        case 8:
+            info.format = FORMAT_RGB888;
+            break;
+        default:
+            info.format = FORMAT_INVALID;
+            break;
+        }
+        break;
+    }
+    case PNG_COLOR_TYPE_GRAY:
+    {
+        info.format = FORMAT_A8;
+        break;
+    }
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+    {
+        info.format = FORMAT_A16;
+        break;
     }
 
-//==== temporary solution for legasy png loading =====
-    
+    case PNG_COLOR_TYPE_PALETTE:
+    {
+        info.format = FORMAT_RGBA8888;
+        break;
+    }
+    default:
+    {
+        info.format = FORMAT_INVALID;
+        break;
+    }
+    }
+
+    //==== temporary solution for legasy png loading =====
+
     switch (info.format)
     {
-        case FORMAT_INVALID:
-        case FORMAT_A8:
-        case FORMAT_A16:
-            //do nothing
-            break;
-            
-        default:
-            info.format = FORMAT_RGBA8888;
-            break;
+    case FORMAT_INVALID:
+    case FORMAT_A8:
+    case FORMAT_A16:
+        //do nothing
+        break;
+
+    default:
+        info.format = FORMAT_RGBA8888;
+        break;
     }
-    
-//==== temporary solution for legasy png loading =====
-    
+
+    //==== temporary solution for legasy png loading =====
+
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    info.dataSize = Image::GetSizeInBytes(width, height, info.format);
     info.mipmapsCount = 1;
+    info.faceCount = 1;
     return info;
 }
 
-eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
+eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat targetFormat /* = FORMAT_INVALID*/)
 {
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
 
-    char sig[8];
+    uint8 sig[8];
     infile->Read(sig, 8);
 
-    if (!png_check_sig((unsigned char *)sig, 8))
+    if (!png_check_sig(sig, 8))
     {
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -433,7 +412,7 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
     {
-        png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
@@ -511,9 +490,9 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     image->dataSize = rowbytes * height;
     SafeDeleteArray(image->data);
     image->data = new uint8[image->dataSize];
-    
+
     png_bytepp row_pointers = nullptr;
-    row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep));
+    row_pointers = static_cast<png_bytepp>(malloc(height * sizeof(png_bytep)));
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);

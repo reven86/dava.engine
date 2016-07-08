@@ -53,8 +53,8 @@ QVariant BranchTreeModel::data(const QModelIndex& index, int role) const
                 return QString(branch->name != nullptr ? branch->name->c_str() : "Root");
             case CLM_STAT:
                 return QString("alloc=%1, nblocks=%2")
-                    .arg(FormatNumberWithDigitGroups(branch->allocByApp).c_str())
-                    .arg(branch->nblocks);
+                .arg(FormatNumberWithDigitGroups(branch->allocByApp).c_str())
+                .arg(branch->nblocks);
             default:
                 break;
             }

@@ -21,16 +21,16 @@
 */
 namespace FMInterpolation
 {
-	/** The different types of interpolation. */
-	enum Interpolation
-	{
-		NONE = 0,			/**< No interpolation. Also called step interpolation. */
-		LINEAR,				/**< Linear interpolation. */
-		BEZIER,				/**< Bezier interpolation. */
+/** The different types of interpolation. */
+enum Interpolation
+{
+    NONE = 0, /**< No interpolation. Also called step interpolation. */
+    LINEAR, /**< Linear interpolation. */
+    BEZIER, /**< Bezier interpolation. */
 
-		UNKNOWN,			/**< Unknown interpolation. */
-		DEFAULT = NONE,		/**< Default interpolation (None). */
-	};
+    UNKNOWN, /**< Unknown interpolation. */
+    DEFAULT = NONE, /**< Default interpolation (None). */
+};
 };
 
 #endif // _FM_INTERPOLATION_H_

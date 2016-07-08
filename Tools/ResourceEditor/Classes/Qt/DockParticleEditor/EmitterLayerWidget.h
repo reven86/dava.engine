@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __ResourceEditorQt__EmitterLayerWidget__
 #define __ResourceEditorQt__EmitterLayerWidget__
 
@@ -45,35 +16,38 @@
 #include <QComboBox>
 #include <QTimer>
 
-using namespace DAVA;
-
-class EmitterLayerWidget: public QWidget, public BaseParticleEditorContentWidget
+class EmitterLayerWidget : public BaseParticleEditorContentWidget
 {
     Q_OBJECT
-    
+
 public:
-    explicit EmitterLayerWidget(QWidget *parent = 0);
+    explicit EmitterLayerWidget(QWidget* parent = 0);
 
-	void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
-	ParticleLayer* GetLayer() const {return layer;};
-	void Update(bool updateMinimized);
-	
-	virtual bool eventFilter(QObject *, QEvent *);
+    void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter,
+              DAVA::ParticleLayer* layer, bool updateMinimized);
 
-	virtual void StoreVisualState(KeyedArchive* visualStateProps);
-	virtual void RestoreVisualState(KeyedArchive* visualStateProps);
+    DAVA::ParticleLayer* GetLayer() const
+    {
+        return layer;
+    };
+    void Update(bool updateMinimized);
 
-	// Switch from/to SuperEmitter mode.
-	void SetSuperemitterMode(bool isSuperemitter);
+    virtual bool eventFilter(QObject*, QEvent*);
 
-	// Notify yhe widget layer value is changed.
-	void OnLayerValueChanged();
+    void StoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+    void RestoreVisualState(DAVA::KeyedArchive* visualStateProps) override;
+
+    // Switch from/to SuperEmitter mode.
+    void SetSuperemitterMode(bool isSuperemitter);
+
+    // Notify yhe widget layer value is changed.
+    void OnLayerValueChanged();
 
 signals:
-	void ValueChanged();
-	
+    void ValueChanged();
+
 protected slots:
-	void OnLodsChanged();
+    void OnLodsChanged();
     void OnValueChanged();
     void OnLayerMaterialValueChanged();
     void OnSpriteBtn();
@@ -85,23 +59,23 @@ protected slots:
     void OnSpriteUpdateTimerExpired();
 
 private:
-	void InitWidget(QWidget* );
-	void UpdateTooltip();
+    void InitWidget(QWidget*);
+    void UpdateTooltip();
     void UpdateLayerSprite();
 
     void FillLayerTypes();
-	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
+    DAVA::int32 LayerTypeToIndex(DAVA::ParticleLayer::eType layerType);
 
 private:
-	struct LayerTypeMap
-	{
-		ParticleLayer::eType layerType;
-		QString layerName;
-	};
+    struct LayerTypeMap
+    {
+        DAVA::ParticleLayer::eType layerType;
+        QString layerName;
+    };
 
-	struct BlendPreset
-	{
-        eBlending blending;
+    struct BlendPreset
+    {
+        DAVA::eBlending blending;
         QString presetName;
     };
 
@@ -109,10 +83,10 @@ private:
     static const LayerTypeMap layerTypeMap[];
     static const BlendPreset blendPresetsMap[];
 
-    ParticleLayer* layer = nullptr;
+    DAVA::ParticleLayer* layer = nullptr;
 
     QTimer* spriteUpdateTimer = nullptr;
-    DAVA::Stack<std::pair<rhi::HSyncObject, Texture*>> spriteUpdateTexturesStack;
+    DAVA::Stack<std::pair<rhi::HSyncObject, DAVA::Texture*>> spriteUpdateTexturesStack;
 
     QVBoxLayout* mainBox = nullptr;
     QVBoxLayout* pivotPointLayout = nullptr;
@@ -138,7 +112,7 @@ private:
     QCheckBox* isLongCheckBox = nullptr;
     QCheckBox* isLoopedCheckBox = nullptr;
     QCheckBox* inheritPostionCheckBox = nullptr;
-    QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
+    QCheckBox* layerLodsCheckBox[DAVA::LodComponent::MAX_LOD_LAYERS];
     QCheckBox* frameBlendingCheckBox = nullptr;
     QCheckBox* cameraFacingCheckBox = nullptr;
     QCheckBox* xFacingCheckBox = nullptr;

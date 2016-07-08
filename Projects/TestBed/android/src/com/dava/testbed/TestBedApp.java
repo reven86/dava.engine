@@ -10,6 +10,7 @@ public class TestBedApp extends JNIApplication {
 	}
 	
 	static {
+		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("TestBed");
 	}
 }

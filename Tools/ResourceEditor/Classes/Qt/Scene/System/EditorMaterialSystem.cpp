@@ -1,44 +1,44 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "EditorMaterialSystem.h"
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Commands2/Command2.h"
-#include "Commands2/CommandBatch.h"
+#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/CommandBatch.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "Commands2/InspMemberModifyCommand.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
+
+EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
+    : entity(entity_)
+{
+    renderBatch = DAVA::SafeRetain(renderBatch_);
+}
+
+EditorMaterialSystem::MaterialMapping::MaterialMapping(const MaterialMapping& other)
+{
+    *this = other;
+}
+
+EditorMaterialSystem::MaterialMapping::~MaterialMapping()
+{
+    DAVA::SafeRelease(renderBatch);
+}
+
+EditorMaterialSystem::MaterialMapping& EditorMaterialSystem::MaterialMapping::operator=(const MaterialMapping& other)
+{
+    if (this == &other)
+        return *this;
+
+    entity = other.entity;
+    DAVA::SafeRelease(renderBatch);
+    renderBatch = DAVA::SafeRetain(other.renderBatch);
+    return *this;
+}
 
 EditorMaterialSystem::EditorMaterialSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
@@ -70,22 +70,7 @@ const DAVA::RenderBatch* EditorMaterialSystem::GetRenderBatch(DAVA::NMaterial* m
     if (it == materialToObjectsMap.end())
         return nullptr;
 
-    const auto& mapping = it->second;
-    if (mapping.mode == MaterialMapping::Mode::RetainedRenderBatch)
-    {
-        DVASSERT(nullptr != mapping.renderBatch);
-        return mapping.renderBatch;
-    }
-    else if (mapping.mode == MaterialMapping::Mode::RenderBatchIndexInRenderObject)
-    {
-        auto renderObject = GetRenderObject(mapping.entity);
-        if ((nullptr == renderObject) || (mapping.renderBatchIndexInRenderObject >= renderObject->GetRenderBatchCount()))
-            return nullptr;
-
-        return renderObject->GetRenderBatch(mapping.renderBatchIndexInRenderObject);
-    }
-
-    return nullptr;
+    return it->second.renderBatch;
 }
 
 const DAVA::Set<DAVA::NMaterial*>& EditorMaterialSystem::GetTopParents() const
@@ -147,33 +132,20 @@ void EditorMaterialSystem::AddEntity(DAVA::Entity* entity)
     DAVA::RenderObject* ro = GetRenderObject(entity);
     if (nullptr != ro)
     {
-        AddMaterialsFromEntity(entity);
+        AddMaterials(entity);
     }
 }
 
-void EditorMaterialSystem::AddMaterialsFromEntity(DAVA::Entity* entity)
+void EditorMaterialSystem::AddMaterials(DAVA::Entity* entity)
 {
     DAVA::RenderObject* ro = GetRenderObject(entity);
     DVASSERT(nullptr != ro);
 
     for (DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
     {
-        MaterialMapping mapping;
-        mapping.entity = entity;
-        mapping.renderBatchIndexInRenderObject = i;
-        mapping.mode = MaterialMapping::Mode::RenderBatchIndexInRenderObject;
-        AddMaterial(ro->GetRenderBatch(i)->GetMaterial(), mapping);
+        DAVA::RenderBatch* renderBatch = ro->GetRenderBatch(i);
+        AddMaterial(renderBatch->GetMaterial(), MaterialMapping(entity, renderBatch));
     }
-}
-
-void EditorMaterialSystem::AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity)
-{
-    MaterialMapping mapping;
-    mapping.entity = entity;
-    mapping.renderBatch = renderBatch;
-    mapping.mode = MaterialMapping::Mode::RetainedRenderBatch;
-    AddMaterial(renderBatch->GetMaterial(), mapping);
-    DAVA::SafeRetain(renderBatch);
 }
 
 void EditorMaterialSystem::RemoveEntity(DAVA::Entity* entity)
@@ -262,78 +234,124 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
 
 void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
 {
-    // TODO: VK: need to be redesigned after command notification will be changed
-    auto commandID = command->GetId();
-    if (commandID == CMDID_LOD_DELETE)
+    const DAVA::int32 commandID = command->GetId();
+    if (commandID == CMDID_BATCH)
     {
-        DeleteLODCommand* lodCommand = (DeleteLODCommand*)command;
-        const DAVA::Vector<DeleteRenderBatchCommand*> batchCommands = lodCommand->GetRenderBatchCommands();
-
-        const DAVA::uint32 count = (const DAVA::uint32)batchCommands.size();
-        for (DAVA::uint32 i = 0; i < count; ++i)
+        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))
         {
-            DAVA::RenderBatch* batch = batchCommands[i]->GetRenderBatch();
+            const DAVA::uint32 count = batch->Size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                ProcessCommand(batch->GetCommand(i), redo);
+            }
+        }
+    }
+    else
+    {
+        switch (commandID)
+        {
+        case CMDID_LOD_DELETE:
+        {
+            const DeleteLODCommand* lodCommand = static_cast<const DeleteLODCommand*>(command);
+            const DAVA::Vector<DeleteRenderBatchCommand*> batchCommands = lodCommand->GetRenderBatchCommands();
+
+            const DAVA::uint32 count = (const DAVA::uint32)batchCommands.size();
+            for (DAVA::uint32 i = 0; i < count; ++i)
+            {
+                DAVA::RenderBatch* batch = batchCommands[i]->GetRenderBatch();
+                if (redo)
+                {
+                    RemoveMaterial(batch->GetMaterial());
+                }
+                else
+                {
+                    AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
+                }
+            }
+
+            break;
+        }
+        case CMDID_LOD_CREATE_PLANE:
+        {
+            const CreatePlaneLODCommand* lodCommand = static_cast<const CreatePlaneLODCommand*>(command);
+            DAVA::RenderBatch* batch = lodCommand->GetRenderBatch();
+            if (redo)
+            {
+                AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
+            }
+            else
+            {
+                RemoveMaterial(batch->GetMaterial());
+            }
+            break;
+        }
+        case CMDID_DELETE_RENDER_BATCH:
+        {
+            const DeleteRenderBatchCommand* rbCommand = static_cast<const DeleteRenderBatchCommand*>(command);
+            DAVA::RenderBatch* batch = rbCommand->GetRenderBatch();
             if (redo)
             {
                 RemoveMaterial(batch->GetMaterial());
             }
             else
             {
-                AddMaterialFromRenderBatchWithEntity(batch, lodCommand->GetEntity());
+                AddMaterial(batch->GetMaterial(), MaterialMapping(rbCommand->GetEntity(), batch));
             }
+            break;
         }
-    }
-    else if (commandID == CMDID_LOD_CREATE_PLANE)
-    {
-        CreatePlaneLODCommand* lodCommand = (CreatePlaneLODCommand*)command;
-        DAVA::RenderBatch* batch = lodCommand->GetRenderBatch();
-        if (redo)
+        case CMDID_CONVERT_TO_SHADOW:
         {
-            AddMaterialFromRenderBatchWithEntity(batch, lodCommand->GetEntity());
-        }
-        else
-        {
-            RemoveMaterial(batch->GetMaterial());
-        }
-    }
-    else if (commandID == CMDID_DELETE_RENDER_BATCH)
-    {
-        DeleteRenderBatchCommand* rbCommand = (DeleteRenderBatchCommand*)command;
-        if (redo)
-        {
-            RemoveMaterial(rbCommand->GetRenderBatch()->GetMaterial());
-        }
-        else
-        {
-            AddMaterialFromRenderBatchWithEntity(rbCommand->GetRenderBatch(), rbCommand->GetEntity());
-        }
-    }
-    else if (commandID == CMDID_CONVERT_TO_SHADOW)
-    {
-        ConvertToShadowCommand* swCommand = (ConvertToShadowCommand*)command;
-        if (redo)
-        {
-            RemoveMaterial(swCommand->oldBatch->GetMaterial());
-        }
-        else
-        {
-            AddMaterialFromRenderBatchWithEntity(swCommand->oldBatch, swCommand->GetEntity());
-        }
-    }
-    else if (commandID == CMDID_LOD_COPY_LAST_LOD)
-    {
-        CopyLastLODToLod0Command* copyCommand = (CopyLastLODToLod0Command*)command;
-        DAVA::uint32 batchCount = copyCommand->newBatches.size();
-        for (DAVA::uint32 i = 0; i < batchCount; ++i)
-        {
-            if (redo)
+            const ConvertToShadowCommand* swCommand = static_cast<const ConvertToShadowCommand*>(command);
+            DAVA::RenderBatch* oldBatch = swCommand->oldBatch;
+            DAVA::RenderBatch* newBatch = swCommand->newBatch;
+
+            if (!redo)
             {
-                AddMaterialFromRenderBatchWithEntity(copyCommand->newBatches[i], copyCommand->GetEntity());
+                std::swap(oldBatch, newBatch);
             }
-            else
+
+            RemoveMaterial(oldBatch->GetMaterial());
+            AddMaterial(newBatch->GetMaterial(), MaterialMapping(swCommand->GetEntity(), newBatch));
+            break;
+        }
+        case CMDID_LOD_COPY_LAST_LOD:
+        {
+            const CopyLastLODToLod0Command* copyCommand = static_cast<const CopyLastLODToLod0Command*>(command);
+            DAVA::uint32 batchCount = copyCommand->newBatches.size();
+            for (DAVA::uint32 i = 0; i < batchCount; ++i)
             {
-                RemoveMaterial(copyCommand->newBatches[i]->GetMaterial());
+                DAVA::RenderBatch* batch = copyCommand->newBatches[i];
+                DAVA::NMaterial* material = batch->GetMaterial();
+                if (redo)
+                {
+                    AddMaterial(material, MaterialMapping(copyCommand->GetEntity(), batch));
+                }
+                else
+                {
+                    RemoveMaterial(material);
+                }
             }
+            break;
+        }
+        case CMDID_INSP_MEMBER_MODIFY:
+        {
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+
+            const DAVA::Vector<DAVA::Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
+            for (DAVA::Entity* landEntity : landscapes)
+            {
+                DAVA::Landscape* landObject = GetLandscape(landEntity);
+                if (landObject == cmd->object)
+                {
+                    RemoveMaterial(landObject->GetMaterial());
+                    AddMaterials(landEntity);
+                }
+            }
+        }
+
+        default:
+            break;
         }
     }
 }
@@ -384,15 +402,7 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const Material
 
 void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial* material)
 {
-    auto it = materialToObjectsMap.find(material);
-    if (it == materialToObjectsMap.end())
-        return;
-
-    if (it->second.mode == MaterialMapping::Mode::RetainedRenderBatch)
-    {
-        DAVA::SafeRelease(it->second.renderBatch);
-    }
-    materialToObjectsMap.erase(it);
+    materialToObjectsMap.erase(material);
 }
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial* material) const

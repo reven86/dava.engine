@@ -30,16 +30,16 @@
 
 struct _xmlLink
 {
-    struct _xmlLink *next;
-    struct _xmlLink *prev;
-    void *data;
+    struct _xmlLink* next;
+    struct _xmlLink* prev;
+    void* data;
 };
 
 struct _xmlList
 {
     xmlLinkPtr sentinel;
-    void (*linkDeallocator)(xmlLinkPtr );
-    int (*linkCompare)(const void *, const void*);
+    void (*linkDeallocator)(xmlLinkPtr);
+    int (*linkCompare)(const void*, const void*);
 };
 
 /************************************************************************
@@ -76,12 +76,12 @@ xmlLinkDeallocator(xmlListPtr l, xmlLinkPtr lk)
  *          than data0
  */
 static int
-xmlLinkCompare(const void *data0, const void *data1)
+xmlLinkCompare(const void* data0, const void* data1)
 {
     if (data0 < data1)
         return (-1);
     else if (data0 == data1)
-	return (0);
+        return (0);
     return (1);
 }
 
@@ -94,15 +94,16 @@ xmlLinkCompare(const void *data0, const void *data1)
  *
  * Returns the link containing the data or NULL
  */
-static xmlLinkPtr 
-xmlListLowerSearch(xmlListPtr l, void *data) 
+static xmlLinkPtr
+xmlListLowerSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
 
     if (l == NULL)
-        return(NULL);
-    for (lk = l->sentinel->next;lk != l->sentinel && l->linkCompare(lk->data, data) <0 ;lk = lk->next);
-    return lk;    
+        return (NULL);
+    for (lk = l->sentinel->next; lk != l->sentinel && l->linkCompare(lk->data, data) < 0; lk = lk->next)
+        ;
+    return lk;
 }
 
 /**
@@ -114,15 +115,16 @@ xmlListLowerSearch(xmlListPtr l, void *data)
  *
  * Returns the link containing the data or NULL
  */
-static xmlLinkPtr 
-xmlListHigherSearch(xmlListPtr l, void *data) 
+static xmlLinkPtr
+xmlListHigherSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
 
     if (l == NULL)
-        return(NULL);
-    for (lk = l->sentinel->prev;lk != l->sentinel && l->linkCompare(lk->data, data) >0 ;lk = lk->prev);
-    return lk;    
+        return (NULL);
+    for (lk = l->sentinel->prev; lk != l->sentinel && l->linkCompare(lk->data, data) > 0; lk = lk->prev)
+        ;
+    return lk;
 }
 
 /**
@@ -134,17 +136,18 @@ xmlListHigherSearch(xmlListPtr l, void *data)
  *
  * Returns the link containing the data or NULL
  */
-static xmlLinkPtr 
-xmlListLinkSearch(xmlListPtr l, void *data) 
+static xmlLinkPtr
+xmlListLinkSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     lk = xmlListLowerSearch(l, data);
     if (lk == l->sentinel)
         return NULL;
-    else {
-        if (l->linkCompare(lk->data, data) ==0)
+    else
+    {
+        if (l->linkCompare(lk->data, data) == 0)
             return lk;
         return NULL;
     }
@@ -159,17 +162,18 @@ xmlListLinkSearch(xmlListPtr l, void *data)
  *
  * Returns the link containing the data or NULL
  */
-static xmlLinkPtr 
-xmlListLinkReverseSearch(xmlListPtr l, void *data) 
+static xmlLinkPtr
+xmlListLinkReverseSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     lk = xmlListHigherSearch(l, data);
     if (lk == l->sentinel)
         return NULL;
-    else {
-        if (l->linkCompare(lk->data, data) ==0)
+    else
+    {
+        if (l->linkCompare(lk->data, data) == 0)
             return lk;
         return NULL;
     }
@@ -188,25 +192,27 @@ xmlListPtr
 xmlListCreate(xmlListDeallocator deallocator, xmlListDataCompare compare)
 {
     xmlListPtr l;
-    if (NULL == (l = (xmlListPtr )xmlMalloc( sizeof(xmlList)))) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for list");
+    if (NULL == (l = (xmlListPtr)xmlMalloc(sizeof(xmlList))))
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for list");
         return (NULL);
     }
     /* Initialize the list to NULL */
     memset(l, 0, sizeof(xmlList));
-    
+
     /* Add the sentinel */
-    if (NULL ==(l->sentinel = (xmlLinkPtr )xmlMalloc(sizeof(xmlLink)))) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for sentinel");
-	xmlFree(l);
+    if (NULL == (l->sentinel = (xmlLinkPtr)xmlMalloc(sizeof(xmlLink))))
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for sentinel");
+        xmlFree(l);
         return (NULL);
     }
     l->sentinel->next = l->sentinel;
     l->sentinel->prev = l->sentinel;
     l->sentinel->data = NULL;
-    
+
     /* If there is a link deallocator, use it */
     if (deallocator != NULL)
         l->linkDeallocator = deallocator;
@@ -217,7 +223,7 @@ xmlListCreate(xmlListDeallocator deallocator, xmlListDataCompare compare)
         l->linkCompare = xmlLinkCompare;
     return l;
 }
-    
+
 /**
  * xmlListSearch:
  * @l:  a list
@@ -227,12 +233,12 @@ xmlListCreate(xmlListDeallocator deallocator, xmlListDataCompare compare)
  *
  * Returns the value associated to @data or NULL in case of error
  */
-void *
-xmlListSearch(xmlListPtr l, void *data) 
+void*
+xmlListSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     lk = xmlListLinkSearch(l, data);
     if (lk)
         return (lk->data);
@@ -248,12 +254,12 @@ xmlListSearch(xmlListPtr l, void *data)
  *
  * Returns the value associated to @data or NULL in case of error
  */
-void *
-xmlListReverseSearch(xmlListPtr l, void *data) 
+void*
+xmlListReverseSearch(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     lk = xmlListLinkReverseSearch(l, data);
     if (lk)
         return (lk->data);
@@ -270,18 +276,19 @@ xmlListReverseSearch(xmlListPtr l, void *data)
  * Returns 0 in case of success, 1 in case of failure
  */
 int
-xmlListInsert(xmlListPtr l, void *data) 
+xmlListInsert(xmlListPtr l, void* data)
 {
     xmlLinkPtr lkPlace, lkNew;
 
     if (l == NULL)
-        return(1);
+        return (1);
     lkPlace = xmlListLowerSearch(l, data);
     /* Add the new link */
-    lkNew = (xmlLinkPtr) xmlMalloc(sizeof(xmlLink));
-    if (lkNew == NULL) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for new link");
+    lkNew = (xmlLinkPtr)xmlMalloc(sizeof(xmlLink));
+    if (lkNew == NULL)
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for new link");
         return (1);
     }
     lkNew->data = data;
@@ -302,18 +309,19 @@ xmlListInsert(xmlListPtr l, void *data)
  *
  * Returns 0 in case of success, 1 in case of failure
  */
-int xmlListAppend(xmlListPtr l, void *data) 
+int xmlListAppend(xmlListPtr l, void* data)
 {
     xmlLinkPtr lkPlace, lkNew;
 
     if (l == NULL)
-        return(1);
+        return (1);
     lkPlace = xmlListHigherSearch(l, data);
     /* Add the new link */
-    lkNew = (xmlLinkPtr) xmlMalloc(sizeof(xmlLink));
-    if (lkNew == NULL) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for new link");
+    lkNew = (xmlLinkPtr)xmlMalloc(sizeof(xmlLink));
+    if (lkNew == NULL)
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for new link");
         return (0);
     }
     lkNew->data = data;
@@ -350,15 +358,16 @@ void xmlListDelete(xmlListPtr l)
  * Returns 1 if a deallocation occured, or 0 if not found
  */
 int
-xmlListRemoveFirst(xmlListPtr l, void *data)
+xmlListRemoveFirst(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
-    
+
     if (l == NULL)
-        return(0);
+        return (0);
     /*Find the first instance of this data */
     lk = xmlListLinkSearch(l, data);
-    if (lk != NULL) {
+    if (lk != NULL)
+    {
         xmlLinkDeallocator(l, lk);
         return 1;
     }
@@ -375,16 +384,17 @@ xmlListRemoveFirst(xmlListPtr l, void *data)
  * Returns 1 if a deallocation occured, or 0 if not found
  */
 int
-xmlListRemoveLast(xmlListPtr l, void *data)
+xmlListRemoveLast(xmlListPtr l, void* data)
 {
     xmlLinkPtr lk;
-    
+
     if (l == NULL)
-        return(0);
+        return (0);
     /*Find the last instance of this data */
     lk = xmlListLinkReverseSearch(l, data);
-    if (lk != NULL) {
-	xmlLinkDeallocator(l, lk);
+    if (lk != NULL)
+    {
+        xmlLinkDeallocator(l, lk);
         return 1;
     }
     return 0;
@@ -400,12 +410,12 @@ xmlListRemoveLast(xmlListPtr l, void *data)
  * Returns the number of deallocation, or 0 if not found
  */
 int
-xmlListRemoveAll(xmlListPtr l, void *data)
+xmlListRemoveAll(xmlListPtr l, void* data)
 {
-    int count=0;
-    
+    int count = 0;
+
     if (l == NULL)
-        return(0);
+        return (0);
 
     while (xmlListRemoveFirst(l, data))
         count++;
@@ -421,12 +431,13 @@ xmlListRemoveAll(xmlListPtr l, void *data)
 void
 xmlListClear(xmlListPtr l)
 {
-    xmlLinkPtr  lk;
-    
+    xmlLinkPtr lk;
+
     if (l == NULL)
         return;
     lk = l->sentinel->next;
-    while (lk != l->sentinel) {
+    while (lk != l->sentinel)
+    {
         xmlLinkPtr next = lk->next;
 
         xmlLinkDeallocator(l, lk);
@@ -446,7 +457,7 @@ int
 xmlListEmpty(xmlListPtr l)
 {
     if (l == NULL)
-        return(-1);
+        return (-1);
     return (l->sentinel->next == l->sentinel);
 }
 
@@ -458,14 +469,14 @@ xmlListEmpty(xmlListPtr l)
  *
  * Returns the first element in the list, or NULL
  */
-xmlLinkPtr 
+xmlLinkPtr
 xmlListFront(xmlListPtr l)
 {
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     return (l->sentinel->next);
 }
-    
+
 /**
  * xmlListEnd:
  * @l:  a list
@@ -474,14 +485,14 @@ xmlListFront(xmlListPtr l)
  *
  * Returns the last element in the list, or NULL
  */
-xmlLinkPtr 
+xmlLinkPtr
 xmlListEnd(xmlListPtr l)
 {
     if (l == NULL)
-        return(NULL);
+        return (NULL);
     return (l->sentinel->prev);
 }
-    
+
 /**
  * xmlListSize:
  * @l:  a list
@@ -494,12 +505,13 @@ int
 xmlListSize(xmlListPtr l)
 {
     xmlLinkPtr lk;
-    int count=0;
+    int count = 0;
 
     if (l == NULL)
-        return(-1);
+        return (-1);
     /* TODO: keep a counter in xmlList instead */
-    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next, count++);
+    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next, count++)
+        ;
     return count;
 }
 
@@ -539,18 +551,19 @@ xmlListPopBack(xmlListPtr l)
  * Returns 1 if successful, 0 otherwise
  */
 int
-xmlListPushFront(xmlListPtr l, void *data) 
+xmlListPushFront(xmlListPtr l, void* data)
 {
     xmlLinkPtr lkPlace, lkNew;
 
     if (l == NULL)
-        return(0);
+        return (0);
     lkPlace = l->sentinel;
     /* Add the new link */
-    lkNew = (xmlLinkPtr) xmlMalloc(sizeof(xmlLink));
-    if (lkNew == NULL) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for new link");
+    lkNew = (xmlLinkPtr)xmlMalloc(sizeof(xmlLink));
+    if (lkNew == NULL)
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for new link");
         return (0);
     }
     lkNew->data = data;
@@ -571,17 +584,18 @@ xmlListPushFront(xmlListPtr l, void *data)
  * Returns 1 if successful, 0 otherwise
  */
 int
-xmlListPushBack(xmlListPtr l, void *data) 
+xmlListPushBack(xmlListPtr l, void* data)
 {
     xmlLinkPtr lkPlace, lkNew;
 
     if (l == NULL)
-        return(0);
+        return (0);
     lkPlace = l->sentinel->prev;
     /* Add the new link */
-    if (NULL ==(lkNew = (xmlLinkPtr )xmlMalloc(sizeof(xmlLink)))) {
-        xmlGenericError(xmlGenericErrorContext, 
-		        "Cannot initialize memory for new link");
+    if (NULL == (lkNew = (xmlLinkPtr)xmlMalloc(sizeof(xmlLink))))
+    {
+        xmlGenericError(xmlGenericErrorContext,
+                        "Cannot initialize memory for new link");
         return (0);
     }
     lkNew->data = data;
@@ -600,11 +614,11 @@ xmlListPushBack(xmlListPtr l, void *data)
  *
  * Returns a pointer to the data referenced from this link
  */
-void *
+void*
 xmlLinkGetData(xmlLinkPtr lk)
 {
     if (lk == NULL)
-        return(NULL);
+        return (NULL);
     return lk->data;
 }
 
@@ -623,7 +637,8 @@ xmlListReverse(xmlListPtr l)
     if (l == NULL)
         return;
     lkPrev = l->sentinel;
-    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next) {
+    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next)
+    {
         lkPrev->next = lkPrev->prev;
         lkPrev->prev = lk;
         lkPrev = lk;
@@ -643,7 +658,7 @@ void
 xmlListSort(xmlListPtr l)
 {
     xmlListPtr lTemp;
-    
+
     if (l == NULL)
         return;
     if (xmlListEmpty(l))
@@ -655,7 +670,7 @@ xmlListSort(xmlListPtr l)
      * an insert. This is slow...
      */
 
-    if (NULL ==(lTemp = xmlListDup(l)))
+    if (NULL == (lTemp = xmlListDup(l)))
         return;
     xmlListClear(l);
     xmlListMerge(l, lTemp);
@@ -673,14 +688,16 @@ xmlListSort(xmlListPtr l)
  * apply the walker function to it
  */
 void
-xmlListWalk(xmlListPtr l, xmlListWalker walker, const void *user) {
+xmlListWalk(xmlListPtr l, xmlListWalker walker, const void* user)
+{
     xmlLinkPtr lk;
 
     if ((l == NULL) || (walker == NULL))
         return;
-    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next) {
+    for (lk = l->sentinel->next; lk != l->sentinel; lk = lk->next)
+    {
         if ((walker(lk->data, user)) == 0)
-                break;
+            break;
     }
 }
 
@@ -694,14 +711,16 @@ xmlListWalk(xmlListPtr l, xmlListWalker walker, const void *user) {
  * apply the walker function to it
  */
 void
-xmlListReverseWalk(xmlListPtr l, xmlListWalker walker, const void *user) {
+xmlListReverseWalk(xmlListPtr l, xmlListWalker walker, const void* user)
+{
     xmlLinkPtr lk;
 
     if ((l == NULL) || (walker == NULL))
         return;
-    for (lk = l->sentinel->prev; lk != l->sentinel; lk = lk->prev) {
+    for (lk = l->sentinel->prev; lk != l->sentinel; lk = lk->prev)
+    {
         if ((walker(lk->data, user)) == 0)
-                break;
+            break;
     }
 }
 
@@ -728,20 +747,20 @@ xmlListMerge(xmlListPtr l1, xmlListPtr l2)
  * 
  * Returns a new copy of the list or NULL in case of error
  */
-xmlListPtr 
+xmlListPtr
 xmlListDup(const xmlListPtr old)
 {
     xmlListPtr cur;
 
     if (old == NULL)
-        return(NULL);
+        return (NULL);
     /* Hmmm, how to best deal with allocation issues when copying
      * lists. If there is a de-allocator, should responsibility lie with
      * the new list or the old list. Surely not both. I'll arbitrarily
      * set it to be the old list for the time being whilst I work out
      * the answer
      */
-    if (NULL ==(cur = xmlListCreate(NULL, old->linkCompare)))
+    if (NULL == (cur = xmlListCreate(NULL, old->linkCompare)))
         return (NULL);
     if (0 != xmlListCopy(cur, old))
         return NULL;
@@ -764,14 +783,16 @@ xmlListCopy(xmlListPtr cur, const xmlListPtr old)
     xmlLinkPtr lk;
 
     if ((old == NULL) || (cur == NULL))
-        return(1);
-    for (lk = old->sentinel->next; lk != old->sentinel; lk = lk->next) {
-        if (0 !=xmlListInsert(cur, lk->data)) {
+        return (1);
+    for (lk = old->sentinel->next; lk != old->sentinel; lk = lk->next)
+    {
+        if (0 != xmlListInsert(cur, lk->data))
+        {
             xmlListDelete(cur);
             return (1);
         }
     }
-    return (0);    
+    return (0);
 }
 /* xmlListUnique() */
 /* xmlListSwap */

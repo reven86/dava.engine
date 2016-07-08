@@ -24,34 +24,36 @@ ImplementObjectType(FCDAnimationChannel);
 ImplementParameterObject(FCDAnimationChannel, FCDAnimationCurve, curves, new FCDAnimationCurve(parent->GetDocument(), parent));
 
 FCDAnimationChannel::FCDAnimationChannel(FCDocument* document, FCDAnimation* _parent)
-:	FCDObject(document), parent(_parent)
-,	InitializeParameterNoArg(curves)
+    : FCDObject(document)
+    , parent(_parent)
+    , InitializeParameterNoArg(curves)
 {
 }
 
 FCDAnimationChannel::~FCDAnimationChannel()
 {
-	parent = NULL;
+    parent = NULL;
 }
 
 FCDAnimationChannel* FCDAnimationChannel::Clone(FCDAnimationChannel* clone) const
 {
-	if (clone == NULL) clone = new FCDAnimationChannel(const_cast<FCDocument*>(GetDocument()), NULL);
+    if (clone == NULL)
+        clone = new FCDAnimationChannel(const_cast<FCDocument*>(GetDocument()), NULL);
 
-	// Clone the curves
-	for (const FCDAnimationCurve** it = curves.begin(); it != curves.end(); ++it)
-	{
-		FCDAnimationCurve* clonedCurve = clone->AddCurve();
-		(*it)->Clone(clonedCurve, false);
-	}
+    // Clone the curves
+    for (const FCDAnimationCurve** it = curves.begin(); it != curves.end(); ++it)
+    {
+        FCDAnimationCurve* clonedCurve = clone->AddCurve();
+        (*it)->Clone(clonedCurve, false);
+    }
 
-	return clone;
+    return clone;
 }
 
 FCDAnimationCurve* FCDAnimationChannel::AddCurve()
 {
-	FCDAnimationCurve* curve = new FCDAnimationCurve(GetDocument(), this);
-	curves.push_back(curve);
-	SetNewChildFlag();
-	return curve;
+    FCDAnimationCurve* curve = new FCDAnimationCurve(GetDocument(), this);
+    curves.push_back(curve);
+    SetNewChildFlag();
+    return curve;
 }

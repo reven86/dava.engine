@@ -1,31 +1,3 @@
-/*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Renderer.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/RHI/rhi_ShaderCache.h"
@@ -36,6 +8,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RenderCallbacks.h"
+#include "Render/Image/Image.h"
+#include "Render/Texture.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -52,10 +27,24 @@ DynamicBindings dynamicBindings;
 RuntimeTextures runtimeTextures;
 RenderStats stats;
 
-int32 framebufferWidth;
-int32 framebufferHeight;
+rhi::ResetParam resetParams;
 
 ScreenShotCallbackDelegate* screenshotCallback = nullptr;
+
+static void
+rhiScreenShotCallback(uint32 width, uint32 height, const void* rgba)
+{
+    if (screenshotCallback)
+    {
+        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, static_cast<const uint8*>(rgba));
+
+        if (img)
+        {
+            (*screenshotCallback)(img);
+            img->Release();
+        }
+    }
+}
 }
 
 static Mutex renderCmdExecSync;
@@ -65,9 +54,6 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     DVASSERT(!ininialized);
 
     api = _api;
-
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
     if (nullptr == params.FrameCommandExecutionSync)
     {
@@ -79,9 +65,16 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::SetHardwareSupportedFormats();
-    GPUFamilyDescriptor::SetupGPUParameters();
+
+    resetParams.width = params.width;
+    resetParams.height = params.height;
+    resetParams.vsyncEnabled = params.vsyncEnabled;
+    resetParams.window = params.window;
+    resetParams.fullScreen = params.fullScreen;
 
     ininialized = true;
+    //must be called after setting ininialized in true
+    Texture::SetDefaultGPU(DeviceInfo::GetGPUFamily());
 }
 
 void Uninitialize()
@@ -102,8 +95,7 @@ bool IsInitialized()
 
 void Reset(const rhi::ResetParam& params)
 {
-    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
+    resetParams = params;
 
     rhi::Reset(params);
 }
@@ -130,6 +122,20 @@ void SetDesiredFPS(int32 fps)
     desiredFPS = fps;
 }
 
+void SetVSyncEnabled(bool enable)
+{
+    if (resetParams.vsyncEnabled != enable)
+    {
+        resetParams.vsyncEnabled = enable;
+        rhi::Reset(resetParams);
+    }
+}
+
+bool IsVSyncEnabled()
+{
+    return resetParams.vsyncEnabled;
+}
+
 RenderOptions* GetOptions()
 {
     DVASSERT(ininialized);
@@ -153,18 +159,18 @@ RenderStats& GetRenderStats()
 
 int32 GetFramebufferWidth()
 {
-    return framebufferWidth;
+    return static_cast<int32>(resetParams.width);
 }
 
 int32 GetFramebufferHeight()
 {
-    return framebufferHeight;
+    return static_cast<int32>(resetParams.height);
 }
 
 void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
 {
     screenshotCallback = _screenShotCallback;
-    //RHI_COMPLETE
+    rhi::TakeScreenshot(&rhiScreenShotCallback);
 }
 
 void BeginFrame()

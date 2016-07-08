@@ -19,10 +19,10 @@ FUSynchronizableObject::~FUSynchronizableObject()
 
 void FUSynchronizableObject::Lock()
 {
-	criticalSection.Enter();
+    criticalSection.Enter();
 }
 
 void FUSynchronizableObject::Unlock()
 {
-	criticalSection.Leave();
+    criticalSection.Leave();
 }

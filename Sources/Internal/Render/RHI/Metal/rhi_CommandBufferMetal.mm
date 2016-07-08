@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
 #include "rhi_Metal.h"
@@ -34,7 +6,7 @@
 #include "../Common/dbg_StatSet.h"
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 #include "Core/Core.h"
 #include "Debug/Profiler.h"
@@ -63,9 +35,22 @@ CommandBufferMetal_t
     id<MTLTexture> rt;
     bool ds_used;
     Handle cur_ib;
-    Handle cur_vb;
+    unsigned cur_vstream_count;
+    Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
+
+    void _ApplyVertexData();
 };
+
+void CommandBufferMetal_t::_ApplyVertexData()
+{
+    for (unsigned s = 0; s != cur_vstream_count; ++s)
+    {
+        id<MTLBuffer> vb = VertexBufferMetal::GetBuffer(cur_vb[s]);
+
+        [encoder setVertexBuffer:vb offset:0 atIndex:s];
+    }
+}
 
 struct
 SyncObjectMetal_t
@@ -164,7 +149,9 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         cb->rt = desc.colorAttachments[0].texture;
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
-        cb->cur_vb = InvalidHandle;
+        cb->cur_vstream_count = 0;
+        for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
+            cb->cur_vb[s] = InvalidHandle;
 
         pass->cmdBuf[0] = cb_h;
         cmdBuf[0] = cb_h;
@@ -185,7 +172,9 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             cb->rt = desc.colorAttachments[0].texture;
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
-            cb->cur_vb = InvalidHandle;
+            cb->cur_vstream_count = 0;
+            for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
+                cb->cur_vb[s] = InvalidHandle;
 
             pass->cmdBuf[i] = cb_h;
             cmdBuf[i] = cb_h;
@@ -231,6 +220,10 @@ metal_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
+    cb->cur_vstream_count = 0;
+    for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
+        cb->cur_vb[s] = InvalidHandle;
+
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
 }
 
@@ -261,6 +254,7 @@ metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
     cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->ds_used, cb->encoder);
+    cb->cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
     StatSet::IncStat(stat_SET_PS, 1);
 }
 
@@ -365,7 +359,7 @@ metal_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
-    cb->cur_vb = vb;
+    cb->cur_vb[streamIndex] = vb;
 
     StatSet::IncStat(stat_SET_VB, 1);
 }
@@ -484,7 +478,6 @@ metal_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
     MTLPrimitiveType ptype = MTLPrimitiveTypeTriangle;
     unsigned v_cnt = 0;
-    id<MTLBuffer> vb = VertexBufferMetal::GetBuffer(cb->cur_vb);
 
     switch (type)
     {
@@ -504,7 +497,7 @@ metal_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
         break;
     }
 
-    [cb->encoder setVertexBuffer:vb offset:0 atIndex:0]; // CRAP: assuming vdata is buffer#0
+    cb->_ApplyVertexData();
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
 
     StatSet::IncStat(stat_DP, 1);
@@ -533,7 +526,6 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     MTLPrimitiveType ptype = MTLPrimitiveTypeTriangle;
     unsigned i_cnt = 0;
     id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cb->cur_ib);
-    id<MTLBuffer> vb = VertexBufferMetal::GetBuffer(cb->cur_vb);
     MTLIndexType i_type = IndexBufferMetal::GetType(cb->cur_ib);
     unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
 
@@ -555,7 +547,104 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
         break;
     }
 
-    [cb->encoder setVertexBuffer:vb offset:firstVertex * cb->cur_stride atIndex:0]; // CRAP: assuming vdata is buffer#0
+    cb->_ApplyVertexData();
+    [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:i_off];
+
+    StatSet::IncStat(stat_DIP, 1);
+    switch (ptype)
+    {
+    case MTLPrimitiveTypeTriangle:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case MTLPrimitiveTypeTriangleStrip:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case MTLPrimitiveTypeLine:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 inst_count, uint32 prim_count)
+{
+    CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
+    MTLPrimitiveType ptype = MTLPrimitiveTypeTriangle;
+    unsigned v_cnt = 0;
+
+    switch (type)
+    {
+    case PRIMITIVE_TRIANGLELIST:
+        ptype = MTLPrimitiveTypeTriangle;
+        v_cnt = prim_count * 3;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        ptype = MTLPrimitiveTypeTriangleStrip;
+        v_cnt = 2 + prim_count;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        ptype = MTLPrimitiveTypeLine;
+        v_cnt = prim_count * 2;
+        break;
+    }
+
+    cb->_ApplyVertexData();
+    [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt instanceCount:inst_count];
+
+    StatSet::IncStat(stat_DP, 1);
+    switch (ptype)
+    {
+    case MTLPrimitiveTypeTriangle:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case MTLPrimitiveTypeTriangleStrip:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case MTLPrimitiveTypeLine:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 inst_count, uint32 prim_count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex, uint32 baseInst)
+{
+    CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
+    MTLPrimitiveType ptype = MTLPrimitiveTypeTriangle;
+    unsigned i_cnt = 0;
+    id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cb->cur_ib);
+    MTLIndexType i_type = IndexBufferMetal::GetType(cb->cur_ib);
+    unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
+
+    switch (type)
+    {
+    case PRIMITIVE_TRIANGLELIST:
+        ptype = MTLPrimitiveTypeTriangle;
+        i_cnt = prim_count * 3;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        ptype = MTLPrimitiveTypeTriangleStrip;
+        i_cnt = 2 + prim_count;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        ptype = MTLPrimitiveTypeLine;
+        i_cnt = prim_count * 2;
+        break;
+    }
+
+    cb->_ApplyVertexData();
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:i_off];
 
     StatSet::IncStat(stat_DIP, 1);
@@ -713,6 +802,8 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetSamplerState = &metal_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive = &metal_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive = &metal_CommandBuffer_DrawIndexedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedPrimitive = &metal_CommandBuffer_DrawInstancedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedIndexedPrimitive = &metal_CommandBuffer_DrawInstancedIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker = &metal_CommandBuffer_SetMarker;
 
     dispatch->impl_SyncObject_Create = &metal_SyncObject_Create;

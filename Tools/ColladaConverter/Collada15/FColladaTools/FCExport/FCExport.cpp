@@ -20,47 +20,49 @@
 int main(int argc, const char* argv[], char* envp[])
 {
 #ifdef WIN32
-	_environ = envp;
+    _environ = envp;
 #else //LINUX
-	environ = envp;
+    environ = envp;
 #endif //WIN32 and LINUX
-	if (argc != 3)
-	{
-		std::cout << "Expecting two arguments:" << std::endl;
-		std::cout << "FCExport.exe <input_filename> <output_filename>" <<std::endl;
-		exit(-1);
-	}
+    if (argc != 3)
+    {
+        std::cout << "Expecting two arguments:" << std::endl;
+        std::cout << "FCExport.exe <input_filename> <output_filename>" << std::endl;
+        exit(-1);
+    }
 
-	fstring inputFilename = TO_FSTRING(argv[1]);
-	fstring outputFilename = TO_FSTRING(argv[2]);
+    fstring inputFilename = TO_FSTRING(argv[1]);
+    fstring outputFilename = TO_FSTRING(argv[2]);
 
-	// Create an empty COLLADA document and import the given file.
-	FCollada::Initialize();
-	FCDocument* document = FCollada::NewTopDocument();
-	FUErrorSimpleHandler errorHandler;
-	FCollada::LoadDocumentFromFile(document, inputFilename.c_str());
-	if (errorHandler.IsSuccessful())
-	{
-		// Write out the COLLADA document.
-		std::cout << "Exporting: ";
-		FCollada::SaveDocument(document, outputFilename.c_str());
-		if (errorHandler.IsSuccessful())
-		{
-			std::cout << "Done." << std::endl;
-		}
-		else
-		{
-			std::cout << errorHandler.GetErrorString();
-			std::cout << std::endl << std::endl;
-		}
-	}
-	else
-	{
-		std::cout << errorHandler.GetErrorString();
-		std::cout << std::endl << std::endl;
-	}
+    // Create an empty COLLADA document and import the given file.
+    FCollada::Initialize();
+    FCDocument* document = FCollada::NewTopDocument();
+    FUErrorSimpleHandler errorHandler;
+    FCollada::LoadDocumentFromFile(document, inputFilename.c_str());
+    if (errorHandler.IsSuccessful())
+    {
+        // Write out the COLLADA document.
+        std::cout << "Exporting: ";
+        FCollada::SaveDocument(document, outputFilename.c_str());
+        if (errorHandler.IsSuccessful())
+        {
+            std::cout << "Done." << std::endl;
+        }
+        else
+        {
+            std::cout << errorHandler.GetErrorString();
+            std::cout << std::endl
+                      << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << errorHandler.GetErrorString();
+        std::cout << std::endl
+                  << std::endl;
+    }
 
-	SAFE_DELETE(document);
-	FCollada::Release();
-	return 0;
+    SAFE_DELETE(document);
+    FCollada::Release();
+    return 0;
 }

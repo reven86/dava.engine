@@ -19,39 +19,42 @@
 ImplementObjectType(FCDPhysicsRigidConstraintInstance);
 
 FCDPhysicsRigidConstraintInstance::FCDPhysicsRigidConstraintInstance(FCDocument* document, FCDPhysicsModelInstance* _parent, FCDPhysicsRigidConstraint* constraint)
-:	FCDEntityInstance(document, NULL, FCDEntity::PHYSICS_RIGID_CONSTRAINT), parent(_parent)
+    : FCDEntityInstance(document, NULL, FCDEntity::PHYSICS_RIGID_CONSTRAINT)
+    , parent(_parent)
 {
-	if (constraint != NULL)
-	{
-		SetRigidConstraint(constraint); 
-	}
+    if (constraint != NULL)
+    {
+        SetRigidConstraint(constraint);
+    }
 }
 
 FCDPhysicsRigidConstraintInstance::~FCDPhysicsRigidConstraintInstance()
 {
-	parent = NULL;
+    parent = NULL;
 }
 
 FCDEntityInstance* FCDPhysicsRigidConstraintInstance::Clone(FCDEntityInstance* _clone) const
 {
-	FCDPhysicsRigidConstraintInstance* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDPhysicsRigidConstraintInstance(const_cast<FCDocument*>(GetDocument()), NULL, NULL);
-	else if (_clone->HasType(FCDPhysicsRigidConstraintInstance::GetClassType())) clone = (FCDPhysicsRigidConstraintInstance*) _clone;
+    FCDPhysicsRigidConstraintInstance* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDPhysicsRigidConstraintInstance(const_cast<FCDocument*>(GetDocument()), NULL, NULL);
+    else if (_clone->HasType(FCDPhysicsRigidConstraintInstance::GetClassType()))
+        clone = (FCDPhysicsRigidConstraintInstance*)_clone;
 
-	Parent::Clone(_clone);
+    Parent::Clone(_clone);
 
-	if (clone != NULL)
-	{
-		// No interesting data to clone.
-	}
+    if (clone != NULL)
+    {
+        // No interesting data to clone.
+    }
 
-	return _clone;
+    return _clone;
 }
 
 void FCDPhysicsRigidConstraintInstance::SetRigidConstraint(
-		FCDPhysicsRigidConstraint* constraint)
+FCDPhysicsRigidConstraint* constraint)
 {
-	FUAssert(constraint != NULL, ;);
+    FUAssert(constraint != NULL, ;);
 
-	SetEntity(constraint); 
+    SetEntity(constraint);
 }

@@ -30,7 +30,7 @@ class FUParameter;
 	inline void Set##flag_name##Flag(bool value) { flags &= ~FLAG_##flag_name; flags |= FLAG_##flag_name * value; } \
 	inline void Set##flag_name##Flag() { flags |= FLAG_##flag_name; } \
 	inline void Reset##flag_name##Flag() { flags &= ~FLAG_##flag_name; } \
-	inline bool Get##flag_name##Flag() const { return (flags & FLAG_##flag_name) != 0; } 
+	inline bool Get##flag_name##Flag() const { return (flags & FLAG_##flag_name) != 0; }
 
 /** Use the following macro to set the number of
 	local flags declared by this class.
@@ -38,7 +38,6 @@ class FUParameter;
 #define DeclareFlagCount(count) \
 protected: \
 	static const uint32 nextAvailableBit = Parent::nextAvailableBit + count;
-
 
 /**
 	A trackable object which contains parameters.
@@ -51,52 +50,67 @@ protected: \
 class FCOLLADA_EXPORT FUParameterizable : public FUTrackable
 {
 private:
-	DeclareObjectType(FUTrackable);
+    DeclareObjectType(FUTrackable);
 
 protected:
-	/** A generic flag container. Contains notifications of object state. */
-	uint32 flags;
+    /** A generic flag container. Contains notifications of object state. */
+    uint32 flags;
 
 public:
-	DeclareFlag(Dirty, 0); /**< [EXPERIMENTAL] Generic Dirty Flag. Should be removed in future versions. */
-	DeclareFlag(ValueChanged, 1); /**< [EXPERIMENTAL] The value of a member has been changed.
+    DeclareFlag(Dirty, 0); /**< [EXPERIMENTAL] Generic Dirty Flag. Should be removed in future versions. */
+    DeclareFlag(ValueChanged, 1); /**< [EXPERIMENTAL] The value of a member has been changed.
 								        Examples: 1. the diffuse color changes from black to red.
 										2. The translation vector changes from {0,3,2} to {5,2,1}. */
-	DeclareFlag(StructureChanged, 2); /**< [EXPERIMENTAL] The structure of this object has changed.
+    DeclareFlag(StructureChanged, 2); /**< [EXPERIMENTAL] The structure of this object has changed.
 										Examples: 1. The effect of a material is changed.
 										2. A new transform is added to the scene node.
 										3. An effect parameter is removed from the effect's technique. */
-	DeclareFlagCount(3); /**< This class declares three flags. */
+    DeclareFlagCount(3); /**< This class declares three flags. */
 
 public:
-	/** Constructor. */
-	FUParameterizable();
+    /** Constructor. */
+    FUParameterizable();
 
-	/** Destructor. */
-	virtual ~FUParameterizable();
+    /** Destructor. */
+    virtual ~FUParameterizable();
 
-	/** Changes the value of one or more flags to a given value.
+    /** Changes the value of one or more flags to a given value.
 		@param f The mask of the flag(s) to set.
 		@param value The value to give these flags. */
-	inline void SetFlag(uint32 f, bool value) { flags &= ~f; flags |= f * value; }
+    inline void SetFlag(uint32 f, bool value)
+    {
+        flags &= ~f;
+        flags |= f * value;
+    }
 
-	/** Sets the value of one or more flags.
+    /** Sets the value of one or more flags.
 		When a flag is set, its value is 1.
 		@param f The mask of the flag(s) to set. */
-	inline void SetFlag(uint32 f) { flags |= f; }
+    inline void SetFlag(uint32 f)
+    {
+        flags |= f;
+    }
 
-	/** Retrieves the value of one or more flags.
+    /** Retrieves the value of one or more flags.
 		@param f The mask of the flag(s) to retrieve.
 		@return The value of the requested flags. */
-	inline uint32 TestFlag(uint32 f) const { return flags & f; }
-	
-	/** Resets the value of one or more flags.
+    inline uint32 TestFlag(uint32 f) const
+    {
+        return flags & f;
+    }
+
+    /** Resets the value of one or more flags.
 		When a flag is reset, its value is 0.
 		@param f The mask of the flag(s) to reset. */
-	inline void ClearFlag(uint32 f) { flags &= ~f; }
+    inline void ClearFlag(uint32 f)
+    {
+        flags &= ~f;
+    }
 
-	/** Value change notification. */
-	virtual void SetValueChange() {}
+    /** Value change notification. */
+    virtual void SetValueChange()
+    {
+    }
 };
 
 #endif // _FU_PARAMETERIZABLE_H_

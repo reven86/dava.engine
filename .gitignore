@@ -8,6 +8,7 @@ build/     # ignore all files in the build/ directory
 _build/    # ignore all files in the _build/ directory
 cmake_build/
 cmake_repo/
+cmake_prebuilt/
 xcuserdata/
 /xcuserdata
 /xcuserdata/
@@ -49,6 +50,7 @@ Projects/UnitTests/android/assets
 
 Projects/UnitTests/android/.settings/*
 .vs
+.tup
 AppPackages
 
 !/Libs/lib_CMake/win10/arm/Debug
@@ -57,6 +59,14 @@ AppPackages
 !/Libs/lib_CMake/win10/x64/Release
 !/Libs/lib_CMake/win10/Win32/Debug
 !/Libs/lib_CMake/win10/Win32/Release
+!/Libs/lib_CMake/win/x86/Release
+!/Libs/lib_CMake/win/x86/Debug
+!/Libs/lib_CMake/win/x86/NGT/Release
+!/Libs/lib_CMake/win/x86/NGT/Debug
+!/Libs/lib_CMake/win/x64/Release
+!/Libs/lib_CMake/win/x64/Debug
+!/Libs/lib_CMake/win/x64/NGT/Release
+!/Libs/lib_CMake/win/x64/NGT/Debug
 !/Sources/Internal/Debug
 Projects/TestBed/android/assets/
 Projects/TestBed/android/obj/
@@ -64,3 +74,4 @@ Projects/TestBed/android/bin/
 Projects/TestBed/android/libs/
 Projects/TestBed/android/gen/
 Projects/TestBed/android/.settings/
+global_setting.settings

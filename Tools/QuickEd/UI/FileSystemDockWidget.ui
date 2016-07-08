@@ -31,7 +31,7 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="LineEditExt" name="filterLine">
+     <widget class="QLineEdit" name="filterLine">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -40,6 +40,9 @@
       </property>
       <property name="placeholderText">
        <string>Filter</string>
+      </property>
+      <property name="clearButtonEnabled">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
@@ -56,13 +59,6 @@
    </layout>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>LineEditExt</class>
-   <extends>QLineEdit</extends>
-   <header>QtControls/lineeditext.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

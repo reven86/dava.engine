@@ -20,25 +20,25 @@
 
 namespace FUAssertion
 {
-    /** A functor that deals with assertions that fail. */
-	typedef FUStaticFunctor1<const char*, bool> FUAssertCallback;
+/** A functor that deals with assertions that fail. */
+typedef FUStaticFunctor1<const char*, bool> FUAssertCallback;
 
-	/** Set a functor to be called back on assertion fail.  If no callback
+/** Set a functor to be called back on assertion fail.  If no callback
 		is set, the default value is to break with a message box 
 		@param assertionCallback Ptr to the callback to send messages to. */
-	FCOLLADA_EXPORT void SetAssertionFailedCallback(FUAssertCallback* assertionCallback);
-	
-	/** [INTERNAL] Event-handler for failed assertions.
+FCOLLADA_EXPORT void SetAssertionFailedCallback(FUAssertCallback* assertionCallback);
+
+/** [INTERNAL] Event-handler for failed assertions.
         Do not use directly. We recommend you use FUBreak, FUFail or FUAssert. */
-	FCOLLADA_EXPORT bool OnAssertionFailed(const char* filename, uint32 line);
+FCOLLADA_EXPORT bool OnAssertionFailed(const char* filename, uint32 line);
 };
 
 #ifdef _DEBUG
 
 #ifndef __FILE__
 // This is unfortunately what we get on non-WIN
-#define __FILE__	"NOT_SET"
-#define __LINE__	0
+#define __FILE__ "NOT_SET"
+#define __LINE__ 0
 #endif
 
 /** Breaks into the debugger.

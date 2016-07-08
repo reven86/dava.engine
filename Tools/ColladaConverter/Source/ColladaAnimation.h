@@ -6,18 +6,17 @@
 
 namespace DAVA
 {
-	
 class ColladaAnimation
 {
 public:
-	ColladaAnimation();
-	~ColladaAnimation();
-	
-	std::string name;
-	float32 duration;
-	Map<ColladaSceneNode*, SceneNodeAnimation*> animations;
-	
-	void Assign();
+    ColladaAnimation();
+    ~ColladaAnimation();
+
+    std::string name;
+    float32 duration;
+    Map<ColladaSceneNode*, SceneNodeAnimation*> animations;
+
+    void Assign();
 };
 };
 					 

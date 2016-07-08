@@ -20,7 +20,7 @@
 ImplementObjectType(FCDEmitter);
 
 FCDEmitter::FCDEmitter(FCDocument* document)
-:	FCDEntity(document, "Emitter")
+    : FCDEntity(document, "Emitter")
 {
 }
 
@@ -30,15 +30,16 @@ FCDEmitter::~FCDEmitter()
 
 FCDEntity* FCDEmitter::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	FCDEmitter* clone = NULL;
-	if (_clone == NULL) _clone = clone = new FCDEmitter(const_cast<FCDocument*>(GetDocument()));
-	else if (_clone->HasType(FCDEmitter::GetClassType())) clone = (FCDEmitter*) _clone;
+    FCDEmitter* clone = NULL;
+    if (_clone == NULL)
+        _clone = clone = new FCDEmitter(const_cast<FCDocument*>(GetDocument()));
+    else if (_clone->HasType(FCDEmitter::GetClassType()))
+        clone = (FCDEmitter*)_clone;
 
-	Parent::Clone(_clone, cloneChildren);
+    Parent::Clone(_clone, cloneChildren);
 
-	if (clone != NULL)
-	{
-	}
-	return _clone;
+    if (clone != NULL)
+    {
+    }
+    return _clone;
 }
-

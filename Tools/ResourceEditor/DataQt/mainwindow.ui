@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>929</height>
+    <width>1205</width>
+    <height>969</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,16 +36,7 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>1</number>
     </property>
     <item>
@@ -61,7 +52,7 @@
     </size>
    </property>
    <property name="windowIcon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/settings.png</normaloff>:/QtIcons/settings.png</iconset>
    </property>
    <property name="floating">
@@ -69,6 +60,9 @@
    </property>
    <property name="windowTitle">
     <string>Properties</string>
+   </property>
+   <property name="layoutTags" stdset="0">
+    <string notr="true">dockProperties</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -78,16 +72,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -114,16 +99,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
        </layout>
@@ -141,16 +117,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -212,9 +179,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
-     <height>21</height>
+     <width>1205</width>
+     <height>22</height>
     </rect>
+   </property>
+   <property name="path" stdset="0">
+    <string/>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -224,19 +194,6 @@
      <property name="title">
       <string>Recent Projects</string>
      </property>
-    </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>Export</string>
-     </property>
-     <addaction name="actionExportPVRIOS"/>
-     <addaction name="actionExportPVRAndroid"/>
-     <addaction name="actionExportTegra"/>
-     <addaction name="actionExportMali"/>
-     <addaction name="actionExportAdreno"/>
-     <addaction name="actionExportDX11"/>
-     <addaction name="separator"/>
-     <addaction name="actionExportPNG"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -260,9 +217,9 @@
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
     <addaction name="separator"/>
+    <addaction name="actionExport"/>
     <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
     <addaction name="menuImport"/>
     <addaction name="separator"/>
    </widget>
@@ -323,6 +280,11 @@
      <addaction name="separator"/>
      <addaction name="actionReloadPNG"/>
     </widget>
+    <widget class="QMenu" name="menuTheme">
+     <property name="title">
+      <string>Theme</string>
+     </property>
+    </widget>
     <widget class="QMenu" name="menuToolbars">
      <property name="title">
       <string>Toolbars</string>
@@ -345,12 +307,14 @@
     <addaction name="menuTexturesForGPU"/>
     <addaction name="menuLightView"/>
     <addaction name="separator"/>
+    <addaction name="menuTheme"/>
     <addaction name="menuToolbars"/>
     <addaction name="menuDockWindows"/>
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
     <addaction name="actionShowStaticOcclusion"/>
+    <addaction name="actionEnableVisibilitySystem"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -410,6 +374,16 @@
      <addaction name="actionSpeedTree"/>
      <addaction name="actionUndefinedCollision"/>
     </widget>
+    <widget class="QMenu" name="menuVisibility_Check_System">
+     <property name="title">
+      <string>Visibility Check System</string>
+     </property>
+     <addaction name="actionEnableVisibilitySystem"/>
+     <addaction name="actionRefreshVisibilitySystem"/>
+     <addaction name="separator"/>
+     <addaction name="actionFixCurrentFrame"/>
+     <addaction name="actionReleaseCurrentFrame"/>
+    </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
@@ -420,7 +394,6 @@
     <addaction name="actionShowNotPassableLandscape"/>
     <addaction name="actionRulerTool"/>
     <addaction name="actionCustomColorsEditor"/>
-    <addaction name="actionVisibilityCheckTool"/>
     <addaction name="actionWayEditor"/>
     <addaction name="menuLandscape_2"/>
     <addaction name="separator"/>
@@ -428,6 +401,7 @@
     <addaction name="actionBuildStaticOcclusion"/>
     <addaction name="actionInvalidateStaticOcclusion"/>
     <addaction name="actionBeastAndSave"/>
+    <addaction name="menuVisibility_Check_System"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
@@ -460,6 +434,7 @@
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
+    <addaction name="actionToggleUseInstancing"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -550,16 +525,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -597,6 +563,12 @@
    <property name="windowTitle">
     <string>Scene Tree</string>
    </property>
+   <property name="layoutTags" stdset="0">
+    <stringlist>
+     <string>history</string>
+     <string>default</string>
+    </stringlist>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -605,16 +577,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -646,16 +609,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -671,8 +625,8 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="QtIcons.qrc">
-            <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
+           <iconset resource="Resources.qrc">
+            <normaloff>:/QtTools/Icons/close-10.png</normaloff>:/QtTools/Icons/close-10.png</iconset>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -710,16 +664,7 @@
    </attribute>
    <widget class="QWidget" name="dockLODEditorContent">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -733,7 +678,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>98</height>
          </rect>
         </property>
        </widget>
@@ -758,12 +703,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionForceFirstLODonLandscape"/>
    <addaction name="actionHeightMapEditor"/>
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
-   <addaction name="actionVisibilityCheckTool"/>
    <addaction name="actionWayEditor"/>
   </widget>
   <widget class="QToolBar" name="sceneToolBar">
@@ -840,16 +785,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -863,7 +799,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>90</height>
+          <height>98</height>
          </rect>
         </property>
        </widget>
@@ -880,7 +816,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/newscene.png</normaloff>:/QtIcons/newscene.png</iconset>
    </property>
    <property name="text">
@@ -898,7 +834,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/openscene.png</normaloff>:/QtIcons/openscene.png</iconset>
    </property>
    <property name="text">
@@ -910,7 +846,7 @@
   </action>
   <action name="actionSaveScene">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/savescene.png</normaloff>:/QtIcons/savescene.png</iconset>
    </property>
    <property name="text">
@@ -922,7 +858,7 @@
   </action>
   <action name="actionOpenProject">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/openproject.png</normaloff>:/QtIcons/openproject.png</iconset>
    </property>
    <property name="text">
@@ -946,7 +882,7 @@
   </action>
   <action name="actionLight">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/light.png</normaloff>:/QtIcons/light.png</iconset>
    </property>
    <property name="text">
@@ -960,7 +896,7 @@
   </action>
   <action name="actionCamera">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/camera.png</normaloff>:/QtIcons/camera.png</iconset>
    </property>
    <property name="text">
@@ -974,7 +910,7 @@
   </action>
   <action name="actionUserNode">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/user_object.png</normaloff>:/QtIcons/user_object.png</iconset>
    </property>
    <property name="text">
@@ -983,7 +919,7 @@
   </action>
   <action name="actionMaterialEditor">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/materialeditor.png</normaloff>:/QtIcons/materialeditor.png</iconset>
    </property>
    <property name="text">
@@ -998,7 +934,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_height.png</normaloff>:/QtIcons/land_height.png</iconset>
    </property>
    <property name="text">
@@ -1013,7 +949,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_tile.png</normaloff>:/QtIcons/land_tile.png</iconset>
    </property>
    <property name="text">
@@ -1025,7 +961,7 @@
   </action>
   <action name="actionTextureConverter">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/textureeditor.png</normaloff>:/QtIcons/textureeditor.png</iconset>
    </property>
    <property name="text">
@@ -1065,7 +1001,7 @@
   </action>
   <action name="actionShowSettings">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/settings.png</normaloff>:/QtIcons/settings.png</iconset>
    </property>
    <property name="text">
@@ -1074,7 +1010,7 @@
   </action>
   <action name="actionSwitchNode">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/switch.png</normaloff>:/QtIcons/switch.png</iconset>
    </property>
    <property name="text">
@@ -1086,7 +1022,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_unpassable.png</normaloff>:/QtIcons/land_unpassable.png</iconset>
    </property>
    <property name="text">
@@ -1104,7 +1040,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_ruler.png</normaloff>:/QtIcons/land_ruler.png</iconset>
    </property>
    <property name="text">
@@ -1140,7 +1076,7 @@
   </action>
   <action name="actionParticleEffectNode">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/effect.png</normaloff>:/QtIcons/effect.png</iconset>
    </property>
    <property name="text">
@@ -1160,7 +1096,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_move.png</normaloff>:/QtIcons/modify_move.png</iconset>
    </property>
    <property name="text">
@@ -1175,7 +1111,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_rotate.png</normaloff>:/QtIcons/modify_rotate.png</iconset>
    </property>
    <property name="text">
@@ -1190,7 +1126,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_scale.png</normaloff>:/QtIcons/modify_scale.png</iconset>
    </property>
    <property name="text">
@@ -1205,7 +1141,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_placeonland.png</normaloff>:/QtIcons/modify_placeonland.png</iconset>
    </property>
    <property name="text">
@@ -1223,7 +1159,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_snaptoland.png</normaloff>:/QtIcons/modify_snaptoland.png</iconset>
    </property>
    <property name="text">
@@ -1238,7 +1174,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/modify_select.png</normaloff>:/QtIcons/modify_select.png</iconset>
    </property>
    <property name="text">
@@ -1250,7 +1186,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/edit_undo.png</normaloff>:/QtIcons/edit_undo.png</iconset>
    </property>
    <property name="text">
@@ -1271,7 +1207,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/edit_redo.png</normaloff>:/QtIcons/edit_redo.png</iconset>
    </property>
    <property name="text">
@@ -1292,7 +1228,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/star.png</normaloff>:/QtIcons/star.png</iconset>
    </property>
    <property name="text">
@@ -1304,7 +1240,7 @@
   </action>
   <action name="actionModifyReset">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/ccancel.png</normaloff>:/QtIcons/ccancel.png</iconset>
    </property>
    <property name="text">
@@ -1313,7 +1249,7 @@
   </action>
   <action name="actionAddNewComponent">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/addcomponent.png</normaloff>:/QtIcons/addcomponent.png</iconset>
    </property>
    <property name="text">
@@ -1325,7 +1261,7 @@
   </action>
   <action name="actionAddNewEntity">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/add_green.png</normaloff>:/QtIcons/add_green.png</iconset>
    </property>
    <property name="text">
@@ -1337,7 +1273,7 @@
   </action>
   <action name="actionRemoveEntity">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/remove.png</normaloff>:/QtIcons/remove.png</iconset>
    </property>
    <property name="text">
@@ -1349,7 +1285,7 @@
   </action>
   <action name="actionConvertToShadow">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/shadow.png</normaloff>:/QtIcons/shadow.png</iconset>
    </property>
    <property name="text">
@@ -1416,7 +1352,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/light.png</normaloff>:/QtIcons/light.png</iconset>
    </property>
    <property name="text">
@@ -1428,7 +1364,7 @@
   </action>
   <action name="actionHelp">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/help.png</normaloff>:/QtIcons/help.png</iconset>
    </property>
    <property name="text">
@@ -1454,7 +1390,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/pivot_center.png</normaloff>:/QtIcons/pivot_center.png</iconset>
    </property>
    <property name="text">
@@ -1469,7 +1405,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/pivot_common.png</normaloff>:/QtIcons/pivot_common.png</iconset>
    </property>
    <property name="text">
@@ -1484,7 +1420,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/move_absolute.png</normaloff>
      <normalon>:/QtIcons/move_offset.png</normalon>:/QtIcons/move_absolute.png</iconset>
    </property>
@@ -1497,7 +1433,7 @@
   </action>
   <action name="actionCubemapEditor">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/cubemap.png</normaloff>:/QtIcons/cubemap.png</iconset>
    </property>
    <property name="text">
@@ -1506,7 +1442,7 @@
   </action>
   <action name="actionReloadSprites">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/refresh_particle.png</normaloff>:/QtIcons/refresh_particle.png</iconset>
    </property>
    <property name="text">
@@ -1528,7 +1464,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_custcolor.png</normaloff>:/QtIcons/land_custcolor.png</iconset>
    </property>
    <property name="text">
@@ -1543,7 +1479,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_visibility.png</normaloff>:/QtIcons/land_visibility.png</iconset>
    </property>
    <property name="text">
@@ -1555,7 +1491,7 @@
   </action>
   <action name="actionReloadTextures">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
    </property>
    <property name="text">
@@ -1662,7 +1598,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/hangingobjects.png</normaloff>:/QtIcons/hangingobjects.png</iconset>
    </property>
    <property name="text">
@@ -1671,7 +1607,7 @@
   </action>
   <action name="actionAddEmptyEntity">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/node.png</normaloff>:/QtIcons/node.png</iconset>
    </property>
    <property name="text">
@@ -1694,7 +1630,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/gizmo.png</normaloff>:/QtIcons/gizmo.png</iconset>
    </property>
    <property name="text">
@@ -1712,7 +1648,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/object_select.png</normaloff>:/QtIcons/object_select.png</iconset>
    </property>
    <property name="text">
@@ -1721,7 +1657,7 @@
   </action>
   <action name="actionExpandSceneTree">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/expand_all.png</normaloff>:/QtIcons/expand_all.png</iconset>
    </property>
    <property name="text">
@@ -1733,7 +1669,7 @@
   </action>
   <action name="actionCollapseSceneTree">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/collapse_all.png</normaloff>:/QtIcons/collapse_all.png</iconset>
    </property>
    <property name="text">
@@ -1768,7 +1704,7 @@
   </action>
   <action name="actionConvertModifiedTextures">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
@@ -1821,7 +1757,7 @@
   </action>
   <action name="actionEditor_Sprite">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/map.png</normaloff>:/QtIcons/map.png</iconset>
    </property>
    <property name="text">
@@ -1830,7 +1766,7 @@
   </action>
   <action name="actionEditor_2D_Camera">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/camera.png</normaloff>:/QtIcons/camera.png</iconset>
    </property>
    <property name="text">
@@ -1839,7 +1775,7 @@
   </action>
   <action name="actionAddLandscape">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/land_settings.png</normaloff>:/QtIcons/land_settings.png</iconset>
    </property>
    <property name="text">
@@ -1864,7 +1800,7 @@
   </action>
   <action name="actionSetLightViewMode">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/light_settings.png</normaloff>:/QtIcons/light_settings.png</iconset>
    </property>
    <property name="text">
@@ -1895,7 +1831,7 @@
   </action>
   <action name="actionImageSplitter">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/image_splitter.png</normaloff>:/QtIcons/image_splitter.png</iconset>
    </property>
    <property name="text">
@@ -1904,7 +1840,7 @@
   </action>
   <action name="actionAddWind">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/wind.png</normaloff>:/QtIcons/wind.png</iconset>
    </property>
    <property name="text">
@@ -1916,7 +1852,7 @@
   </action>
   <action name="actionAddVegetation">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/grass.png</normaloff>:/QtIcons/grass.png</iconset>
    </property>
    <property name="text">
@@ -1925,7 +1861,7 @@
   </action>
   <action name="actionReloadShader">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/reload_shaders.png</normaloff>:/QtIcons/reload_shaders.png</iconset>
    </property>
    <property name="text">
@@ -1937,7 +1873,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/switches_with_different_lods.png</normaloff>:/QtIcons/switches_with_different_lods.png</iconset>
    </property>
    <property name="text">
@@ -1946,7 +1882,7 @@
   </action>
   <action name="actionCenterPivotPoint">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/pivot_mote_to_center.png</normaloff>:/QtIcons/pivot_mote_to_center.png</iconset>
    </property>
    <property name="text">
@@ -1955,7 +1891,7 @@
   </action>
   <action name="actionZeroPivotPoint">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/pivot_move_to_zero.png</normaloff>:/QtIcons/pivot_move_to_zero.png</iconset>
    </property>
    <property name="text">
@@ -1964,7 +1900,7 @@
   </action>
   <action name="actionLockTransform">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/lock_add.png</normaloff>:/QtIcons/lock_add.png</iconset>
    </property>
    <property name="text">
@@ -1973,7 +1909,7 @@
   </action>
   <action name="actionUnlockTransform">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/lock_delete.png</normaloff>:/QtIcons/lock_delete.png</iconset>
    </property>
    <property name="text">
@@ -2014,7 +1950,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/so.png</normaloff>:/QtIcons/so.png</iconset>
    </property>
    <property name="text">
@@ -2057,7 +1993,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/path.png</normaloff>:/QtIcons/path.png</iconset>
    </property>
    <property name="text">
@@ -2066,7 +2002,7 @@
   </action>
   <action name="actionAddPath">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/path.png</normaloff>:/QtIcons/path.png</iconset>
    </property>
    <property name="text">
@@ -2078,7 +2014,7 @@
   </action>
   <action name="actionAddPathComponent">
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/path.png</normaloff>:/QtIcons/path.png</iconset>
    </property>
    <property name="text">
@@ -2117,7 +2053,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/snapcamera.png</normaloff>:/QtIcons/snapcamera.png</iconset>
    </property>
    <property name="text">
@@ -2147,7 +2083,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="QtIcons.qrc">
+    <iconset resource="Resources.qrc">
      <normaloff>:/QtIcons/shadow.png</normaloff>:/QtIcons/shadow.png</iconset>
    </property>
    <property name="text">
@@ -2172,6 +2108,79 @@
   <action name="actionDumpSprites">
    <property name="text">
     <string>Sprites</string>
+   </property>
+  </action>
+  <action name="actionAddVisibilityComponent">
+   <property name="text">
+    <string>Add Visbility Check Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Visibility Component</string>
+   </property>
+  </action>
+  <action name="actionForceFirstLODonLandscape">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/QtIconsTextureDialog/zoom_100.png</normaloff>:/QtIconsTextureDialog/zoom_100.png</iconset>
+   </property>
+   <property name="text">
+    <string>Force first LOD on Landscape</string>
+   </property>
+  </action>
+  <action name="actionEnableVisibilitySystem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/QtIcons/eye.png</normaloff>:/QtIcons/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+V</string>
+   </property>
+  </action>
+  <action name="actionFixCurrentFrame">
+   <property name="text">
+    <string>Fix Current Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+V</string>
+   </property>
+  </action>
+  <action name="actionReleaseCurrentFrame">
+   <property name="text">
+    <string>Release Fixed Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+V</string>
+   </property>
+  </action>
+  <action name="actionRefreshVisibilitySystem">
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Visibility System</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+R</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </action>
+  <action name="actionToggleUseInstancing">
+   <property name="text">
+    <string>Toggle Use Instancing by Landscape</string>
    </property>
   </action>
  </widget>
@@ -2241,7 +2250,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="QtIcons.qrc"/>
+  <include location="Resources.qrc"/>
  </resources>
  <connections/>
 </ui>

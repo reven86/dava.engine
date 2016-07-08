@@ -4,13 +4,16 @@
 
 namespace YAML
 {
-  void *BuildGraphOfNextDocument(Parser& parser, GraphBuilderInterface& graphBuilder)
-  {
+void* BuildGraphOfNextDocument(Parser& parser, GraphBuilderInterface& graphBuilder)
+{
     GraphBuilderAdapter eventHandler(graphBuilder);
-    if (parser.HandleNextDocument(eventHandler)) {
-      return eventHandler.RootNode();
-    } else {
-      return NULL;
+    if (parser.HandleNextDocument(eventHandler))
+    {
+        return eventHandler.RootNode();
     }
-  }
+    else
+    {
+        return NULL;
+    }
+}
 }

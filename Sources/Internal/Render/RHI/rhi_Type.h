@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __RHI_TYPE_H__
 #define __RHI_TYPE_H__
 
@@ -50,13 +21,16 @@ using DAVA::Size2i;
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
-static const uint32 DefaultDepthBuffer = (uint32)(-2);
+static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
+
+typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
 
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
     RESOURCE_INDEX_BUFFER = 12,
     RESOURCE_QUERY_BUFFER = 13,
+    RESOURCE_PERFQUERY_SET = 14,
     RESOURCE_CONST_BUFFER = 22,
     RESOURCE_TEXTURE = 31,
 
@@ -197,6 +171,16 @@ VertexDataTypeName(VertexDataType t)
     }
 }
 
+//------------------------------------------------------------------------------
+
+enum VertexDataFrequency
+{
+    VDF_PER_VERTEX = 1,
+    VDF_PER_INSTANCE = 2
+};
+
+//------------------------------------------------------------------------------
+
 class
 VertexLayout
 {
@@ -204,8 +188,12 @@ public:
     VertexLayout();
     ~VertexLayout();
 
-    unsigned Stride() const;
+    unsigned Stride(unsigned stream_i = 0) const;
+    unsigned StreamCount() const;
+    VertexDataFrequency StreamFrequency(unsigned stream_i) const;
     unsigned ElementCount() const;
+
+    unsigned ElementStreamIndex(unsigned elem_i) const;
     VertexSemantics ElementSemantics(unsigned elem_i) const;
     unsigned ElementSemanticsIndex(unsigned elem_i) const;
     VertexDataType ElementDataType(unsigned elem_i) const;
@@ -217,14 +205,15 @@ public:
     VertexLayout& operator=(const VertexLayout& src);
 
     void Clear();
+    void AddStream(VertexDataFrequency freq = VDF_PER_VERTEX);
     void AddElement(VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
     void InsertElement(unsigned pos, VertexSemantics usage, unsigned usage_i, VertexDataType type, unsigned dimension);
 
     static bool IsCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout);
     static bool MakeCompatible(const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout);
 
-    void Save(DAVA::File* out) const;
-    void Load(DAVA::File* in);
+    bool Save(DAVA::File* out) const;
+    bool Load(DAVA::File* in);
 
     void Dump() const;
 
@@ -235,7 +224,8 @@ public:
 private:
     enum
     {
-        MaxElemCount = 8
+        MaxElemCount = 8,
+        MaxStreamCount = 2
     };
 
     struct
@@ -246,6 +236,18 @@ private:
         uint32 data_type : 8;
         uint32 data_count : 8;
     };
+
+    struct
+    Stream
+    {
+        uint32 first_elem : 8;
+        uint32 elem_count : 8;
+        uint32 freq : 8;
+        uint32 __pad : 8;
+    };
+
+    Stream _stream[MaxStreamCount];
+    uint32 _stream_count;
 
     Element _elem[MaxElemCount];
     uint32 _elem_count;
@@ -345,7 +347,15 @@ enum TextureFormat
     TEXTURE_FORMAT_EAC_R11G11_SIGNED,
 
     TEXTURE_FORMAT_D16,
-    TEXTURE_FORMAT_D24S8
+    TEXTURE_FORMAT_D24S8,
+
+    TEXTURE_FORMAT_R16F,
+    TEXTURE_FORMAT_RG16F,
+    TEXTURE_FORMAT_RGBA16F,
+
+    TEXTURE_FORMAT_R32F,
+    TEXTURE_FORMAT_RG32F,
+    TEXTURE_FORMAT_RGBA32F,
 };
 
 enum TextureFace
@@ -644,6 +654,7 @@ struct Descriptor
     uint32 stencilEnabled : 1;
     uint32 stencilTwoSided : 1;
     uint32 pad : 25;
+    uint32 pad64 : 32;
 
     struct
     {
@@ -665,6 +676,7 @@ struct Descriptor
         , stencilEnabled(false)
         , stencilTwoSided(false)
         , pad(0)
+        , pad64(0)
     {
         stencilFront.readMask = 0xFF;
         stencilFront.writeMask = 0xFF;
@@ -783,6 +795,8 @@ RenderPassConfig
     DepthStencilBuffer depthStencilBuffer;
 
     Handle queryBuffer;
+    uint32 PerfQueryIndex0;
+    uint32 PerfQueryIndex1;
     Viewport viewport;
 
     int priority;
@@ -790,6 +804,8 @@ RenderPassConfig
 
     RenderPassConfig()
         : queryBuffer(InvalidHandle)
+        , PerfQueryIndex0(DAVA::InvalidIndex)
+        , PerfQueryIndex1(DAVA::InvalidIndex)
         , priority(0)
         , invertCulling(0)
     {

@@ -1,31 +1,3 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
 #include "UILayoutSystem.h"
 
 #include "UILinearLayoutComponent.h"
@@ -83,12 +55,26 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
         container = FindNotDependentOnChildrenControl(container);
     }
 
-    CollectControls(container);
+    CollectControls(container, true);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
 
     ApplySizesAndPositions();
+
+    layoutData.clear();
+}
+
+void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
+{
+    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
+
+    CollectControls(control, false);
+
+    ProcessAxis(Vector2::AXIS_X);
+    ProcessAxis(Vector2::AXIS_Y);
+
+    ApplyPositions();
 
     layoutData.clear();
 }
@@ -109,20 +95,25 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
         }
     }
 
+    if (result->GetParent())
+    {
+        result = result->GetParent();
+    }
+
     return result;
 }
 
-void UILayoutSystem::CollectControls(UIControl* control)
+void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
 {
     layoutData.clear();
     layoutData.emplace_back(ControlLayoutData(control));
-    CollectControlChildren(control, 0);
+    CollectControlChildren(control, 0, recursive);
 }
 
-void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex)
+void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
 {
     int32 index = static_cast<int32>(layoutData.size());
-    const List<UIControl*> &children = control->GetChildren();
+    const List<UIControl*>& children = control->GetChildren();
 
     layoutData[parentIndex].SetFirstChildIndex(index);
     layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
@@ -132,10 +123,13 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
         layoutData.emplace_back(ControlLayoutData(child));
     }
 
-    for (UIControl* child : children)
+    if (recursive)
     {
-        CollectControlChildren(child, index);
-        index++;
+        for (UIControl* child : children)
+        {
+            CollectControlChildren(child, index, recursive);
+            index++;
+        }
     }
 }
 
@@ -170,7 +164,12 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
             {
                 LinearLayoutAlgorithm alg(layoutData, isRtl);
 
-                alg.SetInverse(isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL);
+                bool inverse = linearLayoutComponent->IsInverse();
+                if (isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetAxis() == Vector2::AXIS_X)
+                {
+                    inverse = !inverse;
+                }
+                alg.SetInverse(inverse);
                 alg.SetSkipInvisible(linearLayoutComponent->IsSkipInvisibleControls());
 
                 alg.SetPadding(linearLayoutComponent->GetPadding());
@@ -197,4 +196,11 @@ void UILayoutSystem::ApplySizesAndPositions()
     }
 }
 
+void UILayoutSystem::ApplyPositions()
+{
+    for (ControlLayoutData& data : layoutData)
+    {
+        data.ApplyOnlyPositionLayoutToControl();
+    }
+}
 }

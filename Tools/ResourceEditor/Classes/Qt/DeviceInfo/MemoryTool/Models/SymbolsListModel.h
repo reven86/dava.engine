@@ -51,5 +51,5 @@ protected:
 
 private:
     QString filter;
-    bool hideStdAndUnresolved = true;   // If flag is set then filter out unresolved names and names beginning from std::
+    bool hideStdAndUnresolved = true; // If flag is set then filter out unresolved names and names beginning from std::
 };

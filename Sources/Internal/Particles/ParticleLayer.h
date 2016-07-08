@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_PARTICLE_LAYER_H__
 #define __DAVAENGINE_PARTICLE_LAYER_H__
 
@@ -43,9 +14,8 @@
 
 namespace DAVA
 {
-
 class ParticleEmitter;
-	
+
 /**	
 	In most cases you'll not need to use this class directly 
 	and should use ParticleEffect instead. 
@@ -55,22 +25,22 @@ class ParticleEmitter;
 	- You want to change something on the fly inside layer
  */
 struct ParticleLayer : public BaseObject
-{	
-	enum eType 
-	{
-		TYPE_SINGLE_PARTICLE,
-		TYPE_PARTICLES,				// default for any particle layer loaded from yaml file
-		TYPE_SUPEREMITTER_PARTICLES
-	};
+{
+    enum eType
+    {
+        TYPE_SINGLE_PARTICLE,
+        TYPE_PARTICLES, // default for any particle layer loaded from yaml file
+        TYPE_SUPEREMITTER_PARTICLES
+    };
 
-	enum eParticleOrientation
-	{
-		PARTICLE_ORIENTATION_CAMERA_FACING = 1<<0, //default
-		PARTICLE_ORIENTATION_X_FACING = 1<<1,
-		PARTICLE_ORIENTATION_Y_FACING = 1<<2,
-		PARTICLE_ORIENTATION_Z_FACING = 1<<3,
-		PARTICLE_ORIENTATION_WORLD_ALIGN = 1<<4 
-	};
+    enum eParticleOrientation
+    {
+        PARTICLE_ORIENTATION_CAMERA_FACING = 1 << 0, //default
+        PARTICLE_ORIENTATION_X_FACING = 1 << 1,
+        PARTICLE_ORIENTATION_Y_FACING = 1 << 2,
+        PARTICLE_ORIENTATION_Z_FACING = 1 << 3,
+        PARTICLE_ORIENTATION_WORLD_ALIGN = 1 << 4
+    };
 
     enum eDegradeStrategy
     {
@@ -79,31 +49,29 @@ struct ParticleLayer : public BaseObject
         DEGRADE_REMOVE = 2
     };
 
+    ParticleLayer();
+    virtual ~ParticleLayer();
+    virtual ParticleLayer* Clone();
 
-	ParticleLayer();
-	virtual ~ParticleLayer();		
-	virtual ParticleLayer * Clone();
-	
-	void LoadFromYaml(const FilePath & configPath, const YamlNode * node, bool preserveInheritPosition);	
-    void SaveToYamlNode(const FilePath & configPath, YamlNode* parentNode, int32 layerIndex);
-	void SaveForcesToYamlNode(YamlNode* layerNode);
+    void LoadFromYaml(const FilePath& configPath, const YamlNode* node, bool preserveInheritPosition);
+    void SaveToYamlNode(const FilePath& configPath, YamlNode* parentNode, int32 layerIndex);
+    void SaveForcesToYamlNode(YamlNode* layerNode);
 
-	void AddForce(ParticleForce* force);
-	void RemoveForce(ParticleForce* force);
-	void RemoveForce(int32 forceIndex);
-	void CleanupForces();
-		
+    void AddForce(ParticleForce* force);
+    void RemoveForce(ParticleForce* force);
+    void RemoveForce(int32 forceIndex);
+    void CleanupForces();
 
-	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
-	
-	// Convert from Layer Type to its name and vice versa.
-	eType StringToLayerType(const String& layerTypeName, eType defaultLayerType);
-	String LayerTypeToString(eType layerType, const String& defaultLayerTypeName);
+    void GetModifableLines(List<ModifiablePropertyLineBase*>& modifiables);
 
-	void UpdateLayerTime(float32 startTime, float32 endTime);
+    // Convert from Layer Type to its name and vice versa.
+    eType StringToLayerType(const String& layerTypeName, eType defaultLayerType);
+    String LayerTypeToString(eType layerType, const String& defaultLayerTypeName);
 
-	bool IsLodActive(int32 lod);	
-	void SetLodActive(int32 lod, bool active);
+    void UpdateLayerTime(float32 startTime, float32 endTime);
+
+    bool IsLodActive(int32 lod);
+    void SetLodActive(int32 lod, bool active);
 
     ScopedPtr<Sprite> sprite;
     void SetSprite(const FilePath& spritePath);
@@ -139,65 +107,64 @@ struct ParticleLayer : public BaseObject
     RefPtr<PropertyLine<Vector2>> sizeOverLifeXY;
 
     RefPtr<PropertyLine<float32>> velocity; // velocity in pixels
-    RefPtr< PropertyLine<float32> > velocityVariation;	
-	RefPtr< PropertyLine<float32> > velocityOverLife;
-	
-	Vector<ParticleForce*> forces;
-	
-	RefPtr< PropertyLine<float32> > spin;				// spin of angle / second
-	RefPtr< PropertyLine<float32> > spinVariation;
-	RefPtr< PropertyLine<float32> > spinOverLife;
-	bool randomSpinDirection;
-		
-	
-	RefPtr< PropertyLine<Color> > colorRandom;		
-	RefPtr< PropertyLine<float32> > alphaOverLife;	
-	RefPtr< PropertyLine<Color> > colorOverLife;	
+    RefPtr<PropertyLine<float32>> velocityVariation;
+    RefPtr<PropertyLine<float32>> velocityOverLife;
 
-	RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees
-	RefPtr< PropertyLine<float32> > angleVariation;		// variations in degrees
+    Vector<ParticleForce*> forces;
 
-	RefPtr< PropertyLine<float32> > animSpeedOverLife;	
+    RefPtr<PropertyLine<float32>> spin; // spin of angle / second
+    RefPtr<PropertyLine<float32>> spinVariation;
+    RefPtr<PropertyLine<float32>> spinOverLife;
+    bool randomSpinDirection;
 
-	
+    RefPtr<PropertyLine<Color>> colorRandom;
+    RefPtr<PropertyLine<float32>> alphaOverLife;
+    RefPtr<PropertyLine<Color>> colorOverLife;
 
-	float32		startTime;
-	float32		endTime;
-	// Layer loop paremeters
-	float32		deltaTime;
-	float32 	deltaVariation;
-	float32 	loopVariation;
-	float32 	loopEndTime;		
-	
+    RefPtr<PropertyLine<float32>> angle; // sprite angle in degrees
+    RefPtr<PropertyLine<float32>> angleVariation; // variations in degrees
 
-	eType		type;
+    RefPtr<PropertyLine<float32>> animSpeedOverLife;
+
+    float32 startTime;
+    float32 endTime;
+    // Layer loop paremeters
+    float32 deltaTime;
+    float32 deltaVariation;
+    float32 loopVariation;
+    float32 loopEndTime;
+
+    eType type;
 
     eDegradeStrategy degradeStrategy;
 
-	int32 particleOrientation;
+    int32 particleOrientation;
 
-	bool		frameOverLifeEnabled;
-	float32		frameOverLifeFPS;
-	bool		randomFrameOnStart;
-	bool		loopSpriteAnimation;
+    bool frameOverLifeEnabled;
+    float32 frameOverLifeFPS;
+    bool randomFrameOnStart;
+    bool loopSpriteAnimation;
 
-	//for long particles
-	float32 scaleVelocityBase;
-	float32 scaleVelocityFactor;
+    //for long particles
+    float32 scaleVelocityBase;
+    float32 scaleVelocityFactor;
 
-	ParticleEmitter* innerEmitter;
-	FilePath	innerEmitterPath;
+    ParticleEmitter* innerEmitter;
+    FilePath innerEmitterPath;
 
 private:
-	struct LayerTypeNamesInfo
-	{
-		eType layerType;
-		String layerTypeName;
-	};
+    struct LayerTypeNamesInfo
+    {
+        eType layerType;
+        String layerTypeName;
+    };
     static const LayerTypeNamesInfo layerTypeNamesInfoMap[];
 
     void FillSizeOverlifeXY(RefPtr<PropertyLine<float32>> sizeOverLife);
     void UpdateSizeLine(PropertyLine<Vector2>* line, bool rescaleSize, bool swapXY); //conversion from old format
+
+public:
+    INTROSPECTION_EXTEND(ParticleLayer, BaseObject, nullptr);
 };
 }
 

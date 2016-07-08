@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "SliderWidget.h"
 #include "PopupEditorDialog.h"
 
@@ -45,17 +16,17 @@ const int SliderWidget::DEF_LOWEST_VALUE = -999;
 const int SliderWidget::DEF_HIGHEST_VALUE = 999;
 
 SliderWidget::SliderWidget(QWidget* parent)
-: QWidget(parent)
-, isRangeChangingBlocked(true)
-, rangeBoundMin(DEF_LOWEST_VALUE)
-, rangeBoundMax(DEF_HIGHEST_VALUE)
+    : QWidget(parent)
+    , isRangeChangingBlocked(true)
+    , rangeBoundMin(DEF_LOWEST_VALUE)
+    , rangeBoundMax(DEF_HIGHEST_VALUE)
 {
-	InitUI();
-	Init(true, 10, 0, 0);
-	SetRangeVisible(true);
-	SetRangeChangingBlocked(false);
+    InitUI();
+    Init(true, 10, 0, 0);
+    SetRangeVisible(true);
+    SetRangeChangingBlocked(false);
 
-	ConnectToSignals();
+    ConnectToSignals();
 }
 
 SliderWidget::~SliderWidget()
@@ -64,290 +35,290 @@ SliderWidget::~SliderWidget()
 
 void SliderWidget::InitUI()
 {
-	QHBoxLayout* layout = new QHBoxLayout();
-	labelMinValue = new QLabel(this);
-	labelMaxValue = new QLabel(this);
-	sliderValue = new QSlider(this);
-	spinCurValue = new QSpinBox(this);
+    QHBoxLayout* layout = new QHBoxLayout();
+    labelMinValue = new QLabel(this);
+    labelMaxValue = new QLabel(this);
+    sliderValue = new QSlider(this);
+    spinCurValue = new QSpinBox(this);
 
-	layout->addWidget(labelMinValue);
-	layout->addWidget(sliderValue);
-	layout->addWidget(labelMaxValue);
-	layout->addWidget(spinCurValue);
+    layout->addWidget(labelMinValue);
+    layout->addWidget(sliderValue);
+    layout->addWidget(labelMaxValue);
+    layout->addWidget(spinCurValue);
 
-	setLayout(layout);
+    setLayout(layout);
 
-	layout->setContentsMargins(0, 0, 0, 0);
-	layout->setSpacing(3);
-	sliderValue->setOrientation(Qt::Horizontal);
-	sliderValue->setTickPosition(QSlider::TicksBothSides);
-	spinCurValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CURRENT_VALUE.c_str());
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(3);
+    sliderValue->setOrientation(Qt::Horizontal);
+    sliderValue->setTickPosition(QSlider::TicksBothSides);
+    spinCurValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CURRENT_VALUE.c_str());
 }
 
 void SliderWidget::ConnectToSignals()
 {
-	connect(sliderValue, SIGNAL(valueChanged(int)), this, SLOT(SliderValueChanged(int)));
-	connect(spinCurValue, SIGNAL(valueChanged(int)), this, SLOT(SpinValueChanged(int)));
+    connect(sliderValue, SIGNAL(valueChanged(int)), this, SLOT(SliderValueChanged(int)));
+    connect(spinCurValue, SIGNAL(valueChanged(int)), this, SLOT(SpinValueChanged(int)));
 }
 
 void SliderWidget::Init(bool symmetric, int max, int min, int value)
 {
-	isSymmetric = symmetric;
-	currentValue = value;
-	SetRange(min, max);
+    isSymmetric = symmetric;
+    currentValue = value;
+    SetRange(min, max);
 
-	UpdateControls();
+    UpdateControls();
 }
 
 void SliderWidget::SetRange(int min, int max)
 {
-	if (min > max)
-	{
-		qSwap(max, min);
-	}
+    if (min > max)
+    {
+        qSwap(max, min);
+    }
 
-	maxValue = qMin(max, rangeBoundMax);
-	minValue = qMax(min, rangeBoundMin);
-	if (IsSymmetric())
-	{
-		minValue = -max;
-		if (min > max)
-		{
-			qSwap(max, min);
-		}
-	}
+    maxValue = qMin(max, rangeBoundMax);
+    minValue = qMax(min, rangeBoundMin);
+    if (IsSymmetric())
+    {
+        minValue = -max;
+        if (min > max)
+        {
+            qSwap(max, min);
+        }
+    }
 
-	if (currentValue > maxValue)
-	{
-		SetValue(maxValue);
-	}
-	else if (currentValue < minValue)
-	{
-		SetValue(minValue);
-	}
+    if (currentValue > maxValue)
+    {
+        SetValue(maxValue);
+    }
+    else if (currentValue < minValue)
+    {
+        SetValue(minValue);
+    }
 }
 
 void SliderWidget::SetRangeMax(int max)
 {
-	SetRange(minValue, max);
-	UpdateControls();
+    SetRange(minValue, max);
+    UpdateControls();
 }
 
 int SliderWidget::GetRangeMax()
 {
-	return maxValue;
+    return maxValue;
 }
 
 void SliderWidget::SetRangeMin(int min)
 {
-	SetRange(min, maxValue);
-	UpdateControls();
+    SetRange(min, maxValue);
+    UpdateControls();
 }
 
 int SliderWidget::GetRangeMin()
 {
-	return minValue;
+    return minValue;
 }
 
 void SliderWidget::SetSymmetric(bool symmetric)
 {
-	isSymmetric = symmetric;
+    isSymmetric = symmetric;
 
-	if (IsSymmetric())
-	{
-	}
+    if (IsSymmetric())
+    {
+    }
 
-	SetRangeBoundaries(rangeBoundMin, rangeBoundMax);
-	UpdateControls();
+    SetRangeBoundaries(rangeBoundMin, rangeBoundMax);
+    UpdateControls();
 }
 
 bool SliderWidget::IsSymmetric()
 {
-	return isSymmetric;
+    return isSymmetric;
 }
 
 void SliderWidget::SetValue(int value)
 {
-	if (value == currentValue)
-	{
-		return;
-	}
+    if (value == currentValue)
+    {
+        return;
+    }
 
-	value = qMax(minValue, value);
-	value = qMin(maxValue, value);
+    value = qMax(minValue, value);
+    value = qMin(maxValue, value);
 
-	currentValue = value;
-	EmitValueChanged();
-	UpdateControls();
+    currentValue = value;
+    EmitValueChanged();
+    UpdateControls();
 }
 
 int SliderWidget::GetValue()
 {
-	return currentValue;
+    return currentValue;
 }
 
 void SliderWidget::SliderValueChanged(int newValue)
 {
-	SetValue(newValue);
+    SetValue(newValue);
 }
 
 void SliderWidget::RangeChanged(int newMinValue, int newMaxValue)
 {
-	SetRange(newMinValue, newMaxValue);
+    SetRange(newMinValue, newMaxValue);
 }
 
 void SliderWidget::EmitValueChanged()
 {
-	sliderValue->setToolTip(QString::number(currentValue));
-	emit ValueChanged(currentValue);
+    sliderValue->setToolTip(QString::number(currentValue));
+    emit ValueChanged(currentValue);
 }
 
 void SliderWidget::UpdateControls()
 {
-	bool blocked = signalsBlocked();
-	blockSignals(true);
+    bool blocked = signalsBlocked();
+    blockSignals(true);
 
-	labelMinValue->setNum(GetRangeMin());
-	labelMaxValue->setNum(GetRangeMax());
+    labelMinValue->setNum(GetRangeMin());
+    labelMaxValue->setNum(GetRangeMax());
 
-	spinCurValue->setRange(GetRangeMin(), GetRangeMax());
-	spinCurValue->setValue(GetValue());
+    spinCurValue->setRange(GetRangeMin(), GetRangeMax());
+    spinCurValue->setValue(GetValue());
 
-	sliderValue->setRange(GetRangeMin(), GetRangeMax());
-	sliderValue->setValue(GetValue());
+    sliderValue->setRange(GetRangeMin(), GetRangeMax());
+    sliderValue->setValue(GetValue());
 
-	blockSignals(blocked);
+    blockSignals(blocked);
 }
 
 void SliderWidget::SetRangeChangingBlocked(bool blocked)
 {
-	if (blocked == isRangeChangingBlocked)
-	{
-		return;
-	}
+    if (blocked == isRangeChangingBlocked)
+    {
+        return;
+    }
 
-	if (blocked)
-	{
-		labelMinValue->removeEventFilter(this);
-		labelMaxValue->removeEventFilter(this);
-		labelMinValue->setToolTip("");
-		labelMaxValue->setToolTip("");
-	}
-	else
-	{
-		labelMinValue->installEventFilter(this);
-		labelMaxValue->installEventFilter(this);
-		labelMinValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CHANGE_VALUE_TOOLTIP.c_str());
-		labelMaxValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CHANGE_VALUE_TOOLTIP.c_str());
-	}
+    if (blocked)
+    {
+        labelMinValue->removeEventFilter(this);
+        labelMaxValue->removeEventFilter(this);
+        labelMinValue->setToolTip("");
+        labelMaxValue->setToolTip("");
+    }
+    else
+    {
+        labelMinValue->installEventFilter(this);
+        labelMaxValue->installEventFilter(this);
+        labelMinValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CHANGE_VALUE_TOOLTIP.c_str());
+        labelMaxValue->setToolTip(ResourceEditor::SLIDER_WIDGET_CHANGE_VALUE_TOOLTIP.c_str());
+    }
 
-	isRangeChangingBlocked = blocked;
+    isRangeChangingBlocked = blocked;
 }
 
 bool SliderWidget::IsRangeChangingBlocked()
 {
-	return isRangeChangingBlocked;
+    return isRangeChangingBlocked;
 }
 
 void SliderWidget::SpinValueChanged(int newValue)
 {
-	SetValue(spinCurValue->value());
+    SetValue(spinCurValue->value());
 }
 
 bool SliderWidget::eventFilter(QObject* obj, QEvent* ev)
 {
-	if (obj == labelMinValue || obj == labelMaxValue)
-	{
-		if (ev->type() == QEvent::MouseButtonDblClick)
-		{
-			int val = (obj == labelMinValue) ? minValue : maxValue;
+    if (obj == labelMinValue || obj == labelMaxValue)
+    {
+        if (ev->type() == QEvent::MouseButtonDblClick)
+        {
+            int val = (obj == labelMinValue) ? minValue : maxValue;
 
-			QLabel* label = (QLabel*)obj;
-			PopupEditorDialog* dialog = new PopupEditorDialog(val, rangeBoundMin, rangeBoundMax, label, this);
+            QLabel* label = (QLabel*)obj;
+            PopupEditorDialog* dialog = new PopupEditorDialog(val, rangeBoundMin, rangeBoundMax, label, this);
 
-			QPoint pos = label->mapToGlobal(QPoint(0, 0));
-			dialog->move(pos.x(), pos.y());
-			dialog->setMinimumHeight(label->height());
+            QPoint pos = label->mapToGlobal(QPoint(0, 0));
+            dialog->move(pos.x(), pos.y());
+            dialog->setMinimumHeight(label->height());
 
-			connect(dialog, SIGNAL(ValueReady(const QWidget*, int)),
-					this, SLOT(OnValueReady(const QWidget*, int)));
+            connect(dialog, SIGNAL(ValueReady(const QWidget*, int)),
+                    this, SLOT(OnValueReady(const QWidget*, int)));
 
-			dialog->show();
-			//dialog will self-delete after close
+            dialog->show();
+            //dialog will self-delete after close
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
-	return QObject::eventFilter(obj, ev);
+    return QObject::eventFilter(obj, ev);
 }
 
-void SliderWidget::OnValueReady(const QWidget *widget, int value)
+void SliderWidget::OnValueReady(const QWidget* widget, int value)
 {
-	QLabel* label = (QLabel*)widget;
-	label->setNum(value);
+    QLabel* label = (QLabel*)widget;
+    label->setNum(value);
 
-	int min = minValue;
-	int max = maxValue;
-	if (label == labelMinValue)
-	{
-		min = qMax(value, DEF_LOWEST_VALUE);
-		if (IsSymmetric())
-		{
-			max = -min;
-		}
-	}
-	else if (label == labelMaxValue)
-	{
-		max = qMin(value, DEF_HIGHEST_VALUE);
-	}
-	SetRange(min, max);
-	UpdateControls();
+    int min = minValue;
+    int max = maxValue;
+    if (label == labelMinValue)
+    {
+        min = qMax(value, DEF_LOWEST_VALUE);
+        if (IsSymmetric())
+        {
+            max = -min;
+        }
+    }
+    else if (label == labelMaxValue)
+    {
+        max = qMin(value, DEF_HIGHEST_VALUE);
+    }
+    SetRange(min, max);
+    UpdateControls();
 }
 
 void SliderWidget::SetRangeVisible(bool visible)
 {
-	if (visible == isRangeVisible)
-	{
-		return;
-	}
+    if (visible == isRangeVisible)
+    {
+        return;
+    }
 
-	labelMaxValue->setVisible(visible);
-	labelMinValue->setVisible(visible);
+    labelMaxValue->setVisible(visible);
+    labelMinValue->setVisible(visible);
 
-	isRangeVisible = visible;
+    isRangeVisible = visible;
 }
 
 bool SliderWidget::IsRangeVisible()
 {
-	return isRangeVisible;
+    return isRangeVisible;
 }
 
 void SliderWidget::SetRangeBoundaries(int min, int max)
 {
-	if (IsSymmetric())
-	{
-		min = -max;
-	}
+    if (IsSymmetric())
+    {
+        min = -max;
+    }
 
-	if (min > max)
-	{
-		qSwap(min, max);
-	}
+    if (min > max)
+    {
+        qSwap(min, max);
+    }
 
-	rangeBoundMax = max;
-	rangeBoundMin = min;
+    rangeBoundMax = max;
+    rangeBoundMin = min;
 
-	SetRange(minValue, maxValue);
-	UpdateControls();
+    SetRange(minValue, maxValue);
+    UpdateControls();
 }
 
 void SliderWidget::SetCurValueVisible(bool visible)
 {
-	spinCurValue->setVisible(visible);
+    spinCurValue->setVisible(visible);
 }
 
 bool SliderWidget::IsCurValueVisible()
 {
-	return spinCurValue->isVisible();
+    return spinCurValue->isVisible();
 }

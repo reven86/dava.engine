@@ -17,21 +17,20 @@
 /** @defgroup FUParameter The generic FCollada parameter interface. */
 
 #ifdef WIN32
-#pragma warning(disable:4355) // 'this' : used in base member initializer list.
+#pragma warning(disable : 4355) // 'this' : used in base member initializer list.
 #endif // WIN32
 
 /** Contains the supported qualifiers for parameter types. */
 namespace FUParameterQualifiers
 {
-    /** Qualifiers for parameters types. */
-	enum Qualifiers
-	{
-		SIMPLE = 0, /**< Qualifies any self-defined parameter type. */
-		VECTOR = 0, /**< Qualifies a vector parameter (X, Y, Z, W). */
-		COLOR = 1 /**< Qualifies a color parameter (R, G, B, A). */
-	};
+/** Qualifiers for parameters types. */
+enum Qualifiers
+{
+    SIMPLE = 0, /**< Qualifies any self-defined parameter type. */
+    VECTOR = 0, /**< Qualifies a vector parameter (X, Y, Z, W). */
+    COLOR = 1 /**< Qualifies a color parameter (R, G, B, A). */
 };
-
+};
 
 /**
 	An interface to a generic FCollada parameter.
@@ -48,24 +47,53 @@ template <class TYPE>
 class FUParameterT
 {
 private:
-	TYPE value;
+    TYPE value;
 
 public:
     /** Default constructor. */
-	FUParameterT() {}
+    FUParameterT()
+    {
+    }
     /** Copy constructor. @param defaultValue The value to copy into this parameter. */
-	FUParameterT(const TYPE& defaultValue) : value(defaultValue) {}
+    FUParameterT(const TYPE& defaultValue)
+        : value(defaultValue)
+    {
+    }
     /** Destructor. */
-	virtual ~FUParameterT() {}
+    virtual ~FUParameterT()
+    {
+    }
     /** Retrieves the value of this parameter. */
-	inline operator TYPE&() { return value; }
-	inline operator const TYPE&() const { return value; } /**< See above. */
-	inline TYPE& operator *() { return value; } /**< See above. */
-	inline const TYPE& operator *() const { return value; } /**< See above. */
-	inline TYPE* operator->() { return &value; } /**< See above. */
-	inline const TYPE* operator->() const { return &value; } /**< See above. */
+    inline operator TYPE&()
+    {
+        return value;
+    }
+    inline operator const TYPE&() const
+    {
+        return value;
+    } /**< See above. */
+    inline TYPE& operator*()
+    {
+        return value;
+    } /**< See above. */
+    inline const TYPE& operator*() const
+    {
+        return value;
+    } /**< See above. */
+    inline TYPE* operator->()
+    {
+        return &value;
+    } /**< See above. */
+    inline const TYPE* operator->() const
+    {
+        return &value;
+    } /**< See above. */
     /** Replaces the value of this parameter with a given value. @param copy The value to copy into this parameter. */
-	FUParameterT<TYPE>& operator= (const TYPE& copy) { value = copy; return *this; }
+    FUParameterT<TYPE>& operator=(const TYPE& copy)
+    {
+        value = copy;
+        return *this;
+    }
 };
 
 typedef FUParameterT<bool> FUParameterBoolean; /**< A simple Boolean value parameter. */
@@ -110,10 +138,12 @@ typedef fm::vector<fstring, false> FUParameterFStringList; /**< A Unicode string
     @param niceName The Unicode string to identify this parameter to users. */
 #define DeclareParameter(type, qual, parameterName, niceName) \
 	class Parameter_##parameterName : public FUParameterT<type> { \
-	public: Parameter_##parameterName() : FUParameterT<type>() {} \
-	Parameter_##parameterName(const type& defaultValue) : FUParameterT<type>(defaultValue) {} \
+	public: Parameter_##parameterName() \
+            : FUParameterT<type>() {} \
+	Parameter_##parameterName(const type& defaultValue) \
+            : FUParameterT<type>(defaultValue) {} \
 	virtual ~Parameter_##parameterName() {} \
-	inline Parameter_##parameterName& operator= (const type& copy) { FUParameterT<type>::operator=(copy); return *this; } \
+	inline Parameter_##parameterName& operator=(const type& copy) { FUParameterT<type>::operator=(copy); return *this; } \
 	} parameterName;
 
 /** See above. */
@@ -172,4 +202,3 @@ typedef fm::vector<fstring, false> FUParameterFStringList; /**< A Unicode string
 #endif // __APPLE__
 
 #endif // _FCD_PARAMETER_H
-

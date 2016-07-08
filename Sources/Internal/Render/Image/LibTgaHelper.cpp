@@ -1,66 +1,23 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Render/Image/LibTgaHelper.h"
 
 #include "FileSystem/File.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
-
 namespace DAVA
 {
-
 static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
-
 LibTgaHelper::LibTgaHelper()
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_TGA, "TGA",
+                           { ".tga", ".tpic" },
+                           { FORMAT_RGBA8888, FORMAT_RGBA5551, FORMAT_RGBA4444, FORMAT_RGB888,
+                             FORMAT_RGB565, FORMAT_RGBA16161616, FORMAT_RGBA32323232, FORMAT_A8,
+                             FORMAT_A16 })
 {
-    name.assign("TGA");
-    supportedExtensions.emplace_back(".tga");
-    supportedExtensions.emplace_back(".tpic");
-    supportedFormats = { {  FORMAT_RGBA8888,
-                            FORMAT_RGBA5551,
-                            FORMAT_RGBA4444,
-                            FORMAT_RGB888,
-                            FORMAT_RGB565,
-                            FORMAT_RGBA16161616,
-                            FORMAT_RGBA32323232,
-                            FORMAT_A8,
-                            FORMAT_A16 } };
 }
 
-bool LibTgaHelper::CanProcessFile(File* infile) const
-{
-    return !(GetImageInfo(infile).isEmpty());
-}
-
-ImageInfo LibTgaHelper::GetImageInfo(File *infile) const
+DAVA::ImageInfo LibTgaHelper::GetImageInfo(File* infile) const
 {
     DVASSERT(infile);
 
@@ -78,27 +35,30 @@ ImageInfo LibTgaHelper::GetImageInfo(File *infile) const
         imageInfo.width = tgaInfo.width;
         imageInfo.dataSize = tgaInfo.width * tgaInfo.height * tgaInfo.bytesPerPixel;
         imageInfo.format = tgaInfo.pixelFormat;
+        imageInfo.mipmapsCount = 1;
+        imageInfo.faceCount = 1;
     }
-    
+
     return imageInfo;
 }
 
-enum TgaHeaderSpec{
-    idlengthOffset = 0,             // 1 byte, should be 0
-    colorMapTypeOffset = 1,         // 1 byte, should be 0
-    imageTypeOffset = 2,            // 1 byte, can be 2,3,10,11
-    colorMapDataOffset = 3,         // 5 bytes, should be 0,0,0,0,0
-    originXOffset = 8,              // 2 bytes, should be 0 for bottomleft etc., skip this
-    originYOffset = 10,             // 2 bytes, should be 0 for bottomleft etc., skip this
-    widthOffset = 12,               // 2 bytes, image width in pixels
-    heightOffset = 14,              // 2 bytes, image height in pixels
-    bppOffset = 16,                 // 1 byte, bitsPerPixel, can be 8,16,24,32,64,128
-    descriptorOffset = 17           // 1 byte, image origin corner and number of alpha bits
+enum TgaHeaderSpec
+{
+    idlengthOffset = 0, // 1 byte, should be 0
+    colorMapTypeOffset = 1, // 1 byte, should be 0
+    imageTypeOffset = 2, // 1 byte, can be 2,3,10,11
+    colorMapDataOffset = 3, // 5 bytes, should be 0,0,0,0,0
+    originXOffset = 8, // 2 bytes, should be 0 for bottomleft etc., skip this
+    originYOffset = 10, // 2 bytes, should be 0 for bottomleft etc., skip this
+    widthOffset = 12, // 2 bytes, image width in pixels
+    heightOffset = 14, // 2 bytes, image height in pixels
+    bppOffset = 16, // 1 byte, bitsPerPixel, can be 8,16,24,32,64,128
+    descriptorOffset = 17 // 1 byte, image origin corner and number of alpha bits
 };
 
 uint16 LowEndianToUint16(const uint8* p)
 {
-    return (uint16)(p[0] | ((uint16)(p[1]) << 8));
+    return uint16(p[0] | (uint16(p[1]) << 8));
 }
 
 void Uint16ToLowEndian(const uint16 u16, uint8* p)
@@ -119,14 +79,14 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
     return ReadTgaHeader(fileRead, tgaInfo);
 }
 
-DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) const
+DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File* infile, TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields;
     size_t bytesRead = infile->Read(&fields, static_cast<uint32>(fields.size()));
     if (bytesRead != fields.size())
         return eErrorCode::ERROR_READ_FAIL;
 
-    static const Array<uint8, 5> zeroes = {{ 0, 0, 0, 0, 0 }};
+    static const Array<uint8, 5> zeroes = { { 0, 0, 0, 0, 0 } };
     if (Memcmp(&fields[idlengthOffset], &zeroes[0], 2) != 0 ||
         Memcmp(&fields[colorMapDataOffset], &zeroes[0], 5) != 0)
     {
@@ -144,8 +104,8 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     }
 
     // obtaining width and height
-    tgaInfo.width = LowEndianToUint16(&fields[widthOffset]);    //tga uses low endianness
-    tgaInfo.height = LowEndianToUint16(&fields[heightOffset]);  //tga uses low endianness
+    tgaInfo.width = LowEndianToUint16(&fields[widthOffset]); //tga uses low endianness
+    tgaInfo.height = LowEndianToUint16(&fields[heightOffset]); //tga uses low endianness
     if (!tgaInfo.width || !tgaInfo.height)
     {
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
@@ -155,8 +115,15 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     tgaInfo.bytesPerPixel = fields[bppOffset] >> 3;
     switch (tgaInfo.bytesPerPixel)
     {
-    case 1: case 2: case 3: case 4: case 8: case 16: break;
-    default: return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 8:
+    case 16:
+        break;
+    default:
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // obtaining origin corner info
@@ -167,8 +134,13 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     tgaInfo.alphaBits = descriptor & 0x0F;
     switch (tgaInfo.alphaBits)
     {
-    case 0: case 1: case 4: case 8: break;
-    default: return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    case 0:
+    case 1:
+    case 4:
+    case 8:
+        break;
+    default:
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // defining pixel format
@@ -181,7 +153,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
 
 struct Convert_TgaARGB1555_to_RGBA5551
 {
-    inline void operator()(const uint16 * input, uint16 *output)
+    inline void operator()(const uint16* input, uint16* output)
     {
         //arrr rrgg gggb bbbb --> rrrr rggg ggbb bbba
 
@@ -193,13 +165,13 @@ struct Convert_TgaARGB1555_to_RGBA5551
 struct Convert_RGBA5551_to_TgaARGB1555
 {
     //rrrr rggg ggbb bbba --> arrr rrgg gggb bbbb
-    inline void operator()(const uint16 * input, uint16 *output)
+    inline void operator()(const uint16* input, uint16* output)
     {
         *output = (*input >> 1) | 0x8000;
     }
 };
 
-eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+eErrorCode LibTgaHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     DVASSERT(infile);
 
@@ -220,7 +192,7 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
     if (readResult == eErrorCode::SUCCESS)
     {
-        // color formats are stored by TGA with swapped red-blue channels, 
+        // color formats are stored by TGA with swapped red-blue channels,
         // excepting RGBA5551 that is stored as ARGB1555
         if (tgaInfo.imageType == TgaInfo::TRUECOLOR || tgaInfo.imageType == TgaInfo::COMPRESSED_TRUECOLOR)
         {
@@ -235,8 +207,9 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
                 ImageConvert::SwapRedBlueChannels(image);
             }
         }
-        
+
         SafeRetain(pImage);
+        pImage->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(pImage);
         return eErrorCode::SUCCESS;
     }
@@ -302,40 +275,40 @@ PixelFormat LibTgaHelper::DefinePixelFormat(const TgaInfo& tgaInfo) const
         return FORMAT_INVALID;
 }
 
-eErrorCode LibTgaHelper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadUncompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     auto readSize = infile->Read(image->data, image->dataSize);
-    if(readSize != image->dataSize)
+    if (readSize != image->dataSize)
     {
         return eErrorCode::ERROR_READ_FAIL;
     }
-    
+
     switch (tgaInfo.origin_corner)
     {
-        case TgaInfo::BOTTOM_LEFT:
-            image->FlipVertical();
-            break;
+    case TgaInfo::BOTTOM_LEFT:
+        image->FlipVertical();
+        break;
 
-        case TgaInfo::BOTTOM_RIGHT:
-            image->FlipVertical();
-            image->FlipHorizontal();
-            break;
+    case TgaInfo::BOTTOM_RIGHT:
+        image->FlipVertical();
+        image->FlipHorizontal();
+        break;
 
-        case TgaInfo::TOP_RIGHT:
-            image->FlipHorizontal();
-            break;
+    case TgaInfo::TOP_RIGHT:
+        image->FlipHorizontal();
+        break;
 
-        case TgaInfo::TOP_LEFT:
-            break;
+    case TgaInfo::TOP_LEFT:
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
-    
+
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
+eErrorCode LibTgaHelper::ReadCompressedTga(File* infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
 {
     uint8 chunkHeader;
     Array<uint8, MAX_BYTES_IN_PIXEL> pixelBuffer;
@@ -347,9 +320,9 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
         if (infile->Read(&chunkHeader, 1) != 1)
             return eErrorCode::ERROR_READ_FAIL;
 
-        if (chunkHeader < 128)  // is raw section
+        if (chunkHeader < 128) // is raw section
         {
-            ++chunkHeader;      // number of raw pixels
+            ++chunkHeader; // number of raw pixels
 
             for (uint8 i = 0; (i < chunkHeader) && !dataWriter.AtEnd(); ++i)
             {
@@ -358,9 +331,8 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
 
                 dataWriter.Write(pixelBuffer.data());
             }
-
         }
-        else                    // is compressed section
+        else // is compressed section
         {
             chunkHeader -= 127; // number of repeated pixels
 
@@ -376,13 +348,13 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibTgaHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat pixelFormat, ImageQuality quality) const
+eErrorCode LibTgaHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat pixelFormat, ImageQuality quality) const
 {
     Logger::Error("[%s] CubeMaps are not supported for TGA", __FUNCTION__);
     return DAVA::eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat piexelFormat, ImageQuality quality) const
+eErrorCode LibTgaHelper::WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat piexelFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size() == 1);
     int32 width = imageSet[0]->width;
@@ -396,13 +368,13 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
     tgaInfo.height = height;
     tgaInfo.origin_corner = TgaInfo::TOP_LEFT; // saving as top-left avoids additional transformations from/to our Image format
     tgaInfo.pixelFormat = pixelFormat;
-    switch(pixelFormat)
+    switch (pixelFormat)
     {
     case FORMAT_RGBA8888:
         tgaInfo.bytesPerPixel = 4;
         tgaInfo.alphaBits = 8;
         tgaInfo.imageType = TgaInfo::TRUECOLOR;
-        break; 
+        break;
     case FORMAT_RGBA5551:
         tgaInfo.bytesPerPixel = 2;
         tgaInfo.alphaBits = 1;
@@ -480,7 +452,7 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
     return WriteUncompressedTga(dstFile, tgaInfo, imageData);
 }
 
-DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaInfo) const
+DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File* dstFile, const TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -497,7 +469,7 @@ DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaI
     return (bytesWritten == fieldsCount) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibTgaHelper::WriteUncompressedTga(File *dstFile, const TgaInfo& tgaInfo, const uint8* data) const
+eErrorCode LibTgaHelper::WriteUncompressedTga(File* dstFile, const TgaInfo& tgaInfo, const uint8* data) const
 {
     auto dataSize = tgaInfo.width * tgaInfo.height * tgaInfo.bytesPerPixel;
     auto writeSize = dstFile->Write(data, dataSize);
@@ -580,5 +552,4 @@ void LibTgaHelper::ImageDataWriter::IncrementPtr()
             isAtEnd = true;
     }
 }
-
 };

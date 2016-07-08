@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.0)
 
 project      ( PerformanceTests )
 
+set( DAVA_DISABLE_AUTOTESTS true )
+
 if ( ENABLE_MEM_PROFILING )
     add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
 endif()
@@ -10,7 +12,6 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 include      ( CMake-common )
 
 find_package( DavaFramework REQUIRED )
-find_package( DavaTools     REQUIRED )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
@@ -65,7 +66,7 @@ set( ANDROID_APP_NAME           "PerformanceTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "PerformanceTests"   )
 
 set( ADDED_SRC            ${IOS_ADD_SRC})
-set( LIBRARIES            DavaTools )
+set( LIBRARIES            )
 set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
@@ -116,5 +117,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DA
 message( "============================Convert resources ============================"  )
 
 execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+
 
 setup_main_executable()

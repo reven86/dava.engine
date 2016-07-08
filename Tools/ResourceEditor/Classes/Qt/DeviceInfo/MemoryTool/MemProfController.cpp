@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <QMessageBox>
 #include <QFileDialog>
 
@@ -34,7 +5,7 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Platform/DateTime.h"
 #include "Network/Services/MMNet/MMNetClient.h"
 
@@ -62,7 +33,7 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     connect(this, &MemProfController::SnapshotSaved, this, &MemProfController::OnSnapshotSaved, Qt::QueuedConnection);
 }
 
-MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject *parent)
+MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject* parent)
     : QObject(parent)
     , mode(MODE_FILE)
     , parentWidget(parentWidget_)
@@ -80,7 +51,9 @@ MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* pare
     }
 }
 
-MemProfController::~MemProfController() {}
+MemProfController::~MemProfController()
+{
+}
 
 void MemProfController::OnSnapshotPressed()
 {
@@ -95,9 +68,9 @@ void MemProfController::ShowView()
     if (nullptr == view)
     {
         const QString title = QString("%1 (%2 %3)")
-            .arg(profiledPeer.GetName().c_str())
-            .arg(profiledPeer.GetPlatformString().c_str())
-            .arg(profiledPeer.GetVersion().c_str());
+                              .arg(profiledPeer.GetName().c_str())
+                              .arg(profiledPeer.GetPlatformString().c_str())
+                              .arg(profiledPeer.GetVersion().c_str());
 
         view = new MemProfWidget(profilingSession.get(), parentWidget);
         view->setWindowFlags(Qt::Window);
@@ -169,7 +142,7 @@ void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, uint32 coun
 
 void MemProfController::NetSnapshotRecieved(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)
 {
-    if (nullptr == chunk)   // Error while transferring snapshot
+    if (nullptr == chunk) // Error while transferring snapshot
     {
         SafeRelease(snapshotFile);
         FileSystem::Instance()->DeleteFile(snapshotTempName);

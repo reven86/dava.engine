@@ -16,109 +16,114 @@
 //#include <time.h>
 #include <limits.h>
 
-
 // Very simple right now.
 //	This will probably use Perlin noise and parameters in the future.
 ILboolean ILAPIENTRY iluNoisify(ILclampf Tolerance)
 {
-	ILuint		i, j, c, Factor, Factor2, NumPix;
-	ILint		Val;
-	ILushort	*ShortPtr;
-	ILuint		*IntPtr;
-	ILubyte		*RegionMask;
+    ILuint i, j, c, Factor, Factor2, NumPix;
+    ILint Val;
+    ILushort* ShortPtr;
+    ILuint* IntPtr;
+    ILubyte* RegionMask;
 
-	iluCurImage = ilGetCurImage();
-	if (iluCurImage == NULL) {
-		ilSetError(ILU_ILLEGAL_OPERATION);
-		return IL_FALSE;
-	}
+    iluCurImage = ilGetCurImage();
+    if (iluCurImage == NULL)
+    {
+        ilSetError(ILU_ILLEGAL_OPERATION);
+        return IL_FALSE;
+    }
 
-	RegionMask = iScanFill();
+    RegionMask = iScanFill();
 
-	// @TODO:  Change this to work correctly without time()!
-	//srand(time(NULL));
-	NumPix = iluCurImage->SizeOfData / iluCurImage->Bpc;
+    // @TODO:  Change this to work correctly without time()!
+    //srand(time(NULL));
+    NumPix = iluCurImage->SizeOfData / iluCurImage->Bpc;
 
-	switch (iluCurImage->Bpc)
-	{
-		case 1:
-			Factor = (ILubyte)(Tolerance * (UCHAR_MAX / 2));
-			if (Factor == 0)
-				return IL_TRUE;
-			Factor2 = Factor + Factor;
-			for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++) {
-				if (RegionMask) {
-					if (!RegionMask[j])
-						continue;
-				}
-				Val = (ILint)((ILint)(rand() % Factor2) - Factor);
-				for (c = 0; c < iluCurImage->Bpp; c++) {
-					if ((ILint)iluCurImage->Data[i + c] + Val > UCHAR_MAX)
-						iluCurImage->Data[i + c] = UCHAR_MAX;
-					else if ((ILint)iluCurImage->Data[i + c] + Val < 0)
-						iluCurImage->Data[i + c] = 0;
-					else
-						iluCurImage->Data[i + c] += Val;
-				}
-			}
-			break;
-		case 2:
-			Factor = (ILushort)(Tolerance * (USHRT_MAX / 2));
-			if (Factor == 0)
-				return IL_TRUE;
-			Factor2 = Factor + Factor;
-			ShortPtr = (ILushort*)iluCurImage->Data;
-			for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++) {
-				if (RegionMask) {
-					if (!RegionMask[j])
-						continue;
-				}
-				Val = (ILint)((ILint)(rand() % Factor2) - Factor);
-				for (c = 0; c < iluCurImage->Bpp; c++) {
-					if ((ILint)ShortPtr[i + c] + Val > USHRT_MAX)
-						ShortPtr[i + c] = USHRT_MAX;
-					else if ((ILint)ShortPtr[i + c] + Val < 0)
-						ShortPtr[i + c] = 0;
-					else
-						ShortPtr[i + c] += Val;
-				}
-			}
-			break;
-		case 4:
-			Factor = (ILuint)(Tolerance * (UINT_MAX / 2));
-			if (Factor == 0)
-				return IL_TRUE;
-			Factor2 = Factor + Factor;
-			IntPtr = (ILuint*)iluCurImage->Data;
-			for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++) {
-				if (RegionMask) {
-					if (!RegionMask[j])
-						continue;
-				}
-				Val = (ILint)((ILint)(rand() % Factor2) - Factor);
-				for (c = 0; c < iluCurImage->Bpp; c++) {
-					if (IntPtr[i + c] + Val > UINT_MAX)
-						IntPtr[i + c] = UINT_MAX;
-					else if ((ILint)IntPtr[i + c] + Val < 0)
-						IntPtr[i + c] = 0;
-					else
-						IntPtr[i + c] += Val;
-				}
-			}
-			break;
-	}
+    switch (iluCurImage->Bpc)
+    {
+    case 1:
+        Factor = (ILubyte)(Tolerance * (UCHAR_MAX / 2));
+        if (Factor == 0)
+            return IL_TRUE;
+        Factor2 = Factor + Factor;
+        for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++)
+        {
+            if (RegionMask)
+            {
+                if (!RegionMask[j])
+                    continue;
+            }
+            Val = (ILint)((ILint)(rand() % Factor2) - Factor);
+            for (c = 0; c < iluCurImage->Bpp; c++)
+            {
+                if ((ILint)iluCurImage->Data[i + c] + Val > UCHAR_MAX)
+                    iluCurImage->Data[i + c] = UCHAR_MAX;
+                else if ((ILint)iluCurImage->Data[i + c] + Val < 0)
+                    iluCurImage->Data[i + c] = 0;
+                else
+                    iluCurImage->Data[i + c] += Val;
+            }
+        }
+        break;
+    case 2:
+        Factor = (ILushort)(Tolerance * (USHRT_MAX / 2));
+        if (Factor == 0)
+            return IL_TRUE;
+        Factor2 = Factor + Factor;
+        ShortPtr = (ILushort*)iluCurImage->Data;
+        for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++)
+        {
+            if (RegionMask)
+            {
+                if (!RegionMask[j])
+                    continue;
+            }
+            Val = (ILint)((ILint)(rand() % Factor2) - Factor);
+            for (c = 0; c < iluCurImage->Bpp; c++)
+            {
+                if ((ILint)ShortPtr[i + c] + Val > USHRT_MAX)
+                    ShortPtr[i + c] = USHRT_MAX;
+                else if ((ILint)ShortPtr[i + c] + Val < 0)
+                    ShortPtr[i + c] = 0;
+                else
+                    ShortPtr[i + c] += Val;
+            }
+        }
+        break;
+    case 4:
+        Factor = (ILuint)(Tolerance * (UINT_MAX / 2));
+        if (Factor == 0)
+            return IL_TRUE;
+        Factor2 = Factor + Factor;
+        IntPtr = (ILuint*)iluCurImage->Data;
+        for (i = 0, j = 0; i < NumPix; i += iluCurImage->Bpp, j++)
+        {
+            if (RegionMask)
+            {
+                if (!RegionMask[j])
+                    continue;
+            }
+            Val = (ILint)((ILint)(rand() % Factor2) - Factor);
+            for (c = 0; c < iluCurImage->Bpp; c++)
+            {
+                if (IntPtr[i + c] + Val > UINT_MAX)
+                    IntPtr[i + c] = UINT_MAX;
+                else if ((ILint)IntPtr[i + c] + Val < 0)
+                    IntPtr[i + c] = 0;
+                else
+                    IntPtr[i + c] += Val;
+            }
+        }
+        break;
+    }
 
-	ifree(RegionMask);
+    ifree(RegionMask);
 
-	return IL_TRUE;
+    return IL_TRUE;
 }
-
-
-
 
 // Information on Perlin Noise taken from
 //	http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
-
 
 /*ILdouble Noise(ILint x, ILint y)
 {

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 /*
 **********************************************************************
 ** md5.h -- Header file for implementation of MD5                   **
@@ -74,10 +45,8 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 
-
 namespace DAVA
 {
-
 /* Data structure for MD5 (Message Digest) computation */
 
 class MD5
@@ -85,6 +54,11 @@ class MD5
 public:
     struct MD5Digest
     {
+        MD5Digest()
+        {
+            digest.fill(0);
+        }
+
         bool operator==(const MD5Digest& right) const
         {
             return digest == right.digest;
@@ -94,7 +68,6 @@ public:
         Array<uint8, DIGEST_SIZE> digest;
     };
 
-public:
     static void ForData(const uint8* data, uint32 dataSize, MD5Digest& digest);
     static void ForFile(const FilePath& pathName, MD5Digest& digest);
     static void ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecursive, bool includeHidden);
@@ -105,28 +78,24 @@ public:
     static void CharToHash(const char8* buffer, MD5Digest& digest);
     static void CharToHash(const char8* buffer, uint32 bufferSize, uint8* hash, uint32 hashSize);
 
-private:
     void Init();
     void Update(const uint8* inBuf, uint32 inLen);
     void Final();
     const MD5Digest& GetDigest()
     {
         return digest;
-    };
+    }
 
-    static void RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
-
+private:
+    static void CalculateDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);
 
-
-	uint32 i[2];                   /* number of _bits_ handled mod 2^64 */
-	uint32 buf[4];                 /* scratch buffer */
-	uint8 in[64];                  /* input buffer */
+    uint32 i[2]; /* number of _bits_ handled mod 2^64 */
+    uint32 buf[4]; /* scratch buffer */
+    uint8 in[64]; /* input buffer */
     MD5Digest digest; /* actual digest after MD5Final call */
 };
-
-
 }
 
-#endif // 
+#endif //

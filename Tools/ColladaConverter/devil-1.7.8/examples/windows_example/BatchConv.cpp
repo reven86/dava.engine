@@ -1,6 +1,6 @@
-#ifdef  _DEBUG
+#ifdef _DEBUG
 #define IL_DEBUG
-#endif//_DEBUG
+#endif //_DEBUG
 
 #include <IL/il.h>
 #include <windows.h>
@@ -8,30 +8,27 @@
 #include <string>
 using namespace std;
 
-TCHAR *ImageExtArray[] =
+TCHAR* ImageExtArray[] =
 {
-	L"jpe", L"jpg", L"jpeg",
-	L"bmp",
-	L"ico",
-	L"pbm", L"pgm", L"pnm", L"ppm",
-	L"png",
-	L"bw", L"rgb", L"rgba", L"sgi",
-	L"tga", L"tif", L"tiff",
-	L"pcx",
-	NULL
+  L"jpe", L"jpg", L"jpeg",
+  L"bmp",
+  L"ico",
+  L"pbm", L"pgm", L"pnm", L"ppm",
+  L"png",
+  L"bw", L"rgb", L"rgba", L"sgi",
+  L"tga", L"tif", L"tiff",
+  L"pcx",
+  NULL
 };
 
+void ParseDirs(const string& _Dir, char** ExtList, char* ConvExt, bool Recurse);
+bool IsDir(WIN32_FIND_DATA* _Data);
+char* GetExtension(const char* FileName);
+bool CheckExtension(char* Arg, char* Ext);
 
-void	ParseDirs(const string &_Dir, char **ExtList, char *ConvExt, bool Recurse);
-bool	IsDir(WIN32_FIND_DATA *_Data);
-char	*GetExtension(const char *FileName);
-bool	CheckExtension(char *Arg, char *Ext);
-
-
-TCHAR	*Ext;
-string	NewExt;
-int		i, j;
-
+TCHAR* Ext;
+string NewExt;
+int i, j;
 
 //void BatchConv(TCHAR *Directory, TCHAR *ExtList, TCHAR *ConvExt, bool Recurse)
 //{
@@ -103,60 +100,60 @@ int		i, j;
 //	return false;
 //}
 
-
-TCHAR *GetExtension(const TCHAR *FileName)
+TCHAR* GetExtension(const TCHAR* FileName)
 {
-	bool PeriodFound = false;
-	TCHAR *Ext = (TCHAR*)FileName;
-	long i, Len = (long)wcslen(FileName);
+    bool PeriodFound = false;
+    TCHAR* Ext = (TCHAR*)FileName;
+    long i, Len = (long)wcslen(FileName);
 
-	if (FileName == NULL || !Len)  // if not a good filename/extension, exit early
-		return NULL;
+    if (FileName == NULL || !Len) // if not a good filename/extension, exit early
+        return NULL;
 
-	Ext += Len;  // start at the end
+    Ext += Len; // start at the end
 
-	for (i = Len; i >= 0; i--) {
-		if (*Ext == '.') {  // try to find a period 
-			PeriodFound = true;
-			break;
-		}
-		Ext--;
-	}
+    for (i = Len; i >= 0; i--)
+    {
+        if (*Ext == '.')
+        { // try to find a period
+            PeriodFound = true;
+            break;
+        }
+        Ext--;
+    }
 
-	if (!PeriodFound)  // if no period, no extension
-		return NULL;
+    if (!PeriodFound) // if no period, no extension
+        return NULL;
 
-	return Ext+1;
+    return Ext + 1;
 }
-
 
 // Simple function to test if a filename has a given extension, disregarding case
-bool CheckExtension(TCHAR *Arg, TCHAR *Ext)
+bool CheckExtension(TCHAR* Arg, TCHAR* Ext)
 {
-	bool	PeriodFound = false;
-	TCHAR	*Argu = Arg;  // pointer to arg so we don't destroy arg
-	unsigned int i;
+    bool PeriodFound = false;
+    TCHAR* Argu = Arg; // pointer to arg so we don't destroy arg
+    unsigned int i;
 
-	if (Arg == NULL || Ext == NULL || !wcslen(Arg) || !wcslen(Ext))  // if not a good filename/extension, exit early
-		return false;
+    if (Arg == NULL || Ext == NULL || !wcslen(Arg) || !wcslen(Ext)) // if not a good filename/extension, exit early
+        return false;
 
-	Argu += wcslen(Arg);  // start at the end
+    Argu += wcslen(Arg); // start at the end
 
+    for (i = (int)wcslen(Arg); i >= 0; i--)
+    {
+        if (*Argu == '.')
+        { // try to find a period
+            PeriodFound = true;
+            break;
+        }
+        Argu--;
+    }
 
-	for (i = (int)wcslen(Arg); i >= 0; i--) {
-		if (*Argu == '.') {  // try to find a period 
-			PeriodFound = true;
-			break;
-		}
-		Argu--;
-	}
+    if (!PeriodFound) // if no period, no extension
+        return false;
 
-	if (!PeriodFound)  // if no period, no extension
-		return false;
+    if (!_wcsicmp(Argu + 1, Ext)) // extension and ext match?
+        return true;
 
-	if (!_wcsicmp(Argu+1, Ext))  // extension and ext match?
-		return true;
-
-	return false;  // if all else fails, return IL_FALSE
+    return false; // if all else fails, return IL_FALSE
 }
-

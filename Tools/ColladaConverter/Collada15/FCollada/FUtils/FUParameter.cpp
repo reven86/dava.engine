@@ -16,7 +16,7 @@
 
 extern void TrickLinkerFUParameter()
 {
-	// Animatables
-	extern void TrickLinkerFCDParameterAnimatable();
-	TrickLinkerFCDParameterAnimatable();
+    // Animatables
+    extern void TrickLinkerFCDParameterAnimatable();
+    TrickLinkerFCDParameterAnimatable();
 }

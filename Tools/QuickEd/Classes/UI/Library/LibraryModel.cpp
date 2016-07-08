@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "LibraryModel.h"
 
 #include <QIcon>
@@ -47,21 +18,19 @@
 
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 using namespace DAVA;
 
-LibraryModel::LibraryModel(PackageNode *_root, QObject *parent) 
+LibraryModel::LibraryModel(QObject* parent)
     : QStandardItemModel(parent)
-    , root(SafeRetain(_root))
     , defaultControlsRootItem(nullptr)
     , controlsRootItem(nullptr)
     , importedPackageRootItem(nullptr)
 {
-    root->AddListener(this);
     Vector<std::pair<String, bool>> controlDescrs =
     {
       { "UIControl", false },
-      { "UIButton", false },
       { "UIStaticText", false },
       { "UITextField", false },
       { "UISlider", true },
@@ -78,7 +47,7 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
       { "UIJoypad", true }
     };
 
-    for (std::pair<String, bool> &descr : controlDescrs)
+    for (std::pair<String, bool>& descr : controlDescrs)
     {
         ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(descr.first));
         if (control)
@@ -87,41 +56,55 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
                 defaultControls.push_back(ControlNode::CreateFromControlWithChildren(control));
             else
                 defaultControls.push_back(ControlNode::CreateFromControl(control));
+
+            auto prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("Size");
+
+            prop->SetValue(VariantType(Vector2(32.0f, 32.0f)));
         }
         else
         {
             DVASSERT(false);
         }
     }
-    
-    BuildModel();
+
+    defaultControlsRootItem = new QStandardItem(tr("Default controls"));
+    invisibleRootItem()->appendRow(defaultControlsRootItem);
+    for (ControlNode* defaultControl : defaultControls)
+    {
+        QString className = QString::fromStdString(defaultControl->GetControl()->GetClassName());
+        auto item = new QStandardItem(QIcon(IconHelper::GetIconPathForClassName(className)), className);
+        item->setData(QVariant::fromValue(static_cast<void*>(defaultControl)), POINTER_DATA);
+        item->setData(className, INNER_NAME_DATA);
+        defaultControlsRootItem->appendRow(item);
+    }
 }
 
 LibraryModel::~LibraryModel()
 {
-    root->RemoveListener(this);
-    SafeRelease(root);
-    
-    for (ControlNode *control : defaultControls)
+    for (ControlNode* control : defaultControls)
+    {
         control->Release();
+    }
     defaultControls.clear();
 }
 
-Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
+Qt::ItemFlags LibraryModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
     {
         return Qt::NoItemFlags;
     }
 
-    QStandardItem *item = itemFromIndex(index);
-    
+    QStandardItem* item = itemFromIndex(index);
+
     Qt::ItemFlags result = QAbstractItemModel::flags(index);
     Vector<ControlNode*> controls;
     Vector<StyleSheetNode*> styles;
-    PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
-    if (node && node->GetControl() != nullptr)
+    PackageBaseNode* node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+    if (nullptr != node && node->GetControl() != nullptr)
+    {
         result |= Qt::ItemIsDragEnabled;
+    }
     return result;
 }
 
@@ -130,18 +113,24 @@ QStringList LibraryModel::mimeTypes() const
     return QStringList() << "text/plain";
 }
 
-QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
+QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
 {
-    for(const auto &index : indexes)
+    DVASSERT(nullptr != package);
+    if (nullptr == package)
+    {
+        return nullptr;
+    }
+
+    for (const auto& index : indexes)
     {
         if (index.isValid())
         {
-            QMimeData *data = new QMimeData();
+            QMimeData* data = new QMimeData();
             auto item = itemFromIndex(index);
-            
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
-            ControlNode *control = node ? dynamic_cast<ControlNode*>(node) : nullptr;
-            
+
+            PackageBaseNode* node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+            ControlNode* control = node ? dynamic_cast<ControlNode*>(node) : nullptr;
+
             if (control)
             {
                 Vector<ControlNode*> controls;
@@ -152,14 +141,15 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
                     resultControl = RefPtr<ControlNode>(ControlNode::CreateFromPrototype(control));
                 else
                     resultControl = control;
-                
+
                 controls.push_back(resultControl.Get());
-                
+
                 YamlPackageSerializer serializer;
-                serializer.SerializePackageNodes(root, controls, styles);
+
+                serializer.SerializePackageNodes(package, controls, styles);
                 String str = serializer.WriteToString();
                 data->setText(QString::fromStdString(str));
-                
+
                 return data;
             }
         }
@@ -167,7 +157,44 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
     return nullptr;
 }
 
-QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *item) const
+void LibraryModel::SetPackageNode(PackageNode* package_)
+{
+    if (nullptr != controlsRootItem)
+    {
+        removeRow(controlsRootItem->row());
+        controlsRootItem = nullptr;
+    }
+    if (nullptr != importedPackageRootItem)
+    {
+        removeRow(importedPackageRootItem->row());
+        importedPackageRootItem = nullptr;
+    }
+    if (package != nullptr)
+    {
+        package->RemoveListener(this);
+    }
+    package = package_;
+    if (package != nullptr)
+    {
+        package->AddListener(this);
+        BuildModel();
+    }
+}
+
+QVariant LibraryModel::data(const QModelIndex& index, int role) const
+{
+    if (role == Qt::BackgroundRole)
+    {
+        QStandardItem* item = itemFromIndex(index);
+        if (item->parent() == nullptr)
+        {
+            return Themes::GetViewLineAlternateColor();
+        }
+    }
+    return QStandardItemModel::data(index, role);
+}
+
+QModelIndex LibraryModel::indexByNode(const void* node, const QStandardItem* item) const
 {
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != item);
@@ -189,33 +216,26 @@ QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *ite
 
 void LibraryModel::BuildModel()
 {
-    defaultControlsRootItem = new QStandardItem(tr("Default controls"));
-    defaultControlsRootItem->setBackground(QBrush(Qt::lightGray));
-    invisibleRootItem()->appendRow(defaultControlsRootItem);
-    for (ControlNode *defaultControl : defaultControls)
+    DVASSERT(nullptr != package);
+    if (nullptr != package)
     {
-        QString className = QString::fromStdString(defaultControl->GetControl()->GetClassName());
-        auto item = new QStandardItem(QIcon(IconHelper::GetIconPathForClassName(className)), className);
-        item->setData(QVariant::fromValue(static_cast<void*>(defaultControl)), POINTER_DATA);
-        item->setData(className, INNER_NAME_DATA);
-        defaultControlsRootItem->appendRow(item);
-    }
-    const auto packageControls = root->GetPackageControlsNode();
-    if (packageControls->GetCount())
-    {
-        CreateControlsRootItem();
-        for (int i = 0; i < packageControls->GetCount(); i++)
+        const auto packageControls = package->GetPackageControlsNode();
+        if (packageControls->GetCount())
         {
-            AddControl(packageControls->Get(i));
+            CreateControlsRootItem();
+            for (int i = 0; i < packageControls->GetCount(); i++)
+            {
+                AddControl(packageControls->Get(i));
+            }
         }
-    }
-    const auto importedPackagesNode = root->GetImportedPackagesNode();
-    if (importedPackagesNode->GetCount())
-    {
-        CreateImportPackagesRootItem();
-        for (int i = 0; i < importedPackagesNode->GetCount(); ++i)
+        const auto importedPackagesNode = package->GetImportedPackagesNode();
+        if (importedPackagesNode->GetCount())
         {
-            AddImportedControl(importedPackagesNode->GetImportedPackage(i));
+            CreateImportPackagesRootItem();
+            for (int i = 0; i < importedPackagesNode->GetCount(); ++i)
+            {
+                AddImportedControl(importedPackagesNode->GetImportedPackage(i));
+            }
         }
     }
 }
@@ -226,9 +246,9 @@ void LibraryModel::AddControl(ControlNode* node)
     DVASSERT(nullptr != controlsRootItem);
     QString name = QString::fromStdString(node->GetName());
     auto item = new QStandardItem(
-        QIcon(IconHelper::GetCustomIconPath()),
-        name
-        );
+    QIcon(IconHelper::GetCustomIconPath()),
+    name
+    );
     item->setData(QVariant::fromValue(static_cast<void*>(node)), POINTER_DATA);
     item->setData(name, INNER_NAME_DATA);
     controlsRootItem->appendRow(item);
@@ -249,9 +269,9 @@ void LibraryModel::AddImportedControl(PackageNode* node)
         const auto subNode = controls->Get(j);
         QString subPackageName = QString::fromStdString(subNode->GetName());
         auto item = new QStandardItem(
-            QIcon(IconHelper::GetCustomIconPath()),
-            subPackageName
-            );
+        QIcon(IconHelper::GetCustomIconPath()),
+        subPackageName
+        );
         item->setData(QVariant::fromValue(static_cast<void*>(subNode)), POINTER_DATA);
         item->setData(packageName + "/" + subPackageName, INNER_NAME_DATA);
         importedPackageItem->appendRow(item);
@@ -261,22 +281,28 @@ void LibraryModel::AddImportedControl(PackageNode* node)
 void LibraryModel::CreateControlsRootItem()
 {
     DVASSERT(nullptr == controlsRootItem);
-    controlsRootItem = new QStandardItem(tr("Package controls"));
-    controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(root->GetPackageControlsNode())), POINTER_DATA);
-    controlsRootItem->setBackground(QBrush(Qt::lightGray));
-    invisibleRootItem()->insertRow(1 , controlsRootItem);
+    DVASSERT(nullptr != package);
+    if (nullptr != package)
+    {
+        controlsRootItem = new QStandardItem(tr("Package controls"));
+        controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(package->GetPackageControlsNode())), POINTER_DATA);
+        invisibleRootItem()->insertRow(1, controlsRootItem);
+    }
 }
 
 void LibraryModel::CreateImportPackagesRootItem()
 {
     DVASSERT(nullptr == importedPackageRootItem);
-    importedPackageRootItem = new QStandardItem(tr("Importred controls"));
-    importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(root->GetImportedPackagesNode())), POINTER_DATA);
-    importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
-    invisibleRootItem()->appendRow(importedPackageRootItem);
+    DVASSERT(nullptr != package);
+    if (nullptr != package)
+    {
+        importedPackageRootItem = new QStandardItem(tr("Importred controls"));
+        importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(package->GetImportedPackagesNode())), POINTER_DATA);
+        invisibleRootItem()->appendRow(importedPackageRootItem);
+    }
 }
 
-void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
+void LibraryModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetName() == "Name")
     {
@@ -302,7 +328,7 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
     }
 }
 
-void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
+void LibraryModel::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int row)
 {
     Q_UNUSED(destination);
     Q_UNUSED(row);
@@ -313,7 +339,7 @@ void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *des
     }
     if (controlsRootItem->data().value<void*>() == node->GetParent())
     {
-        const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item 
+        const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item
         if (!destIndex.isValid())
         {
             AddControl(node);
@@ -321,7 +347,7 @@ void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *des
     }
 }
 
-void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from)
+void LibraryModel::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
@@ -339,7 +365,7 @@ void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode
     }
 }
 
-void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
+void LibraryModel::ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index)
 {
     Q_UNUSED(to);
     Q_UNUSED(index);
@@ -350,7 +376,7 @@ void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNo
     }
     if (importedPackageRootItem->data().value<void*>() == node->GetParent())
     {
-        const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item 
+        const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item
         if (!destIndex.isValid())
         {
             AddImportedControl(node);
@@ -358,12 +384,12 @@ void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNo
     }
 }
 
-void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
+void LibraryModel::ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from)
 {
     Q_UNUSED(from);
     DVASSERT(nullptr != node);
     DVASSERT(nullptr != importedPackageRootItem);
-    
+
     QModelIndex parentIndex = indexByNode(node, importedPackageRootItem);
     if (parentIndex.isValid())
     {

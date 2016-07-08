@@ -1,41 +1,12 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "PatchFile.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
-
 static const char8 davaPatchSignature[] = "[DAVAPATCH]";
 static const uint32 davaPatchSignatureSize = sizeof(davaPatchSignature) - 1;
 
@@ -43,7 +14,7 @@ static const uint32 davaPatchSignatureSize = sizeof(davaPatchSignature) - 1;
 // PatchInfo
 // ======================================================================================
 PatchInfo::PatchInfo()
-{ 
+{
     Reset();
 }
 
@@ -60,15 +31,21 @@ void PatchInfo::Reset()
 
 bool PatchInfo::Write(File* file)
 {
-    if(nullptr != file)
+    if (nullptr != file)
     {
-        if(!WriteString(file, origPath)) return false;
-        if(sizeof(origSize) != file->Write(&origSize)) return false;
-        if(sizeof(origCRC) != file->Write(&origCRC)) return false;
+        if (!WriteString(file, origPath))
+            return false;
+        if (sizeof(origSize) != file->Write(&origSize))
+            return false;
+        if (sizeof(origCRC) != file->Write(&origCRC))
+            return false;
 
-        if(!WriteString(file, newPath)) return false;
-        if(sizeof(newSize) != file->Write(&newSize)) return false;
-        if(sizeof(newCRC) != file->Write(&newCRC)) return false;
+        if (!WriteString(file, newPath))
+            return false;
+        if (sizeof(newSize) != file->Write(&newSize))
+            return false;
+        if (sizeof(newCRC) != file->Write(&newCRC))
+            return false;
 
         return true;
     }
@@ -76,17 +53,23 @@ bool PatchInfo::Write(File* file)
     return false;
 }
 
-bool PatchInfo::Read(File *file)
+bool PatchInfo::Read(File* file)
 {
-    if(nullptr != file)
+    if (nullptr != file)
     {
-        if(!ReadString(file, origPath)) return false;
-        if(sizeof(origSize) != file->Read(&origSize)) return false;
-        if(sizeof(origCRC) != file->Read(&origCRC)) return false;
+        if (!ReadString(file, origPath))
+            return false;
+        if (sizeof(origSize) != file->Read(&origSize))
+            return false;
+        if (sizeof(origCRC) != file->Read(&origCRC))
+            return false;
 
-        if(!ReadString(file, newPath)) return false;
-        if(sizeof(newSize) != file->Read(&newSize)) return false;
-        if(sizeof(newCRC) != file->Read(&newCRC)) return false;
+        if (!ReadString(file, newPath))
+            return false;
+        if (sizeof(newSize) != file->Read(&newSize))
+            return false;
+        if (sizeof(newCRC) != file->Read(&newCRC))
+            return false;
 
         return true;
     }
@@ -94,17 +77,17 @@ bool PatchInfo::Read(File *file)
     return false;
 }
 
-bool PatchInfo::WriteString(File* file, const String &str)
+bool PatchInfo::WriteString(File* file, const String& str)
 {
     bool ret = false;
 
     uint32 len = static_cast<uint32>(str.length());
     uint32 wlen = file->Write(&len);
 
-    if(wlen == sizeof(uint32))
+    if (wlen == sizeof(uint32))
     {
         wlen = file->Write(str.c_str(), len);
-        if(wlen == len)
+        if (wlen == len)
         {
             ret = true;
         }
@@ -113,21 +96,21 @@ bool PatchInfo::WriteString(File* file, const String &str)
     return ret;
 }
 
-bool PatchInfo::ReadString(File* file, String &str)
+bool PatchInfo::ReadString(File* file, String& str)
 {
     bool ret = false;
     uint32 len = 0;
     size_t rlen = file->Read(&len);
 
-    if(rlen == sizeof(len))
+    if (rlen == sizeof(len))
     {
-        if(len > 0)
+        if (len > 0)
         {
             String tmpStr;
             tmpStr.resize(len);
             rlen = file->Read(&tmpStr[0], static_cast<uint32>(tmpStr.size()));
 
-            if(rlen == tmpStr.size())
+            if (rlen == tmpStr.size())
             {
                 str.swap(tmpStr);
                 ret = true;
@@ -146,21 +129,21 @@ bool PatchInfo::ReadString(File* file, String &str)
 // ======================================================================================
 // PatchFileWriter
 // ======================================================================================
-PatchFileWriter::PatchFileWriter(const FilePath &path, PatchFileWriter::WriterMode mode, BSType _diffType, bool beVerbose)
+PatchFileWriter::PatchFileWriter(const FilePath& path, PatchFileWriter::WriterMode mode, BSType _diffType, bool beVerbose)
     : patchPath(path)
     , diffType(_diffType)
     , verbose(beVerbose)
 {
-    switch(mode)
+    switch (mode)
     {
-        case PatchFileWriter::WRITE:
-            FileSystem::Instance()->DeleteFile(patchPath);
-            break;
-        case PatchFileWriter::APPEND:
-            break;
-        default:
-            DVASSERT(0 && "Unknown PatchWriter mode.");
-            break;
+    case PatchFileWriter::WRITE:
+        FileSystem::Instance()->DeleteFile(patchPath);
+        break;
+    case PatchFileWriter::APPEND:
+        break;
+    default:
+        DVASSERT(0 && "Unknown PatchWriter mode.");
+        break;
     }
 }
 
@@ -168,7 +151,7 @@ PatchFileWriter::~PatchFileWriter()
 {
 }
 
-bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath, const FilePath &_newBase, const FilePath &newPath)
+bool PatchFileWriter::Write(const FilePath& _origBase, const FilePath& origPath, const FilePath& _newBase, const FilePath& newPath)
 {
     bool ret = false;
 
@@ -176,11 +159,13 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
     FilePath newBase = _newBase;
 
     // if base wasn't set, thread it as current directory
-    if(origBase.IsEmpty()) origBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    if(newBase.IsEmpty()) newBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    if (origBase.IsEmpty())
+        origBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    if (newBase.IsEmpty())
+        newBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
 
     // diff between two directories
-    if(origPath.IsDirectoryPathname() && newPath.IsDirectoryPathname())
+    if (origPath.IsDirectoryPathname() && newPath.IsDirectoryPathname())
     {
         ret = true;
 
@@ -191,11 +176,11 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
         EnumerateDir(newPath, newPath, newList);
 
         // go through files, that should exist in new revision
-        for(String& newRelativeFile : newList)
+        for (String& newRelativeFile : newList)
         {
             String origRelativeFile;
 
-            if(std::find(origList.begin(), origList.end(), newRelativeFile) != origList.end())
+            if (std::find(origList.begin(), origList.end(), newRelativeFile) != origList.end())
             {
                 origRelativeFile = newRelativeFile;
             }
@@ -203,7 +188,7 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
             FilePath origSinglePath = origPath + origRelativeFile;
             FilePath newSinglePath = newPath + newRelativeFile;
 
-            if(!SingleWrite(origBase, origSinglePath, newBase, newSinglePath))
+            if (!SingleWrite(origBase, origSinglePath, newBase, newSinglePath))
             {
                 printf("Error generating patch:\n\t %s --> %s\n", origPath.GetRelativePathname().c_str(), newPath.GetRelativePathname().c_str());
                 ret = false;
@@ -211,13 +196,13 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
             }
         }
 
-        if(ret)
+        if (ret)
         {
             // through files, that were in old revision
             // and make patch to delete files that not exist in new revision
-            for(String& x : origList)
+            for (String& x : origList)
             {
-                if(std::find(newList.begin(), newList.end(), x) == newList.end())
+                if (std::find(newList.begin(), newList.end(), x) == newList.end())
                 {
                     FilePath origSinglePath = origPath + x;
                     SingleWrite(origBase, origSinglePath, newBase, FilePath());
@@ -234,7 +219,7 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
     return ret;
 }
 
-bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &origPath, const FilePath &newBase, const FilePath &newPath)
+bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& origPath, const FilePath& newBase, const FilePath& newPath)
 {
     bool ret = false;
 
@@ -246,21 +231,21 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
         String origRelativePath = origPath.GetRelativePathname(origBase);
         String newRelativePath = newPath.GetRelativePathname(newBase);
 
-        if(verbose)
+        if (verbose)
         {
             printf("Writing patch\n\t%s ->\n\t%s\n", origPath.GetAbsolutePathname().c_str(), newPath.GetAbsolutePathname().c_str());
         }
 
-        File *patchFile = File::Create(patchPath, File::APPEND | File::WRITE);
-        if(nullptr != patchFile)
+        File* patchFile = File::Create(patchPath, File::APPEND | File::WRITE);
+        if (nullptr != patchFile)
         {
             PatchInfo patchInfo;
 
-            char8 *origData = nullptr;
-            char8 *newData = nullptr;
+            char8* origData = nullptr;
+            char8* newData = nullptr;
 
             File* origFile = File::Create(origPath, File::OPEN | File::READ);
-            if(nullptr != origFile)
+            if (nullptr != origFile)
             {
                 uint32 origSize = origFile->GetSize();
                 origData = new char8[origSize];
@@ -272,7 +257,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             }
 
             File* newFile = File::Create(newPath, File::OPEN | File::READ);
-            if(nullptr != newFile)
+            if (nullptr != newFile)
             {
                 uint32 newSize = newFile->GetSize();
                 newData = new char8[newSize];
@@ -287,10 +272,10 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             bool needWriteDiff = false;
 
             // if both files were opened
-            if(nullptr != origFile && nullptr != newFile)
+            if (nullptr != origFile && nullptr != newFile)
             {
                 // if there is some diff - write it
-                if(patchInfo.origSize != patchInfo.newSize || patchInfo.origCRC != patchInfo.newCRC)
+                if (patchInfo.origSize != patchInfo.newSize || patchInfo.origCRC != patchInfo.newCRC)
                 {
                     needWriteHeader = true;
                     needWriteDiff = true;
@@ -304,7 +289,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
             // one or both files weren't opened
             else
             {
-                if(nullptr != origFile || nullptr != newFile)
+                if (nullptr != origFile || nullptr != newFile)
                 {
                     needWriteHeader = true;
                     needWriteDiff = true;
@@ -312,10 +297,10 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                 else
                 {
                     // diff between directories
-                    if( (origPath.IsDirectoryPathname() || origPath.IsEmpty()) &&
+                    if ((origPath.IsDirectoryPathname() || origPath.IsEmpty()) &&
                         (newPath.IsDirectoryPathname() || newPath.IsEmpty()))
                     {
-                        if(origRelativePath.empty() || newRelativePath.empty())
+                        if (origRelativePath.empty() || newRelativePath.empty())
                         {
                             patchInfo.origPath = origPath.GetRelativePathname(origBase);
                             patchInfo.newPath = newPath.GetRelativePathname(newBase);
@@ -330,7 +315,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                 }
             }
 
-            if(needWriteHeader)
+            if (needWriteHeader)
             {
                 uint32 patchSizePos;
                 uint32 patchSize = 0;
@@ -348,7 +333,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                 ret = patchInfo.Write(patchFile);
 
                 // write diff, if needed
-                if(ret && needWriteDiff)
+                if (ret && needWriteDiff)
                 {
                     if (!newPath.IsDirectoryPathname() && FileSystem::Instance()->Exists(newPath))
                     {
@@ -362,7 +347,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
 
                 // calculate patch size (without signature and patchSize fields)
                 patchSize = patchFile->GetPos() - patchSizePos - sizeof(patchSize);
-                if(ret && patchSize > 0)
+                if (ret && patchSize > 0)
                 {
                     // seek to pos, where zero patch size was written
                     patchFile->Release();
@@ -372,7 +357,7 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
                     patchFile->Write(&patchSize);
                 }
 
-                if(ret && verbose)
+                if (ret && verbose)
                 {
                     printf("\tDone, size: %u bytes\n", patchSize);
                 }
@@ -389,29 +374,29 @@ bool PatchFileWriter::SingleWrite(const FilePath &origBase, const FilePath &orig
     return ret;
 }
 
-void PatchFileWriter::EnumerateDir(const FilePath &dirPath, const FilePath &basePath, List<String> &in)
+void PatchFileWriter::EnumerateDir(const FilePath& dirPath, const FilePath& basePath, List<String>& in)
 {
-    FileList * list = new FileList(dirPath);
-    
+    FileList* list = new FileList(dirPath);
+
     int32 listSize = list->GetCount();
-    for(int32 i = 0; i < listSize; ++i)
+    for (int32 i = 0; i < listSize; ++i)
     {
         String fileName = list->GetFilename(i);
-        if(list->IsDirectory(i))
+        if (list->IsDirectory(i))
         {
             fileName += '/';
         }
 
-        if(!list->IsNavigationDirectory(i))
+        if (!list->IsNavigationDirectory(i))
         {
             FilePath filePath = FilePath::AddPath(dirPath, fileName);
-            if(list->IsDirectory(i))
+            if (list->IsDirectory(i))
             {
                 EnumerateDir(filePath, basePath, in);
             }
 
             in.push_back(filePath.GetRelativePathname(basePath));
-         }
+        }
     }
 
     list->Release();
@@ -420,68 +405,72 @@ void PatchFileWriter::EnumerateDir(const FilePath &dirPath, const FilePath &base
 // ======================================================================================
 // PatchFileReader
 // ======================================================================================
-PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
-: verbose(beVerbose)
-, lastError(ERROR_NO)
-, parseError(ERROR_NO)
-, initialPositionsCount(0)
-, curErrno(0)
-, curPatchIndex(0)
-, curBSDiffPos(0)
-, eof(true)
+PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose, bool enablePermissive)
+    : isPermissiveMode(enablePermissive)
+    , verbose(beVerbose)
+    , lastError(ERROR_NO)
+    , parseError(ERROR_NO)
+    , lastFileErrno(0)
+    , initialPositionsCount(0)
+    , curPatchIndex(0)
+    , curBSDiffPos(0)
+    , eof(true)
 {
     patchFile = File::Create(path, File::OPEN | File::READ | File::WRITE);
-    if(nullptr != patchFile)
+    if (nullptr != patchFile)
     {
         char8 signature[davaPatchSignatureSize];
         uint32 patchFileSize = patchFile->GetSize();
-        
-        while(true)
+
+        while (true)
         {
             signature[0] = 0;
 
             // read signature and patch size
             uint32 sigReadSize = patchFile->Read(signature, davaPatchSignatureSize);
-            
+
             // if nothing was read, this should be normal end of file
             // so we can break loop without errors
-            if(0 == sigReadSize && patchFile->IsEof())
+            if (0 == sigReadSize && patchFile->IsEof())
             {
                 break;
             }
-            
+
             // check for signature match
-            if(sigReadSize != davaPatchSignatureSize ||
-               Memcmp(signature, davaPatchSignature, davaPatchSignatureSize) != 0)
+            if (sigReadSize != davaPatchSignatureSize ||
+                Memcmp(signature, davaPatchSignature, davaPatchSignatureSize) != 0)
             {
                 // wrong signature, we should break with error
                 parseError = ERROR_CORRUPTED;
+                Logger::ErrorToFile(logFilePath, "[PatchFileReader::PatchFileReader] Check for signature match failed");
                 break;
             }
-            
+
             // now read size of patch
             uint32 patchSize = 0;
             uint32 szReadSize = patchFile->Read(&patchSize);
-            
+
             // check for correct patch size
-            if(sizeof(patchSize) != szReadSize || 0 == patchSize)
+            if (sizeof(patchSize) != szReadSize || 0 == patchSize)
             {
-                // wrong patch size, or failed read operation
+                // wrong patch size or read operation failed
                 parseError = ERROR_CORRUPTED;
+                Logger::ErrorToFile(logFilePath, "[PatchFileReader::PatchFileReader]  Wrong patch size or read operation failed");
                 break;
             }
-            
+
             // remember current file pos
             uint32 curPos = patchFile->GetPos();
 
             // check if next patch position isn't out of file size
-            if((curPos + patchSize) > patchFileSize)
+            if ((curPos + patchSize) > patchFileSize)
             {
                 parseError = ERROR_CORRUPTED;
+                Logger::ErrorToFile(logFilePath, "[PatchFileReader::PatchFileReader]  Next patch position is out of file size");
                 break;
             }
-            
-            // store remembered patch pos in our internal list 
+
+            // store remembered patch pos in our internal list
             // and go to the next patch chunk
             patchPositions.push_back(curPos);
             patchFile->Seek(patchSize, File::SEEK_FROM_CURRENT);
@@ -492,7 +481,9 @@ PatchFileReader::PatchFileReader(const FilePath &path, bool beVerbose)
     else
     {
         parseError = ERROR_CANT_READ;
-        curErrno = errno;
+        lastFileErrno = errno;
+        lastErrorDetails.expected.path = path;
+        lastErrorDetails.actual.path = "";
     }
 }
 
@@ -503,7 +494,7 @@ PatchFileReader::~PatchFileReader()
 
 bool PatchFileReader::ReadFirst()
 {
-    if(patchPositions.size() > 0)
+    if (patchPositions.size() > 0)
     {
         curPatchIndex = 0;
         eof = false;
@@ -518,7 +509,7 @@ bool PatchFileReader::ReadFirst()
 
 bool PatchFileReader::ReadNext()
 {
-    if(patchPositions.size() > 0 && curPatchIndex < (patchPositions.size() - 1))
+    if (patchPositions.size() > 0 && curPatchIndex < (patchPositions.size() - 1))
     {
         curPatchIndex++;
     }
@@ -532,7 +523,7 @@ bool PatchFileReader::ReadNext()
 
 bool PatchFileReader::ReadLast()
 {
-    if(patchPositions.size() > 0)
+    if (patchPositions.size() > 0)
     {
         curPatchIndex = patchPositions.size() - 1;
         eof = false;
@@ -547,7 +538,7 @@ bool PatchFileReader::ReadLast()
 
 bool PatchFileReader::ReadPrev()
 {
-    if(curPatchIndex > 0 && curPatchIndex <= patchPositions.size())
+    if (curPatchIndex > 0 && curPatchIndex <= patchPositions.size())
     {
         curPatchIndex--;
     }
@@ -563,7 +554,7 @@ const PatchInfo* PatchFileReader::GetCurInfo() const
 {
     const PatchInfo* ret = nullptr;
 
-    if(curBSDiffPos > 0)
+    if (curBSDiffPos > 0)
     {
         ret = &curInfo;
     }
@@ -571,39 +562,24 @@ const PatchInfo* PatchFileReader::GetCurInfo() const
     return ret;
 }
 
-PatchFileReader::PatchError PatchFileReader::GetLastError() const
-{
-    return lastError;
-}
-
-PatchFileReader::PatchError PatchFileReader::GetParseError() const
-{
-    return parseError;
-}
-
-int32 PatchFileReader::GetErrno() const
-{
-    return curErrno;
-}
-
 bool PatchFileReader::DoRead()
 {
+    lastErrorDetails = PatchingErrorDetails();
     bool ret = false;
-
     lastError = ERROR_NO;
-    curErrno = 0;
+    lastFileErrno = 0;
 
     // reset header and bsdiff pos
     curBSDiffPos = 0;
     curInfo.Reset();
 
-    if(nullptr != patchFile)
+    if (nullptr != patchFile)
     {
-        if(!eof)
-        { 
+        if (!eof)
+        {
             // read header and remember bsdiff pos
             int32 patchPos = patchPositions[curPatchIndex];
-            if(patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
+            if (patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
             {
                 curBSDiffPos = patchFile->GetPos();
                 ret = true;
@@ -613,14 +589,14 @@ bool PatchFileReader::DoRead()
                 lastError = ERROR_CORRUPTED;
             }
         }
-        else 
+        else
         {
-            // end of file, so we should set lastError to 
+            // end of file, so we should set lastError to
             // the parseError value
             lastError = parseError;
 
             // no errors, check if patch file wasn't empty
-            if(ERROR_NO == lastError && 0 == initialPositionsCount)
+            if (ERROR_NO == lastError && 0 == initialPositionsCount)
             {
                 // patch file without
                 lastError = ERROR_EMPTY_PATCH;
@@ -639,13 +615,13 @@ bool PatchFileReader::Truncate()
 {
     bool ret = false;
 
-    if(nullptr != patchFile && ERROR_NO == parseError && !eof && curPatchIndex < patchPositions.size())
+    if (nullptr != patchFile && ERROR_NO == parseError && !eof && curPatchIndex < patchPositions.size())
     {
         int32 patchPos = patchPositions[curPatchIndex];
         int32 signarutePos = patchPos - davaPatchSignatureSize - sizeof(uint32);
-        if(signarutePos >= 0)
+        if (signarutePos >= 0)
         {
-            if(patchFile->Truncate(signarutePos))
+            if (patchFile->Truncate(signarutePos))
             {
                 curBSDiffPos = 0;
                 patchPositions.resize(curPatchIndex);
@@ -657,11 +633,12 @@ bool PatchFileReader::Truncate()
     return ret;
 }
 
-bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath, const FilePath &_newBase, const FilePath &_newPath)
+bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath, const FilePath& _newBase, const FilePath& _newPath)
 {
     bool ret = true;
     lastError = ERROR_NO;
-    curErrno = 0;
+    lastFileErrno = 0;
+    lastErrorDetails = PatchingErrorDetails();
 
     FilePath origBase = _origBase;
     FilePath newBase = _newBase;
@@ -669,58 +646,69 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
     FilePath newPath = _newPath;
 
     // if base wasn't set, thread it as current directory
-    if(origBase.IsEmpty()) origBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    if(newBase.IsEmpty()) newBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    if (origBase.IsEmpty())
+        origBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    if (newBase.IsEmpty())
+        newBase = FileSystem::Instance()->GetCurrentWorkingDirectory();
 
     // if path wasn't set, generate it using base dir and info about current patch
-    if(origPath.IsEmpty()) origPath = origBase + curInfo.origPath;
-    if(newPath.IsEmpty()) newPath = newBase + curInfo.newPath;
+    if (origPath.IsEmpty())
+        origPath = origBase + curInfo.origPath;
+    if (newPath.IsEmpty())
+        newPath = newBase + curInfo.newPath;
 
-    if(0 == curBSDiffPos)
+    if (0 == curBSDiffPos)
     {
         lastError = ERROR_EMPTY_PATCH;
+        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply]  Patch is empty");
         return false;
     }
 
-    if(verbose)
+    if (verbose)
     {
-        printf("Applying patch\n\t%s ->\n\t%s\n", origPath.GetAbsolutePathname().c_str(), newPath.GetAbsolutePathname().c_str());
+        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] Applying patch\n\t%s ->\n\t%s\n", origPath.GetAbsolutePathname().c_str(), newPath.GetAbsolutePathname().c_str());
     }
 
-    if(!curInfo.origPath.empty() && !curInfo.newPath.empty() &&
+    if (!curInfo.origPath.empty() && !curInfo.newPath.empty() &&
         curInfo.origSize == curInfo.newSize && curInfo.origCRC == curInfo.newCRC)
     {
         // orig file not changed
-        if(origPath != newPath)
+        if (origPath != newPath)
         {
-            if(!FileSystem::Instance()->CopyFile(origPath, newPath, true))
+            if (!FileSystem::Instance()->CopyFile(origPath, newPath, true))
             {
-                curErrno = errno;
+                // can't copy original file to the new path.
+                lastError = ERROR_NEW_WRITE;
+                lastFileErrno = errno;
+                lastErrorDetails.expected.path = newPath;
+                lastErrorDetails.actual.path = origPath;
+
                 ret = false;
+                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't copy %s to %s", origPath.GetFilename().c_str(), newPath.GetFilename().c_str());
             }
         }
     }
     else
     {
-        char8 *origData = nullptr;
-        char8 *newData = nullptr;
+        char8* origData = nullptr;
+        char8* newData = nullptr;
 
-        // if new file should exist after patching 
-        if(!curInfo.newPath.empty())
+        // if new file should exist after patching
+        if (!curInfo.newPath.empty())
         {
             // if there is already exist some
             // we should check if it is already patched
             if (FileSystem::Instance()->Exists(newPath))
             {
                 File* checkFile = File::Create(newPath, File::OPEN | File::READ);
-                if(nullptr != checkFile)
+                if (nullptr != checkFile)
                 {
                     uint32 checkCRC = CRC32::ForFile(newPath);
                     uint32 checkSize = checkFile->GetSize();
                     SafeRelease(checkFile);
 
                     // file exists, so check it size and CRC
-                    if(checkSize == curInfo.newSize && checkCRC == curInfo.newCRC)
+                    if (checkSize == curInfo.newSize && checkCRC == curInfo.newCRC)
                     {
                         return true;
                     }
@@ -728,41 +716,55 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
             }
 
             // should original file exists?
-            if(!curInfo.origPath.empty())
+            if (!curInfo.origPath.empty())
             {
                 File* origFile = File::Create(origPath, File::OPEN | File::READ);
-                if(nullptr == origFile)
+                if (nullptr == origFile)
                 {
-                    curErrno = errno;
+                    lastFileErrno = errno;
+                    lastErrorDetails.expected.path = origPath;
+                    lastErrorDetails.actual.path = "";
                     lastError = ERROR_ORIG_READ;
+                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't read origFile from %s", origPath.GetAbsolutePathname().c_str());
                     ret = false;
                 }
                 else
                 {
                     uint32 origSize = origFile->GetSize();
-                    origData = new(std::nothrow) char8[origSize];
+                    origData = new (std::nothrow) char8[origSize];
 
-                    if(nullptr != origData)
+                    if (nullptr != origData)
                     {
-                        if(origSize != origFile->Read(origData, origSize))
+                        const uint32 bytesReaded = origFile->Read(origData, origSize);
+                        if (bytesReaded != origSize)
                         {
-                            curErrno = errno;
+                            lastFileErrno = errno;
+                            lastErrorDetails.actual.size = bytesReaded;
+                            lastErrorDetails.expected.size = origSize;
+                            lastErrorDetails.actual.path = origPath;
+                            lastErrorDetails.expected.path = origPath;
                             lastError = ERROR_ORIG_READ;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply]  %d bytes readed but %d expected from %s.", bytesReaded, origSize, origPath.GetAbsolutePathname().c_str());
                             ret = false;
                         }
 
                         origFile->Release();
 
-                        // if there was no errors when reading patch file, check for read data CRC
-                        if(ret)
+                        // even if ret == false we need to provide CRC info.
+                        uint32 origCRC = CRC32::ForBuffer(origData, bytesReaded);
+                        if (origSize != curInfo.origSize || origCRC != curInfo.origCRC)
                         {
-                            uint32 origCRC = CRC32::ForBuffer(origData, origSize);
-                            if(origSize != curInfo.origSize || origCRC != curInfo.origCRC)
-                            {
-                                // source crc differ for expected
-                                lastError = ERROR_ORIG_CRC;
-                                ret = false;
-                            }
+                            lastErrorDetails.actual.size = bytesReaded;
+                            lastErrorDetails.expected.size = curInfo.origSize;
+                            lastErrorDetails.actual.crc = origCRC;
+                            lastErrorDetails.expected.crc = curInfo.origCRC;
+                            lastErrorDetails.actual.path = origPath;
+                            lastErrorDetails.expected.path = curInfo.origPath;
+
+                            // source crc differ for expected
+                            lastError = ERROR_ORIG_BUFFER_CRC;
+                            ret = false;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Crc is not match for file %s", origPath.GetAbsolutePathname().c_str());
                         }
                     }
                     else
@@ -770,20 +772,24 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                         // can't allocate memory
                         lastError = ERROR_MEMORY;
                         ret = false;
+                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Cant'allocate %d bytes for %s", origSize, origPath.GetAbsolutePathname().c_str());
                     }
                 }
             }
 
-            if(ret)
+            if (ret)
             {
                 // is this patch for directory creation?
-                if(newPath.IsDirectoryPathname() && curInfo.newSize == 0 && curInfo.newCRC == 0)
+                if (newPath.IsDirectoryPathname() && curInfo.newSize == 0 && curInfo.newCRC == 0)
                 {
-                    if(FileSystem::DIRECTORY_CANT_CREATE == FileSystem::Instance()->CreateDirectory(newPath, true))
+                    if (FileSystem::DIRECTORY_CANT_CREATE == FileSystem::Instance()->CreateDirectory(newPath, true))
                     {
-                        curErrno = errno;
+                        lastFileErrno = errno;
+                        lastErrorDetails.expected.path = newPath;
+                        lastErrorDetails.actual.path = "";
                         lastError = ERROR_NEW_CREATE;
                         ret = false;
+                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't create new directory %s", newPath.GetAbsolutePathname().c_str());
                     }
                 }
                 // for file patching or creation
@@ -796,33 +802,42 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     FileSystem::Instance()->CreateDirectory(tmpNewPath.GetDirectory(), true);
 
                     File* newFile = File::Create(tmpNewPath, File::CREATE | File::WRITE);
-                    if(nullptr == newFile)
+                    if (nullptr == newFile)
                     {
-                        curErrno = errno;
+                        lastFileErrno = errno;
+                        lastErrorDetails.expected.path = tmpNewPath;
+                        lastErrorDetails.actual.path = "";
                         lastError = ERROR_NEW_CREATE;
                         ret = false;
+                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't create temp file &s", tmpNewPath.GetAbsolutePathname().c_str());
                     }
                     else
                     {
-                        if(curInfo.newSize > 0)
+                        if (curInfo.newSize > 0)
                         {
-                            newData = new(std::nothrow) char8[curInfo.newSize];
+                            newData = new (std::nothrow) char8[curInfo.newSize];
 
-                            if(nullptr != newData)
+                            if (nullptr != newData)
                             {
-                                if(BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
+                                if (BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
                                 {
-                                    if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
+                                    if (curInfo.newSize != newFile->Write(newData, curInfo.newSize))
                                     {
-                                        curErrno = errno;
+                                        lastFileErrno = errno;
+                                        lastErrorDetails.expected.path = tmpNewPath;
+                                        lastErrorDetails.expected.size = curInfo.newSize;
+                                        lastErrorDetails.actual.path = "";
+                                        lastErrorDetails.actual.size = newFile->GetSize();
                                         lastError = ERROR_NEW_WRITE;
                                         ret = false;
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't write data to file %s", newFile->GetFilename().GetAbsolutePathname().c_str());
                                     }
                                 }
                                 else
                                 {
                                     lastError = ERROR_CORRUPTED;
                                     ret = false;
+                                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't patch %s", origPath.GetAbsolutePathname().c_str());
                                 }
                             }
                             else
@@ -830,29 +845,39 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                                 // can't allocate memory
                                 lastError = ERROR_MEMORY;
                                 ret = false;
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't allocate %d bytes for new data", curInfo.newSize);
                             }
                         }
                         newFile->Release();
 
                         // if no errors - check for new file CRC
-                        if(ret)
+                        if (ret)
                         {
-                            if(curInfo.newCRC != CRC32::ForFile(tmpNewPath))
+                            uint32 actualCRC = CRC32::ForFile(tmpNewPath);
+                            if (curInfo.newCRC != actualCRC)
                             {
+                                lastErrorDetails.actual.path = tmpNewPath;
+                                lastErrorDetails.expected.path = tmpNewPath;
+                                lastErrorDetails.actual.crc = actualCRC;
+                                lastErrorDetails.expected.crc = curInfo.newCRC;
                                 lastError = ERROR_NEW_CRC;
                                 ret = false;
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s", tmpNewPath.GetAbsolutePathname().c_str());
                             }
                         }
 
                         // if no errors - move tmp file into destination path
-                        if(ret)
+                        if (ret)
                         {
                             // this operation should be atomic
-                            if(!FileSystem::Instance()->MoveFile(tmpNewPath, newPath, true))
+                            if (!FileSystem::Instance()->MoveFile(tmpNewPath, newPath, true))
                             {
-                                curErrno = errno;
+                                lastFileErrno = errno;
+                                lastErrorDetails.expected.path = newPath;
+                                lastErrorDetails.actual.path = tmpNewPath;
                                 lastError = ERROR_NEW_WRITE;
                                 ret = false;
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't move patched file to %s", newPath.GetAbsolutePathname().c_str());
 
                                 FileSystem::Instance()->DeleteFile(tmpNewPath);
                             }
@@ -868,55 +893,73 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
         else
         {
             // should original file exists?
-            if(!curInfo.origPath.empty())
+            // PermissiveMode allows to delete changed files if they should be deleted
+            if (!isPermissiveMode && !curInfo.origPath.empty())
             {
                 // check original crc
                 uint32 origCRC = CRC32::ForFile(origPath);
-                if(origCRC != curInfo.origCRC)
+                if (origCRC != curInfo.origCRC)
                 {
-                    lastError = ERROR_ORIG_CRC;
+                    lastErrorDetails.actual.crc = origCRC;
+                    lastErrorDetails.expected.crc = curInfo.origCRC;
+                    lastErrorDetails.actual.path = origPath;
+                    lastErrorDetails.expected.path = curInfo.origPath;
+                    lastError = ERROR_ORIG_FILE_CRC;
                     ret = false;
+                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Original crc doesn't matches to expected. %s", origPath.GetAbsolutePathname().c_str());
                 }
             }
 
-            if(ret)
+            if (ret)
             {
                 // check if file exists in new basePath
                 FilePath newPathToDelete = newPath;
-                if(newPathToDelete.IsDirectoryPathname())
+                if (newPathToDelete.IsDirectoryPathname())
                 {
                     newPathToDelete += curInfo.origPath;
                 }
 
-                if(newPathToDelete.IsDirectoryPathname())
+                // don't try to delete file or folder if it is not exists in permissive mode
+                // try to delete anyway if permissive mode is not enabled
+                bool isFileExists = FileSystem::Instance()->Exists(newPathToDelete);
+                bool shouldToTtryToDelete = !isPermissiveMode || (isPermissiveMode && isFileExists);
+                if (shouldToTtryToDelete)
                 {
-                    // delete only empty directory
-                    if(!FileSystem::Instance()->DeleteDirectory(newPathToDelete))
+                    if (newPathToDelete.IsDirectoryPathname())
                     {
-                        curErrno = errno;
-                        lastError = ERROR_NEW_WRITE;
-                        ret = false;
+                        // delete only empty directory
+                        if (!FileSystem::Instance()->DeleteDirectory(newPathToDelete))
+                        {
+                            lastFileErrno = errno;
+                            lastErrorDetails.actual.path = newPathToDelete;
+                            lastErrorDetails.expected.path = "";
+                            lastError = ERROR_NEW_WRITE;
+                            ret = false;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        }
                     }
-                }
-                else
-                {
-                    if(!FileSystem::Instance()->DeleteFile(newPathToDelete))
+                    else
                     {
-                        curErrno = errno;
-                        lastError = ERROR_NEW_WRITE;
-                        ret = false;
+                        if (!FileSystem::Instance()->DeleteFile(newPathToDelete))
+                        {
+                            lastFileErrno = errno;
+                            lastErrorDetails.actual.path = newPathToDelete;
+                            lastErrorDetails.expected.path = "";
+                            lastError = ERROR_NEW_WRITE;
+                            ret = false;
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't delete %s", newPathToDelete.GetAbsolutePathname().c_str());
+                        }
                     }
                 }
             }
         }
     }
 
-    if(ret && verbose)
+    if (ret && verbose)
     {
-        printf("\tDone!");
+        Logger::InfoToFile(logFilePath, "[PatchFileReader::Apply] \tDone!");
     }
 
     return ret;
 }
-
 }

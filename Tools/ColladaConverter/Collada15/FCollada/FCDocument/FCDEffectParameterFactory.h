@@ -28,16 +28,18 @@ class FCDEffectParameter;
 class FCOLLADA_EXPORT FCDEffectParameterFactory
 {
 private:
-	// Never instantiate: this is a static class
-	FCDEffectParameterFactory() {}
+    // Never instantiate: this is a static class
+    FCDEffectParameterFactory()
+    {
+    }
 
 public:
-	/** [INTERNAL] Creates a new effect parameter, given a type.
+    /** [INTERNAL] Creates a new effect parameter, given a type.
 		To create new effect parameters, use the appropriate AddEffectParameter function.
 		@param document The COLLADA document that will own the effect parameter.
 		@param type The type of effect to create.
 			This value should reflect the FCDEffectParameter::Type enum. */
-	static FCDEffectParameter* Create(FCDocument* document, uint32 type);
+    static FCDEffectParameter* Create(FCDocument* document, uint32 type);
 };
 
 #endif // _FCD_EFFECT_PARAMETER_FACTORY_H_

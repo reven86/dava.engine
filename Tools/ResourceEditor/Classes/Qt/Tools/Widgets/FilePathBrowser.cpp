@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "FilePathBrowser.h"
 
 #include <QAction>
@@ -37,12 +8,12 @@
 #include <QKeyEvent>
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace
 {
-    const QSize cButtonSize = QSize(24, 24);
+const QSize cButtonSize = QSize(24, 24);
 }
-
 
 FilePathBrowser::FilePathBrowser(QWidget* parent)
     : LineEditEx(parent)
@@ -51,18 +22,13 @@ FilePathBrowser::FilePathBrowser(QWidget* parent)
 {
     InitButtons();
 
-    QBoxLayout *l = qobject_cast<QBoxLayout *>( layout() );
-    if ( l != NULL )
+    QBoxLayout* l = qobject_cast<QBoxLayout*>(layout());
+    if (l != NULL)
     {
-        l->setContentsMargins( 2, 2, 2, 2 );
+        l->setContentsMargins(2, 2, 2, 2);
     }
 
-    connect( this, SIGNAL( returnPressed() ), SLOT( OnReturnPressed() ) );
-    connect( this, SIGNAL( textUpdated( const QString& ) ), SLOT( ValidatePath() ) );
-}
-
-FilePathBrowser::~FilePathBrowser()
-{
+    connect(this, SIGNAL(textUpdated(const QString&)), SLOT(TryToAcceptPath()));
 }
 
 void FilePathBrowser::SetHint(const QString& hint)
@@ -71,9 +37,14 @@ void FilePathBrowser::SetHint(const QString& hint)
     setPlaceholderText(hintText);
 }
 
-void FilePathBrowser::SetDefaultFolder(const QString& _path)
+void FilePathBrowser::SetCurrentFolder(const QString& _path)
 {
-    defaultFolder = _path;
+    currentFolder = _path;
+}
+
+void FilePathBrowser::AllowInvalidPath(bool allow)
+{
+    allowInvalidPath = allow;
 }
 
 void FilePathBrowser::SetPath(const QString& _path)
@@ -81,6 +52,16 @@ void FilePathBrowser::SetPath(const QString& _path)
     path = _path;
     setText(path);
     setToolTip(path);
+
+    if (type == eFileType::Folder)
+    {
+        SetCurrentFolder(path);
+    }
+}
+
+const QString& FilePathBrowser::GetPath() const
+{
+    return path;
 }
 
 void FilePathBrowser::SetFilter(const QString& _filter)
@@ -97,11 +78,11 @@ QSize FilePathBrowser::sizeHint() const
     {
         hint.rheight() = cButtonSize.height();
 
-        QBoxLayout *l = qobject_cast<QBoxLayout *>( layout() );
-        if ( l != NULL )
+        QBoxLayout* l = qobject_cast<QBoxLayout*>(layout());
+        if (l != NULL)
         {
             int top, left, right, bottom;
-            l->getContentsMargins( &left, &top, &right, &bottom );
+            l->getContentsMargins(&left, &top, &right, &bottom);
             hint.rheight() += top + bottom;
         }
     }
@@ -109,38 +90,47 @@ QSize FilePathBrowser::sizeHint() const
     return hint;
 }
 
-QString FilePathBrowser::DefaultBrowsePath()
+QString FilePathBrowser::CurrentBrowsePath()
 {
     const QFileInfo pathInfo(text());
-    const QFileInfo defaultInfo(defaultFolder);
+    const QFileInfo defaultInfo(currentFolder);
 
     if (pathInfo.isFile())
         return path;
 
     if (defaultInfo.isDir())
-        return defaultFolder;
+        return currentFolder;
 
     return QString();
 }
 
 void FilePathBrowser::OnBrowse()
 {
-    const QString newPath = FileDialog::getOpenFileName( this, hintText, DefaultBrowsePath(), filter, NULL, 0 );
-    TryToAcceptPath(newPath);
+    QString newPath;
+    if (type == eFileType::File)
+    {
+        newPath = FileDialog::getOpenFileName(this, hintText, CurrentBrowsePath(), filter, nullptr, 0);
+    }
+    else
+    {
+        newPath = FileDialog::getExistingDirectory(this, hintText, CurrentBrowsePath());
+    }
+
+    if (!newPath.isEmpty())
+    {
+        TryToAcceptPath(newPath);
+    }
 }
 
-void FilePathBrowser::OnReturnPressed()
+void FilePathBrowser::TryToAcceptPath()
 {
-    TryToAcceptPath(text());
-}
-
-void FilePathBrowser::ValidatePath()
-{
-    const bool isValid = QFileInfo(text()).isFile();    
+    QString newPath(text());
+    QFileInfo newInfo(newPath);
+    const bool isValid = (type == eFileType::File ? newInfo.isFile() : newInfo.isDir());
 
     // Icon
-    QPixmap *pix = NULL;
-    if ( iconCache.contains(isValid) )
+    QPixmap* pix = NULL;
+    if (iconCache.contains(isValid))
     {
         pix = iconCache.object(isValid);
     }
@@ -153,8 +143,16 @@ void FilePathBrowser::ValidatePath()
     validIcon->setPixmap(*pix);
 
     // Tooltip
-    const QString toolTip = isValid ? "File exists" : "File doesn't exists";
+    const QString toolTip = (type == eFileType::File ?
+                             (isValid ? "File exists" : "File doesn't exists") :
+                             (isValid ? "Folder exists" : "Folder doesn't exists"));
     validIcon->setToolTip(toolTip);
+
+    if (isValid || allowInvalidPath)
+    {
+        SetPath(newPath);
+        emit pathChanged(newPath);
+    }
 }
 
 void FilePathBrowser::InitButtons()
@@ -164,25 +162,25 @@ void FilePathBrowser::InitButtons()
     validIcon->setAlignment(Qt::AlignCenter);
     AddCustomWidget(validIcon);
 
-    QAction *browse = new QAction(this);
+    QAction* browse = new QAction(this);
     browse->setToolTip("Browse...");
-    browse->setIcon(QIcon(":/QtIcons/openscene.png"));
-    connect( browse, SIGNAL( triggered() ), SLOT( OnBrowse() ) );
+    browse->setIcon(SharedIcon(":/QtIcons/openscene.png"));
+    connect(browse, SIGNAL(triggered()), SLOT(OnBrowse()));
     addAction(browse);
 }
 
 void FilePathBrowser::TryToAcceptPath(const QString& _path)
 {
-    QFileInfo newInfo( _path );
-    
-    if (allowInvalidPath || newInfo.isFile())
+    QFileInfo newInfo(_path);
+
+    if (allowInvalidPath || (newInfo.isFile() && type == eFileType::File) || (newInfo.isDir() && type == eFileType::Folder))
     {
         SetPath(_path);
         emit pathChanged(_path);
     }
 }
 
-QSize FilePathBrowser::ButtonSizeHint(const QAction * action) const
+QSize FilePathBrowser::ButtonSizeHint(const QAction* action) const
 {
     Q_UNUSED(action);
     return cButtonSize;
@@ -192,7 +190,7 @@ void FilePathBrowser::keyPressEvent(QKeyEvent* event)
 {
     LineEditEx::keyPressEvent(event);
 
-    switch ( event->key() )
+    switch (event->key())
     {
     case Qt::Key_Enter:
     case Qt::Key_Return:
@@ -202,4 +200,9 @@ void FilePathBrowser::keyPressEvent(QKeyEvent* event)
     default:
         break;
     }
+}
+
+void FilePathBrowser::SetType(eFileType type_)
+{
+    type = type_;
 }

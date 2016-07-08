@@ -15,32 +15,31 @@
 //
 
 FUObject::FUObject()
-:	objectOwner(NULL)
+    : objectOwner(NULL)
 {
 }
 
 FUObject::~FUObject()
 {
-	// If you trigger this assert, you are NOT using ->Release() properly.
-	FUAssert(objectOwner == NULL, Detach());
+    // If you trigger this assert, you are NOT using ->Release() properly.
+    FUAssert(objectOwner == NULL, Detach());
 }
 
 // Releases this object. This function essentially calls the destructor.
 void FUObject::Release()
 {
-	Detach();
-	delete this;
+    Detach();
+    delete this;
 }
 
 void FUObject::Detach()
 {
-	if (objectOwner != NULL)
-	{
-		objectOwner->OnOwnedObjectReleased(this);
-		objectOwner = NULL;
-	}
+    if (objectOwner != NULL)
+    {
+        objectOwner->OnOwnedObjectReleased(this);
+        objectOwner = NULL;
+    }
 }
 
 FUObjectType __baseObjectType("FUObject");
 FUObjectType* FUObject::baseObjectType = &__baseObjectType;
-

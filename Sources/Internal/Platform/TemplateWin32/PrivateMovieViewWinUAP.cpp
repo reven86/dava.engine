@@ -1,38 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -52,17 +24,17 @@ using namespace concurrency;
 
 namespace DAVA
 {
-
 PrivateMovieViewWinUAP::PrivateMovieViewWinUAP()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
-{}
+{
+}
 
 PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
 {
     if (nativeMovieView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
-        MediaElement^ p = nativeMovieView;
+        MediaElement ^ p = nativeMovieView;
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
@@ -93,7 +65,7 @@ void PrivateMovieViewWinUAP::Initialize(const Rect& rect)
 
 void PrivateMovieViewWinUAP::SetRect(const Rect& rect)
 {
-    auto self{shared_from_this()};
+    auto self{ shared_from_this() };
     core->RunOnUIThread([this, self, rect]() {
         PositionMovieView(rect);
     });
@@ -104,7 +76,7 @@ void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
     if (visible != isVisible)
     {
         visible = isVisible;
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         core->RunOnUIThread([this, self]() {
             nativeMovieView->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
         });
@@ -160,10 +132,10 @@ void PrivateMovieViewWinUAP::Play()
         if (!moviePlaying)
         {
             moviePlaying = true;
-            auto self{shared_from_this()};
+            auto self{ shared_from_this() };
             core->RunOnUIThread([this, self]()
                                 {
-                nativeMovieView->Play();
+                                    nativeMovieView->Play();
                                 });
         }
     }
@@ -201,7 +173,7 @@ void PrivateMovieViewWinUAP::Pause()
     moviePlaying = false;
     if (movieLoaded)
     {
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         core->RunOnUIThread([this, self]() {
             nativeMovieView->Pause();
         });
@@ -217,21 +189,21 @@ void PrivateMovieViewWinUAP::InstallEventHandlers()
 {
     std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
             OnMediaOpened();
         }
     });
-    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
             OnMediaEnded();
         }
     });
-    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object^, ExceptionRoutedEventArgs^ args) {
+    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object ^, ExceptionRoutedEventArgs ^ args) {
         auto self = self_weak.lock();
         if (self != nullptr)
         {
@@ -259,11 +231,19 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     controlRect.dy /= scaleFactor;
 
     // 3. set control's position and size
-    nativeMovieView->MinHeight = 0.0;       // Force minimum control sizes to zero to
-    nativeMovieView->MinWidth = 0.0;        // allow setting any control sizes
-    nativeMovieView->Width = controlRect.dx;
-    nativeMovieView->Height = controlRect.dy;
+    nativeMovieView->MinHeight = 0.0; // Force minimum control sizes to zero to
+    nativeMovieView->MinWidth = 0.0; // allow setting any control sizes
+    nativeMovieView->Width = std::max(0.0f, controlRect.dx);
+    nativeMovieView->Height = std::max(0.0f, controlRect.dy);
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
+
+    { //'workaround' for ATI HD ****G adapters
+        const char* gpuDesc = rhi::DeviceCaps().deviceDescription;
+        if (strstr(gpuDesc, "AMD Radeon HD") && gpuDesc[strlen(gpuDesc) - 1] == 'G')
+        {
+            nativeMovieView->Height += 1.0;
+        }
+    }
 }
 
 Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
@@ -308,7 +288,7 @@ void PrivateMovieViewWinUAP::OnMediaEnded()
     moviePlaying = false;
 }
 
-void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs^ args)
+void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs ^ args)
 {
     playRequest = false;
     moviePlaying = false;
@@ -316,6 +296,6 @@ void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs^ args)
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

@@ -53,74 +53,103 @@ class FCDGeometrySpline;
 class FCOLLADA_EXPORT FCDGeometry : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
+    DeclareObjectType(FCDEntity);
 
-	// Contains only one of the following, in order of importance.
-	DeclareParameterRef(FCDGeometryMesh, mesh, FC("Mesh"));
-	DeclareParameterRef(FCDGeometrySpline, spline, FC("Spline"));
+    // Contains only one of the following, in order of importance.
+    DeclareParameterRef(FCDGeometryMesh, mesh, FC("Mesh"));
+    DeclareParameterRef(FCDGeometrySpline, spline, FC("Spline"));
 
 public:
-	/** Contructor: do not use directly.
+    /** Contructor: do not use directly.
 		Create new geometries using the FCDLibrary::AddEntity function.
 		@param document The COLLADA document which owns the new geometry entity. */
-	FCDGeometry(FCDocument* document);
+    FCDGeometry(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDGeometry();
+    /** Destructor. */
+    virtual ~FCDGeometry();
 
-	/**	[INTERNAL] Set geometry information.
+    /**	[INTERNAL] Set geometry information.
 		@param data The specific geometry data structure.
 	*/
-	void SetMesh(FCDGeometryMesh* data){ mesh = data; }
-	void SetSpline(FCDGeometrySpline* data){ spline = data; } /** see above */
+    void SetMesh(FCDGeometryMesh* data)
+    {
+        mesh = data;
+    }
+    void SetSpline(FCDGeometrySpline* data)
+    {
+        spline = data;
+    } /** see above */
 
-	/** Retrieves the entity class type.
+    /** Retrieves the entity class type.
 		This function is a part of the FCDEntity interface.
 		@return The entity class type: GEOMETRY. */
-	virtual Type GetType() const { return GEOMETRY; }
+    virtual Type GetType() const
+    {
+        return GEOMETRY;
+    }
 
-	/** Retrieves whether the type of this geometry is a mesh.
+    /** Retrieves whether the type of this geometry is a mesh.
 		@return Whether this geometry is a mesh. */
-	bool IsMesh() const { return mesh != NULL; }
+    bool IsMesh() const
+    {
+        return mesh != NULL;
+    }
 
-	/** Retrieves the mesh information structure for this geometry.
+    /** Retrieves the mesh information structure for this geometry.
 		Verify that this geometry is a mesh using the IsMesh function prior to calling this function.
 		@return The mesh information structure. This pointer will be NULL when the geometry is a spline or is undefined. */
-	FCDGeometryMesh* GetMesh() { return mesh; }
-	const FCDGeometryMesh* GetMesh() const { return mesh; } /**< See above. */
+    FCDGeometryMesh* GetMesh()
+    {
+        return mesh;
+    }
+    const FCDGeometryMesh* GetMesh() const
+    {
+        return mesh;
+    } /**< See above. */
 
-	/** Sets the type of this geometry to mesh and creates an empty mesh structure.
+    /** Sets the type of this geometry to mesh and creates an empty mesh structure.
 		This function will release any mesh or spline structure that the geometry may already contain
 		@return The mesh information structure. This pointer will always be valid. */
-	FCDGeometryMesh* CreateMesh();
+    FCDGeometryMesh* CreateMesh();
 
-	/** Retrieves whether the type of this geometry is a spline.
+    /** Retrieves whether the type of this geometry is a spline.
 		@return Whether this geometry is a spline. */
-	bool IsSpline() const { return spline != NULL; }
+    bool IsSpline() const
+    {
+        return spline != NULL;
+    }
 
-	/** Retrieves the spline information structure for this geometry.
+    /** Retrieves the spline information structure for this geometry.
 		Verify that this geometry is a spline using the IsSpline function prior to calling this function.
 		@return The spline information structure. This pointer will be NULL when the geometry is a mesh or is undefined. */
-	FCDGeometrySpline* GetSpline() { return spline; }
-	const FCDGeometrySpline* GetSpline() const { return spline; } /**< See above. */
+    FCDGeometrySpline* GetSpline()
+    {
+        return spline;
+    }
+    const FCDGeometrySpline* GetSpline() const
+    {
+        return spline;
+    } /**< See above. */
 
-	/** Sets the type of this geometry to spline and creates an empty spline structure.
+    /** Sets the type of this geometry to spline and creates an empty spline structure.
 		This function will release any mesh or spline structure that the geometry may already contain.
 		@return The spline information structure. This pointer will always be valid. */
-	FCDGeometrySpline* CreateSpline();
+    FCDGeometrySpline* CreateSpline();
 
-
-	/** Retrieves whether the type of this geometry is a parameterized surface.
+    /** Retrieves whether the type of this geometry is a parameterized surface.
 		@return Whether this geometry is a parameterized surface. */
-	bool IsPSurface() const { return false; }
+    bool IsPSurface() const
+    {
+        return false;
+    }
 
-	/** Copies the geometry entity into a clone.
+    /** Copies the geometry entity into a clone.
 		The clone may reside in another document.
 		@param clone The empty clone. If this pointer is NULL, a new geometry entity
 			will be created and you will need to release the returned pointer manually.
 		@param cloneChildren Whether to recursively clone this entity's children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif // _FCD_GEOMETRY_H_

@@ -75,8 +75,8 @@ LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := fribidi_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+LOCAL_MODULE := icucommon_android
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libicucommon_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -94,6 +94,11 @@ LOCAL_MODULE := webp_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := sqlite3_android
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libsqlite3_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 DAVA_ROOT := $(LOCAL_PATH)
 
 # set path for includes
@@ -102,6 +107,7 @@ DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
@@ -222,6 +228,7 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
+DV_LOCAL_STATIC_LIBRARIES += liblz4
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -243,11 +250,12 @@ DV_LOCAL_STATIC_LIBRARIES += curl_android
 DV_LOCAL_STATIC_LIBRARIES += ssl_android
 DV_LOCAL_STATIC_LIBRARIES += crypto_android
 DV_LOCAL_STATIC_LIBRARIES += zip_android
-DV_LOCAL_STATIC_LIBRARIES += fribidi_android
+DV_LOCAL_STATIC_LIBRARIES += icucommon_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
 DV_LOCAL_STATIC_LIBRARIES += webp_android
 DV_LOCAL_STATIC_LIBRARIES += cpufeatures
+DV_LOCAL_STATIC_LIBRARIES += sqlite3_android
 
 DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
 
@@ -294,7 +302,6 @@ LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
-LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 # set source files 
 LOCAL_SRC_FILES := \
@@ -306,10 +313,15 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
@@ -344,7 +356,6 @@ LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
-LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 LOCAL_WHOLE_STATIC_LIBRARIES := libInternalPart1
 
@@ -376,10 +387,15 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/Image/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \
@@ -387,13 +403,16 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 
 # include modules
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
+$(call import-add-path,$(DAVA_ROOT)/../External/lz4)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -403,4 +422,5 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
+$(call import-module,lz4)
 $(call import-module,android/cpufeatures)

@@ -1,48 +1,20 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(FileSystemTest)
+DAVA_TESTCLASS (FileSystemTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
-        bool dataPrepared = RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
+        bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
     }
 
-    DAVA_TEST(ResTestFunction)
+    DAVA_TEST (ResTestFunction)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileSystemTest/"));
 
@@ -51,7 +23,8 @@ DAVA_TESTCLASS(FileSystemTest)
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo)) continue;
+            if (fileList->IsNavigationDirectory(ifo))
+                continue;
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
@@ -65,15 +38,17 @@ DAVA_TESTCLASS(FileSystemTest)
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
 
-                    File *file = File::Create(pathname, File::OPEN | File::READ);
+                    File* file = File::Create(pathname, File::OPEN | File::READ);
                     TEST_VERIFY(file != NULL);
 
-                    if (!file) continue;
+                    if (!file)
+                        continue;
 
                     if (filename == "file1.zip")
                     {
@@ -104,7 +79,7 @@ DAVA_TESTCLASS(FileSystemTest)
         }
     }
 
-    DAVA_TEST(DocTestFunctionCheckCopy)
+    DAVA_TEST (DocTestFunctionCheckCopy)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileSystemTest/"));
 
@@ -113,7 +88,8 @@ DAVA_TESTCLASS(FileSystemTest)
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
-            if (fileList->IsNavigationDirectory(ifo)) continue;
+            if (fileList->IsNavigationDirectory(ifo))
+                continue;
 
             String filename = fileList->GetFilename(ifo);
             FilePath pathname = fileList->GetPathname(ifo);
@@ -127,15 +103,17 @@ DAVA_TESTCLASS(FileSystemTest)
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
-                    if (files->IsNavigationDirectory(ifi)) continue;
+                    if (files->IsNavigationDirectory(ifi))
+                        continue;
 
                     String filename = files->GetFilename(ifi);
                     FilePath pathname = files->GetPathname(ifi);
 
-                    File *file = File::Create(pathname, File::OPEN | File::READ);
+                    File* file = File::Create(pathname, File::OPEN | File::READ);
                     TEST_VERIFY(file != nullptr);
 
-                    if (!file) continue;
+                    if (!file)
+                        continue;
 
                     if (filename == "file1.zip")
                     {
@@ -166,7 +144,7 @@ DAVA_TESTCLASS(FileSystemTest)
         }
     }
 
-    DAVA_TEST(DocTestFunction)
+    DAVA_TEST (DocTestFunction)
     {
         FilePath savedCurrentWorkingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
         TEST_VERIFY(FileSystem::Instance()->SetCurrentWorkingDirectory("~doc:/TestData/FileSystemTest/"));
@@ -179,17 +157,14 @@ DAVA_TESTCLASS(FileSystemTest)
         FileSystem::Instance()->SetCurrentDocumentsDirectory(savedCurrentDocDirectory);
         TEST_VERIFY(FileSystem::Instance()->GetCurrentDocumentsDirectory() == savedCurrentDocDirectory);
 
-
         TEST_VERIFY(!FileSystem::Instance()->IsDirectory("~doc:/TestData/FileSystemTest/Folder1/file1.zip"));
         TEST_VERIFY(FileSystem::Instance()->IsFile("~doc:/TestData/FileSystemTest/Folder1/file1.zip"));
 
         TEST_VERIFY(FileSystem::Instance()->IsDirectory("~doc:/TestData/FileSystemTest/"));
         TEST_VERIFY(!FileSystem::Instance()->IsFile("~doc:/TestData/FileSystemTest/"));
 
-
-        TEST_VERIFY(FilePath::FilepathInDocuments((const char *)"Test/test.file")
+        TEST_VERIFY(FilePath::FilepathInDocuments("Test/test.file")
                     == FilePath::FilepathInDocuments(String("Test/test.file")));
-
 
         FileSystem::eCreateDirectoryResult created = FileSystem::Instance()->CreateDirectory("~doc:/TestData/FileSystemTest/1/2/3", false);
         TEST_VERIFY(created == FileSystem::DIRECTORY_CANT_CREATE);
@@ -197,8 +172,6 @@ DAVA_TESTCLASS(FileSystemTest)
         TEST_VERIFY(created == FileSystem::DIRECTORY_CREATED);
         created = FileSystem::Instance()->CreateDirectory("~doc:/TestData/FileSystemTest/1/2/3", false);
         TEST_VERIFY(created == FileSystem::DIRECTORY_EXISTS);
-
-
 
         bool moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file1.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new");
         TEST_VERIFY(moved);
@@ -209,25 +182,32 @@ DAVA_TESTCLASS(FileSystemTest)
         moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file2.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
         TEST_VERIFY(moved);
 
-#if   defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__)
         FileSystem* fs = FileSystem::Instance();
-        String externalDrive = "d:\\";
+        String externalDrive = "d:\\Temp";
         bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {
-            String tmpFileName = externalDrive + "test_on_other_drive.file";
-            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
-            TEST_VERIFY(moved);
-            moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
-            TEST_VERIFY(moved);
+            String testWriteFileName = externalDrive + "test_write_on_d_drive.txt";
+            {
+                ScopedPtr<File> testWrite(File::Create(testWriteFileName, File::OPEN | File::WRITE));
+                if (testWrite)
+                {
+                    String tmpFileName = externalDrive + "test_on_other_drive.file";
+                    moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
+                    TEST_VERIFY(moved);
+                    moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
+                    TEST_VERIFY(moved);
+                }
+            }
+            FileSystem::Instance()->DeleteFile(testWriteFileName);
         }
 #endif
 
         FileSystem::Instance()->DeleteFile("~doc:/TestData/FileSystemTest/Folder1/file1_new");
-        File *f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);
+        File* f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);
         TEST_VERIFY(!f);
         SafeRelease(f);
-
 
         uint32 count = FileSystem::Instance()->DeleteDirectoryFiles("~doc:/TestData/FileSystemTest/Folder1/");
         TEST_VERIFY(count == 2);
@@ -236,7 +216,7 @@ DAVA_TESTCLASS(FileSystemTest)
         TEST_VERIFY(fileList->GetFileCount() == 0);
     }
 
-    DAVA_TEST(FileOperationsTestFunction)
+    DAVA_TEST (FileOperationsTestFunction)
     {
         FilePath fileInAssets = "~res:/TestData/FileSystemTest/FileTest/test.yaml";
         FilePath cpyDir = "~doc:/FileSystemTest/FileTest/";
@@ -258,8 +238,8 @@ DAVA_TESTCLASS(FileSystemTest)
         uint32 size = f1->GetSize();
         TEST_VERIFY(size == f2->GetSize());
 
-        char8 *buf1 = new char8[size];
-        char8 *buf2 = new char8[size];
+        char8* buf1 = new char8[size];
+        char8* buf2 = new char8[size];
 
         do
         {
@@ -310,14 +290,14 @@ DAVA_TESTCLASS(FileSystemTest)
         FileSystem::Instance()->DeleteFile(copyTo);
     }
 
-    DAVA_TEST(CompareFilesTest)
+    DAVA_TEST (CompareFilesTest)
     {
         String folder = "~doc:/FileSystemTest/";
         FilePath textFilePath = folder + "text";
         FilePath textFilePath2 = folder + "text2";
         FilePath binaryFilePath = folder + "binary";
-        File *text = File::Create(textFilePath, File::CREATE | File::WRITE);
-        File *binary = File::Create(binaryFilePath, File::CREATE | File::WRITE);
+        File* text = File::Create(textFilePath, File::CREATE | File::WRITE);
+        File* binary = File::Create(binaryFilePath, File::CREATE | File::WRITE);
 
         text->WriteLine("1");
         binary->Write("1");
@@ -384,26 +364,5 @@ DAVA_TESTCLASS(FileSystemTest)
         FileSystem::Instance()->DeleteFile(textFilePath);
         FileSystem::Instance()->DeleteFile(textFilePath2);
     }
-
-    bool RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePath &dst)
-    {
-        DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
-
-        FileSystem::eCreateDirectoryResult created = FileSystem::Instance()->CreateDirectory(dst, true);
-        DVASSERT(created != FileSystem::DIRECTORY_CANT_CREATE);
-
-        bool copied = FileSystem::Instance()->CopyDirectory(src, dst);
-        DVASSERT(copied);
-
-        bool retCode = true;
-        ScopedPtr<FileList> fileList(new FileList(src));
-        for (int32 i = 0; i < fileList->GetCount(); ++i)
-        {
-            if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
-            {
-                retCode &= RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
-            }
-        }
-        return retCode;
-    }
-};
+}
+;

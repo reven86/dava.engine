@@ -18,12 +18,13 @@ FMLookAt::FMLookAt()
 }
 
 FMLookAt::FMLookAt(const FMVector3& _position, const FMVector3& _target, const FMVector3& _up)
-:	position(_position), target(_target), up(_up)
+    : position(_position)
+    , target(_target)
+    , up(_up)
 {
 }
 
 bool operator==(const FMLookAt& first, const FMLookAt& other)
 {
-	return IsEquivalent(first.up, other.up) && IsEquivalent(first.position, other.position) && IsEquivalent(first.target, other.target);
+    return IsEquivalent(first.up, other.up) && IsEquivalent(first.position, other.position) && IsEquivalent(first.target, other.target);
 }
-

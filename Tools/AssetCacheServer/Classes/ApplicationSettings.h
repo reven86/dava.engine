@@ -1,32 +1,3 @@
-
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __APPLICATION_SETTINGS_H__
 #define __APPLICATION_SETTINGS_H__
 
@@ -72,6 +43,7 @@ private:
     static const uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
     static const uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
     static const bool DEFAULT_AUTO_START = true;
+    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
 
 public:
     void Save() const;
@@ -97,6 +69,9 @@ public:
     const bool IsAutoStart() const;
     void SetAutoStart(bool);
 
+    const bool IsLaunchOnSystemStartup() const;
+    void SetLaunchOnSystemStartup(bool);
+
     const List<ServerData>& GetServers() const;
     void ResetServers();
     void AddServer(const ServerData& server);
@@ -112,12 +87,13 @@ private:
     void Deserialize(DAVA::KeyedArchive* archieve);
 
 public:
-    FilePath folder;
+    FilePath folder = DEFAULT_FOLDER;
     float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
     uint32 filesCount = DEFAULT_FILES_COUNT;
     uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
     uint16 listenPort = DEFAULT_PORT;
     bool autoStart = DEFAULT_AUTO_START;
+    bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
     List<ServerData> remoteServers;
 
     bool isFirstLaunch = true;

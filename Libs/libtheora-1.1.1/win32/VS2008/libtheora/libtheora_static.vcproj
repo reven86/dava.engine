@@ -3,9 +3,6 @@
 	<Platforms>
 		<Platform Name="Win32"/>
 		<Platform Name="x64"/>
-		<Platform Name="Windows Mobile 5.0 Pocket PC SDK 2 (ARMV4I)"/>
-		<Platform Name="Windows Mobile 5.0 Smartphone SDK 2 (ARMV4I)"/>
-		<Platform Name="Windows Mobile 6 Professional SDK (ARMV4I)"/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>

@@ -1,205 +1,196 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_KEYBOARD_DEVICE_H__
 #define __DAVAENGINE_KEYBOARD_DEVICE_H__
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
 /**
-	\defgroup inputsystem	Input System
+    \defgroup inputsystem    Input System
 */
 namespace DAVA
 {
-const static int MAX_KEYS = 256;
-
-enum eDavaKeys : uint32
+enum class Key : uint32
 {
-    DVKEY_UNKNOWN = 0,
-    DVKEY_ESCAPE,
-    DVKEY_BACKSPACE,
-    DVKEY_TAB,
-    DVKEY_ENTER,
-    DVKEY_SPACE,
+    UNKNOWN = 0,
+    ESCAPE,
+    BACKSPACE,
+    TAB,
+    ENTER,
+    SPACE,
 
-    DVKEY_SHIFT,
-    DVKEY_CTRL,
-    DVKEY_ALT,
+    LSHIFT,
+    LCTRL,
+    LALT,
 
-    DVKEY_LWIN,
-    DVKEY_RWIN,
-    DVKEY_APPS,
+    LWIN,
+    RWIN,
+    APPS, // https://en.wikipedia.org/wiki/Menu_key
 
-    DVKEY_PAUSE,
-    DVKEY_CAPSLOCK,
-    DVKEY_NUMLOCK,
-    DVKEY_SCROLLLOCK,
+    PAUSE,
+    CAPSLOCK,
+    NUMLOCK,
+    SCROLLLOCK,
 
-    DVKEY_PGUP,
-    DVKEY_PGDN,
-    DVKEY_HOME,
-    DVKEY_END,
-    DVKEY_INSERT,
-    DVKEY_DELETE,
+    PGUP,
+    PGDN,
+    HOME,
+    END,
+    INSERT,
+    DELETE,
 
-    DVKEY_LEFT,
-    DVKEY_UP,
-    DVKEY_RIGHT,
-    DVKEY_DOWN,
+    LEFT,
+    UP,
+    RIGHT,
+    DOWN,
 
-    DVKEY_0,
-    DVKEY_1,
-    DVKEY_2,
-    DVKEY_3,
-    DVKEY_4,
-    DVKEY_5,
-    DVKEY_6,
-    DVKEY_7,
-    DVKEY_8,
-    DVKEY_9,
+    KEY_0,
+    KEY_1,
+    KEY_2,
+    KEY_3,
+    KEY_4,
+    KEY_5,
+    KEY_6,
+    KEY_7,
+    KEY_8,
+    KEY_9,
 
-    DVKEY_A,
-    DVKEY_B,
-    DVKEY_C,
-    DVKEY_D,
-    DVKEY_E,
-    DVKEY_F,
-    DVKEY_G,
-    DVKEY_H,
-    DVKEY_I,
-    DVKEY_J,
-    DVKEY_K,
-    DVKEY_L,
-    DVKEY_M,
-    DVKEY_N,
-    DVKEY_O,
-    DVKEY_P,
-    DVKEY_Q,
-    DVKEY_R,
-    DVKEY_S,
-    DVKEY_T,
-    DVKEY_U,
-    DVKEY_V,
-    DVKEY_W,
-    DVKEY_X,
-    DVKEY_Y,
-    DVKEY_Z,
+    KEY_A,
+    KEY_B,
+    KEY_C,
+    KEY_D,
+    KEY_E,
+    KEY_F,
+    KEY_G,
+    KEY_H,
+    KEY_I,
+    KEY_J,
+    KEY_K,
+    KEY_L,
+    KEY_M,
+    KEY_N,
+    KEY_O,
+    KEY_P,
+    KEY_Q,
+    KEY_R,
+    KEY_S,
+    KEY_T,
+    KEY_U,
+    KEY_V,
+    KEY_W,
+    KEY_X,
+    KEY_Y,
+    KEY_Z,
 
-    DVKEY_GRAVE,
-    DVKEY_MINUS,
-    DVKEY_EQUALS,
-    DVKEY_BACKSLASH,
-    DVKEY_LBRACKET,
-    DVKEY_RBRACKET,
-    DVKEY_SEMICOLON,
-    DVKEY_APOSTROPHE,
-    DVKEY_COMMA,
-    DVKEY_PERIOD,
-    DVKEY_SLASH,
+    GRAVE,
+    MINUS,
+    EQUALS,
+    BACKSLASH,
+    LBRACKET,
+    RBRACKET,
+    SEMICOLON,
+    APOSTROPHE,
+    COMMA,
+    PERIOD,
+    SLASH,
 
-    DVKEY_NUMPAD0,
-    DVKEY_NUMPAD1,
-    DVKEY_NUMPAD2,
-    DVKEY_NUMPAD3,
-    DVKEY_NUMPAD4,
-    DVKEY_NUMPAD5,
-    DVKEY_NUMPAD6,
-    DVKEY_NUMPAD7,
-    DVKEY_NUMPAD8,
-    DVKEY_NUMPAD9,
+    NUMPAD0,
+    NUMPAD1,
+    NUMPAD2,
+    NUMPAD3,
+    NUMPAD4,
+    NUMPAD5,
+    NUMPAD6,
+    NUMPAD7,
+    NUMPAD8,
+    NUMPAD9,
 
-    DVKEY_MULTIPLY,
-    DVKEY_DIVIDE,
-    DVKEY_ADD,
-    DVKEY_SUBTRACT,
-    DVKEY_DECIMAL,
+    MULTIPLY,
+    DIVIDE,
+    ADD,
+    SUBTRACT,
+    DECIMAL,
 
-    DVKEY_F1,
-    DVKEY_F2,
-    DVKEY_F3,
-    DVKEY_F4,
-    DVKEY_F5,
-    DVKEY_F6,
-    DVKEY_F7,
-    DVKEY_F8,
-    DVKEY_F9,
-    DVKEY_F10,
-    DVKEY_F11,
-    DVKEY_F12,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
 
-    //Android keys
-    DVKEY_BACK,
-    DVKEY_MENU,
+    BACK, // Android key
+    MENU, // Android key
 
-    // exist on some keyboards
-    // TODO DVKEY_NON_US_BACKSLASH,
+    NONUSBACKSLASH, // exist on some keyboards
+    NUMPADENTER,
+    PRINTSCREEN,
+    RSHIFT,
+    RCTRL,
+    RALT,
 
-    DVKEY_COUNT
+    F13, // on mac - printscreen
+    F14, // on mac - scrlock
+    F15, // on mac - pause/break
+    F16,
+    F17,
+    F18,
+    F19,
 
+    TOTAL_KEYS_COUNT
 };
 
 class KeyboardDevice : public BaseObject
 {
-    friend class InputSystem;
-        
-protected:
-    ~KeyboardDevice();
-	/**
-	 \brief Don't call this constructor!
-	 */
-	KeyboardDevice();
-			
 public:
-    bool IsKeyPressed(int32 keyCode) const;
+    bool IsKeyPressed(Key key) const; // during frame
+    const String& GetKeyName(Key key);
+    const Key GetKeyByName(const String& name);
 
-    uint32 GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+    void ClearAllKeys(); // unpress keys during ALT+TAB or similar events
+private:
+    friend class InputSystem;
+    friend class CoreWin32Platform;
+    friend class CorePlatformAndroid;
+    friend class DavaQtKeyboard;
+    friend class DavaQtApplyModifier;
+    friend class QtLayer;
+#ifdef __DAVAENGINE_WIN_UAP__
+    friend ref class WinUAPXamlApp;
+#endif
+#if defined(ENABLE_CEF_WEBVIEW)
+    friend class CEFWebViewControl;
+#endif
+    ~KeyboardDevice();
+    KeyboardDevice();
 
-    void OnKeyPressed(uint32 keyCode);
-    void OnKeyUnpressed(uint32 keyCode);
+#ifdef __DAVAENGINE_MACOS__
+public:
+#endif
+    Key GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
+#if defined(ENABLE_CEF_WEBVIEW)
+    uint32 GetSystemKeyForDavaKey(Key key) const;
+#endif
+    void OnKeyPressed(Key keyCode);
+    void OnKeyUnpressed(Key keyCode);
+#ifdef __DAVAENGINE_MACOS__
+private:
+#endif
+    void OnFinishFrame();
 
-    void OnBeforeUpdate();
-    void OnAfterUpdate();
-
-    void OnSystemKeyPressed(uint32 systemKeyCode);
-    void OnSystemKeyUnpressed(uint32 systemKeyCode);
-
-    void ClearAllKeys();
-
-protected:
-    
     void PrepareKeyTranslator();
 
-    Bitset<DVKEY_COUNT> keyStatus; //keys pressed for the current frame
-    Bitset<DVKEY_COUNT> realKeyStatus;
-    Array<uint32, MAX_KEYS> keyTranslator;
+    Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> currentFrameKeyStatus;
+    Bitset<static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> realKeyStatus;
+    static const int MAX_KEYS = 512;
+    Array<Key, MAX_KEYS> keyTranslator;
+    mutable Array<uint32, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> backCodeTranslator;
+    Array<String, static_cast<size_t>(Key::TOTAL_KEYS_COUNT)> keyNames;
 };
-};
+
+}; // end DAVA namespace
 
 #endif

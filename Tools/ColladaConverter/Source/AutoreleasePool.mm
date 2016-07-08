@@ -10,14 +10,14 @@
 #include "AutoreleasePool.h"
 #include <Cocoa/Cocoa.h>
 
-static NSAutoreleasePool * pool = nil;
+static NSAutoreleasePool* pool = nil;
 
 void AutoreleasePool_Init()
 {
-	pool = [[NSAutoreleasePool alloc] init];
+    pool = [[NSAutoreleasePool alloc] init];
 }
 
 void AutoreleasePool_Release()
 {
-	[pool release];
+    [pool release];
 }

@@ -55,102 +55,149 @@ class FCDEffectTechnique;
 class FCOLLADA_EXPORT FCDEffectProfileFX : public FCDEffectProfile
 {
 private:
-	DeclareObjectType(FCDEffectProfile);
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, type, FC("Profile Language")); // FUDaeProfileType::Type
-	DeclareParameter(fstring, FUParameterQualifiers::SIMPLE, platform, FC("Platform"));
+    DeclareObjectType(FCDEffectProfile);
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, type, FC("Profile Language")); // FUDaeProfileType::Type
+    DeclareParameter(fstring, FUParameterQualifiers::SIMPLE, platform, FC("Platform"));
 
-	DeclareParameterContainer(FCDEffectCode, codes, FC("Code Inclusions"));
-	DeclareParameterContainer(FCDEffectTechnique, techniques, FC("Effect Techniques"));
+    DeclareParameterContainer(FCDEffectCode, codes, FC("Code Inclusions"));
+    DeclareParameterContainer(FCDEffectTechnique, techniques, FC("Effect Techniques"));
 
 public:
-	/** Constructor: do not use directly. Instead, use the FCDEffect::AddProfile function.
+    /** Constructor: do not use directly. Instead, use the FCDEffect::AddProfile function.
 		@param parent The effect which contains this profile.
 		@param type The type of profile. */
-	FCDEffectProfileFX(FCDocument* document, FCDEffect* parent);
+    FCDEffectProfileFX(FCDocument* document, FCDEffect* parent);
 
-	/** Destructor. */
-	virtual ~FCDEffectProfileFX();
+    /** Destructor. */
+    virtual ~FCDEffectProfileFX();
 
-	/** Retrieves the profile type for this effect.
+    /** Retrieves the profile type for this effect.
 		This function is a part of the FCDEffectProfile interface and allows you
 		to up-cast an effect profile pointer safely to this class.
 		@return The profile type. This should never be the value: 'COMMON',
 			but all other profiles currently derive from this class. */
-	virtual FUDaeProfileType::Type GetType() const { return (FUDaeProfileType::Type) *type; }
+    virtual FUDaeProfileType::Type GetType() const
+    {
+        return (FUDaeProfileType::Type)*type;
+    }
 
-	/** Sets the profile type for this effect.
+    /** Sets the profile type for this effect.
 		Do not change the profile type of a completed effect. */
-	void SetType(FUDaeProfileType::Type _type) { type = _type; }
+    void SetType(FUDaeProfileType::Type _type)
+    {
+        type = _type;
+    }
 
-	/** Retrieves the name of the platform in which to use the effect profile.
+    /** Retrieves the name of the platform in which to use the effect profile.
 		This parameter is very optional.
 		@return The platform name. */
-	const fstring& GetPlatform() const { return platform; }
+    const fstring& GetPlatform() const
+    {
+        return platform;
+    }
 
-	/** Sets the name of the platform in which to use the effect profile.
+    /** Sets the name of the platform in which to use the effect profile.
 		This parameter is very optional.
 		@param _platform The platform name. */
-	void SetPlatform(const fstring& _platform) { platform = _platform; SetDirtyFlag(); }
+    void SetPlatform(const fstring& _platform)
+    {
+        platform = _platform;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the list of techniques contained within this effect profile.
+    /** Retrieves the list of techniques contained within this effect profile.
 		You may want to check the FCDEffectMaterialTechniqueHint objects at the FCDMaterial level,
 		in order to determine which technique(s) to use for your platform.
 		@return The list of inner techniques. */
-	DEPRECATED(3.05A, GetTechniqueCount and GetTechnique(index)) void GetTechniqueList() const {}
+    DEPRECATED(3.05A, GetTechniqueCount and GetTechnique(index))
+    void GetTechniqueList() const
+    {
+    }
 
-	/** Retrieves the number of techniques contained within this effect profile.
+    /** Retrieves the number of techniques contained within this effect profile.
 		@return The number of inner techniques. */
-	size_t GetTechniqueCount() const { return techniques.size(); }
+    size_t GetTechniqueCount() const
+    {
+        return techniques.size();
+    }
 
-	/** Retrieves a technique contained within this effect profile.
+    /** Retrieves a technique contained within this effect profile.
 		You may want to check the FCDEffectMaterialTechniqueHint objects at the FCDMaterial level,
 		in order to determine which technique(s) to use for your platform.
 		@param index The index of the technique.
 		@return The inner technique. This pointer will be NULL if the index is out-of-bounds. */
-	FCDEffectTechnique* GetTechnique(size_t index) { FUAssert(index < GetTechniqueCount(), return NULL); return techniques.at(index); }
-	const FCDEffectTechnique* GetTechnique(size_t index) const { FUAssert(index < GetTechniqueCount(), return NULL); return techniques.at(index); } /**< See above. */
+    FCDEffectTechnique* GetTechnique(size_t index)
+    {
+        FUAssert(index < GetTechniqueCount(), return NULL);
+        return techniques.at(index);
+    }
+    const FCDEffectTechnique* GetTechnique(size_t index) const
+    {
+        FUAssert(index < GetTechniqueCount(), return NULL);
+        return techniques.at(index);
+    } /**< See above. */
 
-	/** Adds a new technique to this effect profile.
+    /** Adds a new technique to this effect profile.
 		@return The new technique object. */
-	FCDEffectTechnique* AddTechnique();
+    FCDEffectTechnique* AddTechnique();
 
-	/** Retrieves the list of code inclusions.
-		@return The list of code inclusions. */		
-	DEPRECATED(3.05A, GetCodeCount and GetCode(index)) void GetCodeList() {}
+    /** Retrieves the list of code inclusions.
+		@return The list of code inclusions. */
+    DEPRECATED(3.05A, GetCodeCount and GetCode(index))
+    void GetCodeList()
+    {
+    }
 
-	/** Retrieves the number of code inclusions contained within the effect profile.
+    /** Retrieves the number of code inclusions contained within the effect profile.
 		@return The number of code inclusions. */
-	size_t GetCodeCount() const { return codes.size(); }
+    size_t GetCodeCount() const
+    {
+        return codes.size();
+    }
 
-	/** Retrieves a code inclusion contained within the effect profile.
+    /** Retrieves a code inclusion contained within the effect profile.
 		@param index The index of the code inclusion.
 		@return The code inclusion. This pointer will be NULL if the index is out-of-bounds. */
-	inline FCDEffectCode* GetCode(size_t index) { FUAssert(index < GetCodeCount(), return NULL); return codes.at(index); }
-	inline const FCDEffectCode* GetCode(size_t index) const { FUAssert(index < GetCodeCount(), return NULL); return codes.at(index); } /**< See above. */
+    inline FCDEffectCode* GetCode(size_t index)
+    {
+        FUAssert(index < GetCodeCount(), return NULL);
+        return codes.at(index);
+    }
+    inline const FCDEffectCode* GetCode(size_t index) const
+    {
+        FUAssert(index < GetCodeCount(), return NULL);
+        return codes.at(index);
+    } /**< See above. */
 
-	/** Retrieves the code inclusion with the given sub-id.
+    /** Retrieves the code inclusion with the given sub-id.
 		@param sid A COLLADA sub-id.
 		@return The code inclusion with the given sub-id. This pointer will be NULL,
 			if there are no code inclusions that match the given sub-id. */
-	inline FCDEffectCode* FindCode(const char* sid) { return const_cast<FCDEffectCode*>(const_cast<const FCDEffectProfileFX*>(this)->FindCode(sid)); }
-	const FCDEffectCode* FindCode(const char* sid) const; /**< See above. */
+    inline FCDEffectCode* FindCode(const char* sid)
+    {
+        return const_cast<FCDEffectCode*>(const_cast<const FCDEffectProfileFX*>(this)->FindCode(sid));
+    }
+    const FCDEffectCode* FindCode(const char* sid) const; /**< See above. */
 
-	/** Adds a new code inclusion to this effect profile.
+    /** Adds a new code inclusion to this effect profile.
 		@return The new code inclusion. */
-	FCDEffectCode* AddCode();
+    FCDEffectCode* AddCode();
 
-	/** Clones the full effect profile.
+    /** Clones the full effect profile.
 		@param clone The cloned profile.
 			If this pointer is NULL, a new profile is created and
 			you will need to release this new profile.
 		@return The cloned profile. This pointer will never be NULL. */
-	virtual FCDEffectProfile* Clone(FCDEffectProfile* clone = NULL) const;
+    virtual FCDEffectProfile* Clone(FCDEffectProfile* clone = NULL) const;
 
-	/** [INTERNAL] Flattens this effect profile. Pushes all the effect parameter overrides
+    /** [INTERNAL] Flattens this effect profile. Pushes all the effect parameter overrides
 		into the effect parameter generators and moves all the parameters to the 
 		effect technique level of abstraction. To flatten the material, use the
 		FCDMaterialInstance::FlattenMaterial function. */
-	DEPRECATED(3.05A, not recommended) void Flatten() {}
+    DEPRECATED(3.05A, not recommended)
+    void Flatten()
+    {
+    }
 };
 
 #endif // _FCD_EFFECT_PROFILE_H_

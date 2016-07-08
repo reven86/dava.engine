@@ -21,16 +21,16 @@
 class FCOLLADA_EXPORT FMAngleAxis
 {
 public:
-	FMVector3 axis; /**< The axis of rotation. */
-	float angle; /**< The angle of rotation. */
+    FMVector3 axis; /**< The axis of rotation. */
+    float angle; /**< The angle of rotation. */
 
-	/** Default Constructor. */
-	FMAngleAxis();
+    /** Default Constructor. */
+    FMAngleAxis();
 
-	/** Constructor.
+    /** Constructor.
 		@param _axis A 3D rotation axis.
 		@param _angle The rotation angle, in degrees. */
-	FMAngleAxis(const FMVector3& _axis, float _angle);
+    FMAngleAxis(const FMVector3& _axis, float _angle);
 };
 
 /** Retrieves whether one angle-axis rotation is
@@ -40,4 +40,3 @@ public:
 bool operator==(const FMAngleAxis& first, const FMAngleAxis& other);
 
 #endif // _FM_ANGLEAXIS_H_
-

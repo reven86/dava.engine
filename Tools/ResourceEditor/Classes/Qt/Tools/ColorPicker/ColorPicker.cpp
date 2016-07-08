@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "ColorPicker.h"
 #include "ui_ColorPicker.h"
 
@@ -40,8 +11,8 @@
 #include "EyeDropper.h"
 
 #include "Tools/QtPosSaver/QtPosSaver.h"
+#include "QtTools/Utils/Utils.h"
 #include "Settings/SettingsManager.h"
-
 
 ColorPicker::ColorPicker(QWidget* parent)
     : AbstractColorPicker(parent)
@@ -63,19 +34,19 @@ ColorPicker::ColorPicker(QWidget* parent)
     RegisterColorSpace("RGBA M", rgbam);
 
     // Preview
-    connect(this, SIGNAL( changing( const QColor& ) ), ui->preview, SLOT( SetColorNew( const QColor& ) ));
-    connect(this, SIGNAL( changed( const QColor& ) ), ui->preview, SLOT( SetColorNew( const QColor& ) ));
+    connect(this, SIGNAL(changing(const QColor&)), ui->preview, SLOT(SetColorNew(const QColor&)));
+    connect(this, SIGNAL(changed(const QColor&)), ui->preview, SLOT(SetColorNew(const QColor&)));
 
     // Dropper
-    connect(ui->dropper, SIGNAL( clicked() ), SLOT( OnDropper() ));
+    connect(ui->dropper, SIGNAL(clicked()), SLOT(OnDropper()));
 
     // Color picker
-    connect(ui->ok, SIGNAL( clicked() ), SLOT( OnOk() ));
-    connect(ui->cancel, SIGNAL( clicked() ), SLOT( close() ));
+    connect(ui->ok, SIGNAL(clicked()), SLOT(OnOk()));
+    connect(ui->cancel, SIGNAL(clicked()), SLOT(close()));
 
     // Custom palette
     LoadCustomPalette();
-    connect(ui->customPalette, SIGNAL( selected(const QColor&) ), SLOT( OnChanged(const QColor&) ));
+    connect(ui->customPalette, SIGNAL(selected(const QColor&)), SLOT(OnChanged(const QColor&)));
 
     SetColor(Qt::white);
 }
@@ -213,14 +184,14 @@ void ColorPicker::SetColorInternal(const QColor& c)
 
 void ColorPicker::OnChanging(const QColor& c)
 {
-    AbstractColorPicker* source = qobject_cast<AbstractColorPicker *>(sender());
+    AbstractColorPicker* source = qobject_cast<AbstractColorPicker*>(sender());
     UpdateControls(c, source);
     emit changing(c);
 }
 
 void ColorPicker::OnChanged(const QColor& c)
 {
-    AbstractColorPicker* source = qobject_cast<AbstractColorPicker *>(sender());
+    AbstractColorPicker* source = qobject_cast<AbstractColorPicker*>(sender());
     UpdateControls(c, source);
     emit changed(c);
 }
@@ -237,11 +208,11 @@ void ColorPicker::OnDropperChanged(const QColor& c)
 void ColorPicker::OnDropper()
 {
     dropper = new EyeDropper(this);
-    connect(dropper, SIGNAL( picked( const QColor& ) ), SLOT( OnDropperChanged( const QColor& ) ));
-    connect(dropper, SIGNAL( picked( const QColor& ) ), SLOT( show() ));
-    connect(dropper, SIGNAL( canceled() ), SLOT( show() ));
+    connect(dropper, SIGNAL(picked(const QColor&)), SLOT(OnDropperChanged(const QColor&)));
+    connect(dropper, SIGNAL(picked(const QColor&)), SLOT(show()));
+    connect(dropper, SIGNAL(canceled()), SLOT(show()));
     const qreal opacity = windowOpacity();
-    setWindowOpacity(0.0);      // Removes OS-specific animations on window hide
+    setWindowOpacity(0.0); // Removes OS-specific animations on window hide
     hide();
     dropper->Exec();
     setWindowOpacity(opacity);
@@ -279,10 +250,10 @@ void ColorPicker::UpdateControls(const QColor& c, AbstractColorPicker* source)
 
 void ColorPicker::ConnectPicker(AbstractColorPicker* picker)
 {
-    connect(picker, SIGNAL( begin() ), SIGNAL( begin() ));
-    connect(picker, SIGNAL( changing( const QColor& ) ), SLOT( OnChanging( const QColor& ) ));
-    connect(picker, SIGNAL( changed( const QColor& ) ), SLOT( OnChanged( const QColor& ) ));
-    connect(picker, SIGNAL( canceled() ), SIGNAL( canceled() ));
+    connect(picker, SIGNAL(begin()), SIGNAL(begin()));
+    connect(picker, SIGNAL(changing(const QColor&)), SLOT(OnChanging(const QColor&)));
+    connect(picker, SIGNAL(changed(const QColor&)), SLOT(OnChanged(const QColor&)));
+    connect(picker, SIGNAL(canceled()), SIGNAL(canceled()));
 }
 
 void ColorPicker::closeEvent(QCloseEvent* e)
@@ -298,7 +269,7 @@ void ColorPicker::closeEvent(QCloseEvent* e)
 
 void ColorPicker::keyPressEvent(QKeyEvent* e)
 {
-    switch(e->key())
+    switch (e->key())
     {
     case Qt::Key_Escape:
         close();
@@ -317,7 +288,7 @@ void ColorPicker::LoadCustomPalette()
     DAVA::VariantType v = SettingsManager::Instance()->GetValue(Settings::Internal_CustomPalette);
     const DAVA::int32 vSize = v.AsByteArraySize();
     const DAVA::int32 n = vSize / sizeof(DAVA::int32);
-    const DAVA::uint32 *a = (DAVA::uint32 *)v.AsByteArray();
+    const DAVA::uint32* a = (DAVA::uint32*)v.AsByteArray();
 
     CustomPalette::Colors colors(n);
     for (int i = 0; i < n; i++)
@@ -338,6 +309,6 @@ void ColorPicker::SaveCustomPalette()
         a[i] = colors[i].rgba();
     }
 
-    const DAVA::VariantType v((DAVA::uint8 *)a.data(), n*sizeof(DAVA::uint32));
+    const DAVA::VariantType v((DAVA::uint8*)a.data(), n * sizeof(DAVA::uint32));
     SettingsManager::Instance()->SetValue(Settings::Internal_CustomPalette, v);
 }

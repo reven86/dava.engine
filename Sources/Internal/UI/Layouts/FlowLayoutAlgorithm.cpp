@@ -1,31 +1,3 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
-
 #include "FlowLayoutAlgorithm.h"
 
 #include "UIFlowLayoutComponent.h"
@@ -45,6 +17,16 @@ struct FlowLayoutAlgorithm::LineInfo
     int32 lastIndex;
     int32 childrenCount;
     float32 usedSize;
+
+    LineInfo(int32 first_, int32 last_, int32 count_, float32 size_)
+        : firstIndex(first_)
+        , lastIndex(last_)
+        , childrenCount(count_)
+        , usedSize(size_)
+    {
+        DVASSERT(lastIndex >= firstIndex);
+        DVASSERT(childrenCount > 0);
+    }
 };
 
 FlowLayoutAlgorithm::FlowLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
@@ -153,7 +135,10 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
         if (newLineBeforeThis && index > firstIndex)
         {
-            lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
+            if (childrenInLine > 0)
+            {
+                lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+            }
             firstIndex = index;
             childrenInLine = 0;
             usedSize = 0.0f;
@@ -165,14 +150,17 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         {
             if (index > firstIndex)
             {
-                lines.emplace_back(LineInfo{ firstIndex, index - 1, childrenInLine, usedSize });
+                if (childrenInLine > 0)
+                {
+                    lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+                }
                 firstIndex = index;
                 childrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
-                lines.emplace_back(LineInfo{ firstIndex, index, 1, childSize });
+                lines.emplace_back(LineInfo(firstIndex, index, 1, childSize));
                 firstIndex = index + 1;
                 childrenInLine = 0;
                 usedSize = 0.0f;
@@ -185,9 +173,9 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         }
     }
 
-    if (firstIndex <= data.GetLastChildIndex())
+    if (firstIndex <= data.GetLastChildIndex() && childrenInLine > 0)
     {
-        lines.emplace_back(LineInfo{ firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize });
+        lines.emplace_back(LineInfo(firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize));
     }
 }
 

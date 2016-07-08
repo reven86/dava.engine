@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/ShaderCache.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
@@ -38,8 +9,8 @@ namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vertexProgText;
-    char8* fragmentProgText;
+    char8* vertexProgText = nullptr;
+    char8* fragmentProgText = nullptr;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
@@ -75,8 +46,8 @@ void Clear()
 
     for (auto& it : shaderSourceCodes)
     {
-        SafeDelete(it.second.vertexProgText);
-        SafeDelete(it.second.fragmentProgText);
+        SafeDeleteArray(it.second.vertexProgText);
+        SafeDeleteArray(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
 }
@@ -114,42 +85,63 @@ ShaderSourceCode LoadFromSource(const String& source)
     //later move it into FileSystem
 
     //vertex
+    bool loaded = true;
     File* fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
         uint32 fileSize = fp->GetSize();
         sourceCode.vertexProgText = new char8[fileSize + 1];
         sourceCode.vertexProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.vertexProgText, fileSize);
+        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.vertexProgText);
+
+            loaded = false;
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
 
+    if (!loaded)
+    {
+        sourceCode.vertexProgText = new char[1];
+        sourceCode.vertexProgText[0] = 0;
+    }
+
     //fragment
+    loaded = true;
     fp = File::Create(sourceCode.fragmentProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
         uint32 fileSize = fp->GetSize();
         sourceCode.fragmentProgText = new char8[fileSize + 1];
         sourceCode.fragmentProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.fragmentProgText, fileSize);
+        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
         if (dataRead != fileSize)
         {
+            SafeDeleteArray(sourceCode.fragmentProgText);
+            loaded = false;
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
+        loaded = false;
         Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
+
+    if (!loaded)
+    {
+        sourceCode.fragmentProgText = new char[1];
+        sourceCode.fragmentProgText[0] = 0;
+    }
 
     return sourceCode;
 }
@@ -292,8 +284,8 @@ void RelaoadShaders()
     //clear cached source files
     for (auto& it : shaderSourceCodes)
     {
-        SafeDelete(it.second.vertexProgText);
-        SafeDelete(it.second.fragmentProgText);
+        SafeDeleteArray(it.second.vertexProgText);
+        SafeDeleteArray(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
 

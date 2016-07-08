@@ -1,39 +1,10 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Texture.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/PixelFormatDescriptor.h"
 
-namespace DAVA 
+namespace DAVA
 {
 Image::Image()
     : dataSize(0)
@@ -43,83 +14,81 @@ Image::Image()
     , mipmapLevel(-1)
     , format(FORMAT_RGB565)
     , cubeFaceID(Texture::INVALID_CUBEMAP_FACE)
+    , customDeleter(nullptr)
 {
 }
 
 Image::~Image()
 {
-	SafeDeleteArray(data);
-	
-	width = 0;
-	height = 0;
+    if (nullptr != customDeleter)
+    {
+        customDeleter(data);
+    }
+    else
+    {
+        SafeDeleteArray(data);
+    }
+
+    width = 0;
+    height = 0;
 }
 
-Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
+uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
+{
+    DVASSERT(width != 0 && height != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
+
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1 || blockSize.dy != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+        height = height + ((-1 * height) % blockSize.dy);
+    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width * height / 8);
+}
+
+Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Image * image = new Image();
-	image->width = width;
-	image->height = height;
-	image->format = format;
-    
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    if (formatSize ||
-		(format >= FORMAT_DXT1 && format <= FORMAT_DXT1A) ||
-		(format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
+    uint32 size = GetSizeInBytes(width, height, format);
+    if (size > 0)
     {
-		//workaround, because formatSize is not designed for formats with 4 bits per pixel
-		image->dataSize = width * height * formatSize / 8;
-		
-		if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
-			(format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
-		{
-			uint32 dSize = (formatSize/8) == 0 ? (width * height) / 2 : width * height ;
-			if(width < 4 || height < 4)// size lower than  block's size
-			{
-				uint32 minvalue = width < height ? width : height;
-				uint32 maxvalue = width > height ? width : height;
-				minvalue = minvalue < 4 ? 4 : minvalue;
-				maxvalue = maxvalue < 4 ? 4 : maxvalue;
-				dSize = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) * minvalue * maxvalue;
-				dSize /= 8;
-			}
-			image->dataSize = dSize;
-		}
-        
+        Image* image = new Image();
+        image->width = width;
+        image->height = height;
+        image->format = format;
+        image->dataSize = size;
         image->data = new uint8[image->dataSize];
+        return image;
     }
-    else 
+
+    Logger::Error("[Image::Create] trying to create image with wrong format");
+    return nullptr;
+}
+
+Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data)
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    Image* image = Image::Create(width, height, format);
+    if (image != nullptr && data != nullptr)
     {
-        Logger::Error("[Image::Create] trying to create image with wrong format");
-		SafeRelease(image);
+        Memcpy(image->data, data, image->dataSize);
     }
-    
-	return image;
+
+    return image;
 }
 
-Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data)
+Image* Image::CreatePinkPlaceholder(bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	Image * image = Image::Create(width, height, format);
-	if(!image) return NULL;
-
-	if(data)
-	{
-		Memcpy(image->data, data, image->dataSize);
-	}
-
-	return image;
-}
-
-Image * Image::CreatePinkPlaceholder(bool checkers)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    Image * image = Image::Create(16, 16, FORMAT_RGBA8888);
+    Image* image = Image::Create(16, 16, FORMAT_RGBA8888);
     image->MakePink(checkers);
-    
+
     return image;
 }
 
@@ -127,17 +96,18 @@ void Image::MakePink(bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if(data == NULL) return;
-    
+    if (data == nullptr)
+        return;
+
     uint32 pink = 0xffff00ff;
     uint32 gray = (checkers) ? 0xffffff00 : 0xffff00ff;
     bool pinkOrGray = false;
-    
-    uint32 * writeData = (uint32*) data;
-    for(uint32 w = 0; w < width; ++w)
+
+    uint32* writeData = reinterpret_cast<uint32*>(data);
+    for (uint32 w = 0; w < width; ++w)
     {
         pinkOrGray = !pinkOrGray;
-        for(uint32 h = 0; h < height; ++h)
+        for (uint32 h = 0; h < height; ++h)
         {
             *writeData++ = pinkOrGray ? pink : gray;
             pinkOrGray = !pinkOrGray;
@@ -148,62 +118,63 @@ void Image::MakePink(bool checkers)
 bool Image::Normalize()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    
+
     const int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     const uint32 pitch = width * formatSize;
     const uint32 dataSize = height * pitch;
-    
-    uint8 * newImage0Data = new uint8[dataSize];
+
+    uint8* newImage0Data = new uint8[dataSize];
     Memset(newImage0Data, 0, dataSize);
     bool normalized = ImageConvert::Normalize(format, data, width, height, pitch, newImage0Data);
-    
+
     SafeDeleteArray(data);
     data = newImage0Data;
-    
+
     return normalized;
 }
-    
-Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
+
+Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    Vector<Image *> imageSet;
+    Vector<Image*> imageSet;
 
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    if(!formatSize)
+    if (!formatSize)
         return imageSet;
 
-    Image * image0 = SafeRetain(this);
+    Image* image0 = SafeRetain(this);
     uint32 imageWidth = width;
     uint32 imageHeight = height;
     uint32 curMipMapLevel = 0;
     image0->mipmapLevel = curMipMapLevel++;
 
-    if(isNormalMap)
+    if (isNormalMap)
         image0->Normalize();
 
     imageSet.push_back(image0);
-    while(imageHeight > 1 || imageWidth > 1)
+    while (imageHeight > 1 || imageWidth > 1)
     {
         uint32 newWidth = imageWidth;
         uint32 newHeight = imageHeight;
-        if(newWidth > 1) newWidth >>= 1;
-        if(newHeight > 1) newHeight >>= 1;
-        uint8 * newData = new uint8[newWidth * newHeight * formatSize];
-        Memset(newData, 0, newWidth * newHeight * formatSize);
+        if (newWidth > 1)
+            newWidth >>= 1;
+        if (newHeight > 1)
+            newHeight >>= 1;
+
+        Image* halfSizeImg = Image::Create(newWidth, newHeight, format);
+        Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
 
         ImageConvert::DownscaleTwiceBillinear(format, format,
-            image0->data, imageWidth, imageHeight, imageWidth * formatSize,
-            newData, newWidth, newHeight, newWidth * formatSize, isNormalMap);
+                                              image0->data, imageWidth, imageHeight, imageWidth * formatSize,
+                                              halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
 
-        Image * halfSizeImg = Image::CreateFromData(newWidth, newHeight, format, newData);
         halfSizeImg->cubeFaceID = image0->cubeFaceID;
         halfSizeImg->mipmapLevel = curMipMapLevel;
         imageSet.push_back(halfSizeImg);
 
         imageWidth = newWidth;
         imageHeight = newHeight;
-        SafeDeleteArray(newData);
 
         image0 = halfSizeImg;
         curMipMapLevel++;
@@ -212,93 +183,94 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
     return imageSet;
 }
 
-void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
+bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	uint8 * newData = NULL;
-	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    if (formatDescriptor.isCompressed)
+        return false;
 
-	if(formatSize>0)
-	{
-        const uint32 newDataSize = newWidth * newHeight * formatSize;
-		newData = new uint8[newDataSize];
-		Memset(newData, 0, newDataSize);
+    int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
+    const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
 
-		float32 kx = (float32)width / (float32)newWidth;
-		float32 ky = (float32)height / (float32)newHeight;
+    uint8* newData = new uint8[newDataSize];
+    Memset(newData, 0, newDataSize);
 
-		float32 xx = 0, yy = 0;
-		uint32 offset = 0;
-		uint32 offsetOld = 0;
-		uint32 posX, posY;
-		for (uint32 y = 0; y < newHeight; ++y)
-		{
-			for (uint32 x = 0; x < newWidth; ++x)
-			{
-				posX = (uint32)(xx + 0.5f);
-				posY = (uint32)(yy + 0.5f);
-				if (posX >= width)
-					posX = width - 1;
+    float32 kx = float32(width) / float32(newWidth);
+    float32 ky = float32(height) / float32(newHeight);
 
-				if (posY >= height)
-					posY = height - 1;
+    float32 xx = 0, yy = 0;
+    uint32 offset = 0;
+    uint32 offsetOld = 0;
+    uint32 posX, posY;
+    for (uint32 y = 0; y < newHeight; ++y)
+    {
+        for (uint32 x = 0; x < newWidth; ++x)
+        {
+            posX = uint32(xx + 0.5f);
+            posY = uint32(yy + 0.5f);
+            if (posX >= width)
+                posX = width - 1;
 
+            if (posY >= height)
+                posY = height - 1;
 
-				offsetOld = (posY * width + posX) * formatSize;
-				Memcpy(newData + offset, data + offsetOld, formatSize);
+            offsetOld = (posY * width + posX) * formatSizeInBytes;
+            Memcpy(newData + offset, data + offsetOld, formatSizeInBytes);
 
-				xx += kx;
-				offset += formatSize;
-			}
-			yy += ky;
-			xx = 0;
-		}
+            xx += kx;
+            offset += formatSizeInBytes;
+        }
+        yy += ky;
+        xx = 0;
+    }
 
-		// resized data
-		width = newWidth;
-		height = newHeight;
-        
-		SafeDeleteArray(data);
-		data = newData;
-        dataSize = newDataSize;
-	}
+    // resized data
+    width = newWidth;
+    height = newHeight;
+
+    SafeDeleteArray(data);
+    data = newData;
+    dataSize = newDataSize;
+
+    return true;
 }
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    uint8 * newData = NULL;
+    uint8* newData = NULL;
     uint32 newDataSize = 0;
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-        
-    if(formatSize>0)
+
+    if (formatSize > 0)
     {
         newDataSize = newWidth * newHeight * formatSize;
         newData = new uint8[newDataSize];
         Memset(newData, 0, newDataSize);
-            
+
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;
         uint32 indexInOldData = 0;
-            
-        for(uint32 i = 0; i < newDataSize; ++i)
+
+        for (uint32 i = 0; i < newDataSize; ++i)
         {
-            if((currentLine+1)*newWidth*formatSize<=i)
+            if ((currentLine + 1) * newWidth * formatSize <= i)
             {
                 currentLine++;
             }
-                
-            indexOnLine = i - currentLine*newWidth*formatSize;
-                
-            if(currentLine<(uint32)height)
+
+            indexOnLine = i - currentLine * newWidth * formatSize;
+
+            if (currentLine < uint32(height))
             {
                 // within height of old image
-                if(indexOnLine<(uint32)(width*formatSize))
+                if (indexOnLine < uint32(width * formatSize))
                 {
                     // we have data in old image for new image
-                    indexInOldData = currentLine*width*formatSize + indexOnLine;
+                    indexInOldData = currentLine * width * formatSize + indexOnLine;
                     newData[i] = data[indexInOldData];
                 }
                 else
@@ -311,11 +283,11 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
                 newData[i] = 0;
             }
         }
-            
+
         // resized data
         width = newWidth;
         height = newHeight;
-            
+
         SafeDeleteArray(data);
         data = newData;
         dataSize = newDataSize;
@@ -329,171 +301,168 @@ void Image::ResizeToSquare()
 }
 
 Image* Image::CopyImageRegion(const Image* imageToCopy,
-							  uint32 newWidth, uint32 newHeight,
-							  uint32 xOffset, uint32 yOffset)
+                              uint32 newWidth, uint32 newHeight,
+                              uint32 xOffset, uint32 yOffset)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	uint32 oldWidth = imageToCopy->GetWidth();
-	uint32 oldHeight = imageToCopy->GetHeight();
-	DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
+    uint32 oldWidth = imageToCopy->GetWidth();
+    uint32 oldHeight = imageToCopy->GetHeight();
+    DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
 
-	PixelFormat format = imageToCopy->GetPixelFormat();
-	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    PixelFormat format = imageToCopy->GetPixelFormat();
+    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
-	Image* newImage = Image::Create(newWidth, newHeight, format);
+    Image* newImage = Image::Create(newWidth, newHeight, format);
 
-	uint8* oldData = imageToCopy->GetData();
-	uint8* newData = newImage->data;
+    uint8* oldData = imageToCopy->GetData();
+    uint8* newData = newImage->data;
 
-	for (uint32 i = 0; i < newHeight; ++i)
-	{
-		Memcpy((newData + newWidth * i * formatSize),
-			   (oldData + (oldWidth * (yOffset + i) + xOffset) * formatSize),
-			   formatSize * newWidth);
-	}
+    for (uint32 i = 0; i < newHeight; ++i)
+    {
+        Memcpy((newData + newWidth * i * formatSize),
+               (oldData + (oldWidth * (yOffset + i) + xOffset) * formatSize),
+               formatSize * newWidth);
+    }
 
-	return newImage;
+    return newImage;
 }
 
 Image* Image::CopyImageRegion(const Image* imageToCopy, const Rect& rect)
 {
-	return CopyImageRegion(imageToCopy, (uint32)rect.dx, (uint32)rect.dy, (uint32)rect.x, (uint32)rect.y);
+    return CopyImageRegion(imageToCopy, uint32(rect.dx), uint32(rect.dy), uint32(rect.x), uint32(rect.y));
 }
 
 void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
-						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
-						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
+                        uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
+                        uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	if (GetPixelFormat() != image->GetPixelFormat())
-	{
-		return;
-	}
+    if (GetPixelFormat() != image->GetPixelFormat())
+    {
+        return;
+    }
 
-	if (image == NULL || dstX >= width || dstY >= height ||
-		srcX >= image->GetWidth() || srcY >= image->GetHeight())
-	{
-		return;
-	}
+    if (image == NULL || dstX >= width || dstY >= height ||
+        srcX >= image->GetWidth() || srcY >= image->GetHeight())
+    {
+        return;
+    }
 
-	uint32 insertWidth = (srcWidth == (uint32)-1) ? image->GetWidth() : srcWidth;
-	uint32 insertHeight = (srcHeight == (uint32)-1) ? image->GetHeight() : srcHeight;
+    uint32 insertWidth = (srcWidth == uint32(-1)) ? image->GetWidth() : srcWidth;
+    uint32 insertHeight = (srcHeight == uint32(-1)) ? image->GetHeight() : srcHeight;
 
-	if (srcX + insertWidth > image->GetWidth())
-	{
-		insertWidth = image->GetWidth() - srcX;
-	}
-	if (dstX + insertWidth > width)
-	{
-		insertWidth = width - dstX;
-	}
+    if (srcX + insertWidth > image->GetWidth())
+    {
+        insertWidth = image->GetWidth() - srcX;
+    }
+    if (dstX + insertWidth > width)
+    {
+        insertWidth = width - dstX;
+    }
 
-	if (srcY + insertHeight > image->GetHeight())
-	{
-		insertHeight = image->GetHeight() - srcY;
-	}
-	if (dstY + insertHeight > height)
-	{
-		insertHeight = height - dstY;
-	}
+    if (srcY + insertHeight > image->GetHeight())
+    {
+        insertHeight = image->GetHeight() - srcY;
+    }
+    if (dstY + insertHeight > height)
+    {
+        insertHeight = height - dstY;
+    }
 
-	PixelFormat format = GetPixelFormat();
-	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    PixelFormat format = GetPixelFormat();
+    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
-	uint8* srcData = image->GetData();
-	uint8* dstData = data;
+    uint8* srcData = image->GetData();
+    uint8* dstData = data;
 
-	for (uint32 i = 0; i < insertHeight; ++i)
-	{
-		Memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
-			   srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
-			   formatSize * insertWidth);
-	}
+    for (uint32 i = 0; i < insertHeight; ++i)
+    {
+        Memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
+               srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
+               formatSize * insertWidth);
+    }
 }
 
 void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& srcRect)
 {
-	InsertImage(image, (uint32)dstPos.x, (uint32)dstPos.y,
-				(uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
+    InsertImage(image, uint32(dstPos.x), uint32(dstPos.y), uint32(srcRect.x), uint32(srcRect.y), uint32(srcRect.dx), uint32(srcRect.dy));
 }
 
-bool Image::Save(const FilePath &path) const
+bool Image::Save(const FilePath& path) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
+    return ImageSystem::Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
-    
 
 void Image::FlipHorizontal()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	switch(format)
-	{
-	case FORMAT_A8:
-		FlipHorizontal((uint8 *)data, width, height);
-		break;
-
-	case FORMAT_A16:
-	case FORMAT_RGBA5551:
-	case FORMAT_RGBA4444:
-	case FORMAT_RGB565:
-		FlipHorizontal((uint16 *)data, width, height);
-		break;
-
-	case FORMAT_RGBA8888:
-		FlipHorizontal((uint32 *)data, width, height);
-		break;
-
-    case FORMAT_RGB888:
-        FlipHorizontal((RGB888 *)data, width, height);
+    switch (format)
+    {
+    case FORMAT_A8:
+        FlipHorizontal(reinterpret_cast<uint8*>(data), width, height);
         break;
 
-	default:
-		DVASSERT(false && "Not implemented");
-		break;
-	}
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        FlipHorizontal(reinterpret_cast<uint16*>(data), width, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        FlipHorizontal(reinterpret_cast<uint32*>(data), width, height);
+        break;
+
+    case FORMAT_RGB888:
+        FlipHorizontal(reinterpret_cast<RGB888*>(data), width, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
 }
 
 void Image::FlipVertical()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	switch(format)
-	{
-	case FORMAT_A8:
-		FlipVertical((uint8 *)data, width, height);
-		break;
-
-	case FORMAT_A16:
-	case FORMAT_RGBA5551:
-	case FORMAT_RGBA4444:
-	case FORMAT_RGB565:
-		FlipVertical((uint16 *)data, width, height);
-		break;
-
-	case FORMAT_RGBA8888:
-		FlipVertical((uint32 *)data, width, height);
-		break;
-            
-    case FORMAT_RGB888:
-        FlipVertical((RGB888 *)data, width, height);
+    switch (format)
+    {
+    case FORMAT_A8:
+        FlipVertical(reinterpret_cast<uint8*>(data), width, height);
         break;
-            
 
-	default:
-		DVASSERT(false && "Not implemented");
-		break;
-	}
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        FlipVertical(reinterpret_cast<uint16*>(data), width, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        FlipVertical(reinterpret_cast<uint32*>(data), width, height);
+        break;
+
+    case FORMAT_RGB888:
+        FlipVertical(reinterpret_cast<RGB888*>(data), width, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
 }
 
 void Image::RotateDeg(int degree)
 {
     degree %= 360;
 
-    switch(degree)
+    switch (degree)
     {
     case 0:
         return;
@@ -526,22 +495,22 @@ void Image::Rotate90Right()
     switch (format)
     {
     case FORMAT_A8:
-        Rotate90Right((uint8 *)data, (uint8 *)newData, height);
+        Rotate90Right(reinterpret_cast<uint8*>(data), reinterpret_cast<uint8*>(newData), height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        Rotate90Right((uint16 *)data, (uint16 *)newData, height);
+        Rotate90Right(reinterpret_cast<uint16*>(data), reinterpret_cast<uint16*>(newData), height);
         break;
 
     case FORMAT_RGBA8888:
-        Rotate90Right((uint32 *)data, (uint32 *)newData, height);
+        Rotate90Right(reinterpret_cast<uint32*>(data), reinterpret_cast<uint32*>(newData), height);
         break;
 
     case FORMAT_RGB888:
-        Rotate90Right((RGB888 *)data, (RGB888 *)newData, height);
+        Rotate90Right(reinterpret_cast<RGB888*>(data), reinterpret_cast<RGB888*>(newData), height);
         break;
 
     default:
@@ -563,22 +532,22 @@ void Image::Rotate90Left()
     switch (format)
     {
     case FORMAT_A8:
-        Rotate90Left((uint8 *)data, (uint8 *)newData, height);
+        Rotate90Left(reinterpret_cast<uint8*>(data), reinterpret_cast<uint8*>(newData), height);
         break;
 
     case FORMAT_A16:
     case FORMAT_RGBA5551:
     case FORMAT_RGBA4444:
     case FORMAT_RGB565:
-        Rotate90Left((uint16 *)data, (uint16 *)newData, height);
+        Rotate90Left(reinterpret_cast<uint16*>(data), reinterpret_cast<uint16*>(newData), height);
         break;
 
     case FORMAT_RGBA8888:
-        Rotate90Left((uint32 *)data, (uint32 *)newData, height);
+        Rotate90Left(reinterpret_cast<uint32*>(data), reinterpret_cast<uint32*>(newData), height);
         break;
 
     case FORMAT_RGB888:
-        Rotate90Left((RGB888 *)data, (RGB888 *)newData, height);
+        Rotate90Left(reinterpret_cast<RGB888*>(data), reinterpret_cast<RGB888*>(newData), height);
         break;
 
     default:
@@ -589,7 +558,4 @@ void Image::Rotate90Left()
     SafeDeleteArray(data);
     data = newData;
 }
-
-    
-    
 };

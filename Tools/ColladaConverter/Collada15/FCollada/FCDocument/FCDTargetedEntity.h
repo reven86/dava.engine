@@ -41,35 +41,44 @@ class FCDSceneNode;
 class FCOLLADA_EXPORT FCDTargetedEntity : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
+    DeclareObjectType(FCDEntity);
 
-	// Target
-	DeclareParameterPtr(FCDSceneNode, targetNode, FC("Target Node"));
+    // Target
+    DeclareParameterPtr(FCDSceneNode, targetNode, FC("Target Node"));
 
 public:
-	/** Constructor: do not use directly.
+    /** Constructor: do not use directly.
 		Instead, create objects of the up-classes.
 		@param document The COLLADA document that owns the targeted entity.
 		@param baseId The prefix COLLADA id to be used if no COLLADA id is provided. */
-	FCDTargetedEntity(FCDocument* document, const char* baseId);
+    FCDTargetedEntity(FCDocument* document, const char* baseId);
 
-	/** Destructor. */
-	virtual ~FCDTargetedEntity();
+    /** Destructor. */
+    virtual ~FCDTargetedEntity();
 
-	/** Retrieves whether a target is defined for this entity.
+    /** Retrieves whether a target is defined for this entity.
 		@return Whether a target is defined for this entity. */
-	inline bool HasTarget() const { return targetNode != NULL; }
+    inline bool HasTarget() const
+    {
+        return targetNode != NULL;
+    }
 
-	/** Retrieves the target visual scene node for this entity.
+    /** Retrieves the target visual scene node for this entity.
 		@return The target visual scene node. */
-	inline FCDSceneNode* GetTargetNode() { return targetNode; }
-	inline const FCDSceneNode* GetTargetNode() const { return targetNode; } /**< See above. */
+    inline FCDSceneNode* GetTargetNode()
+    {
+        return targetNode;
+    }
+    inline const FCDSceneNode* GetTargetNode() const
+    {
+        return targetNode;
+    } /**< See above. */
 
-	/** Sets the target visual scene node for this entity.
+    /** Sets the target visual scene node for this entity.
 		@param target The new target node. */
-	void SetTargetNode(FCDSceneNode* target);
+    void SetTargetNode(FCDSceneNode* target);
 
-	/** Copies the entity target information into a entity clone.
+    /** Copies the entity target information into a entity clone.
 		All the overwriting functions of this function should call this function
 		to copy the target information.
 		The cloned entity may reside in another document.
@@ -77,9 +86,7 @@ public:
 			will be created and you will need to release the returned pointer manually.
 		@param cloneChildren Whether to recursively clone this entity's children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
-
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif // _FCD_TARGETED_ENTITY_H_
-

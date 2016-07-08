@@ -39,11 +39,10 @@
  * DEPRECATED: use xmlSAX2InitDefaultSAXHandler() for the new SAX2 blocks
  */
 void
-initxmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr, int warning)
+initxmlDefaultSAXHandler(xmlSAXHandlerV1* hdlr, int warning)
 {
-    
     if (hdlr->initialized == 1)
-	return;
+        return;
 
     hdlr->internalSubset = xmlSAX2InternalSubset;
     hdlr->externalSubset = xmlSAX2ExternalSubset;
@@ -69,9 +68,9 @@ initxmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr, int warning)
     hdlr->ignorableWhitespace = xmlSAX2Characters;
     hdlr->processingInstruction = xmlSAX2ProcessingInstruction;
     if (warning == 0)
-	hdlr->warning = NULL;
+        hdlr->warning = NULL;
     else
-	hdlr->warning = xmlParserWarning;
+        hdlr->warning = xmlParserWarning;
     hdlr->error = xmlParserError;
     hdlr->fatalError = xmlParserError;
 
@@ -88,10 +87,10 @@ initxmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr, int warning)
  * DEPRECATED: use xmlSAX2InitHtmlDefaultSAXHandler() for the new SAX2 blocks
  */
 void
-inithtmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr)
+inithtmlDefaultSAXHandler(xmlSAXHandlerV1* hdlr)
 {
     if (hdlr->initialized == 1)
-	return;
+        return;
 
     hdlr->internalSubset = xmlSAX2InternalSubset;
     hdlr->externalSubset = NULL;
@@ -135,10 +134,10 @@ inithtmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr)
  * DEPRECATED: use xmlSAX2InitDocbDefaultSAXHandler() for the new SAX2 blocks
  */
 void
-initdocbDefaultSAXHandler(xmlSAXHandlerV1 *hdlr)
+initdocbDefaultSAXHandler(xmlSAXHandlerV1* hdlr)
 {
     if (hdlr->initialized == 1)
-	return;
+        return;
 
     hdlr->internalSubset = xmlSAX2InternalSubset;
     hdlr->externalSubset = NULL;

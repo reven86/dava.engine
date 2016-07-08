@@ -14,14 +14,14 @@
 //
 
 FCDAnimationMKey::FCDAnimationMKey(uint32 _dimension)
-:	dimension(_dimension)
+    : dimension(_dimension)
 {
-	output = new float[dimension];
+    output = new float[dimension];
 }
 
 FCDAnimationMKey::~FCDAnimationMKey()
 {
-	SAFE_DELETE_ARRAY(output);
+    SAFE_DELETE_ARRAY(output);
 }
 
 //
@@ -29,16 +29,16 @@ FCDAnimationMKey::~FCDAnimationMKey()
 //
 
 FCDAnimationMKeyBezier::FCDAnimationMKeyBezier(uint32 dimension)
-:	FCDAnimationMKey(dimension)
+    : FCDAnimationMKey(dimension)
 {
-	inTangent = new FMVector2[dimension];
-	outTangent = new FMVector2[dimension];
+    inTangent = new FMVector2[dimension];
+    outTangent = new FMVector2[dimension];
 }
 
 FCDAnimationMKeyBezier::~FCDAnimationMKeyBezier()
 {
-	SAFE_DELETE_ARRAY(inTangent);
-	SAFE_DELETE_ARRAY(outTangent);
+    SAFE_DELETE_ARRAY(inTangent);
+    SAFE_DELETE_ARRAY(outTangent);
 }
 
 //
@@ -46,20 +46,20 @@ FCDAnimationMKeyBezier::~FCDAnimationMKeyBezier()
 //
 
 FCDAnimationMKeyTCB::FCDAnimationMKeyTCB(uint32 dimension)
-:	FCDAnimationMKey(dimension)
+    : FCDAnimationMKey(dimension)
 {
-	tension = new float[dimension];
-	continuity = new float[dimension];
-	bias = new float[dimension];
-	easeIn = new float[dimension];
-	easeOut = new float[dimension];
+    tension = new float[dimension];
+    continuity = new float[dimension];
+    bias = new float[dimension];
+    easeIn = new float[dimension];
+    easeOut = new float[dimension];
 }
 
 FCDAnimationMKeyTCB::~FCDAnimationMKeyTCB()
 {
-	SAFE_DELETE_ARRAY(tension);
-	SAFE_DELETE_ARRAY(continuity);
-	SAFE_DELETE_ARRAY(bias);
-	SAFE_DELETE_ARRAY(easeIn);
-	SAFE_DELETE_ARRAY(easeOut);
+    SAFE_DELETE_ARRAY(tension);
+    SAFE_DELETE_ARRAY(continuity);
+    SAFE_DELETE_ARRAY(bias);
+    SAFE_DELETE_ARRAY(easeIn);
+    SAFE_DELETE_ARRAY(easeOut);
 }

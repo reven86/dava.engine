@@ -1,636 +1,791 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene/System/SelectionSystem.h"
-#include "Scene/System/CameraSystem.h"
-#include "Scene/System/CollisionSystem.h"
-#include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
+#include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
-#include "Settings/SettingsManager.h"
-
-#include <QApplication>
-#include "Scene/SceneEditor2.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
-	ENUM_ADD(SS_DRAW_SHAPE);
-	ENUM_ADD(SS_DRAW_CORNERS);
-	ENUM_ADD(SS_DRAW_BOX);
-	ENUM_ADD(SS_DRAW_NO_DEEP_TEST);
+    ENUM_ADD(SS_DRAW_SHAPE);
+    ENUM_ADD(SS_DRAW_CORNERS);
+    ENUM_ADD(SS_DRAW_BOX);
+    ENUM_ADD(SS_DRAW_NO_DEEP_TEST);
 }
 
-SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
-	: DAVA::SceneSystem(scene)
-	, selectionAllowed(true)
-	, componentMaskForSelection(ALL_COMPONENTS_MASK)
-	, applyOnPhaseEnd(false)
-	, invalidSelectionBoxes(false)
-	, collisionSystem(collSys)
-	, hoodSystem(hoodSys)
-	, selectionHasChanges(false)
-	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
+SceneSelectionSystem::SceneSelectionSystem(SceneEditor2* editor)
+    : DAVA::SceneSystem(editor)
+    , collisionSystem(editor->collisionSystem)
+    , hoodSystem(editor->hoodSystem)
+    , modificationSystem(editor->modifSystem)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+    DVASSERT(collisionSystem != nullptr);
+    DVASSERT(hoodSystem != nullptr);
+    DVASSERT(modificationSystem != nullptr);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
 {
-	if(GetScene())
-	{
-		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-	}
+    if (GetScene())
+    {
+        GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
+    }
 }
 
-void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
+void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
-    if(EventSystem::SWITCH_CHANGED == event)
+    switch (event)
     {
-        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+    case DAVA::EventSystem::SWITCH_CHANGED:
+    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
+    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
+    {
+        if (currentSelection.ContainsObject(component->GetEntity()))
         {
-            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
-
-            // if switched entity selected - update it bounding box
-            if(selectedEntity == entity)
-            {
-                invalidSelectionBoxes = true;
-            }
+            invalidSelectionBoxes = true;
         }
+        break;
     }
+    default:
+        break;
+    }
+}
+
+void SceneSelectionSystem::UpdateGroupSelectionMode()
+{
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+
+    if (addSelection)
+    {
+        groupSelectionMode = GroupSelectionMode::Add;
+    }
+    else if (excludeSelection)
+    {
+        groupSelectionMode = GroupSelectionMode::Remove;
+    }
+    else
+    {
+        groupSelectionMode = GroupSelectionMode::Replace;
+    }
+}
+
+namespace SceneSelectionSystem_Details
+{
+bool FindIfParentWasAdded(DAVA::Entity* entity, const DAVA::List<DAVA::Entity*>& container, DAVA::Scene* scene)
+{
+    DAVA::Entity* parent = entity->GetParent();
+    if (parent == scene || parent == nullptr)
+    {
+        return false;
+    }
+
+    auto found = std::find(container.begin(), container.end(), parent);
+    if (found != container.end())
+    {
+        return true;
+    }
+
+    return FindIfParentWasAdded(parent, container, scene);
+}
 }
 
 void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
-	ForceEmitSignals();
+    ForceEmitSignals();
+    if (IsLocked())
+    {
+        return;
+    }
 
-	if (IsLocked())
-	{
-		return;
-	}
+    if (!entitiesForSelection.empty())
+    {
+        Clear();
+        for (auto& entity : entitiesForSelection)
+        {
+            if (false == SceneSelectionSystem_Details::FindIfParentWasAdded(entity, entitiesForSelection, GetScene()))
+            {
+                AddObjectToSelection(entity);
+            }
+        }
+        entitiesForSelection.clear();
+    }
 
     // if boxes are invalid we should request them from collision system
-    // and store them in selection entityGroup
-    if(invalidSelectionBoxes)
+    // and store them in the currentSelection objects
+    if (invalidSelectionBoxes)
     {
-        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        for (auto& item : currentSelection.GetMutableContent())
         {
-            EntityGroupItem *item = curSelections.GetItem(i);
-            item->bbox = GetSelectionAABox(curSelections.GetEntity(i));
+            item.SetBoundingBox(GetUntransformedBoundingBox(item.GetContainedObject()));
         }
-
         invalidSelectionBoxes = false;
     }
 
-
-	UpdateHoodPos();
+    UpdateGroupSelectionMode();
+    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if (selectionHasChanges)
-	{
-		// emit signals
-		SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2 *) GetScene(), &curSelections, &curDeselections);
-
-		selectionHasChanges = false;
-		curDeselections.Clear();
-	}
+    if (selectionHasChanges)
+    {
+        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), &currentSelection, &recentlySelectedEntities);
+        selectionHasChanges = false;
+        recentlySelectedEntities.Clear();
+    }
 }
 
-void SceneSelectionSystem::Input(DAVA::UIEvent *event)
+void SceneSelectionSystem::ProcessSelectedGroup(const SelectableGroup::CollectionType& allObjects)
 {
-	if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection))
-	{
-		return;
-	}
+    SelectableGroup::CollectionType collisionObjects;
+    collisionObjects.reserve(allObjects.size());
+
+    for (const auto& item : allObjects)
+    {
+        bool wasAdded = false;
+
+        auto entity = item.AsEntity();
+        if (entity == nullptr)
+        {
+            collisionObjects.emplace_back(item.GetContainedObject());
+            wasAdded = true;
+        }
+        else if (componentMaskForSelection & entity->GetAvailableComponentFlags())
+        {
+            collisionObjects.emplace_back(GetSelectableEntity(entity));
+            wasAdded = true;
+        }
+
+        if (wasAdded)
+        {
+            collisionObjects.back().SetBoundingBox(GetUntransformedBoundingBox(collisionObjects.back().GetContainedObject()));
+        }
+    }
+
+    Selectable::Object* firstEntity = collisionObjects.empty() ? nullptr : collisionObjects.front().GetContainedObject();
+    Selectable::Object* nextEntity = firstEntity;
+
+    // sequent selection?
+    if (SettingsManager::GetValue(Settings::Scene_SelectionSequent).AsBool() && (currentSelection.GetSize() <= 1))
+    {
+        // find first after currently selected items
+        for (size_t i = 0, e = collisionObjects.size(); i < e; i++)
+        {
+            if (currentSelection.ContainsObject(collisionObjects[i].GetContainedObject()))
+            {
+                if ((i + 1) < e)
+                {
+                    nextEntity = collisionObjects[i + 1].GetContainedObject();
+                    break;
+                }
+            }
+        }
+    }
+
+    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+
+    bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
+    bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
+
+    if (addSelection && (firstEntity != nullptr))
+    {
+        AddObjectToSelection(firstEntity);
+    }
+    else if (excludeSelection && (firstEntity != nullptr))
+    {
+        ExcludeEntityFromSelection(firstEntity);
+    }
+    else
+    {
+        bool selectOnClick = SettingsManager::GetValue(Settings::Scene_SelectionOnClick).AsBool();
+        // if new selection is NULL or is one of already selected items
+        // we should change current selection only on phase end
+        // TODO : review and remove?
+        bool containsAlreadySelectedObjects = false;
+        for (const auto& obj : collisionObjects)
+        {
+            if (currentSelection.ContainsObject(obj.GetContainedObject()))
+            {
+                containsAlreadySelectedObjects = true;
+                break;
+            }
+        }
+
+        if (selectOnClick || (nextEntity == nullptr) || containsAlreadySelectedObjects)
+        {
+            applyOnPhaseEnd = true;
+            objectsToSelect.Clear();
+            if (nextEntity != nullptr)
+            {
+                objectsToSelect.Add(nextEntity, GetUntransformedBoundingBox(nextEntity));
+            }
+        }
+        else
+        {
+            SelectableGroup newSelection;
+            newSelection.Add(nextEntity, GetUntransformedBoundingBox(nextEntity));
+            SetSelection(newSelection);
+        }
+    }
+}
+
+void SceneSelectionSystem::PerformSelectionAtPoint(const DAVA::Vector2& point)
+{
+    DAVA::Vector3 traceFrom;
+    DAVA::Vector3 traceTo;
+    SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
+    if (cameraSystem->GetCurCamera() != nullptr)
+    {
+        cameraSystem->GetRayTo2dPoint(point, cameraSystem->GetCurCamera()->GetZFar(), traceFrom, traceTo);
+    }
+    ProcessSelectedGroup(collisionSystem->ObjectsRayTest(traceFrom, traceTo));
+}
+
+void SceneSelectionSystem::PerformSelectionInCurrentBox()
+{
+    UpdateGroupSelectionMode();
+
+    const DAVA::float32 minSelectionSize = 2.0f;
+
+    DAVA::Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
+    if ((std::abs(selectionSize.x) < minSelectionSize) || (std::abs(selectionSize.y) < minSelectionSize))
+    {
+        return;
+    };
+
+    float minX = std::min(selectionStartPoint.x, selectionEndPoint.x);
+    float minY = std::min(selectionStartPoint.y, selectionEndPoint.y);
+    float maxX = std::max(selectionStartPoint.x, selectionEndPoint.x);
+    float maxY = std::max(selectionStartPoint.y, selectionEndPoint.y);
+
+    DAVA::Vector3 p0;
+    DAVA::Vector3 p1;
+    DAVA::Vector3 p2;
+    DAVA::Vector3 p3;
+    DAVA::Vector3 p4;
+    SceneCameraSystem* cameraSystem = ((SceneEditor2*)GetScene())->cameraSystem;
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(minX, minY), 1.0f, p0, p1);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(maxX, minY), 1.0f, p0, p2);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(minX, maxY), 1.0f, p0, p4);
+    cameraSystem->GetRayTo2dPoint(DAVA::Vector2(maxX, maxY), 1.0f, p0, p3);
+
+    DAVA::Plane planes[4];
+    planes[0] = DAVA::Plane(p2, p1, p0);
+    planes[1] = DAVA::Plane(p3, p2, p0);
+    planes[2] = DAVA::Plane(p4, p3, p0);
+    planes[3] = DAVA::Plane(p1, p4, p0);
+
+    const SelectableGroup& allSelectedObjects = collisionSystem->ClipObjectsToPlanes(planes, 4);
+
+    SelectableGroup selectedObjects;
+    for (const auto& item : allSelectedObjects.GetContent())
+    {
+        auto entity = item.AsEntity();
+        if (entity == nullptr)
+        {
+            selectedObjects.Add(item.GetContainedObject(), GetUntransformedBoundingBox(item.GetContainedObject()));
+        }
+        else if (IsEntitySelectable(entity))
+        {
+            auto selectableEntity = GetSelectableEntity(entity);
+            if (!selectableEntity->GetLocked())
+            {
+                selectedObjects.Add(selectableEntity, GetUntransformedBoundingBox(selectableEntity));
+            }
+        }
+    }
+
+    UpdateSelectionGroup(selectedObjects);
+    applyOnPhaseEnd = true;
+}
+
+void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
+{
+    if (systemIsEnabled)
+    {
+        auto autoSelectionEnabled = SettingsManager::GetValue(Settings::Scene_AutoselectNewEntities).AsBool();
+        if (autoSelectionEnabled && !IsLocked())
+        {
+            DAVA::Entity* parent = entity->GetParent();
+            auto found = std::find(entitiesForSelection.begin(), entitiesForSelection.end(), parent);
+            if (found == entitiesForSelection.end())
+            {
+                entitiesForSelection.push_back(entity); // need add only parent entities to select one
+            }
+        }
+    }
+}
+
+void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
+{
+    if (!entitiesForSelection.empty())
+    {
+        entitiesForSelection.remove(entity);
+    }
+
+    ExcludeEntityFromSelection(entity);
+    invalidSelectionBoxes = true;
+}
+
+void SceneSelectionSystem::Input(DAVA::UIEvent* event)
+{
+    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
+    {
+        return;
+    }
 
     if (DAVA::UIEvent::Phase::BEGAN == event->phase)
     {
-        // we can select only if mouse isn't over hood axis
-		// or if hood is invisible now
-		// or if current mode is NORMAL (no modification)
-		if(!hoodSystem->IsVisible() ||
-			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
-			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
-		{
-			if(event->tid == DAVA::UIEvent::BUTTON_1)
-			{
-				const EntityGroup* collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
-				EntityGroup selectableItems = GetSelecetableFromCollision(collisionEntities);
+        for (auto selectionDelegate : selectionDelegates)
+        {
+            if (selectionDelegate->AllowPerformSelectionHavingCurrent(currentSelection) == false)
+            {
+                return;
+            }
+        }
 
-				DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
-				DAVA::Entity *nextEntity = selectableItems.GetEntity(0);
-
-                // sequent selection?
-                if(SettingsManager::GetValue(Settings::Scene_SelectionSequent).AsBool())
-                {
-				    // search possible next item only if now there is no selection or is only single selection
-				    if(curSelections.Size() <= 1)
-				    {
-					    // find first after currently selected items
-					    for(size_t i = 0; i < selectableItems.Size(); i++)
-					    {
-						    DAVA::Entity *entity = selectableItems.GetEntity(i);
-						    if(curSelections.ContainsEntity(entity))
-						    {
-							    if((i + 1) < selectableItems.Size())
-							    {
-								    nextEntity = selectableItems.GetEntity(i + 1);
-								    break;
-							    }
-						    }
-					    }
-				    }
-                }
-
-				int curKeyModifiers = QApplication::keyboardModifiers();
-				if(curKeyModifiers & Qt::ControlModifier)
-				{
-					AddSelection(firstEntity);
-				}
-				else if(curKeyModifiers & Qt::AltModifier)
-				{
-					RemSelection(firstEntity);
-				}
-				else
-				{
-					// if new selection is NULL or is one of already selected items
-					// we should change current selection only on phase end
-					if(nextEntity == NULL || NULL != curSelections.IntersectedEntity(&selectableItems))
-					{
-						applyOnPhaseEnd = true;
-						lastSelection = nextEntity;
-					}
-					else
-					{
-						SetSelection(nextEntity);
-					}
-				}
-			}
-		}
-	}
+        selecting = true;
+        selectionStartPoint = event->point;
+        selectionEndPoint = selectionStartPoint;
+        lastGroupSelection.Clear();
+        PerformSelectionAtPoint(selectionStartPoint);
+    }
+    else if (selecting && (DAVA::UIEvent::Phase::DRAG == event->phase))
+    {
+        selectionEndPoint = event->point;
+        PerformSelectionInCurrentBox();
+    }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if(event->tid == DAVA::UIEvent::BUTTON_1)
-		{
-			if(applyOnPhaseEnd)
-			{
-				applyOnPhaseEnd = false;
-				SetSelection(lastSelection);
-			}
-		}
-	}
+        if ((event->mouseButton == DAVA::UIEvent::MouseButton::LEFT) && applyOnPhaseEnd)
+        {
+            FinishSelection();
+        }
+        applyOnPhaseEnd = false;
+        selecting = false;
+    }
+}
+
+void SceneSelectionSystem::DrawItem(const DAVA::AABBox3& originalBox, const DAVA::Matrix4& transform, DAVA::int32 drawMode,
+                                    DAVA::RenderHelper::eDrawType wireDrawType, DAVA::RenderHelper::eDrawType solidDrawType, const DAVA::Color& color)
+{
+    DAVA::AABBox3 bbox;
+    originalBox.GetTransformedBox(transform, bbox);
+
+    // draw selection share
+    if (drawMode & SS_DRAW_SHAPE)
+    {
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(bbox, color, wireDrawType);
+    }
+    // draw selection share
+    else if (drawMode & SS_DRAW_CORNERS)
+    {
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(bbox, color, wireDrawType);
+    }
+    // fill selection shape
+    if (drawMode & SS_DRAW_BOX)
+    {
+        DAVA::Color alphaScaledColor = color;
+        alphaScaledColor.a *= 0.15f;
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(bbox, alphaScaledColor, solidDrawType);
+    }
 }
 
 void SceneSelectionSystem::Draw()
 {
-	if (IsLocked())
-	{
-		return;
-	}
-
-	if(curSelections.Size() > 0)
+    if (IsLocked())
     {
-        DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
-
-        DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_WIRE_DEPTH : DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
-        DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
-
-        for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
-        {
-            DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
-
-			// draw selection share
-			if(drawMode & SS_DRAW_SHAPE)
-			{
-                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
-            }
-            // draw selection share
-			else if(drawMode & SS_DRAW_CORNERS)
-			{
-                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
-            }
-
-            // fill selection shape
-			if(drawMode & SS_DRAW_BOX)
-			{
-                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
-            }
-        }
+        return;
     }
-}
 
-void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
-{
-	if(NULL != command)
-	{
-        auto commandId = command->GetId();
-        
-		if((CMDID_ENTITY_REMOVE == commandId))
-		{
-			// remove from selection entity that was removed by command
-			RemSelection(command->GetEntity());
-		}
-		else if((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
-		{
-            invalidSelectionBoxes = true;
-        }
+    DAVA::Vector2 selectionSize = selectionEndPoint - selectionStartPoint;
+    if (selecting && (selectionSize.Length() >= 1.0f))
+    {
+        DAVA::Rect targetRect(selectionStartPoint, selectionSize);
+        DAVA::RenderSystem2D::Instance()->FillRect(targetRect, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f / 3.0f));
+        DAVA::RenderSystem2D::Instance()->DrawRect(targetRect, DAVA::Color::White);
     }
-}
 
-void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
-{
-    if (!IsLocked())
+    DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
+
+    DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ?
+    DAVA::RenderHelper::DRAW_WIRE_DEPTH :
+    DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
+
+    DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ?
+    DAVA::RenderHelper::DRAW_SOLID_DEPTH :
+    DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
+
+    bool replacingSelection = selecting && (groupSelectionMode == GroupSelectionMode::Replace);
+    if (!replacingSelection)
     {
-        Clear();
-
-        uint32 count = newSelection.Size();
-        for (uint32 i = 0; i < count; ++i)
+        for (const auto& item : currentSelection.GetContent())
         {
-            auto entity = newSelection.GetEntity(i);
-			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
-			{
-				curSelections.Add(entity, GetSelectionAABox(entity));
-				selectionHasChanges = true;
-			}
-		}
-
-		if (selectionHasChanges)
-		{
-			invalidSelectionBoxes = true;
-			UpdateHoodPos();
-		}
-	}
-}
-
-
-void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
-{
-	if(!IsLocked())
-	{
-		Clear();
-
-		// add new selection
-		if(NULL != entity)
-		{
-			AddSelection(entity);
-		}
-
-		UpdateHoodPos();
-	}
-}
-
-void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
-{
-    if(!IsLocked())
-    {
-        if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
-        {
-            EntityGroupItem selectableItem;
-            
-            selectableItem.entity = entity;
-            selectableItem.bbox = GetSelectionAABox(entity);
-            curSelections.Add(selectableItem);
-            
-            selectionHasChanges = true;
-            UpdateHoodPos();
-            
-            invalidSelectionBoxes = true;
-        }
-    }
-}
-
-void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
-{
-    if (!IsLocked())
-    {
-        for (size_t i = 0; i < entities.Size(); ++i)
-        {
-            const auto entity = entities.GetEntity(i);
-            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            if (item.SupportsTransformType(Selectable::TransformType::Disabled))
             {
-                EntityGroupItem selectableItem;
-
-                selectableItem.entity = entity;
-                selectableItem.bbox = GetSelectionAABox(entity);
-                curSelections.Add(selectableItem);
-                selectionHasChanges = true;
-                invalidSelectionBoxes = true;
+                DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, DAVA::Color::White);
             }
         }
+    }
+
+    DAVA::Color drawColor = DAVA::Color::White;
+    if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        drawColor = DAVA::Color(0.5f, 1.0f, 0.5f, 1.0f);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        drawColor = DAVA::Color(1.0f, 0.5f, 0.5f, 1.0f);
+    }
+
+    for (const auto& item : objectsToSelect.GetContent())
+    {
+        DrawItem(item.GetBoundingBox(), item.GetWorldTransform(), drawMode, wireDrawType, solidDrawType, drawColor);
+    }
+}
+
+void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
+{
+    if (nullptr != command)
+    {
+        auto commandId = command->GetId();
+
+        if ((CMDID_ENTITY_REMOVE == commandId))
+        {
+            // remove from selection entity that was removed by command
+            ExcludeEntityFromSelection(command->GetEntity());
+        }
+        else if ((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
+        {
+            invalidSelectionBoxes = true;
+        }
+    }
+}
+
+void SceneSelectionSystem::SetSelection(SelectableGroup& newSelection)
+{
+    if (IsLocked())
+        return;
+
+    newSelection.RemoveIf([this](const Selectable& obj) {
+        return (obj.CanBeCastedTo<DAVA::Entity>() && !IsEntitySelectable(obj.AsEntity()));
+    });
+
+    /*
+	 * Ask delegates if selection could be changed
+	 */
+    selectionHasChanges = true;
+    for (auto selectionDelegate : selectionDelegates)
+    {
+        if (selectionDelegate->AllowChangeSelectionReplacingCurrent(currentSelection, newSelection) == false)
+        {
+            selectionHasChanges = false;
+            return;
+        }
+    }
+
+    /*
+	 * Actually change selection
+	 */
+    recentlySelectedEntities.Clear();
+    for (const auto& i : currentSelection.GetContent())
+    {
+        objectsToSelect.Remove(i.GetContainedObject());
+        recentlySelectedEntities.Add(i.GetContainedObject(), i.GetBoundingBox());
+    }
+    currentSelection = newSelection;
+
+    if (selectionHasChanges)
+    {
+        invalidSelectionBoxes = true;
         UpdateHoodPos();
     }
 }
 
-bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity) const
+void SceneSelectionSystem::AddObjectToSelection(Selectable::Object* object)
 {
-    if(!IsLocked() && entity)
+    if (IsLocked() || currentSelection.ContainsObject(object))
+        return;
+
+    Selectable wrapper(object);
+    if (!wrapper.CanBeCastedTo<DAVA::Entity>() || IsEntitySelectable(wrapper.AsEntity()))
+    {
+        auto newSelection = currentSelection;
+        newSelection.Add(object, GetUntransformedBoundingBox(object));
+        SetSelection(newSelection);
+    }
+}
+
+void SceneSelectionSystem::AddGroupToSelection(const SelectableGroup& entities)
+{
+    if (IsLocked())
+        return;
+
+    SelectableGroup newSelection = currentSelection;
+    for (const auto& item : entities.GetContent())
+    {
+        if (currentSelection.ContainsObject(item.GetContainedObject()))
+            continue;
+
+        auto entity = item.AsEntity();
+        if ((entity == nullptr) || IsEntitySelectable(item.AsEntity()))
+        {
+            newSelection.Add(item.GetContainedObject(), GetUntransformedBoundingBox(item.GetContainedObject()));
+        }
+    }
+    SetSelection(newSelection);
+}
+
+bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity* entity) const
+{
+    if (!IsLocked() && (entity != nullptr))
     {
         return (componentMaskForSelection & entity->GetAvailableComponentFlags());
     }
-    
+
     return false;
 }
 
-void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
+void SceneSelectionSystem::ExcludeSingleItem(Selectable::Object* entity)
 {
-	if(!IsLocked())
-	{
-		if(curSelections.ContainsEntity(entity))
-		{
-			curSelections.Rem(entity);
-			curDeselections.Add(entity);
-
-			selectionHasChanges = true;
-		}
-
-		UpdateHoodPos();
-	}
+    auto newSelection = currentSelection;
+    if (newSelection.ContainsObject(entity))
+    {
+        recentlySelectedEntities.Add(entity, DAVA::AABBox3());
+        newSelection.Remove(entity);
+    }
+    if (objectsToSelect.ContainsObject(entity))
+    {
+        objectsToSelect.Remove(entity);
+    }
+    SetSelection(newSelection);
 }
 
-void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
+void SceneSelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity)
 {
     if (!IsLocked())
     {
-        for (size_t i = 0; i < entities.Size(); ++i)
-        {
-            auto entity = entities.GetEntity(i);
-            if (curSelections.ContainsEntity(entity))
-            {
-                curSelections.Rem(entity);
-                curDeselections.Add(entity);
+        ExcludeSingleItem(entity);
+        currentSelection.RebuildIntegralBoundingBox();
+        UpdateHoodPos();
+    }
+}
 
-                selectionHasChanges = true;
-            }
+void SceneSelectionSystem::ExcludeSelection(const SelectableGroup& entities)
+{
+    if (!IsLocked())
+    {
+        for (const auto& item : entities.GetContent())
+        {
+            ExcludeSingleItem(item.GetContainedObject());
         }
+        currentSelection.RebuildIntegralBoundingBox();
         UpdateHoodPos();
     }
 }
 
 void SceneSelectionSystem::Clear()
 {
-	if(!IsLocked())
-	{
-		while(curSelections.Size() > 0)
-		{
-			DAVA::Entity *entity = curSelections.GetEntity(0);
-
-			curSelections.Rem(entity);
-			curDeselections.Add(entity);
-
-			selectionHasChanges = true;
-		}
-
+    if (!IsLocked())
+    {
+        auto allItems = currentSelection.GetContent();
+        for (const auto& item : allItems)
+        {
+            ExcludeSingleItem(item.GetContainedObject());
+        }
+        currentSelection.RebuildIntegralBoundingBox();
         UpdateHoodPos();
-	}
+    }
 }
 
-EntityGroup SceneSelectionSystem::GetSelection() const
+const SelectableGroup& SceneSelectionSystem::GetSelection() const
 {
-	return curSelections;
+    static const SelectableGroup emptyGroup = SelectableGroup();
+    return IsLocked() ? emptyGroup : currentSelection;
 }
 
 size_t SceneSelectionSystem::GetSelectionCount() const
 {
-	return curSelections.Size();
+    return IsLocked() == false ? currentSelection.GetSize() : 0;
 }
 
-DAVA::Entity* SceneSelectionSystem::GetSelectionEntity(int index) const
+DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
 {
-	return curSelections.GetEntity(index);
+    if (IsLocked())
+        return nullptr;
+
+    DVASSERT(!currentSelection.IsEmpty())
+    return currentSelection.GetContent().front().AsEntity();
 }
 
-bool SceneSelectionSystem::IsEntitySelected(Entity *entity)
+void SceneSelectionSystem::CancelSelection()
 {
-    return curSelections.ContainsEntity(entity);
+    // don't change selection on phase end
+    applyOnPhaseEnd = false;
 }
 
-bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity *entity)
+void SceneSelectionSystem::SetPivotPoint(Selectable::TransformPivot pp)
 {
-    while (entity)
-    {
-        if (curSelections.ContainsEntity(entity))
-            return true;
-
-        entity = entity->GetParent();
-    }
-    return false;
+    curPivotPoint = pp;
 }
 
-void SceneSelectionSystem::SelectedItemsWereModified()
+Selectable::TransformPivot SceneSelectionSystem::GetPivotPoint() const
 {
-	// don't change selection on phase end
-	applyOnPhaseEnd = false;
+    return curPivotPoint;
 }
-
-void SceneSelectionSystem::SetPivotPoint(ST_PivotPoint pp)
-{
-	curPivotPoint = pp;
-}
-
-ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
-{
-	return curPivotPoint;
-}
-
 
 void SceneSelectionSystem::SetLocked(bool lock)
 {
-	SceneSystem::SetLocked(lock);
+    bool lockChanged = IsLocked() != lock;
+    SceneSystem::SetLocked(lock);
 
-	hoodSystem->LockAxis(lock);
-	hoodSystem->SetVisible(!lock);
+    hoodSystem->LockAxis(lock);
+    hoodSystem->SetVisible(!lock);
 
-	if(!lock)
-	{
-		UpdateHoodPos();
-	}
+    if (!lock)
+    {
+        UpdateHoodPos();
+    }
+
+    if (lockChanged)
+    {
+        SelectableGroup emptyGroup;
+        SelectableGroup* selected = nullptr;
+        SelectableGroup* deselected = nullptr;
+        if (lock == true)
+        {
+            selected = &emptyGroup;
+            deselected = &currentSelection;
+        }
+        else
+        {
+            selected = &currentSelection;
+            deselected = &emptyGroup;
+        }
+
+        SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2*)GetScene(), selected, deselected);
+    }
 }
 
 void SceneSelectionSystem::UpdateHoodPos() const
 {
-	if(curSelections.Size() > 0)
-	{
-		DAVA::Vector3 p;
-		bool lockHoodModif = false;
+    if (currentSelection.IsEmpty())
+    {
+        hoodSystem->LockModif(false);
+        hoodSystem->SetVisible(false);
+    }
+    else
+    {
+        bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
+        hoodSystem->LockModif(modificationEnabled == false);
 
-		switch (curPivotPoint)
-		{
-		case ST_PIVOT_ENTITY_CENTER:
-			p = curSelections.GetZeroPos(0);
-			break;
-		default:
-			p = curSelections.GetCommonZeroPos();
-			break;
-		}
+        DAVA::Vector3 hoodCenter;
+        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        {
+            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
+        }
+        else
+        {
+            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
+        }
+        hoodSystem->SetPosition(hoodCenter);
 
-		// check if we have locked entities in selection group
-		// if so - lock modification hood
-		for(size_t i = 0; i < curSelections.Size(); ++i)
-		{
-			if(curSelections.GetEntity(i)->GetLocked())
-			{
-				lockHoodModif = true;
-				break;
-			}
-		}
-
-		hoodSystem->LockModif(lockHoodModif);
-		hoodSystem->SetPosition(p);
-		hoodSystem->SetVisible(true);
-	}
-	else
-	{
-		hoodSystem->LockModif(false);
-		hoodSystem->SetVisible(false);
-	}
-    
-    SceneEditor2 *sc = (SceneEditor2 *)GetScene();
-    sc->cameraSystem->UpdateDistanceToCamera();
-}
-
-EntityGroup SceneSelectionSystem::GetSelecetableFromCollision(const EntityGroup *collisionEntities)
-{
-	EntityGroup ret;
-
-	if(NULL != collisionEntities)
-	{
-		for(size_t i = 0; i < collisionEntities->Size(); ++i)
-		{
-			DAVA::Entity *entity = collisionEntities->GetEntity(i);
-            
-            if(componentMaskForSelection & entity->GetAvailableComponentFlags())
+        bool hasNonTransformableObjects = false;
+        for (const auto& item : currentSelection.GetContent())
+        {
+            if (item.SupportsTransformType(Selectable::TransformType::Disabled) == false)
             {
-                EntityGroupItem item;
-                
-                item.entity = GetSelectableEntity(entity);
-                item.bbox = GetSelectionAABox(item.entity);
-                
-                ret.Add(item);
+                hasNonTransformableObjects = true;
+                break;
             }
-		}
-	}
+        }
+        hoodSystem->SetVisible(hasNonTransformableObjects == false);
+    }
 
-	return ret;
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    sc->cameraSystem->UpdateDistanceToCamera();
 }
 
 DAVA::Entity* SceneSelectionSystem::GetSelectableEntity(DAVA::Entity* entity)
 {
-	DAVA::Entity *selectableEntity = NULL;
-	
-	if(NULL != entity)
-	{
-		// find most top solid entity
-		DAVA::Entity *parent = entity;
-		while(NULL != parent)
-		{
-			if(parent->GetSolid())
-			{
-				selectableEntity = parent;
-			}
-
-			parent = parent->GetParent();
-		}
-
-		// still not found?
-		if(NULL == selectableEntity)
-		{
-			// let it current entity to be tread as solid
-			selectableEntity = entity;
-		}
-	}
-
-	return selectableEntity;
+    DAVA::Entity* parent = entity;
+    while (nullptr != parent)
+    {
+        if (parent->GetSolid())
+        {
+            entity = parent;
+        }
+        parent = parent->GetParent();
+    }
+    return entity;
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(int index) const
+DAVA::AABBox3 SceneSelectionSystem::GetUntransformedBoundingBox(Selectable::Object* entity) const
 {
-	return curSelections.GetBbox(index);
+    return GetTransformedBoundingBox(Selectable(entity), DAVA::Matrix4::IDENTITY);
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity) const
+DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const
 {
-	DAVA::Matrix4 beginTransform;
-	beginTransform.Identity();
+    DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(object.GetContainedObject());
 
-	return GetSelectionAABox(entity, beginTransform);
+    if (object.CanBeCastedTo<DAVA::Entity>())
+    {
+        // add childs boxes into entity box
+        auto entity = object.AsEntity();
+        for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
+        {
+            Selectable childEntity(entity->GetChild(i));
+            DAVA::AABBox3 childBox = GetTransformedBoundingBox(childEntity, childEntity.GetLocalTransform());
+            if (childBox.IsEmpty() == false)
+            {
+                if (entityBox.IsEmpty())
+                {
+                    entityBox = childBox;
+                }
+                else
+                {
+                    entityBox.AddAABBox(childBox);
+                }
+            }
+        }
+    }
+
+    DAVA::AABBox3 ret = DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 0.0f);
+    if (entityBox.IsEmpty() == false)
+    {
+        entityBox.GetTransformedBox(transform, ret);
+    }
+    return ret;
 }
 
-DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const
+DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableGroup& group) const
 {
-	DAVA::AABBox3 ret = DAVA::AABBox3(DAVA::Vector3(0, 0, 0), 0);
-
-	if(NULL != entity)
-	{
-		// we will get selection bbox from collision system 
-		DAVA::AABBox3 entityBox = collisionSystem->GetBoundingBox(entity);
-
-		// add childs boxes into entity box
-		for (DAVA::int32 i = 0; i < entity->GetChildrenCount(); i++)
-		{
-			DAVA::Entity *childEntity = entity->GetChild(i);
-			DAVA::AABBox3 childBox = GetSelectionAABox(childEntity, childEntity->GetLocalTransform());
-
-			if(entityBox.IsEmpty())
-			{
-				entityBox = childBox;
-			}
-			else
-			{
-				if(!childBox.IsEmpty())
-				{
-					entityBox.AddAABBox(childBox);
-				}
-			}
-		}
-
-		// we should return box with specified transformation
-		if(!entityBox.IsEmpty())
-		{
-			entityBox.GetTransformedBox(transform, ret);
-		}
-	}
-
-	return ret;
+    DAVA::AABBox3 result;
+    for (const auto& object : group.GetContent())
+    {
+        DAVA::AABBox3 transformed;
+        object.GetBoundingBox().GetTransformedBox(object.GetWorldTransform(), transformed);
+        result.AddAABBox(transformed);
+    }
+    return result.IsEmpty() ? DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 1.0f) : result;
 }
 
 void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
 {
     componentMaskForSelection = mask;
 
-    if(curSelections.Size() != 0)
+    if (currentSelection.IsEmpty())
     {
-        Clear();
+        selectionHasChanges = true; // magic to say to selectionModel() of scene tree to reset selection
     }
     else
     {
-        selectionHasChanges = true; // magic to say to selectionModel() of scene tree to reset selection
+        Clear();
     }
 }
 
@@ -644,4 +799,87 @@ void SceneSelectionSystem::Deactivate()
     SetLocked(true);
 }
 
+void SceneSelectionSystem::EnableSystem(bool enabled)
+{
+    systemIsEnabled = enabled;
+}
 
+bool SceneSelectionSystem::IsSystemEnabled() const
+{
+    return systemIsEnabled;
+}
+
+void SceneSelectionSystem::UpdateSelectionGroup(const SelectableGroup& newSelection)
+{
+    objectsToSelect.Exclude(lastGroupSelection);
+    objectsToSelect.RemoveIf([](const Selectable& e) {
+        return e.SupportsTransformType(Selectable::TransformType::Disabled);
+    });
+
+    if (groupSelectionMode == GroupSelectionMode::Replace)
+    {
+        objectsToSelect.Join(newSelection);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        for (const auto& item : newSelection.GetContent())
+        {
+            auto obj = item.GetContainedObject();
+            if (!currentSelection.ContainsObject(obj))
+            {
+                objectsToSelect.Add(obj, item.GetBoundingBox());
+            }
+        }
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        for (const auto& item : newSelection.GetContent())
+        {
+            if (currentSelection.ContainsObject(item.GetContainedObject()))
+            {
+                objectsToSelect.Add(item.GetContainedObject(), item.GetBoundingBox());
+            }
+        }
+    }
+
+    lastGroupSelection = newSelection;
+}
+
+void SceneSelectionSystem::FinishSelection()
+{
+    SelectableGroup newSelection;
+
+    if (groupSelectionMode == GroupSelectionMode::Replace)
+    {
+        newSelection.Join(objectsToSelect);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Add)
+    {
+        newSelection.Join(objectsToSelect);
+        newSelection.Join(currentSelection);
+    }
+    else if (groupSelectionMode == GroupSelectionMode::Remove)
+    {
+        newSelection.Join(currentSelection);
+        newSelection.Exclude(objectsToSelect);
+    }
+    else
+    {
+        DVASSERT_MSG(0, "Invalid selection mode");
+    }
+    objectsToSelect.Clear();
+
+    SetSelection(newSelection);
+}
+
+void SceneSelectionSystem::AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_)
+{
+    DVASSERT(std::find(selectionDelegates.begin(), selectionDelegates.end(), delegate_) == selectionDelegates.end());
+    selectionDelegates.push_back(delegate_);
+}
+
+void SceneSelectionSystem::RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_)
+{
+    auto i = std::remove(selectionDelegates.begin(), selectionDelegates.end(), delegate_);
+    selectionDelegates.erase(i, selectionDelegates.end());
+}

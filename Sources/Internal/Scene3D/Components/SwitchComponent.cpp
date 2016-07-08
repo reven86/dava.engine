@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
@@ -34,55 +5,51 @@
 
 namespace DAVA
 {
-
-
-
 SwitchComponent::SwitchComponent()
-:	oldSwitchIndex(-1),
-	newSwitchIndex(0)
+    : oldSwitchIndex(-1)
+    ,
+    newSwitchIndex(0)
 {
-
 }
 
-Component * SwitchComponent::Clone(Entity * toEntity)
+Component* SwitchComponent::Clone(Entity* toEntity)
 {
-	SwitchComponent * newComponent = new SwitchComponent();
-	newComponent->SetEntity(toEntity);
+    SwitchComponent* newComponent = new SwitchComponent();
+    newComponent->SetEntity(toEntity);
     newComponent->SetSwitchIndex(GetSwitchIndex());
 
-	return newComponent;
+    return newComponent;
 }
 
-void SwitchComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SwitchComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(NULL != archive)
-	{
-		archive->SetInt32("sc.switchindex", newSwitchIndex);
-	}
+    if (NULL != archive)
+    {
+        archive->SetInt32("sc.switchindex", newSwitchIndex);
+    }
 }
 
-void SwitchComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SwitchComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-	Component::Deserialize(archive, serializationContext);
-	
-	if(NULL != archive)
-	{
-		SetSwitchIndex(archive->GetInt32("sc.switchindex"));
-	}
+    Component::Deserialize(archive, serializationContext);
+
+    if (NULL != archive)
+    {
+        SetSwitchIndex(archive->GetInt32("sc.switchindex"));
+    }
 }
 
-void SwitchComponent::SetSwitchIndex(const int32 & _switchIndex)
+void SwitchComponent::SetSwitchIndex(const int32& _switchIndex)
 {
-	newSwitchIndex = _switchIndex;
+    newSwitchIndex = _switchIndex;
 
-	GlobalEventSystem::Instance()->Event(this, EventSystem::SWITCH_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SWITCH_CHANGED);
 }
 
 int32 SwitchComponent::GetSwitchIndex() const
 {
-	return newSwitchIndex;
+    return newSwitchIndex;
 }
-
 }

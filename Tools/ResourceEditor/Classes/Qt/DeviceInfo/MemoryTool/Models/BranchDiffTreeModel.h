@@ -12,7 +12,8 @@ class MemorySnapshot;
 class BranchDiffTreeModel : public QAbstractItemModel
 {
 public:
-    enum {
+    enum
+    {
         CLM_NAME = 0,
         CLM_STAT1,
         CLM_STAT2,
@@ -43,4 +44,4 @@ private:
     Branch* rootRight = nullptr;
 };
 
-#endif  // __BRANCHDIFFTREEMODEL_H__
+#endif // __BRANCHDIFFTREEMODEL_H__

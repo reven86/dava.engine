@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
 
@@ -40,38 +11,34 @@
 
 namespace DAVA
 {
-static const uint32 MAX_VERTICES = 1024;
-static const uint32 MAX_INDECES = MAX_VERTICES * 2;
-static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
-static const uint32 VBO_STRIDE = GetVertexSize(VBO_FORMAT);
-static const float32 SEGMENT_LENGTH = 15.0f;
+namespace
+{
+const bool virtualToPhysicalTransformEnabledDefaultValue = true;
+
+const uint32 MAX_VERTICES = 1024;
+const uint32 MAX_INDECES = MAX_VERTICES * 2;
+const float32 SEGMENT_LENGTH = 15.0f;
+}
 
 const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
 const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
+const FastName RenderSystem2D::FLAG_GRADIENT_MODE = FastName("GRADIENT_MODE");
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_COMPOSIT_MATERIAL[] = { nullptr };
 
 RenderSystem2D::RenderSystem2D()
-    : currentVertexBuffer(nullptr)
-    , currentIndexBuffer(nullptr)
-    , indexIndex(0)
-    , vertexIndex(0)
-    , spriteClipping(true)
-    , spriteIndexCount(0)
-    , spriteVertexCount(0)
-    , prevFrameErrorsFlags(NO_ERRORS)
-    , currFrameErrorsFlags(NO_ERRORS)
-    , highlightControlsVerticesLimit(0)
-    , renderTargetWidth(0)
-    , renderTargetHeight(0)
-    , viewMatrixSemantic(8) //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
-    , projMatrixSemantic(8)
 {
+    viewMatrixSemantic = 8; //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
+    projMatrixSemantic = 8;
+
+    spriteClipping = true;
 }
 
 void RenderSystem2D::Init()
@@ -83,6 +50,11 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alphablend.material"));
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ADDITIVE);
+    DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
@@ -100,10 +72,32 @@ void RenderSystem2D::Init()
     DEFAULT_2D_FILL_ALPHA_MATERIAL->SetFXName(FastName("~res:/Materials/2d.AlphaFill.material"));
     DEFAULT_2D_FILL_ALPHA_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
+    for (int32 i = 0; i < GRADIENT_BLEND_MODE_COUNT; i++)
+    {
+        DEFAULT_COMPOSIT_MATERIAL[i] = new NMaterial();
+        DEFAULT_COMPOSIT_MATERIAL[i]->SetFXName(FastName("~res:/Materials/2d.Composit.material"));
+        DEFAULT_COMPOSIT_MATERIAL[i]->AddFlag(FLAG_GRADIENT_MODE, i);
+        DEFAULT_COMPOSIT_MATERIAL[i]->PreBuildMaterial(RENDER_PASS_NAME);
+    }
+
+    rhi::VertexLayout noTextureLayout;
+    noTextureLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    noTextureLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    vertexLayouts2d[0] = rhi::VertexLayout::UniqueId(noTextureLayout);
+    VBO_STRIDE[0] = 3 * sizeof(float32) + 4;
+
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    vertexLayouts2d[1] = rhi::VertexLayout::UniqueId(layout);
+    VBO_STRIDE[1] = 3 * sizeof(float32) + 2 * sizeof(float32) + 4; //position, uv, color
+    for (uint32 i = 2; i <= MAX_TEXTURE_STREAMS_COUNT; ++i)
+    {
+        layout.AddElement(rhi::VS_TEXCOORD, i - 1, rhi::VDT_FLOAT, 2);
+        vertexLayouts2d[i] = rhi::VertexLayout::UniqueId(layout);
+        VBO_STRIDE[i] = 3 * sizeof(float32) + 2 * sizeof(float32) * i + 4;
+    }
 
     currentVertexBuffer = nullptr;
     currentIndexBuffer = nullptr;
@@ -111,7 +105,7 @@ void RenderSystem2D::Init()
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
-    currentPacket.vertexLayoutUID = rhi::VertexLayout::UniqueId(layout);
+    currentPacket.vertexLayoutUID = vertexLayouts2d[1];
 
     vertexIndex = 0;
     indexIndex = 0;
@@ -130,6 +124,8 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
+    SafeRelease(DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_ADDITIVE_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -143,14 +139,18 @@ void RenderSystem2D::BeginFrame()
     defaultSpriteDrawState.material = DEFAULT_2D_COLOR_MATERIAL;
 
     rhi::RenderPassConfig renderPass2DConfig;
-    renderPass2DConfig.priority = PRIORITY_MAIN_2D;
+    renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
+    renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
+    renderPass2DConfig.PerfQueryIndex0 = PERFQUERY__2D_PASS_T0;
+    renderPass2DConfig.PerfQueryIndex1 = PERFQUERY__2D_PASS_T1;
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
@@ -158,7 +158,6 @@ void RenderSystem2D::BeginFrame()
     rhi::BeginRenderPass(pass2DHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
-    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -172,37 +171,60 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTargetDescriptor()
+{
+    return IsRenderTargetPass() ? renderPassTargetDescriptor : mainTargetDescriptor;
+}
+const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetMainTargetDescriptor()
+{
+    return mainTargetDescriptor;
+}
+void RenderSystem2D::SetMainTargetDescriptor(const RenderSystem2D::RenderTargetPassDescriptor& descriptor)
+{
+    mainTargetDescriptor = descriptor;
+}
+
 void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
+    RenderTargetPassDescriptor desc;
+    desc.colorAttachment = target->handle;
+    desc.depthAttachment = target->handleDepthStencil;
+    desc.width = target->GetWidth();
+    desc.height = target->GetHeight();
+    desc.clearColor = clearColor;
+    desc.priority = priority;
+    desc.clearTarget = needClear;
+    desc.transformVirtualToPhysical = true;
+    BeginRenderTargetPass(desc);
+}
+
+void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& desc)
+{
     DVASSERT(!IsRenderTargetPass());
-    DVASSERT(target);
-    DVASSERT(target->GetWidth() && target->GetHeight())
 
     Flush();
 
+    renderPassTargetDescriptor = desc;
+
+    UpdateVirtualToPhysicalMatrix(desc.transformVirtualToPhysical);
+
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = target->handle;
-    renderTargetPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
-    renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
-    renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
-    renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
-    renderTargetPassConfig.priority = priority;
-    renderTargetPassConfig.viewport.width = target->GetWidth();
-    renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.colorBuffer[0].texture = desc.colorAttachment;
+    renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
+    renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
+    renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
+    renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
+    renderTargetPassConfig.priority = desc.priority;
+    renderTargetPassConfig.viewport.width = desc.width;
+    renderTargetPassConfig.viewport.height = desc.height;
     renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    if (needClear)
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    else
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
     rhi::BeginPacketList(currentPacketListHandle);
-
-    renderTargetWidth = target->GetWidth();
-    renderTargetHeight = target->GetHeight();
 
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
@@ -219,9 +241,7 @@ void RenderSystem2D::EndRenderTargetPass()
 
     currentPacketListHandle = packetList2DHandle;
 
-    renderTargetWidth = 0;
-    renderTargetHeight = 0;
-
+    UpdateVirtualToPhysicalMatrix(virtualToPhysicalTransformEnabledDefaultValue);
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
@@ -236,35 +256,30 @@ void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
 
 void RenderSystem2D::Setup2DMatrices()
 {
-    if (IsRenderTargetPass())
+    Size2f targetSize;
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    targetSize.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+    targetSize.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+
+    if ((descr.colorAttachment != rhi::InvalidHandle) && (!rhi::DeviceCaps().isUpperLeftRTOrigin))
     {
-        if (rhi::DeviceCaps().isUpperLeftRTOrigin)
-        {
-            projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
-                               (float32)renderTargetHeight, 0.f,
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
-        else
-        {
-            projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
-                               0.0f, (float32)renderTargetHeight,
-                               -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
-        }
+        //invert projection
+        projMatrix.glOrtho(0.0f, targetSize.dx, 0.0f, targetSize.dy, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
+        projMatrix.glOrtho(0.0f, targetSize.dx, targetSize.dy, 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
     if (rhi::DeviceCaps().isCenterPixelMapping)
     {
         // Make translation by half pixel for DirectX systems
         static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));
-        projMatrix = virtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
+        projMatrix = currentVirtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
     }
     else
     {
-        projMatrix = virtualToPhysicalMatrix * projMatrix;
+        projMatrix = currentVirtualToPhysicalMatrix * projMatrix;
     }
 
     projMatrixSemantic += 8; //cause eight is beautiful
@@ -282,10 +297,23 @@ void RenderSystem2D::ScreenSizeChanged()
     glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
     glScale.glScale(scale.x, scale.y, 1.0f);
 
-    virtualToPhysicalMatrix = glScale * glTranslate;
+    actualVirtualToPhysicalMatrix = glScale * glTranslate;
+    actualPhysicalToVirtualScale.x = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(1.0f);
+    actualPhysicalToVirtualScale.y = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(1.0f);
+    if (GetActiveTargetDescriptor().transformVirtualToPhysical)
+    {
+        currentVirtualToPhysicalMatrix = actualVirtualToPhysicalMatrix;
+        currentPhysicalToVirtualScale = actualPhysicalToVirtualScale;
+    }
 }
 
-void RenderSystem2D::SetClip(const Rect &rect)
+void RenderSystem2D::UpdateVirtualToPhysicalMatrix(bool value)
+{
+    currentVirtualToPhysicalMatrix = value ? actualVirtualToPhysicalMatrix : Matrix4::IDENTITY;
+    currentPhysicalToVirtualScale = value ? actualPhysicalToVirtualScale : Vector2(1.0f, 1.0f);
+}
+
+void RenderSystem2D::SetClip(const Rect& rect)
 {
     if ((currentClip == rect) || (currentClip.dx < 0 && rect.dx < 0) || (currentClip.dy < 0 && rect.dy < 0))
     {
@@ -299,14 +327,14 @@ void RenderSystem2D::RemoveClip()
     SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 }
 
-void RenderSystem2D::IntersectClipRect(const Rect &rect)
+void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        //RHI_COMPLETE - Mikhail please review this
+        const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                    IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+                    static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width),
+                    static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -323,7 +351,7 @@ void RenderSystem2D::PushClip()
 
 void RenderSystem2D::PopClip()
 {
-    if(clipStack.empty())
+    if (clipStack.empty())
     {
         Rect r(0, 0, -1, -1);
         SetClip(r);
@@ -359,16 +387,18 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
     spriteClipping = clipping;
 }
 
-bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
+bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 {
     Rect clipRect = currentClip;
-    if (clipRect.dx == -1)
+
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    if (int32(clipRect.dx) == -1)
     {
-        clipRect.dx = (float32)(IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
+        clipRect.dx = static_cast<float32>(descr.width == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx : descr.width);
     }
-    if (clipRect.dy == -1)
+    if (int32(clipRect.dy) == -1)
     {
-        clipRect.dy = (float32)(IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        clipRect.dy = static_cast<float32>(descr.height == 0 ? VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy : descr.height);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -425,11 +455,11 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     Flush();
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
-        const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
-        packet.scissorRect.x = (int16)transformedClipRect.x;
-        packet.scissorRect.y = (int16)transformedClipRect.y;
-        packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
-        packet.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
+        const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
+        packet.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
+        packet.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
+        packet.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
+        packet.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
         packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
     }
     rhi::AddPacket(currentPacketListHandle, packet);
@@ -448,7 +478,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                  (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle),
                  "Incorrect textureSet or samplerState handle");
 
-    DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
+    DVASSERT_MSG(batchDesc.texCoordPointer[0] == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
 
     if (batchDesc.vertexCount == 0 && batchDesc.indexCount == 0)
@@ -467,11 +497,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 #if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().batches2d;
 #endif
-
-    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES))
+    uint32 trimmedTexCoordCount = Max(batchDesc.texCoordCount, 1u); //for zero texCoordCount count we just use 1 empty texcoord stream for batching optimization
+    if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES) || (trimmedTexCoordCount != currentTexcoordStreamCount))
     {
-        // Buffer overflow. Switch to next VBO.
+        // Buffer overflow or format changed. Switch to next VBO.
         Flush();
+        currentTexcoordStreamCount = trimmedTexCoordCount;
 
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
@@ -487,18 +518,19 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             DVASSERT(currentVertexBuffer == nullptr && currentIndexBuffer == nullptr);
             if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
             {
-                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, batchDesc.vertexCount);
+                DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), batchDesc.vertexCount);
                 DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
                 DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
                 DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
 
-                currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
+                currentVertexBuffer = vertexBuffer.data;
                 currentIndexBuffer = indexBuffer.data;
 
                 currentPacket.vertexStream[0] = vertexBuffer.buffer;
                 currentPacket.vertexCount = vertexBuffer.allocatedVertices;
                 currentPacket.baseVertex = vertexBuffer.baseVertex;
                 currentPacket.indexBuffer = indexBuffer.buffer;
+                currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
                 currentIndexBase = indexBuffer.baseIndex;
             }
             // End create vertex and index buffers
@@ -508,18 +540,19 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     // Begin create vertex and index buffers
     if (currentVertexBuffer == nullptr && currentIndexBuffer == nullptr)
     {
-        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, MAX_VERTICES);
+        DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(GetVBOStride(currentTexcoordStreamCount), MAX_VERTICES);
         DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
         DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
         DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
 
-        currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
+        currentVertexBuffer = vertexBuffer.data;
         currentIndexBuffer = indexBuffer.data;
 
         currentPacket.vertexStream[0] = vertexBuffer.buffer;
         currentPacket.vertexCount = vertexBuffer.allocatedVertices;
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
+        currentPacket.vertexLayoutUID = GetVertexLayoutId(currentTexcoordStreamCount);
         currentIndexBase = indexBuffer.baseIndex;
     }
     // End create vertex and index buffers
@@ -545,9 +578,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
 
     // Prepare texture coordinates ptr (batchDesc.texCoordPointer or zero vector)
-    const float32* texPtr = batchDesc.texCoordPointer;
+    const float32* texPtr = batchDesc.texCoordPointer[0];
     uint32 texStride = batchDesc.texCoordStride;
-    if (texPtr == nullptr)
+    if ((texPtr == nullptr) || (batchDesc.texCoordCount == 0)) //for zero texCoordCount count we just use 1 empty texcoord stream for batching optimization
     {
         static float32 TEX_ZERO[2] = { 0.f, 0.f };
         texPtr = TEX_ZERO;
@@ -555,18 +588,40 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
 
     // Begin fill vertex and index buffers
-    uint32 vi = vertexIndex;
-    uint32 ii = indexIndex;
+    struct BatchVertex
+    {
+        Vector3 pos;
+        Vector2 uv;
+        uint32 color;
+        //optional explicit params
+        Vector2 uv_ext[MAX_TEXTURE_STREAMS_COUNT - 1];
+    };
+
+    uint32 vertexStride = GetVBOStride(currentTexcoordStreamCount);
     for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
     {
-        BatchVertex& v = currentVertexBuffer[vi++];
+        BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
         v.pos.x = batchDesc.vertexPointer[i * batchDesc.vertexStride];
         v.pos.y = batchDesc.vertexPointer[i * batchDesc.vertexStride + 1];
+        //TODO: rethink do we still require z in rhi?
         v.pos.z = 0.f; // axis Z, empty but need for EVF_VERTEX format
         v.uv.x = texPtr[i * texStride];
         v.uv.y = texPtr[i * texStride + 1];
         v.color = colorPtr[i * colorStride];
     }
+    //add optional texture streams
+    for (uint32 texStream = 1; texStream < batchDesc.texCoordCount; ++texStream)
+    {
+        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
+        {
+            DVASSERT(batchDesc.texCoordPointer[texStream] != nullptr);
+            BatchVertex& v = *OffsetPointer<BatchVertex>(currentVertexBuffer, vertexStride * (vertexIndex + i));
+            v.uv_ext[texStream - 1].x = batchDesc.texCoordPointer[texStream][i * 2];
+            v.uv_ext[texStream - 1].y = batchDesc.texCoordPointer[texStream][i * 2 + 1];
+        }
+    }
+
+    uint32 ii = indexIndex;
     for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
         currentIndexBuffer[ii++] = vertexIndex + batchDesc.indexPointer[i];
@@ -626,11 +681,11 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = (int16)transformedClipRect.x;
-            currentPacket.scissorRect.y = (int16)transformedClipRect.y;
-            currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
-            currentPacket.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
+            const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
+            currentPacket.scissorRect.x = static_cast<int16>(floorf(transformedClipRect.x));
+            currentPacket.scissorRect.y = static_cast<int16>(floorf(transformedClipRect.y));
+            currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
+            currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
             currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
         else
@@ -677,13 +732,13 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     static uint16 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
     Vector<uint16> spriteClippedIndecex;
 
-    Sprite::DrawState * state = drawState;
+    Sprite::DrawState* state = drawState;
     if (!state)
     {
         state = &defaultSpriteDrawState;
     }
 
-	float32 scaleX = 1.0f;
+    float32 scaleX = 1.0f;
     float32 scaleY = 1.0f;
 
     sprite->flags = 0;
@@ -692,193 +747,191 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         sprite->flags |= Sprite::EST_MODIFICATION;
     }
 
-    if(state->scale.x != 1.f || state->scale.y != 1.f)
+    if (state->scale.x != 1.f || state->scale.y != 1.f)
     {
         sprite->flags |= Sprite::EST_SCALE;
         scaleX = state->scale.x;
         scaleY = state->scale.y;
     }
 
-    if(state->angle != 0.f) sprite->flags |= Sprite::EST_ROTATE;
+    if (state->angle != 0.f)
+        sprite->flags |= Sprite::EST_ROTATE;
 
     int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
 
     float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
     float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
 
-    float32 **frameVertices = sprite->frameVertices;
-    float32 **rectsAndOffsets = sprite->rectsAndOffsets;
+    float32** frameVertices = sprite->frameVertices;
+    float32** rectsAndOffsets = sprite->rectsAndOffsets;
     Vector2 spriteSize = sprite->size;
 
-    if(sprite->flags & Sprite::EST_MODIFICATION)
+    if (sprite->flags & Sprite::EST_MODIFICATION)
     {
-        if((state->flags & (ESM_HFLIP | ESM_VFLIP)) == (ESM_HFLIP | ESM_VFLIP))
-        {//HFLIP|VFLIP
-            if(sprite->flags & Sprite::EST_SCALE)
-            {//SCALE
+        if ((state->flags & (ESM_HFLIP | ESM_VFLIP)) == (ESM_HFLIP | ESM_VFLIP))
+        { //HFLIP|VFLIP
+            if (sprite->flags & Sprite::EST_SCALE)
+            { //SCALE
                 x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
                 y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-                if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] * scaleX + x;//x2 do not change this sequence. This is because of the cache reason
-                    spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] * scaleY + y;//y1
-                    spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] * scaleX + x;//x1
-                    spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] * scaleY + y;//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] * scaleX + x; //x2 do not change this sequence. This is because of the cache reason
+                    spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] * scaleY + y; //y1
+                    spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] * scaleX + x; //x1
+                    spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] * scaleY + y; //y2
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y2
-                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
-                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
+                    spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] * scaleX + x); //x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] * scaleY + y); //y2
+                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2]; //x1
+                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5]; //y1
                 }
             }
             else
-            {//NOT SCALE
+            { //NOT SCALE
                 x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
                 y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-                if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] + x;//x2 do not change this sequence. This is because of the cache reason
-                    spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] + y;//y1
-                    spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] + x;//x1
-                    spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] + y;//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] + x; //x2 do not change this sequence. This is because of the cache reason
+                    spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] + y; //y1
+                    spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] + x; //x1
+                    spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] + y; //y2
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y2
-                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
-                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
+                    spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] + x); //x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] + y); //y2
+                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2]; //x1
+                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5]; //y1
                 }
             }
         }
         else
         {
-            if(state->flags & ESM_HFLIP)
-            {//HFLIP
-                if(sprite->flags & Sprite::EST_SCALE)
-                {//SCALE
+            if (state->flags & ESM_HFLIP)
+            { //HFLIP
+                if (sprite->flags & Sprite::EST_SCALE)
+                { //SCALE
                     x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] * scaleX + x;//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
-                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] * scaleX + y;//y1 //WEIRD: maybe scaleY should be used?
-                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] * scaleX + x;//x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] * scaleX + x; //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y; //y2
+                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] * scaleX + y; //y1 //WEIRD: maybe scaleY should be used?
+                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] * scaleX + x; //x2
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x2
-                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y1
-                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
+                        spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] * scaleX + x); //x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2]; //x1
+                        spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] * scaleY + y); //y1
+                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1]; //y2
                     }
                 }
                 else
-                {//NOT SCALE
+                { //NOT SCALE
                     x += (spriteSize.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] + x;//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y;//y2
-                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] + y;//y1
-                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] + x;//x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][2] + x; //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y; //y2
+                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] + y; //y1
+                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][0] + x; //x2
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x2
-                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y1
-                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
+                        spriteTempVertices[2] = spriteTempVertices[6] = AlignToX(frameVertices[frame][0] + x); //x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2]; //x1
+                        spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] + y); //y1
+                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1]; //y2
                     }
                 }
             }
             else
-            {//VFLIP
-                if(sprite->flags & Sprite::EST_SCALE)
-                {//SCALE
+            { //VFLIP
+                if (sprite->flags & Sprite::EST_SCALE)
+                { //SCALE
                     y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] * scaleY + y;//y2
-                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] * scaleY + y;//y1
-                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] * scaleX + x;//x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x; //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] * scaleY + y; //y2
+                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] * scaleY + y; //y1
+                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] * scaleX + x; //x2
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y2
-                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
-                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
+                        spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] * scaleX + x); //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] * scaleY + y); //y2
+                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0]; //x2
+                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5]; //y1
                     }
                 }
                 else
-                {//NOT SCALE
+                { //NOT SCALE
                     y += (spriteSize.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-                    if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+                    if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x;//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] + y;//y2
-                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] + y;//y1
-                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] + x;//x2
+                        spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x; //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][1] + y; //y2
+                        spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][5] + y; //y1
+                        spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] + x; //x2
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y2
-                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
-                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
+                        spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] + x); //x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = AlignToY(frameVertices[frame][1] + y); //y2
+                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0]; //x2
+                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5]; //y1
                     }
                 }
             }
         }
-
     }
     else
-    {//NO MODIFERS
-        if(sprite->flags & Sprite::EST_SCALE)
-        {//SCALE
-            if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+    { //NO MODIFERS
+        if (sprite->flags & Sprite::EST_SCALE)
+        { //SCALE
+            if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
-                spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
-                spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] * scaleY + y;//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] * scaleX + x;//x2 do not change this sequence. This is because of the cache reason
+                spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] * scaleX + x; //x1
+                spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] * scaleY + y; //y2
+                spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] * scaleY + y; //y1
+                spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] * scaleX + x; //x2 do not change this sequence. This is because of the cache reason
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y);//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
-                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
+                spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] * scaleX + x); //x1
+                spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] * scaleY + y); //y1
+                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0]; //x2
+                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1]; //y2
             }
         }
         else
-        {//NOT SCALE
-            if(!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
+        { //NOT SCALE
+            if (!state || !state->usePerPixelAccuracy || (sprite->flags & Sprite::EST_ROTATE))
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x;//x1
-                spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y;//y2
-                spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] + y;//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] + x;//x2 do not change this sequence. This is because of the cache reason
+                spriteTempVertices[0] = spriteTempVertices[4] = frameVertices[frame][0] + x; //x1
+                spriteTempVertices[5] = spriteTempVertices[7] = frameVertices[frame][5] + y; //y2
+                spriteTempVertices[1] = spriteTempVertices[3] = frameVertices[frame][1] + y; //y1
+                spriteTempVertices[2] = spriteTempVertices[6] = frameVertices[frame][2] + x; //x2 do not change this sequence. This is because of the cache reason
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalX(frameVertices[frame][0] + x);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->AlignVirtualToPhysicalY(frameVertices[frame][1] + y);//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
-                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
+                spriteTempVertices[0] = spriteTempVertices[4] = AlignToX(frameVertices[frame][0] + x); //x1
+                spriteTempVertices[1] = spriteTempVertices[3] = AlignToY(frameVertices[frame][1] + y); //y1
+                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0]; //x2
+                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1]; //y2
             }
-
         }
-
     }
 
-    if(!sprite->clipPolygon)
+    if (!sprite->clipPolygon)
     {
-        if(sprite->flags & Sprite::EST_ROTATE)
+        if (sprite->flags & Sprite::EST_ROTATE)
         {
             //SLOW CODE
             //			glPushMatrix();
@@ -887,17 +940,17 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
             //			glTranslatef(-drawCoord.x, -drawCoord.y, 0);
             //			RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
             //			glPopMatrix();
-            
+
             // Optimized code
             float32 sinA = sinf(state->angle);
             float32 cosA = cosf(state->angle);
-            for(int32 k = 0; k < 4; ++k)
+            for (int32 k = 0; k < 4; ++k)
             {
                 float32 x = spriteTempVertices[(k << 1)] - state->position.x;
                 float32 y = spriteTempVertices[(k << 1) + 1] - state->position.y;
 
-                float32 nx = (x) * cosA  - (y) * sinA + state->position.x;
-                float32 ny = (x) * sinA  + (y) * cosA + state->position.y;
+                float32 nx = (x)*cosA - (y)*sinA + state->position.x;
+                float32 ny = (x)*sinA + (y)*cosA + state->position.y;
 
                 spriteTempVertices[(k << 1)] = nx;
                 spriteTempVertices[(k << 1) + 1] = ny;
@@ -920,42 +973,56 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
         spriteClippedTexCoords.clear();
         spriteClippedTexCoords.reserve(sprite->clipPolygon->GetPointCount());
 
-        Texture * t = sprite->GetTexture(frame);
+        Texture* t = sprite->GetTexture(frame);
 
-        Vector2 virtualTexSize = Vector2((float32)t->width, (float32)t->height);
-        if (sprite->type == Sprite::SPRITE_FROM_FILE)
+        Vector2 virtualTexSize = Vector2(float32(t->width), float32(t->height));
+        if (GetActiveTargetDescriptor().transformVirtualToPhysical)
         {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+            if (sprite->type == Sprite::SPRITE_FROM_FILE)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(virtualTexSize, sprite->GetResourceSizeIndex());
+            }
+            else if (!sprite->textureInVirtualSpace)
+            {
+                virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
+            }
         }
-        else if (!sprite->textureInVirtualSpace)
-        {
-            virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(virtualTexSize);
-        }
-
         float32 adjWidth = 1.f / virtualTexSize.x;
         float32 adjHeight = 1.f / virtualTexSize.y;
 
         if (sprite->flags & Sprite::EST_SCALE)
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] * scaleX + x) - frameVertices[frame][0] * scaleX - x;
+                y += AlignToY(frameVertices[frame][1] * scaleY + y) - frameVertices[frame][1] * scaleY - y;
+            }
+
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
-                const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
-                spriteClippedVertices.push_back(Vector2(point.x*scaleX + x, point.y*scaleY + y));
+                const Vector2& point = sprite->clipPolygon->GetPoints()[i];
+                spriteClippedVertices.push_back(Vector2(point.x * scaleX + x, point.y * scaleY + y));
             }
         }
         else
         {
+            if (state && state->usePerPixelAccuracy)
+            {
+                x += AlignToX(frameVertices[frame][0] + x) - frameVertices[frame][0] - x;
+                y += AlignToY(frameVertices[frame][1] + y) - frameVertices[frame][1] - y;
+            }
+
             Vector2 pos(x, y);
             for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
             {
-                const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
+                const Vector2& point = sprite->clipPolygon->GetPoints()[i];
                 spriteClippedVertices.push_back(point + pos);
             }
         }
 
         for (int32 i = 0; i < sprite->clipPolygon->GetPointCount(); ++i)
         {
-            const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
+            const Vector2& point = sprite->clipPolygon->GetPoints()[i];
             Vector2 texCoord((point.x - frameVertices[frame][0]) * adjWidth, (point.y - frameVertices[frame][1]) * adjHeight);
             spriteClippedTexCoords.push_back(Vector2(sprite->texCoords[frame][0] + texCoord.x, sprite->texCoords[frame][1] + texCoord.y));
         }
@@ -974,25 +1041,6 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
             spriteClippedIndecex.push_back(i);
         }
     }
-    
-    if(sprite->clipPolygon)
-    {
-        PushClip();
-        Rect clipRect;
-        if( sprite->flags & Sprite::EST_SCALE )
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x * state->scale.x;
-            float32 coordY = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) * state->scale.x + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) * state->scale.y + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) * state->scale.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) * state->scale.y);
-        }
-        else
-        {
-            float32 coordX = state->position.x - state->pivotPoint.x;
-            float32 coordY = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE) + coordX, sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE) + coordY, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
-        }
-        IntersectClipRect(clipRect);
-    }
 
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
@@ -1007,47 +1055,40 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
     if (!sprite->clipPolygon)
     {
         batch.vertexPointer = spriteTempVertices.data();
-        batch.texCoordPointer = sprite->texCoords[frame];
+        batch.texCoordPointer[0] = sprite->texCoords[frame];
         batch.indexPointer = spriteIndeces;
     }
     else
     {
-        batch.vertexPointer = (float32*)spriteClippedVertices.data();
-        batch.texCoordPointer = (float32*)spriteClippedTexCoords.data();
+        batch.vertexPointer = spriteClippedVertices.data()->data;
+        batch.texCoordPointer[0] = spriteClippedTexCoords.data()->data;
         batch.indexPointer = spriteClippedIndecex.data();
     }
     PushBatch(batch);
-
-    if (sprite->clipPolygon)
-    {
-        PopClip();
-    }
-
 }
 
 void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color)
 {
-    if (!sprite)return;
+    if (!sprite)
+        return;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
         return;
     }
 
     int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
-    const Vector2 &size = gd.size;
+    const Vector2& size = gd.size;
 
     if (stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
         size.x <= 0.0f || size.y <= 0.0f)
         return;
 
     Vector2 stretchCap(Min(size.x * 0.5f, stretchCapVector.x),
-        Min(size.y * 0.5f, stretchCapVector.y));
-
-    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
+                       Min(size.y * 0.5f, stretchCapVector.y));
 
     bool needGenerateData = false;
-    StretchDrawData * stretchData = 0;
-    if(pStreachData)
+    StretchDrawData* stretchData = 0;
+    if (pStreachData)
     {
         stretchData = *pStreachData;
         if (!stretchData)
@@ -1070,8 +1111,8 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         stretchData = new StretchDrawData();
         needGenerateData = true;
     }
-    
-    StretchDrawData &sd = *stretchData;
+
+    StretchDrawData& sd = *stretchData;
 
     if (needGenerateData)
     {
@@ -1107,23 +1148,26 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
         sd.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)sd.transformedVertices.size();
+    spriteVertexCount = int32(sd.transformedVertices.size());
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.material = state->GetMaterial();
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)sd.transformedVertices.data();
-    batch.texCoordPointer = (float32*)sd.texCoords.data();
-    batch.indexPointer = sd.indeces;
+    if (spriteVertexCount > 0 && spriteIndexCount > 0) // Ignore incorrect streched data
+    {
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.material = state->GetMaterial();
+        batch.vertexCount = spriteVertexCount;
+        batch.indexCount = spriteIndexCount;
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = sd.transformedVertices.data()->data;
+        batch.texCoordPointer[0] = sd.texCoords.data()->data;
+        batch.indexPointer = sd.indeces;
 
-    PushBatch(batch);
+        PushBatch(batch);
+    }
 
     if (!pStreachData)
     {
@@ -1133,34 +1177,33 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
 
 void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color)
 {
-    if (!sprite)return;
+    if (!sprite)
+        return;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
         return;
     }
 
-	int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
+    int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
 
-    const Vector2 &size = gd.size;
+    const Vector2& size = gd.size;
 
-    if( stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
-        size.x <= 0.0f || size.y <= 0.0f )
+    if (stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
+        size.x <= 0.0f || size.y <= 0.0f)
         return;
 
-    Vector2 stretchCap( Min( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) ),
-                        Min( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) ) );
+    Vector2 stretchCap(Min(size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH)),
+                       Min(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)));
 
-    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
-
-    stretchCap.x = Min( stretchCap.x * 0.5f, stretchCapVector.x );
-    stretchCap.y = Min( stretchCap.y * 0.5f, stretchCapVector.y );
+    stretchCap.x = Min(stretchCap.x * 0.5f, stretchCapVector.x);
+    stretchCap.y = Min(stretchCap.y * 0.5f, stretchCapVector.y);
 
     bool needGenerateData = false;
 
-	TiledDrawData * tiledData = 0;
+    TiledDrawData* tiledData = 0;
     if (pTiledData)
-	{
-		tiledData = *pTiledData;
+    {
+        tiledData = *pTiledData;
         if (!tiledData)
         {
             tiledData = new TiledDrawData();
@@ -1174,16 +1217,16 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
             needGenerateData |= sprite != tiledData->sprite;
             needGenerateData |= size != tiledData->size;
         }
-	}
+    }
     else
     {
         tiledData = new TiledDrawData();
         needGenerateData = true;
     }
-    
-    TiledDrawData &td = *tiledData;
 
-    if( needGenerateData )
+    TiledDrawData& td = *tiledData;
+
+    if (needGenerateData)
     {
         td.stretchCap = stretchCap;
         td.size = size;
@@ -1193,33 +1236,159 @@ void RenderSystem2D::DrawTiled(Sprite* sprite, Sprite::DrawState* state, const V
     }
 
     Matrix3 transformMatr;
-    gd.BuildTransformMatrix( transformMatr );
+    gd.BuildTransformMatrix(transformMatr);
 
-    if( needGenerateData || td.transformMatr != transformMatr )
+    if (needGenerateData || td.transformMatr != transformMatr)
     {
         td.transformMatr = transformMatr;
         td.GenerateTransformData();
     }
 
-    spriteVertexCount = (int32)td.transformedVertices.size();
-    spriteIndexCount = (int32)td.indeces.size();
-
-    BatchDescriptor batch;
-    batch.singleColor = color;
-    batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
-    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
-    batch.vertexCount = spriteVertexCount;
-    batch.indexCount = spriteIndexCount;
-    batch.vertexStride = 2;
-    batch.texCoordStride = 2;
-    batch.vertexPointer = (float32*)td.transformedVertices.data();
-    batch.texCoordPointer = (float32*)td.texCoords.data();
-    batch.indexPointer = td.indeces.data();
-
-    PushBatch(batch);
+    const uint32 uCount = static_cast<uint32>(td.units.size());
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
+    {
+        TiledDrawData::Unit& unit = td.units[uIndex];
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = state->GetMaterial();
+        batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
+        batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
+        batch.vertexCount = static_cast<int32>(unit.transformedVertices.size());
+        batch.indexCount = static_cast<int32>(unit.indeces.size());
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = unit.transformedVertices.data()->data;
+        batch.texCoordPointer[0] = unit.texCoords.data()->data;
+        batch.indexPointer = unit.indeces.data();
+        PushBatch(batch);
+    }
 
     if (!pTiledData)
+    {
+        SafeDelete(tiledData);
+    }
+}
+
+void RenderSystem2D::DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
+                                         Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color)
+{
+    if (!contour || !mask || !detail || !gradient)
+        return;
+
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+
+    const Vector2& size = gd.size;
+
+    if (stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
+        size.x <= 0.0f || size.y <= 0.0f)
+        return;
+
+    Vector2 stretchCap(Min(size.x, contour->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH)),
+                       Min(size.y, contour->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)));
+
+    stretchCap.x = Min(stretchCap.x * 0.5f, stretchCapVector.x);
+    stretchCap.y = Min(stretchCap.y * 0.5f, stretchCapVector.y);
+
+    bool needGenerateData = false;
+
+    TiledMultilayerData* tiledData = 0;
+    if (pTileData)
+    {
+        tiledData = *pTileData;
+        if (!tiledData)
+        {
+            tiledData = new TiledMultilayerData();
+            needGenerateData = true;
+            *pTileData = tiledData;
+        }
+        else
+        {
+            needGenerateData |= stretchCap != tiledData->stretchCap;
+            needGenerateData |= mask != tiledData->mask;
+            needGenerateData |= detail != tiledData->detail;
+            needGenerateData |= gradient != tiledData->gradient;
+            needGenerateData |= contour != tiledData->contour;
+            needGenerateData |= size != tiledData->size;
+        }
+    }
+    else
+    {
+        tiledData = new TiledMultilayerData();
+        needGenerateData = true;
+    }
+
+    TiledMultilayerData& td = *tiledData;
+
+    if (needGenerateData)
+    {
+        td.stretchCap = stretchCap;
+        td.size = size;
+        td.mask = mask;
+        td.detail = detail;
+        td.gradient = gradient;
+        td.contour = contour;
+
+        rhi::TextureSetDescriptor textureSetDescriptor;
+        textureSetDescriptor.fragmentTextureCount = 4;
+        textureSetDescriptor.fragmentTexture[0] = mask->GetTexture(0)->handle;
+        textureSetDescriptor.fragmentTexture[1] = detail->GetTexture(0)->handle;
+        textureSetDescriptor.fragmentTexture[2] = gradient->GetTexture(0)->handle;
+        textureSetDescriptor.fragmentTexture[3] = contour->GetTexture(0)->handle;
+        rhi::HTextureSet textureSet = rhi::AcquireTextureSet(textureSetDescriptor);
+
+        rhi::SamplerState::Descriptor samplerStateSetDescriptor;
+        samplerStateSetDescriptor.fragmentSamplerCount = 4;
+        samplerStateSetDescriptor.fragmentSampler[0] = mask->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[1] = detail->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[2] = gradient->GetTexture(0)->samplerState;
+        samplerStateSetDescriptor.fragmentSampler[3] = contour->GetTexture(0)->samplerState;
+        rhi::HSamplerState samplerState = rhi::AcquireSamplerState(samplerStateSetDescriptor);
+
+        rhi::ReleaseTextureSet(td.textureSet);
+        td.textureSet = textureSet;
+        rhi::ReleaseSamplerState(td.samplerState);
+        td.samplerState = samplerState;
+
+        td.GenerateTileData();
+    }
+
+    Matrix3 transformMatr;
+    gd.BuildTransformMatrix(transformMatr);
+
+    if (needGenerateData || (td.transformMatr != transformMatr) || (td.usePerPixelAccuracy != state->usePerPixelAccuracy))
+    {
+        td.transformMatr = transformMatr;
+        td.usePerPixelAccuracy = state->usePerPixelAccuracy;
+        td.GenerateTransformData(td.usePerPixelAccuracy);
+    }
+
+    spriteVertexCount = static_cast<int32>(td.transformedVertices.size());
+    spriteIndexCount = static_cast<int32>(td.indices.size());
+
+    if (td.transformedVertices.size() != 0)
+    {
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = state->GetMaterial();
+        batch.textureSetHandle = td.textureSet;
+        batch.samplerStateHandle = td.samplerState;
+        batch.texCoordCount = 4;
+        batch.vertexCount = static_cast<int32>(td.transformedVertices.size());
+        batch.indexCount = static_cast<int32>(td.indices.size());
+        batch.vertexStride = 2;
+        batch.texCoordStride = 2;
+        batch.vertexPointer = td.transformedVertices.data()->data;
+        batch.texCoordPointer[0] = td.texCoordsMask.data()->data;
+        batch.texCoordPointer[1] = td.texCoordsDetail.data()->data;
+        batch.texCoordPointer[2] = td.texCoordsGradient.data()->data;
+        batch.texCoordPointer[3] = td.texCoordsContour.data()->data;
+        batch.indexPointer = td.indices.data();
+        PushBatch(batch);
+    }
+    if (!pTileData)
     {
         SafeDelete(tiledData);
     }
@@ -1323,8 +1492,8 @@ void RenderSystem2D::DrawGrid(const Rect& rect, const Vector2& gridSize, const C
 {
     // TODO! review with Ivan/Victor whether it is not performance problem!
     Vector<float32> gridVertices;
-    int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
-    int32 horLinesCount = (int32)ceilf(rect.dy / gridSize.y);
+    int32 verLinesCount = static_cast<int32>(ceilf(rect.dx / gridSize.x));
+    int32 horLinesCount = static_cast<int32>(ceilf(rect.dy / gridSize.y));
     gridVertices.resize((horLinesCount + verLinesCount) * 4);
 
     float32 curPos = 0;
@@ -1440,12 +1609,12 @@ void RenderSystem2D::DrawCircle(const Vector2& center, float32 radius, const Col
 {
     Polygon2 pts;
     float32 angle = Min(PI / 6.0f, SEGMENT_LENGTH / radius); // maximum angle 30 degrees
-    int ptsCount = (int)(2 * PI / angle) + 1;
+    int32 ptsCount = int32(2 * PI / angle) + 1;
 
     pts.points.reserve(ptsCount);
-    for (int k = 0; k < ptsCount; ++k)
+    for (int32 k = 0; k < ptsCount; ++k)
     {
-        float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+        float32 angle = (float32(k) / (ptsCount - 1)) * 2 * PI;
         float32 sinA = sinf(angle);
         float32 cosA = cosf(angle);
         Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
@@ -1524,35 +1693,13 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2& polygon, bool closed
     DrawPolygon(copyPoly, closed, color);
 }
 
-void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTextureWithoutAdjustingRects(Texture* texture, NMaterial* material, const Color& color,
+                                                      const Rect& destRect, const Rect& srcRect)
 {
-    Rect destRect(_dstRect);
-    if (destRect.dx < 0.f || destRect.dy < 0.f)
-    {
-        if (IsRenderTargetPass())
-        {
-            destRect.dx = (float32)renderTargetWidth;
-            destRect.dy = (float32)renderTargetHeight;
-        }
-        else
-        {
-            destRect.dx = (float32)Renderer::GetFramebufferWidth();
-            destRect.dy = (float32)Renderer::GetFramebufferHeight();
-        }
-
-        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
-    }
-
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x; //x1
     spriteTempVertices[5] = spriteTempVertices[7] = destRect.y; //y2
     spriteTempVertices[1] = spriteTempVertices[3] = destRect.y + destRect.dy; //y1
     spriteTempVertices[2] = spriteTempVertices[6] = destRect.x + destRect.dx; //x2
-
-    Rect srcRect;
-    srcRect.x = _srcRect.x;
-    srcRect.y = _srcRect.y;
-    srcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx;
-    srcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy;
 
     float32 texCoords[8];
     texCoords[0] = texCoords[4] = srcRect.x; //x1
@@ -1572,43 +1719,79 @@ void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Co
     batch.vertexStride = 2;
     batch.texCoordStride = 2;
     batch.vertexPointer = spriteTempVertices.data();
-    batch.texCoordPointer = texCoords;
+    batch.texCoordPointer[0] = texCoords;
     batch.indexPointer = indices;
     PushBatch(batch);
+}
+
+void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+{
+    Rect destRect(_dstRect);
+    const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
+    if (destRect.dx < 0.f || destRect.dy < 0.f)
+    {
+        destRect.dx = static_cast<float32>(descr.width == 0 ? Renderer::GetFramebufferWidth() : descr.width);
+        destRect.dy = static_cast<float32>(descr.height == 0 ? Renderer::GetFramebufferHeight() : descr.height);
+        if (descr.transformVirtualToPhysical)
+        {
+            destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
+        }
+    }
+
+    Rect srcRect;
+    srcRect.x = _srcRect.x;
+    srcRect.y = _srcRect.y;
+    srcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx;
+    srcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy;
+
+    DrawTextureWithoutAdjustingRects(texture, material, color, destRect, srcRect);
 }
 
 /* TiledDrawData Implementation */
 
 void TiledDrawData::GenerateTileData()
 {
-    Texture *texture = sprite->GetTexture(frame);
+    Texture* texture = sprite->GetTexture(frame);
 
-    Vector< Vector3 > cellsWidth;
+    Vector<Vector3> cellsWidth;
     GenerateAxisData(size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
-        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
+                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(float32(texture->GetWidth()), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
-    Vector< Vector3 > cellsHeight;
+    Vector<Vector3> cellsHeight;
     GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
-        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
+                     VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(float32(texture->GetHeight()), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
-    int32 vertexCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
-    if (vertexCount >= std::numeric_limits<uint16>::max())
+    uint32 vertexLimitPerUnit = MAX_VERTICES - (MAX_VERTICES % 4); // Round for 4 vertexes
+    uint32 indexLimitPerUnit = vertexLimitPerUnit / 4 * 6;
+    uint32 vertexTotalCount = static_cast<uint32>(4 * cellsHeight.size() * cellsWidth.size());
+    uint32 indexTotalCount = static_cast<uint32>(6 * cellsHeight.size() * cellsWidth.size());
+    uint32 unitsCount = vertexTotalCount / vertexLimitPerUnit + (vertexTotalCount % vertexLimitPerUnit > 0 ? 1 : 0);
+
     {
-        vertices.clear();
-        transformedVertices.clear();
-        texCoords.clear();
-        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
-        return;
+        // Resize units
+        units.resize(unitsCount);
+        // Resize buffers for first part of units
+        for (uint32 i = 0; i < unitsCount - 1; ++i)
+        {
+            Unit& u = units[i];
+            u.vertices.resize(vertexLimitPerUnit);
+            u.texCoords.resize(vertexLimitPerUnit);
+            u.transformedVertices.resize(vertexLimitPerUnit);
+            u.indeces.resize(indexLimitPerUnit);
+        }
+        // Resize buffers for last unit
+        Unit& u = units[unitsCount - 1];
+        uint32 lastUnitVertexCount = vertexTotalCount - vertexLimitPerUnit * (unitsCount - 1);
+        uint32 lastUnitIndexCount = indexTotalCount - indexLimitPerUnit * (unitsCount - 1);
+        u.vertices.resize(lastUnitVertexCount);
+        u.texCoords.resize(lastUnitVertexCount);
+        u.transformedVertices.resize(lastUnitVertexCount);
+        u.indeces.resize(lastUnitIndexCount);
     }
-    vertices.resize(vertexCount);
-    transformedVertices.resize(vertexCount);
-    texCoords.resize(vertexCount);
 
-    int32 indecesCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
-    indeces.resize(indecesCount);
-
-    int32 offsetIndex = 0;
-    const float32 * textCoords = sprite->GetTextureCoordsForFrame(frame);
+    uint32 unitNumber = 0;
+    uint32 offsetIndex = 0;
+    const float32* textCoords = sprite->GetTextureCoordsForFrame(frame);
     Vector2 trasformOffset;
     const Vector2 tempTexCoordsPt(textCoords[0], textCoords[1]);
     for (uint32 row = 0; row < cellsHeight.size(); ++row)
@@ -1620,11 +1803,21 @@ void TiledDrawData::GenerateTileData()
 
         for (uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex)
         {
+            uint32 vertIndex = offsetIndex * 4;
+            if (vertIndex >= vertexLimitPerUnit)
+            {
+                offsetIndex = 0;
+                vertIndex = 0;
+                ++unitNumber;
+            }
+            Vector<Vector2>& vertices = units[unitNumber].vertices;
+            Vector<Vector2>& texCoords = units[unitNumber].texCoords;
+            Vector<uint16>& indeces = units[unitNumber].indeces;
+
             cellSize.x = cellsWidth[column].x;
             texCellSize.x = cellsWidth[column].y;
             texTrasformOffset.x = cellsWidth[column].z;
 
-            int32 vertIndex = offsetIndex * 4;
             vertices[vertIndex + 0] = trasformOffset;
             vertices[vertIndex + 1] = trasformOffset + Vector2(cellSize.x, 0.0f);
             vertices[vertIndex + 2] = trasformOffset + Vector2(0.0f, cellSize.y);
@@ -1636,7 +1829,7 @@ void TiledDrawData::GenerateTileData()
             texCoords[vertIndex + 2] = texel + Vector2(0.0f, texCellSize.y);
             texCoords[vertIndex + 3] = texel + texCellSize;
 
-            int32 indecesIndex = offsetIndex * 6;
+            uint32 indecesIndex = offsetIndex * 6;
             indeces[indecesIndex + 0] = vertIndex;
             indeces[indecesIndex + 1] = vertIndex + 1;
             indeces[indecesIndex + 2] = vertIndex + 2;
@@ -1651,7 +1844,7 @@ void TiledDrawData::GenerateTileData()
     }
 }
 
-void TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData )
+void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector<Vector3>& axisData)
 {
     int32 gridSize = 0;
 
@@ -1665,13 +1858,15 @@ void TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 
 
     if (centerSize > 0.0f)
     {
-        gridSize = (int32)ceilf((size - sideSize * 2.0f) / centerSize);
+        gridSize = int32(ceilf((size - sideSize * 2.0f) / centerSize));
         const float32 tileAreaSize = size - sideSize * 2.0f;
         partSize = tileAreaSize - floorf(tileAreaSize / centerSize) * centerSize;
     }
 
     if (sideSize > 0.0f)
         gridSize += 2;
+
+    DVASSERT_MSG(gridSize >= 0, "Incorrect grid size value!")
 
     axisData.resize(gridSize);
 
@@ -1702,10 +1897,15 @@ void TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 
 
 void TiledDrawData::GenerateTransformData()
 {
-    const uint32 size = (uint32)vertices.size();
-    for( uint32 index = 0; index < size; ++index )
+    const uint32 uCount = static_cast<uint32>(units.size());
+    for (uint32 uIndex = 0; uIndex < uCount; ++uIndex)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
+        Unit& unit = units[uIndex];
+        const uint32 vCount = static_cast<uint32>(unit.vertices.size());
+        for (uint32 vIndex = 0; vIndex < vCount; ++vIndex)
+        {
+            unit.transformedVertices[vIndex] = unit.vertices[vIndex] * transformMatr;
+        }
     }
 }
 
@@ -1751,7 +1951,7 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    const uint32 size = (uint32)vertices.size();
+    const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)
     {
         transformedVertices[index] = vertices[index] * transformMatr;
@@ -1762,7 +1962,7 @@ void StretchDrawData::GenerateStretchData()
 {
     const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
     const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE));
-    const Vector2 &spriteSize = sprite->GetSize();
+    const Vector2& spriteSize = sprite->GetSize();
 
     const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
     const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
@@ -1772,7 +1972,7 @@ void StretchDrawData::GenerateStretchData()
 
     const Vector2 xyNegativeLeftTopCap(Max(0.0f, xyLeftTopCap.x), Max(0.0f, xyLeftTopCap.y));
 
-    const Vector2 scaleFactor = (size - stretchCap*2.0f) / (spriteSize - stretchCap*2.0f);
+    const Vector2 scaleFactor = (size - stretchCap * 2.0f) / (spriteSize - stretchCap * 2.0f);
 
     Vector2 xyPos;
     Vector2 xySize;
@@ -1800,16 +2000,16 @@ void StretchDrawData::GenerateStretchData()
     }
 
     const Texture* texture = sprite->GetTexture(frame);
-    const Vector2 textureSize((float32)texture->GetWidth(), (float32)texture->GetHeight());
+    const Vector2 textureSize(float32(texture->GetWidth()), float32(texture->GetHeight()));
 
     const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
-        sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
+                        sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
 
-    VirtualCoordinatesSystem * vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
 
-    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
-        sprite->GetResourceSizeIndex()
-        ) / textureSize;
+    Vector2 value(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+                  sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
+    const Vector2 uvSize = vcs->ConvertVirtualToResource(value, sprite->GetResourceSizeIndex()) / textureSize;
     const Vector2 uvLeftTopCap = vcs->ConvertVirtualToResource(xyRealLeftTopCap, sprite->GetResourceSizeIndex()) / textureSize;
     const Vector2 uvRightBottomCap = vcs->ConvertVirtualToResource(xyRealRightBottomCap, sprite->GetResourceSizeIndex()) / textureSize;
 
@@ -1919,4 +2119,185 @@ void StretchDrawData::GenerateStretchData()
     }
 }
 
+TiledMultilayerData::~TiledMultilayerData()
+{
+    rhi::ReleaseTextureSet(textureSet);
+    rhi::ReleaseSamplerState(samplerState);
+}
+
+Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisData(float32 inSize, float32 inTileSize, float32 inStratchCap,
+                                                                                  float32 gradientBase, float32 gradientDelta, float32 detailBase, float32 detailDelta,
+                                                                                  float32 contourBase, float32 contourStretchBase, float32 contourStretchMax, float32 contourMax,
+                                                                                  float32 maskBase, float32 maskStretchBase, float32 maskStretchMax, float32 maskMax)
+{
+    Vector<AxisData> result;
+
+    int32 tileCount = static_cast<int32>(ceilf(inSize / inTileSize));
+    int32 totalCount = tileCount * 2;
+    if (inStratchCap > 0.0f)
+        totalCount += 4;
+    result.resize(totalCount);
+
+    int32 vid = 0;
+    int32 lastBefore = -1;
+    int32 firstAfter = totalCount;
+    //position tile and gradient
+    for (int32 i = 0; i < tileCount; i++)
+    {
+        float32 posl = inTileSize * i;
+        float32 posr = inTileSize * (i + 1);
+        posr = Min(posr, inSize);
+
+        result[vid].pos = posl;
+        result[vid].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
+        result[vid].texCoordsDetail = detailBase;
+        vid++;
+
+        if ((posl < inStratchCap) && (posr >= inStratchCap)) //insert stretch line
+        {
+            result[vid].pos = result[vid + 1].pos = inStratchCap;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
+            result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            lastBefore = vid;
+            vid += 2;
+        }
+        if ((posl <= (inSize - inStratchCap)) && (posr > (inSize - inStratchCap))) //insert stretch line
+        {
+            result[vid].pos = result[vid + 1].pos = inSize - inStratchCap;
+            result[vid].texCoordsGradient = result[vid + 1].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
+            result[vid].texCoordsDetail = result[vid + 1].texCoordsDetail = detailBase + (result[vid].pos - posl) / inTileSize * detailDelta;
+            firstAfter = vid + 1;
+            vid += 2;
+        }
+
+        result[vid].pos = posr;
+        result[vid].texCoordsGradient = result[vid].pos / inSize * gradientDelta + gradientBase;
+        result[vid].texCoordsDetail = detailBase + (posr - posl) / inTileSize * detailDelta;
+        vid++;
+    }
+
+    for (int32 i = 0; i < totalCount; i++)
+    {
+        if (i <= lastBefore) //before stretch
+        {
+            float32 val = result[i].pos / inStratchCap;
+            result[i].texCoordsMask = maskBase + (maskStretchBase - maskBase) * val;
+            result[i].texCoordsContour = contourBase + (contourStretchBase - contourBase) * val;
+        }
+        else if (i >= firstAfter) //after stretch
+        {
+            float32 val = (result[i].pos - (inSize - inStratchCap)) / inStratchCap;
+            result[i].texCoordsMask = maskStretchMax + (maskMax - maskStretchMax) * val;
+            result[i].texCoordsContour = contourStretchMax + (contourMax - contourStretchMax) * val;
+        }
+        else //in between
+        {
+            float32 val = (result[i].pos - inStratchCap) / (inSize - 2 * inStratchCap);
+            result[i].texCoordsMask = maskStretchBase + (maskStretchMax - maskStretchBase) * val;
+            result[i].texCoordsContour = contourStretchBase + (contourStretchMax - contourStretchBase) * val;
+        }
+    }
+
+    return result;
+}
+
+TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(Sprite* sprite)
+{
+    if ((sprite->GetRectOffsetValueForFrame(0, Sprite::X_OFFSET_TO_ACTIVE) != 0) || (sprite->GetRectOffsetValueForFrame(0, Sprite::Y_OFFSET_TO_ACTIVE) != 0))
+    {
+        Logger::Error("wrong sprite %s", Sprite::GetPathString(sprite).c_str());
+        Logger::Error("texture for sprite atlas for tiled multi-layered should be packed with --disableCropAlpha flag");
+    }
+    SingleStretchData res;
+    int32 resoureceSizeIndex = sprite->GetResourceSizeIndex();
+
+    Vector2 origSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)), resoureceSizeIndex);
+    res.uvBase = Vector2(sprite->GetTextureCoordsForFrame(0)[0], sprite->GetTextureCoordsForFrame(0)[1]);
+    res.uvMax = Vector2(sprite->GetTextureCoordsForFrame(0)[2], sprite->GetTextureCoordsForFrame(0)[5]);
+    Vector2 uvSize = res.uvMax - res.uvBase;
+    res.uvCapMin = res.uvBase + uvSize * stretchCap / origSize;
+    res.uvCapMax = res.uvBase + uvSize * (origSize - stretchCap) / origSize;
+
+    return res;
+}
+
+void TiledMultilayerData::GenerateTileData()
+{
+    if ((size.x <= 0) || (size.y <= 0))
+        return;
+
+    //generate data
+    SingleStretchData contourStretchData = GenerateStretchData(contour);
+    SingleStretchData maskStretchData = GenerateStretchData(mask);
+    Vector2 tileSize = detail->GetSize();
+    Vector2 gradientBase = Vector2(gradient->GetTextureCoordsForFrame(0)[0], gradient->GetTextureCoordsForFrame(0)[1]);
+    Vector2 gradientDelta = Vector2(gradient->GetTextureCoordsForFrame(0)[2], gradient->GetTextureCoordsForFrame(0)[5]) - gradientBase;
+    Vector2 detailBase = Vector2(detail->GetTextureCoordsForFrame(0)[0], detail->GetTextureCoordsForFrame(0)[1]);
+    Vector2 detailDelta = Vector2(detail->GetTextureCoordsForFrame(0)[2], detail->GetTextureCoordsForFrame(0)[5]) - detailBase;
+
+    Vector<AxisData> xData = GenerateSingleAxisData(size.x, tileSize.x, stretchCap.x, gradientBase.x, gradientDelta.x, detailBase.x, detailDelta.x,
+                                                    contourStretchData.uvBase.x, contourStretchData.uvCapMin.x, contourStretchData.uvCapMax.x, contourStretchData.uvMax.x,
+                                                    maskStretchData.uvBase.x, maskStretchData.uvCapMin.x, maskStretchData.uvCapMax.x, maskStretchData.uvMax.x);
+    Vector<AxisData> yData = GenerateSingleAxisData(size.y, tileSize.y, stretchCap.y, gradientBase.y, gradientDelta.y, detailBase.y, detailDelta.y,
+                                                    contourStretchData.uvBase.y, contourStretchData.uvCapMin.y, contourStretchData.uvCapMax.y, contourStretchData.uvMax.y,
+                                                    maskStretchData.uvBase.y, maskStretchData.uvCapMin.y, maskStretchData.uvCapMax.y, maskStretchData.uvMax.y);
+
+    //fill geom
+    size_t xLinesCount = xData.size();
+    size_t yLinesCount = yData.size();
+
+    DVASSERT(((xLinesCount % 2) == 0) && ((yLinesCount % 2) == 0));
+
+    size_t verticesCount = xData.size() * yData.size();
+    vertices.resize(verticesCount);
+    transformedVertices.resize(verticesCount);
+    texCoordsMask.resize(verticesCount);
+    texCoordsDetail.resize(verticesCount);
+    texCoordsGradient.resize(verticesCount);
+    texCoordsContour.resize(verticesCount);
+    size_t vertexId = 0;
+    for (size_t y = 0, szy = yLinesCount; y < szy; ++y)
+    {
+        for (size_t x = 0, szx = xLinesCount; x < szx; ++x)
+        {
+            vertices[vertexId] = Vector2(xData[x].pos, yData[y].pos);
+            texCoordsMask[vertexId] = Vector2(xData[x].texCoordsMask, yData[y].texCoordsMask);
+            texCoordsDetail[vertexId] = Vector2(xData[x].texCoordsDetail, yData[y].texCoordsDetail);
+            texCoordsGradient[vertexId] = Vector2(xData[x].texCoordsGradient, yData[y].texCoordsGradient);
+            texCoordsContour[vertexId] = Vector2(xData[x].texCoordsContour, yData[y].texCoordsContour);
+            ++vertexId;
+        }
+    }
+    size_t indexCount = (xLinesCount / 2) * (yLinesCount / 2) * 6;
+    indices.resize(indexCount);
+    size_t indexId = 0;
+    for (size_t y = 0, szy = yLinesCount / 2; y < szy; ++y)
+    {
+        size_t baseV = y * 2 * xLinesCount;
+        size_t nextV = (y * 2 + 1) * xLinesCount;
+        for (size_t x = 0, szx = xLinesCount / 2; x < szx; ++x)
+        {
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2);
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2);
+            indices[indexId++] = static_cast<uint16>(baseV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2 + 1);
+            indices[indexId++] = static_cast<uint16>(nextV + x * 2);
+        }
+    }
+}
+
+void TiledMultilayerData::GenerateTransformData(bool usePerPixelAccuracy)
+{
+    if (usePerPixelAccuracy)
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = RenderSystem2D::Instance()->GetAlignedVertex(vertices[i] * transformMatr);
+    }
+    else
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = vertices[i] * transformMatr;
+    }
+}
 };

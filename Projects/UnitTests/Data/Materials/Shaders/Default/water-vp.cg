@@ -108,7 +108,7 @@ property float4x4 worldInvTransposeMatrix : dynamic,instance : ;
 VPROG_BEGIN
 
 //position
-    float3 in_pos      = VP_IN_POSITION;    
+    float3 in_pos      = VP_IN_POSITION.xyz;
     float4 inPosition = float4(in_pos, 1.0);    
     float4 resPosition = mul( inPosition, worldViewProjMatrix );                
     VP_OUT_POSITION   = resPosition;    
@@ -141,7 +141,7 @@ VPROG_BEGIN
     float3  inNormal    = VP_IN_NORMAL;
     
     #if (SHADING == SHADING_PERVERTEX)
-		float3 world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+		float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
         float3 viewDirectionInWorldSpace = world_position - cameraPosition;
         float3 normalDirectionInWorldSpace = normalize(mul(float4(inNormal, 0), worldInvTransposeMatrix).xyz);
         VP_OUT(reflectionDirectionInWorldSpace) = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
@@ -182,7 +182,7 @@ VPROG_BEGIN
 	#if VERTEX_FOG
 	
 	    #if (SHADING == SHADING_PERVERTEX)
-            float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+            float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
         #endif
 	
 		#define FOG_view_position eyeCoordsPosition
@@ -194,7 +194,7 @@ VPROG_BEGIN
 		
 	#if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
 		#if (SHADING == SHADING_PERPIXEL)
-			float3 world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+			float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
 		#endif
 		#define FOG_world_position world_position
 	#endif

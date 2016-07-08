@@ -25,53 +25,59 @@ class FUFile;
 class FCOLLADA_EXPORT FULogFile
 {
 private:
-	FUFile* file;
+    FUFile* file;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		This opens, for writing, the file with the given filename.
 		Relative filepaths are recommended for log files.
 		@param filename The log filename. */
-	FULogFile(const fchar* filename);
+    FULogFile(const fchar* filename);
 
-	/** Destructor. */
-	~FULogFile();
+    /** Destructor. */
+    ~FULogFile();
 
-	/** Returns the underlying FUFile.
+    /** Returns the underlying FUFile.
 		@return The FUFile.*/
-	inline FUFile* GetFile() { return file; }
-	inline const FUFile* GetFile() const { return file; } /**< See above.*/
+    inline FUFile* GetFile()
+    {
+        return file;
+    }
+    inline const FUFile* GetFile() const
+    {
+        return file;
+    } /**< See above.*/
 
-	/** Writes out a log message.
+    /** Writes out a log message.
 		This version of this function is useful for code-base assertions and
 		error messages aimed at programmers.
 		@param filename A filename.
 		@param linenum A line number.
 		@param message The message to write out. */
-	void WriteLine(const char* filename, uint32 linenum, const char* message, ...);
-#ifdef UNICODE
-	void WriteLine(const char* filename, uint32 line, const fchar* message, ...); /**< See above. */
+    void WriteLine(const char* filename, uint32 linenum, const char* message, ...);
+#if (1)
+    void WriteLine(const char* filename, uint32 line, const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
-	/** Writes out a log message.
+    /** Writes out a log message.
 		This version of this function is useful for messages aimed at users.
 		@param message The message to write out. */
-	void WriteLine(const char* message, ...);
-#ifdef UNICODE
-	void WriteLine(const fchar* message, ...); /**< See above. */
+    void WriteLine(const char* message, ...);
+#if (1)
+    void WriteLine(const fchar* message, ...); /**< See above. */
 #endif // UNICODE
 
-	/** Writes out a log message.
+    /** Writes out a log message.
 		The variable-list version of this function.
 		@param message The message to write out.
 		@param vars A variable list object. */
-	void WriteLineV(const char* message, va_list& vars);
-#ifdef UNICODE
-	void WriteLineV(const fchar* message, va_list& vars); /**< See above. */
+    void WriteLineV(const char* message, va_list& vars);
+#if (1)
+    void WriteLineV(const fchar* message, va_list& vars); /**< See above. */
 #endif // UNICODE
 
-	/** Flushes the log file. */
-	void Flush();
+    /** Flushes the log file. */
+    void Flush();
 };
 
 #endif // _FU_LOG_FILE_H_

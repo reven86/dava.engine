@@ -29,37 +29,39 @@ class FULogFile;
 class FCOLLADA_EXPORT FUErrorLog
 {
 private:
-	FULogFile* logFile;
-	uint32 counts[FUError::LEVEL_COUNT];
-	FUError::Level minimumLevel;
+    FULogFile* logFile;
+    uint32 counts[FUError::LEVEL_COUNT];
+    FUError::Level minimumLevel;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		@see FUError::Level
 		@param logFilename The filename in which to output the error messages
 			that cover at least the given errorLevel.
 		@param errorLevel The minimum required error level. Any error messages
 			lower that this level will be discarded. */
-	FUErrorLog(const fchar* logFilename, FUError::Level errorLevel);
+    FUErrorLog(const fchar* logFilename, FUError::Level errorLevel);
 
-	/** Destructor.
+    /** Destructor.
 		Closes the log file. */
-	~FUErrorLog();
+    ~FUErrorLog();
 
-	/** Retrieves the log file handler.
+    /** Retrieves the log file handler.
 		This can be useful when writing out long, custom messages.
 		@return The log file handler. */
-	FULogFile* GetLogFile() { return logFile; }
+    FULogFile* GetLogFile()
+    {
+        return logFile;
+    }
 
-	/**	Allows to determine if new messages have been generated since the last query.
+    /**	Allows to determine if new messages have been generated since the last query.
 		@param debug The number of new debug-level messages. 
 		@param warnings The number of new warning-level messages. 
 		@param errors The number of new error-level messages. */
-	void QueryNewMessages(uint32& debug, uint32& warnings, uint32& errors);
+    void QueryNewMessages(uint32& debug, uint32& warnings, uint32& errors);
 
 private:
-	void OnErrorCallback(FUError::Level level, uint32 errorCode, uint32 argument);
+    void OnErrorCallback(FUError::Level level, uint32 errorCode, uint32 argument);
 };
 
 #endif // _FU_ERROR_LOG_H_
-

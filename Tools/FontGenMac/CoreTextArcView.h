@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 /*
  
  File: CoreTextArcView.h
@@ -81,66 +52,67 @@
 #import <Cocoa/Cocoa.h>
 #import "CharacterTablePanel.h"
 
-@interface CoreTextArcView : NSView {
+@interface CoreTextArcView : NSView
+{
 @private
-	NSFont *			_font;
-	NSString *			_string;
-	CGFloat				_radius;
+    NSFont* _font;
+    NSString* _string;
+    CGFloat _radius;
 
-	struct {
-		unsigned int	showsGlyphBounds:1;
-		unsigned int	showsLineMetrics:1;
-		unsigned int	dimsSubstitutedGlyphs:1;
-		unsigned int	reserved:28;
-	}					_flags;
+    struct
+    {
+        unsigned int showsGlyphBounds : 1;
+        unsigned int showsLineMetrics : 1;
+        unsigned int dimsSubstitutedGlyphs : 1;
+        unsigned int reserved : 28;
+    } _flags;
 
-	
-	NSString * symbolTable;
-	
-	CGFloat distanceTable[2048][2048];
-	CGFloat kerningTable[2048][2048];
-	CGFloat kerningBaseShift[2048];
-	signed char	fixedKerningTable[2048][2048];
-	int kerningPairCount;
-	Float32 defaultShiftValue;
-	Float32 fontAscent;
-	Float32 fontDescent;
-	Float32 fontLeading;
-	Float32 fontXHeight;
-	Float32 fontWidth;
-	Float32 fontHeight;
-	
-	CGContextRef symbolTableContext;
-	CGImageRef symbolTableImage;
-	
-	CGRect	symbolTypoBounds[2048];
-	CGRect  symbolBounds[2048];
+    NSString* symbolTable;
 
-	CGFloat maxSymbolWidth;
-	
-	float leftRightPadding;
-	float topBottomPadding;
-	float exportWidth;
-	float exportHeight;
-	
-	bool isPrecisionKerning; 
-	
-	BOOL enableShadow;
-	
-	IBOutlet CharacterTablePanel * characterTablePanel;
+    CGFloat distanceTable[2048][2048];
+    CGFloat kerningTable[2048][2048];
+    CGFloat kerningBaseShift[2048];
+    signed char fixedKerningTable[2048][2048];
+    int kerningPairCount;
+    Float32 defaultShiftValue;
+    Float32 fontAscent;
+    Float32 fontDescent;
+    Float32 fontLeading;
+    Float32 fontXHeight;
+    Float32 fontWidth;
+    Float32 fontHeight;
+
+    CGContextRef symbolTableContext;
+    CGImageRef symbolTableImage;
+
+    CGRect symbolTypoBounds[2048];
+    CGRect symbolBounds[2048];
+
+    CGFloat maxSymbolWidth;
+
+    float leftRightPadding;
+    float topBottomPadding;
+    float exportWidth;
+    float exportHeight;
+
+    bool isPrecisionKerning;
+
+    BOOL enableShadow;
+
+    IBOutlet CharacterTablePanel* characterTablePanel;
 }
 
-@property(retain, nonatomic) NSFont *font;
-@property(retain, nonatomic) NSString *string;
-@property(readonly, nonatomic) NSAttributedString *attributedString;
+@property(retain, nonatomic) NSFont* font;
+@property(retain, nonatomic) NSString* string;
+@property(readonly, nonatomic) NSAttributedString* attributedString;
 @property(assign, nonatomic) CGFloat radius;
 @property(nonatomic) BOOL showsGlyphBounds;
 @property(nonatomic) BOOL showsLineMetrics;
 @property(nonatomic) BOOL dimsSubstitutedGlyphs;
 @property(nonatomic) BOOL enableShadow;
 
-- (void) exportStringToContext:(NSString *) exportString context: (CGContextRef)context export: (bool) export;
-- (void) exportFontToFile;
-- (void) extractKerningValues;
-- (void) setSymbolTable: (NSString*)newSymbolTable;
+- (void)exportStringToContext:(NSString*)exportString context:(CGContextRef)context export:(bool) export;
+- (void)exportFontToFile;
+- (void)extractKerningValues;
+- (void)setSymbolTable:(NSString*)newSymbolTable;
 @end

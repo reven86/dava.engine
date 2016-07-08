@@ -1,30 +1,3 @@
-/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/FXCache.h"
 #include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
@@ -37,17 +10,17 @@ namespace DAVA
 
 namespace DefaultValues
 {
-static Vector3 defaultVec3;
-static Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
-static float32 defaultFloat05 = 0.5f;
-static float32 defaultFloat10 = 1.0f;
-static Vector2 defaultVec2;
-static Vector2 defaultVec2I(1.f, 1.f);
-static float32 defaultLightmapSize = 16.0f;
-static float32 defaultFogStart = 0.0f;
-static float32 defaultFogEnd = 500.0f;
-static float32 defaultFogHeight = 50.0f;
-static float32 defaultFogDensity = 0.005f;
+const Vector3 defaultVec3;
+const Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
+const Color blackColor(0.0f, 0.0f, 0.0f, 1.0f);
+const float32 defaultFloat05 = 0.5f;
+const float32 defaultFloat10 = 1.0f;
+const Vector2 defaultVec2;
+const Vector2 defaultVec2I(1.f, 1.f);
+const float32 defaultFogStart = 0.0f;
+const float32 defaultFogEnd = 500.0f;
+const float32 defaultFogHeight = 50.0f;
+const float32 defaultFogDensity = 0.005f;
 };
 
 void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, FastNameMap<PropData>& propsMap) const
@@ -87,7 +60,8 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     {
         // if fxName is not valid (e.g global material)
         // we just add all local properties
-        for (const auto& lp : material->localProperties)
+        const MaterialConfig& config = material->GetCurrentConfig();
+        for (const auto& lp : config.localProperties)
         {
             PropData data;
             data.size = lp.second->arraySize;
@@ -100,7 +74,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     { //TODO: not shader properties need to be added to material
         static const Map<FastName, NMaterialStateDynamicPropertiesInsp::PropData> NOT_SHADER_PROPS =
         {
-          { NMaterialParamName::PARAM_LIGHTMAP_SIZE, { 1, rhi::ShaderProp::TYPE_FLOAT1, &DefaultValues::defaultLightmapSize } },
+          { NMaterialParamName::PARAM_LIGHTMAP_SIZE, { 1, rhi::ShaderProp::TYPE_FLOAT1, &NMaterial::DEFAULT_LIGHTMAP_SIZE } },
         };
 
         for (auto& prop : NOT_SHADER_PROPS)
@@ -117,7 +91,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void* object, int filter) const
 {
-    NMaterial* material = (NMaterial*)object;
+    NMaterial* material = static_cast<NMaterial*>(object);
     DVASSERT(material);
 
     auto data = new PropDataMap();
@@ -139,7 +113,7 @@ Vector<FastName> NMaterialStateDynamicPropertiesInsp::MembersList(const DynamicD
 {
     Vector<FastName> ret;
 
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
+    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
     DVASSERT(members);
 
     auto it = members->begin();
@@ -164,7 +138,7 @@ int NMaterialStateDynamicPropertiesInsp::MemberFlags(const DynamicData& ddata, c
 {
     int flags = 0;
 
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     flags |= I_VIEW;
@@ -181,10 +155,10 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
 {
     VariantType ret;
 
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
+    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
     DVASSERT(members);
 
     if (members->count(key))
@@ -207,7 +181,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
             break;
 
         case rhi::ShaderProp::TYPE_FLOAT2:
-            ret.SetVector2(*(Vector2*)value);
+            ret.SetVector2(*reinterpret_cast<const Vector2*>(value));
             break;
 
         case rhi::ShaderProp::TYPE_FLOAT3:
@@ -217,7 +191,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
             }
             else
             {
-                ret.SetVector3(*(Vector3*)value);
+                ret.SetVector3(*reinterpret_cast<const Vector3*>(value));
             }
             break;
 
@@ -228,12 +202,12 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
             }
             else
             {
-                ret.SetVector4(*(Vector4*)value);
+                ret.SetVector4(*reinterpret_cast<const Vector4*>(value));
             }
             break;
 
         case rhi::ShaderProp::TYPE_FLOAT4X4:
-            ret.SetMatrix4(*(Matrix4*)value);
+            ret.SetMatrix4(*reinterpret_cast<const Matrix4*>(value));
             break;
 
         default:
@@ -252,10 +226,10 @@ bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName& propName) cons
 
 void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddata, const FastName& key, const VariantType& value)
 {
-    NMaterial* material = (NMaterial*)ddata.object;
+    NMaterial* material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
+    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
     DVASSERT(members);
 
     if (members->count(key))
@@ -391,15 +365,16 @@ void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* 
     checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
     checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogEnd);
 
+    checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &NMaterial::DEFAULT_LIGHTMAP_SIZE);
     checkAndAdd(NMaterialParamName::PARAM_FLAT_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
     checkAndAdd(NMaterialParamName::PARAM_TEXTURE0_SHIFT, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_UV_OFFSET, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_UV_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultLightmapSize);
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
     checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
+    checkAndAdd(NMaterialParamName::WATER_CLEAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::blackColor.color);
 
     //checkAndAdd(NMaterialParamName::PARAM_NORMAL_SCALE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
     //checkAndAdd(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, rhi::ShaderProp::TYPE_FLOAT1, 1, (float32*) &DefaultValues::defaultFloat05);

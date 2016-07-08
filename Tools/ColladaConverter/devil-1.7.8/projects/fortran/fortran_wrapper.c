@@ -10,122 +10,120 @@
 //  We are using DevIL return values as the first parameter.
 //
 
-
 // From http://www.ibiblio.org/pub/languages/fortran/ch1-11.html
 //  This is how Fortran passes strings.
-struct descriptor						/* VMS fixed length string    */
-{										/* descriptor used in FORTRAN */
-	unsigned short  length;
-	unsigned char   data_type,			/* = 14      */
-					dsc_class;			/* = 1       */
-	char            *string_ptr;
-}; 
+struct descriptor /* VMS fixed length string    */
+{ /* descriptor used in FORTRAN */
+    unsigned short length;
+    unsigned char data_type, /* = 14      */
+    dsc_class; /* = 1       */
+    char* string_ptr;
+};
 
-
-void ilFActiveImage_(int *RetVal, int *Number)
+void ilFActiveImage_(int* RetVal, int* Number)
 {
-	*RetVal = ilActiveImage((unsigned int)*Number);
-	return;
+    *RetVal = ilActiveImage((unsigned int)*Number);
+    return;
 }
 
-void ilFActiveLayer_(int *RetVal, int *Number)
+void ilFActiveLayer_(int* RetVal, int* Number)
 {
-	*RetVal = ilActiveImage((unsigned int)*Number);
-	return;
+    *RetVal = ilActiveImage((unsigned int)*Number);
+    return;
 }
 
-void ilFActiveMipmap_(int *RetVal, int *Number)
+void ilFActiveMipmap_(int* RetVal, int* Number)
 {
-	*RetVal = ilActiveImage((unsigned int)*Number);
-	return;
+    *RetVal = ilActiveImage((unsigned int)*Number);
+    return;
 }
 
-void ilFApplyPal_(int *RetVal, struct descriptor *Desc)
+void ilFApplyPal_(int* RetVal, struct descriptor* Desc)
 {
-	char *Filename = malloc(Desc->length + 1);
-	strncpy(Filename, Desc->string_ptr, Desc->length);
-	Filename[Desc->length] = 0;  // Should really be NULL...getting a warning, though.
-	*RetVal = ilApplyPal(Filename);
+    char* Filename = malloc(Desc->length + 1);
+    strncpy(Filename, Desc->string_ptr, Desc->length);
+    Filename[Desc->length] = 0; // Should really be NULL...getting a warning, though.
+    *RetVal = ilApplyPal(Filename);
 
-	free(Filename);
-	return;
+    free(Filename);
+    return;
 }
 
-void ilFBindImage_(int *Image)
+void ilFBindImage_(int* Image)
 {
-	ilBindImage((unsigned int)*Image);
-	return;
+    ilBindImage((unsigned int)*Image);
+    return;
 }
 
-void ilFBlit_(int *RetVal, int *Source, int *DestX, int *DestY, int *DestZ, int *SrcX, int *SrcY, int *SrcZ, int *Width, int *Height, int *Depth)
+void ilFBlit_(int* RetVal, int* Source, int* DestX, int* DestY, int* DestZ, int* SrcX, int* SrcY, int* SrcZ, int* Width, int* Height, int* Depth)
 {
-	*RetVal = ilBlit(*Source, *DestX, *DestY, *DestZ, *SrcX, *SrcY, *SrcZ, *Width, *Height, *Depth);
-	return;
+    *RetVal = ilBlit(*Source, *DestX, *DestY, *DestZ, *SrcX, *SrcY, *SrcZ, *Width, *Height, *Depth);
+    return;
 }
 
-void ilFClearColour_(float *Red, float *Green, float *Blue, float *Alpha)
+void ilFClearColour_(float* Red, float* Green, float* Blue, float* Alpha)
 {
-	ilClearColour(*Red, *Green, *Blue, *Alpha);
-	return;
+    ilClearColour(*Red, *Green, *Blue, *Alpha);
+    return;
 }
 
-void ilFClearImage_(int *RetVal)
+void ilFClearImage_(int* RetVal)
 {
-	*RetVal = ilClearImage();
-	return;
+    *RetVal = ilClearImage();
+    return;
 }
 
-void ilFCloneCurImage_(int *RetVal)
+void ilFCloneCurImage_(int* RetVal)
 {
-	*RetVal = ilCloneCurImage();
-	return;
+    *RetVal = ilCloneCurImage();
+    return;
 }
 
-void ilFCompressFunc_(int *RetVal, int *Mode)
+void ilFCompressFunc_(int* RetVal, int* Mode)
 {
-	*RetVal = ilCompressFunc(*Mode);
-	return;
+    *RetVal = ilCompressFunc(*Mode);
+    return;
 }
 
-void ilFConvertImage_(int *RetVal, int *DestFormat, int *DestType)
+void ilFConvertImage_(int* RetVal, int* DestFormat, int* DestType)
 {
-	*RetVal = ilConvertImage(*DestFormat, *DestType);
-	return;
+    *RetVal = ilConvertImage(*DestFormat, *DestType);
+    return;
 }
 
-void ilFConvertPal_(int *RetVal, int *DestFormat)
+void ilFConvertPal_(int* RetVal, int* DestFormat)
 {
-	*RetVal = ilConvertPal(*DestFormat);
+    *RetVal = ilConvertPal(*DestFormat);
 }
 
-void ilFCopyImage_(int *RetVal, int *Src)
+void ilFCopyImage_(int* RetVal, int* Src)
 {
-	*RetVal = ilCopyImage(*Src);
-	return;
+    *RetVal = ilCopyImage(*Src);
+    return;
 }
 
-void ilFCopyPixels_(int *RetVal, int *XOff, int *YOff, int *ZOff, int *Width, int *Height, int *Depth, int *Format, int *Type, void *Data)
+void ilFCopyPixels_(int* RetVal, int* XOff, int* YOff, int* ZOff, int* Width, int* Height, int* Depth, int* Format, int* Type, void* Data)
 {
-	*RetVal = ilCopyPixels(*XOff, *YOff, *ZOff, *Width, *Height, *Depth, *Format, *Type, Data);
-	return;
+    *RetVal = ilCopyPixels(*XOff, *YOff, *ZOff, *Width, *Height, *Depth, *Format, *Type, Data);
+    return;
 }
 
-void ilFCreateSubImage_(int *RetVal, int *Type, int *Num)
+void ilFCreateSubImage_(int* RetVal, int* Type, int* Num)
 {
-	*RetVal = ilCreateSubImage(*Type, *Num);
-	return;
+    *RetVal = ilCreateSubImage(*Type, *Num);
+    return;
 }
 
-void ilFDefaultImage_(int *RetVal)
+void ilFDefaultImage_(int* RetVal)
 {
-	*RetVal = ilDefaultImage();
-	return;
+    *RetVal = ilDefaultImage();
+    return;
 }
 
-void ilFDeleteImage_(int *Num)
+void ilFDeleteImage_(int* Num)
 {
-	ilDeleteImage(*Num);
-	return;
+    ilDeleteImage(*Num);
+    return;
 }
 
 // Not sure how to do the arrays properly.
@@ -134,22 +132,22 @@ void ilFDeleteImage_(int *Num)
 //	ilDeleteImages(*Num, *Images);
 //}
 
-void ilFDisable_(int *RetVal, int *Mode)
+void ilFDisable_(int* RetVal, int* Mode)
 {
-	*RetVal = ilDisable(*Mode);
-	return;
+    *RetVal = ilDisable(*Mode);
+    return;
 }
 
-void ilFEnable_(int *RetVal, int *Mode)
+void ilFEnable_(int* RetVal, int* Mode)
 {
-	*RetVal = ilEnable(*Mode);
-	return;
+    *RetVal = ilEnable(*Mode);
+    return;
 }
 
-void ilFFormatFunc_(int *RetVal, int *Mode)
+void ilFFormatFunc_(int* RetVal, int* Mode)
 {
-	*RetVal = ilFormatFunc(*Mode);
-	return;
+    *RetVal = ilFormatFunc(*Mode);
+    return;
 }
 
 // Not sure how to do the arrays properly.
@@ -158,107 +156,107 @@ void ilFFormatFunc_(int *RetVal, int *Mode)
 //	ilGenImages(*Num, *Images);
 //}
 
-void ilFGenImage_(int *RetVal)
+void ilFGenImage_(int* RetVal)
 {
-	*RetVal = ilGenImage();
-	return;
+    *RetVal = ilGenImage();
+    return;
 }
 
 //void ilFGetAlpha_(
 
-void ilFGetBoolean_(int *RetVal, int *Mode)
+void ilFGetBoolean_(int* RetVal, int* Mode)
 {
-	*RetVal = ilGetBoolean(*Mode);
-	return;
+    *RetVal = ilGetBoolean(*Mode);
+    return;
 }
 
-void ilFGetBooleanv_(int *Mode, int *Param)
+void ilFGetBooleanv_(int* Mode, int* Param)
 {
-	ilGetBooleanv(*Mode, Param);
-	return;
+    ilGetBooleanv(*Mode, Param);
+    return;
 }
 
-void ilFGetData_(char *RetVal)
+void ilFGetData_(char* RetVal)
 {
-	RetVal = ilGetData();
-	return;
+    RetVal = ilGetData();
+    return;
 }
 
 // ilGetDXTCData
 
-void ilFGetError_(int *RetVal)
+void ilFGetError_(int* RetVal)
 {
-	*RetVal = ilGetError();
-	return;
+    *RetVal = ilGetError();
+    return;
 }
 
-void ilFGetInteger_(int *RetVal, int *Mode)
+void ilFGetInteger_(int* RetVal, int* Mode)
 {
-	*RetVal = ilGetInteger(*Mode);
-	return;
+    *RetVal = ilGetInteger(*Mode);
+    return;
 }
 
-void ilFGetIntegerv_(int *Mode, int *Param)
+void ilFGetIntegerv_(int* Mode, int* Param)
 {
-	ilGetIntegerv(*Mode, Param);
-	return;
+    ilGetIntegerv(*Mode, Param);
+    return;
 }
 
-void ilFGetLumpPos_(int *RetVal)
+void ilFGetLumpPos_(int* RetVal)
 {
-	*RetVal = ilGetLumpPos();
-	return;
+    *RetVal = ilGetLumpPos();
+    return;
 }
 
-void ilFGetPalette_(char *RetVal)
+void ilFGetPalette_(char* RetVal)
 {
-	RetVal = ilGetPalette();
-	return;
+    RetVal = ilGetPalette();
+    return;
 }
 
 //ilGetString
 
 void ilFInit_()
 {
-	ilInit();
-	return;
+    ilInit();
+    return;
 }
 
 void ilFShutDown_()
 {
-	ilShutDown();
-	return;
+    ilShutDown();
+    return;
 }
 
-void ilFLoadImage_(int *RetVal, struct descriptor *Desc)
+void ilFLoadImage_(int* RetVal, struct descriptor* Desc)
 {
-	char *Filename = malloc(Desc->length + 1);
-	strncpy(Filename, Desc->string_ptr, Desc->length);
-	Filename[Desc->length] = 0;  // Should really be NULL...getting a warning, though.
-	*RetVal = ilLoadImage(Filename);
+    char* Filename = malloc(Desc->length + 1);
+    strncpy(Filename, Desc->string_ptr, Desc->length);
+    Filename[Desc->length] = 0; // Should really be NULL...getting a warning, though.
+    *RetVal = ilLoadImage(Filename);
 
-	free(Filename);
-	return;
+    free(Filename);
+    return;
 }
 
-void ilFSave_(int *RetVal, int *Type, struct descriptor *Desc)
+void ilFSave_(int* RetVal, int* Type, struct descriptor* Desc)
 {
-	char *Filename = malloc(Desc->length + 1);
-	strncpy(Filename, Desc->string_ptr, Desc->length);
-	Filename[Desc->length] = 0;  // Should really be NULL...getting a warning, though.
-	*RetVal = ilSave(*Type, Filename);
+    char* Filename = malloc(Desc->length + 1);
+    strncpy(Filename, Desc->string_ptr, Desc->length);
+    Filename[Desc->length] = 0; // Should really be NULL...getting a warning, though.
+    *RetVal = ilSave(*Type, Filename);
 
-	free(Filename);
-	return;
+    free(Filename);
+    return;
 }
 
-void ilFSaveImage_(int *RetVal, struct descriptor *Desc)
+void ilFSaveImage_(int* RetVal, struct descriptor* Desc)
 {
-	char *Filename = malloc(Desc->length + 1);
-	strncpy(Filename, Desc->string_ptr, Desc->length);
-	Filename[Desc->length] = 0;  // Should really be NULL...getting a warning, though.
-	*RetVal = ilSaveImage(Filename);
+    char* Filename = malloc(Desc->length + 1);
+    strncpy(Filename, Desc->string_ptr, Desc->length);
+    Filename[Desc->length] = 0; // Should really be NULL...getting a warning, though.
+    *RetVal = ilSaveImage(Filename);
 
-	free(Filename);
-	return;
+    free(Filename);
+    return;
 }

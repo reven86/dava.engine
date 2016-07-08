@@ -1,36 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "rhi_DX11.h"
+#include "rhi_DX11.h"
     #include "../Common/rhi_Impl.h"
     
     #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
     #include "Core/Core.h"
 using DAVA::Logger;
 
@@ -161,18 +133,56 @@ dx11_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
+static void
+dx11_SuspendRendering()
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    CommandBufferDX11::DiscardAll();
+
+    IDXGIDevice3* dxgiDevice3 = NULL;
+
+    if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3))))
+    {
+        _D3D11_ImmediateContext->ClearState();
+        dxgiDevice3->Trim();
+        dxgiDevice3->Release();
+    }
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_ResumeRendering()
+{
+}
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_TakeScreenshot(ScreenShotCallback callback)
+{
+    _D3D11_ScreenshotCallbackSync.Lock();
+    DVASSERT(!_D3D11_PendingScreenshotCallback);
+    _D3D11_PendingScreenshotCallback = callback;
+    _D3D11_ScreenshotCallbackSync.Unlock();
+}
+
+//------------------------------------------------------------------------------
+
 void _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    get_device_description(_DeviceCapsDX11.deviceDescription);
 
 #else
 
     HRESULT hr;
     DWORD flags = 0;
-    #if RHI__FORCE_DX11_91
+    #if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
     #else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
@@ -287,11 +297,9 @@ void _InitDX11()
 
                     if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
                     {
-                        char info[128];
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, _DeviceCapsDX11.deviceDescription, countof(_DeviceCapsDX11.deviceDescription), NULL, NULL);
 
-                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
-
-                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", _DeviceCapsDX11.deviceDescription, desc.VendorId, desc.DeviceId);
                     }
                 }
             }
@@ -324,6 +332,10 @@ void _InitDX11()
     }
 
 #endif
+
+    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -336,6 +348,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
+    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);
@@ -350,6 +363,9 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
+    DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
+    DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
+    DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 
     SetDispatchTable(DispatchDX11);
 
@@ -377,10 +393,11 @@ void dx11_Initialize(const InitParam& param)
 
     _DeviceCapsDX11.is32BitIndicesSupported = true;
     _DeviceCapsDX11.isFramebufferFetchSupported = true;
-    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0);
+    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
     _DeviceCapsDX11.isUpperLeftRTOrigin = true;
     _DeviceCapsDX11.isZeroBaseClipRange = true;
     _DeviceCapsDX11.isCenterPixelMapping = false;
+    _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
 }
 
 //==============================================================================

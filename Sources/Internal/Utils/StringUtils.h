@@ -1,36 +1,8 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_STRING_UTILS__
 #define __DAVAENGINE_STRING_UTILS__
 
 #include "Base/BaseTypes.h"
+#include <cctype>
 
 namespace DAVA
 {
@@ -48,10 +20,10 @@ namespace StringUtils
 */
 enum eLineBreakType
 {
-    LB_MUSTBREAK = 0,   /**< Break is mandatory */
-    LB_ALLOWBREAK,      /**< Break is allowed */
-    LB_NOBREAK,         /**< No break is possible */
-    LB_INSIDECHAR       /**< A UTF-8/16 sequence is unfinished */
+    LB_MUSTBREAK = 0, /**< Break is mandatory */
+    LB_ALLOWBREAK, /**< Break is allowed */
+    LB_NOBREAK, /**< No break is possible */
+    LB_INSIDECHAR /**< A UTF-8/16 sequence is unfinished */
 };
 
 /**
@@ -62,26 +34,52 @@ enum eLineBreakType
 */
 void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale = 0);
 
+bool IsWhitespace(char8 t);
+bool IsWhitespace(char16 t);
+
 /**
 * \brief Trims the given string.
 * \param [in] string The string.
 * \return output string.
 */
-WideString Trim(const WideString& string);
+template <typename StringType>
+StringType Trim(const StringType& string)
+{
+    auto it = string.begin();
+    auto end = string.end();
+    auto rit = string.rbegin();
+    while (it != end && IsWhitespace(*it)) ++it;
+    while (rit.base() != it && IsWhitespace(*rit)) ++rit;
+    return StringType(it, rit.base());
+}
 
 /**
 * \brief Trim left.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimLeft(const WideString& string);
+template <typename StringType>
+StringType TrimLeft(const StringType& string)
+{
+    auto it = string.begin();
+    auto end = string.end();
+    while (it != end && IsWhitespace(*it)) ++it;
+    return StringType(it, end);
+}
 
 /**
 * \brief Trim right.
 * \param [in] string The string.
 * \return output string.
 */
-WideString TrimRight(const WideString& string);
+template <typename StringType>
+StringType TrimRight(const StringType& string)
+{
+    auto rit = string.rbegin();
+    auto rend = string.rend();
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
+    return StringType(rend.base(), rit.base());
+}
 
 /**
 * \brief Remove from line non-printable characters and replace 
@@ -91,6 +89,44 @@ WideString TrimRight(const WideString& string);
 * \return output string.
 */
 WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
+
+/**
+ * \brief Remove unicode Emoji symbols and surrogates from given string.
+ * \param [in/out] string The string to clearify.
+ * \return output string.
+ */
+bool RemoveEmoji(WideString& string);
+
+/**
+ * \brief Replaces all occurrences of a search string in the specified string with replacement string
+ * \param string Original string
+ * \param search Seeking value
+ * \param replacement Replacement value
+ */
+void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement);
+
+/**
+* \brief Query if 't' is kind of printable character.
+* \param t The char16 to process.
+* \return false if not printable.
+*/
+inline bool IsPrintable(char16 t)
+{
+    switch (t)
+    {
+    case L'\n': // Line feed
+    case L'\r': // Carriage return
+    case 0x200B: // Zero-width space
+    case 0x200C: // Zero-width non-joiner
+    case 0x200D: // Zero-width joiner
+    case 0x200E: // Zero-width Left-to-right zero-width character
+    case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
+    case 0x061C: // Arabic letter mark
+        return false;
+    default:
+        return true;
+    }
+}
 
 /**
  * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespace.
@@ -106,7 +142,7 @@ inline bool IsWhitespace(char16 t)
     case 0x000B: // Line tab
     case 0x000C: // Form feed
     case 0x000D: // Carriage return
-        // Unicode characters in 'Separator, Space' category (Zs)
+    // Unicode characters in 'Separator, Space' category (Zs)
     case 0x0020: // Space
     case 0x00A0: // No-break space
     case 0x1680: // Ogham space mark
@@ -124,11 +160,11 @@ inline bool IsWhitespace(char16 t)
     case 0x202F: // Narrow No-break space
     case 0x205F: // Medium mathematical space
     case 0x3000: // Ideographic space
-        // Unicode characters in 'Separator, Line' category (Zl)
-    case 0x2028:
-        // Unicode characters in 'Separator, Paragraph' category (Zp)
-    case 0x2029:
-        // Additional characters are treated as spaces
+    // Unicode characters in 'Separator, Line' category (Zl)
+    case 0x2028: // Line separator
+    // Unicode characters in 'Separator, Paragraph' category (Zp)
+    case 0x2029: // Paragraph separator
+    // Additional characters are treated as spaces
     case 0x200B: // Zero-width space
     case 0x200E: // Left-to-right zero-width character
     case 0x200F: // Right-to-left zero-width non-Arabic character
@@ -139,7 +175,11 @@ inline bool IsWhitespace(char16 t)
     }
 }
 
+inline bool IsWhitespace(char8 t)
+{
+    return (std::isspace(t) != 0);
+}
 }
 }
 
-#endif 
+#endif

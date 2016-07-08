@@ -1,33 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-    #include "rhi_Impl.h"
+#include "rhi_Impl.h"
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
@@ -40,7 +11,7 @@
     #elif defined(__DAVAENGINE_IPHONE__)
         #include "../Metal/rhi_Metal.h"
         #include "../GLES2/rhi_GLES2.h"
-	#elif defined(__DAVAENGINE_ANDROID__)
+    #elif defined(__DAVAENGINE_ANDROID__)
         #include "../GLES2/rhi_GLES2.h"
     #else
     #endif
@@ -158,6 +129,12 @@ void InvalidateCache()
 {
     if (_Impl.impl_InvalidateCache)
         (*_Impl.impl_InvalidateCache)();
+}
+
+void TakeScreenshot(ScreenShotCallback callback)
+{
+    if (_Impl.impl_TakeScreenshot)
+        (*_Impl.impl_TakeScreenshot)(callback);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -302,6 +279,43 @@ int Value(Handle buf, uint32 objectIndex)
 }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+namespace PerfQuerySet
+{
+Handle Create(uint32 maxTimestampCount)
+{
+    return (*_Impl.impl_PerfQuerySet_Create)(maxTimestampCount);
+}
+void Reset(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Reset)(set);
+}
+void SetCurrent(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_SetCurrent)(set);
+}
+void Delete(Handle set)
+{
+    (*_Impl.impl_PerfQuerySet_Delete)(set);
+}
+
+void GetStatus(Handle set, bool* isReady, bool* isValid)
+{
+    (*_Impl.impl_PerfQuerySet_GetStatus)(set, isReady, isValid);
+}
+bool GetFreq(Handle set, uint64* freq)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFreq)(set, freq);
+}
+bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp)
+{
+    return (*_Impl.impl_PerfQuerySet_GetTimestamp)(set, timestampIndex, timestamp);
+}
+bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1)
+{
+    return (*_Impl.impl_PerfQuerySet_GetFrameTimestamps)(set, t0, t1);
+}
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace Texture
@@ -609,6 +623,10 @@ void SetQueryIndex(Handle cmdBuf, uint32 index)
 {
     (*_Impl.impl_CommandBuffer_SetQueryIndex)(cmdBuf, index);
 }
+void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex)
+{
+    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, pqset, timestampIndex);
+}
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf)
 {
@@ -638,6 +656,16 @@ void DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 void DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
     (*_Impl.impl_CommandBuffer_DrawIndexedPrimitive)(cmdBuf, type, primCount, vertexCount, firstVertex, startIndex);
+}
+
+void DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedPrimitive)(cmdBuf, type, instCount, count);
+}
+
+void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 primCount, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    (*_Impl.impl_CommandBuffer_DrawInstancedIndexedPrimitive)(cmdBuf, type, instCount, primCount, vertexCount, firstVertex, startIndex, baseInstance);
 }
 
 void SetMarker(Handle cmdBuf, const char* text)
@@ -938,20 +966,20 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     switch (HostApi())
     {
     case RHI_DX9:
-        color = ((uint32)((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF)));
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
         break;
 
     case RHI_DX11:
-        color = ((uint32)((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF)));
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
         //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
         break;
 
     case RHI_GLES2:
-        color = ((uint32)((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF)));
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
         break;
 
     case RHI_METAL:
-        color = ((uint32)((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF)));
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
         break;
     }
 

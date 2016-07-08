@@ -61,134 +61,212 @@ class FCDAnimated;
 class FCOLLADA_EXPORT FCDLight : public FCDTargetedEntity
 {
 public:
-	/** The types of lights supported by this class. */
-	enum LightType
-	{
-		POINT, /**< A point light. This is the default type. */
-		SPOT, /**< A spot light. */
-		AMBIENT, /**< An ambient light. */
-		DIRECTIONAL /**< A directional light. */
-	};
+    /** The types of lights supported by this class. */
+    enum LightType
+    {
+        POINT, /**< A point light. This is the default type. */
+        SPOT, /**< A spot light. */
+        AMBIENT, /**< An ambient light. */
+        DIRECTIONAL /**< A directional light. */
+    };
 
 private:
-	DeclareObjectType(FCDTargetedEntity);
+    DeclareObjectType(FCDTargetedEntity);
 
-	// Common Light parameters
-	DeclareParameterAnimatable(FMVector3, FUParameterQualifiers::COLOR, color, FC("Color"));
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, intensity, FC("Intensity")); // Non-standard COLLADA
-	DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, lightType, FC("Light Type")); // LightType
+    // Common Light parameters
+    DeclareParameterAnimatable(FMVector3, FUParameterQualifiers::COLOR, color, FC("Color"));
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, intensity, FC("Intensity")); // Non-standard COLLADA
+    DeclareParameter(uint32, FUParameterQualifiers::SIMPLE, lightType, FC("Light Type")); // LightType
 
-	// Point and spot light parameters
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, constantAttenuationFactor, FC("Constant Attenuation Factor"));
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, linearAttenuationFactor, FC("Linear Attenuation Factor"));
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, quadracticAttenuationFactor, FC("Quadratic Attenuation Factor"));
+    // Point and spot light parameters
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, constantAttenuationFactor, FC("Constant Attenuation Factor"));
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, linearAttenuationFactor, FC("Linear Attenuation Factor"));
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, quadracticAttenuationFactor, FC("Quadratic Attenuation Factor"));
 
-	// Spot-specific light parameters
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, fallOffExponent, FC("Fall-off Exponent")); // Likely to be deprecated in future versions.
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, fallOffAngle, FC("Inner Cone Angle"));
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, outerAngle, FC("Outer Cone Angle")); // Non-standard COLLADA
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, penumbraAngle, FC("Penumbra Angle")); // *** DEPRECATED *** Replaced with the inner/outer angle.
-	DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, dropoff, FC("Drop-off"));
+    // Spot-specific light parameters
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, fallOffExponent, FC("Fall-off Exponent")); // Likely to be deprecated in future versions.
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, fallOffAngle, FC("Inner Cone Angle"));
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, outerAngle, FC("Outer Cone Angle")); // Non-standard COLLADA
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, penumbraAngle, FC("Penumbra Angle")); // *** DEPRECATED *** Replaced with the inner/outer angle.
+    DeclareParameterAnimatable(float, FUParameterQualifiers::SIMPLE, dropoff, FC("Drop-off"));
 
 public:
-	/** Constructor: do not use directly. Create new lights using the FCDLibrary::AddEntity function.
+    /** Constructor: do not use directly. Create new lights using the FCDLibrary::AddEntity function.
 		@param document The COLLADA document that contains this light entity. */
-	FCDLight(FCDocument* document);
+    FCDLight(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDLight();
+    /** Destructor. */
+    virtual ~FCDLight();
 
-	/** Retrieves the entity type for this class. This function is part of the FCDEntity interface.
+    /** Retrieves the entity type for this class. This function is part of the FCDEntity interface.
 		@return The entity type: LIGHT. */
-	virtual Type GetType() const { return LIGHT; }
+    virtual Type GetType() const
+    {
+        return LIGHT;
+    }
 
-	/** Checks if the light uses a DCC specific representation
+    /** Checks if the light uses a DCC specific representation
 		Currently always returns false.
 		@deprecated Instead use: GetExtra()->GetDefaultType()->GetTechniques()
 		@return The DCC flag. */
-	DEPRECATED(3.05A, GetExtra()->GetDefaultType()->GetTechniques()) virtual bool HasMaxExtras() const { return false; }
-	DEPRECATED(3.05A, GetExtra()->GetDefaultType()->GetTechniques()) virtual bool HasMayaExtras() const { return false; } /**< See above. */
+    DEPRECATED(3.05A, GetExtra()->GetDefaultType()->GetTechniques())
+    virtual bool HasMaxExtras() const
+    {
+        return false;
+    }
+    DEPRECATED(3.05A, GetExtra()->GetDefaultType()->GetTechniques())
+    virtual bool HasMayaExtras() const
+    {
+        return false;
+    } /**< See above. */
 
-	/** [INTERNAL] Set DCC specific flags.
+    /** [INTERNAL] Set DCC specific flags.
 		@deprecated Internal method, should never have been used.
 		@param value The new flag.
 	*/
-	DEPRECATED(3.05A, nothing) void SetHasMaxExtras(bool UNUSED(value)) { }
-	DEPRECATED(3.05A, nothing) void SetHasMayaExtras(bool UNUSED(value)) { }
+    DEPRECATED(3.05A, nothing)
+    void SetHasMaxExtras(bool UNUSED(value))
+    {
+    }
+    DEPRECATED(3.05A, nothing)
+    void SetHasMayaExtras(bool UNUSED(value))
+    {
+    }
 
-	/** Retrieves the base color for the light. To calculate the light color,
+    /** Retrieves the base color for the light. To calculate the light color,
 		multiply the base color with the intensity.
 		@return The base color for the light. */
-	FCDParameterAnimatableColor3& GetColor() { return color; }
-	const FCDParameterAnimatableColor3& GetColor() const { return color; } /**< See above. */
+    FCDParameterAnimatableColor3& GetColor()
+    {
+        return color;
+    }
+    const FCDParameterAnimatableColor3& GetColor() const
+    {
+        return color;
+    } /**< See above. */
 
-	/** Sets the base color for the light. To calculate the light color,
+    /** Sets the base color for the light. To calculate the light color,
 		multiply the base color with the intensity.
 		@param col The base color for the light. */
-	void SetColor(const FMVector3& col) { color = col; SetDirtyFlag(); }
+    void SetColor(const FMVector3& col)
+    {
+        color = col;
+        SetDirtyFlag();
+    }
 
-	/** Sets the base color for the light. To calculate the light color,
+    /** Sets the base color for the light. To calculate the light color,
 		multiply the base color with the intensity.
 		@param r The red component for the light color.
 		@param g The green component for the light color.
 		@param b The blue component for the light color. */
-	void SetColor(float r, float g, float b) { color = FMVector3(r, g, b); SetDirtyFlag(); }
+    void SetColor(float r, float g, float b)
+    {
+        color = FMVector3(r, g, b);
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the intensity of the light. To calculate the light color,
+    /** Retrieves the intensity of the light. To calculate the light color,
 		multiply the base color with the intensity.
 		@return The intensity of the light. */
-	FCDParameterAnimatableFloat& GetIntensity() { return intensity; }
-	const FCDParameterAnimatableFloat& GetIntensity() const { return intensity; } /**< See above. */
+    FCDParameterAnimatableFloat& GetIntensity()
+    {
+        return intensity;
+    }
+    const FCDParameterAnimatableFloat& GetIntensity() const
+    {
+        return intensity;
+    } /**< See above. */
 
-	/** Sets the intensity of the light. To calculate the light color,
+    /** Sets the intensity of the light. To calculate the light color,
 		multiply the base color with the intensity.
 		@param _intensity The intensity of the light. */
-	void SetIntensity(float _intensity) { intensity = _intensity; SetDirtyFlag(); }
+    void SetIntensity(float _intensity)
+    {
+        intensity = _intensity;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the type of the light.
+    /** Retrieves the type of the light.
 		Make sure to check the type of light before using the values, as some values
 		may not make sense with some types of light.
 		@return The light type. */
-	LightType GetLightType() const { return (LightType) *lightType; }
+    LightType GetLightType() const
+    {
+        return (LightType)*lightType;
+    }
 
-	/** Sets the type of the light. The default type of a new light is POINT.
+    /** Sets the type of the light. The default type of a new light is POINT.
 		@param type The light type. */
-	void SetLightType(LightType type) { lightType = type; SetDirtyFlag(); }
+    void SetLightType(LightType type)
+    {
+        lightType = type;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the constant attenuation factor for the light.
+    /** Retrieves the constant attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@return The constant attenuation factor. */
-	FCDParameterAnimatableFloat& GetConstantAttenuationFactor() { return constantAttenuationFactor; }
-	const FCDParameterAnimatableFloat& GetConstantAttenuationFactor() const { return constantAttenuationFactor; } /**< See above. */
+    FCDParameterAnimatableFloat& GetConstantAttenuationFactor()
+    {
+        return constantAttenuationFactor;
+    }
+    const FCDParameterAnimatableFloat& GetConstantAttenuationFactor() const
+    {
+        return constantAttenuationFactor;
+    } /**< See above. */
 
-	/** Sets the constant attenuation factor for the light.
+    /** Sets the constant attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@param factor The constant attenuation factor. */
-	void SetConstantAttenuationFactor(float factor) { constantAttenuationFactor = factor; SetDirtyFlag(); }
+    void SetConstantAttenuationFactor(float factor)
+    {
+        constantAttenuationFactor = factor;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the linear attenuation factor for the light.
+    /** Retrieves the linear attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@return The linear attenuation factor. */
-	FCDParameterAnimatableFloat& GetLinearAttenuationFactor() { return linearAttenuationFactor; }
-	const FCDParameterAnimatableFloat& GetLinearAttenuationFactor() const { return linearAttenuationFactor; } /**< See above. */
+    FCDParameterAnimatableFloat& GetLinearAttenuationFactor()
+    {
+        return linearAttenuationFactor;
+    }
+    const FCDParameterAnimatableFloat& GetLinearAttenuationFactor() const
+    {
+        return linearAttenuationFactor;
+    } /**< See above. */
 
-	/** Sets the linear attenuation factor for the light.
+    /** Sets the linear attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@param factor The linear attenuation factor. */
-	void SetLinearAttenuationFactor(float factor) { linearAttenuationFactor = factor; SetDirtyFlag(); }
+    void SetLinearAttenuationFactor(float factor)
+    {
+        linearAttenuationFactor = factor;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the quadratic attenuation factor for the light.
+    /** Retrieves the quadratic attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@return The quadratic attenuation factor. */
-	FCDParameterAnimatableFloat& GetQuadraticAttenuationFactor() { return quadracticAttenuationFactor; }
-	const FCDParameterAnimatableFloat& GetQuadraticAttenuationFactor() const { return quadracticAttenuationFactor; } /**< See above. */
+    FCDParameterAnimatableFloat& GetQuadraticAttenuationFactor()
+    {
+        return quadracticAttenuationFactor;
+    }
+    const FCDParameterAnimatableFloat& GetQuadraticAttenuationFactor() const
+    {
+        return quadracticAttenuationFactor;
+    } /**< See above. */
 
-	/** Sets the quadratic attenuation factor for the light.
+    /** Sets the quadratic attenuation factor for the light.
 		This value is valid only for point and spot lights.
 		@param factor The quadratic attenuation factor. */
-	void SetQuadraticAttenuationFactor(float factor) { quadracticAttenuationFactor = factor; SetDirtyFlag(); }
+    void SetQuadraticAttenuationFactor(float factor)
+    {
+        quadracticAttenuationFactor = factor;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the fall-off exponent for the light.
+    /** Retrieves the fall-off exponent for the light.
 		This value is valid only for spot lights. It determines
 		how fast the lighting turns off, with respect to
 		angles greater than the fall-off angle. This results in a smooth
@@ -198,27 +276,47 @@ public:
 		as neither Maya or 3dsMax use this technique for soft lighting.
 
 		@return The spot light fall-off exponent. */
-	FCDParameterAnimatableFloat& GetFallOffExponent() { return fallOffExponent; }
-	const FCDParameterAnimatableFloat& GetFallOffExponent() const { return fallOffExponent; } /**< See above. */
+    FCDParameterAnimatableFloat& GetFallOffExponent()
+    {
+        return fallOffExponent;
+    }
+    const FCDParameterAnimatableFloat& GetFallOffExponent() const
+    {
+        return fallOffExponent;
+    } /**< See above. */
 
-	/** Sets the fall-off exponent for the light.
+    /** Sets the fall-off exponent for the light.
 		@see GetFallOffExponent
 		@param exponent The spot light fall-off exponent. */
-	void SetFallOffExponent(float exponent) { fallOffExponent = exponent; SetDirtyFlag(); }
+    void SetFallOffExponent(float exponent)
+    {
+        fallOffExponent = exponent;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the fall-off angle for the light.
+    /** Retrieves the fall-off angle for the light.
 		This value is valid only for spot lights. It defines
 		the cone of the spot light.
 		@return The spot light fall-off angle. */
-	FCDParameterAnimatableFloat& GetFallOffAngle() { return fallOffAngle; }
-	const FCDParameterAnimatableFloat& GetFallOffAngle() const { return fallOffAngle; } /**< See above. */
+    FCDParameterAnimatableFloat& GetFallOffAngle()
+    {
+        return fallOffAngle;
+    }
+    const FCDParameterAnimatableFloat& GetFallOffAngle() const
+    {
+        return fallOffAngle;
+    } /**< See above. */
 
-	/** Sets the fall-off angle for the light.
+    /** Sets the fall-off angle for the light.
 		@see GetFallOffAngle
 		@param angle The spot light fall-off angle. */
-	void SetFallOffAngle(float angle) { fallOffAngle = angle; SetDirtyFlag(); }
+    void SetFallOffAngle(float angle)
+    {
+        fallOffAngle = angle;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the outer angle for the light.
+    /** Retrieves the outer angle for the light.
 		This value is valid only for spot lights. This value is used
 		by documents exported by ColladaMax and ColladaMaya. This value should always be
 		greater than the fall-off angle. It represents the angle at which
@@ -226,15 +324,25 @@ public:
 		the outer angle is a linear interpolation between the light color
 		and black.
 		@return The spot light outer angle. */
-	FCDParameterAnimatableFloat& GetOuterAngle() { return outerAngle; }
-	const FCDParameterAnimatableFloat& GetOuterAngle() const { return outerAngle; } /**< See above. */
+    FCDParameterAnimatableFloat& GetOuterAngle()
+    {
+        return outerAngle;
+    }
+    const FCDParameterAnimatableFloat& GetOuterAngle() const
+    {
+        return outerAngle;
+    } /**< See above. */
 
-	/** Sets the outer angle for the light.
+    /** Sets the outer angle for the light.
 		@see GetOuterAngle
 		@param angle The spot light outer angle. */
-	void SetOuterAngle(float angle) { outerAngle = angle; SetDirtyFlag(); }
+    void SetOuterAngle(float angle)
+    {
+        outerAngle = angle;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the penumbra angle for the light.
+    /** Retrieves the penumbra angle for the light.
 		This value is valid only for spot lights. The value is only used
 		by documents exported by ColladaMaya. This value is relative to
 		the fall-off angle and may be negative. If this value is positive,
@@ -246,27 +354,48 @@ public:
 		@deprecated Instead use: GetOuterAngle and GetFallOffAngle
 		@see GetOuterAngle
 		@return The spot light penumbra angle. */
-	DEPRECATED(3.05A, GetOuterAngle and GetFallOffAngle) float& GetPenumbraAngle() { return penumbraAngle; }
-	DEPRECATED(3.05A, GetOuterAngle and GetFallOffAngle) const float& GetPenumbraAngle() const { return penumbraAngle; } /**< See above. */
+    DEPRECATED(3.05A, GetOuterAngle and GetFallOffAngle)
+    float& GetPenumbraAngle()
+    {
+        return penumbraAngle;
+    }
+    DEPRECATED(3.05A, GetOuterAngle and GetFallOffAngle)
+    const float& GetPenumbraAngle() const
+    {
+        return penumbraAngle;
+    } /**< See above. */
 
-	/** Sets the penumbra angle for the light.
+    /** Sets the penumbra angle for the light.
 		This now actually doesn't nothing except sets a variable that you can read back with GetPenumbraAngle.
 		@deprecated Instead use: SetOuterAngle and SetFallOffAngle, or FCDLightTools::LoadPenumbra
 		@see GetPenumbraAngle
 		@param angle The spot light penumbra angle. */
-	DEPRECATED(3.05A, SetOuterAngle and SetFallOffAngle) void SetPenumbraAngle(float angle) { penumbraAngle = angle; }
-	
-	/** Retrieves the drop-off for the light.
+    DEPRECATED(3.05A, SetOuterAngle and SetFallOffAngle)
+    void SetPenumbraAngle(float angle)
+    {
+        penumbraAngle = angle;
+    }
+
+    /** Retrieves the drop-off for the light.
 		It defines the rate at which a spot light gets dimmer from the center
 		of the beam to outside angles.
 		@return The drop-off for the light. */
-	FCDParameterAnimatableFloat& GetDropoff() { return dropoff; }
-	const FCDParameterAnimatableFloat& GetDropoff() const { return dropoff; } /**< See above. */
+    FCDParameterAnimatableFloat& GetDropoff()
+    {
+        return dropoff;
+    }
+    const FCDParameterAnimatableFloat& GetDropoff() const
+    {
+        return dropoff;
+    } /**< See above. */
 
-	/** Sets the drop-off for the light.
+    /** Sets the drop-off for the light.
 		@param factor The drop-off for the light. */
-	void SetDropoff(float factor) { dropoff = factor; SetDirtyFlag(); }
+    void SetDropoff(float factor)
+    {
+        dropoff = factor;
+        SetDirtyFlag();
+    }
 };
 
 #endif // _FCD_LIGHT_H_
-

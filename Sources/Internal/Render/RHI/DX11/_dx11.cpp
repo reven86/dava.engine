@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include <dxgiformat.h>
+#include <dxgiformat.h>
     #include "_dx11.h"
 
     #include <stdio.h>
@@ -40,6 +12,7 @@ namespace rhi
 ID3D11Device* _D3D11_Device = nullptr;
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
+ID3D11Texture2D* _D3D11_SwapChainBufferCopy = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
 ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
@@ -49,6 +22,8 @@ ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
+ScreenShotCallback _D3D11_PendingScreenshotCallback = nullptr;
+DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 InitParam _DX11_InitParam;
 }
@@ -132,7 +107,7 @@ DX11_TextureFormat(TextureFormat format)
     case TEXTURE_FORMAT_R8:
         return DXGI_FORMAT_R8_UNORM;
     case TEXTURE_FORMAT_R16:
-        return DXGI_FORMAT_R16_FLOAT;
+        return DXGI_FORMAT_R16_UNORM;
 
     case TEXTURE_FORMAT_DXT1:
         return DXGI_FORMAT_BC1_UNORM;
@@ -168,6 +143,20 @@ DX11_TextureFormat(TextureFormat format)
         return DXGI_FORMAT_D16_UNORM;
     case TEXTURE_FORMAT_D24S8:
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+    case TEXTURE_FORMAT_R16F:
+        return DXGI_FORMAT_R16_FLOAT;
+    case TEXTURE_FORMAT_RG16F:
+        return DXGI_FORMAT_R16G16_FLOAT;
+    case TEXTURE_FORMAT_RGBA16F:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+    case TEXTURE_FORMAT_R32F:
+        return DXGI_FORMAT_R32_FLOAT;
+    case TEXTURE_FORMAT_RG32F:
+        return DXGI_FORMAT_R32G32_FLOAT;
+    case TEXTURE_FORMAT_RGBA32F:
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
     }
 
     return DXGI_FORMAT_UNKNOWN;

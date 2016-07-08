@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "stdafx.h"
 #include "ColladaScene.h"
 #include "DAVAEngine.h"
@@ -62,18 +33,20 @@ void ColladaScene::ExportAnimations(ColladaAnimation* colladaAnimation, FCDScene
 void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode* node /* = 0 */)
 {
     exportSceneLevel++;
-    if (fcdNode == 0)
+
+    if (fcdNode == nullptr)
         fcdNode = rootFCDNode;
-    if (node == 0)
+
+    if (node == nullptr)
         node = rootNode;
 
-    node->UpdateTransforms(0);
+    node->UpdateTransforms(0.0f);
 
-    for (int i = 0; i < (int)fcdNode->GetInstanceCount(); ++i)
+    for (size_t i = 0; i < fcdNode->GetInstanceCount(); ++i)
     {
         FCDEntityInstance* instance = fcdNode->GetInstance(i);
         FCDEntity* entity = instance->GetEntity();
-        if (!entity)
+        if (entity == nullptr)
             continue;
 
         fm::string name = entity->GetDaeId();
@@ -86,19 +59,12 @@ void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode
         if (mesh)
         {
             ColladaMeshInstance* meshInstance = CreateMeshInstance(mesh, dynamic_cast<FCDGeometryInstance*>(instance), false);
-
-            //for (int space = 0; space < exportSceneLevel; ++space)
-            //	printf(" ");
-            //printf(" - mesh: %s\n", name.c_str());
             node->AddMeshInstance(meshInstance);
         }
 
         ColladaLight* light = FindLightWithName(name);
         if (light)
         {
-            //for (int space = 0; space < exportSceneLevel; ++space)
-            //	printf(" ");
-            //printf(" - light: %s\n", name.c_str());
             node->AddLight(light);
         }
 
@@ -123,7 +89,6 @@ void ColladaScene::ExportScene(FCDSceneNode* fcdNode /* = 0 */, ColladaSceneNode
     {
         FCDSceneNode* fcdChildNode = fcdNode->GetChild(i);
         ColladaSceneNode* childNode = new ColladaSceneNode(this, fcdChildNode);
-
         ExportScene(fcdChildNode, childNode);
         node->AddNode(childNode);
     }
@@ -298,22 +263,33 @@ ColladaMeshInstance* ColladaScene::CreateMeshInstance(ColladaMesh* mesh, FCDGeom
 
             if (materialSemantic == polygonMaterialSemantic)
             {
-                fm::string materialId = materialInstance->GetMaterial()->GetDaeId();
-                material = FindMaterialWithName(materialId);
+                auto colladaMaterial = materialInstance->GetMaterial();
+                if (colladaMaterial != nullptr)
+                {
+                    const fm::string& materialId = colladaMaterial->GetDaeId();
+                    material = FindMaterialWithName(materialId);
+                }
+                else
+                {
+                    printf("\n[ERROR] no material for %ls in polygon group %s inside mesh %s\n",
+                           materialSemantic.c_str(), polygonMaterialSemantic.c_str(), mesh->name.c_str());
+                }
             }
         }
 
         printf(" - mesh instance: %s ", mesh->mesh->GetDaeId().c_str());
-        if (material)
+        if (material != nullptr)
         {
-            printf(" material: %s ", material->material->GetDaeId().c_str());
+            printf(" material: %s", material->material->GetDaeId().c_str());
             if (material->hasDiffuseTexture)
-                wprintf(L" diftex: %s\n", (wchar_t*)(material->diffuseTexture->image->GetFilename().c_str()));
+            {
+                wprintf(L" diffuse texture: %S\n", (wchar_t*)(material->diffuseTexture->image->GetFilename().c_str()));
+            }
+            printf("\n");
         }
-        printf("\n");
-
         ColladaPolygonGroup* polyGroup = mesh->GetPolygonGroup(i);
         printf("- mesh instance added polygroup: %p %d\n", polyGroup, i);
+
         ColladaPolygonGroupInstance* polygonGroupInstance = new ColladaPolygonGroupInstance(polyGroup, material);
         meshInstance->AddPolygonGroupInstance(polygonGroupInstance);
     }

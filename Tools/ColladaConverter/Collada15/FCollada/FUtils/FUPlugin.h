@@ -21,25 +21,27 @@
 class FCOLLADA_EXPORT FUPlugin : public FUTrackable
 {
 private:
-	DeclareObjectType(FUTrackable);
+    DeclareObjectType(FUTrackable);
 
 protected:
-	/** Destructor.
+    /** Destructor.
 		This destructor is protected as no application should
 		release the memory of a plug-in directly. Instead, use
 		the FUObject::Release function. */
-	virtual ~FUPlugin() {}
+    virtual ~FUPlugin()
+    {
+    }
 
 public:
-	/** Retrieves the name of the plug-in.
+    /** Retrieves the name of the plug-in.
 		@return The name of the plug-in. */
-	virtual const char* GetPluginName() const = 0;
+    virtual const char* GetPluginName() const = 0;
 
-	/** Retrieves the version of the plug-in.
+    /** Retrieves the version of the plug-in.
 		For now, no version string formatting is suggested for this integer.
 		It is unused and exists for future expansion only.
 		@return The version number of the plug-in. */
-	virtual uint32 GetPluginVersion() const = 0;
+    virtual uint32 GetPluginVersion() const = 0;
 };
 
 #endif // _FU_PLUGIN_H_

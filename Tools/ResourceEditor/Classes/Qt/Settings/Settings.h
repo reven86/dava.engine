@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright  2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-     ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __RESOURCEEDITOR__SETTINGS_H__
 #define __RESOURCEEDITOR__SETTINGS_H__
 
@@ -40,6 +11,7 @@ public:
     static const DAVA::FastName General_DesinerName;
     static const DAVA::FastName General_RecentFilesCount;
     static const DAVA::FastName General_RecentProjectsCount;
+    static const DAVA::FastName General_ReloadParticlesOnPojectOpening;
     static const DAVA::FastName General_PreviewEnabled;
     static const DAVA::FastName General_OpenByDBClick;
     static const DAVA::FastName General_CompressionQuality;
@@ -75,6 +47,7 @@ public:
     static const DAVA::FastName Scene_CameraHeightOnLandscape;
     static const DAVA::FastName Scene_CameraHeightOnLandscapeStep;
     static const DAVA::FastName Scene_SelectionSequent;
+    static const DAVA::FastName Scene_SelectionOnClick;
     static const DAVA::FastName Scene_SelectionDrawMode;
     static const DAVA::FastName Scene_CollisionDrawMode;
     static const DAVA::FastName Scene_ModificationByGizmoOnly;
@@ -100,6 +73,7 @@ public:
     // and are used only by application
     static const DAVA::FastName InternalGroup;
     static const DAVA::FastName Internal_TextureViewGPU;
+    static const DAVA::FastName Internal_SpriteViewGPU;
     static const DAVA::FastName Internal_LastProjectPath;
     static const DAVA::FastName Internal_EditorVersion;
     static const DAVA::FastName Internal_CubemapLastFaceDir;

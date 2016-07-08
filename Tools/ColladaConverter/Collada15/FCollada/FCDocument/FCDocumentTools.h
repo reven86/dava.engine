@@ -21,7 +21,7 @@
 */
 namespace FCDocumentTools
 {
-	/** Standardizes the up-axis and the length units accross the whole document.
+/** Standardizes the up-axis and the length units accross the whole document.
 		Regardless of whether your application can handle different up-axis values or
 		different length units, you should call this function at least once
 		to ensure that the whole document has only one up-axis and one length unit.
@@ -34,8 +34,7 @@ namespace FCDocumentTools
 		@param handleTargets This flag is very specific to ColladaMax which handles the
 			specificities of targeted cameras and lights: the pivots cannot be modified
 			simply, since the re-targeting will happen before the pivot transform is done. */
-	void FCOLLADA_EXPORT StandardizeUpAxisAndLength(FCDocument* document, const FMVector3& upAxis = FMVector3::Origin, float unitInMeters = 0.0f, bool handleTargets=false);
-
+void FCOLLADA_EXPORT StandardizeUpAxisAndLength(FCDocument* document, const FMVector3& upAxis = FMVector3::Origin, float unitInMeters = 0.0f, bool handleTargets = false);
 };
 
 #endif // _FC_DOCUMENT_TOOLS_H_

@@ -48,8 +48,7 @@
  * NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, EVEN IF NVIDIA HAS BEEN ADVISED 
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- */ 
-
+ */
 
 /* 
  * The following macro invocations define the supported CG basic data types.
@@ -62,8 +61,6 @@
  *     enum_val      : The enumerant value.
  *   
  */
-
-
 
 CG_ENUM_MACRO(CG_UNKNOWN, 4096)
 CG_ENUM_MACRO(CG_IN, 4097)
@@ -92,5 +89,3 @@ CG_ENUM_MACRO(CG_VERSION, 4119)
 CG_ENUM_MACRO(CG_ROW_MAJOR, 4120)
 CG_ENUM_MACRO(CG_COLUMN_MAJOR, 4121)
 #undef CG_ENUM_MACRO
-
-

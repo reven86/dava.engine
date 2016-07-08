@@ -1,57 +1,32 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "MaterialTree.h"
 #include "MaterialFilterModel.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneSignals.h"
 #include "MaterialEditor/MaterialAssignSystem.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
+
+#include "Classes/Commands2/RemoveComponentCommand.h"
+#include "Classes/Commands2/Base/CommandBatch.h"
+#include "Entity/Component.h"
 
 #include <QDragMoveEvent>
 #include <QDragEnterEvent>
 #include <QHeaderView>
 
-
-MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
-: QTreeView(parent)
-{ 
-	treeModel = new MaterialFilteringModel(new MaterialModel(this));
-	setModel(treeModel);
-	setContextMenuPolicy(Qt::CustomContextMenu);
+MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
+    : QTreeView(parent)
+{
+    treeModel = new MaterialFilteringModel(new MaterialModel(this));
+    setModel(treeModel);
+    setContextMenuPolicy(Qt::CustomContextMenu);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setIconSize(QSize(24, 24));
 
-	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
+    QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(OnStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(OnSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), this, SLOT(OnStructureChanged(SceneEditor2*, DAVA::Entity*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
@@ -63,58 +38,57 @@ MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 }
 
 MaterialTree::~MaterialTree()
-{}
+{
+}
 
-void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
+void MaterialTree::SetScene(SceneEditor2* sceneEditor)
 {
     setSortingEnabled(false);
-	treeModel->SetScene(sceneEditor);
+    treeModel->SetScene(sceneEditor);
 
-	if(NULL != sceneEditor)
-	{
-		EntityGroup curSelection = sceneEditor->selectionSystem->GetSelection();
-        OnSelectionChanged( sceneEditor, &curSelection, NULL );
-	}
-	else
-	{
-		treeModel->SetSelection(NULL);
-	}
+    if (nullptr != sceneEditor)
+    {
+        OnSelectionChanged(sceneEditor, &sceneEditor->selectionSystem->GetSelection(), nullptr);
+    }
+    else
+    {
+        treeModel->SetSelection(nullptr);
+    }
 
     sortByColumn(0);
     setSortingEnabled(true);
 }
 
-
-DAVA::NMaterial* MaterialTree::GetMaterial(const QModelIndex &index) const
+DAVA::NMaterial* MaterialTree::GetMaterial(const QModelIndex& index) const
 {
-	return treeModel->GetMaterial(index);
+    return treeModel->GetMaterial(index);
 }
 
-void MaterialTree::SelectMaterial(DAVA::NMaterial *material)
+void MaterialTree::SelectMaterial(DAVA::NMaterial* material)
 {
-	selectionModel()->clear();
+    selectionModel()->clear();
 
-	QModelIndex index = treeModel->GetIndex(material);
-	if(index.isValid())
-	{
-		selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-		scrollTo(index, QAbstractItemView::PositionAtCenter);
-	}
+    QModelIndex index = treeModel->GetIndex(material);
+    if (index.isValid())
+    {
+        selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        scrollTo(index, QAbstractItemView::PositionAtCenter);
+    }
 }
 
-void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
+void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
 {
-	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
-    if (NULL != curScene && materials.size() > 0)
+    if (nullptr != curScene && materials.size() > 0)
     {
         std::function<void(DAVA::NMaterial*)> fn = [&fn, &curScene](DAVA::NMaterial* material) {
             DAVA::Entity* entity = curScene->materialSystem->GetEntity(material);
             if (nullptr != entity)
             {
-                curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+                curScene->selectionSystem->AddObjectToSelection(curScene->selectionSystem->GetSelectableEntity(entity));
             }
-            const Vector<NMaterial*>& children = material->GetChildren();
+            const DAVA::Vector<DAVA::NMaterial*>& children = material->GetChildren();
             for (auto child : children)
             {
                 fn(child);
@@ -124,17 +98,17 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
         curScene->selectionSystem->Clear();
         for (int i = 0; i < materials.size(); i++)
         {
-            DAVA::NMaterial * material = materials.at(i);
+            DAVA::NMaterial* material = materials.at(i);
             fn(material);
         }
 
-        QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
+        LookAtSelection(curScene);
     }
 }
 
 void MaterialTree::Update()
 {
-	treeModel->Sync();
+    treeModel->Sync();
     treeModel->invalidate();
     emit Updated();
 }
@@ -146,132 +120,160 @@ int MaterialTree::getFilterType() const
 
 void MaterialTree::setFilterType(int filterType)
 {
-    treeModel->setFilterType( filterType );
+    treeModel->setFilterType(filterType);
 }
 
-void MaterialTree::ShowContextMenu(const QPoint &pos)
-{ 
-	QMenu contextMenu(this);
+void MaterialTree::ShowContextMenu(const QPoint& pos)
+{
+    QMenu contextMenu(this);
 
-	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
+    contextMenu.addAction(SharedIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
     emit ContextMenuPrepare(&contextMenu);
-	contextMenu.exec(mapToGlobal(pos));
+    contextMenu.exec(mapToGlobal(pos));
 }
 
-
-void MaterialTree::dragEnterEvent(QDragEnterEvent * event)
+void MaterialTree::dragEnterEvent(QDragEnterEvent* event)
 {
-	QTreeView::dragEnterEvent(event);
-	dragTryAccepted(event);
+    QTreeView::dragEnterEvent(event);
+    dragTryAccepted(event);
 }
 
-void MaterialTree::dragMoveEvent(QDragMoveEvent * event)
+void MaterialTree::dragMoveEvent(QDragMoveEvent* event)
 {
-	QTreeView::dragMoveEvent(event);
-	dragTryAccepted(event);
+    QTreeView::dragMoveEvent(event);
+    dragTryAccepted(event);
 }
 
-void MaterialTree::dropEvent(QDropEvent * event)
+void MaterialTree::dropEvent(QDropEvent* event)
 {
-	QTreeView::dropEvent(event);
+    QTreeView::dropEvent(event);
 
-	event->setDropAction(Qt::IgnoreAction);
-	event->accept();
+    event->setDropAction(Qt::IgnoreAction);
+    event->accept();
 }
 
-void MaterialTree::dragTryAccepted(QDragMoveEvent *event)
+void MaterialTree::dragTryAccepted(QDragMoveEvent* event)
 {
-	int row, col;
-	QModelIndex parent;
+    int row, col;
+    QModelIndex parent;
 
-	GetDropParams(event->pos(), parent, row, col);
-	if(treeModel->dropCanBeAccepted(event->mimeData(), event->dropAction(), row, col, parent))
-	{
-		event->setDropAction(Qt::MoveAction);
-		event->accept();
+    GetDropParams(event->pos(), parent, row, col);
+    if (treeModel->dropCanBeAccepted(event->mimeData(), event->dropAction(), row, col, parent))
+    {
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
         treeModel->invalidate();
-	}
-	else
-	{
-		event->setDropAction(Qt::IgnoreAction);
-		event->accept();
-	}
+    }
+    else
+    {
+        event->setDropAction(Qt::IgnoreAction);
+        event->accept();
+    }
 }
 
-void MaterialTree::GetDropParams(const QPoint &pos, QModelIndex &index, int &row, int &col)
+void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col)
 {
-	row = -1;
-	col = -1;
-	index = indexAt(pos);
+    row = -1;
+    col = -1;
+    index = indexAt(pos);
 
-	switch(dropIndicatorPosition())
-	{
-	case QAbstractItemView::OnItem:
-	case QAbstractItemView::AboveItem:
-		row = index.row();
-		col = index.column();
-		index = index.parent();
-		break;
-	case QAbstractItemView::BelowItem:
-		row = index.row() + 1;
-		col = index.column();
-		index = index.parent();
-		break;
-	case QAbstractItemView::OnViewport:
+    switch (dropIndicatorPosition())
+    {
+    case QAbstractItemView::OnItem:
+    case QAbstractItemView::AboveItem:
+        row = index.row();
+        col = index.column();
+        index = index.parent();
+        break;
+    case QAbstractItemView::BelowItem:
+        row = index.row() + 1;
+        col = index.column();
+        index = index.parent();
+        break;
+    case QAbstractItemView::OnViewport:
         index = QModelIndex();
-		break;
-	}
+        break;
+    }
 }
 
-void MaterialTree::OnCommandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo)
+void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
 {
-	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
-	{
-		const int commandID = command->GetId();
-        switch (commandID)
+    if (command == nullptr)
+    {
+        return;
+    }
+
+    if (QtMainWindow::Instance()->GetCurrentScene() == scene)
+    {
+        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
-        case CMDID_INSP_MEMBER_MODIFY:
             treeModel->invalidate();
-            break;
-        case CMDID_DELETE_RENDER_BATCH:
-        case CMDID_CLONE_LAST_BATCH:
-        case CMDID_CONVERT_TO_SHADOW:
-        case CMDID_MATERIAL_SWITCH_PARENT:
-            Update();
-            break;
-        default:
-            break;
         }
-	}
+        else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
+                                            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
+        {
+            Update();
+        }
+        else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+        {
+            auto ProcessRemoveCommand = [this](const Command2* command, bool redo)
+            {
+                const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                DVASSERT(removeCommand->GetComponent() != nullptr);
+                if (removeCommand->GetComponent()->GetType() == DAVA::Component::RENDER_COMPONENT)
+                {
+                    Update();
+                }
+            };
+
+            if (command->GetId() == CMDID_BATCH)
+            {
+                const CommandBatch* batch = static_cast<const CommandBatch*>(command);
+                const DAVA::uint32 count = batch->Size();
+                for (DAVA::uint32 i = 0; i < count; ++i)
+                {
+                    const Command2* cmd = batch->GetCommand(i);
+                    if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
+                    {
+                        ProcessRemoveCommand(cmd, redo);
+                    }
+                }
+            }
+            else
+            {
+                ProcessRemoveCommand(command, redo);
+            }
+        }
+    }
 }
 
-void MaterialTree::OnStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
+void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 {
-	treeModel->Sync();
+    treeModel->Sync();
 }
 
-void MaterialTree::OnSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
-	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
-	{
-		treeModel->SetSelection(selected);
-		treeModel->invalidate();
-	}
+    if (QtMainWindow::Instance()->GetCurrentScene() == scene)
+    {
+        treeModel->SetSelection(selected);
+        treeModel->invalidate();
+    }
 }
 
 void MaterialTree::OnSelectEntities()
 {
     const QModelIndexList selection = selectionModel()->selectedRows();
-    QList<DAVA::NMaterial *> materials;
+    QList<DAVA::NMaterial*> materials;
 
-    materials.reserve( selection.size() );
+    materials.reserve(selection.size());
     for (int i = 0; i < selection.size(); i++)
     {
-        DAVA::NMaterial * material = treeModel->GetMaterial(selection.at(i));
-        if ( material != NULL )
+        DAVA::NMaterial* material = treeModel->GetMaterial(selection.at(i));
+        if (material != nullptr)
             materials << material;
     }
 
-	SelectEntities(materials);
+    SelectEntities(materials);
 }

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Settings/Settings.h"
 
 using namespace DAVA;
@@ -36,6 +7,7 @@ const char Settings::Delimiter = '/';
 const FastName Settings::General_DesinerName = FastName("General/DesignerName");
 const FastName Settings::General_RecentFilesCount = FastName("General/RecentFilesCount");
 const FastName Settings::General_RecentProjectsCount = FastName("General/RecentProjectsCount");
+const FastName Settings::General_ReloadParticlesOnPojectOpening = FastName("General/ReloadParticlesOnProjectOpening");
 const FastName Settings::General_PreviewEnabled = FastName("General/PreviewEnabled");
 const FastName Settings::General_OpenByDBClick = FastName("General/OpenByDoubleClick");
 const FastName Settings::General_CompressionQuality = FastName("General/CompressionQuality");
@@ -65,6 +37,7 @@ const FastName Settings::Scene_CameraFar = FastName("Scene/CameraFar");
 const FastName Settings::Scene_CameraHeightOnLandscape = FastName("Scene/HeightOnLandscape");
 const FastName Settings::Scene_CameraHeightOnLandscapeStep = FastName("Scene/HeightOnLandscapeStep");
 const FastName Settings::Scene_SelectionSequent = FastName("Scene/SelectionSequent");
+const FastName Settings::Scene_SelectionOnClick = FastName("Scene/SelectionOnClick");
 const FastName Settings::Scene_SelectionDrawMode = FastName("Scene/SelectionDrawMode");
 const FastName Settings::Scene_CollisionDrawMode = FastName("Scene/CollisionDrawMode");
 const FastName Settings::Scene_ModificationByGizmoOnly = FastName("Scene/ModificationByGizmoOnly");
@@ -85,6 +58,7 @@ const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/Inv
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
 const FastName Settings::InternalGroup = FastName("Internal");
 const FastName Settings::Internal_TextureViewGPU = FastName("Internal/TextureViewGPU");
+const FastName Settings::Internal_SpriteViewGPU = FastName("Internal/SpriteViewGPU");
 const FastName Settings::Internal_LastProjectPath = FastName("Internal/LastProjectPath");
 const FastName Settings::Internal_EditorVersion = FastName("Internal/EditorVersion");
 const FastName Settings::Internal_CubemapLastFaceDir = FastName("Internal/CubemapLastFaceDir");

@@ -1,50 +1,27 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <thread>
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
 
 #ifndef __DAVAENGINE_WINDOWS__
-#   include <time.h>
-#   include <errno.h>
+#include <time.h>
+#include <errno.h>
 #endif
 
 namespace DAVA
 {
-
-ConcurrentObject<Set<Thread *>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
+const char* Thread::davaMainThreadName = "DAVA Engine Main Thread";
+
+ConcurrentObject<Set<Thread*>>& GetThreadList()
+{
+    static ConcurrentObject<Set<Thread*>> threadList;
+    return threadList;
+}
 
 void Thread::InitMainThread()
 {
     mainThreadId = GetCurrentId();
+    Thread::SetCurrentThreadName(davaMainThreadName);
 }
 
 bool Thread::IsMainThread()
@@ -58,12 +35,12 @@ bool Thread::IsMainThread()
     return currentId == mainThreadId;
 }
 
-Thread *Thread::Create(const Message& msg)
+Thread* Thread::Create(const Message& msg)
 {
     return new Thread(msg);
 }
 
-Thread *Thread::Create(const Procedure& proc)
+Thread* Thread::Create(const Procedure& proc)
 {
     return new Thread(proc);
 }
@@ -87,7 +64,7 @@ void Thread::Kill()
 
 void Thread::KillAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Kill();
@@ -96,58 +73,57 @@ void Thread::KillAll()
 
 void Thread::CancelAll()
 {
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     for (auto& x : *threadListAccessor)
     {
         x->Cancel();
     }
-} 
-
+}
 
 Thread::Thread()
     : state(STATE_CREATED)
-    , threadPriority(PRIORITY_NORMAL)
     , isCancelling(false)
     , stackSize(0)
-    , id(Id())
     , handle(Handle())
+    , id(Id())
     , name("DAVA::Thread")
 {
     Init();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->insert(this);
 }
 
-Thread::Thread(const Message &msg) : Thread()
+Thread::Thread(const Message& msg)
+    : Thread()
 {
     Message message = msg;
     Thread* caller = this;
     threadFunc = [=] { message(caller); };
 }
 
-Thread::Thread(const Procedure &proc) : Thread()
+Thread::Thread(const Procedure& proc)
+    : Thread()
 {
     threadFunc = proc;
 }
 
 Thread::~Thread()
 {
+    Cancel();
     Shutdown();
 
-    auto threadListAccessor = threadList.GetAccessor();
+    auto threadListAccessor = GetThreadList().GetAccessor();
     threadListAccessor->erase(this);
 }
-    
-void Thread::ThreadFunction(void *param)
+
+void Thread::ThreadFunction(void* param)
 {
-    Thread * t = (Thread *)param;
+    Thread* t = reinterpret_cast<Thread*>(param);
     t->id = GetCurrentId();
 
     t->threadFunc();
     t->state = STATE_ENDED;
-
-    t->Release();
 }
 
 void Thread::Yield()

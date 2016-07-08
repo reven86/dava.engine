@@ -15,25 +15,24 @@
 
 namespace FMRandom
 {
-	void Seed(uint32 seed) 
-	{
-		srand(seed);
-		rand(); // The first number is usually crap, skip it.
-	}
+void Seed(uint32 seed)
+{
+    srand(seed);
+    rand(); // The first number is usually crap, skip it.
+}
 
-	uint32 GetUInt32()
-	{
-		return rand() & 0x7FFF;
-	}
+uint32 GetUInt32()
+{
+    return rand() & 0x7FFF;
+}
 
-	int32 GetInt32()
-	{
-		return (rand() & 0x7FFF) - 0x3FFF;
-	}
+int32 GetInt32()
+{
+    return (rand() & 0x7FFF) - 0x3FFF;
+}
 
-	float GetFloat()
-	{
-		return ((float) (rand() & 0x7FFF)) / ((float) 0x7FFF);
-	}
+float GetFloat()
+{
+    return ((float)(rand() & 0x7FFF)) / ((float)0x7FFF);
+}
 };
-

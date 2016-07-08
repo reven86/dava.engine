@@ -1,41 +1,16 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
+#include "../rhi_ShaderSource.h"
     
-    #include "../rhi_ShaderSource.h"
-    
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "FileSystem/DynamicMemoryFile.h"
     #include "FileSystem/FileSystem.h"
 using DAVA::DynamicMemoryFile;
     #include "Utils/Utils.h"
-#include "Debug/Profiler.h"
+    #include "Debug/Profiler.h"
+    #include "Concurrency/Mutex.h"
+    #include "Concurrency/LockGuard.h"
+using DAVA::Mutex;
+using DAVA::LockGuard;
 
     #include "PreProcess.h"
 
@@ -121,7 +96,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     // parse properties/samplers
 
-    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create((const uint8*)src.c_str(), (uint32)(src.length() + 1), DAVA::File::READ));
+    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1), DAVA::File::READ));
 
     if (in)
     {
@@ -498,7 +473,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -528,7 +503,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -593,7 +568,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
                 DVASSERT(sampler.size() < 10);
                 char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", (unsigned)(sampler.size()));
+                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
                 DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
                 line[mbegin + 1] = ch;
                 if (sn > static_cast<size_t>(sl))
@@ -751,6 +726,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
             if (strstr(line, "VPROG_IN_BEGIN"))
                 vdecl.Clear();
+            if (strstr(line, "VPROG_IN_STREAM_VERTEX"))
+                vdecl.AddStream(VDF_PER_VERTEX);
+            if (strstr(line, "VPROG_IN_STREAM_INSTANCE"))
+                vdecl.AddStream(VDF_PER_INSTANCE);
             if (strstr(line, "VPROG_IN_POSITION"))
                 vdecl.AddElement(VS_POSITION, 0, VDT_FLOAT, 3);
             if (strstr(line, "VPROG_IN_NORMAL"))
@@ -994,115 +973,142 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
 //------------------------------------------------------------------------------
 
-static inline uint8
-ReadUI1(DAVA::File* f)
+static inline bool
+ReadUI1(DAVA::File* f, uint8* x)
 {
-    uint8 x;
-
-    f->Read(&x);
-    return x;
+    return (f->Read(x) == sizeof(uint8));
 }
 
-static inline uint32
-ReadUI4(DAVA::File* f)
+static inline bool
+ReadUI4(DAVA::File* f, uint32* x)
 {
-    uint32 x;
-
-    f->Read(&x);
-    return x;
+    return (f->Read(x) == sizeof(uint32));
 }
 
-static inline void
+static inline bool
 ReadS0(DAVA::File* f, std::string* str)
 {
     char s0[128 * 1024];
-    uint32 sz = ReadUI4(f);
-
-    f->Read(s0, sz);
-    *str = s0;
+    uint32 sz = 0;
+    if (ReadUI4(f, &sz))
+    {
+        if (f->Read(s0, sz) == sz)
+        {
+            *str = s0;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool ShaderSource::Load(DAVA::File* in)
 {
-    bool success = false;
+#define READ_CHECK(exp) if (!(exp)) { return false; }
+
     std::string s0;
+    uint32 readUI4;
+    uint8 readUI1;
 
     _Reset();
 
-    type = ProgType(ReadUI4(in));
-    ReadS0(in, &code);
+    READ_CHECK(ReadUI4(in, &readUI4));
+    type = ProgType(readUI4);
 
-    vdecl.Load(in);
+    READ_CHECK(ReadS0(in, &code));
 
-    prop.resize(ReadUI4(in));
+    READ_CHECK(vdecl.Load(in));
+
+    READ_CHECK(ReadUI4(in, &readUI4));
+    prop.resize(readUI4);
     for (unsigned p = 0; p != prop.size(); ++p)
     {
-        ReadS0(in, &s0);
+        READ_CHECK(ReadS0(in, &s0));
         prop[p].uid = FastName(s0.c_str());
 
-        ReadS0(in, &s0);
+        READ_CHECK(ReadS0(in, &s0));
         prop[p].tag = FastName(s0.c_str());
 
-        prop[p].type = ShaderProp::Type(ReadUI4(in));
-        prop[p].storage = ShaderProp::Storage(ReadUI4(in));
-        prop[p].isBigArray = ReadUI4(in);
-        prop[p].arraySize = ReadUI4(in);
-        prop[p].bufferindex = ReadUI4(in);
-        prop[p].bufferReg = ReadUI4(in);
-        prop[p].bufferRegCount = ReadUI4(in);
+        READ_CHECK(ReadUI4(in, &readUI4));
+        prop[p].type = ShaderProp::Type(readUI4);
 
-        in->Read(prop[p].defaultValue, 16 * sizeof(float));
+        READ_CHECK(ReadUI4(in, &readUI4));
+        prop[p].storage = ShaderProp::Storage(readUI4);
+
+        READ_CHECK(ReadUI4(in, &readUI4));
+        prop[p].isBigArray = readUI4;
+
+        READ_CHECK(ReadUI4(in, &prop[p].arraySize));
+        READ_CHECK(ReadUI4(in, &prop[p].bufferindex));
+        READ_CHECK(ReadUI4(in, &prop[p].bufferReg));
+        READ_CHECK(ReadUI4(in, &prop[p].bufferRegCount));
+
+        READ_CHECK(in->Read(prop[p].defaultValue, 16 * sizeof(float)) == 16 * sizeof(float));
     }
 
-    buf.resize(ReadUI4(in));
+    READ_CHECK(ReadUI4(in, &readUI4));
+    buf.resize(readUI4);
     for (unsigned b = 0; b != buf.size(); ++b)
     {
-        buf[b].storage = ShaderProp::Storage(ReadUI4(in));
+        READ_CHECK(ReadUI4(in, &readUI4));
+        buf[b].storage = ShaderProp::Storage(readUI4);
 
-        ReadS0(in, &s0);
+        READ_CHECK(ReadS0(in, &s0));
         buf[b].tag = FastName(s0.c_str());
 
-        buf[b].regCount = ReadUI4(in);
+        READ_CHECK(ReadUI4(in, &buf[b].regCount));
     }
 
-    sampler.resize(ReadUI4(in));
+    READ_CHECK(ReadUI4(in, &readUI4));
+    sampler.resize(readUI4);
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
-        sampler[s].type = TextureType(ReadUI4(in));
+        READ_CHECK(ReadUI4(in, &readUI4));
+        sampler[s].type = TextureType(readUI4);
 
-        ReadS0(in, &s0);
+        READ_CHECK(ReadS0(in, &s0));
         sampler[s].uid = FastName(s0.c_str());
     }
 
-    blending.rtBlend[0].colorFunc = ReadUI1(in);
-    blending.rtBlend[0].colorSrc = ReadUI1(in);
-    blending.rtBlend[0].colorDst = ReadUI1(in);
-    blending.rtBlend[0].alphaFunc = ReadUI1(in);
-    blending.rtBlend[0].alphaSrc = ReadUI1(in);
-    blending.rtBlend[0].alphaDst = ReadUI1(in);
-    blending.rtBlend[0].writeMask = ReadUI1(in);
-    blending.rtBlend[0].blendEnabled = ReadUI1(in);
-    blending.rtBlend[0].alphaToCoverage = ReadUI1(in);
-    in->Seek(3, DAVA::File::SEEK_FROM_CURRENT);
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].colorFunc = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].colorSrc = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].colorDst = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].alphaFunc = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].alphaSrc = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].alphaDst = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].writeMask = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].blendEnabled = readUI1;
+    READ_CHECK(ReadUI1(in, &readUI1));
+    blending.rtBlend[0].alphaToCoverage = readUI1;
+    READ_CHECK(in->Seek(3, DAVA::File::SEEK_FROM_CURRENT));
+    
+#undef READ_CHECK
 
-    return success;
+    return true;
 }
 
 //------------------------------------------------------------------------------
 
-static inline void
+static inline bool
 WriteUI1(DAVA::File* f, uint8 x)
 {
-    f->Write(&x);
+    return (f->Write(&x) == sizeof(x));
 }
 
-static inline void
+static inline bool
 WriteUI4(DAVA::File* f, uint32 x)
 {
-    f->Write(&x);
+    return (f->Write(&x) == sizeof(x));
 }
 
-static inline void
+static inline bool
 WriteS0(DAVA::File* f, const char* str)
 {
     char s0[128 * 1024];
@@ -1111,63 +1117,68 @@ WriteS0(DAVA::File* f, const char* str)
     memset(s0, 0x00, sz);
     strcpy(s0, str);
 
-    WriteUI4(f, sz);
-    f->Write(s0, sz);
+    if (WriteUI4(f, sz))
+    {
+        return (f->Write(s0, sz) == sz);
+    }
+    return false;
 }
 
 bool ShaderSource::Save(DAVA::File* out) const
 {
-    bool success = false;
+#define WRITE_CHECK(exp) if (!(exp)) { return false; }
 
-    WriteUI4(out, type);
-    WriteS0(out, code.c_str());
+    WRITE_CHECK(WriteUI4(out, type));
+    WRITE_CHECK(WriteS0(out, code.c_str()));
 
-    vdecl.Save(out);
+    WRITE_CHECK(vdecl.Save(out));
 
-    WriteUI4(out, static_cast<uint32>(prop.size()));
+    WRITE_CHECK(WriteUI4(out, static_cast<uint32>(prop.size())));
     for (unsigned p = 0; p != prop.size(); ++p)
     {
-        WriteS0(out, prop[p].uid.c_str());
-        WriteS0(out, prop[p].tag.c_str());
-        WriteUI4(out, prop[p].type);
-        WriteUI4(out, prop[p].storage);
-        WriteUI4(out, prop[p].isBigArray);
-        WriteUI4(out, prop[p].arraySize);
-        WriteUI4(out, prop[p].bufferindex);
-        WriteUI4(out, prop[p].bufferReg);
-        WriteUI4(out, prop[p].bufferRegCount);
-        out->Write(prop[p].defaultValue, 16 * sizeof(float));
+        WRITE_CHECK(WriteS0(out, prop[p].uid.c_str()));
+        WRITE_CHECK(WriteS0(out, prop[p].tag.c_str()));
+        WRITE_CHECK(WriteUI4(out, prop[p].type));
+        WRITE_CHECK(WriteUI4(out, prop[p].storage));
+        WRITE_CHECK(WriteUI4(out, prop[p].isBigArray));
+        WRITE_CHECK(WriteUI4(out, prop[p].arraySize));
+        WRITE_CHECK(WriteUI4(out, prop[p].bufferindex));
+        WRITE_CHECK(WriteUI4(out, prop[p].bufferReg));
+        WRITE_CHECK(WriteUI4(out, prop[p].bufferRegCount));
+        WRITE_CHECK(out->Write(prop[p].defaultValue, 16 * sizeof(float)) == 16 * sizeof(float));
     }
 
-    WriteUI4(out, static_cast<uint32>(buf.size()));
+    WRITE_CHECK(WriteUI4(out, static_cast<uint32>(buf.size())));
     for (unsigned b = 0; b != buf.size(); ++b)
     {
-        WriteUI4(out, buf[b].storage);
-        WriteS0(out, buf[b].tag.c_str());
-        WriteUI4(out, buf[b].regCount);
+        WRITE_CHECK(WriteUI4(out, buf[b].storage));
+        WRITE_CHECK(WriteS0(out, buf[b].tag.c_str()));
+        WRITE_CHECK(WriteUI4(out, buf[b].regCount));
     }
 
-    WriteUI4(out, static_cast<uint32>(sampler.size()));
+    WRITE_CHECK(WriteUI4(out, static_cast<uint32>(sampler.size())));
     for (unsigned s = 0; s != sampler.size(); ++s)
     {
-        WriteUI4(out, sampler[s].type);
-        WriteS0(out, sampler[s].uid.c_str());
+        WRITE_CHECK(WriteUI4(out, sampler[s].type));
+        WRITE_CHECK(WriteS0(out, sampler[s].uid.c_str()));
     }
 
-    WriteUI1(out, blending.rtBlend[0].colorFunc);
-    WriteUI1(out, blending.rtBlend[0].colorSrc);
-    WriteUI1(out, blending.rtBlend[0].colorDst);
-    WriteUI1(out, blending.rtBlend[0].alphaFunc);
-    WriteUI1(out, blending.rtBlend[0].alphaSrc);
-    WriteUI1(out, blending.rtBlend[0].alphaDst);
-    WriteUI1(out, blending.rtBlend[0].writeMask);
-    WriteUI1(out, blending.rtBlend[0].blendEnabled);
-    WriteUI1(out, blending.rtBlend[0].alphaToCoverage);
-    WriteUI1(out, 0);
-    WriteUI1(out, 0);
-    WriteUI1(out, 0);
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].colorFunc));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].colorSrc));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].colorDst));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].alphaFunc));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].alphaSrc));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].alphaDst));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].writeMask));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].blendEnabled));
+    WRITE_CHECK(WriteUI1(out, blending.rtBlend[0].alphaToCoverage));
+    WRITE_CHECK(WriteUI1(out, 0));
+    WRITE_CHECK(WriteUI1(out, 0));
+    WRITE_CHECK(WriteUI1(out, 0));
 
-    return success;
+#undef WRITE_CHECK
+
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -1268,17 +1279,6 @@ void ShaderSource::_AppendLine(const char* line, size_t lineLen)
     code.append(line, lineLen);
     code.push_back('\n');
     return;
-
-    char text[4 * 1024];
-    int len = Snprintf(text, sizeof(text) - 1, "/*%04u*/ ", codeLineCount + 1);
-
-    strncpy(text + len, line, lineLen);
-    text[len + lineLen] = '\0';
-
-    code.append(text, strlen(text));
-    code.push_back('\n');
-
-    ++codeLineCount;
 }
 
 //------------------------------------------------------------------------------
@@ -1387,12 +1387,15 @@ void ShaderSource::Dump() const
 
 //==============================================================================
 
+Mutex shaderSourceEntryMutex;
 std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
-const uint32 ShaderSourceCache::FormatVersion = 2;
+const uint32 ShaderSourceCache::FormatVersion = 4;
 
 const ShaderSource*
 ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 {
+    LockGuard<Mutex> guard(shaderSourceEntryMutex);
+
     //Logger::Info("get-shader-src");
     //Logger::Info("  uid= \"%s\"",uid.c_str());
     const ShaderSource* src = nullptr;
@@ -1414,6 +1417,8 @@ ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 
 void ShaderSourceCache::Update(FastName uid, uint32 srcHash, const ShaderSource& source)
 {
+    LockGuard<Mutex> guard(shaderSourceEntryMutex);
+
     bool doAdd = true;
 
     for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
@@ -1445,6 +1450,8 @@ void ShaderSourceCache::Update(FastName uid, uint32 srcHash, const ShaderSource&
 
 void ShaderSourceCache::Clear()
 {
+    LockGuard<Mutex> guard(shaderSourceEntryMutex);
+
     for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         delete e->src;
     Entry.clear();
@@ -1459,24 +1466,39 @@ void ShaderSourceCache::Save(const char* fileName)
     static const FilePath cacheTempFile("~doc:/shader_source_cache_temp.bin");
 
     File* file = File::Create(cacheTempFile, File::WRITE | File::CREATE);
-
     if (file)
     {
-        WriteUI4(file, FormatVersion);
+        Logger::Info("saving cached-shaders (%u): ", Entry.size());
 
-        WriteUI4(file, static_cast<uint32>(Entry.size()));
-        Logger::Info("saving cached-shaders (%u) :", Entry.size());
+        LockGuard<Mutex> guard(shaderSourceEntryMutex);
+        bool success = true;
+
+        SCOPE_EXIT
+        {
+            SafeRelease(file);
+
+            if (success)
+            {
+                FileSystem::Instance()->MoveFile(cacheTempFile, fileName, true);
+            }
+            else
+            {
+                FileSystem::Instance()->DeleteFile(cacheTempFile);
+            }
+        };
+        
+#define WRITE_CHECK(exp) if (!exp) { success = false; return; }
+
+        WRITE_CHECK(WriteUI4(file, FormatVersion));
+        WRITE_CHECK(WriteUI4(file, static_cast<uint32>(Entry.size())));
         for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         {
-            Logger::Info("  uid= \"%s\"", e->uid.c_str());
-            WriteS0(file, e->uid.c_str());
-            WriteUI4(file, e->srcHash);
-            e->src->Save(file);
+            WRITE_CHECK(WriteS0(file, e->uid.c_str()));
+            WRITE_CHECK(WriteUI4(file, e->srcHash));
+            WRITE_CHECK(e->src->Save(file));
         }
-
-        file->Release();
-
-        FileSystem::Instance()->MoveFile(cacheTempFile, fileName, true);
+        
+#undef WRITE_CHECK
     }
 }
 
@@ -1486,37 +1508,53 @@ void ShaderSourceCache::Load(const char* fileName)
 {
     using namespace DAVA;
 
-    File* file = File::Create(fileName, File::READ | File::OPEN);
+    ScopedPtr<File> file(File::Create(fileName, File::READ | File::OPEN));
 
     if (file)
     {
         Clear();
-        uint32 version = ReadUI4(file);
 
-        if (version == FormatVersion)
+        bool success = true;
+        SCOPE_EXIT
         {
-            Entry.resize(ReadUI4(file));
-            Logger::Info("loading cached-shaders (%u) :", Entry.size());
+            if (!success)
+            {
+                Clear();
+            }
+        };
+        
+#define READ_CHECK(exp) if (!exp) { success = false; return; }
+
+        uint32 readUI4 = 0;
+        READ_CHECK(ReadUI4(file, &readUI4));
+
+        if (readUI4 == FormatVersion)
+        {
+            LockGuard<Mutex> guard(shaderSourceEntryMutex);
+
+            READ_CHECK(ReadUI4(file, &readUI4));
+            Entry.resize(readUI4);
+            Logger::Info("loading cached-shaders (%u): ", Entry.size());
+
             for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
             {
                 std::string str;
-                ReadS0(file, &str);
+                READ_CHECK(ReadS0(file, &str));
 
                 e->uid = FastName(str.c_str());
-                e->srcHash = ReadUI4(file);
-                Logger::Info("  uid= \"%s\"", e->uid.c_str());
+                READ_CHECK(ReadUI4(file, &e->srcHash));
                 e->src = new ShaderSource();
 
-                e->src->Load(file);
+                READ_CHECK(e->src->Load(file));
             }
-            Logger::Info("loaded ShaderSource cache (%u shaders)", Entry.size());
         }
         else
         {
             Logger::Warning("ShaderSource-Cache version mismatch, ignoring cached shaders\n");
+            success = false;
         }
-
-        file->Release();
+        
+#undef READ_CHECK
     }
 }
 

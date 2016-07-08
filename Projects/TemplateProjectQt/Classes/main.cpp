@@ -1,52 +1,43 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-#include "Platform/Qt5/QtLayer.h"
 #include "Core/Core.h"
 
-#include <QApplication>
-#include "MainWindow.h"
+#include "Platform/Qt5/QtLayer.h"
 
-int main(int argc, char *argv[])
+#include "FrameworkMain.h"
+#include "Application.h"
+#include "GLView.h"
+
+#include "NgtTools/Common/GlobalContext.h"
+#include <core_ui_framework/i_ui_framework.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_ui_framework/i_window.hpp>
+#include <core_ui_framework/i_view.hpp>
+
+int main(int argc, char* argv[])
 {
-#if defined (__DAVAENGINE_MACOS__)
+    //helper class which connect Qt openGL and DAVA framework together
+    DAVA::QtLayer qtLayer;
+
+    //DAVA Framework require to launch Core first
     DAVA::Core::Run(argc, argv);
-#elif defined (__DAVAENGINE_WIN32__)
-    DAVA::Core::Run(argc, argv);
-#else
-    static_assert(!"Wrong platform");
-#endif
-    new DAVA::QtLayer();
 
-    QApplication a(argc, argv);
+    int retCode = 0;
+    {
+        //our application wrapper. Here it only load plugins
+        Application a(argc, argv);
+        a.LoadPlugins();
 
-    MainWindow w;
-    w.show();
+        IUIFramework* framework = Context::queryInterface<IUIFramework>();
 
-    return QApplication::exec();
+        IUIApplication* app = Context::queryInterface<IUIApplication>();
+        DVASSERT(app != nullptr);
+
+        std::unique_ptr<IWindow> window = framework->createWindow(":/MainWindow.ui", IUIFramework::ResourceType::File);
+        app->addWindow(*window);
+
+        GLView glView;
+        app->addView(glView);
+        window->show();
+        retCode = app->startApplication();
+    }
+    return retCode;
 }

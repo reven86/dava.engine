@@ -26,7 +26,7 @@ typedef fm::map<uint32, UInt32List> FCDGeometryIndexTranslationMap;
 /** Holds commonly-used transformation functions for skin controllers. */
 namespace FCDControllerTools
 {
-	/** Applies a translation map obtained from 
+/** Applies a translation map obtained from 
 		FCDGeometryPolygonsTools::GenerateUniqueIndices to a given 
 		FCDSkinController to synchronize with the updated indices. This is 
 		useful for older engines and the applications that only support one 
@@ -35,8 +35,8 @@ namespace FCDControllerTools
 		@param translationMap The map that translates old vertex position 
 				indices into new indices. This map is recieved from 
 				FCDGeometryPolygonsTools::GenerateUniqueIndices. */
-	void FCOLLADA_EXPORT ApplyTranslationMap(const FCDSkinController* controller, const FCDGeometryIndexTranslationMap& translationMap, 
-				const UInt16List& packingMap, fm::pvector<const FCDSkinControllerVertex>& skinInfluences);
+void FCOLLADA_EXPORT ApplyTranslationMap(const FCDSkinController* controller, const FCDGeometryIndexTranslationMap& translationMap,
+                                         const UInt16List& packingMap, fm::pvector<const FCDSkinControllerVertex>& skinInfluences);
 }
 
 #endif // _FCD_CONTROLLER_TOOLS_H_

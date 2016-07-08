@@ -21,13 +21,13 @@ extern "C" {
  * xmlMutex are a simple mutual exception locks.
  */
 typedef struct _xmlMutex xmlMutex;
-typedef xmlMutex *xmlMutexPtr;
+typedef xmlMutex* xmlMutexPtr;
 
 /*
  * xmlRMutex are reentrant mutual exception locks.
  */
 typedef struct _xmlRMutex xmlRMutex;
-typedef xmlRMutex *xmlRMutexPtr;
+typedef xmlRMutex* xmlRMutexPtr;
 
 #ifdef __cplusplus
 }
@@ -37,41 +37,41 @@ typedef xmlRMutex *xmlRMutexPtr;
 extern "C" {
 #endif
 
-XMLPUBFUN xmlMutexPtr XMLCALL		
-			xmlNewMutex	(void);
-XMLPUBFUN void XMLCALL			
-			xmlMutexLock	(xmlMutexPtr tok);
-XMLPUBFUN void XMLCALL			
-			xmlMutexUnlock	(xmlMutexPtr tok);
-XMLPUBFUN void XMLCALL			
-			xmlFreeMutex	(xmlMutexPtr tok);
+XMLPUBFUN xmlMutexPtr XMLCALL
+xmlNewMutex(void);
+XMLPUBFUN void XMLCALL
+xmlMutexLock(xmlMutexPtr tok);
+XMLPUBFUN void XMLCALL
+xmlMutexUnlock(xmlMutexPtr tok);
+XMLPUBFUN void XMLCALL
+xmlFreeMutex(xmlMutexPtr tok);
 
-XMLPUBFUN xmlRMutexPtr XMLCALL		
-			xmlNewRMutex	(void);
-XMLPUBFUN void XMLCALL			
-			xmlRMutexLock	(xmlRMutexPtr tok);
-XMLPUBFUN void XMLCALL			
-			xmlRMutexUnlock	(xmlRMutexPtr tok);
-XMLPUBFUN void XMLCALL			
-			xmlFreeRMutex	(xmlRMutexPtr tok);
+XMLPUBFUN xmlRMutexPtr XMLCALL
+xmlNewRMutex(void);
+XMLPUBFUN void XMLCALL
+xmlRMutexLock(xmlRMutexPtr tok);
+XMLPUBFUN void XMLCALL
+xmlRMutexUnlock(xmlRMutexPtr tok);
+XMLPUBFUN void XMLCALL
+xmlFreeRMutex(xmlRMutexPtr tok);
 
 /*
  * Library wide APIs.
  */
-XMLPUBFUN void XMLCALL			
-			xmlInitThreads	(void);
-XMLPUBFUN void XMLCALL			
-			xmlLockLibrary	(void);
-XMLPUBFUN void XMLCALL			
-			xmlUnlockLibrary(void);
-XMLPUBFUN int XMLCALL			
-			xmlGetThreadId	(void);
-XMLPUBFUN int XMLCALL			
-			xmlIsMainThread	(void);
-XMLPUBFUN void XMLCALL			
-			xmlCleanupThreads(void);
-XMLPUBFUN xmlGlobalStatePtr XMLCALL	
-			xmlGetGlobalState(void);
+XMLPUBFUN void XMLCALL
+xmlInitThreads(void);
+XMLPUBFUN void XMLCALL
+xmlLockLibrary(void);
+XMLPUBFUN void XMLCALL
+xmlUnlockLibrary(void);
+XMLPUBFUN int XMLCALL
+xmlGetThreadId(void);
+XMLPUBFUN int XMLCALL
+xmlIsMainThread(void);
+XMLPUBFUN void XMLCALL
+xmlCleanupThreads(void);
+XMLPUBFUN xmlGlobalStatePtr XMLCALL
+xmlGetGlobalState(void);
 
 #ifdef __cplusplus
 }

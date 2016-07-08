@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
- 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
- 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
- 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
@@ -35,14 +7,14 @@ using namespace DAVA;
 
 #include "MemoryManager/MemoryProfiler.h"
 
-DAVA_TESTCLASS(MemoryManagerTest)
+DAVA_TESTCLASS (MemoryManagerTest)
 {
     DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
 
     volatile uint32 capturedTag = 0;
     volatile uint32 capturedCheckpoint = 0;
 
-    DAVA_TEST(TestZeroAlloc)
+    DAVA_TEST (TestZeroAlloc)
     {
         void* ptr1 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
         void* ptr2 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
@@ -55,7 +27,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         MemoryManager::Instance()->Deallocate(ptr2);
     }
 
-    DAVA_TEST(TestAlignedAlloc)
+    DAVA_TEST (TestAlignedAlloc)
     {
         // Alignment should be power of 2
         size_t align[] = {
@@ -71,26 +43,26 @@ DAVA_TESTCLASS(MemoryManagerTest)
         }
     }
 
-    DAVA_TEST(TestGPUTracking)
+    DAVA_TEST (TestGPUTracking)
     {
         const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
         void* buffer = ::operator new(statSize);
         MMCurStat* stat = static_cast<MMCurStat*>(buffer);
         AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
         uint32 oldAllocByApp = poolStat[ALLOC_GPU_TEXTURE].allocByApp;
         uint32 oldBlockCount = poolStat[ALLOC_GPU_TEXTURE].blockCount;
 
         DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 100, ALLOC_GPU_TEXTURE);
         DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 200, ALLOC_GPU_TEXTURE);
 
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
         TEST_VERIFY(oldAllocByApp + 300 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
         TEST_VERIFY(oldBlockCount + 2 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
 
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(101, ALLOC_GPU_TEXTURE);
-        MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+        MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
 
         TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
         TEST_VERIFY(oldBlockCount == poolStat[ALLOC_GPU_TEXTURE].blockCount);
@@ -98,7 +70,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         ::operator delete(buffer);
     }
 
-    DAVA_TEST(TestAllocScope)
+    DAVA_TEST (TestAllocScope)
     {
         const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
         void* buffer = ::operator new(statSize);
@@ -106,24 +78,37 @@ DAVA_TESTCLASS(MemoryManagerTest)
         AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
         {
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
             uint32 oldAllocByApp = poolStat[ALLOC_POOL_BULLET].allocByApp;
             uint32 oldBlockCount = poolStat[ALLOC_POOL_BULLET].blockCount;
 
             DAVA_MEMORY_PROFILER_ALLOC_SCOPE(ALLOC_POOL_BULLET);
 
             // Use volatile keyword to prevent optimizer to throw allocations out
+            uint32 allocDelta = 0;
+            uint32 blockDelta = 0;
+
+#if !defined(__DAVAENGINE_WIN_UAP__) && !(defined(_WIN64))
+            // For now memory profiler intercepts only operators new/delete but not functions malloc/free
+            // TODO: remove define after full memory profiler implementation on win10
             void* volatile ptr1 = malloc(222);
+            allocDelta += 222;
+            blockDelta += 1;
+#endif
             char* volatile ptr2 = new char[111];
+            allocDelta += 111;
+            blockDelta += 1;
 
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
-            TEST_VERIFY(oldAllocByApp + 222 + 111 == poolStat[ALLOC_POOL_BULLET].allocByApp);
-            TEST_VERIFY(oldBlockCount + 1 + 1 == poolStat[ALLOC_POOL_BULLET].blockCount);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
+            TEST_VERIFY(oldAllocByApp + allocDelta == poolStat[ALLOC_POOL_BULLET].allocByApp);
+            TEST_VERIFY(oldBlockCount + blockDelta == poolStat[ALLOC_POOL_BULLET].blockCount);
 
+#if !defined(__DAVAENGINE_WIN_UAP__) && !(defined(_WIN64))
             free(ptr1);
+#endif
             delete[] ptr2;
 
-            MemoryManager::Instance()->GetCurStat(0, buffer, statSize);
+            MemoryManager::Instance()->GetCurStat(0, buffer, static_cast<uint32>(statSize));
             TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_POOL_BULLET].allocByApp);
             TEST_VERIFY(oldBlockCount == poolStat[ALLOC_POOL_BULLET].blockCount);
         }
@@ -131,7 +116,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
         ::operator delete(buffer);
     }
 
-    DAVA_TEST(TestCallback)
+    DAVA_TEST (TestCallback)
     {
         const uint32 TAG = 1;
 
@@ -156,4 +141,4 @@ DAVA_TESTCLASS(MemoryManagerTest)
     volatile uint32 leftTag = 0;
 };
 
-#endif  // DAVA_MEMORY_PROFILING_ENABLE
+#endif // DAVA_MEMORY_PROFILING_ENABLE

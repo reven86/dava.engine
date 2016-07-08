@@ -1,33 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-
 #ifndef __RHI_PRIVATE_H__
 #define __RHI_PRIVATE_H__
 
@@ -84,6 +54,23 @@ void Delete(Handle buf);
 bool BufferIsReady(Handle buf);
 bool IsReady(Handle buf, uint32 objectIndex);
 int Value(Handle buf, uint32 objectIndex);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// perfquery-set
+
+namespace PerfQuerySet
+{
+Handle Create(uint32 maxQueryCount);
+void Delete(Handle set);
+
+void Reset(Handle set);
+void SetCurrent(Handle set);
+
+void GetStatus(Handle set, bool* isReady, bool* isValid);
+bool GetFreq(Handle set, uint64* freq);
+bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp);
+bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +164,8 @@ void SetIndices(Handle cmdBuf, Handle ib);
 void SetQueryBuffer(Handle cmdBuf, Handle queryBuf);
 void SetQueryIndex(Handle cmdBuf, uint32 index);
 
+void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex);
+
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf);
 void SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex);
 
@@ -186,12 +175,18 @@ void SetSamplerState(Handle cmdBuf, const Handle samplerState);
 void DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count);
 void DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex = 0, uint32 startIndex = 0);
 
+void DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count);
+void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 primCount, uint32 vertexCount, uint32 firstVertex = 0, uint32 startIndex = 0, uint32 baseInstance = 0);
+
 void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
 
 void InitPacketListPool(uint32 maxCount);
 void InitTextreSetPool(uint32 maxCount);
+
+void BeginFreqMeasurement(Handle pqset);
+void EndFreqMeasurement(Handle pqset);
 
 void PresentImpl(Handle sync);
 
@@ -213,7 +208,9 @@ extern uint32 stat_SET_IB;
 
 
 
-#define DV_USE_UNIFORMBUFFER_OBJECT 0
+#define RHI_GL__USE_UNIFORMBUFFER_OBJECT 0
+#define RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION 0
+#define RHI_GL__DEBUG_CONST_BUFFERS 0
 
 
 #endif // __RHI_PRIVATE_H__

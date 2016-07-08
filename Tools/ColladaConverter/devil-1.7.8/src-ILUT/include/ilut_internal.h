@@ -35,7 +35,7 @@
 #ifdef _WIN32
 #ifdef _MSC_VER
 		#if _MSC_VER > 1000
-			#pragma warning(disable: 4996)	// "The POSIX name for this item is deprecated." AND "This function or variable may be unsafe."
+			#pragma warning(disable : 4996) // "The POSIX name for this item is deprecated." AND "This function or variable may be unsafe."
 		#endif // _MSC_VER > 1000
 	#endif
 #endif
@@ -55,9 +55,9 @@
 
 #include <stdlib.h>
 
-extern ILimage *ilutCurImage;
+extern ILimage* ilutCurImage;
 
-void	ilutDefaultStates(void);
+void ilutDefaultStates(void);
 
 
 #ifdef _UNICODE
@@ -66,34 +66,33 @@ void	ilutDefaultStates(void);
 	#define IL_TEXT(s) (s)
 #endif
 
-
 // ImageLib Utility Toolkit's OpenGL Functions
 #ifdef ILUT_USE_OPENGL
-	ILboolean ilutGLInit();
+ILboolean ilutGLInit();
 #endif
 
 // ImageLib Utility Toolkit's Win32 Functions
 #ifdef ILUT_USE_WIN32
-	ILboolean ilutWin32Init();
+ILboolean ilutWin32Init();
 #endif
 
 // ImageLib Utility Toolkit's Win32 Functions
 #ifdef ILUT_USE_DIRECTX8
-	ILboolean ilutD3D8Init();
+ILboolean ilutD3D8Init();
 #endif
 
 #ifdef ILUT_USE_DIRECTX9
-	ILboolean ilutD3D9Init();
+ILboolean ilutD3D9Init();
 #endif
 
 #ifdef ILUT_USE_DIRECTX10
-	ILboolean ilutD3D10Init();
+ILboolean ilutD3D10Init();
 #endif
 
 #define CUBEMAP_SIDES 6
 #ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p) {if((p)!=NULL){(p)->lpVtbl->Release(p);(p)=NULL;}}
+#define SAFE_RELEASE(p) {if ((p) != NULL){(p)->lpVtbl->Release(p);(p) = NULL;}}
 #endif
 
 
-#endif//INTERNAL_H
+#endif //INTERNAL_H

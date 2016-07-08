@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "LandscapeThumbnails.h"
 #include "Base/Platform.h"
 #include "Concurrency/LockGuard.h"
@@ -39,18 +10,60 @@ using namespace DAVA;
 
 namespace
 {
+class MaterialFlagsDisabler
+{
+public:
+    MaterialFlagsDisabler(const ScopedPtr<NMaterial>& material_, const DAVA::Vector<FastName>& flagNames)
+        : material(material_)
+    {
+        flagsInfo.reserve(flagNames.size());
+        for (const FastName& flagName : flagNames)
+        {
+            FlagInfo info;
+            info.flagName = flagName;
+            info.hasFlag = material->HasLocalFlag(info.flagName);
+            if (info.hasFlag)
+            {
+                info.oldValue = material->GetLocalFlagValue(info.flagName);
+                material->SetFlag(info.flagName, 0);
+            }
+            else
+            {
+                material->AddFlag(info.flagName, 0);
+            }
+
+            flagsInfo.push_back(info);
+        }
+
+        material->PreBuildMaterial(DAVA::PASS_FORWARD);
+    }
+
+private:
+    ScopedPtr<NMaterial> material;
+    struct FlagInfo
+    {
+        int32 oldValue = 0;
+        FastName flagName;
+        bool hasFlag = false;
+    };
+
+    DAVA::Vector<FlagInfo> flagsInfo;
+};
+
 struct ThumbnailRequest
 {
     rhi::HSyncObject syncObject;
     Landscape* landscape = nullptr;
     Texture* texture = nullptr;
     LandscapeThumbnails::Callback callback;
+    MaterialFlagsDisabler flagsDisabler;
 
-    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnails::Callback cb)
+    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, const ScopedPtr<NMaterial>& thumbnailMaterial, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
         : syncObject(so)
         , landscape(l)
         , texture(tex)
         , callback(cb)
+        , flagsDisabler(thumbnailMaterial, flagsToDisable)
     {
     }
 };
@@ -95,8 +108,6 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
 {
     const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
     ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
     renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
     renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);
@@ -116,11 +127,17 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     renderData->SetIndex(5, 3);
     renderData->BuildBuffers();
 
+    ScopedPtr<NMaterial> thumbnailMaterial(landscape->GetMaterial()->Clone());
     rhi::HSyncObject syncObject = rhi::CreateSyncObject();
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
+        DAVA::Vector<FastName> flagsToDisable{ NMaterialFlagName::FLAG_VERTEXFOG,
+                                               NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
+                                               NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR
+        };
+
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-        requests.list.emplace_back(syncObject, landscape, texture, handler);
+        requests.list.emplace_back(syncObject, landscape, thumbnailMaterial, flagsToDisable, texture, handler);
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
@@ -141,7 +158,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
-    landscape->GetMaterial()->BindParams(packet);
+    thumbnailMaterial->BindParams(packet);
 
     rhi::RenderPassConfig passDesc = {};
     passDesc.colorBuffer[0].texture = texture->handle;

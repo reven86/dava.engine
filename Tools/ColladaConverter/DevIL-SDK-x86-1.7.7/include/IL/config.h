@@ -47,7 +47,6 @@
 
 /* Supported api (ilut) */
 
-
 //
 // sorry just
 // cant get this one to work under windows
@@ -65,7 +64,6 @@
 //#define ILUT_USE_OPENGL
 //#define ILUT_USE_SDL
 //#define ILUT_USE_WIN32
-
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 //#define HAVE_DLFCN_H 1

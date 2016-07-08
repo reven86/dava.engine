@@ -52,7 +52,7 @@
 /* #undef ILUT_USE_DIRECTX9 */
 
 /* Support OpenGL API */
-#define ILUT_USE_OPENGL 
+#define ILUT_USE_OPENGL
 
 /* Support SDL API */
 /* #undef ILUT_USE_SDL */
@@ -76,7 +76,7 @@
 /* #undef IL_NO_JPG */
 
 /* LCMS support */
-#define IL_NO_LCMS 
+#define IL_NO_LCMS
 
 /* LIF support */
 /* #undef IL_NO_LIF */
@@ -85,7 +85,7 @@
 /* #undef IL_NO_MDL */
 
 /* MNG support */
-#define IL_NO_MNG 
+#define IL_NO_MNG
 
 /* PCD support */
 /* #undef IL_NO_PCD */
@@ -124,7 +124,7 @@
 /* #undef IL_NO_TGA */
 
 /* TIF support */
-/*#define IL_NO_TIF */ 
+/*#define IL_NO_TIF */
 
 /* WAD support */
 /* #undef IL_NO_WAD */
@@ -136,10 +136,10 @@
 /* #undef IL_NO_XPM */
 
 /* Use libjpeg without modification. always enabled. */
-#define IL_USE_JPEGLIB_UNMODIFIED 
+#define IL_USE_JPEGLIB_UNMODIFIED
 
 /* LCMS include without lcms/ support */
-#define LCMS_NODIRINCLUDE 
+#define LCMS_NODIRINCLUDE
 
 /* Building on Mac OS X */
 #ifdef __APPLE__
@@ -150,7 +150,7 @@
 /* #undef MEMALIGN */
 
 /* mm_malloc memory allocation */
-// #define MM_MALLOC 
+// #define MM_MALLOC
 
 /* Name of package */
 #define PACKAGE "DevIL"
@@ -174,10 +174,10 @@
 /* #undef POSIX_MEMALIGN */
 
 /* SSE extension found */
-#define SSE 
+#define SSE
 
 /* SSE2 extension found */
-#define SSE2 
+#define SSE2
 
 /* SSE3 extension found */
 /* #undef SSE3 */
@@ -186,7 +186,7 @@
 #define STDC_HEADERS 1
 
 /* valloc memory allocation */
-#define VALLOC  
+#define VALLOC
 
 /* Memory must be vector aligned */
 //#define VECTORMEM 

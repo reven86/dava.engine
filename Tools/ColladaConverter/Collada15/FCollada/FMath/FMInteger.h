@@ -32,20 +32,46 @@ typedef fm::vector<bool, true> BooleanList;
 	@param i1 A first integer.
 	@param i2 A second integer.
 	@return Whether the two integers are equivalent. */
-inline bool IsEquivalent(int8 i1, int8 i2) { return i1 == i2; }
-inline bool IsEquivalent(uint8 i1, uint8 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(int16 i1, int16 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(uint16 i1, uint16 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(int32 i1, int32 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(uint32 i1, uint32 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(int64 i1, int64 i2) { return i1 == i2; } /**< See above. */
-inline bool IsEquivalent(uint64 i1, uint64 i2) { return i1 == i2; } /**< See above. */
+inline bool IsEquivalent(int8 i1, int8 i2)
+{
+    return i1 == i2;
+}
+inline bool IsEquivalent(uint8 i1, uint8 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(int16 i1, int16 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(uint16 i1, uint16 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(int32 i1, int32 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(uint32 i1, uint32 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(int64 i1, int64 i2)
+{
+    return i1 == i2;
+} /**< See above. */
+inline bool IsEquivalent(uint64 i1, uint64 i2)
+{
+    return i1 == i2;
+} /**< See above. */
 
 /** Returns whether two Booleans are equivalent.
 	@param b1 A first Boolean.
 	@param b2 A second Boolean.
 	@return Whether the two Booleans are equivalent. */
-inline bool IsEquivalent(bool b1, bool b2) { return b1 == b2; }
+inline bool IsEquivalent(bool b1, bool b2)
+{
+    return b1 == b2;
+}
 
 #endif // _FM_INTEGER_H_
-

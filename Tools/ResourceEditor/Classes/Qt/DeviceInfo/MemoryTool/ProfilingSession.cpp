@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
@@ -40,7 +12,6 @@ using namespace DAVA;
 
 namespace
 {
-
 const uint32 FILE_SIGNATURE = 0x41764144;
 
 struct FileHeader
@@ -55,10 +26,11 @@ struct FileHeader
 };
 static_assert(sizeof(FileHeader) == 32, "sizeof(FileHeader) != 32");
 
-}   // unnamed namespace
+} // unnamed namespace
 
 ProfilingSession::ProfilingSession()
-{}
+{
+}
 
 ProfilingSession::~ProfilingSession()
 {
@@ -83,7 +55,7 @@ bool ProfilingSession::StartNew(const DAVA::MMStatConfig* config, const DAVA::Ne
     isValid = CreateLogFile(config);
     if (!isValid)
     {
-        FlushAndReset(true);    // Erase files if created
+        FlushAndReset(true); // Erase files if created
     }
     return isValid;
 }
@@ -117,7 +89,7 @@ void ProfilingSession::AppendStatItems(const DAVA::MMCurStat* statBuf, size_t it
     const size_t itemSize = statBuf->size;
     stat.reserve(stat.size() + itemCount);
     const DAVA::MMCurStat* statPtr = statBuf;
-    for (size_t i = 0;i < itemCount;++i)
+    for (size_t i = 0; i < itemCount; ++i)
     {
         stat.emplace_back(statBuf, allocPoolCount, tagCount);
         statPtr = OffsetPointer<const DAVA::MMCurStat>(statPtr, itemSize);
@@ -168,7 +140,7 @@ size_t ProfilingSession::ClosestStatItem(DAVA::uint64 timestamp) const
 {
     MemoryStatItem dummy(timestamp);
     auto less = [](const MemoryStatItem& l, const MemoryStatItem& r) -> bool { return l.Timestamp() < r.Timestamp(); };
-    
+
     auto iter = std::lower_bound(stat.begin(), stat.end(), dummy, less);
     if (iter != stat.end())
     {
@@ -211,8 +183,8 @@ bool ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
     header.devInfoSize = static_cast<uint32>(deviceInfo.SerializedSize());
     header.statConfigSize = config->size;
     header.statItemSize = sizeof(MMCurStat)
-                        + sizeof(AllocPoolStat) * config->allocPoolCount
-                        + sizeof(TagAllocStat) * config->tagCount;
+    + sizeof(AllocPoolStat) * config->allocPoolCount
+    + sizeof(TagAllocStat) * config->tagCount;
 
     Vector<uint8> serializedDeviceInfo(header.devInfoSize, 0);
     deviceInfo.Serialize(&*serializedDeviceInfo.begin(), header.devInfoSize);
@@ -268,7 +240,7 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
     if (sizeof(FileHeader) == nread)
     {
         if (FILE_SIGNATURE == header.signature && header.devInfoSize > 0 &&
-                              header.statConfigSize > sizeof(MMStatConfig) && header.statItemSize > sizeof(MMCurStat))
+            header.statConfigSize > sizeof(MMStatConfig) && header.statItemSize > sizeof(MMCurStat))
         {
             Vector<uint8> tempBuf;
 
@@ -299,7 +271,7 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
 
 bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
 {
-    const size_t BUF_CAPACITY = 1000;   // Some reasonable buffer size
+    const size_t BUF_CAPACITY = 1000; // Some reasonable buffer size
     Vector<uint8> buf(BUF_CAPACITY * itemSize, 0);
 
     bool result = true;
@@ -314,7 +286,7 @@ bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
         {
             const MMCurStat* rawStat = reinterpret_cast<const MMCurStat*>(buf.data());
             size_t nitems = nread / itemSize;
-            for (size_t i = 0;i < nitems;++i)
+            for (size_t i = 0; i < nitems; ++i)
             {
                 stat.emplace_back(rawStat, allocPoolCount, tagCount);
                 rawStat = OffsetPointer<const MMCurStat>(rawStat, itemSize);
@@ -335,13 +307,13 @@ void ProfilingSession::ApplyConfig(const DAVA::MMStatConfig* config)
     tagNames.reserve(tagCount);
 
     const MMItemName* names = OffsetPointer<const MMItemName>(config, sizeof(MMItemName));
-    for (size_t i = 0;i < allocPoolCount;++i)
+    for (size_t i = 0; i < allocPoolCount; ++i)
     {
         poolMaskMapping.emplace_back(1 << i, i);
         allocPoolNames.push_back(names->name);
         names += 1;
     }
-    for (size_t i = 0;i < tagCount;++i)
+    for (size_t i = 0; i < tagCount; ++i)
     {
         tagNames.push_back(names->name);
         names += 1;
@@ -376,7 +348,7 @@ void ProfilingSession::FlushAndReset(bool eraseFiles)
 void ProfilingSession::LookForShapshots()
 {
     RefPtr<FileList> fileList(new FileList(storageDir));
-    for (int32 i = 0, n = fileList->GetCount();i < n;++i)
+    for (int32 i = 0, n = fileList->GetCount(); i < n; ++i)
     {
         if (!fileList->IsDirectory(i))
         {
@@ -424,7 +396,7 @@ void ProfilingSession::LoadShapshotDescriptor(const DAVA::FilePath& path)
 
 void ProfilingSession::LoadSymbols(const MMSymbol* symbols, size_t count)
 {
-    for (size_t i = 0;i < count;++i)
+    for (size_t i = 0; i < count; ++i)
     {
         DVASSERT(strlen(symbols[i].name) > 0);
         symbolTable.AddSymbol(symbols[i].addr, symbols[i].name);

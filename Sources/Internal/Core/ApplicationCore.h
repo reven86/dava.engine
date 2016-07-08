@@ -1,38 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #ifndef __DAVAENGINE_APPLICATION_CORE__
 #define __DAVAENGINE_APPLICATION_CORE__
 
 #include "Base/BaseObject.h"
 
-namespace DAVA 
+namespace DAVA
 {
 /**
 	\ingroup core
@@ -148,38 +119,39 @@ class Thread;
 class ApplicationCore : public BaseObject
 {
 protected:
-	virtual ~ApplicationCore();
-public:
-	ApplicationCore();
+    virtual ~ApplicationCore();
 
-	/**
+public:
+    ApplicationCore();
+
+    /**
 		\brief Called when application is suspended or minimized.
 		Stops main loop.
 	 */
-	virtual void OnSuspend();
-	
-	/**
+    virtual void OnSuspend();
+
+    /**
 		\brief Called when application is resumed after suspend or minimization.
 		Resumes main loop.
 	 */
-	virtual void OnResume();
-    
+    virtual void OnResume();
+
     /**
      \brief Called after entering fullscreen.
      */
     virtual void OnEnterFullscreen();
-    
+
     /**
      \brief Called after exiting fullscreen.
      */
     virtual void OnExitFullscreen();
 
-	/**
+    /**
 		\brief Called time to time from separate thread (not main) when application is Suspended.
 	 */
-	virtual void OnBackgroundTick();
+    virtual void OnBackgroundTick();
 
-	/**
+    /**
 		\brief Called when application is going to quit.
 		Called after quit event has come from operating system. If false is returned, application will quit in normal way (all destructors are called).
 		Is true is returned, application will fast quit (no desructors are called). Fast quit is usually used to prevent crash on quit while loading transition is in progress.
@@ -187,7 +159,7 @@ public:
 
 		\returns true for fast quit, false for normal quit
 	 */
-	virtual bool OnQuit();
+    virtual bool OnQuit();
 
 protected:
     /**
@@ -278,30 +250,29 @@ protected:
 	
 #if defined(__DAVAENGINE_ANDROID__)
 protected:
-	/**
+    /**
 		\brief Should be started only when Main thread is stopped
 	 */
-	void StartBackbroundTicker(uint32 tickPeriod = 250);
-	/**
+    void StartBackgroundTicker(uint32 tickPeriod = 250);
+    /**
 		\brief Should be stopped before Main thread start
 	 */
-	void StopBackgroundTicker();
+    void StopBackgroundTicker();
 
 private:
-	void BackgroundTickerHandler(BaseObject * caller, void * callerData, void * userData);
+    void BackgroundTickerHandler(BaseObject* caller, void* callerData, void* userData);
 #endif
-    
+
 private:
-	friend class Core;
+    friend class Core;
 
 #if defined(__DAVAENGINE_ANDROID__)
 private:
-	Thread *backgroundTicker;
-	volatile bool backgroundTickerFinishing;
-	uint32 backgroundTickTimeMs;
+    Thread* backgroundTicker;
+    volatile bool backgroundTickerFinishing;
+    uint32 backgroundTickTimeMs;
 #endif
 };
-	
 };
 
 #endif

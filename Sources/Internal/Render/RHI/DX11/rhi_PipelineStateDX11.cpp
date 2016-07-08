@@ -1,32 +1,4 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/rhi_RingBuffer.h"
     #include "../rhi_ShaderCache.h"
@@ -34,7 +6,7 @@
 
     #include "Debug/DVAssert.h"
     #include "Debug/Profiler.h"
-    #include "FileSystem/Logger.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
 using DAVA::uint16;
@@ -64,11 +36,22 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
         if (layout.ElementSemantics(i) == VS_PAD)
             continue;
 
+        unsigned stream_i = layout.ElementStreamIndex(i);
+
         elem[elemCount].AlignedByteOffset = (UINT)(layout.ElementOffset(i));
         elem[elemCount].SemanticIndex = layout.ElementSemanticsIndex(i);
-        elem[elemCount].InputSlot = 0;
-        elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-        elem[elemCount].InstanceDataStepRate = 0;
+        elem[elemCount].InputSlot = stream_i;
+
+        if (layout.StreamFrequency(stream_i) == VDF_PER_INSTANCE)
+        {
+            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+            elem[elemCount].InstanceDataStepRate = 1;
+        }
+        else
+        {
+            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+            elem[elemCount].InstanceDataStepRate = 0;
+        }
 
         switch (layout.ElementSemantics(i))
         {
@@ -190,11 +173,22 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
 
         if (vb_elem_i != DAVA::InvalidIndex)
         {
+            unsigned stream_i = vprogLayout.ElementStreamIndex(i);
+
             elem[elemCount].AlignedByteOffset = (UINT)(vbLayout.ElementOffset(vb_elem_i));
             elem[elemCount].SemanticIndex = vprogLayout.ElementSemanticsIndex(i);
-            elem[elemCount].InputSlot = 0;
-            elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-            elem[elemCount].InstanceDataStepRate = 0;
+            elem[elemCount].InputSlot = stream_i;
+
+            if (vprogLayout.StreamFrequency(stream_i) == VDF_PER_INSTANCE)
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+                elem[elemCount].InstanceDataStepRate = 1;
+            }
+            else
+            {
+                elem[elemCount].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                elem[elemCount].InstanceDataStepRate = 0;
+            }
 
             switch (vbLayout.ElementSemantics(vb_elem_i))
             {
@@ -335,6 +329,11 @@ public:
     bool SetConst(unsigned const_i, unsigned count, const float* data);
     bool SetConst(unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount);
     void SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const;
+    void Invalidate();
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    void SetToRHI(const void* instData) const;
+    const void* Instance() const;
+#endif
 
 private:
     void _EnsureMapped();
@@ -342,18 +341,26 @@ private:
     ProgType progType;
     ID3D11Buffer* buf;
     mutable float* value;
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    mutable float* inst;
+    mutable unsigned frame;
+#endif
     unsigned buf_i;
     unsigned regCount;
     mutable uint32 updatePending : 1;
 };
 
 static RingBuffer _DefConstRingBuf;
+static uint32 _CurFrame = 0;
 
 //------------------------------------------------------------------------------
 
 ConstBufDX11::ConstBufDX11()
     : buf(nullptr)
     , value(nullptr)
+#if !RHI_DX11__USE_DEFERRED_CONTEXTS
+    , inst(nullptr)
+#endif
     , buf_i(DAVA::InvalidIndex)
     , regCount(0)
 {
@@ -467,7 +474,11 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_count, const float*
     if (const_i + const_count <= regCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
         updatePending = true;
+#else
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -483,7 +494,11 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
     if (const_i <= regCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
         updatePending = true;
+#else
+        inst = nullptr;
+#endif
         success = true;
     }
 
@@ -492,6 +507,7 @@ bool ConstBufDX11::SetConst(unsigned const_i, unsigned const_sub_i, const float*
 
 //------------------------------------------------------------------------------
 
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
 void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer) const
 {
     if (updatePending)
@@ -501,6 +517,43 @@ void ConstBufDX11::SetToRHI(ID3D11DeviceContext* context, ID3D11Buffer** buffer)
     }
 
     buffer[buf_i] = buf;
+}
+
+#else
+
+void ConstBufDX11::SetToRHI(const void* instData) const
+{
+    _D3D11_ImmediateContext->UpdateSubresource(buf, 0, NULL, instData, regCount * 4 * sizeof(float), 0);
+
+    ID3D11Buffer* cb[1] = { buf };
+
+    if (progType == PROG_VERTEX)
+        _D3D11_ImmediateContext->VSSetConstantBuffers(buf_i, 1, &buf);
+    else
+        _D3D11_ImmediateContext->PSSetConstantBuffers(buf_i, 1, &buf);
+}
+const void* ConstBufDX11::Instance() const
+{
+    if (frame != _CurFrame)
+    {
+        inst = nullptr;
+    }
+
+    if (!inst)
+    {
+        //SCOPED_NAMED_TIMING("gl.cb-inst");
+        inst = _DefConstRingBuf.Alloc(regCount * 4 * sizeof(float));
+        memcpy(inst, value, 4 * regCount * sizeof(float));
+        frame = _CurFrame;
+    }
+
+    return inst;
+}
+#endif
+
+void ConstBufDX11::Invalidate()
+{
+    updatePending = true;
 }
 
 //==============================================================================
@@ -631,10 +684,12 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     ID3D10Blob* fp_code = nullptr;
     ID3D10Blob* fp_err = nullptr;
 
+#if 0
     Logger::Info("create PS");
     Logger::Info("  vprog= %s", desc.vprogUid.c_str());
     Logger::Info("  fprog= %s", desc.vprogUid.c_str());
     desc.vertexLayout.Dump();
+#endif
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
@@ -646,11 +701,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "vp_main",
-        #if RHI__FORCE_DX11_91
-    "vs_4_0_level_9_1",
-        #else
-    "vs_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "vs_4_0" : "vs_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &vp_code,
@@ -721,11 +772,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     NULL, // no macros
     NULL, // no includes
     "fp_main",
-        #if RHI__FORCE_DX11_91
-    "ps_4_0_level_9_1",
-        #else
-    "ps_4_0",
-        #endif
+    (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_11_0) ? "ps_4_0" : "ps_4_0_level_9_1",
     D3DCOMPILE_OPTIMIZATION_LEVEL2,
     0, // no effect compile flags
     &fp_code,
@@ -973,11 +1020,19 @@ ps11->vertexLayout.Dump();
 }
 
 unsigned
-VertexLayoutStride(Handle ps)
+VertexLayoutStride(Handle ps, unsigned stream_i)
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
 
-    return ps11->vertexLayout.Stride();
+    return ps11->vertexLayout.Stride(stream_i);
+}
+
+unsigned
+VertexLayoutStreamCount(Handle ps)
+{
+    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get(ps);
+
+    return ps11->vertexLayout.StreamCount();
 }
 
 void GetConstBufferCount(Handle ps, unsigned* vertexBufCount, unsigned* fragmentBufCount)
@@ -1004,6 +1059,16 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_Delete = &dx11_ConstBuffer_Delete;
 }
 
+void InvalidateAll()
+{
+    for (ConstBufDX11Pool::Iterator cb = ConstBufDX11Pool::Begin(), cb_end = ConstBufDX11Pool::End(); cb != cb_end; ++cb)
+    {
+        cb->Invalidate();
+    }
+}
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+
 void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
 {
     ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
@@ -1011,10 +1076,30 @@ void SetToRHI(Handle cb, ID3D11DeviceContext* context, ID3D11Buffer** buffer)
     cb11->SetToRHI(context, buffer);
 }
 
+#else
+
+void SetToRHI(Handle cb, const void* instData)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    cb11->SetToRHI(instData);
+}
+const void* Instance(Handle cb)
+{
+    ConstBufDX11* cb11 = ConstBufDX11Pool::Get(cb);
+
+    return cb11->Instance();
+}
+void InvalidateAllInstances()
+{
+    ++_CurFrame;
+}
+
 void InitializeRingBuffer(uint32 size)
 {
-    _DefConstRingBuf.Initialize(size);
+    _DefConstRingBuf.Initialize((size) ? size : 4 * 1024 * 1024);
 }
+#endif
 }
 
 } // namespace rhi

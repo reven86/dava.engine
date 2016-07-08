@@ -9,17 +9,21 @@
 
 namespace YAML
 {
-	// this is basically boost::noncopyable
-	class YAML_CPP_API noncopyable
-	{
-	protected:
-		noncopyable() {}
-		~noncopyable() {}
-			
-	private:
-		noncopyable(const noncopyable&);
-		const noncopyable& operator = (const noncopyable&);
-	};
+// this is basically boost::noncopyable
+class YAML_CPP_API noncopyable
+{
+protected:
+    noncopyable()
+    {
+    }
+    ~noncopyable()
+    {
+    }
+
+private:
+    noncopyable(const noncopyable&);
+    const noncopyable& operator=(const noncopyable&);
+};
 }
 
 #endif // NONCOPYABLE_H_62B23520_7C8E_11DE_8A39_0800200C9A66

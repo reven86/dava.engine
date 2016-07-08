@@ -53,30 +53,30 @@ extern "C" {
  * the specific UTF-16LE and UTF-16BE are present.
  */
 typedef enum {
-    XML_CHAR_ENCODING_ERROR=   -1, /* No char encoding detected */
-    XML_CHAR_ENCODING_NONE=	0, /* No char encoding detected */
-    XML_CHAR_ENCODING_UTF8=	1, /* UTF-8 */
-    XML_CHAR_ENCODING_UTF16LE=	2, /* UTF-16 little endian */
-    XML_CHAR_ENCODING_UTF16BE=	3, /* UTF-16 big endian */
-    XML_CHAR_ENCODING_UCS4LE=	4, /* UCS-4 little endian */
-    XML_CHAR_ENCODING_UCS4BE=	5, /* UCS-4 big endian */
-    XML_CHAR_ENCODING_EBCDIC=	6, /* EBCDIC uh! */
-    XML_CHAR_ENCODING_UCS4_2143=7, /* UCS-4 unusual ordering */
-    XML_CHAR_ENCODING_UCS4_3412=8, /* UCS-4 unusual ordering */
-    XML_CHAR_ENCODING_UCS2=	9, /* UCS-2 */
-    XML_CHAR_ENCODING_8859_1=	10,/* ISO-8859-1 ISO Latin 1 */
-    XML_CHAR_ENCODING_8859_2=	11,/* ISO-8859-2 ISO Latin 2 */
-    XML_CHAR_ENCODING_8859_3=	12,/* ISO-8859-3 */
-    XML_CHAR_ENCODING_8859_4=	13,/* ISO-8859-4 */
-    XML_CHAR_ENCODING_8859_5=	14,/* ISO-8859-5 */
-    XML_CHAR_ENCODING_8859_6=	15,/* ISO-8859-6 */
-    XML_CHAR_ENCODING_8859_7=	16,/* ISO-8859-7 */
-    XML_CHAR_ENCODING_8859_8=	17,/* ISO-8859-8 */
-    XML_CHAR_ENCODING_8859_9=	18,/* ISO-8859-9 */
-    XML_CHAR_ENCODING_2022_JP=  19,/* ISO-2022-JP */
-    XML_CHAR_ENCODING_SHIFT_JIS=20,/* Shift_JIS */
-    XML_CHAR_ENCODING_EUC_JP=   21,/* EUC-JP */
-    XML_CHAR_ENCODING_ASCII=    22 /* pure ASCII */
+    XML_CHAR_ENCODING_ERROR = -1, /* No char encoding detected */
+    XML_CHAR_ENCODING_NONE = 0, /* No char encoding detected */
+    XML_CHAR_ENCODING_UTF8 = 1, /* UTF-8 */
+    XML_CHAR_ENCODING_UTF16LE = 2, /* UTF-16 little endian */
+    XML_CHAR_ENCODING_UTF16BE = 3, /* UTF-16 big endian */
+    XML_CHAR_ENCODING_UCS4LE = 4, /* UCS-4 little endian */
+    XML_CHAR_ENCODING_UCS4BE = 5, /* UCS-4 big endian */
+    XML_CHAR_ENCODING_EBCDIC = 6, /* EBCDIC uh! */
+    XML_CHAR_ENCODING_UCS4_2143 = 7, /* UCS-4 unusual ordering */
+    XML_CHAR_ENCODING_UCS4_3412 = 8, /* UCS-4 unusual ordering */
+    XML_CHAR_ENCODING_UCS2 = 9, /* UCS-2 */
+    XML_CHAR_ENCODING_8859_1 = 10, /* ISO-8859-1 ISO Latin 1 */
+    XML_CHAR_ENCODING_8859_2 = 11, /* ISO-8859-2 ISO Latin 2 */
+    XML_CHAR_ENCODING_8859_3 = 12, /* ISO-8859-3 */
+    XML_CHAR_ENCODING_8859_4 = 13, /* ISO-8859-4 */
+    XML_CHAR_ENCODING_8859_5 = 14, /* ISO-8859-5 */
+    XML_CHAR_ENCODING_8859_6 = 15, /* ISO-8859-6 */
+    XML_CHAR_ENCODING_8859_7 = 16, /* ISO-8859-7 */
+    XML_CHAR_ENCODING_8859_8 = 17, /* ISO-8859-8 */
+    XML_CHAR_ENCODING_8859_9 = 18, /* ISO-8859-9 */
+    XML_CHAR_ENCODING_2022_JP = 19, /* ISO-2022-JP */
+    XML_CHAR_ENCODING_SHIFT_JIS = 20, /* Shift_JIS */
+    XML_CHAR_ENCODING_EUC_JP = 21, /* EUC-JP */
+    XML_CHAR_ENCODING_ASCII = 22 /* pure ASCII */
 } xmlCharEncoding;
 
 /**
@@ -95,9 +95,8 @@ typedef enum {
  *     if the return value is positive, else unpredictiable.
  * The value of @outlen after return is the number of octets consumed.
  */
-typedef intptr_t (* xmlCharEncodingInputFunc)(unsigned char *out, intptr_t* outlen,
-                                         const unsigned char *in, intptr_t* inlen);
-
+typedef intptr_t (*xmlCharEncodingInputFunc)(unsigned char* out, intptr_t* outlen,
+                                             const unsigned char* in, intptr_t* inlen);
 
 /**
  * xmlCharEncodingOutputFunc:
@@ -117,9 +116,8 @@ typedef intptr_t (* xmlCharEncodingInputFunc)(unsigned char *out, intptr_t* outl
  *     if the return value is positive, else unpredictiable.
  * The value of @outlen after return is the number of octets produced.
  */
-typedef intptr_t (* xmlCharEncodingOutputFunc)(unsigned char *out, intptr_t* outlen,
-                                          const unsigned char *in, intptr_t* inlen);
-
+typedef intptr_t (*xmlCharEncodingOutputFunc)(unsigned char* out, intptr_t* outlen,
+                                              const unsigned char* in, intptr_t* inlen);
 
 /*
  * Block defining the handlers for non UTF-8 encodings.
@@ -127,14 +125,15 @@ typedef intptr_t (* xmlCharEncodingOutputFunc)(unsigned char *out, intptr_t* out
  */
 
 typedef struct _xmlCharEncodingHandler xmlCharEncodingHandler;
-typedef xmlCharEncodingHandler *xmlCharEncodingHandlerPtr;
-struct _xmlCharEncodingHandler {
-    char                       *name;
-    xmlCharEncodingInputFunc   input;
-    xmlCharEncodingOutputFunc  output;
+typedef xmlCharEncodingHandler* xmlCharEncodingHandlerPtr;
+struct _xmlCharEncodingHandler
+{
+    char* name;
+    xmlCharEncodingInputFunc input;
+    xmlCharEncodingOutputFunc output;
 #ifdef LIBXML_ICONV_ENABLED
-    iconv_t                    iconv_in;
-    iconv_t                    iconv_out;
+    iconv_t iconv_in;
+    iconv_t iconv_out;
 #endif /* LIBXML_ICONV_ENABLED */
 };
 
@@ -149,76 +148,76 @@ extern "C" {
 /*
  * Interfaces for encoding handlers.
  */
-XMLPUBFUN void XMLCALL	
-	xmlInitCharEncodingHandlers	(void);
-XMLPUBFUN void XMLCALL	
-	xmlCleanupCharEncodingHandlers	(void);
-XMLPUBFUN void XMLCALL	
-	xmlRegisterCharEncodingHandler	(xmlCharEncodingHandlerPtr handler);
+XMLPUBFUN void XMLCALL
+xmlInitCharEncodingHandlers(void);
+XMLPUBFUN void XMLCALL
+xmlCleanupCharEncodingHandlers(void);
+XMLPUBFUN void XMLCALL
+xmlRegisterCharEncodingHandler(xmlCharEncodingHandlerPtr handler);
 XMLPUBFUN xmlCharEncodingHandlerPtr XMLCALL
-	xmlGetCharEncodingHandler	(xmlCharEncoding enc);
+xmlGetCharEncodingHandler(xmlCharEncoding enc);
 XMLPUBFUN xmlCharEncodingHandlerPtr XMLCALL
-	xmlFindCharEncodingHandler	(const char *name);
+xmlFindCharEncodingHandler(const char* name);
 XMLPUBFUN xmlCharEncodingHandlerPtr XMLCALL
-	xmlNewCharEncodingHandler	(const char *name, 
-                          		 xmlCharEncodingInputFunc input,
-                          		 xmlCharEncodingOutputFunc output);
+xmlNewCharEncodingHandler(const char* name,
+                          xmlCharEncodingInputFunc input,
+                          xmlCharEncodingOutputFunc output);
 
 /*
  * Interfaces for encoding names and aliases.
  */
-XMLPUBFUN int XMLCALL	
-	xmlAddEncodingAlias		(const char *name,
-					 const char *alias);
-XMLPUBFUN int XMLCALL	
-	xmlDelEncodingAlias		(const char *alias);
-XMLPUBFUN const char * XMLCALL
-	xmlGetEncodingAlias		(const char *alias);
-XMLPUBFUN void XMLCALL	
-	xmlCleanupEncodingAliases	(void);
+XMLPUBFUN int XMLCALL
+xmlAddEncodingAlias(const char* name,
+                    const char* alias);
+XMLPUBFUN int XMLCALL
+xmlDelEncodingAlias(const char* alias);
+XMLPUBFUN const char* XMLCALL
+xmlGetEncodingAlias(const char* alias);
+XMLPUBFUN void XMLCALL
+xmlCleanupEncodingAliases(void);
 XMLPUBFUN xmlCharEncoding XMLCALL
-	xmlParseCharEncoding		(const char *name);
-XMLPUBFUN const char * XMLCALL
-	xmlGetCharEncodingName		(xmlCharEncoding enc);
+xmlParseCharEncoding(const char* name);
+XMLPUBFUN const char* XMLCALL
+xmlGetCharEncodingName(xmlCharEncoding enc);
 
 /*
  * Interfaces directly used by the parsers.
  */
 XMLPUBFUN xmlCharEncoding XMLCALL
-	xmlDetectCharEncoding		(const unsigned char *in,
-					 intptr_t len);
+xmlDetectCharEncoding(const unsigned char* in,
+                      intptr_t len);
 
-XMLPUBFUN intptr_t XMLCALL	
-	xmlCharEncOutFunc		(xmlCharEncodingHandler *handler,
-					 xmlBufferPtr out,
-					 xmlBufferPtr in);
-
-XMLPUBFUN intptr_t XMLCALL	
-	xmlCharEncInFunc		(xmlCharEncodingHandler *handler,
-					 xmlBufferPtr out,
-					 xmlBufferPtr in);
 XMLPUBFUN intptr_t XMLCALL
-	xmlCharEncFirstLine		(xmlCharEncodingHandler *handler,
-					 xmlBufferPtr out,
-					 xmlBufferPtr in);
-XMLPUBFUN int XMLCALL	
-	xmlCharEncCloseFunc		(xmlCharEncodingHandler *handler);
+xmlCharEncOutFunc(xmlCharEncodingHandler* handler,
+                  xmlBufferPtr out,
+                  xmlBufferPtr in);
+
+XMLPUBFUN intptr_t XMLCALL
+xmlCharEncInFunc(xmlCharEncodingHandler* handler,
+                 xmlBufferPtr out,
+                 xmlBufferPtr in);
+XMLPUBFUN intptr_t XMLCALL
+xmlCharEncFirstLine(xmlCharEncodingHandler* handler,
+                    xmlBufferPtr out,
+                    xmlBufferPtr in);
+XMLPUBFUN int XMLCALL
+xmlCharEncCloseFunc(xmlCharEncodingHandler* handler);
 
 /*
  * Export a few useful functions
  */
 #ifdef LIBXML_OUTPUT_ENABLED
-XMLPUBFUN intptr_t XMLCALL	
-	UTF8Toisolat1			(unsigned char *out,
-					 intptr_t* outlen,
-					 const unsigned char *in,
-					 intptr_t* inlen);
+XMLPUBFUN intptr_t XMLCALL
+UTF8Toisolat1(unsigned char* out,
+              intptr_t* outlen,
+              const unsigned char* in,
+              intptr_t* inlen);
 #endif /* LIBXML_OUTPUT_ENABLED */
-XMLPUBFUN intptr_t XMLCALL	
-	isolat1ToUTF8			(unsigned char *out,
-					 intptr_t* outlen,
-					 const unsigned char *in,
-					 intptr_t* inlen);
+XMLPUBFUN intptr_t XMLCALL
+isolat1ToUTF8(unsigned char* out,
+              intptr_t* outlen,
+              const unsigned char* in,
+              intptr_t* inlen);
 #ifdef __cplusplus
 }
 #endif

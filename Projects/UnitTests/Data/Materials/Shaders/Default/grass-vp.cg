@@ -48,7 +48,7 @@ property float4 vegWaveOffsety : static,instance : ;
 
 VPROG_BEGIN
 
-    float3 inPosition = VP_IN_POSITION;
+    float3 inPosition = VP_IN_POSITION.xyz;
     float2 inTexCoord0 = VP_IN_TEXCOORD0;
     float3 inTexCoord1 = VP_IN_TEXCOORD1;
     float3 inTexCoord2 = VP_IN_TEXCOORD2;

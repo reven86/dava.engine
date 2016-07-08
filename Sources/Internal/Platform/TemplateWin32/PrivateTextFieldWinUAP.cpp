@@ -1,37 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Platform/TemplateWin32/PrivateTextFieldWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/Logger.h"
+#include "Logger/Logger.h"
 
 #include "Math/Color.h"
 
@@ -39,9 +11,12 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UITextField.h"
+#include "UI/Focus/FocusHelpers.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/Image.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -66,26 +41,25 @@ using namespace concurrency;
 
 namespace DAVA
 {
-
 namespace
 {
-
 struct StringDiffResult
 {
     StringDiffResult() = default;
 
-    enum eDiffType {
-        NO_CHANGE = 0,      // No changes between original string and new string
-        INSERTION,          // Character range was inserted into new string
-        DELETION,           // Character range was deleted from original string
-        REPLACEMENT         // Character range in original string was replaced by another character range in new string
+    enum eDiffType
+    {
+        NO_CHANGE = 0, // No changes between original string and new string
+        INSERTION, // Character range was inserted into new string
+        DELETION, // Character range was deleted from original string
+        REPLACEMENT // Character range in original string was replaced by another character range in new string
     };
 
     eDiffType diffType = NO_CHANGE;
-    int32 originalStringDiffPosition = 0;   // Position in original string where difference starts
-    int32 newStringDiffPosition = 0;        // Position in new string where difference starts
-    WideString originalStringDiff;          // What was changed in original string
-    WideString newStringDiff;               // What was changed in new string
+    int32 originalStringDiffPosition = 0; // Position in original string where difference starts
+    int32 newStringDiffPosition = 0; // Position in new string where difference starts
+    WideString originalStringDiff; // What was changed in original string
+    WideString newStringDiff; // What was changed in new string
 
     // Explanation of originalStringDiff, newStringDiff and diff positions:
     // diffType is INSERTION:
@@ -143,7 +117,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         newDiffEnd -= 1;
     }
 
-    if (origDiffEnd < origDiffBegin)    // Insertion took place
+    if (origDiffEnd < origDiffBegin) // Insertion took place
     {
         result.diffType = StringDiffResult::INSERTION;
         result.originalStringDiffPosition = origDiffBegin;
@@ -151,7 +125,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         result.newStringDiffPosition = newDiffBegin;
         result.newStringDiff = WideString(newString, newDiffBegin, newDiffEnd - newDiffBegin + 1);
     }
-    else if (newDiffEnd < origDiffBegin)    // Deletion took place
+    else if (newDiffEnd < origDiffBegin) // Deletion took place
     {
         result.diffType = StringDiffResult::DELETION;
         result.originalStringDiffPosition = origDiffBegin;
@@ -159,7 +133,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
         result.originalStringDiffPosition = newDiffBegin;
         result.newStringDiff = WideString();
     }
-    else    // Replacement took place
+    else // Replacement took place
     {
         result.diffType = StringDiffResult::REPLACEMENT;
         result.originalStringDiffPosition = origDiffBegin;
@@ -169,7 +143,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
     }
 }
 
-}   // unnamed namespace
+} // unnamed namespace
 
 PrivateTextFieldWinUAP::TextFieldProperties::TextFieldProperties()
     : createNew(false)
@@ -269,7 +243,8 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+            core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
@@ -328,7 +303,7 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
         if (properties.textChanged && properties.focusChanged && properties.focus)
             uiTextField->SetSprite(nullptr, 0);
 
-        auto self{shared_from_this()};
+        auto self{ shared_from_this() };
         TextFieldProperties props(properties);
         core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
@@ -345,12 +320,14 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
     // Do not set same text again as TextChanged event not fired after setting equal text
     if (text.length() == curText.length() && text == curText)
         return;
-
     properties.text = text;
     properties.textChanged = true;
     properties.textAssigned = true;
     properties.anyPropertyChanged = true;
+    properties.caretPosition = static_cast<int32>(text.length());
+    properties.caretPositionChanged = true;
 
+    lastProgrammaticText = curText;
     curText = text;
     if (text.empty())
     { // Immediatly remove sprite image if new text is empty to get rid of some flickering
@@ -482,7 +459,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
     if (textControl)
     {
-        nativeText = ref new TextBox();
+        nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
         InstallTextEventHandlers();
@@ -604,28 +581,31 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
     case VirtualKey::Back:
         savedCaretPosition += 1;
         break;
+    case VirtualKey::Tab:
+        args->Handled = true; // To avoid handling tab navigation by windows. We will handle navigation by our focus system.
+        break;
     case VirtualKey::Escape:
+    {
+        auto self{ shared_from_this() };
+        core->RunOnMainThread([this, self]()
+                              {
+                                  if (textFieldDelegate != nullptr)
+                                      textFieldDelegate->TextFieldShouldCancel(uiTextField);
+                              });
+    }
+    break;
+    case VirtualKey::Enter:
+        // Known XAML bug: native TextBox generates two OnKeyDown events
+        // So use RepeatCount field to filter out extra event: second event comes with RepeatCount > 0
+        if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
         {
-            auto self{shared_from_this()};
-            core->RunOnMainThread([this, self]()
-            {
+            auto self{ shared_from_this() };
+            core->RunOnMainThread([this, self]() {
                 if (textFieldDelegate != nullptr)
-                    textFieldDelegate->TextFieldShouldCancel(uiTextField);
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
         }
         break;
-        case VirtualKey::Enter:
-            // Known XAML bug: native TextBox generates two OnKeyDown events
-            // So use RepeatCount field to filter out extra event: second event comes with RepeatCount > 0
-            if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
-            {
-                auto self{ shared_from_this() };
-                core->RunOnMainThread([this, self]() {
-                    if (textFieldDelegate != nullptr)
-                        textFieldDelegate->TextFieldShouldReturn(uiTextField);
-                });
-            }
-            break;
     default:
         break;
     }
@@ -633,6 +613,8 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    core->XamlApplication()->CaptureTextBox(nativeControl);
+
     SetNativeCaretPosition(GetNativeText()->Length());
 
     Windows::Foundation::Rect nativeKeyboardRect = InputPane::GetForCurrentView()->OccludedRect;
@@ -656,15 +638,21 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             // 1. click on text field in multiline mode as it is always shown on screen
             // 2. tab navigation
             UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-            if (curFocused != uiTextField)
+            if (curFocused != uiTextField && FocusHelpers::CanFocusControl(uiTextField))
+            {
                 uiTextField->SetFocused();
+            }
+            if (!uiTextField->IsEditing())
+            {
+                uiTextField->StartEdit();
+            }
 
             // Sometimes OnKeyboardShowing event does not fired when keyboard is already on screen
             // If keyboard rect is not empty so manually notify delegate about keyboard size and position
             if (textFieldDelegate != nullptr && keyboardRect.dx != 0 && keyboardRect.dy != 0)
             {
                 Rect rect = WindowToVirtual(keyboardRect);
-                textFieldDelegate->OnKeyboardShown(rect);
+                uiTextField->OnKeyboardShown(rect);
             }
         }
     });
@@ -682,9 +670,8 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     core->RunOnMainThread([this, self]() {
         if (uiTextField != nullptr)
         {
+            uiTextField->OnKeyboardHidden();
             uiTextField->ReleaseFocus();
-            if (textFieldDelegate)
-                textFieldDelegate->OnKeyboardHidden();
         }
     });
 }
@@ -714,10 +701,10 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     auto self{ shared_from_this() };
     core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
-        if (programmaticTextChange && targetAlive)
+        if (programmaticTextChange && targetAlive && newText != lastProgrammaticText)
         {
             // Event has originated from SetText() method so only notify delegate about text change
-            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+            textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, lastProgrammaticText, UITextFieldDelegate::eReason::CODE);
         }
         else if (targetAlive)
         {
@@ -731,7 +718,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
                 static_cast<int32>(diffR.originalStringDiff.length()),
                 diffR.newStringDiff);
                 if (textAccepted)
-                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText);
+                    textFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, UITextFieldDelegate::eReason::USER);
             }
         }
         programmaticTextChange = false;
@@ -880,8 +867,8 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
         xOffset = rect.x + rect.dx + 1000.0f;
         yOffset = rect.y + rect.dy + 1000.0f;
     }
-    nativeControlHolder->Width = rect.dx;
-    nativeControlHolder->Height = rect.dy;
+    nativeControlHolder->Width = std::max(0.0f, rect.dx);
+    nativeControlHolder->Height = std::max(0.0f, rect.dy);
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 }
 
@@ -1107,8 +1094,8 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
 
 void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 {
-    auto self{shared_from_this()};
-    RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
+    auto self{ shared_from_this() };
+    RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         int32 imageWidth = renderTarget->PixelWidth;
@@ -1129,8 +1116,9 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
-                if (curFocused != uiTextField)
-                { // Do not set rendered texture if control has focus
+                if (!uiTextField->IsEditing())
+                {
+                    // Do not set rendered texture if control has focus
                     uiTextField->SetSprite(sprite.Get(), 0);
                 }
             }
@@ -1156,12 +1144,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 
 Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
 {
-    const uint32 pitch = 4 * width;
-    ImageConvert::ConvertImageDirect(FORMAT_BGRA8888, FORMAT_RGBA8888, imageData, width, height, pitch, imageData, width, height, pitch);
-    RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
-    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
+    ScopedPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
+    ImageConvert::SwapRedBlueChannels(imgSrc);
+    return Sprite::CreateFromImage(imgSrc, true, false);
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__

@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIControl.h"
@@ -37,15 +9,14 @@
 
 namespace DAVA
 {
-
 namespace
 {
-    const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
+const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
 }
 
 struct ImmediatePropertySetter
 {
-    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
         targetIntrospectionMember->SetValue(targetObject, value);
@@ -57,7 +28,7 @@ struct ImmediatePropertySetter
 
 struct AnimatedPropertySetter
 {
-    template<typename T>
+    template <typename T>
     void Animate(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
@@ -75,7 +46,7 @@ struct AnimatedPropertySetter
         }
     }
 
-    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
     {
         switch (value.GetType())
         {
@@ -107,12 +78,10 @@ struct AnimatedPropertySetter
 
 UIStyleSheetSystem::UIStyleSheetSystem()
 {
-
 }
 
 UIStyleSheetSystem::~UIStyleSheetSystem()
 {
-
 }
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control)
@@ -122,34 +91,49 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
 
     if (packageContext)
     {
-        UIStyleSheetPropertySet appliedProperties;
-        const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
-        const auto& styleSheets = packageContext->GetSortedStyleSheets();
-        for (const UIPriorityStyleSheet& styleSheet : styleSheets)
-        {
-            if (StyleSheetMatchesControl(styleSheet.GetStyleSheet(), control))
-            {
-                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
-                for (const auto& iter : propertyTable)
-                {
-                    if (!appliedProperties.test(iter.propertyIndex) && !localControlProperties.test(iter.propertyIndex))
-                    {
-                        appliedProperties.set(iter.propertyIndex);
+        UIStyleSheetPropertySet cascadeProperties;
+        const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
+        const Vector<UIPriorityStyleSheet>& styleSheets = packageContext->GetSortedStyleSheets();
 
-                        if (iter.transition && control->IsStyleSheetInitialized())
-                            DoForAllPropertyInstances(control, iter.propertyIndex, AnimatedPropertySetter{ iter.propertyIndex, iter.value, iter.transitionFunction, iter.transitionTime });
-                        else
-                            DoForAllPropertyInstances(control, iter.propertyIndex, ImmediatePropertySetter{ iter.propertyIndex, iter.value });
-                    }
+        Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources = {};
+
+        for (auto styleSheetIter = styleSheets.rbegin(); styleSheetIter != styleSheets.rend(); ++styleSheetIter)
+        {
+            const UIStyleSheet* styleSheet = styleSheetIter->GetStyleSheet();
+
+            if (StyleSheetMatchesControl(styleSheet, control))
+            {
+                cascadeProperties |= styleSheet->GetPropertyTable()->GetPropertySet();
+
+                const Vector<UIStyleSheetProperty>& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
+                for (const UIStyleSheetProperty& prop : propertyTable)
+                {
+                    propertySources[prop.propertyIndex] = &prop;
                 }
             }
         }
 
-        const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & (~appliedProperties) & (~localControlProperties);
-        if (propertiesToReset.any())
+        const UIStyleSheetPropertySet propertiesToApply = cascadeProperties & (~localControlProperties);
+        const UIStyleSheetPropertySet propertiesToReset = control->GetStyledPropertySet() & (~propertiesToApply) & (~localControlProperties);
+
+        if (propertiesToReset.any() || propertiesToApply.any())
         {
-            for (uint32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+            for (uint32 propertyIndex = 0; propertyIndex < propertySources.size(); ++propertyIndex)
             {
+                if (propertiesToApply.test(propertyIndex))
+                {
+                    const UIStyleSheetProperty* prop = propertySources[propertyIndex];
+
+                    if (prop->transition && control->IsStyleSheetInitialized())
+                    {
+                        DoForAllPropertyInstances(control, propertyIndex, AnimatedPropertySetter{ propertyIndex, prop->value, prop->transitionFunction, prop->transitionTime });
+                    }
+                    else
+                    {
+                        DoForAllPropertyInstances(control, propertyIndex, ImmediatePropertySetter{ propertyIndex, prop->value });
+                    }
+                }
+
                 if (propertiesToReset.test(propertyIndex))
                 {
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
@@ -158,7 +142,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
             }
         }
 
-        control->SetStyledPropertySet(appliedProperties);
+        control->SetStyledPropertySet(propertiesToApply);
     }
 
     control->ResetStyleSheetDirty();
@@ -169,18 +153,18 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         ProcessControl(child);
     }
 }
-    
-void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
+
+void UIStyleSheetSystem::AddGlobalClass(const FastName& clazz)
 {
     globalClasses.AddClass(clazz);
 }
 
-void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
+void UIStyleSheetSystem::RemoveGlobalClass(const FastName& clazz)
 {
     globalClasses.RemoveClass(clazz);
 }
-    
-bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
+
+bool UIStyleSheetSystem::HasGlobalClass(const FastName& clazz) const
 {
     return globalClasses.HasClass(clazz);
 }
@@ -199,10 +183,10 @@ void UIStyleSheetSystem::ClearGlobalClasses()
 {
     globalClasses.RemoveAllClasses();
 }
-    
-bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
+
+bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
-    UIControl* currentControl = control;
+    const UIControl* currentControl = control;
 
     auto endIter = styleSheet->GetSelectorChain().rend();
     for (auto selectorIter = styleSheet->GetSelectorChain().rbegin(); selectorIter != endIter; ++selectorIter)
@@ -216,11 +200,9 @@ bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet
     return true;
 }
 
-bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
+bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control)
 {
-    if (((selector.stateMask & control->GetState()) != selector.stateMask)
-        || (selector.name.IsValid() && selector.name != control->GetFastName())
-        || (!selector.className.empty() && selector.className != control->GetClassName()))
+    if (((selector.stateMask & control->GetState()) != selector.stateMask) || (selector.name.IsValid() && selector.name != control->GetName()) || (!selector.className.empty() && selector.className != control->GetClassName()))
         return false;
 
     for (const FastName& clazz : selector.classes)
@@ -270,5 +252,4 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         break;
     }
 }
-
 }

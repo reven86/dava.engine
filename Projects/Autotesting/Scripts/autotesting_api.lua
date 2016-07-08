@@ -1,7 +1,8 @@
 SMALL_TIMEOUT = 3.0
 BIG_TIMEOUT = 30.0 -- Big time out for waiting
 TIMEOUT = 10.0 -- DEFAULT TIMEOUT
-TIMECLICK = 0.5 -- time for simple action
+TIMECLICK = 0.2 -- time for simple action
+DOUBLETAP_DELAY = 0.005 --time between two taps
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
@@ -176,6 +177,10 @@ function StopTest()
     autotestingSystem:OnTestFinished()
 end
 
+function SkipTest()
+    autotestingSystem:OnTestSkipped()
+    Yield()
+end
 
 -- DB communication
 function SaveKeyedArchiveToDevice(name, archive)
@@ -196,16 +201,10 @@ function GetParameter(name, default)
     OnError("Couldn't find value for variable " .. name)
 end
 
-function ReadString(name)
-    return autotestingSystem:ReadString(name)
-end
-
-function WriteString(name, text)
-    autotestingSystem:WriteString(name, text)
-    coroutine.yield()
-end
-
 function MakeScreenshot()
+    while autotestingSystem:GetIsScreenShotSaving() do
+        coroutine.yield()
+    end
     local name = autotestingSystem:MakeScreenshot()
     coroutine.yield()
     return name
@@ -218,41 +217,49 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Multiplayer API
 ----------------------------------------------------------------------------------------------------
+MP_STATE = {READY="ready", NO_DEVICE="not_found"}
+
+STATE_RECORD = "State"
+COMMAND_RECORD = "Command"
+
 -- mark current device as ready to work in DB
 function ReadState(name)
-    return autotestingSystem:ReadState(name)
+    return autotestingSystem:ReadState(name, STATE_RECORD)
 end
 
 function ReadCommand(name)
-    return autotestingSystem:ReadCommand(name)
+    return autotestingSystem:ReadState(name, COMMAND_RECORD)
 end
 
 function WriteState(name, state)
-    autotestingSystem:WriteState(name, state)
+    autotestingSystem:WriteState(name, STATE_RECORD , state)
     coroutine.yield()
 end
 
 function WriteCommand(name, command)
-    autotestingSystem:WriteCommand(name, command)
+    autotestingSystem:WriteState(name, COMMAND_RECORD, command)
     coroutine.yield()
 end
 
-function InitializeDevice(name)
-    DEVICE = name
-    Log("Mark " .. name .. " device as Ready")
+function InitializeDevice()
+    Log("Mark " .. DEVICE_NAME .. " device as Ready")
+    autotestingSystem:InitializeDevice()
+    WriteState(DEVICE_NAME, MP_STATE['READY'])
     Yield()
-    autotestingSystem:InitializeDevice(DEVICE)
-    Yield()
-    WriteState(DEVICE, "ready")
 end
 
 function WaitForDevice(name)
     Log("Wait while " .. name .. " device become Ready")
     Yield()
+	local currentStatus = ""
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        if ReadState(name) == "ready" then
-            return
-        end
+		currentStatus = ReadState(name)
+        if currentStatus == MP_STATE['READY'] then
+			Log("Device " .. name .. " is ready")
+            return true
+        elseif currentStatus == MP_STATE['NO_DEVICE'] then
+			OnError("Could not find device " .. name)
+		end
         Wait(1)
     end
     OnError("Device " .. name .. " is not ready during timeout")
@@ -277,8 +284,9 @@ end
 
 function WaitJob(name)
     Log("Wait for job on slave " .. name)
+	local state
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        local state = ReadState(name)
+        state = ReadState(name)
         if state == "execution_completed" then
             WriteState(name, "ready")
             Log("Device " .. name .. " finish his job")
@@ -392,7 +400,24 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(controlName, background)
     local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
+    if not control then
+        Log("Control " .. controlName .. " not found")
+        return false
+    end
+    if not (control:GetVisibilityFlag() and control:IsVisible()) then
+        Log("Control " .. controlName .. " is not visible")
+        return false
+    end
+    if not IsOnScreen(controlName, background) then
+        Log("Control " .. controlName .. " is not on screen")
+        return false
+    end
+    return true
+end
+
+local function __IsVisibleNoLog(controlName, background)
+    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
@@ -426,7 +451,6 @@ function IsReady(controlName, waitTime)
         return false
     end
     if not IsVisible(controlName) then
-        Log("Control " .. controlName .. " is not visible.")
         return false
     end
     if not IsCenterOnScreen(controlName) then
@@ -502,6 +526,31 @@ function WaitControl(name, time)
     return result
 end
 
+function WaitControls(controls, waitAll, waitTime)
+    waitTime = waitTime or TIMEOUT
+    if waitAll == nil then
+        waitAll = true
+    end
+    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
+    local find_controls_lua = function(controls, waitAll)
+        local loadedControls = 0
+        for _, control in pairs(controls)do
+            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
+                if not waitAll then
+                   return true
+                end
+                loadedControls = loadedControls + 1
+            end
+        end
+        return table.getn(controls) == loadedControls
+    end
+    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    if not result then
+        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+    end
+    return result
+end
+
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
@@ -516,7 +565,7 @@ end
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local result = WaitUntil(waitTime, IsVisible, name)
+    local result = WaitUntil(waitTime, __IsVisibleNoLog, name)
 	if not result then
         Log("Control not found " .. name, "DEBUG")
     end
@@ -552,6 +601,18 @@ function ClearField(field)
     KeyPress(2)
 end
 
+function FastSelectControl(name, waitTime)
+    Log('Scroll to contorol '.. name .. ' through API')
+    local waitTime = waitTime or SMALL_TIMEOUT
+    if not WaitControl(name, waitTime) then
+        Log("Control " .. name .. " not found.")
+        return false
+    end
+    autotestingSystem:ScrollToControl(name)
+    Yield()
+    return ClickControl(name)
+end
+
 function SelectItemInList(listName, item)
     Log(string.format("Select '%s' cell in '%s' list.", item, listName))
     assert(WaitControl(listName), "Couldn't find " .. listName)
@@ -563,9 +624,7 @@ function SelectItemInList(listName, item)
     end
     local listControl = GetControl(listName)
     local startPoint, __scroll = listControl:GetPivotPoint(), nil
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
     local finalPoint = autotestingSystem:GetMaxListOffsetSize(listControl)
-    print(string.format('Final point: ' .. finalPoint))
     if autotestingSystem:IsListHorisontal(listControl) then
         __scroll, startPoint = HorizontalScroll, startPoint.y
     else
@@ -620,36 +679,40 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         end
         return false
     end
+	local oldPosition = Vector.Vector2()
+	local function __isChanged(newPosition)
+		local result = true
+		if (oldPosition.x == newPosition.x) and (oldPosition.y == newPosition.y) then
+			result = false
+		end
+		oldPosition.x = newPosition.x
+		oldPosition.y = newPosition.y
+		return result
+	end
 
     if __click() then
         return true
     end
-    local containerCtrl, position, invert = GetControl(containerName)
-    local startPoint = containerCtrl:GetPivotPoint()
-    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
-    local finalPoint = autotestingSystem:GetMaxContainerOffsetSize(containerCtrl)
-    print(string.format('Final point: X: %f; Y: %f', finalPoint.x, finalPoint.y))
+    local containerCtrl, invert = GetControl(containerName)
 
     local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
-
+	oldPosition = __getPosition()
     -- move to start of list and check cell
     for _ = 0, MAX_LIST_COUNT do -- move to up side
-        position = __getPosition()
-        if position.y <= startPoint.y then
-            break
-        end
         VerticalScroll(containerName, true, notInCenter)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
     end
     -- move to left side
     for _ = 0, MAX_LIST_COUNT do
-        position = __getPosition()
-        if position.x <= startPoint.x then
-            break
-        end
         HorizontalScroll(containerName, true)
+		if not __isChanged(__getPosition()) then
+			break
+		end
         if __click() then
             return true
         end
@@ -659,27 +722,18 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         invert = _ % 2 ~= 0 -- if true - right side, else - left
         -- move to right/left side
         for __ = 0, MAX_LIST_COUNT do
-            position = __getPosition()
-            if invert then
-                if position.x <= startPoint.x then
-                    break
-                end
-            else
-                if position.x >= finalPoint.x then
-                    break
-                end
-            end
             HorizontalScroll(containerName, invert)
+			if not __isChanged(__getPosition()) then
+				break
+			end
             if __click() then
                 return true
             end
         end
-        -- move to down side
-        position = __getPosition()
-        if position.y >= finalPoint.y then
-            break
-        end
         VerticalScroll(containerName, false, notInCenter)
+		if not __isChanged(__getPosition()) then
+				break
+		end
         if __click() then
             return true
         end
@@ -703,12 +757,10 @@ end
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
-function TouchDownPosition(pos, touchId, tapCount)
-    local tapCount = tapCount or 1
+function TouchDownPosition(pos, touchId)
     local touchId = touchId or 1
     local position = Vector.Vector2(pos.x, pos.y)
-    autotestingSystem:TouchDown(position, touchId, tapCount)
-    Yield()
+    autotestingSystem:TouchDown(position, touchId)
 end
 
 function TouchDown(x, y, touchId)
@@ -722,18 +774,18 @@ function TouchUp(touchId)
     autotestingSystem:TouchUp(touchId)
 end
 
-function ClickPosition(position, waitTime, touchId, tapCount)
-    TouchDownPosition(position, touchId, tapCount)
+function ClickPosition(position, waitTime, touchId)
+    Wait(waitTime)
+    TouchDownPosition(position, touchId)
     Wait(waitTime)
     TouchUp(touchId)
-    Wait(waitTime)
 end
 
 function Click(x, y, waitTime, touchId)
     local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
-    ClickPosition(position, touchId, waitTime)
+    ClickPosition(position, waitTime, touchId)
 end
 
 function KeyPress(key, control)
@@ -741,27 +793,29 @@ function KeyPress(key, control)
         ClickControl(control)
     end
     autotestingSystem:KeyPress(key)
+    Wait(TIMECLICK)
 end
 
 function ClickControl(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId)
+        ClickPosition(position, TIMECLICK, touchId)
         return true
     end
     return false
 end
 
 function DoubleClick(name, waitTime, touchId)
-    local waitTime = waitTime or TIMECLICK
+    local waitTime = waitTime or SMALL_TIMEOUT
     local touchId = touchId or 1
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
-    if IsReady(name) then
+    if IsReady(name, waitTime) then
         local position = GetCenter(name)
-        ClickPosition(position, waitTime, touchId, 2)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
+        ClickPosition(position, DOUBLETAP_DELAY, touchId)
         return true
     end
     return false

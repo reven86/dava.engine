@@ -39,28 +39,31 @@ class FCDEmitterParticle;
 class FCOLLADA_EXPORT FCDEmitter : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
+    DeclareObjectType(FCDEntity);
 
 public:
-	/** Constructor.  Do not use directly, emitters should be created using
+    /** Constructor.  Do not use directly, emitters should be created using
 		the AddEntity function on the FCDEmitterLibrary
 		@param document The COLLADA document that owns the emitter. */
-	FCDEmitter(FCDocument* document);
+    FCDEmitter(FCDocument* document);
 
-	/** Destructor. */
-	~FCDEmitter();
+    /** Destructor. */
+    ~FCDEmitter();
 
-	/** Retrieves the entity class type.
+    /** Retrieves the entity class type.
 		@return The entity class type: EMITTER */
-	virtual Type GetType() const { return EMITTER; }
+    virtual Type GetType() const
+    {
+        return EMITTER;
+    }
 
-	/** Clones the emitter information.
+    /** Clones the emitter information.
 		@param clone The cloned emitter.
 			If this pointer is NULL, a new emitter is created and
 			you will need to release it manually.
 		@param cloneChildren Whether to recursively clone this entity's children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif //_FCD_EMITTER_H

@@ -14,12 +14,8 @@ property float4x4 worldViewProjMatrix : dynamic,instance : ;
 
 VPROG_BEGIN
 
-    float3 in_pos      = VP_IN_POSITION;
-    float2 in_texcoord = VP_IN_TEXCOORD;
-    float4 in_color    = VP_IN_COLOR0;
-
-    VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
-    VP_OUT(uv) = in_texcoord;
-    VP_OUT(color) =  in_color;
+    VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
+    VP_OUT(uv) = VP_IN_TEXCOORD;
+    VP_OUT(color) =  VP_IN_COLOR0;
 
 VPROG_END

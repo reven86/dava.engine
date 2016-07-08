@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Entity.h"
@@ -77,7 +48,7 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
 #endif
 
     uint32* bitdata = data->GetBlockVisibilityData(blockIndex);
-    uint32 size = (uint32)indexedRenderObjects.size();
+    uint32 size = static_cast<uint32>(indexedRenderObjects.size());
     for (uint32 k = 0; k < size; ++k)
     {
         uint32 index = k / 32; // number of bits in uint32
@@ -132,7 +103,7 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     if (!camera)
         return;
 
-    uint32 size = (uint32)staticOcclusionComponents.size();
+    uint32 size = static_cast<uint32>(staticOcclusionComponents.size());
     if (size == 0)
         return;
 
@@ -149,14 +120,14 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
 
         if ((position.x >= data->bbox.min.x) && (position.x <= data->bbox.max.x) && (position.y >= data->bbox.min.y) && (position.y <= data->bbox.max.y))
         {
-            uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
-            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);
+            uint32 x = static_cast<uint32>((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * static_cast<float32>(data->sizeX));
+            uint32 y = static_cast<uint32>((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * static_cast<float32>(data->sizeY));
             if ((x < data->sizeX) && (y < data->sizeY)) //
             {
                 float32 dH = data->cellHeightOffset ? data->cellHeightOffset[x + y * data->sizeX] : 0;
                 if ((position.z >= (data->bbox.min.z + dH)) && (position.z <= (data->bbox.max.z + dH)))
                 {
-                    uint32 z = (uint32)((position.z - (data->bbox.min.z + dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);
+                    uint32 z = static_cast<uint32>((position.z - (data->bbox.min.z + dH)) / (data->bbox.max.z - data->bbox.min.z) * static_cast<float32>(data->sizeZ));
 
                     if (z < data->sizeZ)
                     {
@@ -241,7 +212,7 @@ void StaticOcclusionSystem::UnregisterComponent(Entity* entity, Component* compo
 
 void StaticOcclusionSystem::AddEntity(Entity* entity)
 {
-    staticOcclusionComponents.push_back((StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
+    staticOcclusionComponents.push_back(static_cast<StaticOcclusionDataComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT)));
 }
 
 void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObject)
@@ -251,9 +222,9 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
      */
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
-        indexedRenderObjects.resize(Max((uint32)indexedRenderObjects.size(), (uint32)(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr);
-
+        indexedRenderObjects.resize(Max(static_cast<uint32>(indexedRenderObjects.size()), static_cast<uint32>(renderObject->GetStaticOcclusionIndex() + 1)));
+        DVASSERT_MSG(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
+                     "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }
 }
@@ -272,14 +243,14 @@ void StaticOcclusionSystem::RemoveRenderObjectFromOcclusion(RenderObject* render
 
 void StaticOcclusionSystem::RemoveEntity(Entity* entity)
 {
-    for (uint32 k = 0; k < (uint32)staticOcclusionComponents.size(); ++k)
+    for (uint32 k = 0; k < static_cast<uint32>(staticOcclusionComponents.size()); ++k)
     {
         StaticOcclusionDataComponent* component = staticOcclusionComponents[k];
         if (component == entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT))
         {
             UndoOcclusionVisibility();
 
-            staticOcclusionComponents[k] = staticOcclusionComponents[(uint32)staticOcclusionComponents.size() - 1];
+            staticOcclusionComponents[k] = staticOcclusionComponents[static_cast<uint32>(staticOcclusionComponents.size()) - 1];
             staticOcclusionComponents.pop_back();
             break;
         }
@@ -367,7 +338,6 @@ StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
 {
-    StaticOcclusionComponent* staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
     //create render object
     ScopedPtr<RenderObject> debugRenderObject(new RenderObject());
@@ -397,6 +367,7 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity* entity)
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
 }
+
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32 event)
 {
     Entity* entity = component->GetEntity();

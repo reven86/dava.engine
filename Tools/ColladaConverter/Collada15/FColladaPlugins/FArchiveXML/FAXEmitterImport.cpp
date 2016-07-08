@@ -13,25 +13,23 @@
 #include "FCDocument/FCDEmitterParticle.h"
 #include "FCDocument/FCDParticleModifier.h"
 
-
 //
 // Emitter Import
 //
 
-bool FArchiveXML::LoadEmitter(FCDObject* object, xmlNode* node)				
+bool FArchiveXML::LoadEmitter(FCDObject* object, xmlNode* node)
 {
-	FCDEmitter* emitter = (FCDEmitter*)object;
+    FCDEmitter* emitter = (FCDEmitter*)object;
 
-	bool status = FArchiveXML::LoadEntity(emitter, node);
-	if (!status) return status;
-	if (!IsEquivalent(node->name, DAE_EMITTER_ELEMENT))
-	{
-		FUError::Error(FUError::WARNING_LEVEL, FUError::WARNING_UNKNOWN_ELEMENT, node->line);
-		return status;
-	}
+    bool status = FArchiveXML::LoadEntity(emitter, node);
+    if (!status)
+        return status;
+    if (!IsEquivalent(node->name, DAE_EMITTER_ELEMENT))
+    {
+        FUError::Error(FUError::WARNING_LEVEL, FUError::WARNING_UNKNOWN_ELEMENT, node->line);
+        return status;
+    }
 
-
-	emitter->SetDirtyFlag();
-	return status;
+    emitter->SetDirtyFlag();
+    return status;
 }
-

@@ -33,4 +33,4 @@ GLuint TexID = 0;
 // IL image ID
 ILuint ImgId = 0;
 
-#endif//GLTEST_H
+#endif //GLTEST_H

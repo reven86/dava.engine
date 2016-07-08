@@ -1,59 +1,64 @@
 include ( GlobalVariables )
 include ( CMake-common )
 
+if (NOT QT_VERSION)
+    set(QT_VERSION "QT")
+endif()
+
+if( WIN32 AND NOT X64_MODE )
+    message( FATAL_ERROR "We don't support x86 platform on windows"  )
+endif ()
+
+set(QT_ACTUAL_PATH ${${QT_VERSION}_PATH})
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
     endif ()
 
+    set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
+
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
-        foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
-        endforeach ()
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
+        endif()
 
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
-        foreach ( ITEM  ${FILE_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
-                                                         ${DEPLOY_DIR}/platforms )
+        set(DEPLOY_PLATFORM "WIN")
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
+        set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
+        foreach(ITEM ${BINARY_ITEMS})
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT_ACTUAL_PATH}/bin/Qt5${ITEM}.dll)
+                set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --${ITEM}")
+            endif()
+        endforeach()
 
     elseif( MACOS )
 
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
-        )
-
-    endif()
-
-endmacro ()
-
-macro(resolve_qt_pathes)
-    if ( NOT QT5_LIB_PATH)
-
-        if( WIN32 )
-            set ( QT_CORE_LIB Qt5Core.lib )
-        elseif( MACOS )
-            set ( QT_CORE_LIB QtCore.la )
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
         endif()
 
-        find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
-                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
-                          PATH_SUFFIXES lib)
-
-        ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
-
-        set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
-        set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-        message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
+        set(DEPLOY_PLATFORM "MAC")
+        set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
+        set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
+
+    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+            COMMAND "python"
+                    ${DEPLOY_SCRIPT_PATH}
+                    "-p" "${DEPLOY_PLATFORM}"
+                    "-q" "${DEPLOY_QT_FOLDER}"
+                    "-d" "${DEPLOY_ROOT_FOLDER}"
+                    "-a" "${DEPLOY_ARGUMENTS}"
+        )
+
 endmacro()
 
 #################################################################
@@ -66,7 +71,14 @@ set ( CMAKE_AUTOMOC ON )
 list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick Network)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
-resolve_qt_pathes()
+set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
+
+if (NOT EXISTS ${QT_CMAKE_RULES})
+   message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
+endif()
+
+set ( QT5_LIB_PATH "${QT_ACTUAL_PATH}/lib")
+set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_ACTUAL_PATH}/lib/cmake")
 
 foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     if (NOT Qt5${COMPONENT}_FOUND)
@@ -74,7 +86,7 @@ foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
-    LIST(APPEND DEPLOY_LIST "Qt5${COMPONENT}")
+    LIST(APPEND DEPLOY_LIST "${COMPONENT}")
     LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
 endforeach()
 

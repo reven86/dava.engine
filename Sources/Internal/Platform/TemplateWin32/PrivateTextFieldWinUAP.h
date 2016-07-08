@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #ifndef __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
 #define __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
 
@@ -40,7 +12,6 @@
 
 namespace DAVA
 {
-
 class Color;
 class Sprite;
 class UITextField;
@@ -191,7 +162,7 @@ private:
     void RenderToTexture(bool moveOffScreenOnCompletion);
     Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
-private:    // Event handlers
+private: // Event handlers
     void OnKeyDown(Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args);
     void OnGotFocus();
     void OnLostFocus();
@@ -210,9 +181,9 @@ private:
     UITextFieldDelegate* textFieldDelegate = nullptr;
     // Windows UAP has two different controls for text input and password input
     // So we should switch internal implementation depending on user's wishes
-    Windows::UI::Xaml::Controls::TextBox^ nativeText = nullptr;
-    Windows::UI::Xaml::Controls::PasswordBox^ nativePassword = nullptr;
-    Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
+    Windows::UI::Xaml::Controls::TextBox ^ nativeText = nullptr;
+    Windows::UI::Xaml::Controls::PasswordBox ^ nativePassword = nullptr;
+    Windows::UI::Xaml::Controls::Control ^ nativeControl = nullptr; // Points either to nativeText or nativePassword
     Windows::UI::Xaml::Controls::Border ^ nativeControlHolder = nullptr;
 
     // Tokens to unsubscribe from touch keyboard event handlers
@@ -222,12 +193,13 @@ private:
     bool ignoreTextChange = false;
     bool waitRenderToTextureComplete = false; // If flag is set do not move native control offscreen to get rid of some flickering
 
-    int32 caretPosition = 0;                // Current caret position
-    int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing
+    int32 caretPosition = 0; // Current caret position
+    int32 savedCaretPosition = 0; // Saved caret position to restore it when delegate declines text changing
 
     Rect rectInWindowSpace;
 
     WideString curText;
+    WideString lastProgrammaticText;
     TextFieldProperties properties;
     bool programmaticTextChange = false;
 };
@@ -259,7 +231,7 @@ inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
     return caretPosition;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__

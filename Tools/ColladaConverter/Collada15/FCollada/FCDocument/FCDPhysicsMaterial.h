@@ -32,56 +32,80 @@ class FCDocument;
 class FCOLLADA_EXPORT FCDPhysicsMaterial : public FCDEntity
 {
 private:
-	DeclareObjectType(FCDEntity);
-	float staticFriction;
-	float dynamicFriction;
-	float restitution;
+    DeclareObjectType(FCDEntity);
+    float staticFriction;
+    float dynamicFriction;
+    float restitution;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		@param document The COLLADA document that contains this rigid body. */
-	FCDPhysicsMaterial(FCDocument* document);
+    FCDPhysicsMaterial(FCDocument* document);
 
-	/** Destructor. */
-	virtual ~FCDPhysicsMaterial();
+    /** Destructor. */
+    virtual ~FCDPhysicsMaterial();
 
-	/** Retrieves the entity type for this class. This function is part of the 
+    /** Retrieves the entity type for this class. This function is part of the 
 		FCDEntity interface.
 		@return The entity type: PHYSICS_MATERIAL. */
-	virtual Type GetType() const { return FCDEntity::PHYSICS_MATERIAL; }
+    virtual Type GetType() const
+    {
+        return FCDEntity::PHYSICS_MATERIAL;
+    }
 
-	/** Retrieves the static friction for this physics material.
+    /** Retrieves the static friction for this physics material.
 		@return The static friction. */
-	float GetStaticFriction() const { return staticFriction; }
+    float GetStaticFriction() const
+    {
+        return staticFriction;
+    }
 
-	/** Sets the static friction for this physics material.
+    /** Sets the static friction for this physics material.
 		@param _staticFriction The static friction. */
-	void  SetStaticFriction(float _staticFriction) { staticFriction = _staticFriction; SetDirtyFlag(); }
+    void SetStaticFriction(float _staticFriction)
+    {
+        staticFriction = _staticFriction;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the dynamic friction for this physics material.
+    /** Retrieves the dynamic friction for this physics material.
 		@return The dynamic friction. */
-	float GetDynamicFriction() const { return dynamicFriction; }
+    float GetDynamicFriction() const
+    {
+        return dynamicFriction;
+    }
 
-	/** Sets the dynamic friction for this physics material.
+    /** Sets the dynamic friction for this physics material.
 		@param _dynamicFriction The dynamic friction. */
-	void  SetDynamicFriction(float _dynamicFriction) { dynamicFriction = _dynamicFriction; SetDirtyFlag(); }
+    void SetDynamicFriction(float _dynamicFriction)
+    {
+        dynamicFriction = _dynamicFriction;
+        SetDirtyFlag();
+    }
 
-	/** Retrieves the restitution for this physics material.
+    /** Retrieves the restitution for this physics material.
 		@return The restitution. */
-	float GetRestitution() const { return restitution; }
+    float GetRestitution() const
+    {
+        return restitution;
+    }
 
-	/** Sets the restitution for this physics material.
+    /** Sets the restitution for this physics material.
 		@param _restitution The restitution. */
-	void  SetRestitution(float _restitution) { restitution = _restitution; SetDirtyFlag(); }
+    void SetRestitution(float _restitution)
+    {
+        restitution = _restitution;
+        SetDirtyFlag();
+    }
 
-	/** Copies the physics material into a clone.
+    /** Copies the physics material into a clone.
 		@param clone The empty clone. If this pointer is NULL, a new physics
 			material will be created and you will need to release the returned 
 			pointer manually.
 		@param cloneChildren Whether to recursively clone this entity's 
 			children.
 		@return The clone. */
-	virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
+    virtual FCDEntity* Clone(FCDEntity* clone = NULL, bool cloneChildren = false) const;
 };
 
 #endif // _FCD_MATERIAL_H_

@@ -27,21 +27,20 @@ extern "C" {
  * to the xmlSaveToFd() and similar calls.
  */
 typedef enum {
-    XML_SAVE_FORMAT     = 1<<0	/* format save output */
+    XML_SAVE_FORMAT = 1 << 0 /* format save output */
 } xmlSaveOption;
 
-
 typedef struct _xmlSaveCtxt xmlSaveCtxt;
-typedef xmlSaveCtxt *xmlSaveCtxtPtr;
+typedef xmlSaveCtxt* xmlSaveCtxtPtr;
 
 XMLPUBFUN xmlSaveCtxtPtr XMLCALL
-		xmlSaveToFd		(int fd,
-					 const char *encoding,
-					 int options);
+xmlSaveToFd(int fd,
+            const char* encoding,
+            int options);
 XMLPUBFUN xmlSaveCtxtPtr XMLCALL
-		xmlSaveToFilename	(const char *filename,
-					 const char *encoding,
-					 int options);
+xmlSaveToFilename(const char* filename,
+                  const char* encoding,
+                  int options);
 /******
   Not yet implemented.
 
@@ -51,33 +50,31 @@ XMLPUBFUN xmlSaveCtxtPtr XMLCALL
 					 int options);
  ******/
 XMLPUBFUN xmlSaveCtxtPtr XMLCALL
-		xmlSaveToIO		(xmlOutputWriteCallback iowrite,
-					 xmlOutputCloseCallback ioclose,
-					 void *ioctx,
-					 const char *encoding,
-					 int options);
+xmlSaveToIO(xmlOutputWriteCallback iowrite,
+            xmlOutputCloseCallback ioclose,
+            void* ioctx,
+            const char* encoding,
+            int options);
 
 XMLPUBFUN long XMLCALL
-		xmlSaveDoc		(xmlSaveCtxtPtr ctxt,
-					 xmlDocPtr doc);
+xmlSaveDoc(xmlSaveCtxtPtr ctxt,
+           xmlDocPtr doc);
 XMLPUBFUN long XMLCALL
-		xmlSaveTree		(xmlSaveCtxtPtr ctxt,
-					 xmlNodePtr node);
+xmlSaveTree(xmlSaveCtxtPtr ctxt,
+            xmlNodePtr node);
 
 XMLPUBFUN intptr_t XMLCALL
-		xmlSaveFlush		(xmlSaveCtxtPtr ctxt);
+xmlSaveFlush(xmlSaveCtxtPtr ctxt);
 XMLPUBFUN intptr_t XMLCALL
-		xmlSaveClose		(xmlSaveCtxtPtr ctxt);
+xmlSaveClose(xmlSaveCtxtPtr ctxt);
 XMLPUBFUN int XMLCALL
-		xmlSaveSetEscape	(xmlSaveCtxtPtr ctxt,
-					 xmlCharEncodingOutputFunc escape);
+xmlSaveSetEscape(xmlSaveCtxtPtr ctxt,
+                 xmlCharEncodingOutputFunc escape);
 XMLPUBFUN int XMLCALL
-		xmlSaveSetAttrEscape	(xmlSaveCtxtPtr ctxt,
-					 xmlCharEncodingOutputFunc escape);
+xmlSaveSetAttrEscape(xmlSaveCtxtPtr ctxt,
+                     xmlCharEncodingOutputFunc escape);
 #ifdef __cplusplus
 }
 #endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 #endif /* __XML_XMLSAVE_H__ */
-
-

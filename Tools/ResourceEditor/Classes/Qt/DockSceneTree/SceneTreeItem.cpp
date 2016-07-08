@@ -1,89 +1,63 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <QSet>
 #include "DockSceneTree/SceneTreeItem.h"
 #include "Commands2/ConvertToShadowCommand.h"
 
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
-SceneTreeItem::SceneTreeItem(eItemType _type)
-	: type(_type)
-    , isAcceptedByFilter(false)
-    , isHighlighted(false)
-{ 
+SceneTreeItem::SceneTreeItem(eItemType _type, DAVA::BaseObject* object_)
+    : object(object_)
+    , type(_type)
+{
 }
 
-SceneTreeItem::~SceneTreeItem()
-{ }
+DAVA::BaseObject* SceneTreeItem::GetItemObject() const
+{
+    return static_cast<DAVA::BaseObject*>(object.GetContainedObject());
+}
 
 QVariant SceneTreeItem::data(int role) const
 {
-	QVariant v;
+    QVariant v;
 
-	switch(role)
-	{
-	case Qt::DecorationRole:
-		v = ItemIcon();
-		break;
-	case Qt::DisplayRole:
-		v = ItemName();
-		break;
-	case EIDR_Type:
-		v = ItemType();
-		break;
-	case EIDR_Data:
-		v = ItemData();
-		break;
-	default:
-		break;
-	}
+    switch (role)
+    {
+    case Qt::DecorationRole:
+        v = ItemIcon();
+        break;
+    case Qt::DisplayRole:
+        v = ItemName();
+        break;
+    case Qt::ToolTipRole:
+        v = ItemName();
+        break;
+    case EIDR_Type:
+        v = ItemType();
+        break;
+    case EIDR_Data:
+        v = ItemData();
+        break;
+    default:
+        break;
+    }
 
-	if(v.isNull())
-	{
-		v = QStandardItem::data(role);
-	}
+    if (v.isNull())
+    {
+        v = QStandardItem::data(role);
+    }
 
-	return v;
+    return v;
 }
 
-
-int SceneTreeItem::ItemType() const
+DAVA::uint32 SceneTreeItem::ItemType() const
 {
-	return type;
+    return type;
 }
 
-QIcon SceneTreeItem::ItemIcon() const
+const QIcon& SceneTreeItem::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/node.png");
-	return icon;
+    return SharedIcon(":/QtIcons/node.png");
 }
 
 bool SceneTreeItem::IsAcceptedByFilter() const
@@ -106,595 +80,563 @@ void SceneTreeItem::SetHighlight(bool state)
     isHighlighted = state;
 }
 
-
 // =========================================================================================
 // SceneTreeItemEntity
 // =========================================================================================
 
 SceneTreeItemEntity::SceneTreeItemEntity(DAVA::Entity* _entity)
-	: SceneTreeItem(SceneTreeItem::EIT_Entity)
-	, entity(_entity)
+    : SceneTreeItem(SceneTreeItem::EIT_Entity, _entity)
 {
-	DoSync(this, entity);
+    DoSync(this, _entity);
 }
 
-SceneTreeItemEntity::~SceneTreeItemEntity()
-{ }
-
-DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem *item)
+DAVA::Entity* SceneTreeItemEntity::GetEntity() const
 {
-	DAVA::Entity *ret = NULL;
+    return object.AsEntity();
+}
 
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Entity)
-	{
-		SceneTreeItemEntity *itemEntity = (SceneTreeItemEntity *) item;
-		ret = itemEntity->entity;
-	}
+DAVA::Entity* SceneTreeItemEntity::GetEntity(SceneTreeItem* item)
+{
+    if ((nullptr != item) && (item->ItemType() == SceneTreeItem::EIT_Entity))
+    {
+        SceneTreeItemEntity* itemEntity = static_cast<SceneTreeItemEntity*>(item);
+        return itemEntity->GetEntity();
+    }
 
-	return ret;
+    return nullptr;
 }
 
 QString SceneTreeItemEntity::ItemName() const
 {
-	QString ret; 
+    QString ret;
 
-	if(NULL != entity)
-	{
-		ret = entity->GetName().c_str();
-	}
+    if (object.ContainsObject())
+    {
+        ret = GetEntity()->GetName().c_str();
+    }
 
-	return ret;
+    return ret;
 }
 
 QVariant SceneTreeItemEntity::ItemData() const
 {
-	return qVariantFromValue(entity);
+    return qVariantFromValue(GetEntity());
 }
 
-QIcon SceneTreeItemEntity::ItemIcon() const
+const QIcon& SceneTreeItemEntity::ItemIcon() const
 {
-	static QIcon effectIcon(":/QtIcons/effect.png");
-	static QIcon emitterIcon(":/QtIcons/emitter_particle.png");
-	static QIcon renderobjIcon(":/QtIcons/render_object.png");
-	static QIcon lodobjIcon(":/QtIcons/lod_object.png");
-	static QIcon userobjIcon(":/QtIcons/user_object.png");
-	static QIcon landscapeIcon(":/QtIcons/heightmapeditor.png");
-	static QIcon cameraIcon(":/QtIcons/camera.png");
-	static QIcon lightIcon(":/QtIcons/light.png");
-	static QIcon shadowIcon(":/QtIcons/shadow.png");
-	static QIcon switchIcon(":/QtIcons/switch.png");
-	static QIcon windIcon(":/QtIcons/wind.png");
-    static QIcon soIcon(":/QtIcons/so.png");
-    static QIcon pathIcon(":/QtIcons/path.png");
-    static QIcon grassIcon(":/QtIcons/grass.png");
+    DAVA::Entity* entity = GetEntity();
 
-	QIcon ret;
-
-	if(NULL != entity)
-	{	
-        if(NULL != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
-        {
-            ret = soIcon;
-        }
-		if(NULL != DAVA::GetEffectComponent(entity))
-		{
-			ret = effectIcon;
-		}
-		else if(NULL != DAVA::GetLandscape(entity))
-		{
-			ret = landscapeIcon;
-		}
-		else if(NULL != GetLodComponent(entity))
-		{
-			ret = lodobjIcon;
-		}
-		else if(NULL != GetSwitchComponent(entity))
-		{
-			ret = switchIcon;
-		}
-        else if (NULL != DAVA::GetVegetation(entity))
-        {
-            ret = grassIcon;
-        }
-		else if(NULL != DAVA::GetRenderObject(entity))
-		{
-			ret = renderobjIcon;
-		}
-		else if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
-		{
-			ret = userobjIcon;
-		}
-		else if(NULL != DAVA::GetCamera(entity))
-		{
-			ret = cameraIcon;
-		}
-		else if(NULL != DAVA::GetLight(entity))
-		{
-			ret = lightIcon;
-		}
-		else if(NULL != DAVA::GetWindComponent(entity))
-		{
-			ret = windIcon;
-		}
-        else if(NULL != DAVA::GetPathComponent(entity))
-        {
-            ret = pathIcon;
-        }
-	}
-
-	if(ret.isNull())
-	{
-		ret = SceneTreeItem::ItemIcon();
-	}
-
-	return ret;
-}
-
-
-void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
-{
-	if(NULL != rootItem && NULL != entity)
-	{
-		DAVA::int32 i;
-		QSet<DAVA::Entity *> entitiesSet;
-		QSet<DAVA::ParticleEmitter *> emitterSet;
-
-		DAVA::ParticleEffectComponent *effect = DAVA::GetEffectComponent(entity);		
-
-		// remember all entity childs
-		for(i = 0; i < entity->GetChildrenCount(); ++i)
-		{
-			entitiesSet.insert(entity->GetChild(i));
-		}
-
-		// remember all particle emitters
-		if(NULL != effect)
-		{			
-			for(DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
-			{
-				emitterSet.insert(effect->GetEmitter(i));
-			}
-		}
-
-		// remove items that are not in set
-		for(int i = 0; i < rootItem->rowCount(); ++i)
-		{
-			bool doRemove = true;
-			SceneTreeItem *childItem = (SceneTreeItem *) rootItem->child(i);
-
-			if(childItem->ItemType() == SceneTreeItem::EIT_Entity)
-			{
-				SceneTreeItemEntity *entityItem = (SceneTreeItemEntity *) childItem;
-				if(entitiesSet.contains(entityItem->entity))
-				{
-					doRemove = false;
-				}
-			}
-			else if(childItem->ItemType() == SceneTreeItem::EIT_Emitter)
-			{
-				SceneTreeItemParticleEmitter *emitterItem = (SceneTreeItemParticleEmitter *) childItem;
-				if(emitterSet.contains(emitterItem->emitter))
-				{
-					doRemove = false;
-				}
-			}
-
-			if(doRemove)
-			{
-				rootItem->removeRow(i);
-				i--;
-			}
-		}
-
-		entitiesSet.clear();
-		emitterSet.clear();
-
-		// add entities
-		int row = 0;
-
-		for(int i = 0; i < entity->GetChildrenCount(); ++i)
-		{
-			bool repeatStep;
-			DAVA::Entity *childEntity = entity->GetChild(i);
-
-			do
-			{
-				SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
-				DAVA::Entity *itemEntity = SceneTreeItemEntity::GetEntity(item);
-
-				repeatStep = false;
-
-				// remove items that we already add
-				while(entitiesSet.contains(itemEntity))
-				{
-					rootItem->removeRow(row);
-
-					item = (SceneTreeItem *) rootItem->child(row);
-					itemEntity = SceneTreeItemEntity::GetEntity(item);
-				}
-
-				// append entity that isn't in child items list
-				if(NULL == item)
-				{
-					rootItem->appendRow(new SceneTreeItemEntity(childEntity));
-				}
-				else if(childEntity != itemEntity)
-				{
-					// now we should decide what to do: remove item or insert it
-
-					// calc len until itemEntity will be found in real entity childs
-					int lenUntilRealEntity = 0;
-					for(int j = i; j < entity->GetChildrenCount(); ++j)
-					{
-						if(entity->GetChild(j) == itemEntity)
-						{
-							lenUntilRealEntity = j - i;
-							break;
-						}
-					}
-
-					// calc len until current real entity child will be found in current item childs
-					int lenUntilItem = 0;
-					for(int j = i; j < rootItem->rowCount(); ++j)
-					{
-						SceneTreeItem *itm = (SceneTreeItem *) rootItem->child(j);
-						DAVA::Entity *itmEn = SceneTreeItemEntity::GetEntity(itm);
-
-						if(childEntity == itmEn)
-						{
-							lenUntilItem = j - i;
-							break;
-						}
-					}
-
-					if(lenUntilRealEntity >= lenUntilItem)
-					{
-						rootItem->removeRow(row);
-						repeatStep = true;
-					}
-					else
-					{
-						rootItem->insertRow(row, new SceneTreeItemEntity(childEntity));
-					}
-				}
-				else
-				{
-					DoSync(item, itemEntity);
-				}
-			}
-			while(repeatStep);
-
-			// remember that we add that entity
-			entitiesSet.insert(childEntity);
-
-			row++;
-		}
-		
-		if(effect)
-		{
-			for(DAVA::int32 i = 0; i < effect->GetEmittersCount(); ++i)
-			{
-				bool repeatStep;
-				DAVA::ParticleEmitter* emitter = effect->GetEmitter(i);
-
-				do 
-				{
-					SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
-					DAVA::ParticleEmitter *itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
-
-					repeatStep = false;
-
-					// remove items that we already add
-					if (emitterSet.contains(itemEmitter))
-					{
-						rootItem->removeRow(row);
-					}
-
-					if(NULL == item)
-					{
-						rootItem->appendRow(new SceneTreeItemParticleEmitter(effect, emitter));
-					}
-					else if(emitter != itemEmitter)
-					{
-						// now we should decide what to do: remove layer or insert it
-
-						// calc len until itemEntity will be found in real
-						int lenUntilRealLayer = 0;
-						for(int j = i; j < (int)effect->GetEmittersCount(); ++j)
-						{
-							if(effect->GetEmitter(j) == itemEmitter)
-							{
-								lenUntilRealLayer = j - i;
-								break;
-							}
-						}
-
-						// calc len until current real entity child will be found in current item childs
-						int lenUntilItem = 0;
-						for(int j = i; j < rootItem->rowCount(); ++j)
-						{
-							SceneTreeItem *itm = (SceneTreeItem *) rootItem->child(j);
-							DAVA::ParticleEmitter *itmEmm = SceneTreeItemParticleEmitter::GetEmitter(itm);
-
-							if(emitter == itmEmm)
-							{
-								lenUntilItem = j - i;
-								break;
-							}
-						}
-
-						if(lenUntilRealLayer >= lenUntilItem)
-						{
-							rootItem->removeRow(row);
-							repeatStep = true;
-						}
-						else
-						{
-							rootItem->insertRow(row, new SceneTreeItemParticleEmitter(effect, emitter));
-						}
-					}
-					else
-					{
-						SceneTreeItemParticleEmitter::DoSync(item, itemEmitter);
-					}
-				} while (repeatStep);
-
-				row++;
-				emitterSet.insert(emitter);
-			}
-		}
-
-		// remove all other rows
-		if(row < rootItem->rowCount())
-		{
-			rootItem->removeRows(row, rootItem->rowCount() - row);
-		}
-	}
-}
-
-
-SceneTreeItemParticleEmitter::SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent *_effect, DAVA::ParticleEmitter* _emitter) : SceneTreeItem(SceneTreeItem::EIT_Emitter), effect(_effect), emitter(_emitter)
-{
-	DoSync(this, emitter);
-}
-SceneTreeItemParticleEmitter::~SceneTreeItemParticleEmitter()
-{
-
-}
-
-DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem *item)
-{
-	DAVA::ParticleEmitter *ret = NULL;
-
-	if(NULL != item && ((item->ItemType() == SceneTreeItem::EIT_Emitter)||(item->ItemType() == SceneTreeItem::EIT_InnerEmitter)))
-	{
-		SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
-		ret = itemEmitter->emitter;
-	}
-	return ret;
-}
-
-DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitterStrict(SceneTreeItem *item)
-{
-    DAVA::ParticleEmitter *ret = nullptr;
-
-    if (nullptr != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
+    if (nullptr != entity)
     {
-        SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
-        ret = itemEmitter->emitter;
+        if (nullptr != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
+        {
+            return SharedIcon(":/QtIcons/so.png");
+        }
+        if (nullptr != DAVA::GetEffectComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/effect.png");
+        }
+        else if (nullptr != DAVA::GetLandscape(entity))
+        {
+            return SharedIcon(":/QtIcons/heightmapeditor.png");
+        }
+        else if (nullptr != GetLodComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/lod_object.png");
+        }
+        else if (nullptr != GetSwitchComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/switch.png");
+        }
+        else if (nullptr != DAVA::GetVegetation(entity))
+        {
+            return SharedIcon(":/QtIcons/grass.png");
+        }
+        else if (nullptr != DAVA::GetRenderObject(entity))
+        {
+            return SharedIcon(":/QtIcons/render_object.png");
+        }
+        else if (nullptr != entity->GetComponent(DAVA::Component::USER_COMPONENT))
+        {
+            return SharedIcon(":/QtIcons/user_object.png");
+        }
+        else if (nullptr != DAVA::GetCamera(entity))
+        {
+            return SharedIcon(":/QtIcons/camera.png");
+        }
+        else if (nullptr != DAVA::GetLight(entity))
+        {
+            return SharedIcon(":/QtIcons/light.png");
+        }
+        else if (nullptr != DAVA::GetWindComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/wind.png");
+        }
+        else if (nullptr != DAVA::GetPathComponent(entity))
+        {
+            return SharedIcon(":/QtIcons/path.png");
+        }
     }
-    return ret;
-}
-void SceneTreeItemParticleEmitter::DoSync(QStandardItem *rootItem, DAVA::ParticleEmitter *emitter)
-{
-	if(NULL != rootItem && NULL != emitter)
-	{
-		SceneTreeItemParticleEmitter *rootEmitterItem = (SceneTreeItemParticleEmitter *) rootItem;
 
-		for(int i = 0; i < rootItem->rowCount(); )
-		{	
-			DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);			
-			rootItem->removeRow(i);						
-		}
-		for (DAVA::uint32 i=0; i<(DAVA::uint32)emitter->layers.size(); ++i)
-		{
-			rootItem->appendRow(new SceneTreeItemParticleLayer(rootEmitterItem->effect, emitter, emitter->layers[i]));
-		}					
-	}
+    return SceneTreeItem::ItemIcon();
+}
+
+void SceneTreeItemEntity::DoSync(QStandardItem* rootItem, DAVA::Entity* entity)
+{
+    if (nullptr != rootItem && nullptr != entity)
+    {
+        DAVA::int32 i;
+        QSet<DAVA::Entity*> entitiesSet;
+        QSet<DAVA::ParticleEmitterInstance*> emitterSet;
+
+        DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
+
+        // remember all entity childs
+        for (i = 0; i < entity->GetChildrenCount(); ++i)
+        {
+            entitiesSet.insert(entity->GetChild(i));
+        }
+
+        // remember all particle emitters
+        if (nullptr != effect)
+        {
+            for (DAVA::uint32 i = 0; i < effect->GetEmittersCount(); ++i)
+            {
+                emitterSet.insert(effect->GetEmitterInstance(i));
+            }
+        }
+
+        // remove items that are not in set
+        for (int i = 0; i < rootItem->rowCount(); ++i)
+        {
+            bool doRemove = true;
+            SceneTreeItem* childItem = (SceneTreeItem*)rootItem->child(i);
+
+            if (childItem->ItemType() == SceneTreeItem::EIT_Entity)
+            {
+                SceneTreeItemEntity* entityItem = (SceneTreeItemEntity*)childItem;
+                if (entitiesSet.contains(entityItem->GetEntity()))
+                {
+                    doRemove = false;
+                }
+            }
+            else if (childItem->ItemType() == SceneTreeItem::EIT_Emitter)
+            {
+                SceneTreeItemParticleEmitter* emitterItem = (SceneTreeItemParticleEmitter*)childItem;
+                if (emitterSet.contains(emitterItem->GetEmitterInstance()))
+                {
+                    doRemove = false;
+                }
+            }
+
+            if (doRemove)
+            {
+                rootItem->removeRow(i);
+                i--;
+            }
+        }
+
+        entitiesSet.clear();
+        emitterSet.clear();
+
+        // add entities
+        int row = 0;
+
+        for (int i = 0; i < entity->GetChildrenCount(); ++i)
+        {
+            bool repeatStep;
+            DAVA::Entity* childEntity = entity->GetChild(i);
+
+            do
+            {
+                SceneTreeItem* item = (SceneTreeItem*)rootItem->child(row);
+                DAVA::Entity* itemEntity = SceneTreeItemEntity::GetEntity(item);
+
+                repeatStep = false;
+
+                // remove items that we already add
+                while (entitiesSet.contains(itemEntity))
+                {
+                    rootItem->removeRow(row);
+
+                    item = (SceneTreeItem*)rootItem->child(row);
+                    itemEntity = SceneTreeItemEntity::GetEntity(item);
+                }
+
+                // append entity that isn't in child items list
+                if (NULL == item)
+                {
+                    rootItem->appendRow(new SceneTreeItemEntity(childEntity));
+                }
+                else if (childEntity != itemEntity)
+                {
+                    // now we should decide what to do: remove item or insert it
+
+                    // calc len until itemEntity will be found in real entity childs
+                    int lenUntilRealEntity = 0;
+                    for (int j = i; j < entity->GetChildrenCount(); ++j)
+                    {
+                        if (entity->GetChild(j) == itemEntity)
+                        {
+                            lenUntilRealEntity = j - i;
+                            break;
+                        }
+                    }
+
+                    // calc len until current real entity child will be found in current item childs
+                    int lenUntilItem = 0;
+                    for (int j = i; j < rootItem->rowCount(); ++j)
+                    {
+                        SceneTreeItem* itm = (SceneTreeItem*)rootItem->child(j);
+                        DAVA::Entity* itmEn = SceneTreeItemEntity::GetEntity(itm);
+
+                        if (childEntity == itmEn)
+                        {
+                            lenUntilItem = j - i;
+                            break;
+                        }
+                    }
+
+                    if (lenUntilRealEntity >= lenUntilItem)
+                    {
+                        rootItem->removeRow(row);
+                        repeatStep = true;
+                    }
+                    else
+                    {
+                        rootItem->insertRow(row, new SceneTreeItemEntity(childEntity));
+                    }
+                }
+                else
+                {
+                    DoSync(item, itemEntity);
+                }
+            }
+            while (repeatStep);
+
+            // remember that we add that entity
+            entitiesSet.insert(childEntity);
+
+            row++;
+        }
+
+        if (effect)
+        {
+            for (DAVA::uint32 i = 0; i < effect->GetEmittersCount(); ++i)
+            {
+                bool repeatStep = false;
+
+                DAVA::ParticleEmitterInstance* emitter = effect->GetEmitterInstance(i);
+                do
+                {
+                    repeatStep = false;
+                    SceneTreeItem* item = (SceneTreeItem*)rootItem->child(row);
+                    DAVA::ParticleEmitterInstance* itemEmitter = SceneTreeItemParticleEmitter::GetEmitterInstance(item);
+
+                    // remove items that we already add
+                    if (emitterSet.contains(itemEmitter))
+                    {
+                        rootItem->removeRow(row);
+                    }
+
+                    if (item == nullptr)
+                    {
+                        rootItem->appendRow(new SceneTreeItemParticleEmitter(effect, emitter));
+                    }
+                    else if (emitter != itemEmitter)
+                    {
+                        // now we should decide what to do: remove layer or insert it
+
+                        // calc len until itemEntity will be found in real
+                        DAVA::int32 lenUntilRealLayer = 0;
+                        for (DAVA::uint32 j = i; j < effect->GetEmittersCount(); ++j)
+                        {
+                            if (effect->GetEmitterInstance(j) == itemEmitter)
+                            {
+                                lenUntilRealLayer = j - i;
+                                break;
+                            }
+                        }
+
+                        // calc len until current real entity child will be found in current item childs
+                        int lenUntilItem = 0;
+                        for (int j = i; j < rootItem->rowCount(); ++j)
+                        {
+                            SceneTreeItem* itm = (SceneTreeItem*)rootItem->child(j);
+                            DAVA::ParticleEmitterInstance* itmEmm = SceneTreeItemParticleEmitter::GetEmitterInstance(itm);
+
+                            if (emitter == itmEmm)
+                            {
+                                lenUntilItem = j - i;
+                                break;
+                            }
+                        }
+
+                        if (lenUntilRealLayer >= lenUntilItem)
+                        {
+                            rootItem->removeRow(row);
+                            repeatStep = true;
+                        }
+                        else
+                        {
+                            rootItem->insertRow(row, new SceneTreeItemParticleEmitter(effect, emitter));
+                        }
+                    }
+                    else
+                    {
+                        SceneTreeItemParticleEmitter::DoSync(item, itemEmitter);
+                    }
+                } while (repeatStep);
+
+                row++;
+                emitterSet.insert(emitter);
+            }
+        }
+
+        // remove all other rows
+        if (row < rootItem->rowCount())
+        {
+            rootItem->removeRows(row, rootItem->rowCount() - row);
+        }
+    }
+}
+
+SceneTreeItemParticleEmitter::SceneTreeItemParticleEmitter(DAVA::ParticleEffectComponent* _effect, DAVA::ParticleEmitterInstance* _emitter)
+    : SceneTreeItem(SceneTreeItem::EIT_Emitter, _emitter)
+    , effect(_effect)
+{
+    DoSync(this, _emitter);
+}
+
+DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitterInstance() const
+{
+    return object.Cast<DAVA::ParticleEmitterInstance>();
+}
+
+DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitterInstance(SceneTreeItem* item)
+{
+    if ((nullptr != item) && ((item->ItemType() == SceneTreeItem::EIT_Emitter) || (item->ItemType() == SceneTreeItem::EIT_InnerEmitter)))
+    {
+        SceneTreeItemParticleEmitter* itemEmitter = static_cast<SceneTreeItemParticleEmitter*>(item);
+        return itemEmitter->GetEmitterInstance();
+    }
+
+    return nullptr;
+}
+
+DAVA::ParticleEmitterInstance* SceneTreeItemParticleEmitter::GetEmitterInstanceStrict(SceneTreeItem* item)
+{
+    if ((nullptr != item) && (item->ItemType() == SceneTreeItem::EIT_Emitter))
+    {
+        SceneTreeItemParticleEmitter* itemEmitter = (SceneTreeItemParticleEmitter*)item;
+        return itemEmitter->GetEmitterInstance();
+    }
+
+    return nullptr;
+}
+
+void SceneTreeItemParticleEmitter::DoSync(QStandardItem* rootItem, DAVA::ParticleEmitterInstance* emitter)
+{
+    if ((nullptr == rootItem) || (nullptr == emitter))
+        return;
+
+    SceneTreeItemParticleEmitter* rootEmitterItem = static_cast<SceneTreeItemParticleEmitter*>(rootItem);
+
+    for (int i = 0; i < rootItem->rowCount();)
+    {
+        DVASSERT(((SceneTreeItem*)rootItem->child(i))->ItemType() == SceneTreeItem::EIT_Layer);
+        rootItem->removeRow(i);
+    }
+    for (auto layer : emitter->GetEmitter()->layers)
+    {
+        rootItem->appendRow(new SceneTreeItemParticleLayer(rootEmitterItem->effect, emitter, layer));
+    }
 }
 
 QString SceneTreeItemParticleEmitter::ItemName() const
 {
-	return QString(emitter->name.c_str());
+    return QString(GetEmitterInstance()->GetEmitter()->name.c_str());
 }
 
 QVariant SceneTreeItemParticleEmitter::ItemData() const
 {
-	return qVariantFromValue(emitter);
+    return qVariantFromValue(GetEmitterInstance());
 }
 
-
-QIcon SceneTreeItemParticleEmitter::ItemIcon() const
+const QIcon& SceneTreeItemParticleEmitter::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/emitter_particle.png");
-	return icon;
+    return SharedIcon(":/QtIcons/emitter_particle.png");
 }
 
 // =========================================================================================
 // SceneTreeItemParticleLayer
 // =========================================================================================
 
-SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent *_effect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleLayer *_layer)
-	: SceneTreeItem(SceneTreeItem::EIT_Layer)
-	, effect(_effect)
-	, emitter(_emitter)
-	, layer(_layer)
-	, hasInnerEmmiter(false)
+SceneTreeItemParticleLayer::SceneTreeItemParticleLayer(DAVA::ParticleEffectComponent* effect_,
+                                                       DAVA::ParticleEmitterInstance* instance_, DAVA::ParticleLayer* layer_)
+    : SceneTreeItem(SceneTreeItem::EIT_Layer, layer_)
+    , effect(effect_)
+    , emitterInstance(instance_)
+    , hasInnerEmmiter(false)
 {
-	if(NULL != layer)
-	{
-		setCheckable(true);
+    if (nullptr != layer_)
+    {
+        setCheckable(true);
 
-		if(layer->isDisabled)
-		{
-			setCheckState(Qt::Unchecked);
-		}
-		else
-		{
-			setCheckState(Qt::Checked);
-		}
-		hasInnerEmmiter = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES); //layer can still have inner emitter cached
-	}
+        if (layer_->isDisabled)
+        {
+            setCheckState(Qt::Unchecked);
+        }
+        else
+        {
+            setCheckState(Qt::Checked);
+        }
+        hasInnerEmmiter = (layer_->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES); // layer can still have inner emitter cached
+    }
 
-	DoSync(this, layer);
+    DoSync(this, layer_);
 }
 
-SceneTreeItemParticleLayer::~SceneTreeItemParticleLayer()
-{ }
-
-DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem *item)
+DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer() const
 {
-	DAVA::ParticleLayer *ret = NULL;
+    return object.Cast<DAVA::ParticleLayer>();
+}
 
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Layer)
-	{
-		SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) item;
-		ret = itemLayer->layer;
-	}
+DAVA::ParticleLayer* SceneTreeItemParticleLayer::GetLayer(SceneTreeItem* item)
+{
+    DAVA::ParticleLayer* ret = NULL;
 
-	return ret;
+    if ((nullptr != item) && (item->ItemType() == SceneTreeItem::EIT_Layer))
+    {
+        SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)item;
+        ret = static_cast<DAVA::ParticleLayer*>(itemLayer->GetItemObject());
+    }
+
+    return ret;
 }
 
 QString SceneTreeItemParticleLayer::ItemName() const
 {
-	QString ret; 
+    QString ret;
 
-	if(NULL != layer)
-	{
-		ret = layer->layerName.c_str();
-	}
+    if (object.ContainsObject())
+    {
+        ret = GetLayer()->layerName.c_str();
+    }
 
-	return ret;
+    return ret;
 }
 
 QVariant SceneTreeItemParticleLayer::ItemData() const
 {
-	return qVariantFromValue(layer);
+    return qVariantFromValue(GetLayer());
 }
 
-void SceneTreeItemParticleLayer::DoSync(QStandardItem *rootItem, DAVA::ParticleLayer *layer)
+void SceneTreeItemParticleLayer::DoSync(QStandardItem* rootItem, DAVA::ParticleLayer* layer)
 {
-	if(NULL != rootItem && NULL != layer)
-	{	
-		SceneTreeItemParticleLayer *rootLayerItem = (SceneTreeItemParticleLayer *) rootItem;
-		bool hadInnerEmmiter = false;
-		for (int i=0; i<rootItem->rowCount(); i++)
-		{
-			bool keepItem = false;
-			SceneTreeItem*item = (SceneTreeItem*)rootItem->child(i);
-			if ((item)->ItemType() == SceneTreeItem::EIT_InnerEmitter)
-			{
-				hadInnerEmmiter = true;
-				if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
-				{
-					keepItem = true;
-					((SceneTreeItemParticleInnerEmitter*)item)->DoSync(item, layer->innerEmitter);
-				}
-			}
-			if (!keepItem)
-			{
-				rootItem->removeRow(i);
-				i--;
-			}
-		}
+    if (nullptr != rootItem && nullptr != layer)
+    {
+        SceneTreeItemParticleLayer* rootLayerItem = (SceneTreeItemParticleLayer*)rootItem;
+        bool hadInnerEmmiter = false;
+        for (int i = 0; i < rootItem->rowCount(); i++)
+        {
+            bool keepItem = false;
+            SceneTreeItem* item = (SceneTreeItem*)rootItem->child(i);
+            if ((item)->ItemType() == SceneTreeItem::EIT_InnerEmitter)
+            {
+                hadInnerEmmiter = true;
+                if (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+                {
+                    keepItem = true;
+                    DAVA::ScopedPtr<DAVA::ParticleEmitterInstance> instance(new DAVA::ParticleEmitterInstance(nullptr, layer->innerEmitter, true));
+                    ((SceneTreeItemParticleInnerEmitter*)item)->DoSync(item, instance);
+                }
+            }
+            if (!keepItem)
+            {
+                rootItem->removeRow(i);
+                i--;
+            }
+        }
 
-		size_t itemsCount = layer->forces.size();
-		QList<QStandardItem*> items;
-		
-		for(size_t i = 0; i < itemsCount; ++i)
-		{
-			items.push_back(new SceneTreeItemParticleForce(layer, layer->forces[i]));
-		}
+        size_t itemsCount = layer->forces.size();
+        QList<QStandardItem*> items;
 
-		if(items.size() > 0)
-		{
-			rootItem->insertRows(0, items);
-		}
+        for (size_t i = 0; i < itemsCount; ++i)
+        {
+            items.push_back(new SceneTreeItemParticleForce(layer, layer->forces[i]));
+        }
 
-		if (!hadInnerEmmiter&&(layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
-		{
-			rootItem->appendRow(new SceneTreeItemParticleInnerEmitter(rootLayerItem->effect, layer->innerEmitter, layer));
-		}
-	}
+        if (items.size() > 0)
+        {
+            rootItem->insertRows(0, items);
+        }
+
+        if (!hadInnerEmmiter && (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
+        {
+            rootItem->appendRow(new SceneTreeItemParticleInnerEmitter(rootLayerItem->effect, layer->innerEmitter, layer));
+        }
+    }
 }
 
-QIcon SceneTreeItemParticleLayer::ItemIcon() const
+const QIcon& SceneTreeItemParticleLayer::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/layer_particle.png");
-	return icon;
+    return SharedIcon(":/QtIcons/layer_particle.png");
 }
 
 // =========================================================================================
 // SceneTreeItemParticleForce
 // =========================================================================================
 
-SceneTreeItemParticleForce::SceneTreeItemParticleForce(DAVA::ParticleLayer *_layer, DAVA::ParticleForce *_force)
-	: SceneTreeItem(SceneTreeItem::EIT_Force)
-	, layer(_layer)
-	, force(_force)
-{ }
-
-DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce(SceneTreeItem *item)
+SceneTreeItemParticleForce::SceneTreeItemParticleForce(DAVA::ParticleLayer* _layer, DAVA::ParticleForce* _force)
+    : SceneTreeItem(SceneTreeItem::EIT_Force, _force)
+    , layer(_layer)
 {
-	DAVA::ParticleForce *ret = NULL;
-
-	if(NULL != item && item->ItemType() == SceneTreeItem::EIT_Force)
-	{
-		SceneTreeItemParticleForce *itemForce = (SceneTreeItemParticleForce *) item;
-		ret = itemForce->force;
-	}
-
-	return ret;
 }
 
-SceneTreeItemParticleForce::~SceneTreeItemParticleForce()
-{ }
+DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce() const
+{
+    return object.Cast<DAVA::ParticleForce>();
+}
+
+DAVA::ParticleForce* SceneTreeItemParticleForce::GetForce(SceneTreeItem* item)
+{
+    if ((nullptr != item) && (item->ItemType() == SceneTreeItem::EIT_Force))
+    {
+        SceneTreeItemParticleForce* itemForce = (SceneTreeItemParticleForce*)item;
+        return itemForce->GetForce();
+    }
+
+    return nullptr;
+}
 
 QString SceneTreeItemParticleForce::ItemName() const
 {
-	return "force";
+    return "force";
 }
 
 QVariant SceneTreeItemParticleForce::ItemData() const
 {
-	return qVariantFromValue(force);
+    return qVariantFromValue(GetForce());
 }
 
-QIcon SceneTreeItemParticleForce::ItemIcon() const
+const QIcon& SceneTreeItemParticleForce::ItemIcon() const
 {
-	static QIcon icon = QIcon(":/QtIcons/force.png");
-	return icon;
+    return SharedIcon(":/QtIcons/force.png");
 }
 
-
-
-SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent *_effect, DAVA::ParticleEmitter *_emitter, DAVA::ParticleLayer *_parentLayer)
-	: SceneTreeItemParticleEmitter(_effect, _emitter)
-	, parent(_parentLayer)	
+SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::ParticleEffectComponent* effect_, DAVA::ParticleEmitter* emitter_,
+                                                                     DAVA::ParticleLayer* parentLayer_)
+    : SceneTreeItemParticleEmitter(effect_, new DAVA::ParticleEmitterInstance(effect_, emitter_, true)) // local instance will be initialized after
+    , parent(parentLayer_)
+    , localInstance(object.Cast<DAVA::ParticleEmitterInstance>())
 {
-	type = SceneTreeItem::EIT_InnerEmitter;
+    type = SceneTreeItem::EIT_InnerEmitter;
+    DoSync(this, localInstance);
 }
-
-
-
-SceneTreeItemParticleInnerEmitter::~SceneTreeItemParticleInnerEmitter()
-{ }
-
-
 
 QString SceneTreeItemParticleInnerEmitter::ItemName() const
 {
-	return "innerEmmiter";
+    return "innerEmmiter";
 }
-
-

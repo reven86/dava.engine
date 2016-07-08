@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
@@ -47,9 +19,17 @@
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
 #include "Tests/InputTest.h"
+#include "Tests/FloatingPointExceptionTest.h"
+#include "Tests/DlcTest.h"
+#include "Tests/CoreTest.h"
+#include "Tests/FormatsTest.h"
+#include "Tests/GPUTest.h"
+#include "Tests/PackManagerTest.h"
 //$UNITTEST_INCLUDE
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
+#endif
 
 void GameCore::RunOnlyThisTest()
 {
@@ -63,6 +43,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new DlcTest();
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();
@@ -78,11 +59,13 @@ void GameCore::RegisterTests()
     new UIBackgroundTest();
     new ClipTest();
     new InputTest();
+    new CoreTest();
+    new FormatsTest();
+    new GPUTest();
+    new FloatingPointExceptionTest();
+    new PackManagerTest();
     //$UNITTEST_CTOR
 }
-
-#include <fstream>
-#include <algorithm>
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -92,9 +75,7 @@ void GameCore::OnAppStarted()
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 
-#if !defined(__DAVAENGINE_WIN_UAP__)
     InitNetwork();
-#endif
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
@@ -151,9 +132,7 @@ void GameCore::OnAppFinished()
     screens.clear();
 
     SafeRelease(testListScreen);
-#if !defined(__DAVAENGINE_WIN_UAP__)
     netLogger.Uninstall();
-#endif
 }
 
 void GameCore::BeginFrame()
@@ -195,21 +174,13 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
         return false;
     }
 
-    const String& name = screen.GetName();
+    const FastName& name = screen.GetName();
 
-    return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
+    return 0 != CompareCaseInsensitive(runOnlyThisTest, name.c_str());
 }
 
-#if !defined(__DAVAENGINE_WIN_UAP__)
-const char8 GameCore::announceMulticastGroup[] = "239.192.100.1";
 void GameCore::InitNetwork()
 {
-    enum eServiceTypes
-    {
-        SERVICE_LOG = 0,
-        SERVICE_MEMPROF = 1
-    };
-
     auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
         if (!loggerInUse)
         {
@@ -218,7 +189,7 @@ void GameCore::InitNetwork()
         }
         return nullptr;
     };
-    NetCore::Instance()->RegisterService(SERVICE_LOG, loggerCreate,
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, loggerCreate,
                                          [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -230,28 +201,31 @@ void GameCore::InitNetwork()
         }
         return nullptr;
     };
-    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, memprofCreate,
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, memprofCreate,
                                          [this](IChannelListener* obj, void*) -> void { memprofInUse = false; });
 #endif
-    NetConfig config(SERVER_ROLE);
-    config.AddTransport(TRANSPORT_TCP, Net::Endpoint(9999));
-    config.AddService(SERVICE_LOG);
+
+    eNetworkRole role = SERVER_ROLE;
+    Net::Endpoint endpoint = Net::Endpoint(NetCore::DEFAULT_TCP_PORT);
+
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endpoint);
+    config.AddService(NetCore::SERVICE_LOG);
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    config.AddService(SERVICE_MEMPROF);
+    config.AddService(NetCore::SERVICE_MEMPROF);
 #endif
     peerDescr = PeerDescription(config);
-    Net::Endpoint annoEndpoint(announceMulticastGroup, ANNOUNCE_PORT);
-    id_anno = NetCore::Instance()->CreateAnnouncer(annoEndpoint, ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier));
-    id_net = NetCore::Instance()->CreateController(config, NULL);
+    Net::Endpoint annoUdpEndpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);
+    Net::Endpoint annoTcpEndpoint(NetCore::DEFAULT_TCP_ANNOUNCE_PORT);
+    id_anno = NetCore::Instance()->CreateAnnouncer(annoUdpEndpoint, DEFAULT_ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier), annoTcpEndpoint);
+    id_net = NetCore::Instance()->CreateController(config, nullptr);
 }
+
 size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
 {
     if (true == peerDescr.NetworkInterfaces().empty())
     {
         peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());
-        if (true == peerDescr.NetworkInterfaces().empty())
-            return 0;
     }
     return peerDescr.Serialize(buffer, length);
 }
-#endif // !defined(__DAVAENGINE_WIN_UAP__)

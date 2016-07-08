@@ -107,7 +107,7 @@
 /* #undef HAVE_LIBSOCKET */
 
 /* Have compression library */
-#define HAVE_LIBZ 
+#define HAVE_LIBZ
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1

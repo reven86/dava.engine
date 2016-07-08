@@ -1,88 +1,62 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/RenderOptions.h"
 
 namespace DAVA
 {
-
-FastName optionsNames[RenderOptions::OPTIONS_COUNT] = 
+FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 {
-    FastName("Test Option"),
+  FastName("Test Option"),
 
-    FastName("Draw Landscape"),
-    FastName("Draw Water Refl/Refr"),
-    FastName("Draw Opaque Layer"),
-    FastName("Draw Transparent Layer"),
-    FastName("Draw Sprites"),
-    FastName("Draw Shadow Volumes"),
-    FastName("Draw Vegetation"),
+  FastName("Preview Metal"),
 
-    FastName("Enable Fog"),
+  FastName("Draw Landscape"),
+  FastName("Draw Water Refl/Refr"),
+  FastName("Draw Opaque Layer"),
+  FastName("Draw Transparent Layer"),
+  FastName("Draw Sprites"),
+  FastName("Draw Shadow Volumes"),
+  FastName("Draw Vegetation"),
 
-    FastName("Update LODs"),
-    FastName("Update Landscape LODs"), 
-    FastName("Update Animations"), 
-    FastName("Process Clipping"),
-    FastName("Update UI System"),
+  FastName("Enable Fog"),
 
-    FastName("SpeedTree Animations"),
-    FastName("Waves System Process"),
+  FastName("Update LODs"),
+  FastName("Update Landscape LODs"),
+  FastName("Update Animations"),
+  FastName("Process Clipping"),
+  FastName("Update UI System"),
 
-    FastName("All Render Enabled"),
-    FastName("Texture Loading"),
+  FastName("SpeedTree Animations"),
+  FastName("Waves System Process"),
 
-    FastName("Static Occlusion"),
-    FastName("Debug Draw Occlusion"),
+  FastName("All Render Enabled"),
+  FastName("Texture Loading"),
 
-    FastName("Update Particle Emitters"),
-    FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers"),
-    FastName("Albedo mipmaps"),
-    FastName("Lightmap mipmaps"),
+  FastName("Static Occlusion"),
+  FastName("Debug Draw Occlusion"),
+  FastName("Enable Visibility System"),
+
+  FastName("Update Particle Emitters"),
+  FastName("Draw Particles"),
+  FastName("Particle Prepare Buffers"),
+  FastName("Albedo mipmaps"),
+  FastName("Lightmap mipmaps"),
 #if defined(LOCALIZATION_DEBUG)
-    FastName("Localization Warings"),
-    FastName("Localization Errors"),
-    FastName("Line Break Errors"),
+  FastName("Localization Warings"),
+  FastName("Localization Errors"),
+  FastName("Line Break Errors"),
 #endif
-    FastName("Draw Nondef Glyph"),
-    FastName("Highlight Hard Controls")
+  FastName("Draw Nondef Glyph"),
+  FastName("Highlight Hard Controls")
 };
 
 RenderOptions::RenderOptions()
 {
-	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
-	{
-		options[i] = true;
-	}		
+    for (int32 i = 0; i < OPTIONS_COUNT; ++i)
+    {
+        options[i] = true;
+    }
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
+    options[DEBUG_ENABLE_VISIBILITY_SYSTEM] = false;
     options[REPLACE_ALBEDO_MIPMAPS] = false;
     options[REPLACE_LIGHTMAP_MIPMAPS] = false;
 #if defined(LOCALIZATION_DEBUG)
@@ -92,22 +66,23 @@ RenderOptions::RenderOptions()
 #endif
     options[DRAW_NONDEF_GLYPH] = false;
     options[HIGHLIGHT_HARD_CONTROLS] = false;
+
+    options[PREVIEW_METAL_ON_GL] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)
 {
-	return options[option];
+    return options[option];
 }
 
 void RenderOptions::SetOption(RenderOption option, bool value)
 {
-	options[option] = value;
-	NotifyObservers();
+    options[option] = value;
+    NotifyObservers();
 }
 
 FastName RenderOptions::GetOptionName(RenderOption option)
 {
     return optionsNames[option];
 }
-
 };

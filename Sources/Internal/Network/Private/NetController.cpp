@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <algorithm>
 
 #include <Functional/Function.h>
@@ -47,6 +18,12 @@ namespace DAVA
 {
 namespace Net
 {
+// Move dtor to source file to prevent clang warning: 'class' has no out-of-line virtual method definitions
+IController::~IController() = default;
+IServerTransport::~IServerTransport() = default;
+IClientTransport::~IClientTransport() = default;
+IServerListener::~IServerListener() = default;
+IClientListener::~IClientListener() = default;
 
 NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout_)
     : loop(aLoop)
@@ -65,12 +42,12 @@ NetController::~NetController()
     DVASSERT(0 == runningObjects);
     if (SERVER_ROLE == role)
     {
-        for (Vector<IServerTransport*>::iterator i = servers.begin(), e = servers.end();i != e;++i)
+        for (Vector<IServerTransport *>::iterator i = servers.begin(), e = servers.end(); i != e; ++i)
             delete *i;
     }
     else
     {
-        for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+        for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
         {
             ClientEntry& entry = *i;
             delete entry.driver;
@@ -82,7 +59,8 @@ NetController::~NetController()
 bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
 {
     DVASSERT(true == config.Validate() && trIndex < config.Transports().size());
-    if (false == config.Validate() || trIndex >= config.Transports().size()) return false;
+    if (false == config.Validate() || trIndex >= config.Transports().size())
+        return false;
 
     const Vector<NetConfig::TransportConfig>& trConfig = config.Transports();
 
@@ -91,7 +69,7 @@ bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
     if (SERVER_ROLE == role)
     {
         servers.reserve(trConfig.size());
-        for (size_t i = 0, n = trConfig.size();i < n;++i)
+        for (size_t i = 0, n = trConfig.size(); i < n; ++i)
         {
             IServerTransport* tr = CreateServerTransport(trConfig[i].type, trConfig[i].endpoint);
             DVASSERT(tr != NULL);
@@ -117,16 +95,18 @@ bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
 void NetController::Start()
 {
     SERVER_ROLE == role ? loop->Post(MakeFunction(this, &NetController::DoStartServers))
-                        : loop->Post(MakeFunction(this, &NetController::DoStartClients));
+                          :
+                          loop->Post(MakeFunction(this, &NetController::DoStartClients));
 }
 
-void NetController::Stop(Function<void (IController*)> handler)
+void NetController::Stop(Function<void(IController*)> handler)
 {
     DVASSERT(false == isTerminating && handler != nullptr);
     isTerminating = true;
     stopHandler = handler;
     SERVER_ROLE == role ? loop->Post(MakeFunction(this, &NetController::DoStopServers))
-                        : loop->Post(MakeFunction(this, &NetController::DoStopClients));
+                          :
+                          loop->Post(MakeFunction(this, &NetController::DoStopClients));
 }
 
 void NetController::Restart()
@@ -138,7 +118,7 @@ void NetController::Restart()
 void NetController::DoStartServers()
 {
     runningObjects = servers.size();
-    for (size_t i = 0, n = servers.size();i < n;++i)
+    for (size_t i = 0, n = servers.size(); i < n; ++i)
     {
         servers[i]->Start(this);
     }
@@ -153,12 +133,12 @@ void NetController::DoStartClients()
 
 void NetController::DoRestart()
 {
-    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
     {
         ClientEntry& entry = *i;
         entry.client->Reset();
     }
-    for (size_t i = 0, n = servers.size();i < n;++i)
+    for (size_t i = 0, n = servers.size(); i < n; ++i)
         servers[i]->Reset();
 }
 
@@ -166,7 +146,7 @@ void NetController::DoStopServers()
 {
     if (true == clients.empty())
     {
-        for (size_t i = 0, n = servers.size();i < n;++i)
+        for (size_t i = 0, n = servers.size(); i < n; ++i)
         {
             servers[i]->Stop();
         }
@@ -177,7 +157,7 @@ void NetController::DoStopServers()
 
 void NetController::DoStopClients()
 {
-    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
     {
         ClientEntry& entry = *i;
         entry.client->Stop();
@@ -264,7 +244,7 @@ void NetController::OnTransportSendComplete(IClientTransport* tr)
 void NetController::OnTransportReadTimeout(IClientTransport* tr)
 {
     DVASSERT(GetClientEntry(tr) != NULL);
-    
+
     ClientEntry* entry = GetClientEntry(tr);
     if (false == entry->driver->OnTimeout())
     {
@@ -276,12 +256,13 @@ NetController::ClientEntry* NetController::GetClientEntry(IClientTransport* clie
 {
     List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), client);
     return i != clients.end() ? &*i
-                              : NULL;
+                                :
+                                NULL;
 }
 
 IServerTransport* NetController::CreateServerTransport(eTransportType type, const Endpoint& endpoint)
 {
-    switch(type)
+    switch (type)
     {
     case TRANSPORT_TCP:
         return new TCPServerTransport(loop, endpoint, readTimeout);
@@ -293,7 +274,7 @@ IServerTransport* NetController::CreateServerTransport(eTransportType type, cons
 
 IClientTransport* NetController::CreateClientTransport(eTransportType type, const Endpoint& endpoint)
 {
-    switch(type)
+    switch (type)
     {
     case TRANSPORT_TCP:
         return new TCPClientTransport(loop, endpoint, readTimeout);
@@ -303,5 +284,5 @@ IClientTransport* NetController::CreateClientTransport(eTransportType type, cons
     }
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

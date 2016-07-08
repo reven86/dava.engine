@@ -31,138 +31,138 @@ ImplementParameterObjectNoCtr(FCDMorphController, FCDEntity, baseTarget);
 ImplementParameterObject(FCDMorphController, FCDMorphTarget, morphTargets, new FCDMorphTarget(parent->GetDocument(), parent));
 
 FCDMorphController::FCDMorphController(FCDocument* document, FCDController* _parent)
-:	FCDObject(document), parent(_parent)
-,	InitializeParameter(method, FUDaeMorphMethod::NORMALIZED)
-,	InitializeParameterNoArg(baseTarget)
-,	InitializeParameterNoArg(morphTargets)
+    : FCDObject(document)
+    , parent(_parent)
+    , InitializeParameter(method, FUDaeMorphMethod::NORMALIZED)
+    , InitializeParameterNoArg(baseTarget)
+    , InitializeParameterNoArg(morphTargets)
 {
 }
 
 FCDMorphController::~FCDMorphController()
 {
-	parent = NULL;
+    parent = NULL;
 }
 
 // Changes the base target of the morpher
 void FCDMorphController::SetBaseTarget(FCDEntity* entity)
 {
-	baseTarget = NULL;
+    baseTarget = NULL;
 
-	// Retrieve the actual base entity, as you can chain controllers.
-	FCDEntity* baseEntity = entity;
-	if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
-	{
-		baseEntity = ((FCDController*) baseEntity)->GetBaseGeometry();
-	}
-	if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
-	{
-		baseTarget = entity;
+    // Retrieve the actual base entity, as you can chain controllers.
+    FCDEntity* baseEntity = entity;
+    if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
+    {
+        baseEntity = ((FCDController*)baseEntity)->GetBaseGeometry();
+    }
+    if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
+    {
+        baseTarget = entity;
 
-		// Remove the old morph targets which are not similar, anymore, to the new base entity.
-		for (size_t i = 0; i < morphTargets.size();)
-		{
-			if (IsSimilar(morphTargets[i]->GetGeometry()))
-			{
-				++i;
-			}
-			else
-			{
-				morphTargets[i]->Release();
-			}
-		}
-	}
-	else
-	{
-		// The new base target is not valid.
-		morphTargets.clear();
-	}
+        // Remove the old morph targets which are not similar, anymore, to the new base entity.
+        for (size_t i = 0; i < morphTargets.size();)
+        {
+            if (IsSimilar(morphTargets[i]->GetGeometry()))
+            {
+                ++i;
+            }
+            else
+            {
+                morphTargets[i]->Release();
+            }
+        }
+    }
+    else
+    {
+        // The new base target is not valid.
+        morphTargets.clear();
+    }
 
-	SetNewChildFlag();
+    SetNewChildFlag();
 }
 
 // Adds a new morph target.
 FCDMorphTarget* FCDMorphController::AddTarget(FCDGeometry* geometry, float weight)
 {
-	FCDMorphTarget* target = NULL;
-	// It is legal to add targets with out a base geometry
-	if (baseTarget == NULL || IsSimilar(geometry))
-	{
-		target = new FCDMorphTarget(GetDocument(), this);
-		morphTargets.push_back(target);
-		target->SetGeometry(geometry);
-		target->SetWeight(weight);
-	}
-	SetNewChildFlag();
-	return target;
+    FCDMorphTarget* target = NULL;
+    // It is legal to add targets with out a base geometry
+    if (baseTarget == NULL || IsSimilar(geometry))
+    {
+        target = new FCDMorphTarget(GetDocument(), this);
+        morphTargets.push_back(target);
+        target->SetGeometry(geometry);
+        target->SetWeight(weight);
+    }
+    SetNewChildFlag();
+    return target;
 }
 
 // Retrieves whether a given entity is similar to the base target.
 bool FCDMorphController::IsSimilar(FCDEntity* entity)
 {
-	bool similar = false;
-	if (entity != NULL && baseTarget != NULL)
-	{
-		size_t vertexCount = 0;
-		bool isMesh = false;
-		bool isSpline = false;
+    bool similar = false;
+    if (entity != NULL && baseTarget != NULL)
+    {
+        size_t vertexCount = 0;
+        bool isMesh = false;
+        bool isSpline = false;
 
-		// Find the number of vertices in the base target
-		FCDEntity* baseEntity = baseTarget;
-		if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
-		{
-			baseEntity = ((FCDController*) baseEntity)->GetBaseGeometry();
-		}
-		if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
-		{
-			FCDGeometry* g = (FCDGeometry*) baseEntity;
-			if (g->IsMesh())
-			{
-				isMesh = true;
-				FCDGeometryMesh* m = g->GetMesh();
-				FCDGeometrySource* positions = m->GetPositionSource();
-				if (positions != NULL)
-				{
-					vertexCount = positions->GetValueCount();
-				}
-			}
+        // Find the number of vertices in the base target
+        FCDEntity* baseEntity = baseTarget;
+        if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
+        {
+            baseEntity = ((FCDController*)baseEntity)->GetBaseGeometry();
+        }
+        if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
+        {
+            FCDGeometry* g = (FCDGeometry*)baseEntity;
+            if (g->IsMesh())
+            {
+                isMesh = true;
+                FCDGeometryMesh* m = g->GetMesh();
+                FCDGeometrySource* positions = m->GetPositionSource();
+                if (positions != NULL)
+                {
+                    vertexCount = positions->GetValueCount();
+                }
+            }
 
-			if (g->IsSpline())
-			{
-				isSpline = true;
-				FCDGeometrySpline* s = g->GetSpline();
-				vertexCount = s->GetTotalCVCount();
-			}
-		}
+            if (g->IsSpline())
+            {
+                isSpline = true;
+                FCDGeometrySpline* s = g->GetSpline();
+                vertexCount = s->GetTotalCVCount();
+            }
+        }
 
+        // Find the number of vertices in the given entity
+        baseEntity = entity;
+        if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
+        {
+            baseEntity = ((FCDController*)baseEntity)->GetBaseGeometry();
+        }
+        if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
+        {
+            FCDGeometry* g = (FCDGeometry*)baseEntity;
+            if (g->IsMesh() && isMesh)
+            {
+                FCDGeometryMesh* m = g->GetMesh();
+                FCDGeometrySource* positions = m->GetPositionSource();
+                if (positions != NULL)
+                {
+                    similar = (vertexCount == positions->GetValueCount());
+                }
+            }
 
-		// Find the number of vertices in the given entity
-		baseEntity = entity;
-		if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::CONTROLLER)
-		{
-			baseEntity = ((FCDController*) baseEntity)->GetBaseGeometry();
-		}
-		if (baseEntity != NULL && baseEntity->GetType() == FCDEntity::GEOMETRY)
-		{
-			FCDGeometry* g = (FCDGeometry*) baseEntity;
-			if (g->IsMesh() && isMesh)
-			{
-				FCDGeometryMesh* m = g->GetMesh();
-				FCDGeometrySource* positions = m->GetPositionSource();
-				if (positions != NULL)
-				{
-					similar = (vertexCount == positions->GetValueCount());
-				}
-			}
+            if (g->IsSpline() && isSpline)
+            {
+                FCDGeometrySpline* s = g->GetSpline();
+                similar = (vertexCount == s->GetTotalCVCount());
+            }
+        }
+    }
 
-			if (g->IsSpline() && isSpline)
-			{
-				FCDGeometrySpline* s = g->GetSpline();
-				similar = (vertexCount == s->GetTotalCVCount());
-			}
-		}
-	}
-
-	return similar;
+    return similar;
 }
 
 //
@@ -173,44 +173,45 @@ ImplementObjectType(FCDMorphTarget);
 ImplementParameterObjectNoCtr(FCDMorphTarget, FCDGeometry, geometry);
 
 FCDMorphTarget::FCDMorphTarget(FCDocument* document, FCDMorphController* _parent)
-:	FCDObject(document), parent(_parent)
-,	InitializeParameterNoArg(geometry)
-,	InitializeParameterAnimatable(weight, 0.0f)
+    : FCDObject(document)
+    , parent(_parent)
+    , InitializeParameterNoArg(geometry)
+    , InitializeParameterAnimatable(weight, 0.0f)
 {
 }
 
 FCDMorphTarget::~FCDMorphTarget()
 {
-	parent = NULL;
+    parent = NULL;
 }
 
 void FCDMorphTarget::SetGeometry(FCDGeometry* _geometry)
 {
-	// Let go of the old geometry
-	FCDGeometry* oldGeometry = geometry;
-	if (oldGeometry != NULL && oldGeometry->GetTrackerCount() == 1)
-	{
-		SAFE_RELEASE(geometry);
-	}
+    // Let go of the old geometry
+    FCDGeometry* oldGeometry = geometry;
+    if (oldGeometry != NULL && oldGeometry->GetTrackerCount() == 1)
+    {
+        SAFE_RELEASE(geometry);
+    }
 
-	// Check if this geometry is similar to the controller base target
-	if (GetParent()->GetBaseTarget() == NULL || GetParent()->IsSimilar(_geometry))
-	{
-		geometry = _geometry;
-	}
-	SetNewChildFlag();
+    // Check if this geometry is similar to the controller base target
+    if (GetParent()->GetBaseTarget() == NULL || GetParent()->IsSimilar(_geometry))
+    {
+        geometry = _geometry;
+    }
+    SetNewChildFlag();
 }
 
 FCDAnimated* FCDMorphTarget::GetAnimatedWeight()
 {
-	return weight.GetAnimated();
+    return weight.GetAnimated();
 }
 const FCDAnimated* FCDMorphTarget::GetAnimatedWeight() const
 {
-	return weight.GetAnimated();
+    return weight.GetAnimated();
 }
 
 bool FCDMorphTarget::IsAnimated() const
 {
-	return weight.IsAnimated();
+    return weight.IsAnimated();
 }

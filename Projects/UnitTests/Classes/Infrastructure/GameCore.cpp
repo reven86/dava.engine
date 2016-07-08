@@ -1,31 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenManager.h"
 #include "CommandLine/CommandLineParser.h"
@@ -34,19 +6,22 @@
 
 #include "Infrastructure/GameCore.h"
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+#include "Network/NetConfig.h"
+#include "Platform/TemplateWin32/UAPNetworkHelper.h"
+#endif
+
 using namespace DAVA;
 
 namespace
 {
-
 // List of semicolon separated names specifying which test classes should run
 String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 
-bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
-bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
-
+bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 }
 
 void GameCore::ProcessCommandLine()
@@ -73,6 +48,9 @@ void GameCore::ProcessCommandLine()
 void GameCore::OnAppStarted()
 {
     ProcessCommandLine();
+#if defined(__DAVAENGINE_WIN_UAP__)
+    InitNetwork();
+#endif
 
     if (teamcityOutputEnabled)
     {
@@ -108,6 +86,10 @@ void GameCore::OnAppFinished()
     {
         DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
     }
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    UnInitNetwork();
+#endif
 }
 
 void GameCore::OnSuspend()
@@ -122,7 +104,7 @@ void GameCore::OnResume()
     ApplicationCore::OnResume();
 }
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 void GameCore::OnForeground()
 {
     ApplicationCore::OnForeground();
@@ -207,3 +189,73 @@ void GameCore::FinishTests()
     Logger::Debug("Finish all tests.");
     Core::Instance()->Quit();
 }
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+void GameCore::InitNetwork()
+{
+    using namespace Net;
+
+    auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
+        if (!loggerInUse)
+        {
+            loggerInUse = true;
+            return &netLogger;
+        }
+        return nullptr;
+    };
+
+    NetCore::Instance()->RegisterService(
+    NetCore::SERVICE_LOG,
+    loggerCreate,
+    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+
+    eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
+    Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
+
+    NetConfig config(role);
+    config.AddTransport(TRANSPORT_TCP, endpoint);
+    config.AddService(NetCore::SERVICE_LOG);
+
+    netController = NetCore::Instance()->CreateController(config, nullptr);
+
+    flusher.reset(new LogFlusher(&netLogger));
+}
+
+void GameCore::UnInitNetwork()
+{
+    netLogger.Uninstall();
+    flusher->FlushLogs();
+    flusher.reset();
+
+    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
+}
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+GameCore::LogFlusher::LogFlusher(Net::NetLogger* logger)
+    : netLogger(logger)
+{
+    Logger::AddCustomOutput(this);
+}
+
+GameCore::LogFlusher::~LogFlusher()
+{
+    Logger::RemoveCustomOutput(this);
+}
+
+void GameCore::LogFlusher::FlushLogs()
+{
+    while (netLogger->IsChannelOpen() && netLogger->GetMessageQueueSize() != 0)
+    {
+        Net::NetCore::Instance()->Poll();
+    }
+}
+
+void GameCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
+{
+    FlushLogs();
+}
+
+#endif
+
+#endif

@@ -15,14 +15,12 @@
 
 #include "ilu_internal.h"
 
-
 typedef struct Edge
 {
-	ILint	yUpper;
-	ILfloat	xIntersect, dxPerScan;
-	struct	Edge *next;
+    ILint yUpper;
+    ILfloat xIntersect, dxPerScan;
+    struct Edge* next;
 } Edge;
 
 
-#endif//ILU_REGION_H
-
+#endif //ILU_REGION_H

@@ -11,7 +11,7 @@
 
 FUThread::FUThread()
 #ifdef WIN32
-:	thread(NULL)
+    : thread(NULL)
 #endif
 {
 }
@@ -23,14 +23,14 @@ FUThread::~FUThread()
 void FUThread::YieldCurrentThread()
 {
 #ifdef WIN32
-	SwitchToThread();
+    SwitchToThread();
 #endif
 }
 
 void FUThread::SleepCurrentThread(unsigned long milliseconds)
 {
 #ifdef WIN32
-	Sleep(milliseconds);
+    Sleep(milliseconds);
 #endif
 }
 
@@ -41,22 +41,22 @@ FUThread* FUThread::CreateFUThread()
 #endif // WIN32
 {
 #ifdef WIN32
-	FUThread* newThread = new FUThread();
-	newThread->thread = CreateThread(NULL, 0, lpStartAddress, lpParameter, 0, NULL);
-	return newThread;
+    FUThread* newThread = new FUThread();
+    newThread->thread = CreateThread(NULL, 0, lpStartAddress, lpParameter, 0, NULL);
+    return newThread;
 #else
-	return NULL;
+    return NULL;
 #endif
 }
 
 void FUThread::ExitFUThread(FUThread* thread)
 {	
 #ifdef WIN32
-	if (thread == NULL) return;
+    if (thread == NULL)
+        return;
 
-	WaitForSingleObject(thread->thread, INFINITE);
-	CloseHandle(thread->thread); // delete the thread once it's finished
-	SAFE_DELETE(thread);
+    WaitForSingleObject(thread->thread, INFINITE);
+    CloseHandle(thread->thread); // delete the thread once it's finished
+    SAFE_DELETE(thread);
 #endif
 }
-

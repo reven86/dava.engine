@@ -23,18 +23,18 @@
 ImplementObjectType(FCDLight);
 
 FCDLight::FCDLight(FCDocument* document)
-:	FCDTargetedEntity(document, "Light")
-,	InitializeParameterAnimatable(color, FMVector3::One)
-,	InitializeParameterAnimatable(intensity, 1.0f)
-,	InitializeParameter(lightType, FCDLight::POINT)
-,	InitializeParameterAnimatable(constantAttenuationFactor, 1.0f)
-,	InitializeParameterAnimatable(linearAttenuationFactor, 0.0f)
-,	InitializeParameterAnimatable(quadracticAttenuationFactor, 0.0f)
-,	InitializeParameterAnimatable(fallOffExponent, 1.0f)
-,	InitializeParameterAnimatable(fallOffAngle, 5.0f)
-,	InitializeParameterAnimatable(outerAngle, 5.0f)
-,	InitializeParameterAnimatable(penumbraAngle, 0.0f) // not used by default
-,	InitializeParameterAnimatable(dropoff, 0.0f) // not used by default
+    : FCDTargetedEntity(document, "Light")
+    , InitializeParameterAnimatable(color, FMVector3::One)
+    , InitializeParameterAnimatable(intensity, 1.0f)
+    , InitializeParameter(lightType, FCDLight::POINT)
+    , InitializeParameterAnimatable(constantAttenuationFactor, 1.0f)
+    , InitializeParameterAnimatable(linearAttenuationFactor, 0.0f)
+    , InitializeParameterAnimatable(quadracticAttenuationFactor, 0.0f)
+    , InitializeParameterAnimatable(fallOffExponent, 1.0f)
+    , InitializeParameterAnimatable(fallOffAngle, 5.0f)
+    , InitializeParameterAnimatable(outerAngle, 5.0f)
+    , InitializeParameterAnimatable(penumbraAngle, 0.0f) // not used by default
+    , InitializeParameterAnimatable(dropoff, 0.0f) // not used by default
 {
 }
 

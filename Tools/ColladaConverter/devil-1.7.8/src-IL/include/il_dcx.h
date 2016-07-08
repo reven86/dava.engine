@@ -22,21 +22,21 @@
 #endif
 typedef struct DCXHEAD
 {
-	ILubyte		Manufacturer;
-	ILubyte		Version;
-	ILubyte		Encoding;
-	ILubyte		Bpp;
-	ILushort	Xmin, Ymin, Xmax, Ymax;
-	ILushort	HDpi;
-	ILushort	VDpi;
-	ILubyte		ColMap[48];
-	ILubyte		Reserved;
-	ILubyte		NumPlanes;
-	ILushort	Bps;
-	ILushort	PaletteInfo;
-	ILushort	HScreenSize;
-	ILushort	VScreenSize;
-	ILubyte		Filler[54];
+    ILubyte Manufacturer;
+    ILubyte Version;
+    ILubyte Encoding;
+    ILubyte Bpp;
+    ILushort Xmin, Ymin, Xmax, Ymax;
+    ILushort HDpi;
+    ILushort VDpi;
+    ILubyte ColMap[48];
+    ILubyte Reserved;
+    ILubyte NumPlanes;
+    ILushort Bps;
+    ILushort PaletteInfo;
+    ILushort HScreenSize;
+    ILushort VScreenSize;
+    ILubyte Filler[54];
 } IL_PACKSTRUCT DCXHEAD;
 #ifdef _WIN32
 #pragma pack(pop, packed_struct)
@@ -44,9 +44,9 @@ typedef struct DCXHEAD
 
 // For checking and reading
 ILboolean iIsValidDcx(void);
-ILboolean iCheckDcx(DCXHEAD *Header);
+ILboolean iCheckDcx(DCXHEAD* Header);
 ILboolean iLoadDcxInternal(void);
-ILimage*  iUncompressDcx(DCXHEAD *Header);
-ILimage*  iUncompressDcxSmall(DCXHEAD *Header);
+ILimage* iUncompressDcx(DCXHEAD* Header);
+ILimage* iUncompressDcxSmall(DCXHEAD* Header);
 
-#endif//PCX_H
+#endif //PCX_H

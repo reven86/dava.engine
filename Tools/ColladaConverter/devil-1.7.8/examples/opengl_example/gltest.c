@@ -19,9 +19,9 @@
 #include <GL/glut.h>
 #endif
 
-#ifdef  _DEBUG
+#ifdef _DEBUG
 #define IL_DEBUG
-#endif//_DEBUG
+#endif //_DEBUG
 
 #define ILUT_USE_OPENGL
 #include <IL/il.h>
@@ -46,214 +46,217 @@
 
 #endif
 
-char	*FileName;
-ILuint	Width, Height, window;
+char* FileName;
+ILuint Width, Height, window;
 
-
-
-void HandleDevILErrors ()
+void HandleDevILErrors()
 {
-	ILenum error = ilGetError ();
-	
-	if (error != IL_NO_ERROR) {
-		do {
-			printf ("\n\n%s\n", iluErrorString (error));	
-		} while ((error = ilGetError ()));
+    ILenum error = ilGetError();
 
-		exit (1);
-	}
+    if (error != IL_NO_ERROR)
+    {
+        do
+        {
+            printf("\n\n%s\n", iluErrorString(error));
+        } while ((error = ilGetError()));
+
+        exit(1);
+    }
 }
 
 extern int main(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-	// No filename is specified on the command-line.
-	if (argc < 2) {
-		printf ("Please run as:\n\nDevIL_testGL image_filename\n");
-		return 1;
-	}
-	FileName = argv[1];  // Set filename equal to the first argument.
+    // No filename is specified on the command-line.
+    if (argc < 2)
+    {
+        printf("Please run as:\n\nDevIL_testGL image_filename\n");
+        return 1;
+    }
+    FileName = argv[1]; // Set filename equal to the first argument.
 
-	//
-	// Check if the shared lib's version matches the executable's version.
-	//
+    //
+    // Check if the shared lib's version matches the executable's version.
+    //
 
+    //
+    // fixed to get the right numbers from the right library call...
+    //
+    if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION ||
+        iluGetInteger(ILU_VERSION_NUM) < ILU_VERSION ||
+        ilutGetInteger(ILUT_VERSION_NUM) < ILUT_VERSION)
+    {
+        printf("DevIL library is out of date! Please upgrade\n");
+        return 2;
+    }
 
+    // Needed to initialize DevIL.
+    ilInit();
+    iluInit();
 
-//
-// fixed to get the right numbers from the right library call...
-//
-	if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION ||
-		iluGetInteger(ILU_VERSION_NUM) < ILU_VERSION ||
-		ilutGetInteger(ILUT_VERSION_NUM) < ILUT_VERSION) {
-		printf ("DevIL library is out of date! Please upgrade\n");
-		return 2;
-	}
+    // GL cannot use palettes anyway, so convert early.
+    ilEnable(IL_CONV_PAL);
 
-	// Needed to initialize DevIL.
-	ilInit ();
-	iluInit();
+    // Gets rid of dithering on some nVidia-based cards.
+    ilutEnable(ILUT_OPENGL_CONV);
 
-	// GL cannot use palettes anyway, so convert early.
-	ilEnable (IL_CONV_PAL);
+    // Generate the main image name to use.
+    ilGenImages(1, &ImgId);
 
-	// Gets rid of dithering on some nVidia-based cards.
-	ilutEnable (ILUT_OPENGL_CONV);
+    // Bind this image name.
+    ilBindImage(ImgId);
 
-	// Generate the main image name to use.
-	ilGenImages (1, &ImgId);
-	
-	// Bind this image name.
-	ilBindImage (ImgId);
+    // Loads the image specified by File into the ImgId image.
+    if (!ilLoadImage(FileName))
+    {
+        HandleDevILErrors();
+    }
 
-	// Loads the image specified by File into the ImgId image.
-	if (!ilLoadImage (FileName)) {
-		HandleDevILErrors ();
-	}
+    // Make sure the window is in the same proportions as the image.
+    //  Generate the appropriate width x height less than or equal to MAX_X x MAX_Y.
+    //	Instead of just clipping Width x Height to MAX_X x MAX_Y, we scale to
+    //	an appropriate size, so the image isn't stretched/squished.
+    Width = ilGetInteger(IL_IMAGE_WIDTH);
+    Height = ilGetInteger(IL_IMAGE_HEIGHT);
 
-	// Make sure the window is in the same proportions as the image.
-	//  Generate the appropriate width x height less than or equal to MAX_X x MAX_Y.
-	//	Instead of just clipping Width x Height to MAX_X x MAX_Y, we scale to
-	//	an appropriate size, so the image isn't stretched/squished.
-	Width  = ilGetInteger (IL_IMAGE_WIDTH);
-	Height = ilGetInteger (IL_IMAGE_HEIGHT);
-	
-	if (Width > 0) {  // Don't want a divide by 0...
-		if (Width > MAX_X) {
-			Width = MAX_X;
-			Height = (ILuint)(MAX_X / (ILfloat)ilGetInteger(IL_IMAGE_WIDTH) * Height);
-		}
-	}
-	if (Height > 0) {  // Don't want a divide by 0...
-		if (Height > MAX_Y) {
-			Height = MAX_Y;
-			Width = (ILuint)(MAX_Y / (ILfloat)ilGetInteger(IL_IMAGE_HEIGHT) * Width);
-		}
-	}
+    if (Width > 0)
+    { // Don't want a divide by 0...
+        if (Width > MAX_X)
+        {
+            Width = MAX_X;
+            Height = (ILuint)(MAX_X / (ILfloat)ilGetInteger(IL_IMAGE_WIDTH) * Height);
+        }
+    }
+    if (Height > 0)
+    { // Don't want a divide by 0...
+        if (Height > MAX_Y)
+        {
+            Height = MAX_Y;
+            Width = (ILuint)(MAX_Y / (ILfloat)ilGetInteger(IL_IMAGE_HEIGHT) * Width);
+        }
+    }
 
-	HandleDevILErrors ();
+    HandleDevILErrors();
 
-	// Standard glut initializations.
-	glutInit               (&argc, argv);  // Standard glut initialization.
-	glutInitDisplayMode    (GLUT_RGB | GLUT_DOUBLE);
-	glutInitWindowPosition (100, 100);
-	glutInitWindowSize     (Width, Height);
-	
-	window = glutCreateWindow("Developer's Image Library (DevIL) Test");
+    // Standard glut initializations.
+    glutInit(&argc, argv); // Standard glut initialization.
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+    glutInitWindowPosition(100, 100);
+    glutInitWindowSize(Width, Height);
 
-	ilutInit();
+    window = glutCreateWindow("Developer's Image Library (DevIL) Test");
 
-	glutDisplayFunc  (DisplayFunc);
-	glutKeyboardFunc (KeyboardFunc);
+    ilutInit();
 
-	// Goes into our setup function.
-	if (Setup() == IL_FALSE)
-		return 1;
+    glutDisplayFunc(DisplayFunc);
+    glutKeyboardFunc(KeyboardFunc);
 
-	// Enter the main (Free)GLUT processing loop
-	glutMainLoop();
+    // Goes into our setup function.
+    if (Setup() == IL_FALSE)
+        return 1;
 
-	// Clean up any loose ends.
-	CleanUp();
+    // Enter the main (Free)GLUT processing loop
+    glutMainLoop();
 
-	return 0;
+    // Clean up any loose ends.
+    CleanUp();
+
+    return 0;
 }
-
 
 //
 // Standard glut resize function.
 //
 void ResizeFunc(int NewWidth, int NewHeight)
 {
-	glMatrixMode   (GL_PROJECTION);
-	glLoadIdentity ();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
 
-	glViewport (0, 0, NewWidth, NewHeight);
-	glOrtho    (0, Width, Height, 0, -1, 1);
+    glViewport(0, 0, NewWidth, NewHeight);
+    glOrtho(0, Width, Height, 0, -1, 1);
 }
-
 
 //
 // Standard glut display function.
 //
 void DisplayFunc()
 {
-	glClear(GL_COLOR_BUFFER_BIT);  // Clear the colour buffer.
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the colour buffer.
 
-	// Texture a quad with our image that fills the entire window.
-	glBindTexture (GL_TEXTURE_2D, TexID);
-	
-	glBegin (GL_QUADS);
-	/*glTexCoord2f (0.0f, 0.0f); glVertex3i (0,     0,      0);
+    // Texture a quad with our image that fills the entire window.
+    glBindTexture(GL_TEXTURE_2D, TexID);
+
+    glBegin(GL_QUADS);
+    /*glTexCoord2f (0.0f, 0.0f); glVertex3i (0,     0,      0);
 	glTexCoord2f (1.0f, 0.0f); glVertex3i (Width, 0,      0);
 	glTexCoord2f (1.0f, 1.0f); glVertex3i (Width, Height, 0);
 	glTexCoord2f (0.0f, 1.0f); glVertex3i (0,     Height, 0);*/
 
-	glTexCoord2f (0.0f, 1.0f); glVertex3i (0,     0,      0);
-	glTexCoord2f (1.0f, 1.0f); glVertex3i (Width, 0,      0);
-	glTexCoord2f (1.0f, 0.0f); glVertex3i (Width, Height, 0);
-	glTexCoord2f (0.0f, 0.0f); glVertex3i (0,     Height, 0);
-	glEnd();
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3i(0, 0, 0);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3i(Width, 0, 0);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3i(Width, Height, 0);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3i(0, Height, 0);
+    glEnd();
 
-	glutSwapBuffers();  // We use double buffering, so swap the buffers.
+    glutSwapBuffers(); // We use double buffering, so swap the buffers.
 }
-
 
 //
 // Standard glut idle function
 //
 void IdleFunc()
 {
-	glutShowWindow    ();
-	glutPostRedisplay ();
+    glutShowWindow();
+    glutPostRedisplay();
 }
-
 
 //
 // Any keypress closes the window - standard glut keypress function.
 //
 void KeyboardFunc(unsigned char cChar, int nMouseX, int nMouseY)
 {
-	CleanUp();  // Clean up OpenGL.
-	glutDestroyWindow(window);  // Destroy the window.
+    CleanUp(); // Clean up OpenGL.
+    glutDestroyWindow(window); // Destroy the window.
 #ifndef _WIN32
-	// Must use this with regular glut, since it never returns control to main().
-	exit(0);
+    // Must use this with regular glut, since it never returns control to main().
+    exit(0);
 #endif
 }
-
 
 //
 // Setup OpenGL to use our image.
 //
 ILboolean Setup()
 {
-	glEnable       (GL_TEXTURE_2D);  // Enable texturing.
-	glMatrixMode   (GL_PROJECTION);  // We want to use the projection matrix.
-	glLoadIdentity ();  // Loads the identity matrix into the current matrix.
+    glEnable(GL_TEXTURE_2D); // Enable texturing.
+    glMatrixMode(GL_PROJECTION); // We want to use the projection matrix.
+    glLoadIdentity(); // Loads the identity matrix into the current matrix.
 
-	// Lets ILUT know to use its OpenGL functions.
-	ilutRenderer (ILUT_OPENGL);
-	
-	// Goes through all steps of sending the image to OpenGL.
-	TexID = ilutGLBindTexImage();
-	
-	// We're done with our image, so we go ahead and delete it.
-	ilDeleteImages(1, &ImgId);
+    // Lets ILUT know to use its OpenGL functions.
+    ilutRenderer(ILUT_OPENGL);
 
-	glOrtho(0, Width, Height, 0, -1, 1);  // Set up an orthographic projection with OpenGL.
+    // Goes through all steps of sending the image to OpenGL.
+    TexID = ilutGLBindTexImage();
 
-	return IL_TRUE;
+    // We're done with our image, so we go ahead and delete it.
+    ilDeleteImages(1, &ImgId);
+
+    glOrtho(0, Width, Height, 0, -1, 1); // Set up an orthographic projection with OpenGL.
+
+    return IL_TRUE;
 }
-
 
 //
 // Cleans up any loose ends.
 //
 void CleanUp()
 {
-	if (!bCleaned)  // Can only delete the texture once.
-		glDeleteTextures (1, &TexID);  // Delete our OpenGL texture.
-	bCleaned = IL_TRUE;  // Want to make sure we only delete it once.
+    if (!bCleaned) // Can only delete the texture once.
+        glDeleteTextures(1, &TexID); // Delete our OpenGL texture.
+    bCleaned = IL_TRUE; // Want to make sure we only delete it once.
 }

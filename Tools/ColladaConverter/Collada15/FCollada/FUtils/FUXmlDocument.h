@@ -20,45 +20,45 @@ typedef struct _xmlDoc xmlDoc;
 class FCOLLADA_EXPORT FUXmlDocument
 {
 private:
-	bool isParsing;
-	fstring filename;
-	xmlDoc* xmlDocument;
+    bool isParsing;
+    fstring filename;
+    xmlDoc* xmlDocument;
 
 public:
-	/** Constructor.
+    /** Constructor.
 		Opens the XML document for the given filename.
 		@param manager To handle non-file system opens and to handle relative paths.
 		@param filename The filename of the XML document to open.
 		@param isParsing Whether the document should be opened from file or created and written out. */
-	FUXmlDocument(FUFileManager* manager, const fchar* filename, bool isParsing);
+    FUXmlDocument(FUFileManager* manager, const fchar* filename, bool isParsing);
 
-	/** Creates an XML document from a data string.
+    /** Creates an XML document from a data string.
 		@param data The data buffer containing the XML document.
 		@param length The length of the data. If the length is -1,
 			the data buffer must be NULL-terminated. */
-	FUXmlDocument(const char* data, size_t length = (size_t) ~0);
+    FUXmlDocument(const char* data, size_t length = (size_t)~0);
 
-	/** Destructor.
+    /** Destructor.
 		Releases the XML document. */
-	~FUXmlDocument();
+    ~FUXmlDocument();
 
-	/** Creates the root XML tree node for the document.
+    /** Creates the root XML tree node for the document.
 		@param name The name of the root XML tree node.
 		@return The newly created root XML tree node. */
-	xmlNode* CreateRootNode(const char* name);
+    xmlNode* CreateRootNode(const char* name);
 
-	/** Releases the stored XML data, if any */
-	void ReleaseXmlData();
+    /** Releases the stored XML data, if any */
+    void ReleaseXmlData();
 
-	/** Retrieves the root XML tree node for the document.
+    /** Retrieves the root XML tree node for the document.
 		@return The root XML tree node. This pointer will be NULL
 			if the document did not load successfully. */
-	xmlNode* GetRootNode();
+    xmlNode* GetRootNode();
 
-	/** Writes out the XML document.
+    /** Writes out the XML document.
 		@param encoding The format encoding string.
 		@return Whether the XML document was written out successfully. */
-	bool Write(const char* encoding = "utf-8");
+    bool Write(const char* encoding = "utf-8");
 };
 
 #endif // HAS_LIBXML

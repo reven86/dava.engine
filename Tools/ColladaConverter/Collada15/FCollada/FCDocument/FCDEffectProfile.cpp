@@ -25,35 +25,37 @@ ImplementParameterObjectNoCtr(FCDEffectProfile, FCDEffectParameter, parameters);
 ImplementParameterObject(FCDEffectProfile, FCDExtra, extra, new FCDExtra(parent->GetDocument(), parent));
 
 FCDEffectProfile::FCDEffectProfile(FCDocument* document, FCDEffect* _parent)
-:	FCDObject(document), parent(_parent)
-,	InitializeParameterNoArg(parameters)
-,	InitializeParameterNoArg(extra)
+    : FCDObject(document)
+    , parent(_parent)
+    , InitializeParameterNoArg(parameters)
+    , InitializeParameterNoArg(extra)
 {
-	extra = new FCDExtra(GetDocument(), this);
+    extra = new FCDExtra(GetDocument(), this);
 }
 
 FCDEffectProfile::~FCDEffectProfile()
 {
-	parent = NULL;
+    parent = NULL;
 }
 
 FCDEffectProfile* FCDEffectProfile::Clone(FCDEffectProfile* clone) const
 {
-	if (clone == NULL) return NULL;
-	size_t parameterCount = parameters.size();
-	for (size_t p = 0; p < parameterCount; ++p)
-	{
-		FCDEffectParameter* parameter = clone->AddEffectParameter(parameters[p]->GetType());
-		parameters[p]->Clone(parameter);
-	}
-	extra->Clone(clone->extra);
-	return clone;
+    if (clone == NULL)
+        return NULL;
+    size_t parameterCount = parameters.size();
+    for (size_t p = 0; p < parameterCount; ++p)
+    {
+        FCDEffectParameter* parameter = clone->AddEffectParameter(parameters[p]->GetType());
+        parameters[p]->Clone(parameter);
+    }
+    extra->Clone(clone->extra);
+    return clone;
 }
 
 FCDEffectParameter* FCDEffectProfile::AddEffectParameter(uint32 type)
 {
-	FCDEffectParameter* parameter = FCDEffectParameterFactory::Create(GetDocument(), type);
-	parameters.push_back(parameter);
-	SetNewChildFlag();
-	return parameter;
+    FCDEffectParameter* parameter = FCDEffectParameterFactory::Create(GetDocument(), type);
+    parameters.push_back(parameter);
+    SetNewChildFlag();
+    return parameter;
 }

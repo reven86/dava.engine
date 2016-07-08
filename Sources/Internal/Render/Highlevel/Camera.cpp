@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Highlevel/Camera.h"
 #include "Render/RenderBase.h"
 #include "Core/Core.h"
@@ -484,6 +455,8 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4* externalCl
     {
         currentFrustum->Build(viewProjMatrix);
     }
+
+    projectionFlip = invertProjection ? -1.0f : 1.0f;
 }
 
 void Camera::SetupDynamicParameters(bool invertProjection, Vector4* externalClipPlane)
@@ -499,6 +472,8 @@ void Camera::SetupDynamicParameters(bool invertProjection, Vector4* externalClip
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &position, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_DIR, &direction, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_UP, &up, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJECTION_FLIP, &projectionFlip, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
 
 BaseObject* Camera::Clone(BaseObject* dstNode)
@@ -509,7 +484,7 @@ BaseObject* Camera::Clone(BaseObject* dstNode)
         dstNode = new Camera();
     }
     // SceneNode::Clone(dstNode);
-    Camera* cnd = (Camera*)dstNode;
+    Camera* cnd = static_cast<Camera*>(dstNode);
     cnd->znear = znear;
     cnd->zfar = zfar;
     cnd->aspect = aspect;

@@ -35,6 +35,11 @@
  * The post-preprocessing routines are also placed here.
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include "_mcpp.h"
 
 #if PREPROCESSED /* Use "pre-preprocessed" header    */
@@ -1028,7 +1033,7 @@ char* out)
         return;
     len = strlen(out);
     tp = out_p = out + len - 2; /* Just before '\n'     */
-    while (char_type[*out_p & UCHARMAX] & SPA)
+    while (out_p >= out && char_type[*out_p & UCHARMAX] & SPA)
         out_p--; /* Remove trailing white spaces */
     if (out_p < tp)
     {
@@ -1206,3 +1211,7 @@ char* str_end /* The end of the token */
     return str_end;
 }
 #endif /* ! MBCHAR_IS_ESCAPE_FREE  */
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

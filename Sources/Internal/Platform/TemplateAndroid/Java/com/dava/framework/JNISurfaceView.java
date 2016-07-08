@@ -9,14 +9,12 @@ import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
-import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -24,20 +22,24 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
-	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
+	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 
 	private native void nativeSurfaceCreated(Surface surface);
-	private native void nativeSurfaceChanged(int width, int height);
+	private native void nativeSurfaceChanged(Surface surface, int width, int height);
 	private native void nativeSurfaceDestroyed();
 
     private native void nativeProcessFrame();
-	
-	private Surface surface = null;
+
+    // Make surface member as static due to JNISurfaceView's lifecycle
+    // System can create new JNISurfaceView instance before deleting previous instance
+    // So use surface as current surface
+    // TODO: work with surface in SDL way 
+	static private Surface surface = null;
 	private int surfaceWidth = 0, surfaceHeight = 0;
-	
+
 	private boolean isMultitouchEnabled = true;
 	
 	private Integer[] gamepadAxises = null;
@@ -45,35 +47,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
 	
 	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
-	
-	private static volatile boolean isPaused = false;
-
-	public int lastDoubleActionIdx = -1;
-	
-	private int frameCounter = 0;
-	
-	public static boolean isPaused()
-	{
-	    return isPaused;
-	}
-	
-	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNISurfaceView surfaceView;
-		
-		DoubleTapListener(JNISurfaceView view) {
-			this.surfaceView = view;
-		}
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			lastDoubleActionIdx = e.getActionIndex();
-			
-			surfaceView.queueEvent(new InputRunnable(e, 2));
-			return true;
-		}
-	}
-	
-	GestureDetector doubleTapDetector = null;
+	private volatile boolean mEventQueueReady = true;
 
 	public JNISurfaceView(Context context) 
 	{
@@ -91,8 +65,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	{
 		getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		
-		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
-
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
@@ -101,21 +73,42 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         getHolder().addCallback(this);
 	}
 	
-	public void ProcessQueueEvents()
+	public void ProcessQueuedEvents()
 	{
 		ArrayList<Runnable> queueCopy = null;
-		synchronized (mEventQueue) 
-		{
+
+		synchronized (mEventQueue) {
 			queueCopy = new ArrayList<Runnable>(mEventQueue);
 			mEventQueue.clear();
 		}
 		
-		for(Runnable r : queueCopy)
-    	{
+		for(Runnable r : queueCopy) {
     		r.run();
     	}
+
+    	synchronized(mEventQueue) {
+    		mEventQueueReady = true;
+    		mEventQueue.notify();
+    	}
 	}
-	
+
+	public void WaitQueuedEvents()
+	{
+    	synchronized(mEventQueue)
+    	{
+            if(!mEventQueue.isEmpty()) {
+    		    mEventQueueReady = false;
+    		    while(!mEventQueueReady) {
+                    try {
+	    			    mEventQueue.wait();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+    		    }
+            }
+		}		
+	}
+
 	public void ProcessFrame()
 	{
         if (!JNIAssert.waitUserInputOnAssertDialog)
@@ -157,10 +150,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) 
 	{
-		//YZ rewrite size parameter from fill parent to fixed size
-		LayoutParams params = getLayoutParams();
-		params.height = h;
-		params.width = w;
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method onSizeChanged is called with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+		// So tell superclass of our expected and desired width and height, hehe
+        // See also method surfaceChanged
+		if (w < h)
+		{
+			int temp = w;
+			w = h;
+			h = temp;
+		}
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
@@ -171,7 +172,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			int tid;
 			float x;
 			float y;
-			int tapCount;
 			double time;
 
 			InputEvent(int tid, float x, float y, double time)
@@ -179,16 +179,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				this.tid = tid;
 				this.x = x;
 				this.y = y;
-				this.tapCount = 1;
-				this.time = time;
-			}
-			
-			InputEvent(int tid, float x, float y, int tapCount, double time)
-			{
-				this.tid = tid;
-				this.x = x;
-				this.y = y;
-				this.tapCount = tapCount;
 				this.time = time;
 			}
 		}
@@ -204,7 +194,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			return pointerId + 1;
 		}
 
-		public InputRunnable(final android.view.MotionEvent event, final int tapCount) {
+		public InputRunnable(final android.view.MotionEvent event) {
 			allEvents = new ArrayList<InputEvent>();
 
 			action = event.getActionMasked();
@@ -221,7 +211,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 					for (int i = 0; i < pointerCount; i++) {
 						for (int a = 0; a < gamepadAxises.length; ++a) {
 							InputEvent ev = new InputEvent(gamepadAxises[a],
-									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount,
+									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0,
 									event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
@@ -232,7 +222,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 				for (int i = 0; i < pointerCount; i++) {
 					for (int a = 0; a < gamepadAxises.length; ++a) {
 						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
-								tapCount, event.getEventTime());
+								event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -248,13 +238,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 						pointerId = event.getPointerId(i);
 						if (isMultitouchEnabled) {
 							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
-									tapCount, event.getEventTime());
+									event.getEventTime());
 							allEvents.add(ev);
 						}
 					}
 				} else {
 					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
-							event.getY(actionIndex), tapCount, event.getEventTime());
+							event.getY(actionIndex), event.getEventTime());
 					allEvents.add(ev);
 				}
 			} else
@@ -282,7 +272,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 			}
 			else if(allEvents.size() != 0) 
 			{
-				nativeOnInput(action, source, groupSize, allEvents, allEvents);
+				nativeOnInput(action, source, groupSize, allEvents);
 			}
 		}
     }
@@ -336,9 +326,10 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	queueEvent(new KeyInputRunnable(keyCode, true));
     	
     	if (event.isSystem())
-    		return super.onKeyDown(keyCode, event);
-    	else
-    		return true;
+    	{
+    		return super.onKeyDown(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override
@@ -350,29 +341,24 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     	
     	queueEvent(new KeyInputRunnable(keyCode, false));
     	
-    	return super.onKeyUp(keyCode, event);
+    	if (event.isSystem())
+    	{
+    		return super.onKeyUp(keyCode, event);	
+    	}
+    	return true;
     }
     
     @Override
     public boolean onTouchEvent(MotionEvent event) 
     {
-        boolean isDoubleTap = doubleTapDetector.onTouchEvent(event);
-        if (lastDoubleActionIdx >= 0 &&
-        	lastDoubleActionIdx == event.getActionIndex() &&
-        	event.getAction() == MotionEvent.ACTION_UP) {
-        	lastDoubleActionIdx = -1;
-        	queueEvent(new InputRunnable(event, 2));
-        	isDoubleTap = true;
-        }
-        if (!isDoubleTap)
-            queueEvent(new InputRunnable(event, 1));
+        queueEvent(new InputRunnable(event));
         return true;
     }
     
     @Override
     public boolean onGenericMotionEvent(MotionEvent event)
     {
-    	queueEvent(new InputRunnable(event, 1));
+    	queueEvent(new InputRunnable(event));
     	return true;
     }
     
@@ -386,6 +372,18 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
+    	if (surface != null)
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated: previous surface is alive, call nativeSurfaceDestroyed");
+    		queueEvent(new Runnable() {
+    			public void run() {
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in: call nativeSurfaceDestroyed");
+    		    	nativeSurfaceDestroyed();
+                    Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out: call nativeSurfaceDestroyed");
+    			}
+    		});
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
     	surface = holder.getSurface();
     	surfaceWidth = surfaceHeight = 0;
@@ -403,6 +401,12 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+    	if (surface != holder.getSurface())
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
+    		return;
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
 
         // while we always in landscape mode, but some devices
@@ -418,7 +422,19 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         // on nexus 5 w == h == 1080
         // if you have any trouble here you should first check
         // res/layout/activity_main.xml and root layout is FrameLayout!
-        if (width > height)
+        
+        // On some devices (e.g. Samsung SM-G900F with Android 5) when
+        // starting app from notification label on lock screen
+        // method surfaceChanged is called only once with dimension like
+        // in portrait mode despite of landscape orientation in AndroidManifest.xml.
+        // See also method onSizeChanged
+        if (width < height)
+        {
+            int temp = width;
+            width = height;
+            height = temp;
+        }
+        
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {
@@ -428,11 +444,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             	queueEvent(new Runnable() {
         			public void run() {
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
-        		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+        		    	nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
         			}
         		});
-                
+
                 // Workaround! we have to initialize keyboard after glView(OpenGL)
                 // initialization for some devices like
                 // HTC One (adreno 320, os 4.3)
@@ -443,14 +459,24 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                         activity.InitKeyboardLayout();
                     }
                 });
+
+        		WaitQueuedEvents();
             }
         }
+
+		JNIActivity.isSurfaceReady = true;
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+    	if (surface != holder.getSurface())
+    	{
+    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed for previous object! Do nothing");
+    		return;
+    	}
+    	
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
     	queueEvent(new Runnable() {
 			public void run() {
@@ -459,6 +485,11 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
 			}
 		});
+
+		WaitQueuedEvents();
+
+		JNIActivity.isSurfaceReady = false;
+
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
     }

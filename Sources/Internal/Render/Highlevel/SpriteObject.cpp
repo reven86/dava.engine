@@ -1,39 +1,9 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/Material/NMaterialNames.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
 SpriteObject::SpriteObject()
 {
     ScopedPtr<Texture> pink(Texture::CreatePink());
@@ -51,7 +21,7 @@ SpriteObject::SpriteObject(const FilePath& pathToSprite, int32 _frame, const Vec
 
 SpriteObject::SpriteObject(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
-	Init(spr, _frame, reqScale, pivotPoint);
+    Init(spr, _frame, reqScale, pivotPoint);
     RegisterRestoreCallback();
 }
 
@@ -86,19 +56,19 @@ void SpriteObject::Clear()
     SafeRelease(sprite);
 }
 
-void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint )
+void SpriteObject::Init(Sprite* spr, int32 _frame, const Vector2& reqScale, const Vector2& pivotPoint)
 {
     Clear();
 
-	type = TYPE_SPRITE;
-	spriteType = SPRITE_OBJECT;
+    type = TYPE_SPRITE;
+    spriteType = SPRITE_OBJECT;
 
-	sprScale = reqScale;
-	sprPivot = pivotPoint;
-	sprite = SafeRetain(spr);
-	frame = _frame;
+    sprScale = reqScale;
+    sprPivot = pivotPoint;
+    sprite = SafeRetain(spr);
+    frame = _frame;
 
-	SetupRenderBatch();
+    SetupRenderBatch();
 }
 
 void SpriteObject::Restore()
@@ -134,25 +104,25 @@ void SpriteObject::UpdateBufferData(RenderBatch* batch)
 
         float32* pT = sprite->GetTextureVerts(i);
 
-        *((Vector3*)verticesPtr) = Vector3(x0, y0, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x0, y0, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 0));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 0));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x1, y0, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x1, y0, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 2));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 2));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x0, y1, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x0, y1, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 4));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 4));
         verticesPtr += 2;
-        *((Vector3*)verticesPtr) = Vector3(x1, y1, 0);
-        bbox.AddPoint(*((Vector3*)verticesPtr));
+        *(reinterpret_cast<Vector3*>(verticesPtr)) = Vector3(x1, y1, 0);
+        bbox.AddPoint(*reinterpret_cast<Vector3*>(verticesPtr));
         verticesPtr += 3;
-        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 6));
+        *(reinterpret_cast<Vector2*>(verticesPtr)) = *(reinterpret_cast<Vector2*>(pT + 6));
         verticesPtr += 2;
 
         *indicesPtr = i * 4 + 0;
@@ -238,8 +208,7 @@ void SpriteObject::SetupRenderBatch()
     SafeRelease(batch);
 }
 
-
-RenderObject * SpriteObject::Clone(RenderObject *newObject)
+RenderObject* SpriteObject::Clone(RenderObject* newObject)
 {
     if (newObject == nullptr)
     {
@@ -257,10 +226,9 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
     return spriteObject;
 }
 
-
 void SpriteObject::SetFrame(int32 newFrame)
 {
-	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
+    frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
     if (GetRenderBatchCount() > 0)
     {
@@ -271,32 +239,32 @@ void SpriteObject::SetFrame(int32 newFrame)
 
 int32 SpriteObject::GetFrame() const
 {
-	return frame;
+    return frame;
 }
 
-Sprite * SpriteObject::GetSprite() const
+Sprite* SpriteObject::GetSprite() const
 {
-	return sprite;
+    return sprite;
 }
 
 void SpriteObject::SetSpriteType(eSpriteType _type)
 {
-	spriteType = _type;
+    spriteType = _type;
 }
 
 SpriteObject::eSpriteType SpriteObject::GetSpriteType() const
 {
-	return spriteType;
+    return spriteType;
 }
 
-const Vector2 & SpriteObject::GetScale() const
+const Vector2& SpriteObject::GetScale() const
 {
-	return sprScale;
+    return sprScale;
 }
 
-const Vector2 & SpriteObject::GetPivot() const
+const Vector2& SpriteObject::GetPivot() const
 {
-	return sprPivot;
+    return sprPivot;
 }
 
 void SpriteObject::BindDynamicParameters(Camera* camera)
@@ -353,10 +321,10 @@ void SpriteObject::BindDynamicParameters(Camera* camera)
     };
     }
 
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, (pointer_size)&worldMatrix);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, reinterpret_cast<pointer_size>(&worldMatrix));
 }
 
-void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpriteObject::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     // we dont need to save render batche(s)
     // because sprite creating it on loading
@@ -377,7 +345,7 @@ void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializati
     }
 }
 
-void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
+void SpriteObject::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     RenderObject::Load(archive, serializationContext);
 
@@ -395,7 +363,7 @@ void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializati
             Init(localSprite, 0, Vector2(1, 1), Vector2(localSprite->GetWidth(), localSprite->GetHeight()) * 0.5f);
             AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
         }
-	}
+    }
 }
 void SpriteObject::RecalcBoundingBox()
 {

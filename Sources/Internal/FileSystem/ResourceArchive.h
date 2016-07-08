@@ -1,214 +1,38 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+#pragma once
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef __DAVAENGINE_RESOURCE_ARCHIVE_H__
-#define __DAVAENGINE_RESOURCE_ARCHIVE_H__
-
-#include "Base/BaseTypes.h"
-#include "FileSystem/Bitstream.h"
-#include "Base/BaseObject.h"
+#include "Compression/Compressor.h"
 
 namespace DAVA
 {
-/*
-	Resource file format
-	
-	header
-	-------
-	uint8  signature[4];
-	uint32 version;
-	uint32 fileCount;
-	uint32 flags;	
-	
-	dictionary
-	------------
-	for i = [0, fileCount)
-		uint32 filePosition;
-		uint32 fileSize;
-		uint32 packedFileSize;
-		uint32 fileFlags;
-		String pathName;
-	
-	compressed files
-	----------------
-	for i = [0, fileCount)
-		uint8 * fileData[packedFileSize[i]];
+class ResourceArchiveImpl;
 
+class FilePath;
 
-	compression method LZSS.
-	compression rate (about 2 - 3 times)
-	decompression speed O(n) 
-*/
-
-class FileSystem;
-//! \brief class to work with resource archives
-class ResourceArchive : public BaseObject
+class ResourceArchive final
 {
-protected:
-	virtual ~ResourceArchive();
 public:
-	ResourceArchive();
+    explicit ResourceArchive(const FilePath& filePath);
+    ~ResourceArchive();
 
-	// Loading resources functions
-	
+    struct FileInfo
+    {
+        FileInfo() = default;
+        FileInfo(const char8* relativePath, uint32 originalSize, uint32 compressedSize, Compressor::Type compressionType);
 
-    //! \brief function to get file size in archive
-    //! \return file size
-    int32	GetFileSize(const uint32 resourceIndex) const;
+        String relativeFilePath;
+        uint32 originalSize = 0;
+        uint32 compressedSize = 0;
+        Compressor::Type compressionType = Compressor::Type::None;
+    };
 
+    const Vector<FileInfo>& GetFilesInfo() const;
+    const FileInfo* GetFileInfo(const String& relativeFilePath) const;
+    bool HasFile(const String& relativeFilePath) const;
+    bool LoadFile(const String& relativeFilePath, Vector<uint8>& outputFileContent) const;
 
-	//! \brief function to get this archive file count
-	//! \return file count
-	int32	GetFileCount() const;
-	
-
-
-	//! \brief Get resource relative pathname
-	//! \param resourceIndex index of resource from what we want to get pathname
-	//! \return pathName or String("") if any error occurred
-	String GetResourcePathname(const uint32 resourceIndex) const;
-
-
-	//! \brief function to load resource with relative path
-	//! \param pathName relative pathname of resource we want to load
-	//! \param data pointer to memory we want to store this resource (if null function return size of resource)
-	//! \return -1 if error occurred otherwise return size of data
-	int32	LoadResource(const FilePath & pathName, void * data);
-
-
-	//! \brief function to open resource archive
-	//! \param resourceIndex we want to open
-	//! \param data pointer to memory we want to store this resource (if null function return size of resource)
-	//! \return -1 if error occurred otherwise return size of data
-	int32	LoadResource(const uint32 resourceIndex, void * data);
-
-	//! \brief function to open resource archive
-	//! \param archiveName path to archive we want to open
-	//! \param withPaths can use relative paths to open resources
-	bool	Open(const FilePath & archiveName);
-
-	// Saving resources functions
-
-	//! \brief function to create new resource archive
-	//! \param archiveName path to archive we want to save
-	//! \param packedCacheDir path to directory where we want to store temporary files or from where get whese files
-	//! \param withPaths save relative paths to open resources
-	void	StartResource(const FilePath & archiveName, bool withPaths = true, const String & extrudePart = String(""), const FilePath & packedCacheDir = FilePath(""));
-
-	//! \brief Add new file to archive. Can be called only between \ref StartResource and \ref SaveResource
-	//! \param resourceFile name of resourceFile to save
-	void	AddFile(const FilePath & resourceFile);
-	
-	//! \brief function to finish resource archive and prepare it to saving to disk
-	void	FinishResource();
-	
-	//! \brief function to check progress of saving archive to disk
-	//! process of compression can be long so we need to have progress bar
-	//! \param resourcePackedSize
-	//! \return if succeed returns number from 0 to added resource file count. 
-	//!			else return -1.
-	int32	SaveProgress(int32 * resourcePackedSize = 0, int32 * resourceRealSize = 0);
-
-    void    UnpackToFolder(const FilePath & dirPath);
+    bool UnpackToFolder(const FilePath& dir) const;
 
 private:
-
-	// internal function to pack resource
-	bool	PackResource(const FilePath & resourceToPack, int32 * resourcePackedSize, int32 * resourceRealSize);
-	bool	UnpackResource(int32 fileIndex, uint8 * data);
-
-
-	int32	FindPathnameIndex(const FilePath & pathname);
-	int32	lastResourceIndex;
-	FilePath	lastResourceName;
-
-	bool	WriteDictionary();
-	bool	ReadDictionary();
-
-	enum eHeaderFlags
-	{
-		EHF_WITHPATHS = 0x01,
-	};
-
-	struct Header
-	{
-		uint8  signature[4];
-		uint32 version;
-		uint32 fileCount;
-		uint32 flags;
-	};
-	
-
-	enum eFileFlags
-	{
-		EFF_PACKED = 0x1, // if flag is set this file is packed, else this file is unpacked
-	};
-
-	struct DictionaryNode
-	{
-		uint32 filePosition;
-		uint32 fileSize;
-		uint32 packedFileSize;
-		uint32 fileFlags;
-		String pathName;
-		//String relativePathName;
-	};
-
-	
-	static const int32 OFFSET_BITS = 10;
-	static const int32 WINDOW_SIZE = 1 << OFFSET_BITS;
-	static const int32 MATCHLEN_BITS = OFFSET_BITS;
-	
-	// common information (for loading archive files & for saving arhchive files)
-	Header					header;
-	Vector<DictionaryNode>			nodeArray;
-	Map<String,uint32>	nodeMap;
-
-
-	// save information
-	int32					saveResourceCounter;
-	Vector<FilePath>			fileArray;
-	FilePath					archiveFileName;
-	FilePath					packedCacheDir;
-	String					extrudePart;
-	bool					withPaths;
-
-
-	File					*archiveFile;
-	// global influences
-	FileSystem				* fileSystem;
+    std::unique_ptr<ResourceArchiveImpl> impl;
 };
-
-
-};
-
-
-#endif // __DAVAENGINE_RESOURCE_ARCHIVE_H__
-
-
+} // end namespace DAVA

@@ -1,32 +1,3 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include <Debug/DVAssert.h>
 
 #include <Network/PeerDesription.h>
@@ -35,16 +6,15 @@ namespace DAVA
 {
 namespace Net
 {
-
 struct SerializedHeader
 {
-    uint32 magicZero;       // Magic zero
-    uint32 totalSize;       // Total length of serialized data including this header
-    uint32 checkSum;        // Simple checksum of serialized data not including this header
-    uint32 ifadrCount;      // Number of network interfaces
-    uint32 networkRole;     // Network role in network configuration
-    uint32 transpCount;     // Number of transports in network configuration
-    uint32 serviceCount;    // Number of services in network configuration
+    uint32 magicZero; // Magic zero
+    uint32 totalSize; // Total length of serialized data including this header
+    uint32 checkSum; // Simple checksum of serialized data not including this header
+    uint32 ifadrCount; // Number of network interfaces
+    uint32 networkRole; // Network role in network configuration
+    uint32 transpCount; // Number of transports in network configuration
+    uint32 serviceCount; // Number of services in network configuration
 };
 
 struct SerializedGeneralInfo
@@ -61,7 +31,7 @@ struct SerializedGeneralInfo
     Array<char8, 64> udid;
     Array<char8, 32> name;
 };
-// make sure that sizeof SerializedGeneralInfo with arrays like char8 arr[] is same as witn std::array 
+// make sure that sizeof SerializedGeneralInfo with arrays like char8 arr[] is same as witn std::array
 static_assert(196 == sizeof(SerializedGeneralInfo), "invalid SerializedGeneralInfo size.");
 
 struct SerializedIfAddress
@@ -87,14 +57,16 @@ static DeviceInfo::ePlatform IntToPlatform(uint32 n)
 static eGPUFamily IntToGPUFamily(uint32 n)
 {
     return GPU_POWERVR_IOS <= n && n < GPU_FAMILY_COUNT ? static_cast<eGPUFamily>(n)
-                                                        : GPU_INVALID;
+                                                          :
+                                                          GPU_INVALID;
 }
 
 static eTransportType IntToTransportType(uint32 n)
 {
     switch (n)
     {
-    case TRANSPORT_TCP: return TRANSPORT_TCP;
+    case TRANSPORT_TCP:
+        return TRANSPORT_TCP;
     }
     DVASSERT(0);
     return TRANSPORT_TCP;
@@ -102,10 +74,12 @@ static eTransportType IntToTransportType(uint32 n)
 
 static eNetworkRole IntToNetworkRole(uint32 n)
 {
-    switch(n)
+    switch (n)
     {
-    case SERVER_ROLE: return SERVER_ROLE;
-    case CLIENT_ROLE: return CLIENT_ROLE;
+    case SERVER_ROLE:
+        return SERVER_ROLE;
+    case CLIENT_ROLE:
+        return CLIENT_ROLE;
     }
     DVASSERT(0);
     return SERVER_ROLE;
@@ -114,21 +88,21 @@ static eNetworkRole IntToNetworkRole(uint32 n)
 static size_t EstimateBufferSize(const SerializedHeader* header)
 {
     return
-        sizeof(SerializedHeader) +
-        sizeof(SerializedGeneralInfo) +
-        sizeof(SerializedIfAddress) * header->ifadrCount +
-        sizeof(SerializedTransport) * header->transpCount +
-        sizeof(uint32) * header->serviceCount;
+    sizeof(SerializedHeader) +
+    sizeof(SerializedGeneralInfo) +
+    sizeof(SerializedIfAddress) * header->ifadrCount +
+    sizeof(SerializedTransport) * header->transpCount +
+    sizeof(uint32) * header->serviceCount;
 }
 
 size_t PeerDescription::SerializedSize() const
 {
     return
-        sizeof(SerializedHeader) +
-        sizeof(SerializedGeneralInfo) +
-        sizeof(SerializedIfAddress) * ifaddr.size() +
-        sizeof(SerializedTransport) * netConfig.Transports().size() +
-        sizeof(uint32) * netConfig.Services().size();
+    sizeof(SerializedHeader) +
+    sizeof(SerializedGeneralInfo) +
+    sizeof(SerializedIfAddress) * ifaddr.size() +
+    sizeof(SerializedTransport) * netConfig.Transports().size() +
+    sizeof(uint32) * netConfig.Services().size();
 }
 
 size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
@@ -141,7 +115,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     SerializedHeader* header = static_cast<SerializedHeader*>(dstBuffer);
     header->magicZero = 0;
     header->totalSize = static_cast<uint32>(totalSize);
-    header->checkSum = 0;       // Compute later after serializing into buffer
+    header->checkSum = 0; // Compute later after serializing into buffer
     header->ifadrCount = static_cast<uint32>(ifaddr.size());
     header->networkRole = static_cast<uint32>(netConfig.Role());
     header->transpCount = static_cast<uint32>(netConfig.Transports().size());
@@ -167,7 +141,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     general->name[general->name.size() - 1] = '\0';
 
     SerializedIfAddress* ifa = reinterpret_cast<SerializedIfAddress*>(general + 1);
-    for (size_t i = 0, n = ifaddr.size();i < n;++i)
+    for (size_t i = 0, n = ifaddr.size(); i < n; ++i)
     {
         ifa[i].addr = ifaddr[i].Address().ToUInt();
         ifa[i].mask = ifaddr[i].Mask().ToUInt();
@@ -176,7 +150,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     }
 
     SerializedTransport* tr = reinterpret_cast<SerializedTransport*>(ifa + ifaddr.size());
-    for (size_t i = 0, n = netConfig.Transports().size();i < n;++i)
+    for (size_t i = 0, n = netConfig.Transports().size(); i < n; ++i)
     {
         tr[i].type = static_cast<uint32>(netConfig.Transports()[i].type);
         tr[i].addr = netConfig.Transports()[i].endpoint.Address().ToUInt();
@@ -184,7 +158,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     }
 
     uint32* serv = reinterpret_cast<uint32*>(tr + netConfig.Transports().size());
-    for (size_t i = 0, n = netConfig.Services().size();i < n;++i)
+    for (size_t i = 0, n = netConfig.Services().size(); i < n; ++i)
     {
         serv[i] = netConfig.Services()[i];
     }
@@ -202,7 +176,7 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     size_t estimatedSize = EstimateBufferSize(header);
     // TODO: verify checksum
     if (false == (0 == header->magicZero && header->totalSize <= buflen && header->totalSize == estimatedSize &&
-                                                    (SERVER_ROLE == header->networkRole || CLIENT_ROLE == header->networkRole)))
+                  (SERVER_ROLE == header->networkRole || CLIENT_ROLE == header->networkRole)))
         return 0;
 
     PeerDescription temp;
@@ -221,7 +195,7 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     temp.name = general->name.data();
 
     const SerializedIfAddress* ifa = reinterpret_cast<const SerializedIfAddress*>(general + 1);
-    for (uint32 i = 0;i < header->ifadrCount;++i)
+    for (uint32 i = 0; i < header->ifadrCount; ++i)
     {
         IfAddress::PhysAddress phys;
         Memcpy(phys.data, ifa[i].physAddr, 6);
@@ -229,14 +203,14 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     }
 
     const SerializedTransport* tr = reinterpret_cast<const SerializedTransport*>(ifa + header->ifadrCount);
-    for (uint32 i = 0;i < header->transpCount;++i)
+    for (uint32 i = 0; i < header->transpCount; ++i)
     {
         eTransportType type = IntToTransportType(tr[i].type);
         temp.netConfig.AddTransport(type, Endpoint(IPAddress(tr[i].addr), static_cast<uint16>(tr[i].port)));
     }
 
     const uint32* serv = reinterpret_cast<const uint32*>(tr + header->transpCount);
-    for (uint32 i = 0;i < header->serviceCount;++i)
+    for (uint32 i = 0; i < header->serviceCount; ++i)
     {
         temp.netConfig.AddService(serv[i]);
     }
@@ -245,5 +219,5 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     return header->totalSize;
 }
 
-}   // namespace Net
-}   // namespace DAVA
+} // namespace Net
+} // namespace DAVA

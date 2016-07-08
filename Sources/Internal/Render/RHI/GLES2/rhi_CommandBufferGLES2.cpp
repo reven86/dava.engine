@@ -1,54 +1,30 @@
-﻿/*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+#include "../Common/rhi_Pool.h"
+#include "rhi_GLES2.h"
+#include "rhi_ProgGLES2.h"
 
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_GLES2.h"
-    #include "rhi_ProgGLES2.h"
+#include "../Common/rhi_Private.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
-
-    #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
     #include "Concurrency/ConditionVariable.h"
     #include "Concurrency/LockGuard.h"
+    #include "Concurrency/AutoResetEvent.h"
+    #include "Concurrency/ManualResetEvent.h"
     #include "Debug/Profiler.h"
 
-    #include "_gl.h"
+#include "_gl.h"
+
+#define RHI_GLES2__USE_CMDBUF_PACKING 1
 
 namespace rhi
 {
-enum CommandGLES2
+enum CommandGLES2Type
 {
     GLES2__BEGIN = 1,
     GLES2__END = 2,
@@ -73,6 +49,8 @@ enum CommandGLES2
 
     GLES2__DRAW_PRIMITIVE = 41,
     GLES2__DRAW_INDEXED_PRIMITIVE = 42,
+    GLES2__DRAW_INSTANCED_PRIMITIVE = 43,
+    GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE = 44,
 
     GLES2__SET_MARKER = 51,
 
@@ -86,6 +64,202 @@ RenderPassGLES2_t
     int priority;
 };
 
+#if defined(__DAVAENGINE_WIN32__)
+#pragma pack(push, 1)
+#endif
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define DV_ATTR_PACKED __attribute__((packed))
+#else
+#define DV_ATTR_PACKED 
+#endif
+
+struct
+CommandGLES2
+{
+    uint8 type;
+    uint8 size;
+
+    CommandGLES2(uint8 t, uint8 sz)
+        : type(t)
+        , size(sz)
+    {
+    }
+} DV_ATTR_PACKED;
+
+template <class T, CommandGLES2Type t>
+struct
+CommandGLES2Impl
+: public CommandGLES2
+{
+    CommandGLES2Impl()
+        : CommandGLES2(t, sizeof(T))
+    {
+    }
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_Begin : public CommandGLES2Impl<CommandGLES2_Begin, GLES2__BEGIN>
+{
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_End : public CommandGLES2Impl<CommandGLES2_End, GLES2__END>
+{
+    Handle syncObject;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexData : public CommandGLES2Impl<CommandGLES2_SetVertexData, GLES2__SET_VERTEX_DATA>
+{
+    uint16 streamIndex;
+    Handle vb;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetIndices : public CommandGLES2Impl<CommandGLES2_SetIndices, GLES2__SET_INDICES>
+{
+    Handle ib;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetQueryBuffer : public CommandGLES2Impl<CommandGLES2_SetQueryBuffer, GLES2__SET_QUERY_BUFFER>
+{
+    Handle queryBuf;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetQueryIndex : public CommandGLES2Impl<CommandGLES2_SetQueryIndex, GLES2__SET_QUERY_INDEX>
+{
+    uint32 objectIndex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetPipelineState : public CommandGLES2Impl<CommandGLES2_SetPipelineState, GLES2__SET_PIPELINE_STATE>
+{
+    uint32 vdecl;
+    uint32 ps;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetDepthStencilState : public CommandGLES2Impl<CommandGLES2_SetDepthStencilState, GLES2__SET_DEPTHSTENCIL_STATE>
+{
+    Handle depthStencilState;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetSamplerState : public CommandGLES2Impl<CommandGLES2_SetSamplerState, GLES2__SET_SAMPLER_STATE>
+{
+    Handle samplerState;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetCullMode : public CommandGLES2Impl<CommandGLES2_SetCullMode, GLES2__SET_CULL_MODE>
+{
+    uint8 mode;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetScissorRect : public CommandGLES2Impl<CommandGLES2_SetScissorRect, GLES2__SET_SCISSOR_RECT>
+{
+    uint16 x;
+    uint16 y;
+    uint16 width;
+    uint16 height;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetViewport : public CommandGLES2Impl<CommandGLES2_SetViewport, GLES2__SET_VIEWPORT>
+{
+    uint16 x;
+    uint16 y;
+    uint16 width;
+    uint16 height;
+} /*DV_ATTR_PACKED*/;
+
+struct
+CommandGLES2_SetFillMode : public CommandGLES2Impl<CommandGLES2_SetFillMode, GLES2__SET_FILLMODE>
+{
+    uint8 mode;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetVertexProgConstBuffer, GLES2__SET_VERTEX_PROG_CONST_BUFFER>
+{
+    uint8 bufIndex;
+    Handle buffer;
+    const void* inst;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetFragmentProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetFragmentProgConstBuffer, GLES2__SET_FRAGMENT_PROG_CONST_BUFFER>
+{
+    uint8 bufIndex;
+    Handle buffer;
+    const void* inst;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetVertexTexture : public CommandGLES2Impl<CommandGLES2_SetVertexTexture, GLES2__SET_VERTEX_TEXTURE>
+{
+    uint8 unitIndex;
+    Handle tex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetFragmentTexture : public CommandGLES2Impl<CommandGLES2_SetFragmentTexture, GLES2__SET_FRAGMENT_TEXTURE>
+{
+    uint8 unitIndex;
+    Handle tex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawPrimitive : public CommandGLES2Impl<CommandGLES2_DrawPrimitive, GLES2__DRAW_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawInstancedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedPrimitive, GLES2__DRAW_INSTANCED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint16 instanceCount;
+    uint16 baseInstance;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawIndexedPrimitive, GLES2__DRAW_INDEXED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_DrawInstancedIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedIndexedPrimitive, GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE>
+{
+    uint8 mode;
+    uint32 vertexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+    uint16 instanceCount;
+    uint16 baseInstance;
+} DV_ATTR_PACKED;
+
+struct
+CommandGLES2_SetMarker : public CommandGLES2Impl<CommandGLES2_SetMarker, GLES2__SET_MARKER>
+{
+    const char* text;
+};
+
+
+#ifdef __DAVAENGINE_WIN32__
+#pragma pack(pop)
+#endif
+
 struct
 CommandBufferGLES2_t
 {
@@ -97,6 +271,28 @@ public:
     void End();
     void Execute();
 
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    template <class T>
+    T* allocCmd()
+    {
+        if (curUsedSize + sizeof(T) >= cmdDataSize)
+        {
+            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
+            cmdData = reinterpret_cast<uint8*>(::realloc(cmdData, cmdDataSize));
+        }
+
+        uint8* p = cmdData + curUsedSize;
+        curUsedSize += sizeof(T);
+
+        return new (reinterpret_cast<T*>(p)) T();
+    }
+
+    uint8* cmdData;
+    uint32 cmdDataSize;
+    uint32 curUsedSize;
+
+#else
+
     void Command(uint64 cmd);
     void Command(uint64 cmd, uint64 arg1);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2);
@@ -105,16 +301,18 @@ public:
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
 
-    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
-
     std::vector<uint64> _cmd;
+
+#endif
+
+    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
 
-    uint32 dbgCommandCount;
+    //    uint32              dbgCommandCount;
     RingBuffer* text;
 
     Handle sync;
@@ -149,11 +347,15 @@ static bool _GLES2_RenderThreadExitPending = false;
 static DAVA::Spinlock _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
 
-static DAVA::Mutex _GLES2_RenderThreadSuspendSync;
+static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
 static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
 
+static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
+
 static DAVA::Thread* _GLES2_RenderThread = nullptr;
-static unsigned _GLES2_RenderThreadFrameCount = 0;
+static uint32 _GLES2_RenderThreadFrameCount = 0;
+
+static DAVA::Mutex _GLES2_SyncObjectsSync;
 
 struct
 FrameGLES2
@@ -170,12 +372,14 @@ static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
 //static DAVA::Mutex              _FrameSync;
 
+static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
+static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
+
 static void _ExecGL(GLCommand* command, uint32 cmdCount);
 
 static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    Trace("gl.alloc-rpass\n");
     DVASSERT(cmdBufCount);
 
     Handle handle = RenderPassPoolGLES2::Alloc();
@@ -189,7 +393,9 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         Handle h = CommandBufferPoolGLES2::Alloc();
         CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(h);
 
+#if !RHI_GLES2__USE_CMDBUF_PACKING
         cb->_cmd.clear();
+#endif
         cb->passCfg = passConf;
         cb->isFirstInPass = i == 0;
         cb->isLastInPass = i == cmdBufCount - 1;
@@ -236,6 +442,7 @@ void Init(uint32 maxCount)
 {
     RenderPassPoolGLES2::Reserve(maxCount);
 }
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &gles2_RenderPass_Allocate;
@@ -249,8 +456,14 @@ void SetupDispatch(Dispatch* dispatch)
 static void
 gles2_CommandBuffer_Begin(Handle cmdBuf)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    cb->Begin();
+    CommandGLES2_Begin* cmd = cb->allocCmd<CommandGLES2_Begin>();
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Begin();
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__BEGIN);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -258,7 +471,14 @@ gles2_CommandBuffer_Begin(Handle cmdBuf)
 static void
 gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_End* cmd = cb->allocCmd<CommandGLES2_End>();
+    cmd->syncObject = syncObject;
+    cb->End();
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__END, syncObject);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -266,7 +486,14 @@ gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 static void
 gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetPipelineState* cmd = cb->allocCmd<CommandGLES2_SetPipelineState>();
+    cmd->vdecl = uint16(vdecl);
+    cmd->ps = ps;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_PIPELINE_STATE, ps, vdecl);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -274,14 +501,29 @@ gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 static void
 gles2_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetCullMode* cmd = cb->allocCmd<CommandGLES2_SetCullMode>();
+    cmd->mode = mode;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_CULL_MODE, mode);
+#endif
 }
 
 //------------------------------------------------------------------------------
 
 void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetScissorRect* cmd = cb->allocCmd<CommandGLES2_SetScissorRect>();
+    cmd->x = rect.x;
+    cmd->y = rect.y;
+    cmd->width = rect.width;
+    cmd->height = rect.height;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -289,7 +531,16 @@ void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 static void
 gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetViewport* cmd = cb->allocCmd<CommandGLES2_SetViewport>();
+    cmd->x = uint16(vp.x);
+    cmd->y = uint16(vp.y);
+    cmd->width = uint16(vp.width);
+    cmd->height = uint16(vp.height);
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -297,7 +548,13 @@ gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 static void
 gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetFillMode* cmd = cb->allocCmd<CommandGLES2_SetFillMode>();
+    cmd->mode = mode;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FILLMODE, mode);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -305,7 +562,14 @@ gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 static void
 gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VERTEX_DATA, vb, streamIndex);
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetVertexData* cmd = cb->allocCmd<CommandGLES2_SetVertexData>();
+    cmd->vb = vb;
+    cmd->streamIndex = uint16(streamIndex);
+#else
+    CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VERTEX_DATA, vb, streamIndex);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -313,11 +577,20 @@ gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 static void
 gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
-    //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != InvalidHandle)
+    {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+        CommandGLES2_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetVertexProgConstBuffer>();
+        cmd->buffer = buffer;
+        cmd->bufIndex = bufIndex;
+        cmd->inst = ConstBufferGLES2::Instance(buffer);
+#else
         CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -326,7 +599,16 @@ static void
 gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
     if (tex != InvalidHandle)
+    {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+        CommandGLES2_SetVertexTexture* cmd = cb->allocCmd<CommandGLES2_SetVertexTexture>();
+        cmd->unitIndex = unitIndex;
+        cmd->tex = tex;
+#else
         CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VERTEX_TEXTURE, unitIndex, tex);
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -334,7 +616,13 @@ gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
 static void
 gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetIndices* cmd = cb->allocCmd<CommandGLES2_SetIndices>();
+    cmd->ib = ib;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_INDICES, ib);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -342,7 +630,13 @@ gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 static void
 gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetQueryIndex* cmd = cb->allocCmd<CommandGLES2_SetQueryIndex>();
+    cmd->objectIndex = objectIndex;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_QUERY_INDEX, objectIndex);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -350,7 +644,13 @@ gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 static void
 gles2_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetQueryBuffer* cmd = cb->allocCmd<CommandGLES2_SetQueryBuffer>();
+    cmd->queryBuf = queryBuf;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_QUERY_BUFFER, queryBuf);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -362,7 +662,17 @@ gles2_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != InvalidHandle)
+    {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+        CommandGLES2_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetFragmentProgConstBuffer>();
+        cmd->bufIndex = bufIndex;
+        cmd->buffer = buffer;
+        cmd->inst = ConstBufferGLES2::Instance(buffer);
+#else
         CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -370,10 +680,17 @@ gles2_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
 static void
 gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    //    L_ASSERT(tex);
-
     if (tex != InvalidHandle)
+    {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+        CommandGLES2_SetFragmentTexture* cmd = cb->allocCmd<CommandGLES2_SetFragmentTexture>();
+        cmd->unitIndex = unitIndex;
+        cmd->tex = tex;
+#else
         CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_TEXTURE, unitIndex, tex);
+#endif
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -381,7 +698,13 @@ gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
 static void
 gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetDepthStencilState* cmd = cb->allocCmd<CommandGLES2_SetDepthStencilState>();
+    cmd->depthStencilState = depthStencilState;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_DEPTHSTENCIL_STATE, depthStencilState);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -389,8 +712,42 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 static void
 gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    // NOTE: expected to be called BEFORE SetFragmentTexture
+// NOTE: expected to be called BEFORE SetFragmentTexture
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
+    cmd->samplerState = samplerState;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_SAMPLER_STATE, samplerState);
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static int
+_GLES2_GetDrawMode(PrimitiveType primType, uint32 primCount, unsigned* v_cnt)
+{
+    int mode = GL_TRIANGLES;
+
+    switch (primType)
+    {
+    case PRIMITIVE_TRIANGLELIST:
+        *v_cnt = primCount * 3;
+        mode = GL_TRIANGLES;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        *v_cnt = 2 + primCount;
+        mode = GL_TRIANGLE_STRIP;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        *v_cnt = primCount * 2;
+        mode = GL_LINES;
+        break;
+    }
+
+    return mode;
 }
 
 //------------------------------------------------------------------------------
@@ -399,31 +756,16 @@ static void
 gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 {
     unsigned v_cnt = 0;
-    int mode = GL_TRIANGLES;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        v_cnt = count * 3;
-        mode = GL_TRIANGLES;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        v_cnt = 2 + count;
-        mode = GL_TRIANGLE_STRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        v_cnt = count * 2;
-        mode = GL_LINES;
-        break;
-
-    default:
-    {
-    }
-    }
-
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -432,31 +774,60 @@ static void
 gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex)
 {
     unsigned v_cnt = 0;
-    int mode = GL_TRIANGLES;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        v_cnt = count * 3;
-        mode = GL_TRIANGLES;
-        break;
-
-    case PRIMITIVE_TRIANGLESTRIP:
-        v_cnt = 2 + count;
-        mode = GL_TRIANGLE_STRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        v_cnt = count * 2;
-        mode = GL_LINES;
-        break;
-
-    default:
-    {
-    }
-    }
-
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawIndexedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+#else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex);
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    unsigned v_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = 0;
+#else
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_PRIMITIVE, uint32(mode), instCount, v_cnt);
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    unsigned v_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
+    CommandGLES2_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedIndexedPrimitive>();
+    cmd->mode = mode;
+    cmd->vertexCount = v_cnt;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInstance;
+#else
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex, baseInstance);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -464,6 +835,7 @@ gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
 static void
 gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
+#ifdef __DAVAENGINE_DEBUG__
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
 
     if (!cb->text)
@@ -472,14 +844,21 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
-    char* txt = (char*)cb->text->Alloc(len / sizeof(float) + 2);
+    int len = static_cast<int>(strlen(text));
+    char* txt = reinterpret_cast<char*>(cb->text->Alloc(len / sizeof(float) + 2));
 
     memcpy(txt, text, len);
     txt[len] = '\n';
     txt[len + 1] = '\0';
 
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    CommandGLES2_SetMarker* cmd = cb->allocCmd<CommandGLES2_SetMarker>();
+    cmd->text = text;
+#else
     cb->Command(GLES2__SET_MARKER, (uint64)(txt));
+#endif
+
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -487,11 +866,15 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 static Handle
 gles2_SyncObject_Create()
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     Handle handle = SyncObjectPoolGLES2::Alloc();
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(handle);
 
     sync->is_signaled = false;
     sync->is_used = false;
+
+    _GLES2_SyncObjectsSync.Unlock();
 
     return handle;
 }
@@ -501,7 +884,11 @@ gles2_SyncObject_Create()
 static void
 gles2_SyncObject_Delete(Handle obj)
 {
+    _GLES2_SyncObjectsSync.Lock();
+
     SyncObjectPoolGLES2::Free(obj);
+
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -509,6 +896,11 @@ gles2_SyncObject_Delete(Handle obj)
 static bool
 gles2_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
+
+    if (!SyncObjectPoolGLES2::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
@@ -522,7 +914,14 @@ CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
     , text(nullptr)
-    , sync(InvalidHandle)
+    ,
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    cmdData(nullptr)
+    , cmdDataSize(0)
+    , curUsedSize(0)
+    ,
+#endif
+    sync(InvalidHandle)
 {
 }
 
@@ -536,23 +935,32 @@ CommandBufferGLES2_t::~CommandBufferGLES2_t()
 
 void CommandBufferGLES2_t::Begin()
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    curUsedSize = 0;
+#else
     _cmd.clear();
-    dbgCommandCount = 0;
+#endif
+    //dbgCommandCount = 0;
 }
 
 //------------------------------------------------------------------------------
 
 void CommandBufferGLES2_t::End()
 {
+#if RHI_GLES2__USE_CMDBUF_PACKING    
+#else
     _cmd.push_back(EndCmd);
+#endif
 }
 
+
+#if !RHI_GLES2__USE_CMDBUF_PACKING
 //------------------------------------------------------------------------------
 
 void CommandBufferGLES2_t::Command(uint64 cmd)
 {
     _cmd.push_back(cmd);
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -565,7 +973,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1)
 
     b[0] = cmd;
     b[1] = arg1;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -579,7 +987,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2)
     b[0] = cmd;
     b[1] = arg1;
     b[2] = arg2;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -594,7 +1002,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[1] = arg1;
     b[2] = arg2;
     b[3] = arg3;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -610,7 +1018,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[2] = arg2;
     b[3] = arg3;
     b[4] = arg4;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -627,7 +1035,7 @@ void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 
     b[3] = arg3;
     b[4] = arg4;
     b[5] = arg5;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
 
 //------------------------------------------------------------------------------
@@ -646,8 +1054,9 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
     b[4] = arg4;
     b[5] = arg5;
     b[6] = arg6;
-    ++dbgCommandCount;
+    //++dbgCommandCount;
 }
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -663,13 +1072,16 @@ void CommandBufferGLES2_t::Execute()
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
-    Handle cur_vb = InvalidHandle;
+    Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     Handle cur_ib = InvalidHandle;
     bool vdecl_pending = true;
     IndexSize idx_size = INDEX_SIZE_16BIT;
     unsigned tex_unit_0 = 0;
     Handle cur_query_buf = InvalidHandle;
     GLint def_viewport[4] = { 0, 0, 0, 0 };
+
+    for (unsigned i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
+        cur_vb[i] = InvalidHandle;
 
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {
@@ -683,18 +1095,28 @@ void CommandBufferGLES2_t::Execute()
 
     sync = InvalidHandle;
 
-    Trace("cmd-count= %i\n", int(dbgCommandCount));
-    unsigned cmd_n = 0;
+//unsigned    cmd_cnt=0;
+//unsigned    dip_cnt=0;
+//unsigned    stcb_cnt=0;
+//unsigned    sttx_cnt=0;
+
+#if RHI_GLES2__USE_CMDBUF_PACKING
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)     
+#else
     for (std::vector<uint64>::const_iterator c = _cmd.begin(), c_end = _cmd.end(); c != c_end; ++c)
+#endif
     {
+#if RHI_GLES2__USE_CMDBUF_PACKING
+        const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
+        switch (cmd->type)
+#else
         const uint64 cmd = *c;
         std::vector<uint64>::const_iterator arg = c + 1;
 
         if (cmd == EndCmd)
             break;
-
-        Trace("cmd[%u] %i\n", cmd_n, int(cmd));
         switch (cmd)
+#endif
         {
         case GLES2__BEGIN:
         {
@@ -726,65 +1148,41 @@ void CommandBufferGLES2_t::Execute()
                 }
                 else
                 {
-                    GLint fbo = 0;
-
-                    // this is SLOW AS HELL
-                    //                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
-
-                    if (fbo)
+                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        GLint type = 0;
-                        GLint obj = 0;
-
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
-                        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &obj);
-
-                        if (type == GL_RENDERBUFFER)
-                        {
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport + 2);
-                            glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport + 3);
-                        }
-                        else if (type == GL_TEXTURE)
-                        {
-                            //                                GLint   w,h;
-                            //
-                            //                                glGetTexParameteriv( GL_TEXTURE_2D, obj,  );
-                        }
-                    }
-                    else
-                    {
-                        def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                        def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                        //                            glGetIntegerv( GL_VIEWPORT, def_viewport );
+                        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
+                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
 
                 if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                 {
-                    glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]);
+                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
                     flags |= GL_COLOR_BUFFER_BIT;
                 }
 
                 if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
                 {
                         #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                    glStencilMask(0xFFFFFFFF);
-                    glClearDepthf(passCfg.depthStencilBuffer.clearDepth);
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
                         #else
-                    glClearDepth(passCfg.depthStencilBuffer.clearDepth);
-                    glStencilMask(0xFFFFFFFF);
-                    glClearStencil(0);
+                    GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
+                    GL_CALL(glStencilMask(0xFFFFFFFF));
+                    GL_CALL(glClearStencil(0));
                         #endif
 
                     flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
 
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
+
                 if (flags)
                 {
-                    glClear(flags);
+                    GL_CALL(glClear(flags));
                 }
-
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
@@ -793,47 +1191,73 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__END:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            sync = (static_cast<const CommandGLES2_End*>(cmd))->syncObject;
+            #else
             sync = Handle(arg[0]);
+            c += 1;
+            #endif
 
             if (isLastInPass)
             {
                 if (cur_query_buf != InvalidHandle)
                     QueryBufferGLES2::QueryComplete(cur_query_buf);
 
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+#if defined(__DAVAENGINE_IPHONE__)
+                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) //defualt framebuffer is discard once after frame
                 {
-                    glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
-                    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
-                }
-            }
+                    GLenum discards[3];
+                    int32 discardsCount = 0;
+                    if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
+                        discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
+                    if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
+                    {
+                        discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
+                        discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
+                    }
 
-            c += 1;
+                    if (discardsCount != 0)
+                        GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+                }
+#endif
+            }
         }
         break;
 
         case GLES2__SET_VERTEX_DATA:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle vb = (static_cast<const CommandGLES2_SetVertexData*>(cmd))->vb;
+            unsigned stream_i = (static_cast<const CommandGLES2_SetVertexData*>(cmd))->streamIndex;
+            #else
             Handle vb = (Handle)(arg[0]);
-
-            if (cur_vb != vb)
+            unsigned stream_i = uint32(arg[1]);
+            c += 2;
+            #endif
+            if (cur_vb[stream_i] != vb)
             {
-                VertexBufferGLES2::SetToRHI(vb);
+                if (stream_i == 0)
+                    VertexBufferGLES2::SetToRHI(vb);
+
                 PipelineStateGLES2::InvalidateVattrCache();
                 vdecl_pending = true;
                 cur_base_vert = 0;
 
                 StatSet::IncStat(stat_SET_VB, 1);
 
-                cur_vb = vb;
+                cur_vb[stream_i] = vb;
             }
-
-            c += 2;
         }
         break;
 
         case GLES2__SET_INDICES:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle ib = (static_cast<const CommandGLES2_SetIndices*>(cmd))->ib;
+            #else
             Handle ib = (Handle)(arg[0]);
+            c += 1;
+            #endif
 
             if (ib != cur_ib)
             {
@@ -841,32 +1265,44 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_SET_IB, 1);
                 cur_ib = ib;
             }
-
-            c += 1;
         }
         break;
 
         case GLES2__SET_QUERY_BUFFER:
         {
             DVASSERT(cur_query_buf == InvalidHandle);
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            cur_query_buf = (static_cast<const CommandGLES2_SetQueryBuffer*>(cmd))->queryBuf;
+            #else
             cur_query_buf = (Handle)(arg[0]);
             c += 1;
+            #endif
         }
         break;
 
         case GLES2__SET_QUERY_INDEX:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            cur_query_i = (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex;
+            #else
             if (cur_query_buf != InvalidHandle)
                 QueryBufferGLES2::SetQueryIndex(cur_query_buf, uint32(arg[0]));
 
             c += 1;
+            #endif
         }
         break;
 
         case GLES2__SET_PIPELINE_STATE:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle ps = (static_cast<const CommandGLES2_SetPipelineState*>(cmd))->ps;
+            uint32 vdecl = (static_cast<const CommandGLES2_SetPipelineState*>(cmd))->vdecl;
+            #else
             Handle ps = (Handle)arg[0];
             uint32 vdecl = (uint32)(arg[1]);
+            c += 2;
+            #endif
 
             if (cur_ps != ps || cur_vdecl != vdecl)
             {
@@ -887,157 +1323,228 @@ void CommandBufferGLES2_t::Execute()
             }
 
             tex_unit_0 = PipelineStateGLES2::VertexSamplerCount(ps);
-
-            c += 2;
         }
         break;
 
         case GLES2__SET_CULL_MODE:
         {
-            switch (CullMode(arg[0]))
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            CullMode mode = CullMode((static_cast<const CommandGLES2_SetCullMode*>(cmd))->mode);
+            #else
+            CullMode mode = CullMode(arg[0]);
+            c += 1;
+            #endif
+
+            switch (mode)
             {
             case CULL_NONE:
-                glDisable(GL_CULL_FACE);
+                GL_CALL(glDisable(GL_CULL_FACE));
                 break;
 
             case CULL_CCW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_BACK);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_BACK));
                 break;
 
             case CULL_CW:
-                glEnable(GL_CULL_FACE);
-                glFrontFace(GL_CW);
-                glCullFace(GL_FRONT);
+                GL_CALL(glEnable(GL_CULL_FACE));
+                GL_CALL(glFrontFace(GL_CW));
+                GL_CALL(glCullFace(GL_FRONT));
                 break;
             }
-
-            c += 1;
         }
         break;
 
         case GLES2__SET_SCISSOR_RECT:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            GLint x = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->x;
+            GLint y = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->y;
+            GLsizei w = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->width;
+            GLsizei h = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->height;
+            #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
             GLsizei w = GLsizei(arg[2]);
             GLsizei h = GLsizei(arg[3]);
+            c += 4;
+            #endif
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glEnable(GL_SCISSOR_TEST);
-                glScissor(x, y, w, h);
+                GL_CALL(glEnable(GL_SCISSOR_TEST));
+                GL_CALL(glScissor(x, y, w, h));
             }
             else
             {
-                glDisable(GL_SCISSOR_TEST);
+                GL_CALL(glDisable(GL_SCISSOR_TEST));
             }
-
-            c += 4;
         }
         break;
 
         case GLES2__SET_VIEWPORT:
         {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            GLint x = (static_cast<const CommandGLES2_SetViewport*>(cmd))->x;
+            GLint y = (static_cast<const CommandGLES2_SetViewport*>(cmd))->y;
+            GLsizei w = (static_cast<const CommandGLES2_SetViewport*>(cmd))->width;
+            GLsizei h = (static_cast<const CommandGLES2_SetViewport*>(cmd))->height;
+            #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
             GLsizei w = GLsizei(arg[2]);
             GLsizei h = GLsizei(arg[3]);
+            c += 4;
+            #endif
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
                 if (usingDefaultFrameBuffer)
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                glViewport(x, y, w, h);
+                GL_CALL(glViewport(x, y, w, h));
             }
             else
             {
-                glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]);
+                GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
             }
-
-            c += 4;
         }
         break;
 
         case GLES2__SET_FILLMODE:
         {
-                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-            glPolygonMode(GL_FRONT_AND_BACK, (FillMode(arg[0]) == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL);
-                #endif
-
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            FillMode mode = FillMode((static_cast<const CommandGLES2_SetFillMode*>(cmd))->mode);
+            #else
+            FillMode mode = FillMode(arg[0]);
             c += 1;
+            #endif
+
+            #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glPolygonMode(GL_FRONT_AND_BACK, (mode == FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL));
+            #endif
         }
         break;
 
         case GLES2__SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateGLES2::SetToRHI((Handle)(arg[0]));
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle state = (static_cast<const CommandGLES2_SetDepthStencilState*>(cmd))->depthStencilState;
+            #else
+            Handle state = (Handle)(arg[0]);
             c += 1;
+            #endif
+
+            DepthStencilStateGLES2::SetToRHI(state);
         }
         break;
 
         case GLES2__SET_SAMPLER_STATE:
         {
-            SamplerStateGLES2::SetToRHI((Handle)(arg[0]));
-            StatSet::IncStat(stat_SET_SS, 1);
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle state = (static_cast<const CommandGLES2_SetSamplerState*>(cmd))->samplerState;
+            #else
+            Handle state = (Handle)(arg[0]);
             c += 1;
+            #endif
+
+            SamplerStateGLES2::SetToRHI(state);
+            StatSet::IncStat(stat_SET_SS, 1);
         }
         break;
 
         case GLES2__SET_VERTEX_PROG_CONST_BUFFER:
         {
+//++stcb_cnt;
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned buf_i = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->buffer;
+            #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
-
-            vp_const[buf_i] = (Handle)(arg[1]);
-            vp_const_data[buf_i] = inst;
-
+            Handle buf = (Handle)(arg[1]);
             c += 3;
+            #endif
+
+            vp_const[buf_i] = buf;
+            vp_const_data[buf_i] = inst;
         }
         break;
 
         case GLES2__SET_FRAGMENT_PROG_CONST_BUFFER:
         {
+//++stcb_cnt;
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned buf_i = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->buffer;
+            #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
-
-            fp_const[buf_i] = (Handle)(arg[1]);
-            fp_const_data[buf_i] = inst;
-
+            Handle buf = (Handle)(arg[1]);
             c += 3;
+            #endif
+
+            fp_const[buf_i] = buf;
+            fp_const_data[buf_i] = inst;
         }
         break;
 
         case GLES2__SET_FRAGMENT_TEXTURE:
         {
-            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), tex_unit_0);
-            StatSet::IncStat(stat_SET_TEX, 1);
+//++sttx_cnt;
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle tex = (static_cast<const CommandGLES2_SetFragmentTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const CommandGLES2_SetFragmentTexture*>(cmd))->unitIndex;
+            #else
+            Handle tex = (Handle)(arg[1]);
+            unsigned unit_i = unsigned(arg[0]);
             c += 2;
+            #endif
+
+            TextureGLES2::SetToRHI(tex, unit_i, tex_unit_0);
+            StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
         case GLES2__SET_VERTEX_TEXTURE:
         {
-            TextureGLES2::SetToRHI((Handle)(arg[1]), unsigned(arg[0]), DAVA::InvalidIndex);
-            StatSet::IncStat(stat_SET_TEX, 1);
+//++sttx_cnt;
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            Handle tex = (static_cast<const CommandGLES2_SetVertexTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const CommandGLES2_SetVertexTexture*>(cmd))->unitIndex;
+            #else
+            Handle tex = (Handle)(arg[1]);
+            unsigned unit_i = unsigned(arg[0]);
             c += 2;
+            #endif
+
+            TextureGLES2::SetToRHI(tex, unit_i, DAVA::InvalidIndex);
+            StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
         case GLES2__DRAW_PRIMITIVE:
         {
-            //{SCOPED_NAMED_TIMING("gl.DP")}
+//++dip_cnt;
+//{SCOPED_NAMED_TIMING("gl.DP")}
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->mode;
+            #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
+            c += 2;
+            #endif
 
             if (last_ps != cur_ps)
             {
-                PipelineStateGLES2::SetToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetToRHI(cur_ps);
                 StatSet::IncStat(stat_SET_PS, 1);
                 last_ps = cur_ps;
             }
@@ -1055,7 +1562,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (vdecl_pending)
             {
-                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
                 vdecl_pending = false;
             }
 
@@ -1076,25 +1583,32 @@ void CommandBufferGLES2_t::Execute()
                 break;
             }
 
-            c += 2;
         }
         break;
 
         case GLES2__DRAW_INDEXED_PRIMITIVE:
         {
-            //{SCOPED_NAMED_TIMING("gl.DIP")}
+//++dip_cnt;
+//{SCOPED_NAMED_TIMING("gl.DIP")}
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->mode;
+            uint32 firstVertex = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->firstVertex;
+            uint32 startIndex = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->startIndex;
+            #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
             uint32 firstVertex = uint32(arg[2]);
             uint32 startIndex = uint32(arg[3]);
+            c += 4;
+            #endif
 
             if (last_ps != cur_ps)
             {
-                PipelineStateGLES2::SetToRHI(cur_ps, cur_vdecl);
+                PipelineStateGLES2::SetToRHI(cur_ps);
                 StatSet::IncStat(stat_SET_PS, 1);
                 last_ps = cur_ps;
             }
-            //LCP;
 
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
@@ -1109,7 +1623,7 @@ void CommandBufferGLES2_t::Execute()
 
             if (vdecl_pending || firstVertex != cur_base_vert)
             {
-                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex);
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex, countof(cur_vb), cur_vb);
                 vdecl_pending = false;
                 cur_base_vert = firstVertex;
             }
@@ -1123,8 +1637,7 @@ void CommandBufferGLES2_t::Execute()
                 i_off = startIndex * sizeof(uint32);
             }
 
-            GL_CALL(glDrawElements(mode, v_cnt, i_sz, (void*)((uint64)i_off)));
-            //LCP;
+            GL_CALL(glDrawElements(mode, v_cnt, i_sz, _GLES2_LastSetIndices + i_off));
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
             {
@@ -1140,16 +1653,178 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
+        }
+        break;
 
-            //LCP;
-            c += 4;
+        case GLES2__DRAW_INSTANCED_PRIMITIVE:
+        {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->mode;
+            unsigned instCount = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->instanceCount;
+            #else
+            unsigned v_cnt = unsigned(arg[2]);
+            int mode = int(arg[0]);
+            unsigned instCount = int(arg[1]);
+            c += 3;
+            #endif
+
+            if (last_ps != cur_ps)
+            {
+                PipelineStateGLES2::SetToRHI(cur_ps);
+                StatSet::IncStat(stat_SET_PS, 1);
+                last_ps = cur_ps;
+            }
+
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (vp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
+            }
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (fp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
+
+            if (vdecl_pending)
+            {
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
+                vdecl_pending = false;
+            }
+
+            #if defined(__DAVAENGINE_IPHONE__)
+            GL_CALL(glDrawArraysInstancedEXT(mode, 0, v_cnt, instCount));
+            #elif defined(__DAVAENGINE_ANDROID__)
+            if (glDrawArraysInstanced)
+            {
+                GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            }
+            #elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glDrawArraysInstancedARB(mode, 0, v_cnt, instCount));
+            #else
+            GL_CALL(glDrawArraysInstanced(mode, 0, v_cnt, instCount));
+            #endif
+            StatSet::IncStat(stat_DP, 1);
+            switch (mode)
+            {
+            case GL_TRIANGLES:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case GL_TRIANGLE_STRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case GL_LINES:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+            }
+        }
+        break;
+
+        case GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        {
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->mode;
+            unsigned instCount = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->instanceCount;
+            uint32 firstVertex = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->firstVertex;
+            uint32 startIndex = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->startIndex;
+            uint32 baseInst = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->baseInstance;
+            #else
+            unsigned v_cnt = unsigned(arg[2]);
+            int mode = int(arg[0]);
+            unsigned instCount = int(arg[1]);
+            uint32 firstVertex = uint32(arg[3]);
+            uint32 startIndex = uint32(arg[4]);
+            uint32 baseInst = uint32(arg[5]);
+            c += 6;
+            #endif
+            //{SCOPED_NAMED_TIMING("gl.DIP")}
+
+            if (last_ps != cur_ps)
+            {
+                PipelineStateGLES2::SetToRHI(cur_ps);
+                StatSet::IncStat(stat_SET_PS, 1);
+                last_ps = cur_ps;
+            }
+
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (vp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(vp_const[i], cur_gl_prog, vp_const_data[i]);
+            }
+            for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
+            {
+                if (fp_const[i] != InvalidHandle)
+                    ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
+            }
+
+            if (vdecl_pending || firstVertex != cur_base_vert)
+            {
+                PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, firstVertex, countof(cur_vb), cur_vb);
+                vdecl_pending = false;
+                cur_base_vert = firstVertex;
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
+
+            int i_sz = GL_UNSIGNED_SHORT;
+            int i_off = startIndex * sizeof(uint16);
+
+            if (idx_size == INDEX_SIZE_32BIT)
+            {
+                i_sz = GL_UNSIGNED_INT;
+                i_off = startIndex * sizeof(uint32);
+            }
+
+            #if defined(__DAVAENGINE_IPHONE__)
+            DVASSERT(baseInst == 0) // it's not supported in GLES
+            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            #elif defined(__DAVAENGINE_ANDROID__)
+            DVASSERT(baseInst == 0) // it's not supported in GLES
+            if (glDrawElementsInstanced)
+            {
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            }
+            #elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
+            #else
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            #endif
+            StatSet::IncStat(stat_DIP, 1);
+            switch (mode)
+            {
+            case GL_TRIANGLES:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case GL_TRIANGLE_STRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case GL_LINES:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+            }
         }
         break;
 
         case GLES2__SET_MARKER:
         {
-            Trace((const char*)(arg[0]));
+            #if RHI_GLES2__USE_CMDBUF_PACKING
+            const char* text = (static_cast<const CommandGLES2_SetMarker*>(cmd))->text;
+            #else
+            const char* text = (const char*)(arg[0]);
             c += 1;
+            #endif
+
+            Trace(text);
         }
         break;
         }
@@ -1171,10 +1846,21 @@ void CommandBufferGLES2_t::Execute()
 
             immediate_cmd_ttw = 10;
         }
-        ++cmd_n;
+        
+        #if RHI_GLES2__USE_CMDBUF_PACKING
+        if (cmd->type == GLES2__END)
+            break;
+
+        c += cmd->size;
+        #endif
     }
 
+#if RHI_GLES2__USE_CMDBUF_PACKING
+//Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
+#else
+    //Logger::Info("exec cb  = %.2f Kb  in %u cmds (%u DIPs)",float(_cmd.size()*sizeof(uint64))/1024.0f,cmd_cnt,dip_cnt);
     _cmd.clear();
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1207,7 +1893,11 @@ _RejectAllFrames()
                         s->is_signaled = true;
                         s->is_used = true;
                     }
+                    #if RHI_GLES2__USE_CMDBUF_PACKING
+                    cc->curUsedSize = 0;
+                    #else
                     cc->_cmd.clear();
+                    #endif
                     CommandBufferPoolGLES2::Free(*c);
                 }
 
@@ -1231,7 +1921,6 @@ static void
 _GLES2_ExecuteQueuedCommands()
 {
     Trace("rhi-gl.exec-queued-cmd\n");
-
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;
     unsigned frame_n = 0;
@@ -1279,6 +1968,7 @@ _GLES2_ExecuteQueuedCommands()
     if (do_exit)
         return;
 
+    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
     for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassGLES2_t* pp = *p;
@@ -1317,6 +2007,42 @@ _GLES2_ExecuteQueuedCommands()
 
     if (_GLES2_Context)
     {
+        // take screenshot, if needed
+
+        _GLES2_ScreenshotCallbackSync.Lock();
+        if (_GLES2_PendingScreenshotCallback)
+        {
+            const uint32 stride = 4 * _GLES2_DefaultFrameBuffer_Width;
+            uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
+
+            GLCommand cmd[] =
+            {
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
+              { GLCommand::PIXEL_STORE_I, { GL_PACK_ALIGNMENT, 1 } },
+              { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, uint64(rgba) } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
+            };
+
+            _ExecGL(cmd, countof(cmd));
+            for (int y = 0; y < _GLES2_DefaultFrameBuffer_Height / 2; ++y)
+            {
+                uint8* line1 = rgba + y * stride;
+                uint8* line2 = rgba + (_GLES2_DefaultFrameBuffer_Height - y - 1) * stride;
+                uint8 tmp[5 * 1024 * 4];
+
+                DVASSERT(stride <= sizeof(tmp));
+                memcpy(tmp, line1, stride);
+                memcpy(line1, line2, stride);
+                memcpy(line2, tmp, stride);
+            }
+            (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
+            delete[] rgba;
+            _GLES2_PendingScreenshotCallback = nullptr;
+        }
+        _GLES2_ScreenshotCallbackSync.Unlock();
+
+        // do swap-buffers
+
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
         
 #if defined(__DAVAENGINE_WIN32__)
@@ -1346,11 +2072,13 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
+    _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -1378,22 +2106,26 @@ gles2_Present(Handle sync)
         }
         _GLES2_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        if (!_GLES2_RenderThreadSuspended.GetRelaxed())
+        {
+            _GLES2_FramePreparedEvent.Signal();
+        }
 
+        uint32 frame_cnt = 0;
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             _GLES2_FrameSync.Lock();
-            frame_cnt = _GLES2_Frame.size();
+            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
             _GLES2_FrameSync.Unlock();
 
             if (frame_cnt >= _GLES2_RenderThreadFrameCount)
             {
-                DAVA::Thread::Yield();
+                _GLES2_FrameDoneEvent.Wait();
             }
             //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-
-        } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+        }
+        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }
@@ -1424,23 +2156,32 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     Trace("RHI render-thread started\n");
 
     Logger::Info("[RHI] render-thread started");
-    while (true)
+
+    bool do_exit = false;
+    while (!do_exit)
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
         {
-            DAVA::LockGuard<DAVA::Mutex> suspendGuard(_GLES2_RenderThreadSuspendSync);
-
-            bool do_wait = true;
-            bool do_exit = false;
+            if (_GLES2_RenderThreadSuspended.Get())
+            {
+                GL_CALL(glFinish());
+                _GLES2_RenderThreadSuspendSyncReached = true;
+                _GLES2_RenderThreadSuspendSync.Wait();
+            }
+            
 
 #if defined __DAVAENGINE_ANDROID__
             android_gl_checkSurface();
+#elif defined __DAVAENGINE_IPHONE__
+            ios_gl_check_layer();
 #endif
 
-            // CRAP: busy-wait
             TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-            do
+
+            // CRAP: busy-wait
+            bool do_wait = true;
+            while (do_wait)
             {
                 _GLES2_RenderThreadExitSync.Lock();
                 do_exit = _GLES2_RenderThreadExitPending;
@@ -1456,7 +2197,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-
+                    //Trace("exec-imm-cmd done\n");
                     TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
@@ -1468,15 +2209,21 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
 
-            } while (do_wait);
+                if (do_wait)
+                {
+                    _GLES2_FramePreparedEvent.Wait();
+                }
+            }
             TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
-            if (do_exit)
-                break;
+            if (!do_exit)
+            {
+                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+                _GLES2_ExecuteQueuedCommands();
+                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            }
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-            _GLES2_ExecuteQueuedCommands();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+            _GLES2_FrameDoneEvent.Signal();
         }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
@@ -1519,6 +2266,8 @@ void UninitializeRenderThreadGLES2()
             ResumeGLES2();
         }
 
+        _GLES2_FramePreparedEvent.Signal();
+
         Logger::Info("UninitializeRenderThreadGLES2 join begin");
         _GLES2_RenderThread->Join();
         Logger::Info("UninitializeRenderThreadGLES2 join end");
@@ -1529,19 +2278,36 @@ void UninitializeRenderThreadGLES2()
 
 void SuspendGLES2()
 {
-    _GLES2_RenderThreadSuspended.Set(true);
-    _GLES2_RenderThreadSuspendSync.Lock();
-    glFinish();
-    Logger::Info("Render GLES Suspended");
+    if (_GLES2_RenderThreadSuspended.CompareAndSwap(false, true))
+    {
+        while (!_GLES2_RenderThreadSuspendSyncReached)
+        {
+            _GLES2_FramePreparedEvent.Signal(); //avoid stall
+        }
+        _GLES2_RenderThreadSuspendSyncReached = false;
+    }
+    else
+    {
+        DVASSERT_MSG(false, "[RHI] Render was suspended twice");
+    }
+
+    Logger::Error("Render GLES Suspended");
 }
 
 //------------------------------------------------------------------------------
 
 void ResumeGLES2()
 {
-    _GLES2_RenderThreadSuspendSync.Unlock();
-    _GLES2_RenderThreadSuspended.Set(false);
-    Logger::Info("Render GLES Resumed");
+    Logger::Error("Render GLES Resumed");
+
+    if (_GLES2_RenderThreadSuspended.CompareAndSwap(true, false))
+    {
+        _GLES2_RenderThreadSuspendSync.Post();
+    }
+    else
+    {
+        DVASSERT_MSG(false, "[RHI] Render was resumed twice");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1563,13 +2329,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 {
     int err = GL_NO_ERROR;
 
-/*
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
+    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+#else
+    #define ACQUIRE_CONTEXT()
+    #define RELEASE_CONTEXT()
+#endif
+
+    /*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
 */
+    ACQUIRE_CONTEXT();
 
 #if 0
 
@@ -1582,8 +2357,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define EXEC_GL(expr) \
     expr; \
     err = glGetError(); \
-    if (err != GL_NO_ERROR) \
-        _LogGLError(#expr, err); \
 
 #else
 
@@ -1605,63 +2378,65 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GEN_BUFFERS:
         {
-            EXEC_GL(glGenBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenBuffers(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_BUFFER:
         {
-            EXEC_GL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
+            GL_CALL(glBindBuffer(GLenum(arg[0]), *(reinterpret_cast<GLuint*>(arg[1]))));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_VERTEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
+            GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, _GLES2_LastSetVB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_INDEX_BUFFER:
         {
-            EXEC_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
+            GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_BUFFERS:
         {
-            EXEC_GL(glDeleteBuffers((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteBuffers(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_DATA:
         {
-            EXEC_GL(glBufferData((GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3])));
+            GL_CALL(glBufferData(GLenum(arg[0]), GLsizei(arg[1]), reinterpret_cast<const void*>(arg[2]), GLenum(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BUFFER_SUBDATA:
         {
-            EXEC_GL(glBufferSubData((GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3])));
+            GL_CALL(glBufferSubData(GLenum(arg[0]), GLintptr(arg[1]), GLsizei(arg[2]), reinterpret_cast<const void*>(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_TEXTURES:
         {
-            EXEC_GL(glGenTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenTextures(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_TEXTURES:
         {
-            EXEC_GL(glDeleteTextures((GLsizei)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glDeleteTextures(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
@@ -1672,7 +2447,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
             if (t != _GLES2_LastActiveTexture)
             {
-                EXEC_GL(glActiveTexture(GLenum(t)));
+                GL_CALL(glActiveTexture(GLenum(t)));
                 _GLES2_LastActiveTexture = t;
                 cmd->status = err;
             }
@@ -1681,21 +2456,21 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::BIND_TEXTURE:
         {
-            EXEC_GL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
+            GL_CALL(glBindTexture(GLenum(cmd->arg[0]), *(reinterpret_cast<GLuint*>(cmd->arg[1]))));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RESTORE_TEXTURE0:
         {
-            EXEC_GL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
+            GL_CALL(glBindTexture(_GLES2_LastSetTex0Target, _GLES2_LastSetTex0));
             cmd->status = err;
         }
         break;
 
         case GLCommand::TEX_PARAMETER_I:
         {
-            EXEC_GL(glTexParameteri((GLenum)(arg[0]), (GLenum)(arg[1]), (GLuint)(arg[2])));
+            GL_CALL(glTexParameteri(GLenum(arg[0]), GLenum(arg[1]), GLuint(arg[2])));
             cmd->status = err;
         }
         break;
@@ -1704,11 +2479,11 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
             if (arg[10])
             {
-                EXEC_GL(glCompressedTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9])));
+                GL_CALL(glCompressedTexImage2D(GLenum(arg[0]), GLint(arg[1]), GLenum(arg[2]), GLsizei(arg[3]), GLsizei(arg[4]), GLint(arg[5]), GLsizei(arg[8]), reinterpret_cast<const GLvoid*>(arg[9])));
             }
             else
             {
-                EXEC_GL(glTexImage2D((GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9])));
+                GL_CALL(glTexImage2D(GLenum(arg[0]), GLint(arg[1]), GLint(arg[2]), GLsizei(arg[3]), GLsizei(arg[4]), GLint(arg[5]), GLenum(arg[6]), GLenum(arg[7]), reinterpret_cast<const GLvoid*>(arg[9])));
             }
             cmd->status = err;
         }
@@ -1716,14 +2491,22 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::GENERATE_MIPMAP:
         {
-            EXEC_GL(glGenerateMipmap((GLenum)(arg[0])));
+            GL_CALL(glGenerateMipmap(GLenum(arg[0])));
+            cmd->status = err;
+        }
+        break;
+
+        case GLCommand::PIXEL_STORE_I:
+        {
+            GL_CALL(glPixelStorei(GLenum(arg[0]), GLint(arg[1])));
+            cmd->retval = 0;
             cmd->status = err;
         }
         break;
 
         case GLCommand::READ_PIXELS:
         {
-            EXEC_GL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), (GLvoid*)(arg[6])));
+            GL_CALL(glReadPixels(GLint(arg[0]), GLint(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]), GLenum(arg[4]), GLenum(arg[5]), reinterpret_cast<GLvoid*>(arg[6])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -1731,159 +2514,159 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::CREATE_PROGRAM:
         {
-            cmd->retval = glCreateProgram();
+            GL_CALL(cmd->retval = glCreateProgram());
             cmd->status = 0;
         }
         break;
 
         case GLCommand::CREATE_SHADER:
         {
-            cmd->retval = glCreateShader((GLenum)(arg[0]));
+            GL_CALL(cmd->retval = glCreateShader(GLenum(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::ATTACH_SHADER:
         {
-            EXEC_GL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
+            GL_CALL(glAttachShader(GLuint(arg[0]), GLuint(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::LINK_PROGRAM:
         {
-            EXEC_GL(glLinkProgram(GLuint(arg[0])));
+            GL_CALL(glLinkProgram(GLuint(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::SHADER_SOURCE:
         {
-            EXEC_GL(glShaderSource((GLuint)(arg[0]), (GLsizei)(arg[1]), (const GLchar**)(arg[2]), (const GLint*)(arg[3])));
+            GL_CALL(glShaderSource(GLuint(arg[0]), GLsizei(arg[1]), reinterpret_cast<const GLchar**>(arg[2]), reinterpret_cast<const GLint*>(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::COMPILE_SHADER:
         {
-            EXEC_GL(glCompileShader((GLuint)(arg[0])));
+            GL_CALL(glCompileShader(GLuint(arg[0])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_IV:
         {
-            EXEC_GL(glGetShaderiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetShaderiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLint*>(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_SHADER_INFO_LOG:
         {
-            EXEC_GL(glGetShaderInfoLog((GLuint)(arg[0]), GLsizei(arg[1]), (GLsizei*)(arg[2]), (GLchar*)(arg[3])));
+            GL_CALL(glGetShaderInfoLog(GLuint(arg[0]), GLsizei(arg[1]), reinterpret_cast<GLsizei*>(arg[2]), reinterpret_cast<GLchar*>(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_PROGRAM_IV:
         {
-            EXEC_GL(glGetProgramiv((GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2])));
+            GL_CALL(glGetProgramiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLint*>(arg[2])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_ATTRIB_LOCATION:
         {
-            cmd->retval = glGetAttribLocation(GLuint(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetAttribLocation(GLuint(arg[0]), reinterpret_cast<const GLchar*>(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::GET_ACTIVE_UNIFORM:
         {
-            EXEC_GL(glGetActiveUniform((GLuint)(arg[0]), (GLuint)(arg[1]), (GLsizei)(arg[2]), (GLsizei*)(arg[3]), (GLint*)(arg[4]), (GLenum*)(arg[5]), (GLchar*)(arg[6])));
+            GL_CALL(glGetActiveUniform(GLuint(arg[0]), GLuint(arg[1]), GLsizei(arg[2]), reinterpret_cast<GLsizei*>(arg[3]), reinterpret_cast<GLint*>(arg[4]), reinterpret_cast<GLenum*>(arg[5]), reinterpret_cast<GLchar*>(arg[6])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GET_UNIFORM_LOCATION:
         {
-            cmd->retval = glGetUniformLocation((GLuint)(arg[0]), (const GLchar*)(arg[1]));
+            GL_CALL(cmd->retval = glGetUniformLocation(GLuint(arg[0]), reinterpret_cast<const GLchar*>(arg[1])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::SET_UNIFORM_1I:
         {
-            EXEC_GL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
+            GL_CALL(glUniform1i(GLint(arg[0]), GLint(arg[1])));
         }
         break;
 
         case GLCommand::GEN_FRAMEBUFFERS:
         {
-            EXEC_GL(glGenFramebuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenFramebuffers(GLuint(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::GEN_RENDERBUFFERS:
         {
-            EXEC_GL(glGenRenderbuffers((GLuint)(arg[0]), (GLuint*)(arg[1])));
+            GL_CALL(glGenRenderbuffers(GLuint(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::DELETE_RENDERBUFFERS:
         {
-            EXEC_GL(glDeleteRenderbuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteRenderbuffers(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
         }
         break;
 
         case GLCommand::BIND_FRAMEBUFFER:
         {
-            EXEC_GL(glBindFramebuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindFramebuffer(GLenum(arg[0]), GLuint(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::BIND_RENDERBUFFER:
         {
-            EXEC_GL(glBindRenderbuffer((GLenum)(arg[0]), (GLuint)(arg[1])));
+            GL_CALL(glBindRenderbuffer(GLenum(arg[0]), GLuint(arg[1])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_TEXTURE:
         {
-            EXEC_GL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
+            GL_CALL(glFramebufferTexture2D(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]), GLint(arg[4])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::RENDERBUFFER_STORAGE:
         {
-            EXEC_GL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
+            GL_CALL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_RENDERBUFFER:
         {
-            EXEC_GL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
+            GL_CALL(glFramebufferRenderbuffer(GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3])));
             cmd->status = err;
         }
         break;
 
         case GLCommand::FRAMEBUFFER_STATUS:
         {
-            cmd->retval = glCheckFramebufferStatus(GLenum(arg[0]));
+            GL_CALL(cmd->retval = glCheckFramebufferStatus(GLenum(arg[0])));
             cmd->status = 0;
         }
         break;
 
         case GLCommand::DELETE_FRAMEBUFFERS:
         {
-            EXEC_GL(glDeleteFramebuffers(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            GL_CALL(glDeleteFramebuffers(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
             cmd->retval = 0;
             cmd->status = err;
         }
@@ -1893,7 +2676,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         {
                 #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
                 #else
-            EXEC_GL(glDrawBuffers(GLuint(arg[0]), (GLenum*)(arg[1])));
+            GL_CALL(glDrawBuffers(GLuint(arg[0]), reinterpret_cast<GLenum*>(arg[1])));
             cmd->status = err;
                 #endif
         }
@@ -1948,6 +2731,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         }
     }
+    RELEASE_CONTEXT();
 #undef EXEC_GL
 }
 
@@ -1967,7 +2751,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         // CRAP: busy-wait
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
 
-        do
+        while (!scheduled)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -1977,10 +2761,10 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 scheduled = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!scheduled);
+        }
 
         // CRAP: busy-wait
-        do
+        while (!executed)
         {
             _GLES2_PendingImmediateCmdSync.Lock();
             if (!_GLES2_PendingImmediateCmd)
@@ -1988,7 +2772,12 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 executed = true;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-        } while (!executed);
+
+            if (!executed)
+            {
+                _GLES2_FramePreparedEvent.Signal();
+            }
+        }
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
@@ -2021,6 +2810,8 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetSamplerState = &gles2_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive = &gles2_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive = &gles2_CommandBuffer_DrawIndexedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedPrimitive = &gles2_CommandBuffer_DrawInstancedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedIndexedPrimitive = &gles2_CommandBuffer_DrawInstancedIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker = &gles2_CommandBuffer_SetMarker;
 
     dispatch->impl_SyncObject_Create = &gles2_SyncObject_Create;

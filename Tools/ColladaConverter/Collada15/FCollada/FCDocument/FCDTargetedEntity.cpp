@@ -26,8 +26,8 @@ ImplementObjectType(FCDTargetedEntity);
 ImplementParameterObjectNoCtr(FCDTargetedEntity, FCDSceneNode, targetNode)
 
 FCDTargetedEntity::FCDTargetedEntity(FCDocument* document, const char* className)
-:	FCDEntity(document, className)
-,	InitializeParameterNoArg(targetNode)
+    : FCDEntity(document, className)
+    , InitializeParameterNoArg(targetNode)
 {
 }
 
@@ -38,37 +38,37 @@ FCDTargetedEntity::~FCDTargetedEntity()
 // Sets a new target
 void FCDTargetedEntity::SetTargetNode(FCDSceneNode* target)
 {
-	if (targetNode != NULL)
-	{
-		targetNode->DecrementTargetCount();
-	}
+    if (targetNode != NULL)
+    {
+        targetNode->DecrementTargetCount();
+    }
 
-	targetNode = target;
+    targetNode = target;
 
-	if (targetNode != NULL)
-	{
-		targetNode->IncrementTargetCount();
-	}
+    if (targetNode != NULL)
+    {
+        targetNode->IncrementTargetCount();
+    }
 
-	SetNewChildFlag();
+    SetNewChildFlag();
 }
 
 FCDEntity* FCDTargetedEntity::Clone(FCDEntity* _clone, bool cloneChildren) const
 {
-	if (_clone == NULL)
-	{
-		_clone = new FCDTargetedEntity(const_cast<FCDocument*>(GetDocument()), "TargetedEntity");
-	}
+    if (_clone == NULL)
+    {
+        _clone = new FCDTargetedEntity(const_cast<FCDocument*>(GetDocument()), "TargetedEntity");
+    }
 
-	// Clone the base class variables
-	FCDEntity::Clone(_clone, cloneChildren);
+    // Clone the base class variables
+    FCDEntity::Clone(_clone, cloneChildren);
 
-	if (_clone->HasType(FCDTargetedEntity::GetClassType()))
-	{
-		FCDTargetedEntity* clone = (FCDTargetedEntity*) _clone;
-		// Copy the target information over.
-		clone->SetTargetNode(const_cast<FCDSceneNode*>((const FCDSceneNode*)targetNode));
-	}
+    if (_clone->HasType(FCDTargetedEntity::GetClassType()))
+    {
+        FCDTargetedEntity* clone = (FCDTargetedEntity*)_clone;
+        // Copy the target information over.
+        clone->SetTargetNode(const_cast<FCDSceneNode*>((const FCDSceneNode*)targetNode));
+    }
 
-	return _clone;
+    return _clone;
 }

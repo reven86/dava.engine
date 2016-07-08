@@ -1,58 +1,32 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+#include "../Common/rhi_Pool.h"
+#include "rhi_DX9.h"
+#include "../rhi_Type.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "../Common/dbg_StatSet.h"
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX9.h"
-
-    #include "../rhi_Type.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
-
-    #include "Debug/DVAssert.h"
-    #include "FileSystem/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Core/Core.h"
-    #include "Debug/Profiler.h"
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
 
-    #include "_dx9.h"
+#include "Core/Core.h"
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
+
+#include "_dx9.h"
+#include <vector>
+#include <atomic>
+#include <thread>
+
 namespace rhi
 {
 extern void _InitDX9();
 }
-    #include <vector>
 
 namespace rhi
 {
 //==============================================================================
-
-static bool _ResetPending = false;
 
 struct
 FrameDX9
@@ -64,22 +38,82 @@ FrameDX9
 };
 
 static std::vector<FrameDX9> _DX9_Frame;
-static bool _DX9_FrameStarted = false;
 static unsigned _DX9_FrameNumber = 1;
-//static DAVA::Spinlock       _DX9_FrameSync;
 static DAVA::Mutex _DX9_FrameSync;
 
 static void _DX9_ExecuteQueuedCommands();
 
 static DAVA::Thread* _DX9_RenderThread = nullptr;
 static unsigned _DX9_RenderThreadFrameCount = 0;
-static bool _DX9_RenderThreadExitPending = false;
-static DAVA::Spinlock _DX9_RenderThreadExitSync;
+static bool _DX9_RenderThreadRunning = true;
 static DAVA::Semaphore _DX9_RenderThreadStartedSync(0);
 
 static DX9Command* _DX9_PendingImmediateCmd = nullptr;
 static uint32 _DX9_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _DX9_PendingImmediateCmdSync;
+static std::atomic<bool> _DX9_ResetPending = false;
+
+static DAVA::Thread::Id _DX9_ThreadId = 0;
+
+HANDLE _DX9_FramePreparedEvent;
+HANDLE _DX9_FrameDoneEvent;
+
+//------------------------------------------------------------------------------
+
+static inline D3DPRIMITIVETYPE
+_DX9_PrimitiveType(PrimitiveType type)
+{
+    D3DPRIMITIVETYPE type9 = D3DPT_TRIANGLELIST;
+
+    switch (type)
+    {
+    case PRIMITIVE_TRIANGLELIST:
+        type9 = D3DPT_TRIANGLELIST;
+        break;
+
+    case PRIMITIVE_TRIANGLESTRIP:
+        type9 = D3DPT_TRIANGLESTRIP;
+        break;
+
+    case PRIMITIVE_LINELIST:
+        type9 = D3DPT_LINELIST;
+        break;
+    }
+
+    return type9;
+}
+
+//------------------------------------------------------------------------------
+
+static IDirect3DIndexBuffer9*
+_DX9_SequentialIB()
+{
+    static IDirect3DIndexBuffer9* ib = NULL;
+
+    if (!ib)
+    {
+        HRESULT hr;
+
+        hr = _D3D9_Device->CreateIndexBuffer(0xFFFF * sizeof(uint16), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ib, NULL);
+        if (SUCCEEDED(hr))
+        {
+            void* idata;
+
+            hr = ib->Lock(0, 0xFFFF * sizeof(uint16), &idata, 0);
+            if (SUCCEEDED(hr))
+            {
+                uint16 idx = 0;
+
+                for (uint16 *i = (uint16 *)idata, *i_end = ((uint16 *)idata) + 0xFFFF; i != i_end; ++i, ++idx)
+                    *i = idx;
+
+                ib->Unlock();
+            }
+        }
+    }
+
+    return ib;
+}
 
 //------------------------------------------------------------------------------
 
@@ -107,6 +141,9 @@ enum CommandDX9
 
     DX9__DRAW_PRIMITIVE,
     DX9__DRAW_INDEXED_PRIMITIVE,
+
+    DX9__DRAW_INSTANCED_PRIMITIVE,
+    DX9__DRAW_INSTANCED_INDEXED_PRIMITIVE,
 
     DX9__DEBUG_MARKER,
 
@@ -139,6 +176,8 @@ public:
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
+    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7);
+    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8);
 
     static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
@@ -203,24 +242,20 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
 static void
 dx9_RenderPass_Begin(Handle pass)
 {
-    _DX9_FrameSync.Lock();
+    DAVA::LockGuard<DAVA::Mutex> lock(_DX9_FrameSync);
 
-    if (!_DX9_FrameStarted)
+    if (_DX9_Frame.empty() || _DX9_Frame.back().readyToExecute)
     {
-        _DX9_Frame.push_back(FrameDX9());
+        _DX9_Frame.emplace_back();
         _DX9_Frame.back().number = _DX9_FrameNumber;
         _DX9_Frame.back().sync = rhi::InvalidHandle;
         _DX9_Frame.back().readyToExecute = false;
-
-        Trace("\n\n-------------------------------\nframe %u started\n", _DX9_FrameNumber);
-        _DX9_FrameStarted = true;
         ++_DX9_FrameNumber;
     }
 
-    _DX9_Frame.back().pass.push_back(pass);
+    DVASSERT(!_DX9_Frame.empty());
 
-    _DX9_FrameSync.Unlock();
-    //-    _CmdQueue.push_back( pass );
+    _DX9_Frame.back().pass.push_back(pass);
 }
 
 //------------------------------------------------------------------------------
@@ -389,24 +424,15 @@ dx9_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 static void
 dx9_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 {
-    D3DPRIMITIVETYPE type9 = D3DPT_TRIANGLELIST;
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_PRIMITIVE, _DX9_PrimitiveType(type), count);
+}
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        type9 = D3DPT_TRIANGLELIST;
-        break;
+//------------------------------------------------------------------------------
 
-    case PRIMITIVE_TRIANGLESTRIP:
-        type9 = D3DPT_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        type9 = D3DPT_LINELIST;
-        break;
-    }
-
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_PRIMITIVE, type9, count);
+static void
+dx9_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+{
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_INSTANCED_PRIMITIVE, _DX9_PrimitiveType(type), instCount, count);
 }
 
 //------------------------------------------------------------------------------
@@ -414,25 +440,15 @@ dx9_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 static void
 dx9_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
-    unsigned v_cnt = 0;
-    D3DPRIMITIVETYPE type9 = D3DPT_TRIANGLELIST;
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_INDEXED_PRIMITIVE, _DX9_PrimitiveType(type), count, vertexCount, firstVertex, startIndex);
+}
 
-    switch (type)
-    {
-    case PRIMITIVE_TRIANGLELIST:
-        type9 = D3DPT_TRIANGLELIST;
-        break;
+//------------------------------------------------------------------------------
 
-    case PRIMITIVE_TRIANGLESTRIP:
-        type9 = D3DPT_TRIANGLESTRIP;
-        break;
-
-    case PRIMITIVE_LINELIST:
-        type9 = D3DPT_LINELIST;
-        break;
-    }
-
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_INDEXED_PRIMITIVE, type9, count, vertexCount, firstVertex, startIndex);
+static void
+dx9_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
+{
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__DRAW_INSTANCED_INDEXED_PRIMITIVE, _DX9_PrimitiveType(type), instCount, count, vertexCount, firstVertex, startIndex, baseInstance);
 }
 
 //------------------------------------------------------------------------------
@@ -448,8 +464,8 @@ dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
         cb->text->Initialize(64 * 1024);
     }
 
-    int len = strlen(text);
-    char* txt = (char*)cb->text->Alloc(len / sizeof(float) + 1);
+    size_t len = strlen(text);
+    char* txt = (char*)cb->text->Alloc(static_cast<unsigned>(len / sizeof(float) + 1));
 
     memcpy(txt, text, len);
     txt[len] = '\0';
@@ -484,6 +500,9 @@ dx9_SyncObject_Delete(Handle obj)
 static bool
 dx9_SyncObject_IsSignaled(Handle obj)
 {
+    if (!SyncObjectPoolDX9::IsAlive(obj))
+        return true;
+
     bool signaled = false;
     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(obj);
 
@@ -618,13 +637,57 @@ CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, u
 
 //------------------------------------------------------------------------------
 
+inline void
+CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7)
+{
+    _cmd.resize(_cmd.size() + 1 + 7);
+
+    std::vector<uint64>::iterator b = _cmd.end() - (1 + 7);
+
+    b[0] = cmd;
+    b[1] = arg1;
+    b[2] = arg2;
+    b[3] = arg3;
+    b[4] = arg4;
+    b[5] = arg5;
+    b[6] = arg6;
+    b[7] = arg7;
+}
+
+//------------------------------------------------------------------------------
+
+inline void
+CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8)
+{
+    _cmd.resize(_cmd.size() + 1 + 8);
+
+    std::vector<uint64>::iterator b = _cmd.end() - (1 + 8);
+
+    b[0] = cmd;
+    b[1] = arg1;
+    b[2] = arg2;
+    b[3] = arg3;
+    b[4] = arg4;
+    b[5] = arg5;
+    b[6] = arg6;
+    b[7] = arg7;
+    b[8] = arg8;
+}
+
+//------------------------------------------------------------------------------
+
 void CommandBufferDX9_t::Execute()
 {
+    CommandBufferDX9::BlockNonRenderThreads();
+
     SCOPED_FUNCTION_TIMING();
     Handle cur_pipelinestate = InvalidHandle;
-    uint32 cur_stride = 0;
+    uint32 cur_vd_uid = VertexLayout::InvalidUID;
+    uint32 cur_stride[MAX_VERTEX_STREAM_COUNT];
     Handle cur_query_buf = InvalidHandle;
     D3DVIEWPORT9 def_viewport;
+
+    memset(cur_stride, 0, sizeof(cur_stride));
 
     _D3D9_Device->GetViewport(&def_viewport);
 
@@ -740,9 +803,14 @@ void CommandBufferDX9_t::Execute()
         case DX9__SET_VERTEX_DATA:
         {
             DVASSERT(cur_pipelinestate != InvalidHandle);
-            unsigned stride = (cur_stride) ? cur_stride : PipelineStateDX9::VertexLayoutStride(cur_pipelinestate);
+            unsigned stream = unsigned(arg[1]);
+            unsigned stride = (cur_stride[stream])
+            ?
+            cur_stride[stream]
+            :
+            PipelineStateDX9::VertexLayoutStride(cur_pipelinestate, stream);
 
-            VertexBufferDX9::SetToRHI((Handle)(arg[0]), 0, 0, stride);
+            VertexBufferDX9::SetToRHI((Handle)(arg[0]), stream, 0, stride);
 
             StatSet::IncStat(stat_SET_VB, 1);
 
@@ -781,7 +849,17 @@ void CommandBufferDX9_t::Execute()
             uint32 vd_uid = (uint32)(arg[1]);
             const VertexLayout* vdecl = (vd_uid == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vd_uid);
             cur_pipelinestate = (Handle)(arg[0]);
-            cur_stride = (vdecl) ? vdecl->Stride() : 0;
+            cur_vd_uid = vd_uid;
+
+            if (vdecl)
+            {
+                for (unsigned s = 0; s != vdecl->StreamCount(); ++s)
+                    cur_stride[s] = vdecl->Stride(s);
+            }
+            else
+            {
+                memset(cur_stride, 0, sizeof(cur_stride));
+            }
 
             PipelineStateDX9::SetToRHI(cur_pipelinestate, vd_uid);
 
@@ -821,7 +899,7 @@ void CommandBufferDX9_t::Execute()
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
-                RECT rect = { x, y, x + w - 1, y + h - 1 };
+                RECT rect = { x, y, x + w, y + h };
 
                 _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
                 _D3D9_Device->SetScissorRect(&rect);
@@ -981,6 +1059,88 @@ void CommandBufferDX9_t::Execute()
         }
         break;
 
+        case DX9__DRAW_INSTANCED_PRIMITIVE:
+        {
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
+
+            D3DPRIMITIVETYPE primType = D3DPRIMITIVETYPE(arg[0]);
+            uint32 instCount = uint32(arg[1]);
+            uint32 primCount = uint32(arg[2]);
+
+            DVASSERT(primType == D3DPT_TRIANGLELIST);
+            DVASSERT(primCount / 3 < 0xFFFF);
+            PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, instCount);
+            DX9_CALL(_D3D9_Device->SetIndices(_DX9_SequentialIB()), "SetIndices");
+            DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(primType, 0, 0, primCount * 3, 0, primCount), "DrawInstancedIndexedPrimitive");
+            StatSet::IncStat(stat_DIP, 1);
+            switch (arg[0])
+            {
+            case D3DPT_TRIANGLELIST:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case D3DPT_TRIANGLESTRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case D3DPT_LINELIST:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+
+            default:
+                break;
+            }
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
+
+            c += 3;
+        }
+        break;
+
+        case DX9__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        {
+            D3DPRIMITIVETYPE type = (D3DPRIMITIVETYPE)(arg[0]);
+            uint32 instCount = uint32(arg[1]);
+            uint32 primCount = uint32(arg[2]);
+            uint32 vertexCount = uint32(arg[3]);
+            uint32 firstVertex = uint32(arg[4]);
+            uint32 startIndex = uint32(arg[5]);
+            uint32 baseinst = uint32(arg[6]);
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
+
+            PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, unsigned(arg[1]));
+            DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
+
+            if (cur_query_i != DAVA::InvalidIndex)
+                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
+
+            StatSet::IncStat(stat_DIP, 1);
+            switch (type)
+            {
+            case D3DPT_TRIANGLELIST:
+                StatSet::IncStat(stat_DTL, 1);
+                break;
+
+            case D3DPT_TRIANGLESTRIP:
+                StatSet::IncStat(stat_DTS, 1);
+                break;
+
+            case D3DPT_LINELIST:
+                StatSet::IncStat(stat_DLL, 1);
+                break;
+
+            default:
+                break;
+            }
+
+            c += 7;
+        }
+        break;
+
         case DX9__DEBUG_MARKER:
         {
             wchar_t txt[128];
@@ -1012,23 +1172,26 @@ dx9_Present(Handle sync)
             {
                 _DX9_Frame.back().readyToExecute = true;
                 _DX9_Frame.back().sync = sync;
-                _DX9_FrameStarted = false;
                 Trace("\n\n-------------------------------\nframe %u generated\n", _DX9_Frame.back().number);
             }
-
-            //        _FrameStarted = false;
         }
         _DX9_FrameSync.Unlock();
 
-        unsigned frame_cnt = 0;
+        SetEvent(_DX9_FramePreparedEvent);
 
-        do
+        size_t frame_cnt = 0;
+
+        for (;;)
         {
             _DX9_FrameSync.Lock();
             frame_cnt = _DX9_Frame.size();
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
             _DX9_FrameSync.Unlock();
-        } while (frame_cnt >= _DX9_RenderThreadFrameCount);
+
+            if (frame_cnt < _DX9_RenderThreadFrameCount)
+                break;
+
+            WaitForSingleObject(_DX9_FrameDoneEvent, INFINITE);
+        }
     }
     else
     {
@@ -1036,7 +1199,6 @@ dx9_Present(Handle sync)
         {
             _DX9_Frame.back().readyToExecute = true;
             _DX9_Frame.back().sync = sync;
-            _DX9_FrameStarted = false;
         }
 
         _DX9_ExecuteQueuedCommands();
@@ -1087,83 +1249,78 @@ _RejectAllFrames()
             ++f;
         }
     }
-
     _DX9_FrameSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
-
-static void
-_DX9_ExecuteQueuedCommands()
+void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<Handle>& pass_h, unsigned& frame_n)
 {
-    Trace("rhi-dx9.exec-queued-cmd\n");
-
-    std::vector<RenderPassDX9_t*> pass;
-    std::vector<Handle> pass_h;
-    unsigned frame_n = 0;
-    bool do_render = true;
-
-    if (_ResetPending || NeedRestoreResources())
-        _RejectAllFrames();
-
-    _DX9_FrameSync.Lock();
-    if (_DX9_Frame.size())
+    for (Handle p : _DX9_Frame.front().pass)
     {
-        for (std::vector<Handle>::iterator p = _DX9_Frame.begin()->pass.begin(), p_end = _DX9_Frame.begin()->pass.end(); p != p_end; ++p)
+        RenderPassDX9_t* pp = RenderPassPoolDX9::Get(p);
+
+        bool do_add = true;
+        for (unsigned i = 0; i != pass.size(); ++i)
         {
-            RenderPassDX9_t* pp = RenderPassPoolDX9::Get(*p);
-            bool do_add = true;
-
-            for (unsigned i = 0; i != pass.size(); ++i)
+            if (pp->priority > pass[i]->priority)
             {
-                if (pp->priority > pass[i]->priority)
-                {
-                    pass.insert(pass.begin() + i, 1, pp);
-                    do_add = false;
-                    break;
-                }
+                pass.insert(pass.begin() + i, 1, pp);
+                do_add = false;
+                break;
             }
-
-            if (do_add)
-                pass.push_back(pp);
         }
 
-        pass_h = _DX9_Frame.begin()->pass;
-        frame_n = _DX9_Frame.begin()->number;
-    }
-    else
-    {
-        do_render = false;
+        if (do_add)
+            pass.push_back(pp);
     }
 
-    if (_DX9_Frame.size() && _DX9_Frame.begin()->sync != InvalidHandle)
-    {
-        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.begin()->sync);
+    frame_n = _DX9_Frame.front().number;
+    pass_h.swap(_DX9_Frame.front().pass);
 
+    if (_DX9_Frame.front().sync != InvalidHandle)
+    {
+        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(_DX9_Frame.front().sync);
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
+}
+
+static void
+_DX9_ExecuteQueuedCommands()
+{
+    unsigned frame_n = 0;
+
+    if (_DX9_ResetPending || rhi::NeedRestoreResources())
+    {
+        _RejectAllFrames();
+    }
+
+    std::vector<Handle> pass_h;
+    std::vector<RenderPassDX9_t*> pass;
+
+    _DX9_FrameSync.Lock();
+    bool shouldExecute = !(_DX9_Frame.empty() || _DX9_ResetPending);
+    if (shouldExecute)
+    {
+        _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
+    }
     _DX9_FrameSync.Unlock();
 
-    if (do_render)
+    if (shouldExecute)
     {
-        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-        for (std::vector<RenderPassDX9_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+        for (RenderPassDX9_t* pp : pass)
         {
-            RenderPassDX9_t* pp = *p;
-
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
                 Handle cb_h = pp->cmdBuf[b];
-                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
 
+                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cb_h);
                 cb->Execute();
 
                 if (cb->sync != InvalidHandle)
                 {
                     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
-
                     sync->frame = frame_n;
                     sync->is_signaled = false;
                     sync->is_used = true;
@@ -1171,73 +1328,74 @@ _DX9_ExecuteQueuedCommands()
 
                 CommandBufferPoolDX9::Free(cb_h);
             }
-
-            //        RenderPassPool::Free( *p );
         }
 
         _DX9_FrameSync.Lock();
-        {
-            Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-            _DX9_Frame.erase(_DX9_Frame.begin());
-
-            for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-                RenderPassPoolDX9::Free(*p);
-        }
+        _DX9_Frame.erase(_DX9_Frame.begin());
         _DX9_FrameSync.Unlock();
+
+        for (Handle p : pass_h)
+            RenderPassPoolDX9::Free(p);
     }
 
-    // do flip, reset/restore device if necessary
-
-    HRESULT hr;
-
-    if (_ResetPending)
+    if (_DX9_ResetPending)
     {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if (hr == D3DERR_DEVICENOTRESET)
+        HRESULT hr = _D3D9_Device->TestCooperativeLevel();
+        if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
         {
             D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
 
             param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
 
+            Logger::Info("DX9 device reset: releasing resources...");
             TextureDX9::ReleaseAll();
             VertexBufferDX9::ReleaseAll();
             IndexBufferDX9::ReleaseAll();
 
+            Logger::Info("DX9 device reset: reseting device...");
             hr = _D3D9_Device->Reset(&param);
 
-            Logger::Info("trying device reset\n");
             if (SUCCEEDED(hr))
             {
-                Logger::Info("device reset\n");
+                Logger::Info("Device reset, restoring resources...");
 
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
 
-                _ResetPending = false;
+                Logger::Info("Device reset completed");
+
+                _DX9_ResetPending = false;
             }
             else
             {
-                Logger::Info("device reset failed (%08X) : %s", hr, D3D9ErrorText(hr));
+                Logger::Error("Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
             }
         }
         else
         {
-            ::Sleep(100);
+            Logger::Info("Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     else
     {
-        hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
-
+        HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
         if (FAILED(hr))
-            Logger::Error("present() failed:\n%s\n", D3D9ErrorText(hr));
-
-        if (hr == D3DERR_DEVICELOST)
         {
-            _ResetPending = true;
-            _RejectAllFrames();
+            if (hr == D3DERR_DEVICELOST)
+            {
+                _RejectAllFrames();
+                _DX9_ResetPending = true;
+            }
+            else if (hr == 0x88760872)
+            {
+                // ignore undocumented error
+            }
+            else
+            {
+                DAVA::Logger::Error("Present failed (%08X) : %s", hr, D3D9ErrorText(hr));
+            }
         }
     }
 
@@ -1262,6 +1420,8 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 #else
     CHECK_HR(hr)
 #endif
+
+    CommandBufferDX9::BlockNonRenderThreads();
 
     for (DX9Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1381,12 +1541,12 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
+            cmd->retval = ((IDirect3DBaseTexture9*)(arg[0]))->SetAutoGenFilterType(D3DTEXTUREFILTERTYPE(arg[1]));
             CHECK_HR(cmd->retval);
         }
         break;
 
-        case DX9Command::GET_TEXTURE_SURFACE_LEVEl:
+        case DX9Command::GET_TEXTURE_SURFACE_LEVEL:
         {
             cmd->retval = ((IDirect3DTexture9*)(arg[0]))->GetSurfaceLevel(UINT(arg[1]), (IDirect3DSurface9**)(arg[2]));
             CHECK_HR(cmd->retval);
@@ -1395,14 +1555,18 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::LOCK_TEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->LockRect(UINT(arg[1]), (D3DLOCKED_RECT*)(arg[2]), (const RECT*)(arg[3]), DWORD(arg[4]));
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            cmd->retval = tex->LockRect(UINT(arg[1]), (D3DLOCKED_RECT*)(arg[2]), (const RECT*)(arg[3]), DWORD(arg[4]));
             CHECK_HR(cmd->retval);
         }
         break;
 
         case DX9Command::UNLOCK_TEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DTexture9*)(arg[0]))->UnlockRect(UINT(arg[1]));
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            cmd->retval = tex->UnlockRect(UINT(arg[1]));
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1416,12 +1580,60 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 UINT lev = UINT(arg[1]);
                 void* src = (void*)(arg[2]);
                 unsigned sz = unsigned(arg[3]);
-                D3DLOCKED_RECT rc = { 0 };
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                D3DLOCKED_RECT rc = {};
                 HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
+                    cmd->retval = tex->UnlockRect(lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
+        case DX9Command::READ_TEXTURE_LEVEL:
+        {
+            IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                unsigned sz = unsigned(arg[2]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[3]);
+                void* dst = (void*)(arg[4]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
+
                     cmd->retval = tex->UnlockRect(lev);
                 }
                 else
@@ -1439,14 +1651,18 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::LOCK_CUBETEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->LockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]));
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            cmd->retval = tex->LockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]));
             CHECK_HR(cmd->retval);
         }
         break;
 
         case DX9Command::UNLOCK_CUBETEXTURE_RECT:
         {
-            cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->UnlockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]));
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            cmd->retval = tex->UnlockRect(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]));
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1461,12 +1677,61 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                 D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
                 void* src = (void*)(arg[3]);
                 unsigned sz = unsigned(arg[4]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[5]);
                 D3DLOCKED_RECT rc = { 0 };
                 HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
 
                 if (SUCCEEDED(hr))
                 {
-                    memcpy(rc.pBits, src, sz);
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(src, rc.pBits, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(src, rc.pBits, sz);
+                    else
+                        memcpy(rc.pBits, src, sz);
+
+                    cmd->retval = tex->UnlockRect(face, lev);
+                }
+                else
+                {
+                    CHECK_HR(hr);
+                    cmd->retval = hr;
+                }
+            }
+            else
+            {
+                cmd->retval = E_FAIL;
+            }
+        }
+        break;
+
+        case DX9Command::READ_CUBETEXTURE_LEVEL:
+        {
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+            if (tex)
+            {
+                UINT lev = UINT(arg[1]);
+                D3DCUBEMAP_FACES face = (D3DCUBEMAP_FACES)(arg[2]);
+                unsigned sz = unsigned(arg[3]);
+                rhi::TextureFormat format = static_cast<rhi::TextureFormat>(arg[4]);
+                void* dst = (void*)(arg[5]);
+                D3DLOCKED_RECT rc = {};
+                HRESULT hr = tex->LockRect(face, lev, &rc, NULL, 0);
+
+                if (SUCCEEDED(hr))
+                {
+                    if (format == TEXTURE_FORMAT_R8G8B8A8)
+                        _SwapRB8(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R4G4B4A4)
+                        _SwapRB4(rc.pBits, dst, sz);
+                    else if (format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551(rc.pBits, dst, sz);
+                    else
+                        memcpy(dst, rc.pBits, sz);
+
                     cmd->retval = tex->UnlockRect(face, lev);
                 }
                 else
@@ -1519,13 +1784,15 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
         case DX9Command::QUERY_INTERFACE:
         {
-            cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
         }
         break;
 
         case DX9Command::RELEASE:
         {
-            ((IUnknown*)arg[0])->Release();
+            IUnknown* ptr = *((IUnknown**)(arg[0]));
+            cmd->retval = ptr->Release();
         }
         break;
 
@@ -1541,6 +1808,13 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
 
 void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 {
+    if (DAVA::Thread::GetCurrentId() == _DX9_ThreadId)
+    {
+        DVASSERT_MSG(force_immediate, "Call to ExecDX9 from render thread without force_immediate");
+    }
+
+    CommandBufferDX9::BlockNonRenderThreads();
+
     if (force_immediate || !_DX9_RenderThreadFrameCount)
     {
         _ExecDX9(command, cmdCount);
@@ -1572,6 +1846,12 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
                 executed = true;
             }
             _DX9_PendingImmediateCmdSync.Unlock();
+
+            if (!executed)
+            {
+                SetEvent(_DX9_FramePreparedEvent);
+            }
+
         } while (!executed);
     }
 }
@@ -1581,52 +1861,47 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
 static void
 _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
 {
+    _DX9_ThreadId = DAVA::Thread::GetCurrentId();
+    _DX9_FramePreparedEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    _DX9_FrameDoneEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
     _InitDX9();
 
     _DX9_RenderThreadStartedSync.Post();
     Trace("RHI render-thread started\n");
 
-    while (true)
+    while (_DX9_RenderThreadRunning)
     {
-        bool do_wait = true;
-        bool do_exit = false;
-
-        // CRAP: busy-wait
-        do
+        _DX9_PendingImmediateCmdSync.Lock();
+        if (_DX9_PendingImmediateCmd)
         {
-            _DX9_RenderThreadExitSync.Lock();
-            do_exit = _DX9_RenderThreadExitPending;
-            _DX9_RenderThreadExitSync.Unlock();
+            Trace("exec imm cmd (%u)\n", _DX9_PendingImmediateCmdCount);
+            _ExecDX9(_DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount);
+            _DX9_PendingImmediateCmd = nullptr;
+            _DX9_PendingImmediateCmdCount = 0;
+            Trace("exec-imm-cmd done\n");
+        }
+        _DX9_PendingImmediateCmdSync.Unlock();
 
-            if (do_exit)
-                break;
+        _DX9_FrameSync.Lock();
+        bool shouldExecute = (!_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute) || _DX9_ResetPending;
+        _DX9_FrameSync.Unlock();
 
-            _DX9_PendingImmediateCmdSync.Lock();
-            if (_DX9_PendingImmediateCmd)
-            {
-                Trace("exec imm cmd (%u)\n", _DX9_PendingImmediateCmdCount);
-                _ExecDX9(_DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount);
-                _DX9_PendingImmediateCmd = nullptr;
-                _DX9_PendingImmediateCmdCount = 0;
-                Trace("exec-imm-cmd done\n");
-            }
-            _DX9_PendingImmediateCmdSync.Unlock();
+        if (shouldExecute)
+        {
+            _DX9_ExecuteQueuedCommands();
+        }
+        else
+        {
+            WaitForSingleObject(_DX9_FramePreparedEvent, INFINITE);
+        }
 
-            //            _CmdQueueSync.Lock();
-            //            cnt = _RenderQueue.size();
-            //            _CmdQueueSync.Unlock();
-            _DX9_FrameSync.Lock();
-            do_wait = !(_DX9_Frame.size() && _DX9_Frame.begin()->readyToExecute);
-            _DX9_FrameSync.Unlock();
-        } while (do_wait);
-
-        if (do_exit)
-            break;
-
-        _DX9_ExecuteQueuedCommands();
+        SetEvent(_DX9_FrameDoneEvent);
     }
 
     Trace("RHI render-thread stopped\n");
+    CloseHandle(_DX9_FramePreparedEvent);
+    CloseHandle(_DX9_FrameDoneEvent);
 }
 
 void InitializeRenderThreadDX9(uint32 frameCount)
@@ -1653,16 +1928,30 @@ void UninitializeRenderThreadDX9()
 {
     if (_DX9_RenderThreadFrameCount)
     {
-        _DX9_RenderThreadExitSync.Lock();
-        _DX9_RenderThreadExitPending = true;
-        _DX9_RenderThreadExitSync.Unlock();
-
+        _DX9_RenderThreadRunning = false;
+        SetEvent(_DX9_FramePreparedEvent);
         _DX9_RenderThread->Join();
     }
 }
 
+void ScheduleDeviceReset()
+{
+    _DX9_ResetPending = true;
+    DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
+    SetEvent(_DX9_FramePreparedEvent);
+    CommandBufferDX9::BlockNonRenderThreads();
+}
+
 namespace CommandBufferDX9
 {
+void BlockNonRenderThreads()
+{
+    while (_DX9_ResetPending && (DAVA::Thread::GetCurrentId() != _DX9_ThreadId))
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &dx9_CommandBuffer_Begin;
@@ -1684,6 +1973,8 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetSamplerState = &dx9_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive = &dx9_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive = &dx9_CommandBuffer_DrawIndexedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedPrimitive = &dx9_CommandBuffer_DrawInstancedPrimitive;
+    dispatch->impl_CommandBuffer_DrawInstancedIndexedPrimitive = &dx9_CommandBuffer_DrawInstancedIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker = &dx9_CommandBuffer_SetMarker;
 
     dispatch->impl_SyncObject_Create = &dx9_SyncObject_Create;

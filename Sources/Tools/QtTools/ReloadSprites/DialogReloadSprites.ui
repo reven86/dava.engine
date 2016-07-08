@@ -76,7 +76,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QCheckBox" name="checkBox_clean">
+      <widget class="QCheckBox" name="checkBox_repack">
        <property name="whatsThis">
         <string>Cleaer $process folder </string>
        </property>
@@ -84,7 +84,7 @@
         <enum>Qt::LeftToRight</enum>
        </property>
        <property name="text">
-        <string>Clean when start</string>
+        <string>Force repack</string>
        </property>
       </widget>
      </item>

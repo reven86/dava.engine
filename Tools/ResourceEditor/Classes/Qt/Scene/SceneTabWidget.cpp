@@ -1,33 +1,6 @@
-/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
 #include "Scene/SceneTabWidget.h"
+
+#include "UI/Focus/UIFocusComponent.h"
 
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
@@ -47,146 +20,151 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QDebug>
+#include <QTimer>
 
-
-SceneTabWidget::SceneTabWidget(QWidget *parent)
-	: QWidget(parent)
-	, davaUIScreenID(0)
-	, dava3DViewMargin(3)
-	, previewDialog(NULL)
-	, newSceneCounter(0)
-	, curScene(NULL)
+SceneTabWidget::SceneTabWidget(QWidget* parent)
+    : QWidget(parent)
 {
-	this->setMouseTracking(true);
+    this->setMouseTracking(true);
 
-	// create Qt controls and add them into layout
-	// 
-	// tab bar
-	tabBar = new MainTabBar(this);
-	tabBar->setTabsClosable(true);
-	tabBar->setMovable(true);
-	tabBar->setUsesScrollButtons(true);
-	tabBar->setExpanding(false);
+    // create Qt controls and add them into layout
+    //
+    // tab bar
+    tabBar = new MainTabBar(this);
+    tabBar->setTabsClosable(true);
+    tabBar->setMovable(true);
+    tabBar->setUsesScrollButtons(true);
+    tabBar->setExpanding(false);
 
-	// davawidget to display DAVAEngine content
-	davaWidget = new DavaGLWidget(this);
+    // davawidget to display DAVAEngine content
+    davaWidget = new DavaGLWidget();
     tabBar->setMinimumWidth(davaWidget->minimumWidth());
     setMinimumWidth(davaWidget->minimumWidth());
     setMinimumHeight(davaWidget->minimumHeight() + tabBar->sizeHint().height());
-    
-	// put tab bar and davawidget into vertical layout
-	QVBoxLayout *layout = new QVBoxLayout();
-	layout->addWidget(tabBar);
-	layout->addWidget(davaWidget);
-	layout->setMargin(0);
-	layout->setSpacing(1);
-	setLayout(layout);
-	setAcceptDrops(true);
-    
-	// create DAVA UI
-	InitDAVAUI();
 
-	QObject::connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(TabBarCurrentChanged(int)));
-	QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
-	QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(TabBarDataDropped(const QMimeData *)));
-	QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(DAVAWidgetDataDropped(const QMimeData *)));
-    QObject::connect(davaWidget, SIGNAL(Resized(int, int, int)), this, SLOT(OnDavaGLWidgetResized(int, int, int)));
+    // put tab bar and davawidget into vertical layout
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget(tabBar);
+    QTimer::singleShot(1500, [layout, this]
+                       {
+                           davaWidget->setParent(this);
+                           layout->addWidget(davaWidget);
+                       });
+    layout->setMargin(0);
+    layout->setSpacing(1);
+    setLayout(layout);
+    setAcceptDrops(true);
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
+    // create DAVA UI
+    InitDAVAUI();
 
-	SetCurrentTab(0);
+    QObject::connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(TabBarCurrentChanged(int)));
+    QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
+    QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(TabBarDataDropped(const QMimeData*)));
+    QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData*)), this, SLOT(DAVAWidgetDataDropped(const QMimeData*)));
+    QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
-    auto mouseWheelHandler = [&]( int ofs )
+    QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const SelectableGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const SelectableGroup*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(Updated(SceneEditor2*)), this, SLOT(SceneUpdated(SceneEditor2*)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2*, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2*, bool)));
+
+    SetCurrentTab(0);
+
+    auto mouseWheelHandler = [&](int ofs)
     {
-        if ( curScene == nullptr )
+        if (curScene == nullptr)
             return;
-        const auto moveCamera = SettingsManager::GetValue( Settings::General_Mouse_WheelMoveCamera ).AsBool();
-        if ( !moveCamera )
+        const auto moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
+        if (!moveCamera)
             return;
 
-        const auto reverse = SettingsManager::GetValue( Settings::General_Mouse_InvertWheel ).AsBool() ? -1 : 1;
+        const auto reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
 #ifdef Q_OS_MAC
         ofs *= reverse * -1;
 #else
         ofs *= reverse;
 #endif
 
-        curScene->cameraSystem->MoveToStep( ofs );
+        curScene->cameraSystem->MoveToStep(ofs);
     };
     connect(davaWidget, &DavaGLWidget::mouseScrolled, mouseWheelHandler);
 
     auto moveToSelectionHandler = [&]
     {
-        if ( curScene == nullptr )
+        if (curScene == nullptr)
             return;
         curScene->cameraSystem->MoveToSelection();
     };
-    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this );
-    connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
+    auto moveToSelectionHandlerHotkey = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), this);
+    connect(moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler);
 }
 
 SceneTabWidget::~SceneTabWidget()
 {
-	SafeRelease(previewDialog);
+    if (previewDialog != nullptr)
+    {
+        previewDialog->RemoveFromParent();
+    }
+    SafeRelease(previewDialog);
 
-	ReleaseDAVAUI();
+    ReleaseDAVAUI();
 }
 
 void SceneTabWidget::InitDAVAUI()
 {
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
+    dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
-	davaUIScreen = new DAVA::UIScreen();
-	davaUIScreen->AddControl(dava3DView);
+    davaUIScreen = new DAVA::UIScreen();
+    davaUIScreen->AddControl(dava3DView);
 
-	UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
-	UIScreenManager::Instance()->SetScreen(davaUIScreenID);
+    DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
+    DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
 }
 
 void SceneTabWidget::ReleaseDAVAUI()
 {
-	SafeRelease(davaUIScreen);
+    SafeRelease(davaUIScreen);
 }
 
 int SceneTabWidget::OpenTab()
 {
-	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
-    
+    QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
+
     DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
-	scenePath.ReplaceExtension(".sc2");
+    scenePath.ReplaceExtension(".sc2");
 
     int tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
 
     OpenTabInternal(scenePath, tabIndex);
-    
-	return tabIndex;
+
+    return tabIndex;
 }
 
-int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
+int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
 {
     HideScenePreview();
-    
+
     int tabIndex = FindTab(scenePath);
-    if(tabIndex != -1)
+    if (tabIndex != -1)
     {
         SetCurrentTab(tabIndex);
         return tabIndex;
     }
-    
+
     if (!TestSceneCompatibility(scenePath))
     {
         return -1;
     }
-    
+
     QtMainWindow::Instance()->WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
 
     tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
-    
+
     OpenTabInternal(scenePath, tabIndex);
 
     return tabIndex;
@@ -194,18 +172,19 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
 
 void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex)
 {
-    SceneEditor2 *scene = new SceneEditor2();
+    SceneEditor2* scene = new SceneEditor2();
     scene->SetScenePath(scenePathname);
 
-    if (FileSystem::Instance()->Exists(scenePathname))
+    if (DAVA::FileSystem::Instance()->Exists(scenePathname))
     {
-        bool sceneWasLoaded = scene->Load(scenePathname);
-        if(!sceneWasLoaded)
+        DAVA::SceneFileV2::eError sceneWasLoaded = scene->LoadScene(scenePathname);
+        if (sceneWasLoaded != DAVA::SceneFileV2::ERROR_NO_ERROR)
         {
-            QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
+            QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
         }
     }
-    
+    scene->EnableEditorSystems();
+
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);
 
@@ -213,31 +192,31 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     updateTabBarVisibility();
 }
 
-bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath &scenePath)
+bool SceneTabWidget::TestSceneCompatibility(const DAVA::FilePath& scenePath)
 {
-    VersionInfo::SceneVersion sceneVersion = SceneFileV2::LoadSceneVersion(scenePath);
+    DAVA::VersionInfo::SceneVersion sceneVersion = DAVA::SceneFileV2::LoadSceneVersion(scenePath);
 
     if (sceneVersion.IsValid())
     {
-        VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(sceneVersion);
-        const uint32 curVersion = VersionInfo::Instance()->GetCurrentVersion().version;
+        DAVA::VersionInfo::eStatus status = DAVA::VersionInfo::Instance()->TestVersion(sceneVersion);
+        const DAVA::uint32 curVersion = DAVA::VersionInfo::Instance()->GetCurrentVersion().version;
 
         switch (status)
         {
-        case VersionInfo::COMPATIBLE:
+        case DAVA::VersionInfo::COMPATIBLE:
         {
-            const String& branches = VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->UnsupportedTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             const QMessageBox::StandardButton result = QMessageBox::warning(this, "Compatibility warning", msg, QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
-            if ( result != QMessageBox::Open )
+            if (result != QMessageBox::Open)
             {
                 return false;
             }
             break;
         }
-        case VersionInfo::INVALID:
+        case DAVA::VersionInfo::INVALID:
         {
-            const String& branches = VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
+            const DAVA::String& branches = DAVA::VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
             const QString msg = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             QMessageBox::critical(this, "Compatibility error", msg);
             return false;
@@ -259,20 +238,20 @@ void SceneTabWidget::updateTabBarVisibility()
 bool SceneTabWidget::CloseTab(int index)
 {
     Request request;
-    
+
     emit CloseTabRequest(index, &request);
-    
-    if(!request.IsAccepted())
+
+    if (!request.IsAccepted())
         return false;
 
-	SceneEditor2 *scene = GetTabScene(index);
-    if(index == tabBar->currentIndex())
+    SceneEditor2* scene = GetTabScene(index);
+    if (index == tabBar->currentIndex())
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
-    
+
     SafeRelease(scene);
     tabBar->removeTab(index);
     updateTabBarVisibility();
@@ -280,104 +259,102 @@ bool SceneTabWidget::CloseTab(int index)
     return true;
 }
 
-
 int SceneTabWidget::GetCurrentTab() const
 {
-	return tabBar->currentIndex();
+    return tabBar->currentIndex();
 }
 
 void SceneTabWidget::SetCurrentTab(int index)
 {
     davaWidget->setEnabled(false);
 
-    if(index >= 0 && index < tabBar->count())
-	{
-        SceneEditor2 *oldScene = curScene;
-		curScene = GetTabScene(index);
+    if (index >= 0 && index < tabBar->count())
+    {
+        SceneEditor2* oldScene = curScene;
+        curScene = GetTabScene(index);
 
-		if(NULL != oldScene)
-		{
+        if (NULL != oldScene)
+        {
             oldScene->Deactivate();
-		}
+        }
 
-		tabBar->blockSignals(true);
-		tabBar->setCurrentIndex(index);
-		tabBar->blockSignals(false);
+        tabBar->blockSignals(true);
+        tabBar->setCurrentIndex(index);
+        tabBar->blockSignals(false);
 
-		if(NULL != curScene)
-		{
-			dava3DView->SetScene(curScene);
-			curScene->SetViewportRect(dava3DView->GetRect());
+        if (NULL != curScene)
+        {
+            dava3DView->SetScene(curScene);
+            curScene->SetViewportRect(dava3DView->GetRect());
 
             curScene->Activate();
 
-			davaWidget->setEnabled(true);
-		}
-	}
+            davaWidget->setEnabled(true);
+        }
+    }
 }
 
 SceneEditor2* SceneTabWidget::GetTabScene(int index) const
 {
-	SceneEditor2 *ret = NULL;
+    SceneEditor2* ret = NULL;
 
-	if(index >= 0 && index < tabBar->count())
-	{
-		ret = tabBar->tabData(index).value<SceneEditor2 *>();
-	}
+    if (index >= 0 && index < tabBar->count())
+    {
+        ret = tabBar->tabData(index).value<SceneEditor2*>();
+    }
 
-	return ret;
+    return ret;
 }
 
 void SceneTabWidget::SetTabScene(int index, SceneEditor2* scene)
 {
-	if(index >= 0 && index < tabBar->count())
-	{
-		tabBar->setTabData(index, qVariantFromValue(scene));
-	}
+    if (index >= 0 && index < tabBar->count())
+    {
+        tabBar->setTabData(index, qVariantFromValue(scene));
+    }
 }
 
 int SceneTabWidget::GetTabCount() const
 {
-	return tabBar->count();
+    return tabBar->count();
 }
-
 
 void SceneTabWidget::TabBarCurrentChanged(int index)
 {
-	SetCurrentTab(index);
+    SetCurrentTab(index);
 }
 
 void SceneTabWidget::TabBarCloseRequest(int index)
 {
-	CloseTab(index);
+    CloseTab(index);
 }
 
 void SceneTabWidget::TabBarCloseCurrentRequest()
 {
-	int tabIndex = GetCurrentTab();
-	if(tabIndex != -1)
-	{
-		CloseTab(tabIndex);
-	}
+    int tabIndex = GetCurrentTab();
+    if (tabIndex != -1)
+    {
+        CloseTab(tabIndex);
+    }
 }
 
-void SceneTabWidget::TabBarDataDropped(const QMimeData *data)
+void SceneTabWidget::TabBarDataDropped(const QMimeData* data)
 {
-	QList<QUrl> urls = data->urls();
-	for(int i = 0; i < urls.size(); ++i)
-	{
-		QString path = urls[i].toLocalFile();
-        if(QFileInfo(path).suffix() == "sc2")
+    QList<QUrl> urls = data->urls();
+    for (int i = 0; i < urls.size(); ++i)
+    {
+        QString path = urls[i].toLocalFile();
+        if (QFileInfo(path).suffix() == "sc2")
         {
             QtMainWindow::Instance()->OpenScene(path);
         }
-	}
+    }
 }
 
-void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
+void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
 {
-	if(NULL != curScene)
-	{
+    if (NULL != curScene)
+    {
         QList<QUrl> urls = data->urls();
         for (int i = 0; i < urls.size(); ++i)
         {
@@ -407,192 +384,192 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
         }
     }
     else
-	{
-		TabBarDataDropped(data);
-	}
+    {
+        TabBarDataDropped(data);
+    }
 }
 
-void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities)
+void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects)
 {
-	static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
-	static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
-	static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
+    static QCursor cursorMove(QPixmap(":/QtIcons/curcor_move.png"));
+    static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
+    static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
 
     auto view = davaWidget->GetGLView();
 
-    if (GetCurrentScene() == scene && nullptr != entities)
+    if ((GetCurrentScene() == scene) && (objects != nullptr))
     {
-        switch(scene->modifSystem->GetModifMode())
-		{
-		case ST_MODIF_MOVE:
+        switch (scene->modifSystem->GetTransformType())
+        {
+        case Selectable::TransformType::Translation:
             view->setCursor(cursorMove);
             break;
-        case ST_MODIF_ROTATE:
+        case Selectable::TransformType::Rotation:
             view->setCursor(cursorRotate);
             break;
-        case ST_MODIF_SCALE:
+        case Selectable::TransformType::Scale:
             view->setCursor(cursorScale);
             break;
-        case ST_MODIF_OFF:
+        case Selectable::TransformType::Disabled:
         default:
             view->unsetCursor();
             break;
         }
     }
-	else
-	{
+    else
+    {
         view->unsetCursor();
     }
 }
 
-void SceneTabWidget::SceneSaved(SceneEditor2 *scene)
+void SceneTabWidget::SceneUpdated(SceneEditor2* scene)
 {
-	// update scene name on tabBar
-	for(int i = 0; i < tabBar->count(); ++i)
-	{
-		SceneEditor2 *tabScene = GetTabScene(i);
-		if(tabScene == scene)
-		{
-			UpdateTabName(i);
-			break;
-		}
-	}
-
+    // update scene name on tabBar
+    for (int i = 0; i < tabBar->count(); ++i)
+    {
+        SceneEditor2* tabScene = GetTabScene(i);
+        if (tabScene == scene)
+        {
+            UpdateTabName(i);
+            break;
+        }
+    }
 }
 
-void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2 *scene, bool modified)
+void SceneTabWidget::SceneSaved(SceneEditor2* scene)
 {
-	// update scene name on tabBar
-	for(int i = 0; i < tabBar->count(); ++i)
-	{
-		SceneEditor2 *tabScene = GetTabScene(i);
-		if(tabScene == scene)
-		{
-			UpdateTabName(i);
-			break;
-		}
-	}
+    SceneUpdated(scene);
 }
 
-void SceneTabWidget::OnDavaGLWidgetResized(int width, int height, int dpr)
+void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified)
 {
-    int scaledWidth = width * dpr;
-    int scaledHeight = height * dpr;
-    
-    davaUIScreen->SetSize(DAVA::Vector2(scaledWidth, scaledHeight));
-    dava3DView->SetSize(DAVA::Vector2(scaledWidth - 2 * dava3DViewMargin, scaledHeight - 2 * dava3DViewMargin));
+    // update scene name on tabBar
+    for (int i = 0; i < tabBar->count(); ++i)
+    {
+        SceneEditor2* tabScene = GetTabScene(i);
+        if (tabScene == scene)
+        {
+            UpdateTabName(i);
+            break;
+        }
+    }
+}
+
+void SceneTabWidget::OnDavaGLWidgetResized(int width, int height)
+{
+    davaUIScreen->SetSize(DAVA::Vector2(width, height));
+    dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 
     SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-    if(NULL != scene)
+    if (NULL != scene)
     {
         scene->SetViewportRect(dava3DView->GetRect());
     }
 }
 
-
-void SceneTabWidget::dragEnterEvent(QDragEnterEvent *event)
+void SceneTabWidget::dragEnterEvent(QDragEnterEvent* event)
 {
-	if(MimeDataHelper2<DAVA::NMaterial>::IsValid(event->mimeData()) ||
-		event->mimeData()->hasUrls())
-	{
-		event->acceptProposedAction();
-	}
-	else
-	{
-		event->setDropAction(Qt::IgnoreAction);
-		event->accept();
-	}
+    if (MimeDataHelper2<DAVA::NMaterial>::IsValid(event->mimeData()) ||
+        event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+    else
+    {
+        event->setDropAction(Qt::IgnoreAction);
+        event->accept();
+    }
 }
 
-void SceneTabWidget::dropEvent(QDropEvent *event)
+void SceneTabWidget::dropEvent(QDropEvent* event)
 {
-	TabBarDataDropped(event->mimeData());
+    TabBarDataDropped(event->mimeData());
 }
 
-void SceneTabWidget::keyReleaseEvent(QKeyEvent * event)
+void SceneTabWidget::keyReleaseEvent(QKeyEvent* event)
 {
-	if(event->modifiers() == Qt::NoModifier)
-	{
-		if(event->key() == Qt::Key_Escape)
-		{
-			emit Escape();
-		}
-	}
+    if (event->modifiers() == Qt::NoModifier)
+    {
+        if (event->key() == Qt::Key_Escape)
+        {
+            emit Escape();
+        }
+    }
 }
 
 void SceneTabWidget::UpdateTabName(int index)
 {
-	SceneEditor2 *scene = GetTabScene(index);
-	if(NULL != scene)
-	{
-		DAVA::String tabName = scene->GetScenePath().GetFilename();
-		DAVA::String tabTooltip = scene->GetScenePath().GetAbsolutePathname();
+    SceneEditor2* scene = GetTabScene(index);
+    if (NULL != scene)
+    {
+        DAVA::String tabName = scene->GetScenePath().GetFilename();
+        DAVA::String tabTooltip = scene->GetScenePath().GetAbsolutePathname();
 
-		if(scene->IsChanged())
-		{
-			tabName += "*";
-		}
+        if (scene->IsChanged())
+        {
+            tabName += "*";
+        }
 
-		tabBar->setTabText(index, tabName.c_str());
-		tabBar->setTabToolTip(index, tabTooltip.c_str());
-	}
+        tabBar->setTabText(index, tabName.c_str());
+        tabBar->setTabToolTip(index, tabTooltip.c_str());
+    }
 }
 
 SceneEditor2* SceneTabWidget::GetCurrentScene() const
 {
-	return curScene;
+    return curScene;
 }
 
-void SceneTabWidget::ShowScenePreview(const DAVA::FilePath &scenePath)
+void SceneTabWidget::ShowScenePreview(const DAVA::FilePath& scenePath)
 {
-	if(!previewDialog)
+    if (!previewDialog)
     {
         previewDialog = new ScenePreviewDialog();
     }
 
-	if(scenePath.IsEqualToExtension(".sc2"))
-	{
-		previewDialog->Show(scenePath);
-	}
-	else
-	{
-		previewDialog->Close();
-	}
+    if (scenePath.IsEqualToExtension(".sc2"))
+    {
+        previewDialog->Show(scenePath);
+    }
+    else
+    {
+        previewDialog->Close();
+    }
 }
 
 void SceneTabWidget::HideScenePreview()
 {
-	if(previewDialog && previewDialog->GetParent())
-	{
-		previewDialog->Close();
-	}
+    if (previewDialog && previewDialog->GetParent())
+    {
+        previewDialog->Close();
+    }
 }
 
-DavaGLWidget * SceneTabWidget::GetDavaWidget() const
+DavaGLWidget* SceneTabWidget::GetDavaWidget() const
 {
-	return davaWidget;
+    return davaWidget;
 }
 
-int SceneTabWidget::FindTab( const DAVA::FilePath & scenePath )
+int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
 {
-	for(int i = 0; i < tabBar->count(); ++i)
-	{
-		SceneEditor2 *tabScene = GetTabScene(i);
-		if(tabScene && (tabScene->GetScenePath() == scenePath))
-		{
-			return i;
-		}
-	}
+    for (int i = 0; i < tabBar->count(); ++i)
+    {
+        SceneEditor2* tabScene = GetTabScene(i);
+        if (tabScene && (tabScene->GetScenePath() == scenePath))
+        {
+            return i;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 bool SceneTabWidget::CloseAllTabs()
 {
-    uint32 count = GetTabCount();
-    while(count)
+    DAVA::uint32 count = GetTabCount();
+    while (count)
     {
-        if(!CloseTab(GetCurrentTab()))
+        if (!CloseTab(GetCurrentTab()))
         {
             return false;
         }
@@ -601,32 +578,29 @@ bool SceneTabWidget::CloseAllTabs()
     return true;
 }
 
-
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
-	: QTabBar(parent)
+    : QTabBar(parent)
 {
-	setAcceptDrops(true);
+    setAcceptDrops(true);
 }
 
-void MainTabBar::dragEnterEvent(QDragEnterEvent *event)
+void MainTabBar::dragEnterEvent(QDragEnterEvent* event)
 {
-	if(event->mimeData()->hasUrls())
-	{
-		event->acceptProposedAction();
-	}
-	else
-	{
-		event->setDropAction(Qt::IgnoreAction);
-		event->accept();
-	}
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+    else
+    {
+        event->setDropAction(Qt::IgnoreAction);
+        event->accept();
+    }
 }
 
-void MainTabBar::dropEvent(QDropEvent *event)
+void MainTabBar::dropEvent(QDropEvent* event)
 {
-	if(event->mimeData()->hasUrls())
-	{
-		emit OnDrop(event->mimeData());
-	}
+    if (event->mimeData()->hasUrls())
+    {
+        emit OnDrop(event->mimeData());
+    }
 }
-
-

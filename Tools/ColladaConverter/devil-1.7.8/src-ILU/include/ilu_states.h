@@ -17,4 +17,4 @@
 extern ILenum iluFilter;
 extern ILenum iluPlacement;
 
-#endif//STATES_H
+#endif //STATES_H
