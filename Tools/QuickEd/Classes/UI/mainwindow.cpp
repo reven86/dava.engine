@@ -90,7 +90,7 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     documentGroup->AttachRedoAction(actionRedo);
     documentGroup->AttachUndoAction(actionUndo);
-
+    actionRedo->setShortcuts(QList<QKeySequence>() << Qt::CTRL + Qt::Key_Y << Qt::CTRL + Qt::SHIFT + Qt::Key_Z); //Qt can not set multishortcut or enum shortcut in Qt designer
     Q_ASSERT(documentGroup != nullptr);
     documentGroup->AttachSaveAction(actionSaveDocument);
     documentGroup->AttachSaveAllAction(actionSaveAllDocuments);

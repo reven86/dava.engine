@@ -79,8 +79,12 @@ void CommandStack::EndMacro()
     DVASSERT(!batchesStack.empty() && "CommandStack::EndMacro called without BeginMacro");
     if (batchesStack.size() == 1)
     {
-        DAVA::Command::Pointer commandPtr(batchesStack.top());
-        commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+        DAVA::CommandBatch* topLevelBatch = batchesStack.top();
+        DAVA::Command::Pointer commandPtr(topLevelBatch);
+        if (!topLevelBatch->IsEmpty())
+        {
+            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+        }
     }
     if (!batchesStack.empty())
     {
@@ -102,7 +106,7 @@ void CommandStack::SetClean()
 
 void CommandStack::Undo()
 {
-    DVASSERT(commandManager->canUndo());
+    DVASSERT(CanUndo());
     if (CanUndo())
     {
         commandManager->undo();
@@ -143,7 +147,7 @@ void CommandStack::ConnectToCommandManager()
     indexChanged.enable();
 }
 
-void CommandStack::OnHistoryIndexChanged(int /*currentIndex*/)
+void CommandStack::OnHistoryIndexChanged(int currentIndex)
 {
     UpdateCleanState();
     SetCanUndo(CanUndo());
@@ -155,16 +159,19 @@ void CommandStack::UpdateCleanState()
     int currentIndex = commandManager->commandIndex();
     int begin = std::min(cleanIndex, currentIndex);
     int end = std::max(cleanIndex, currentIndex);
+    DVASSERT(end >= begin);
     bool containsModifiedCommands = false;
     const wgt::VariantList& commandHistory = commandManager->getHistory();
     for (int commandIndex = begin; commandIndex != end && !containsModifiedCommands; ++commandIndex)
     {
-        wgt::Variant var = commandHistory[commandIndex];
-        if (var.typeIs<wgt::CommandInstancePtr>())
+        wgt::Variant var = commandHistory[commandIndex + 1]; //wgt command index starts from -1
+        if (var.typeIs<wgt::ObjectHandle>())
         {
-            DAVA::Command* cmd = var.value<wgt::CommandInstancePtr>()->getArguments().getBase<DAVA::Command>();
-            DVASSERT(cmd != nullptr);
-            containsModifiedCommands |= cmd->IsModifying();
+            wgt::ObjectHandle objectHandle = var.value<wgt::ObjectHandle>();
+            wgt::CommandInstance* commandInstance = var.value<wgt::ObjectHandle>().getBase<wgt::CommandInstance>();
+            DVASSERT(commandInstance != nullptr);
+            DAVA::Command* command = commandInstance->getArguments().getBase<DAVA::Command>();
+            containsModifiedCommands |= command->IsModifying();
         }
     }
     SetClean(!containsModifiedCommands);

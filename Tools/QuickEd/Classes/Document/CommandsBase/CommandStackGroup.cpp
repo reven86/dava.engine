@@ -46,12 +46,9 @@ void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
         activeStack->canRedoChanged.Connect(&canRedoChanged, &DAVA::Signal<bool>::Emit);
         activeStack->canUndoChanged.Connect(&canUndoChanged, &DAVA::Signal<bool>::Emit);
     }
-    else
-    {
-        cleanChanged.Emit(true);
-        canRedoChanged.Emit(false);
-        canUndoChanged.Emit(false);
-    }
+    cleanChanged.Emit(IsClean());
+    canRedoChanged.Emit(CanRedo());
+    canUndoChanged.Emit(CanUndo());
 }
 
 void CommandStackGroup::Undo()
