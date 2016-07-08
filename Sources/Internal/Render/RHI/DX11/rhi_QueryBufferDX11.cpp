@@ -103,7 +103,7 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
         if (hr == S_OK)
         {
             buf->results[resultIndex] = static_cast<uint32>(val);
-            QueryDX11Pool.push_back(buf->pendingQueries.back().first);
+            QueryDX11Pool.push_back(buf->pendingQueries[q].first);
 
             buf->pendingQueries[q] = buf->pendingQueries.back();
             buf->pendingQueries.pop_back();

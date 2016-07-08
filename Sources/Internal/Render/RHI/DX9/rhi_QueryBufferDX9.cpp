@@ -115,7 +115,7 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
                 if (resultIndex < buf->results.size())
                     buf->results[resultIndex] = results[q];
 
-                QueryDX9Pool.push_back(buf->pendingQueries.back().first);
+                QueryDX9Pool.push_back(buf->pendingQueries[q].first);
 
                 buf->pendingQueries[q] = buf->pendingQueries.back();
                 buf->pendingQueries.pop_back();
@@ -259,7 +259,7 @@ void ReleaseQueryPool()
     {
         cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
     }
-    ExecDX9(cmd.data(), cmd.size(), false);
+    ExecDX9(cmd.data(), uint32(cmd.size()), false);
 
     QueryDX9Pool.clear();
 }

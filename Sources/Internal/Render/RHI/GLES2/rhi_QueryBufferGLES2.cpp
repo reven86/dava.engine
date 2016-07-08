@@ -138,7 +138,7 @@ gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
                 if (resultIndex < buf->results.size())
                     buf->results[resultIndex] = results[q];
 
-                QueryObjectGLES2Pool.push_back(buf->pendingQueries.back().first);
+                QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
 
                 buf->pendingQueries[q] = buf->pendingQueries.back();
                 buf->pendingQueries.pop_back();
