@@ -112,7 +112,7 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
             uint32 resultIndex = buf->pendingQueries[q].second;
             if (cmd[q].retval == S_OK)
             {
-                if (resultIndex < buf->results.size())
+                if (resultIndex < uint32(buf->results.size()))
                     buf->results[resultIndex] = results[q];
 
                 QueryDX9Pool.push_back(buf->pendingQueries[q].first);
@@ -173,7 +173,7 @@ dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 
     dx9_Check_Query_Results(buf);
 
-    if (objectIndex < buf->results.size())
+    if (objectIndex < uint32(buf->results.size()))
     {
         return buf->results[objectIndex];
     }
