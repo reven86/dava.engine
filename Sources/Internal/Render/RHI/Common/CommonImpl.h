@@ -5,8 +5,10 @@ namespace rhi
 {
 struct RenderPassBase
 {
-    int32 priority;
     DAVA::Vector<Handle> cmdBuf;
+    int32 priority;
+    uint32 perfQueryIndex0;
+    uint32 perfQueryIndex1;
 };
 
 struct SyncObjectBase
@@ -18,9 +20,16 @@ struct SyncObjectBase
 
 struct FrameBase
 {
+    int frame_n;
     Handle sync;
+    std::vector<Handle> pass;
     bool readyToExecute;
 };
+
+namespace CommonDetail
+{
+bool renderContextReady = false;
+}
 
 namespace DispatchPlatform
 {
@@ -33,7 +42,13 @@ void (*Suspend)() = nullptr;
 
 void (*ProcessImmediateCommands)() = nullptr;
 
-RenderPassBase* (*GetPass)(Handle passHandle) = nullptr;
+void (*UpdateCommandBuffers)() = nullptr; //platform as metal uses api callbacks and dx/gl on desktop can use queries in future
+void (*ExecuteCommandBuffer)(Handle cb) = nullptr; //should also handle command buffer sync here
+void (*FreeCommandBuffer)(Handle cb) = nullptr;
+
+//TODO - think may be we really can store them without platform dispatch
+RenderPassBase* (*GetRenderPass)(Handle passHandle) = nullptr;
+void (*FreeRenderPass)(Handle cb) = nullptr;
 SyncObjectBase* (*GetSyncObject)(Handle passHandle) = nullptr;
 }
 }

@@ -38,7 +38,7 @@ void (*Suspend)() = nullptr;
 void (*ProcessImmediateCommands)() = nullptr;
 
 RenderPassBase* (*GetPass)(Handle passHandle) = nullptr;
-SyncObjectBase* (*GetSyncObject)(Handle passHandle) = nullptr;
+SyncObjectBase* (*GetSyncObject)(Handle syncHandle) = nullptr;
 }
 
 using namespace Details;
@@ -72,7 +72,10 @@ void Present(Handle syncHandle) // called from main thread
 
     if (renderThreadFrameCount == 0) //single thread render
     {
-        FrameLoop::ProcessFrame();
+        if (CommonDetail::renderContextReady)
+            FrameLoop::ProcessFrame();
+        else
+            FrameLoop::RejectFrames();
     }
     else //wait for render thread if needed
     {
