@@ -53,8 +53,7 @@ private slots:
     //action
     void CopyLastLODToLOD0Clicked();
     void CreatePlaneLODClicked();
-    void DeleteFirstLOD();
-    void DeleteLastLOD();
+    void DeleteLOD();
 
 private:
     void SetupSceneSignals();

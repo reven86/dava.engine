@@ -395,18 +395,6 @@ void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const 
     }
 }
 
-void EditorLODSystem::DeleteFirstLOD()
-{
-    DVASSERT(activeLodData != nullptr);
-    DeleteLOD(0);
-}
-
-void EditorLODSystem::DeleteLastLOD()
-{
-    DVASSERT(activeLodData != nullptr);
-    DeleteLOD(activeLodData->GetMaxLODLayer());
-}
-
 void EditorLODSystem::DeleteLOD(int32 layer)
 {
     if (activeLodData->GetLODLayersCount() > 0)

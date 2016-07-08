@@ -22,11 +22,13 @@ public:
 
     void SetMinMax(DAVA::float64 min, DAVA::float64 max);
     void SetActive(bool active);
+    void SetCanDelete(bool canDelete);
     void SetIndex(DAVA::int32 widgetIndex);
     void SetTrianglesCount(DAVA::uint32 trianglesCount);
 
 signals:
     void DistanceChanged();
+    void DistanceRemoved();
 
 private slots:
 
@@ -46,6 +48,7 @@ private:
 
     QLabel* label = nullptr;
     EventFilterDoubleSpinBox* spinBox = nullptr;
+    QPushButton* deleteButton = nullptr;
     QPushButton* resetButton = nullptr;
     QLineEdit* multipleText = nullptr;
 
@@ -56,5 +59,6 @@ private:
     DAVA::uint32 trianglesCount = 0;
     DAVA::uint32 widgetIndex = 0;
     bool active = true;
+    bool canDelete = false;
     bool isMultiple = false;
 };

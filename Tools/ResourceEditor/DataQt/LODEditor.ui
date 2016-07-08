@@ -74,13 +74,13 @@
        <number>6</number>
       </property>
       <property name="topMargin">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="rightMargin">
        <number>6</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>2</number>
       </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -140,9 +140,6 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="sizeConstraint">
-         <enum>QLayout::SetDefaultConstraint</enum>
-        </property>
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -151,13 +148,13 @@
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
             <horstretch>32</horstretch>
-            <verstretch>32</verstretch>
+            <verstretch>24</verstretch>
            </sizepolicy>
           </property>
           <property name="minimumSize">
            <size>
             <width>32</width>
-            <height>32</height>
+            <height>24</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -176,13 +173,13 @@
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
             <horstretch>32</horstretch>
-            <verstretch>32</verstretch>
+            <verstretch>24</verstretch>
            </sizepolicy>
           </property>
           <property name="minimumSize">
            <size>
             <width>32</width>
-            <height>32</height>
+            <height>24</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -193,63 +190,6 @@
           </property>
           <property name="text">
            <string>Copy last LOD to lod0</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QPushButton" name="buttonDeleteFirstLOD">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-            <horstretch>32</horstretch>
-            <verstretch>32</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>32</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Delete First LOD</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="buttonDeleteLastLOD">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-            <horstretch>32</horstretch>
-            <verstretch>32</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>32</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Delete Last LOD</string>
           </property>
          </widget>
         </item>

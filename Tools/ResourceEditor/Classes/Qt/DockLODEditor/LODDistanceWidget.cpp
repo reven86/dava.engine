@@ -42,7 +42,20 @@ void LODDistanceWidget::CreateUI()
     label->setMinimumSize(QSize(70, 0));
     label->setLayoutDirection(Qt::LeftToRight);
     label->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignVCenter);
+    label->setToolTip("Trinagles count");
     layout->addWidget(label);
+
+    deleteButton = new QPushButton(this);
+    QSizePolicy sizePolicyButton(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    sizePolicyButton.setHorizontalStretch(0);
+    sizePolicyButton.setVerticalStretch(0);
+    sizePolicyButton.setHeightForWidth(deleteButton->sizePolicy().hasHeightForWidth());
+    deleteButton->setSizePolicy(sizePolicyButton);
+    deleteButton->setMinimumSize(QSize(24, 24));
+    deleteButton->setMaximumSize(QSize(24, 24));
+    deleteButton->setIcon(SharedIcon(":/QtIcons/remove.png"));
+    deleteButton->setToolTip("Remove geometry");
+    layout->addWidget(deleteButton);
 
     spinBox = new EventFilterDoubleSpinBox(this);
     QSizePolicy sizePolicySpinBox(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -55,6 +68,7 @@ void LODDistanceWidget::CreateUI()
     spinBox->setValue(distance);
     spinBox->setFocusPolicy(Qt::WheelFocus);
     spinBox->setKeyboardTracking(false);
+    spinBox->setToolTip("Switching of LODs distance");
     layout->addWidget(spinBox);
 
     multipleText = new QLineEdit(this);
@@ -62,13 +76,11 @@ void LODDistanceWidget::CreateUI()
     layout->addWidget(multipleText);
 
     resetButton = new QPushButton(this);
-    QSizePolicy sizePolicyButton(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    sizePolicyButton.setHorizontalStretch(0);
-    sizePolicyButton.setVerticalStretch(0);
     sizePolicyButton.setHeightForWidth(resetButton->sizePolicy().hasHeightForWidth());
     resetButton->setSizePolicy(sizePolicyButton);
     resetButton->setMinimumSize(QSize(24, 24));
     resetButton->setMaximumSize(QSize(24, 24));
+    resetButton->setToolTip("Reset distance");
 
     resetButton->setIcon(SharedIcon(":/QtIcons/reset.png"));
     layout->addWidget(resetButton);
@@ -78,6 +90,7 @@ void LODDistanceWidget::SetupSignals()
 {
     connect(spinBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &LODDistanceWidget::DistanceChangedBySpinBox);
     connect(multipleText, &QLineEdit::editingFinished, this, &LODDistanceWidget::DistanceChangedByLineEdit);
+    connect(deleteButton, &QPushButton::released, this, &LODDistanceWidget::DistanceRemoved);
     connect(resetButton, &QPushButton::released, this, &LODDistanceWidget::DistanceChangedByResetButton);
 }
 
@@ -86,7 +99,17 @@ void LODDistanceWidget::SetActive(bool active_)
     if (active != active_)
     {
         active = active_;
+        deleteButton->setEnabled(active && canDelete);
         UpdateDisplayingStyle();
+    }
+}
+
+void LODDistanceWidget::SetCanDelete(bool canDelete_)
+{
+    if (canDelete != canDelete_)
+    {
+        canDelete = canDelete_;
+        deleteButton->setEnabled(active && canDelete);
     }
 }
 

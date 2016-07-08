@@ -195,6 +195,7 @@ void LODEditor::SetupDistancesUI()
         distanceWidgets[i]->SetDistance(LodComponent::MIN_LOD_DISTANCE, false);
 
         connect(distanceWidgets[i], &LODDistanceWidget::DistanceChanged, this, &LODEditor::LODDistanceChangedByDistanceWidget);
+        connect(distanceWidgets[i], &LODDistanceWidget::DistanceRemoved, this, &LODEditor::DeleteLOD);
     }
 }
 
@@ -249,6 +250,20 @@ void LODEditor::LODDistanceChangedByDistanceWidget()
     system->SetLODDistances(distances);
 }
 
+void LODEditor::DeleteLOD()
+{
+    LODDistanceWidget* dw = static_cast<LODDistanceWidget*>(sender());
+    for (int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        if (dw == distanceWidgets[i])
+        {
+            EditorLODSystem* system = GetCurrentEditorLODSystem();
+            system->DeleteLOD(i);
+            break;
+        }
+    }
+}
+
 //ENDOF DISTANCES
 
 //SCENE SIGNALS
@@ -288,8 +303,6 @@ void LODEditor::SetupActionsUI()
 {
     connect(ui->lastLodToFrontButton, &QPushButton::clicked, this, &LODEditor::CopyLastLODToLOD0Clicked);
     connect(ui->createPlaneLodButton, &QPushButton::clicked, this, &LODEditor::CreatePlaneLODClicked);
-    connect(ui->buttonDeleteFirstLOD, &QPushButton::clicked, this, &LODEditor::DeleteFirstLOD);
-    connect(ui->buttonDeleteLastLOD, &QPushButton::clicked, this, &LODEditor::DeleteLastLOD);
 }
 
 void LODEditor::CopyLastLODToLOD0Clicked()
@@ -311,18 +324,6 @@ void LODEditor::CreatePlaneLODClicked()
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
         QtMainWindow::Instance()->WaitStop();
     }
-}
-
-void LODEditor::DeleteFirstLOD()
-{
-    EditorLODSystem* system = GetCurrentEditorLODSystem();
-    system->DeleteFirstLOD();
-}
-
-void LODEditor::DeleteLastLOD()
-{
-    EditorLODSystem* system = GetCurrentEditorLODSystem();
-    system->DeleteLastLOD();
 }
 
 //ENDOF ACTIONS
@@ -380,8 +381,10 @@ void LODEditor::UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentH
 void LODEditor::UpdateActionUI(EditorLODSystem* forSystem)
 {
     const bool canDeleteLod = forSystem->CanDeleteLOD();
-    ui->buttonDeleteFirstLOD->setEnabled(canDeleteLod);
-    ui->buttonDeleteLastLOD->setEnabled(canDeleteLod);
+    for (LODDistanceWidget* dw : distanceWidgets)
+    {
+        dw->SetCanDelete(canDeleteLod);
+    }
 
     bool canCreateLod = forSystem->CanCreateLOD();
     ui->lastLodToFrontButton->setEnabled(canCreateLod);
@@ -391,7 +394,7 @@ void LODEditor::UpdateActionUI(EditorLODSystem* forSystem)
 void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 {
     EditorLODSystem* lodSystem = GetCurrentEditorLODSystem();
-    const auto& triangles = forSystem->GetTriangles(lodSystem->GetMode(), true);
+    const Vector<uint32>& triangles = forSystem->GetTriangles(lodSystem->GetMode(), true);
 
     int32 index = EditorStatisticsSystem::INDEX_OF_FIRST_LOD_TRIANGLES;
     for (LODDistanceWidget* dw : distanceWidgets)

@@ -118,9 +118,9 @@ public:
     bool CanDeleteLOD() const;
     bool CanCreateLOD() const;
 
+    void DeleteLOD(DAVA::int32 layer);
+
     void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
-    void DeleteFirstLOD();
-    void DeleteLastLOD();
     void CopyLastLODToFirst();
     //end of actions
 
@@ -146,7 +146,6 @@ private:
     void RecalculateData();
     //actions
     void CopyLOD(DAVA::int32 fromLayer, DAVA::int32 toLayer);
-    void DeleteLOD(DAVA::int32 layer);
 
     //signals
     void EmitInvalidateUI(DAVA::uint32 flags);
@@ -155,7 +154,6 @@ private:
 
     void ProcessPlaneLODs();
 
-private:
     LODComponentHolder lodData[eEditorMode::MODE_COUNT];
     LODComponentHolder* activeLodData = nullptr;
     ForceValues forceValues;
