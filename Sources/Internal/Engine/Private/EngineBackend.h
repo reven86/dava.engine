@@ -36,6 +36,7 @@ public:
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
 
+    Engine* GetEngine() const;
     Dispatcher* GetDispatcher() const;
     PlatformCore* GetPlatformCore() const;
 
@@ -47,6 +48,7 @@ public:
     void Quit(int32 exitCode_);
 
     void RunAsyncOnMainThread(const Function<void()>& task);
+    void RunAndWaitOnMainThread(const Function<void()>& task);
     void PostAppTerminate();
 
     void OnGameLoopStarted();
@@ -133,6 +135,11 @@ inline int32 EngineBackend::GetExitCode() const
 inline const Vector<String>& EngineBackend::GetCommandLine() const
 {
     return cmdargs;
+}
+
+inline Engine* EngineBackend::GetEngine() const
+{
+    return engine;
 }
 
 inline Dispatcher* EngineBackend::GetDispatcher() const

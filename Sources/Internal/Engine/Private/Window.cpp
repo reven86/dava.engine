@@ -42,6 +42,11 @@ void Window::Close()
     nativeWindow->Close();
 }
 
+Engine* Window::GetEngine() const
+{
+    return engineBackend->GetEngine();
+}
+
 void* Window::GetNativeHandle() const
 {
     DVASSERT(nativeWindow != nullptr);

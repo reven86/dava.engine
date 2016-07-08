@@ -31,6 +31,7 @@ public:
     void Quit(int exitCode = 0);
 
     void RunAsyncOnMainThread(const Function<void()>& task);
+    void RunAndWaitOnMainThread(const Function<void()>& task);
 
     // Methods taken from class Core
     void SetOptions(KeyedArchive* options_);

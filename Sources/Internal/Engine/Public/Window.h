@@ -46,6 +46,7 @@ public:
     void Resize(Vector2 size);
     void Close();
 
+    Engine* GetEngine() const;
     void* GetNativeHandle() const;
     Private::NativeWindow* GetNativeWindow() const;
 

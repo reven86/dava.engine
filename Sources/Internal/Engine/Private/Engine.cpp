@@ -65,6 +65,11 @@ void Engine::RunAsyncOnMainThread(const Function<void()>& task)
     engineBackend->RunAsyncOnMainThread(task);
 }
 
+void Engine::RunAndWaitOnMainThread(const Function<void()>& task)
+{
+    engineBackend->RunAndWaitOnMainThread(task);
+}
+
 uint32 Engine::GetGlobalFrameIndex() const
 {
     return engineBackend->GetGlobalFrameIndex();

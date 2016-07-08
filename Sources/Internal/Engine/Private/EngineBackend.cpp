@@ -171,6 +171,15 @@ void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
     dispatcher->PostEvent(e);
 }
 
+void EngineBackend::RunAndWaitOnMainThread(const Function<void()>& task)
+{
+    DispatcherEvent e;
+    e.type = DispatcherEvent::FUNCTOR;
+    e.window = nullptr;
+    e.functor = task;
+    dispatcher->SendEvent(e);
+}
+
 void EngineBackend::RunConsole()
 {
     OnGameLoopStarted();
