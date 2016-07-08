@@ -72,6 +72,26 @@ void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
     bridge->BindToXamlWindow(xamlWindow);
 }
 
+void WindowWinUWP::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+{
+    bridge->AddXamlControl(xamlControl);
+}
+
+void WindowWinUWP::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+{
+    bridge->RemoveXamlControl(xamlControl);
+}
+
+void WindowWinUWP::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
+{
+    bridge->PositionXamlControl(xamlControl, x, y);
+}
+
+void WindowWinUWP::UnfocusXamlControl()
+{
+    bridge->UnfocusXamlControl();
+}
+
 void WindowWinUWP::PlatformEventHandler(const PlatformEvent& e)
 {
     // Method executes in context of XAML::Window's UI thread

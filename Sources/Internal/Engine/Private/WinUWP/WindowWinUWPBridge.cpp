@@ -41,6 +41,37 @@ void WindowWinUWPBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
     xamlWindow->Activate();
 }
 
+void WindowWinUWPBridge::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+{
+    xamlCanvas->Children->Append(xamlControl);
+}
+
+void WindowWinUWPBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+{
+    unsigned int index = 0;
+    for (auto x = xamlCanvas->Children->First(); x->HasCurrent; x->MoveNext(), ++index)
+    {
+        if (x->Current == xamlControl)
+        {
+            xamlCanvas->Children->RemoveAt(index);
+            break;
+        }
+    }
+}
+
+void WindowWinUWPBridge::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
+{
+    xamlCanvas->SetLeft(xamlControl, x);
+    xamlCanvas->SetTop(xamlControl, y);
+}
+
+void WindowWinUWPBridge::UnfocusXamlControl()
+{
+    // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
+    // So use dummy offscreen control that steals focus
+    xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
+}
+
 void WindowWinUWPBridge::TriggerPlatformEvents()
 {
     using namespace ::Windows::UI::Core;
@@ -305,6 +336,17 @@ void WindowWinUWPBridge::CreateBaseXamlUI()
 
     xamlSwapChainPanel = ref new SwapChainPanel;
     xamlSwapChainPanel->Children->Append(xamlCanvas);
+
+    // Windows UAP doesn't allow to unfocus UI control programmatically
+    // It only permits to set focus at another control
+    // So create dummy offscreen button that steals focus when there is
+    // a need to unfocus native control, especially useful for text fields
+    xamlControlThatStealsFocus = ref new Button();
+    xamlControlThatStealsFocus->Content = L"I steal your focus";
+    xamlControlThatStealsFocus->Width = 30;
+    xamlControlThatStealsFocus->Height = 20;
+    AddXamlControl(xamlControlThatStealsFocus);
+    PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
 
     xamlWindow->Content = xamlSwapChainPanel;
 }
