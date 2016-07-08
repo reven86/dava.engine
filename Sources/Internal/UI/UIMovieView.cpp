@@ -2,11 +2,7 @@
 
 #include "UI/UIMovieView.h"
 
-#if defined(__DAVAENGINE_COREV2__) && !defined(__DAVAENGINE_WIN32__)
-#define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
-#include "Platform/MovieViewControlStub.h"
-#include "Render/RenderHelper.h"
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 #include "Platform/TemplateiOS/MovieViewControliOS.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Platform/TemplateMacOS/MovieViewControlMacOS.h"

@@ -1,6 +1,4 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
+#include "Platform/TemplateWin32/PrivateMovieViewWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -11,9 +9,14 @@
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Private/NativeWindow.h"
+#include "Render/RHI/rhi_Public.h"
+#else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
-#include "Platform/TemplateWin32/PrivateMovieViewWinUAP.h"
+#endif
 
 using namespace Windows::System;
 using namespace Windows::Foundation;
@@ -26,21 +29,41 @@ using namespace concurrency;
 
 namespace DAVA
 {
+void PrivateMovieViewWinUAP::MovieViewProperties::ClearChangedFlags()
+{
+    anyPropertyChanged = false;
+    rectChanged = false;
+    visibleChanged = false;
+    streamChanged = false;
+    actionChanged = false;
+}
+
 PrivateMovieViewWinUAP::PrivateMovieViewWinUAP()
+#if defined(__DAVAENGINE_COREV2__)
+    : window(Engine::Instance()->PrimaryWindow())
+#else
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#endif
+    , properties()
 {
 }
 
 PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
 {
-    if (nativeMovieView != nullptr)
+    if (nativeControl != nullptr)
     {
-        // Compiler complains of capturing nativeWebView data member in lambda
-        MediaElement ^ p = nativeMovieView;
+        MediaElement ^ p = nativeControl;
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowWinUWP* nativeWindow = window->GetNativeWindow();
+        window->RunAsyncOnUIThread([p, nativeWindow]() {
+            nativeWindow->RemoveXamlControl(p);
+        });
+#else
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-        nativeMovieView = nullptr;
+#endif
+        nativeControl = nullptr;
     }
 }
 
@@ -51,99 +74,104 @@ void PrivateMovieViewWinUAP::OwnerAtPremortem()
 
 void PrivateMovieViewWinUAP::Initialize(const Rect& rect)
 {
-    core->RunOnUIThreadBlocked([this, &rect]() {
-        nativeMovieView = ref new MediaElement();
-        nativeMovieView->AllowDrop = false;
-        nativeMovieView->CanDrag = false;
-        nativeMovieView->AutoPlay = false;
-        nativeMovieView->Volume = 1.0;
-
-        core->XamlApplication()->AddUIElement(nativeMovieView);
-
-        InstallEventHandlers();
-        PositionMovieView(rect);
-    });
+    properties.createNew = true;
 }
 
 void PrivateMovieViewWinUAP::SetRect(const Rect& rect)
 {
-    auto self{ shared_from_this() };
-    core->RunOnUIThread([this, self, rect]() {
-        PositionMovieView(rect);
-    });
+    if (properties.rect != rect)
+    {
+        properties.rect = rect;
+        properties.rectInWindowSpace = VirtualToWindow(rect);
+        properties.rectChanged = true;
+        properties.anyPropertyChanged = true;
+    }
 }
 
 void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
 {
-    if (visible != isVisible)
+    if (properties.visible != isVisible)
     {
-        visible = isVisible;
-        auto self{ shared_from_this() };
-        core->RunOnUIThread([this, self]() {
-            nativeMovieView->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
-        });
+        properties.visible = isVisible;
+        properties.visibleChanged = true;
+        properties.anyPropertyChanged = true;
+        if (!isVisible)
+        { // Immediately hide native control if it has been already created
+            auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
+#endif
+        }
     }
 }
 
 void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
+    using ::Windows::UI::Xaml::Media::Stretch;
+    using ::Windows::Storage::Streams::IRandomAccessStream;
+
+    properties.stream = nullptr;
+    properties.playing = false;
+    properties.canPlay = false;
+
     IRandomAccessStream ^ stream = CreateStreamFromFilePath(moviePath);
-    if (stream)
+    if (stream != nullptr)
     {
-        OpenMovieFromStream(stream, params);
+        properties.canPlay = true;
+
+        Stretch scaling = Stretch::None;
+        switch (params.scalingMode)
+        {
+        case scalingModeNone:
+            scaling = Stretch::None;
+            break;
+        case scalingModeAspectFit:
+            scaling = Stretch::Uniform;
+            break;
+        case scalingModeAspectFill:
+            scaling = Stretch::UniformToFill;
+            break;
+        case scalingModeFill:
+            scaling = Stretch::Fill;
+            break;
+        default:
+            scaling = Stretch::None;
+            break;
+        }
+
+        properties.stream = stream;
+        properties.scaling = scaling;
+        properties.streamChanged = true;
+        properties.anyPropertyChanged = true;
     }
-}
-
-void PrivateMovieViewWinUAP::OpenMovieFromStream(IRandomAccessStream ^ stream, const OpenMovieParams& params)
-{
-    movieLoaded = false;
-    playRequest = false;
-    moviePlaying = false;
-
-    Stretch scaling = Stretch::None;
-    switch (params.scalingMode)
-    {
-    case scalingModeNone:
-        scaling = Stretch::None;
-        break;
-    case scalingModeAspectFit:
-        scaling = Stretch::Uniform;
-        break;
-    case scalingModeAspectFill:
-        scaling = Stretch::UniformToFill;
-        break;
-    case scalingModeFill:
-        scaling = Stretch::Fill;
-        break;
-    default:
-        scaling = Stretch::None;
-        break;
-    }
-
-    auto self{ shared_from_this() };
-    core->RunOnUIThread([this, self, stream, scaling]() {
-        nativeMovieView->Stretch = scaling;
-        nativeMovieView->SetSource(stream, L"");
-    });
 }
 
 void PrivateMovieViewWinUAP::Play()
 {
-    if (movieLoaded)
+    if (properties.canPlay)
     {
-        if (!moviePlaying)
-        {
-            moviePlaying = true;
-            auto self{ shared_from_this() };
-            core->RunOnUIThread([this, self]()
-                                {
-                                    nativeMovieView->Play();
-                                });
-        }
-    }
-    else
-    {
-        playRequest = true;
+        // It seems that dava.engine is client of game but not vice versa
+        // Game does not take into account that video playback can take some time after Play() has been called
+        // So assume movie is playing under following conditions:
+        //  - movie is really playing
+        //  - game has called Play() method
+        properties.playing = true;
+
+        properties.action = MovieViewProperties::ACTION_PLAY;
+        properties.actionChanged = true;
+        properties.anyPropertyChanged = true;
     }
 }
 
@@ -158,33 +186,116 @@ void PrivateMovieViewWinUAP::Stop()
     Pause();
 
     // DO NOT DELETE COMMENTED CODE
-    //playRequest = false;
-    //moviePlaying = false;
-    //if (movieLoaded)
-    //{
-    //    auto self{shared_from_this()};
-    //    core->RunOnUIThread([this, self]() {
-    //        nativeMovieView->Stop();
-    //    });
-    //}
+    // if (properties.canPlay)
+    // {
+    //     properties.playing = false;
+    //
+    //     properties.action = MovieViewProperties::ACTION_STOP;
+    //     properties.actionChanged = true;
+    //     properties.anyPropertyChanged = true;
+    // }
 }
 
 void PrivateMovieViewWinUAP::Pause()
 {
-    playRequest = false;
-    moviePlaying = false;
-    if (movieLoaded)
+    if (properties.canPlay)
     {
-        auto self{ shared_from_this() };
-        core->RunOnUIThread([this, self]() {
-            nativeMovieView->Pause();
-        });
+        properties.playing = false;
+
+        properties.action = MovieViewProperties::ACTION_PAUSE;
+        properties.actionChanged = true;
+        properties.anyPropertyChanged = true;
     }
 }
 
 void PrivateMovieViewWinUAP::Resume()
 {
     Play();
+}
+
+void PrivateMovieViewWinUAP::Update()
+{
+    if (properties.anyPropertyChanged || properties.createNew)
+    {
+        auto self{ shared_from_this() };
+        MovieViewProperties props(properties);
+#if defined(__DAVAENGINE_COREV2__)
+        window->RunAsyncOnUIThread([this, self, props]() {
+            ProcessProperties(props);
+        });
+#else
+        core->RunOnUIThread([this, self, props]() {
+            ProcessProperties(props);
+        });
+#endif
+
+        properties.createNew = false;
+        properties.stream = nullptr;
+        properties.ClearChangedFlags();
+    }
+}
+
+void PrivateMovieViewWinUAP::ProcessProperties(const MovieViewProperties& props)
+{
+    if (props.createNew)
+    {
+        nativeControl = ref new MediaElement();
+        nativeControl->AllowDrop = false;
+        nativeControl->CanDrag = false;
+        nativeControl->AutoPlay = false;
+        nativeControl->MinHeight = 0.0; // Force minimum control sizes to zero to
+        nativeControl->MinWidth = 0.0; // allow setting any control sizes
+        nativeControl->Volume = 1.0;
+
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetNativeWindow()->AddXamlControl(nativeControl);
+#else
+        core->XamlApplication()->AddUIElement(nativeControl);
+#endif
+        InstallEventHandlers();
+    }
+
+    if (props.anyPropertyChanged)
+    {
+        ApplyChangedProperties(props);
+    }
+}
+
+void PrivateMovieViewWinUAP::ApplyChangedProperties(const MovieViewProperties& props)
+{
+    if (props.visibleChanged)
+        SetNativeVisible(props.visible);
+    if (props.rectChanged)
+        SetNativePositionAndSize(props.rectInWindowSpace);
+    if (props.streamChanged)
+    {
+        nativeControl->Stretch = props.scaling;
+        nativeControl->SetSource(props.stream, L"");
+        movieLoaded = false;
+        playAfterLoaded = false;
+    }
+    if (props.actionChanged)
+    {
+        if (movieLoaded)
+        {
+            switch (props.action)
+            {
+            case MovieViewProperties::ACTION_PLAY:
+                nativeControl->Play();
+                break;
+            case MovieViewProperties::ACTION_PAUSE:
+                nativeControl->Pause();
+                break;
+            case MovieViewProperties::ACTION_RESUME:
+                nativeControl->Play();
+                break;
+            case MovieViewProperties::ACTION_STOP:
+                nativeControl->Stop();
+                break;
+            }
+        }
+        playAfterLoaded = !movieLoaded && props.action == MovieViewProperties::ACTION_PLAY;
+    }
 }
 
 void PrivateMovieViewWinUAP::InstallEventHandlers()
@@ -212,40 +323,9 @@ void PrivateMovieViewWinUAP::InstallEventHandlers()
             OnMediaFailed(args);
         }
     });
-    nativeMovieView->MediaOpened += mediaOpened;
-    nativeMovieView->MediaEnded += mediaEnded;
-    nativeMovieView->MediaFailed += mediaFailed;
-}
-
-void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordinates)
-{
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    // 1. map virtual to physical
-    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
-    controlRect += coordSystem->GetPhysicalDrawOffset();
-
-    // 2. map physical to window
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-    controlRect.x /= scaleFactor;
-    controlRect.y /= scaleFactor;
-    controlRect.dx /= scaleFactor;
-    controlRect.dy /= scaleFactor;
-
-    // 3. set control's position and size
-    nativeMovieView->MinHeight = 0.0; // Force minimum control sizes to zero to
-    nativeMovieView->MinWidth = 0.0; // allow setting any control sizes
-    nativeMovieView->Width = std::max(0.0f, controlRect.dx);
-    nativeMovieView->Height = std::max(0.0f, controlRect.dy);
-    core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
-
-    { //'workaround' for ATI HD ****G adapters
-        const char* gpuDesc = rhi::DeviceCaps().deviceDescription;
-        if (strstr(gpuDesc, "AMD Radeon HD") && gpuDesc[strlen(gpuDesc) - 1] == 'G')
-        {
-            nativeMovieView->Height += 1.0;
-        }
-    }
+    nativeControl->MediaOpened += mediaOpened;
+    nativeControl->MediaEnded += mediaEnded;
+    nativeControl->MediaFailed += mediaFailed;
 }
 
 Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
@@ -273,27 +353,82 @@ Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateS
     }
 }
 
+void PrivateMovieViewWinUAP::SetNativeVisible(bool visible)
+{
+    nativeControl->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
+}
+
+void PrivateMovieViewWinUAP::SetNativePositionAndSize(const Rect& rect)
+{
+    nativeControl->Width = std::max(0.0f, rect.dx);
+    nativeControl->Height = std::max(0.0f, rect.dy);
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeWindow()->PositionXamlControl(nativeControl, rect.x, rect.y);
+#else
+    core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
+#endif
+
+    { //'workaround' for ATI HD ****G adapters
+        const char* gpuDesc = rhi::DeviceCaps().deviceDescription;
+        if (strstr(gpuDesc, "AMD Radeon HD") && gpuDesc[strlen(gpuDesc) - 1] == 'G')
+        {
+            nativeControl->Height += 1.0;
+        }
+    }
+}
+
+Rect PrivateMovieViewWinUAP::VirtualToWindow(const Rect& srcRect) const
+{
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+
+    // 1. map virtual to physical
+    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
+    rect += coordSystem->GetPhysicalDrawOffset();
+
+// 2. map physical to window
+#if defined(__DAVAENGINE_COREV2__)
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
+    rect.x /= scaleFactor;
+    rect.y /= scaleFactor;
+    rect.dx /= scaleFactor;
+    rect.dy /= scaleFactor;
+    return rect;
+}
+
+void PrivateMovieViewWinUAP::TellPlayingStatus(bool playing)
+{
+#if defined(__DAVAENGINE_COREV2__)
+    window->RunAsyncOnUIThread([this, playing]() {
+        properties.playing = playing;
+    });
+#else
+    core->RunOnMainThread([this, playing]() {
+        properties.playing = playing;
+    });
+#endif
+}
+
 void PrivateMovieViewWinUAP::OnMediaOpened()
 {
     movieLoaded = true;
-    if (playRequest)
+    if (playAfterLoaded)
     {
-        playRequest = false;
-        moviePlaying = true;
-        nativeMovieView->Play();
+        playAfterLoaded = false;
+        nativeControl->Play();
     }
 }
 
 void PrivateMovieViewWinUAP::OnMediaEnded()
 {
-    playRequest = false;
-    moviePlaying = false;
+    TellPlayingStatus(false);
 }
 
 void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs ^ args)
 {
-    playRequest = false;
-    moviePlaying = false;
+    TellPlayingStatus(false);
     String errMessage = WStringToString(args->ErrorMessage->Data());
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
 }
@@ -301,4 +436,3 @@ void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs ^ args)
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // !__DAVAENGINE_COREV2__
