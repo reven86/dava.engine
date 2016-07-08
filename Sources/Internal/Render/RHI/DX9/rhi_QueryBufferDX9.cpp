@@ -16,10 +16,10 @@ class
 QueryBufferDX9_t
 {
 public:
-    QueryBufferDX9_t() 
+    QueryBufferDX9_t()
         : curObjectIndex(DAVA::InvalidIndex)
         , bufferCompleted(false){};
-    ~QueryBufferDX9_t() {};
+    ~QueryBufferDX9_t(){};
 
     std::vector<std::pair<IDirect3DQuery9*, uint32>> pendingQueries;
     std::vector<uint32> results;
@@ -255,7 +255,7 @@ bool QueryIsCompleted(Handle handle)
 void ReleaseQueryPool()
 {
     std::vector<DX9Command> cmd;
-    for (IDirect3DQuery9 * iq : QueryDX9Pool)
+    for (IDirect3DQuery9* iq : QueryDX9Pool)
     {
         cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
     }
@@ -263,7 +263,6 @@ void ReleaseQueryPool()
 
     QueryDX9Pool.clear();
 }
-
 }
 
 //==============================================================================

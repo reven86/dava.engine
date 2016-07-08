@@ -122,7 +122,7 @@ public:
         HashMap<FastName, V>::insert(name, value);
     }
 
-    void Insert(const char *name, const V &value)
+    void Insert(const char* name, const V& value)
 };
 
 // Implementation

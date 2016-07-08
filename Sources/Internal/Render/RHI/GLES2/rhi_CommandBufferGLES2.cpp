@@ -1582,7 +1582,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
         }
         break;
 

@@ -19,7 +19,7 @@ public:
     QueryBufferDX11_t()
         : curObjectIndex(DAVA::InvalidIndex)
         , bufferCompleted(false){};
-    ~QueryBufferDX11_t() {};
+    ~QueryBufferDX11_t(){};
 
     std::vector<std::pair<ID3D11Query*, uint32>> pendingQueries;
     std::vector<uint32> results;
@@ -91,10 +91,11 @@ static void
 dx11_Check_Query_Results(QueryBufferDX11_t* buf)
 {
     int32 pendingCount = static_cast<int32>(buf->pendingQueries.size());
-    uint64 val = 0;;
+    uint64 val = 0;
+    ;
     for (int32 q = pendingCount - 1; q >= 0; --q)
     {
-        ID3D11Query * iq = buf->pendingQueries[q].first;
+        ID3D11Query* iq = buf->pendingQueries[q].first;
         uint32 resultIndex = buf->pendingQueries[q].second;
 
         HRESULT hr = _D3D11_ImmediateContext->GetData(iq, &val, sizeof(uint64), D3D11_ASYNC_GETDATA_DONOTFLUSH);
@@ -250,7 +251,6 @@ void ReleaseQueryPool()
 
     QueryDX11Pool.clear();
 }
-
 }
 
 //==============================================================================

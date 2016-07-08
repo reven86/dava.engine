@@ -911,7 +911,6 @@ void SceneInfo::RefreshLayersSection()
         const RenderStats& renderStats = activeScene->GetRenderStats();
         QtPropertyData* header = GetInfoHeader("Fragments Info");
 
-
         static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
         float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
 

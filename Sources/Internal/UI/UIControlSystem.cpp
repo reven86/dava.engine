@@ -22,7 +22,6 @@
 
 namespace DAVA
 {
-
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);

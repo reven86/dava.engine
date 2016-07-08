@@ -290,7 +290,6 @@ void ReleaseQueryObjectsPool()
         QueryObjectGLES2Pool.clear();
     }
 }
-
 }
 
 //==============================================================================
