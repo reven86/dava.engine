@@ -17,7 +17,12 @@ IPAddress::IPAddress(const char8* address)
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
+    
+#if !defined(DAVA_NETWORK_DISABLE)
     return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
+#else
+    return false;
+#endif
 }
 
 String IPAddress::ToString() const
@@ -33,8 +38,11 @@ IPAddress IPAddress::FromString(const char8* addr)
     DVASSERT(addr != NULL);
 
     Endpoint endp;
+    
+#if !defined(DAVA_NETWORK_DISABLE)
     if (0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
         return endp.Address();
+#endif
     return IPAddress();
 }
 
