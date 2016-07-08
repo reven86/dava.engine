@@ -134,7 +134,7 @@ void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
 {
 }
 
-const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine()
+const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine() const
 {
     return commandLineParser;
 }

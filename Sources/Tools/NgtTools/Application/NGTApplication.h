@@ -29,7 +29,7 @@ protected:
     virtual void OnPreUnloadPlugins();
     virtual bool OnRequestCloseApp();
     virtual void ConfigureLineCommand(NGTCmdLineParser& lineParser);
-    const NGTCmdLineParser& GetCommandLine();
+    const NGTCmdLineParser& GetCommandLine() const;
 
 private:
     DAVA::WideString GetPluginsFolder() const;
