@@ -449,7 +449,7 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const RECommand* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const DAVA::Command* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -498,7 +498,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const RECommand* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const DAVA::Command* command, bool redo)
 {
     if (nullptr != editor)
     {

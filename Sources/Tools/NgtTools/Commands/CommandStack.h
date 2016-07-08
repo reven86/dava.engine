@@ -31,8 +31,8 @@ public:
     virtual void Undo();
     virtual void Redo();
 
-    virtual bool CanUndo() const;
-    virtual bool CanRedo() const;
+    bool CanUndo() const;
+    bool CanRedo() const;
 
     DAVA::int32 GetID() const;
 

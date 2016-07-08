@@ -339,8 +339,7 @@ void RECommandStack::commandExecuted(const wgt::CommandInstance& commandInstance
     DAVA::Command* cmd = commandInstance.getArguments().getBase<DAVA::Command>();
     if (cmd != nullptr)
     {
-        RECommand* reCommand = DAVA::DynamicTypeCheck<RECommand*>(cmd);
-        EmitNotify(reCommand, operation != wgt::CommandOperation::UNDO);
+        EmitNotify(cmd, operation != wgt::CommandOperation::UNDO);
     }
 }
 

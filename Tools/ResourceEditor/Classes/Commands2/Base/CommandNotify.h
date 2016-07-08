@@ -3,12 +3,15 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
-class RECommand;
+namespace DAVA
+{
+class Command;
+}
 
 class CommandNotify : public DAVA::BaseObject
 {
 public:
-    virtual void Notify(const RECommand* command, bool redo) = 0;
+    virtual void Notify(const DAVA::Command* command, bool redo) = 0;
     virtual void CleanChanged(bool clean);
     virtual void UndoRedoStateChanged();
 };
@@ -21,7 +24,7 @@ public:
     void SetNotify(CommandNotify* notify);
     CommandNotify* GetNotify() const;
 
-    void EmitNotify(const RECommand* command, bool redo);
+    void EmitNotify(const DAVA::Command* command, bool redo);
     void EmitCleanChanged(bool clean);
     void EmitUndoRedoStateChanged();
 
