@@ -26,22 +26,33 @@ static DAVA::Atomic<bool> renderThreadSuspended = false;
 static DAVA::Atomic<bool> renderThreadExitPending = false;
 }
 
-namespace DispatchPlatform
+using namespace Details;
+
+void PresentFrame()
 {
-void (*InitContext)() = nullptr;
-void (*AcquireContext)() = nullptr;
-void (*ReleaseContext)() = nullptr;
-void (*CheckSurface)() = nullptr;
+    if (!CommonDetail::renderContextReady)
+    {
+        //no render context - just reject frames and do nothing;
+        FrameLoop::RejectFrames();
+        return;
+    }
 
-void (*Suspend)() = nullptr;
+    bool presentResult = false;
+    if (!CommonDetail::resetPending)
+    {
+        FrameLoop::ProcessFrame();
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+        presentResult = DispatchPlatform::PresntBuffer();
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+    }
 
-void (*ProcessImmediateCommands)() = nullptr;
-
-RenderPassBase* (*GetPass)(Handle passHandle) = nullptr;
-SyncObjectBase* (*GetSyncObject)(Handle syncHandle) = nullptr;
+    if (!presentResult)
+    {
+        FrameLoop::RejectFrames();
+        DispatchPlatform::ResetBlock();
+    }
 }
 
-using namespace Details;
 void Present(Handle syncHandle) // called from main thread
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
@@ -72,10 +83,7 @@ void Present(Handle syncHandle) // called from main thread
 
     if (renderThreadFrameCount == 0) //single thread render
     {
-        if (CommonDetail::renderContextReady)
-            FrameLoop::ProcessFrame();
-        else
-            FrameLoop::RejectFrames();
+        PresentFrame();
     }
     else //wait for render thread if needed
     {
@@ -144,7 +152,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         if (!renderThreadExitPending)
         {
-            FrameLoop::ProcessFrame();
+            PresentFrame();
         }
 
         frameDoneEvent.Signal();

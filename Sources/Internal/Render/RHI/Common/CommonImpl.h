@@ -20,7 +20,6 @@ struct SyncObjectBase
 
 struct FrameBase
 {
-    int frame_n;
     Handle sync;
     std::vector<Handle> pass;
     bool readyToExecute;
@@ -28,7 +27,8 @@ struct FrameBase
 
 namespace CommonDetail
 {
-bool renderContextReady = false;
+static bool renderContextReady = false;
+static bool resetPending = false;
 }
 
 namespace DispatchPlatform
@@ -42,9 +42,12 @@ void (*Suspend)() = nullptr;
 
 void (*ProcessImmediateCommands)() = nullptr;
 
-void (*UpdateCommandBuffers)() = nullptr; //platform as metal uses api callbacks and dx/gl on desktop can use queries in future
+void (*UpdateSyncObjects)(uint32 frame_n) = nullptr; //platform as metal uses api callbacks and dx/gl on desktop can use queries in future
 void (*ExecuteCommandBuffer)(Handle cb) = nullptr; //should also handle command buffer sync here
 void (*FreeCommandBuffer)(Handle cb) = nullptr;
+
+bool (*PresntBuffer)() = nullptr;
+void (*ResetBlock)() = nullptr;
 
 //TODO - think may be we really can store them without platform dispatch
 RenderPassBase* (*GetRenderPass)(Handle passHandle) = nullptr;

@@ -6,13 +6,15 @@ namespace rhi
 {
 namespace FrameLoop
 {
-static void ProcessFrame()
+static uint32 currFrameNumber = 0;
+
+static void ExecuteFrameCommands()
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
 
     std::vector<RenderPassBase*> pass;
     std::vector<Handle> pass_h;
-    unsigned frame_n = 0;
+    currFrameNumber++;
 
     //sort and test
     frameSync.Lock();
@@ -39,13 +41,12 @@ static void ProcessFrame()
     }
 
     pass_h = frames.begin()->pass;
-    frame_n = frames.begin()->frame_n;
 
     if (frames.begin()->sync != InvalidHandle)
     {
         SyncObjectBase* sync = DispatchPlatform::GetSyncObject(frames.begin()->sync);
 
-        sync->frame = frame_n;
+        sync->frame = currFrameNumber;
         sync->is_signaled = false;
         sync->is_used = true;
     }
@@ -78,37 +79,41 @@ static void ProcessFrame()
     }
     frameSync.Unlock();
 
-    if (CommonDetail::renderContextReady)
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
+}
+void RejectFrames()
+{
+}
+
+void ProcessFrame()
+{
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
+
+    if (!CommonDetail::renderContextReady) //no render context - just reject frames and do nothing;
     {
-        // do swap-buffers
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
-
-#if defined(__DAVAENGINE_WIN32__)
-        Trace("rhi-gl.swap-buffers...\n");
-        SwapBuffers(_GLES2_WindowDC);
-        Trace("rhi-gl.swap-buffers done\n");
-#elif defined(__DAVAENGINE_MACOS__)
-        macos_gl_end_frame();
-#elif defined(__DAVAENGINE_IPHONE__)
-        ios_gl_end_frame();
-#elif defined(__DAVAENGINE_ANDROID__)
-
-        bool success = android_gl_end_frame();
-        if (!success) //'false' mean lost context, need restore resources
-        {
-            _RejectAllFrames();
-
-            TextureGLES2::ReCreateAll();
-            VertexBufferGLES2::ReCreateAll();
-            IndexBufferGLES2::ReCreateAll();
-        }
-
-#endif
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
+        RejectFrames();
+        return;
     }
 
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+    bool presentResult = false;
+    if (!CommonDetail::resetPending)
+    {
+        ExecuteFrameCommands();
+
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+        presentResult = DispatchPlatform::PresntBuffer();
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+    }
+
+    if (!presentResult)
+    {
+        RejectFrames();
+        DispatchPlatform::ResetBlock();
+    }
+
+    DispatchPlatform::UpdateSyncObjects(currFrameNumber);
+
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 }
 }
 }
