@@ -1,16 +1,22 @@
-#ifndef __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
-#define __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
+#pragma once
 
-#if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/EngineFwd.h"
+
+#include "Math/Rect.h"
+#include "FileSystem/FilePath.h"
+
 namespace DAVA
 {
+class UIWebView;
+class IUIWebViewDelegate;
 class Sprite;
+#if !defined(__DAVAENGINE_COREV2__)
 class CorePlatformWinUAP;
+#endif
 
 class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewWinUAP>
 {
@@ -96,7 +102,11 @@ private: // WebView event handlers
 
 private:
     // clang-format off
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#else
     CorePlatformWinUAP* core;
+#endif
     UIWebView* uiWebView = nullptr;
     IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
@@ -113,5 +123,3 @@ private:
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // !__DAVAENGINE_COREV2__
-#endif // __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__

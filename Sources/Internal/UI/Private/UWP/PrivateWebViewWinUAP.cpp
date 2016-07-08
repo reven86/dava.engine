@@ -1,6 +1,4 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
-#include "Base/Platform.h"
+#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -10,8 +8,13 @@
 #include "Base/RefPtr.h"
 #include "Debug/DVAssert.h"
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Private/NativeWindow.h"
+#else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#endif
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -23,7 +26,6 @@
 #include "Utils/Utils.h"
 
 #include "UI/UIWebView.h"
-#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
@@ -94,23 +96,22 @@ IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const 
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
     Platform::String^ fileName = StringToRTString(fileNameStr);
 
-    return create_async([ this, fileName ]() -> IInputStream^
-                        {
-                            try
-                            {
-                                StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
-                                IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
-                                return static_cast<IInputStream^>(stream);
-                            }
-                            catch (Platform::COMException^ e)
-                            {
-                                Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
-                                              RTStringToString(fileName).c_str(),
-                                              RTStringToString(e->Message).c_str(),
-                                              e->HResult);
-                                return ref new InMemoryRandomAccessStream();
-                            }
-                        });
+    return create_async([ this, fileName ]() -> IInputStream^ {
+        try
+        {
+            StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
+            IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
+            return static_cast<IInputStream^>(stream);
+        }
+        catch (Platform::COMException^ e)
+        {
+            Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
+                            RTStringToString(fileName).c_str(),
+                            RTStringToString(e->Message).c_str(),
+                            e->HResult);
+            return ref new InMemoryRandomAccessStream();
+        }
+    });
 }
 
 IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
@@ -151,8 +152,12 @@ void PrivateWebViewWinUAP::WebViewProperties::ClearChangedFlags()
 }
 
 PrivateWebViewWinUAP::PrivateWebViewWinUAP(UIWebView* uiWebView_)
-    : uiWebView(uiWebView_)
-    , core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#if defined(__DAVAENGINE_COREV2__)
+    : window(Engine::Instance()->PrimaryWindow())
+#else
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#endif
+    , uiWebView(uiWebView_)
 {
 }
 
@@ -162,9 +167,16 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowWinUWP* nativeWindow = window->GetNativeWindow();
+        window->RunAsyncOnUIThread([p, nativeWindow]() {
+            nativeWindow->RemoveXamlControl(p);
+        });
+#else
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
+#endif
         nativeWebView = nullptr;
     }
 }
@@ -234,12 +246,22 @@ void PrivateWebViewWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 }
             });
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeWebView != nullptr)
+                {
+                    SetNativePositionAndSize(rectInWindowSpace, true);
+                }
+            });
+#endif
         }
     }
 }
@@ -268,12 +290,22 @@ void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
         properties.anyPropertyChanged = true;
         if (!value)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 }
             });
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeWebView != nullptr)
+                {
+                    SetNativePositionAndSize(rectInWindowSpace, true);
+                }
+            });
+#endif
         }
     }
 }
@@ -289,9 +321,15 @@ void PrivateWebViewWinUAP::Update()
     {
         auto self{ shared_from_this() };
         WebViewProperties props(properties);
+#if defined(__DAVAENGINE_COREV2__)
+        window->RunAsyncOnUIThread([this, self, props]() {
+            ProcessProperties(props);
+        });
+#else
         core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
         });
+#endif
 
         properties.createNew = false;
         properties.ClearChangedFlags();
@@ -308,7 +346,11 @@ void PrivateWebViewWinUAP::CreateNativeControl()
     nativeWebView->MinHeight = 0.0;
     nativeWebView->Visibility = Visibility::Visible;
 
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeWindow()->AddXamlControl(nativeWebView);
+#else
     core->XamlApplication()->AddUIElement(nativeWebView);
+#endif
     SetNativePositionAndSize(rectInWindowSpace, true); // After creation move native control offscreen
 }
 
@@ -341,13 +383,21 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigat
 
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
-                                 {
-                                     if (uiWebView != nullptr && webViewDelegate != nullptr)
-                                     {
-                                         whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-                                     }
-                                 });
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAndWaitOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        }
+    });
+#else
+    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        }
+    });
+#endif
 
     if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
     {
@@ -379,12 +429,21 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNaviga
     }
 
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            webViewDelegate->PageLoaded(uiWebView);
+        }
+    });
+#else
     core->RunOnMainThread([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             webViewDelegate->PageLoaded(uiWebView);
         }
     });
+#endif
 }
 
 void PrivateWebViewWinUAP::ProcessProperties(const WebViewProperties& props)
@@ -433,7 +492,11 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
     }
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeWindow()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+#else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+#endif
 }
 
 void PrivateWebViewWinUAP::SetNativeBackgroundTransparency(bool enabled)
@@ -480,13 +543,23 @@ void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
     auto js = nativeWebView->InvokeScriptAsync(L"eval", args);
     auto self{shared_from_this()};
     create_task(js).then([this, self](Platform::String^ result) {
-        core->RunOnMainThread([this, result]() {
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
                 String jsResult = WStringToString(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
+#else
+        core->RunOnMainThread([this, self, result]() {
+            if (webViewDelegate != nullptr && uiWebView != nullptr)
+            {
+                String jsResult = WStringToString(result->Data());
+                webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
+            }
+        });
+#endif
     }).then([self](task<void> t) {
         try {
             t.get();
@@ -508,7 +581,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     rect += coordSystem->GetPhysicalDrawOffset();
 
     // 2. map physical to window
+#if defined(__DAVAENGINE_COREV2__)
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
     const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
     rect.x /= scaleFactor;
     rect.y /= scaleFactor;
     rect.dx /= scaleFactor;
@@ -541,6 +618,15 @@ void PrivateWebViewWinUAP::RenderToTexture()
             RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], width, height));
             if (sprite.Valid())
             {
+#if defined(__DAVAENGINE_COREV2__)
+                window->GetEngine()->RunAsyncOnMainThread([this, self, sprite]()
+                {
+                    if (uiWebView != nullptr)
+                    {
+                        uiWebView->SetSprite(sprite.Get(), 0);
+                    }
+                });
+#else
                 core->RunOnMainThread([this, self, sprite]()
                 {
                     if (uiWebView != nullptr)
@@ -548,6 +634,7 @@ void PrivateWebViewWinUAP::RenderToTexture()
                         uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
+#endif
             }
         });
     }).then([this, self](task<void> t) {
@@ -586,4 +673,3 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
 } // namespace DAVA
 
 #endif // defined(__DAVAENGINE_WIN_UAP__)
-#endif // !__DAVAENGINE_COREV2__
