@@ -1,5 +1,4 @@
-#ifndef __QT_UTILS_H__
-#define __QT_UTILS_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include <QString>
@@ -16,8 +15,6 @@ void ShowActionWithText(QToolBar* toolbar, QAction* action, bool showText);
 
 DAVA::WideString SizeInBytesToWideString(DAVA::float32 size);
 DAVA::String SizeInBytesToString(DAVA::float32 size);
-
-DAVA::Image* CreateTopLevelImage(const DAVA::FilePath& imagePathname);
 
 bool IsKeyModificatorPressed(DAVA::Key key);
 bool IsKeyModificatorsPressed();
@@ -44,5 +41,4 @@ void SaveSpriteToFile(DAVA::Sprite* sprite, const DAVA::FilePath& path);
 void SaveTextureToFile(DAVA::Texture* texture, const DAVA::FilePath& path);
 void SaveImageToFile(DAVA::Image* image, const DAVA::FilePath& path);
 
-
-#endif // __QT_UTILS_H__
+DAVA::Texture* CreateSingleMipTexture(const DAVA::FilePath& pngPathname);

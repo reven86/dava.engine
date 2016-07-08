@@ -62,6 +62,8 @@
 #include "Classes/Constants.h"
 #include "Classes/StringConstants.h"
 
+#include "Render/2D/Sprite.h"
+
 #include "TextureCompression/TextureConverter.h"
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
@@ -90,6 +92,8 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QShortcut>
+
+#include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 
 QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     : QMainWindow(parent)
@@ -195,15 +199,12 @@ QtMainWindow::~QtMainWindow()
     TextureBrowser::Instance()->Release();
     MaterialEditor::Instance()->Release();
 
-    delete ui;
-    ui = nullptr;
-
     ProjectManager::Instance()->Release();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
 {
-    return ui;
+    return ui.get();
 }
 
 SceneTabWidget* QtMainWindow::GetSceneWidget()
@@ -403,7 +404,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         if (!allScenesTextures.empty())
         {
             int progress = 0;
-            WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
+            WaitStart("Reloading textures...", "", 0, static_cast<int>(allScenesTextures.size()));
 
             DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
             DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
@@ -432,6 +433,9 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
                 m->InvalidateTextureBindings();
             }
         }
+
+        DAVA::Sprite::ReloadSprites(gpu);
+        QtMainWindow::Instance()->RestartParticleEffects();
     }
     LoadGPUFormat();
 }
@@ -737,7 +741,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->menuRecentProjects, &QMenu::triggered, this, &QtMainWindow::OnRecentProjectsTriggered);
 
     // export
-    QObject::connect(ui->menuExport, &QMenu::triggered, this, &QtMainWindow::ExportMenuTriggered);
+    QObject::connect(ui->actionExport, &QAction::triggered, this, &QtMainWindow::ExportTriggered);
     ui->actionExportPVRIOS->setData(DAVA::GPU_POWERVR_IOS);
     ui->actionExportPVRAndroid->setData(DAVA::GPU_POWERVR_ANDROID);
     ui->actionExportTegra->setData(DAVA::GPU_TEGRA);
@@ -1067,7 +1071,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
     ui->actionHangingObjects->setEnabled(enable);
 
-    ui->menuExport->setEnabled(enable);
+    ui->actionExport->setEnabled(enable);
     ui->menuEdit->setEnabled(enable);
     ui->menuCreateNode->setEnabled(enable);
     ui->menuScene->setEnabled(enable);
@@ -1343,22 +1347,37 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request* closeRequest)
     closeRequest->Accept();
 }
 
-void QtMainWindow::ExportMenuTriggered(QAction* exportAsAction)
+void QtMainWindow::ExportTriggered()
 {
-    SceneEditor2* scene = GetCurrentScene();
-    if (scene == nullptr || !SaveTilemask(false))
+    ExportSceneDialog dlg;
+    dlg.exec();
+    if (dlg.result() == QDialog::Accepted)
     {
-        return;
+        SceneEditor2* scene = GetCurrentScene();
+        if (scene == nullptr || !SaveTilemask(false))
+        {
+            return;
+        }
+
+        WaitStart("Export", "Please wait...");
+
+        const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
+        DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
+
+        SceneExporter::Params exportingParams;
+        exportingParams.dataFolder = dlg.GetDataFolder();
+        exportingParams.dataSourceFolder = dataSourceFolder;
+        exportingParams.exportForGPUs = dlg.GetGPUs();
+        exportingParams.quality = dlg.GetQuality();
+        exportingParams.optimizeOnExport = dlg.GetOptimizeOnExport();
+        exportingParams.useHDTextures = dlg.GetUseHDTextures();
+
+        scene->Export(exportingParams);
+
+        WaitStop();
+
+        OnReloadTextures(); // need reload textures because they may be re-compressed
     }
-
-    WaitStart("Export", "Please wait...");
-
-    DAVA::eGPUFamily gpuFamily = static_cast<DAVA::eGPUFamily>(exportAsAction->data().toInt());
-    scene->Export(gpuFamily); // errors will be displayed by logger output
-
-    WaitStop();
-
-    OnReloadTextures(); // need reload textures because they may be re-compressed
 }
 
 void QtMainWindow::OnImportSpeedTreeXML()
@@ -2795,7 +2814,7 @@ void QtMainWindow::UpdateConflictingActionsState(bool enable)
 {
     ui->menuTexturesForGPU->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
-    ui->menuExport->setEnabled(enable);
+    ui->actionExport->setEnabled(enable);
     ui->actionOnlyOriginalTextures->setEnabled(enable);
     ui->actionWithCompressedTextures->setEnabled(enable);
 }

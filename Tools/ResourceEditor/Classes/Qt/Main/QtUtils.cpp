@@ -64,20 +64,6 @@ WideString SizeInBytesToWideString(float32 size)
     return StringToWString(SizeInBytesToString(size));
 }
 
-Image* CreateTopLevelImage(const FilePath& imagePathname)
-{
-    Image* image = NULL;
-    Vector<Image*> imageSet;
-    ImageSystem::Load(imagePathname, imageSet);
-    if (0 != imageSet.size())
-    {
-        image = SafeRetain(imageSet[0]);
-        for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-    }
-
-    return image;
-}
-
 bool IsKeyModificatorPressed(Key key)
 {
     return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
@@ -142,4 +128,10 @@ void SaveTextureToFile(Texture* texture, const FilePath& path)
 void SaveImageToFile(Image* image, const FilePath& path)
 {
     ImageSystem::Save(path, image);
+}
+
+DAVA::Texture* CreateSingleMipTexture(const DAVA::FilePath& imagePath)
+{
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(imagePath));
+    return Texture::CreateFromData(image, false);
 }

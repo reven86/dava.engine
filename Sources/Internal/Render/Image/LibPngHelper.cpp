@@ -62,37 +62,26 @@ void abort_(const char* s, ...)
 }
 
 LibPngHelper::LibPngHelper()
-    : ImageFormatInterface(
-      IMAGE_FORMAT_PNG, // image format type
-      "PNG", // image format name
-      { ".png" }, // image format extension
-      { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 }) // supported pixel formats
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PNG, "PNG", { ".png" }, { FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16 })
 {
 }
 
-bool LibPngHelper::CanProcessFile(const ScopedPtr<File>& infile) const
+bool LibPngHelper::CanProcessFileInternal(File* infile) const
 {
-    if (infile)
-    {
-        unsigned char sig[8];
-        infile->Read(sig, 8);
-        bool retValue = (0 != png_check_sig(sig, 8));
-        infile->Seek(0, File::SEEK_FROM_START);
-        return retValue;
-    }
-    else
-    {
-        return false;
-    }
+    unsigned char sig[8];
+    infile->Read(sig, 8);
+    bool retValue = (0 != png_check_sig(sig, 8));
+    return retValue;
 }
 
-eErrorCode LibPngHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPngHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
 
     if (innerRetCode == eErrorCode::SUCCESS)
     {
+        image->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(image);
     }
     else
@@ -258,7 +247,7 @@ eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(File* infile) const
 {
     if (!infile)
     {
@@ -394,7 +383,7 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(const ScopedPtr<File>& infile) 
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    info.dataSize = Image::GetSizeInBytes(width, height, info.format);
     info.mipmapsCount = 1;
     info.faceCount = 1;
     return info;
