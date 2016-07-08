@@ -1061,9 +1061,6 @@ void CommandBufferDX9_t::Execute()
 
         case DX9__DRAW_INSTANCED_PRIMITIVE:
         {
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
-
             D3DPRIMITIVETYPE primType = D3DPRIMITIVETYPE(arg[0]);
             uint32 instCount = uint32(arg[1]);
             uint32 primCount = uint32(arg[2]);
@@ -1092,9 +1089,6 @@ void CommandBufferDX9_t::Execute()
                 break;
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
-
             c += 3;
         }
         break;
@@ -1109,14 +1103,8 @@ void CommandBufferDX9_t::Execute()
             uint32 startIndex = uint32(arg[5]);
             uint32 baseinst = uint32(arg[6]);
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::BeginQuery(cur_query_buf, cur_query_i);
-
             PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, unsigned(arg[1]));
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferDX9::EndQuery(cur_query_buf, cur_query_i);
 
             StatSet::IncStat(stat_DIP, 1);
             switch (type)

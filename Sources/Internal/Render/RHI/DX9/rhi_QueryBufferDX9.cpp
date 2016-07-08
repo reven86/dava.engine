@@ -259,7 +259,7 @@ void ReleaseQueryPool()
     {
         cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
     }
-    ExecDX9(cmd.data(), cmd.size());
+    ExecDX9(cmd.data(), cmd.size(), false);
 
     QueryDX9Pool.clear();
 }

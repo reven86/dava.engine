@@ -1283,11 +1283,11 @@ void CommandBufferGLES2_t::Execute()
         case GLES2__SET_QUERY_INDEX:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            cur_query_i = (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex;
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferGLES2::SetQueryIndex(cur_query_buf, (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex);
             #else
             if (cur_query_buf != InvalidHandle)
                 QueryBufferGLES2::SetQueryIndex(cur_query_buf, uint32(arg[0]));
-
             c += 1;
             #endif
         }
@@ -1686,9 +1686,6 @@ void CommandBufferGLES2_t::Execute()
                     ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             if (vdecl_pending)
             {
                 PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
@@ -1769,9 +1766,6 @@ void CommandBufferGLES2_t::Execute()
                 vdecl_pending = false;
                 cur_base_vert = firstVertex;
             }
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
 
             int i_sz = GL_UNSIGNED_SHORT;
             int i_off = startIndex * sizeof(uint16);
