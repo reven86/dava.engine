@@ -3132,7 +3132,6 @@ void QtMainWindow::OnGenerateHeightDelta()
     HeightDeltaTool* w = new HeightDeltaTool(this);
     w->setWindowFlags(Qt::Window);
     w->setAttribute(Qt::WA_DeleteOnClose);
-    w->SetOutputTemplate("h_", QString());
 
     w->show();
 }
