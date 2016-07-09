@@ -4,11 +4,6 @@ MEMORY_SANITIZE := false
 APP_STL := c++_shared
 APP_CPPFLAGS := -frtti -fexceptions
 
-# TODO: fix this warning suppression with libc++_abi on x86
-APP_LDFLAGS += -Wl,--no-warn-shared-textrel
-
-#APP_CFLAGS = -marm -g
-
 #debug
 #APP_CFLAGS += -DNDK_DEBUG=1 -O0 -g
 #APP_CFLAGS += -D__DAVAENGINE_DEBUG__
@@ -30,7 +25,8 @@ APP_LDFLAGS  += -fsanitize=address
 #LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 
-APP_ABI := x86 armeabi-v7a
+APP_ABI += armeabi-v7a
+APP_ABI += x86
 APP_PLATFORM := android-14
 
 # we have to use last ndk10e with clang3.6, clang - point to clang3.6 in ndk10e

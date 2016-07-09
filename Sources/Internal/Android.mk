@@ -16,62 +16,62 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := xml_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libxml_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libxml_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := png_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libpng_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libpng_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := freetype_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := yaml_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libyaml_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libyaml_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := mongodb_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := lua_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/liblua_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/liblua_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := dxt_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libdxt_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libdxt_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := jpeg_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := curl_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcurl_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libcurl_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libssl_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libssl_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := crypto_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := zip_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libzip_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -81,17 +81,17 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := unibreak_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := uv_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libuv_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := webp_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libwebp_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -112,15 +112,10 @@ DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 
-# starting from ndk10b x86 support NEON too! Add latter
-ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 DV_LOCAL_ARM_NEON := true
 DV_LOCAL_ARM_MODE := arm
 DV_LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 DV_LOCAL_CFLAGS += -DUSE_NEON
-else
-DV_LOCAL_ARM_NEON := false
-endif
 
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
@@ -264,7 +259,7 @@ DV_LOCAL_STATIC_LIBRARIES += webp_android
 DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 DV_LOCAL_STATIC_LIBRARIES += sqlite3_android
 
-DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic -landroid -lz
 
 ifeq ($(APP_PLATFORM), android-14)
 	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
