@@ -4,4 +4,5 @@ To build curl with crypto & ssl you need to follow these steps:
 2. Copy curl-compile-scripts-android directory to that directory
 3. Run curl-compile-scripts-android directory/build_Android.sh
 
-Tested on curl 7.34. 
+Tested on curl 7.34 & openssl 1.0.1l. You probably need to modify mk files when these libs will be updated
+Original script was taken from https://github.com/gcesarmza/curl-android-ios
