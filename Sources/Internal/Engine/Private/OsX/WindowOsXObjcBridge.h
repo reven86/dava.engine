@@ -28,6 +28,7 @@ namespace Private
 //  - posts events to dispatcher
 //
 // WindowOsXObjcBridge is friend of WindowOsX
+class WindowInteropService;
 struct WindowOsXObjcBridge final
 {
     WindowOsXObjcBridge(WindowOsX* w);
@@ -60,6 +61,7 @@ struct WindowOsXObjcBridge final
     //////////////////////////////////////////////////////////////////////////
 
     WindowOsX* window = nullptr;
+    std::unique_ptr<WindowInteropService> interopService;
 
     NSWindow* nswindow = nullptr;
     OpenGLViewOsX* openGLView = nullptr;

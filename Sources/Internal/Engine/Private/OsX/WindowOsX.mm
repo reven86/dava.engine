@@ -42,6 +42,11 @@ void* WindowOsX::GetHandle() const
     return bridge->openGLView;
 }
 
+WindowInteropService* WindowOsX::GetInteropService() const
+{
+    return bridge->interopService.get();
+}
+
 bool WindowOsX::Create(float32 width, float32 height)
 {
     NSSize screenSize = [[NSScreen mainScreen] frame].size;

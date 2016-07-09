@@ -19,6 +19,7 @@ namespace DAVA
 {
 namespace Private
 {
+class WindowInteropService;
 class WindowOsX final
 {
 public:
@@ -28,6 +29,8 @@ public:
     void* GetHandle() const;
     Dispatcher* GetDispatcher() const;
     Window* GetWindow() const;
+
+    WindowInteropService* GetInteropService() const;
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
