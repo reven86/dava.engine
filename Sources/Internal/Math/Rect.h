@@ -1,7 +1,7 @@
 #ifndef __DAVAENGINE_RECT_H__
 #define __DAVAENGINE_RECT_H__
 
-#include <math.h>
+#include <cmath>
 
 #include "Vector.h"
 

@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_MATH_DEFINES_H__
 #define __DAVAENGINE_MATH_DEFINES_H__
 
+#include <cmath>
 #include "Base/BaseTypes.h"
 
 /*
@@ -11,8 +12,8 @@
 namespace DAVA
 {
     
-#define FLOAT_EQUAL(f1, f2) (fabsf(f1 - f2) < DAVA::EPSILON)
-#define FLOAT_EQUAL_EPS(f1, f2, EPS) (fabsf(f1 - f2) < EPS)
+#define FLOAT_EQUAL(f1, f2) (std::fabs(f1 - f2) < DAVA::EPSILON)
+#define FLOAT_EQUAL_EPS(f1, f2, EPS) (std::fabs(f1 - f2) < EPS)
 }
 
 #endif // __DAVAENGINE_MATH_DEFINES_H__

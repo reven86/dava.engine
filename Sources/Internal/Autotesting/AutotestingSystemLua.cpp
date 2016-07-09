@@ -307,7 +307,7 @@ bool AutotestingSystemLua::IsPhoneScreen()
 {
     float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
     float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
-    return sqrtf(xInch * xInch + yInch * yInch) <= 6.5f;
+    return std::sqrt(xInch * xInch + yInch * yInch) <= 6.5f;
 }
 
 String AutotestingSystemLua::GetTestParameter(const String& parameter)

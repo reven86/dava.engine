@@ -84,15 +84,15 @@ const Vector2& UIJoypad::GetDigitalPosition()
     }
 
     Vector2 v = analogVector;
-    if (fabs(v.x) > fabs(v.y))
+    if (std::fabs(v.x) > std::fabs(v.y))
     {
-        float32 f = fabs(1.f / v.x);
+        float32 f = std::fabs(1.f / v.x);
         v.y *= f;
         v.x *= f;
     }
     else
     {
-        float32 f = fabs(1.f / v.y);
+        float32 f = std::fabs(1.f / v.y);
         v.x *= f;
         v.y *= f;
     }
@@ -122,8 +122,8 @@ float32 UIJoypad::GetStickAngle() const
 {
     const Vector2& v = currentPos;
 
-    const float32 len = sqrtf(v.x * v.x + v.y * v.y);
-    float32 ang = asinf(v.x / len);
+    const float32 len = std::sqrt(v.x * v.x + v.y * v.y);
+    float32 ang = std::asin(v.x / len);
 
     if (v.y > 0)
     {

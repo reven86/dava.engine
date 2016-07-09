@@ -104,8 +104,8 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
                                              -textBlock->cacheOx + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(xOffset))),
                                              -textBlock->cacheOy + int32(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(yOffset))),
-                                             int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(w)))),
-                                             int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(lineSize)))),
+                                             int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(w)))),
+                                             int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(lineSize)))),
                                              drawText,
                                              true);
     }

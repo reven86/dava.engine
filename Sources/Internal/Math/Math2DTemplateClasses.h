@@ -1,7 +1,7 @@
 #ifndef __DAVAENGINE_MATH2DBASE_H__
 #define __DAVAENGINE_MATH2DBASE_H__
 
-#include <math.h>
+#include <cmath>
 #include "Math/Matrix2.h"
 #include "Math/Matrix3.h"
 

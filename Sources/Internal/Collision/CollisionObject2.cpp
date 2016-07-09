@@ -33,7 +33,7 @@ void CollisionObject2::SetPolygon(Polygon2* _basePolygon)
     polygon = *_basePolygon;
     basePolygon->CalculateCenterPoint(basePolygonCenter);
     circle.center = basePolygonCenter;
-    circle.radius = sqrtf(basePolygon->CalculateSquareRadius(basePolygonCenter));
+    circle.radius = std::sqrt(basePolygon->CalculateSquareRadius(basePolygonCenter));
 
     forceUpdate = true;
 }
@@ -56,8 +56,8 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
     
     if (type == TYPE_POLYGON)
     {
-        float32 sinA = sinf(angle);
-        float32 cosA = cosf(angle);
+        float32 sinA = std::sin(angle);
+        float32 cosA = std::cos(angle);
         for (int k = 0; k < basePolygon->pointCount; ++k)
         {
             Vector2 * v = &polygon.points[k];
@@ -133,8 +133,8 @@ void CollisionObject2::Update(const Sprite::DrawState& state /*const Vector2 & _
 
     bbox.Empty();
 
-    float32 sinA = sinf(angle);
-    float32 cosA = cosf(angle);
+    float32 sinA = std::sin(angle);
+    float32 cosA = std::cos(angle);
 
     if (type == TYPE_POLYGON)
     {
@@ -153,7 +153,7 @@ void CollisionObject2::Update(const Sprite::DrawState& state /*const Vector2 & _
 
         Vector2 c;
         polygon.CalculateCenterPoint(c);
-        circle.radius = sqrtf(polygon.CalculateSquareRadius(c));
+        circle.radius = std::sqrt(polygon.CalculateSquareRadius(c));
         circle.center = c;
     }
     else

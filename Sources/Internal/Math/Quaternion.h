@@ -117,7 +117,7 @@ inline void Quaternion::Construct(const Vector3& source, const Vector3& dest, co
     }
     else
     {
-        float32 s = sqrtf((1 + d) * 2);
+        float32 s = std::sqrt((1 + d) * 2);
         float32 invs = 1 / s;
 
         Vector3 c = v0.CrossProduct(v1);
@@ -167,7 +167,7 @@ inline void Quaternion::Set(float32 _x, float32 _y, float32 _z, float32 _w)
 
 inline float32 Quaternion::Lenght() const
 {
-    return sqrtf(x * x + y * y + z * z + w * w);
+    return std::sqrt(x * x + y * y + z * z + w * w);
 }
 
 inline void Quaternion::Normalize()
@@ -339,10 +339,10 @@ inline void Quaternion::Slerp(const Quaternion& q1, const Quaternion& q2, float3
     if ((1.0f - cosom) > 0.05f)
     {
         // ÒÚ‡Ì‰‡ÚÌ˚È ÒÎÛ˜‡È (slerp)
-        omega = acosf(cosom);
-        sinom = sinf(omega);
-        scale0 = sinf((1.0f - t) * omega) / sinom;
-        scale1 = sinf(t * omega) / sinom;
+        omega = std::acos(cosom);
+        sinom = std::sin(omega);
+        scale0 = std::sin((1.0f - t) * omega) / sinom;
+        scale1 = std::sin(t * omega) / sinom;
     }
     else
     {
@@ -363,8 +363,8 @@ inline void Quaternion::Construct(const Vector3& axis, float32 angle)
     axisR.Normalize();
 
     float32 halfAngle = 0.5f * angle;
-    float32 sin = sinf(halfAngle);
-    w = cosf(halfAngle);
+    float32 sin = std::sin(halfAngle);
+    w = std::cos(halfAngle);
     x = sin * axisR.x;
     y = sin * axisR.y;
     z = sin * axisR.z;
@@ -442,7 +442,7 @@ inline void Quaternion::Construct(const Matrix4& matrix)
 
     if (tr > 0.0f)
     {
-        s = sqrtf(tr + 1.0f);
+        s = std::sqrt(tr + 1.0f);
         w = s / 2.0f;
         s = 0.5f / s;
         x = (m[1][2] - m[2][1]) * s;
@@ -459,7 +459,7 @@ inline void Quaternion::Construct(const Matrix4& matrix)
         j = nxt[i];
         k = nxt[j];
 
-        s = sqrtf((m[i][i] - (m[j][j] + m[k][k])) + 1.0f);
+        s = std::sqrt((m[i][i] - (m[j][j] + m[k][k])) + 1.0f);
 
         q[i] = s * 0.5f;
 
@@ -479,15 +479,15 @@ inline void Quaternion::Construct(const Matrix4& matrix)
 
 inline void Quaternion::ConvertToAxisAngle(Vector3& axis, float32& angle) const
 {
-    float vl = sqrtf(x * x + y * y + z * z);
+    float vl = std::sqrt(x * x + y * y + z * z);
     if (vl > 0.01f)
     {
         float ivl = 1.0f / vl;
         axis = Vector3(x * ivl, y * ivl, z * ivl);
         if (w < 0)
-            angle = 2.0f * atan2f(-vl, -w); //-PI,0
+            angle = 2.0f * std::atan2(-vl, -w); //-PI,0
         else
-            angle = 2.0f * atan2f(vl, w); //0,PI
+            angle = 2.0f * std::atan2(vl, w); //0,PI
     }
     else
     {

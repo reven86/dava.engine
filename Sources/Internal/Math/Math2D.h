@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_MATH2D_H__
 #define __DAVAENGINE_MATH2D_H__
 
+#include <cmath>
+
 //!
 //! All 2D & 3D math represent vectors & points (2D eq to vector) as vector array
 //! for example
@@ -13,8 +15,8 @@
 namespace DAVA
 {
 
-#define FLOAT_EQUAL(f1, f2) (fabsf(f1 - f2) < DAVA::EPSILON)
-#define FLOAT_EQUAL_EPS(f1, f2, EPS) (fabsf(f1 - f2) < EPS)
+#define FLOAT_EQUAL(f1, f2) (std::fabs(f1 - f2) < DAVA::EPSILON)
+#define FLOAT_EQUAL_EPS(f1, f2, EPS) (std::fabs(f1 - f2) < EPS)
 
 inline float32 FloatClamp(float32 min, float32 max, float32 val);
 

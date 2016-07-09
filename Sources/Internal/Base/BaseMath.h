@@ -2,7 +2,7 @@
 #define __DAVAENGINE_MATHBASE_H__
 
 
-#include <math.h>
+#include <cmath>
 
 /**
 	\defgroup math Math
@@ -26,7 +26,6 @@
 #include "Math/Polygon2.h"
 #include "Math/AABBox2.h"
 #include "Math/AABBox3.h"
-#include "Math/OOBBox.h"
 
 #include "Math/Spline.h"
 #include "Math/BezierSpline.h"

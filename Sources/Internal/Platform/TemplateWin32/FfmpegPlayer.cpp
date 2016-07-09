@@ -450,7 +450,7 @@ void FfmpegPlayer::UpdateVideo(DecodedFrameBuffer* frameBuffer)
     /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
     float64 syncThreshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
-    if (fabs(diff) < AV_NOSYNC_THRESHOLD)
+    if (std::fabs(diff) < AV_NOSYNC_THRESHOLD)
     {
         if (diff <= -syncThreshold)
         {

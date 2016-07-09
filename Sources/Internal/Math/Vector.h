@@ -1,9 +1,9 @@
 #ifndef __DAVAENGINE_VECTOR_H__
 #define __DAVAENGINE_VECTOR_H__
 
+#include <cmath>
 #include "Base/BaseTypes.h"
 #include "Math/MathConstants.h"
-#include <math.h>
 
 namespace DAVA
 {
@@ -166,11 +166,11 @@ public:
 
     inline float32 Yaw() const
     {
-        return atan2f(x, y);
+        return std::atan2(x, y);
     }
     inline float32 Pitch() const
     {
-        return -atan2f(z, sqrtf(x * x + y * y));
+        return -std::atan2(z, std::sqrt(x * x + y * y));
     }
 
     inline bool IsZero() const
@@ -449,7 +449,7 @@ inline float32 Vector2::SquareLength() const
 
 inline float32 Vector2::Length() const
 {
-    return sqrtf(SquareLength());
+    return std::sqrt(SquareLength());
 }
 
 inline void Vector2::Normalize()
@@ -471,7 +471,7 @@ inline float32 Vector2::CrossProduct(const Vector2& b) const
 
 inline float32 Vector2::Angle() const
 {
-    float angle = (fabsf(x) > fabsf(y)) ? acosf(fabsf(x)) : asinf(fabsf(y));
+    float angle = (std::fabs(x) > std::fabs(y)) ? std::acos(std::fabs(x)) : std::asin(std::fabs(y));
 
     if (x >= 0 && y >= 0)
         return angle; // I
@@ -675,7 +675,7 @@ inline float32 Vector3::SquareLength() const
 }
 inline float32 Vector3::Length() const
 {
-    return sqrtf(SquareLength());
+    return std::sqrt(SquareLength());
 }
 inline float32 Vector3::Normalize()
 {
@@ -865,7 +865,7 @@ inline float32 Distance(const Vector3& v1, const Vector3& v2)
     float32 dx = v1.x - v2.x;
     float32 dy = v1.y - v2.y;
     float32 dz = v1.z - v2.z;
-    return sqrtf(dx * dx + dy * dy + dz * dz);
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 inline Vector3 PerpendicularVector(const Vector3& normal)
@@ -989,7 +989,7 @@ inline float32 Vector4::SquareLength()
 }
 inline float32 Vector4::Length()
 {
-    return sqrtf(SquareLength());
+    return std::sqrt(SquareLength());
 }
 inline void Vector4::Normalize()
 {
