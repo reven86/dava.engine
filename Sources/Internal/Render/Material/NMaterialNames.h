@@ -187,6 +187,8 @@ public:
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
 
+    static const FastName FLAG_TEST_OCCLUSION;
+
     static bool IsRuntimeFlag(const FastName& flag);
 };
 

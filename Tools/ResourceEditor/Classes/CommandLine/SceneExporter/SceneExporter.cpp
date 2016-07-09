@@ -418,6 +418,7 @@ bool SceneExporter::ExportTextureFile(const FilePath& descriptorPathname, const 
 bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 {
     DAVA::Map<DAVA::eGPUFamily, bool> exportFailed;
+    bool shouldSplitHDTextures = (exportingParams.useHDTextures && descriptor.dataSettings.GetGenerateMipMaps());
 
     { // compress images
 
@@ -429,7 +430,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
             if (gpu == DAVA::eGPUFamily::GPU_ORIGIN)
             {
                 DAVA::ImageFormat targetFormat = static_cast<DAVA::ImageFormat>(descriptor.compression[gpu].imageFormat);
-                if (exportingParams.useHDTextures && (targetFormat != DAVA::ImageFormat::IMAGE_FORMAT_DDS && targetFormat != IMAGE_FORMAT_PVR))
+                if (shouldSplitHDTextures && (targetFormat != DAVA::ImageFormat::IMAGE_FORMAT_DDS && targetFormat != IMAGE_FORMAT_PVR))
                 {
                     Logger::Error("HD texture will not be created for exported %s for GPU 'origin'", descriptor.pathname.GetStringValue().c_str());
                     exportFailed[gpu] = true;
@@ -478,7 +479,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
     }
 
     //modify descriptors in data
-    descriptor.dataSettings.SetSeparateHDTextures(exportingParams.useHDTextures);
+    descriptor.dataSettings.SetSeparateHDTextures(shouldSplitHDTextures);
 
     { // copy or separate images
         for (DAVA::eGPUFamily gpu : exportingParams.exportForGPUs)
@@ -511,7 +512,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
             }
             else if (DAVA::GPUFamilyDescriptor::IsGPUForDevice(gpu))
             {
-                if (exportingParams.useHDTextures)
+                if (shouldSplitHDTextures)
                 {
                     copied = SplitCompressedFile(descriptor, gpu);
                 }

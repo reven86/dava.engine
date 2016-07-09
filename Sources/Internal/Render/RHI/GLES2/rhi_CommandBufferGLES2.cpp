@@ -2388,6 +2388,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GEN_BUFFERS:
         {
             GL_CALL(glGenBuffers(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;
@@ -2437,6 +2438,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GEN_TEXTURES:
         {
             GL_CALL(glGenTextures(GLsizei(arg[0]), reinterpret_cast<GLuint*>(arg[1])));
+            DVASSERT(*(reinterpret_cast<GLuint*>(arg[1])));
             cmd->status = err;
         }
         break;

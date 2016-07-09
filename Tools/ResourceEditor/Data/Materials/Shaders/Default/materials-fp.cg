@@ -204,8 +204,13 @@ FPROG_BEGIN
 				min10float3 flowSample1 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x).rgb;
 				min10float3 flowSample2 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y).rgb;				
 				min10float3 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);				
-			#else
-				min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
+			#else				
+                #if TEST_OCCLUSION
+                    min10float4 preColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
+                    min10float3 textureColor0 = preColor.rgb*preColor.a;
+                #else
+                    min10float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
+                #endif
 				
 			#endif
         #endif
