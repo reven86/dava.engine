@@ -9,8 +9,8 @@
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
+#include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/OsX/WindowOsX.h"
 #include "Engine/Private/OsX/OpenGLViewOsX.h"
 #include "Engine/Private/OsX/OsXWindowDelegate.h"
@@ -52,8 +52,8 @@ bool WindowOsXObjcBridge::DoCreateWindow(float32 x, float32 y, float32 width, fl
         viewRect = [openGLView frame];
         float32 scale = [nswindow backingScaleFactor];
 
-        window->window->PostWindowCreated(window, viewRect.size.width, viewRect.size.height, scale, scale);
-        window->window->PostVisibilityChanged(true);
+        window->GetWindow()->PostWindowCreated(window, viewRect.size.width, viewRect.size.height, scale, scale);
+        window->GetWindow()->PostVisibilityChanged(true);
     }
 
     [nswindow makeKeyAndOrderFront:nil];
@@ -85,7 +85,7 @@ void WindowOsXObjcBridge::ApplicationDidHideUnhide(bool hidden)
 void WindowOsXObjcBridge::WindowDidMiniaturize()
 {
     isMiniaturized = true;
-    window->window->PostVisibilityChanged(false);
+    window->GetWindow()->PostVisibilityChanged(false);
 }
 
 void WindowOsXObjcBridge::WindowDidDeminiaturize()
@@ -97,17 +97,17 @@ void WindowOsXObjcBridge::WindowDidBecomeKey()
 {
     if (isMiniaturized || isAppHidden)
     {
-        window->window->PostVisibilityChanged(true);
+        window->GetWindow()->PostVisibilityChanged(true);
     }
-    window->window->PostFocusChanged(true);
+    window->GetWindow()->PostFocusChanged(true);
 }
 
 void WindowOsXObjcBridge::WindowDidResignKey()
 {
-    window->window->PostFocusChanged(false);
+    window->GetWindow()->PostFocusChanged(false);
     if (isAppHidden)
     {
-        window->window->PostVisibilityChanged(false);
+        window->GetWindow()->PostVisibilityChanged(false);
     }
 }
 
@@ -116,7 +116,7 @@ void WindowOsXObjcBridge::WindowDidResize()
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [openGLView frame].size;
 
-    window->window->PostSizeChanged(size.width, size.height, scale, scale);
+    window->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
 }
 
 void WindowOsXObjcBridge::WindowDidChangeScreen()
@@ -130,7 +130,7 @@ bool WindowOsXObjcBridge::WindowShouldClose()
 
 void WindowOsXObjcBridge::WindowWillClose()
 {
-    window->window->PostWindowDestroyed();
+    window->GetWindow()->PostWindowDestroyed();
 
     [nswindow setContentView:nil];
     [nswindow setDelegate:nil];
@@ -167,7 +167,7 @@ void WindowOsXObjcBridge::MouseClick(NSEvent* theEvent)
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
-    window->dispatcher->PostEvent(e);
+    window->GetDispatcher()->PostEvent(e);
 }
 
 void WindowOsXObjcBridge::MouseMove(NSEvent* theEvent)
@@ -181,7 +181,7 @@ void WindowOsXObjcBridge::MouseMove(NSEvent* theEvent)
     NSPoint pt = theEvent.locationInWindow;
     e.mmoveEvent.x = pt.x;
     e.mmoveEvent.y = sz.height - pt.y;
-    window->dispatcher->PostEvent(e);
+    window->GetDispatcher()->PostEvent(e);
 }
 
 void WindowOsXObjcBridge::MouseWheel(NSEvent* theEvent)
@@ -220,7 +220,7 @@ void WindowOsXObjcBridge::MouseWheel(NSEvent* theEvent)
         e.mwheelEvent.y = deltaY * scrollK;
     }
 
-    window->dispatcher->PostEvent(e);
+    window->GetDispatcher()->PostEvent(e);
 }
 
 void WindowOsXObjcBridge::KeyEvent(NSEvent* theEvent)
@@ -242,7 +242,7 @@ void WindowOsXObjcBridge::KeyEvent(NSEvent* theEvent)
         for (NSUInteger i = 0; i < n; ++i)
         {
             e.keyEvent.key = [chars characterAtIndex:i];
-            window->dispatcher->PostEvent(e);
+            window->GetDispatcher()->PostEvent(e);
         }
     }
 }

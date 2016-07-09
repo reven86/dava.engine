@@ -9,7 +9,6 @@
 #include <AppKit/NSScreen.h>
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/OsX/CoreOsX.h"
 #include "Engine/Private/OsX/WindowOsXObjcBridge.h"
@@ -22,10 +21,10 @@ namespace DAVA
 {
 namespace Private
 {
-WindowOsX::WindowOsX(EngineBackend* engine_, WindowBackend* window_)
-    : engine(engine_)
+WindowOsX::WindowOsX(EngineBackend* e, Window* w)
+    : engine(e)
     , dispatcher(engine->GetDispatcher())
-    , window(window_)
+    , window(w)
     , platformDispatcher(MakeFunction(this, &WindowOsX::EventHandler))
     , bridge(new WindowOsXObjcBridge(this))
 {

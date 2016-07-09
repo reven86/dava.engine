@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
@@ -22,10 +22,12 @@ namespace Private
 class WindowOsX final
 {
 public:
-    WindowOsX(EngineBackend* engine_, WindowBackend* window_);
+    WindowOsX(EngineBackend* e, Window* w);
     ~WindowOsX();
 
     void* GetHandle() const;
+    Dispatcher* GetDispatcher() const;
+    Window* GetWindow() const;
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
@@ -42,7 +44,7 @@ private:
 private:
     EngineBackend* engine = nullptr;
     Dispatcher* dispatcher = nullptr;
-    WindowBackend* window = nullptr;
+    Window* window = nullptr;
 
     PlatformDispatcher platformDispatcher;
 
@@ -55,6 +57,16 @@ private:
     friend class CoreOsX;
     friend struct WindowOsXObjcBridge;
 };
+
+inline Dispatcher* WindowOsX::GetDispatcher() const
+{
+    return dispatcher;
+}
+
+inline Window* WindowOsX::GetWindow() const
+{
+    return window;
+}
 
 } // namespace Private
 } // namespace DAVA

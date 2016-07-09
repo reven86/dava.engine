@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
@@ -36,7 +36,7 @@ public:
 private:
     int OnFrame();
 
-    WindowOsX* CreateNativeWindow(WindowBackend* w, float32 width, float32 height);
+    WindowOsX* CreateNativeWindow(Window* w, float32 width, float32 height);
 
 private:
     EngineBackend* engineBackend = nullptr;
