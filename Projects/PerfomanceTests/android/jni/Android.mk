@@ -38,12 +38,6 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid
-
-ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
-LOCAL_ARM_NEON := true
-LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
-endif
 LOCAL_CPPFLAGS += -std=c++1y
 
 # set included libraries
