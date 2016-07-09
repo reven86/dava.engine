@@ -1,5 +1,5 @@
-APP_STL := gnustl_shared
-APP_GNUSTL_FORCE_CPP_FEATURES := rtti exceptions
+APP_STL := c++_shared
+APP_CPPFLAGS := -frtti -fexceptions
 
 APP_MODULES := libicucommon_android
 
