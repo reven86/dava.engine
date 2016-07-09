@@ -1,7 +1,4 @@
-#ifndef __DAVAENGINE_UITEXTFIELDWINUAP_H_H__
-#define __DAVAENGINE_UITEXTFIELDWINUAP_H_H__
-
-#if !defined(__DAVAENGINE_COREV2__)
+#pragma once
 
 #include "Base/Platform.h"
 
@@ -74,5 +71,3 @@ private:
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // !__DAVAENGINE_COREV2__
-#endif // __DAVAENGINE_UITEXTFIELDWINUAP_H_H__

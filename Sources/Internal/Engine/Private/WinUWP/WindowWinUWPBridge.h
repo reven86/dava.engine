@@ -81,6 +81,9 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
+
+    static ::Platform::String ^ xamlWorkaroundWebViewProblems;
+    static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
 };
 
 inline void* WindowWinUWPBridge::GetHandle() const

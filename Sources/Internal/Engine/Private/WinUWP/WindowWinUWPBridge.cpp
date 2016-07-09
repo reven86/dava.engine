@@ -330,12 +330,27 @@ std::bitset<5> WindowWinUWPBridge::FillMouseButtonState(::Windows::UI::Input::Po
 
 void WindowWinUWPBridge::CreateBaseXamlUI()
 {
+    using ::Windows::UI::Xaml::Markup::XamlReader;
+    using ::Windows::UI::Xaml::ResourceDictionary;
     using namespace ::Windows::UI::Xaml::Controls;
 
     xamlCanvas = ref new Canvas;
 
     xamlSwapChainPanel = ref new SwapChainPanel;
     xamlSwapChainPanel->Children->Append(xamlCanvas);
+
+    {
+        // Universal Windows Platfrom has some problems and bugs when application works with XAML UI:
+        //  - MouseDevice::MouseMoved events are lost on Surface devices
+        //  - exception is thrown when inserting some text into programmatically created TextBox
+        // Solution to resolve these problems is to create invisible dummy WebView and TextBox controls
+        // from XAML sheet and add them to control hierarchy
+        WebView ^ dummyWebView = static_cast<WebView ^>(XamlReader::Load(xamlWorkaroundWebViewProblems));
+        TextBox ^ dummyTextBox = static_cast<TextBox ^>(XamlReader::Load(xamlWorkaroundTextBoxProblems));
+
+        AddXamlControl(dummyWebView);
+        AddXamlControl(dummyTextBox);
+    }
 
     // Windows UAP doesn't allow to unfocus UI control programmatically
     // It only permits to set focus at another control
@@ -396,6 +411,20 @@ void WindowWinUWPBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
 }
+
+::Platform::String ^ WindowWinUWPBridge::xamlWorkaroundWebViewProblems = LR"(
+<WebView x:Name="dummyWebView" Visibility="Collapsed"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</WebView>
+)";
+
+::Platform::String ^ WindowWinUWPBridge::xamlWorkaroundTextBoxProblems = LR"(
+<TextBox x:Name="dummyTextBox" Visibility="Collapsed"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+</TextBox>
+)";
 
 } // namespace Private
 } // namespace DAVA

@@ -41,9 +41,6 @@ public:
     void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
     void PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
     void UnfocusXamlControl();
-    //void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
-    //void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
-    //void CaptureTextBox(Windows::UI::Xaml::Controls::Control^ text);
 
 private:
     void PlatformEventHandler(const PlatformEvent& e);
