@@ -47,6 +47,7 @@ void TextBlockSoftwareRender::Prepare()
     DrawText();
     buf = nullptr;
 
+    String addInfo;
     if (!textBlock->isMultilineEnabled)
     {
         addInfo = WStringToString(textBlock->visualText.c_str());

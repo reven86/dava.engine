@@ -34,7 +34,6 @@ private:
     int8* buf = nullptr;
     FTFont* ftFont = nullptr;
     Texture* currentTexture = nullptr;
-    String addInfo;
 
 #if defined(LOCALIZATION_DEBUG)
     Vector2 textOffsetTL;
