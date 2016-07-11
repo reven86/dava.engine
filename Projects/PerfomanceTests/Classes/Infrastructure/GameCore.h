@@ -37,6 +37,8 @@ public:
     void BeginFrame() override;
     void EndFrame() override;
 
+    void Quit();
+
 private:
     void InitScreenController();
     void RegisterTests();

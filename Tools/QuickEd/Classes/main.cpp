@@ -57,6 +57,11 @@ protected:
         return editorCore->CloseProject();
     }
 
+    void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override
+    {
+        lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname() + "QuickEd/");
+    }
+
 private:
     std::unique_ptr<EditorCore> editorCore;
 };

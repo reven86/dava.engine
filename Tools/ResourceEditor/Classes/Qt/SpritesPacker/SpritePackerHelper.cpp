@@ -61,7 +61,7 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 
 void SpritePackerHelper::Reload()
 {
-    Sprite::ReloadSprites();
+    Sprite::ReloadSprites(DAVA::Texture::GetDefaultGPU());
     QtMainWindow::Instance()->RestartParticleEffects();
 }
 

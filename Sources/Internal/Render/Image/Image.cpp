@@ -33,38 +33,20 @@ Image::~Image()
     height = 0;
 }
 
-const uint32 BLOCK_SIZE = 4;
-
 uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
 {
-    int32 pixelSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    DVASSERT(width != 0 && height != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
 
-    if (pixelSizeBits > 0)
-    {
-        if ((format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
-            (format >= FORMAT_ATC_RGB && format <= FORMAT_ATC_RGBA_INTERPOLATED_ALPHA))
-        {
-            if (width < BLOCK_SIZE || height < BLOCK_SIZE)
-            {
-                uint32 w = Max(width, BLOCK_SIZE);
-                uint32 h = Max(height, BLOCK_SIZE);
-                return (w * h * pixelSizeBits / 8);
-            }
-            else
-            {
-                int32 pix = (pixelSizeBits < 8) ? BLOCK_SIZE : pixelSizeBits;
-                return (width * height * pix / 8);
-            }
-        }
-        else
-        {
-            return (width * height * pixelSizeBits / 8);
-        }
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1 || blockSize.dy != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+        height = height + ((-1 * height) % blockSize.dy);
     }
-    else
-    {
-        return 0;
-    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width * height / 8);
 }
 
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
@@ -72,7 +54,6 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint32 size = GetSizeInBytes(width, height, format);
-
     if (size > 0)
     {
         Image* image = new Image();
@@ -83,11 +64,9 @@ Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
         image->data = new uint8[image->dataSize];
         return image;
     }
-    else
-    {
-        Logger::Error("[Image::Create] trying to create image with wrong format");
-        return nullptr;
-    }
+
+    Logger::Error("[Image::Create] trying to create image with wrong format");
+    return nullptr;
 }
 
 Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data)
@@ -117,7 +96,7 @@ void Image::MakePink(bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (data == NULL)
+    if (data == nullptr)
         return;
 
     uint32 pink = 0xffff00ff;
@@ -204,56 +183,58 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
     return imageSet;
 }
 
-void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
+bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    uint8* newData = NULL;
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    if (formatDescriptor.isCompressed)
+        return false;
 
-    if (formatSize > 0)
+    int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
+    const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
+
+    uint8* newData = new uint8[newDataSize];
+    Memset(newData, 0, newDataSize);
+
+    float32 kx = float32(width) / float32(newWidth);
+    float32 ky = float32(height) / float32(newHeight);
+
+    float32 xx = 0, yy = 0;
+    uint32 offset = 0;
+    uint32 offsetOld = 0;
+    uint32 posX, posY;
+    for (uint32 y = 0; y < newHeight; ++y)
     {
-        const uint32 newDataSize = newWidth * newHeight * formatSize;
-        newData = new uint8[newDataSize];
-        Memset(newData, 0, newDataSize);
-
-        float32 kx = float32(width) / float32(newWidth);
-        float32 ky = float32(height) / float32(newHeight);
-
-        float32 xx = 0, yy = 0;
-        uint32 offset = 0;
-        uint32 offsetOld = 0;
-        uint32 posX, posY;
-        for (uint32 y = 0; y < newHeight; ++y)
+        for (uint32 x = 0; x < newWidth; ++x)
         {
-            for (uint32 x = 0; x < newWidth; ++x)
-            {
-                posX = uint32(xx + 0.5f);
-                posY = uint32(yy + 0.5f);
-                if (posX >= width)
-                    posX = width - 1;
+            posX = uint32(xx + 0.5f);
+            posY = uint32(yy + 0.5f);
+            if (posX >= width)
+                posX = width - 1;
 
-                if (posY >= height)
-                    posY = height - 1;
+            if (posY >= height)
+                posY = height - 1;
 
-                offsetOld = (posY * width + posX) * formatSize;
-                Memcpy(newData + offset, data + offsetOld, formatSize);
+            offsetOld = (posY * width + posX) * formatSizeInBytes;
+            Memcpy(newData + offset, data + offsetOld, formatSizeInBytes);
 
-                xx += kx;
-                offset += formatSize;
-            }
-            yy += ky;
-            xx = 0;
+            xx += kx;
+            offset += formatSizeInBytes;
         }
-
-        // resized data
-        width = newWidth;
-        height = newHeight;
-
-        SafeDeleteArray(data);
-        data = newData;
-        dataSize = newDataSize;
+        yy += ky;
+        xx = 0;
     }
+
+    // resized data
+    width = newWidth;
+    height = newHeight;
+
+    SafeDeleteArray(data);
+    data = newData;
+    dataSize = newDataSize;
+
+    return true;
 }
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)

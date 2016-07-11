@@ -12,8 +12,7 @@ find_package( DavaTools     REQUIRED )
 include_directories (Classes)
 include_directories ( ${DAVA_INCLUDE_DIR} ) 
 
-define_source_folders          ( SRC_ROOT "Classes" )
-generate_source_groups_project ( SRC_ROOT "Classes" )
+define_source ( SOURCE  "Classes"  )
 
 set( MAC_DISABLE_BUNDLE     true)
 set( DISABLE_SOUNDS         true)
