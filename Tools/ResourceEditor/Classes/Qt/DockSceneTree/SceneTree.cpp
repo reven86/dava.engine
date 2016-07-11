@@ -972,12 +972,8 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
-        {
-            Guard::ScopedBoolGuard guard(isInSync, true);
-            treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-            treeUpdater->Update();
-        }
-        SyncSelectionFromTree();
+        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        treeUpdater->Update();
     }
 }
 
