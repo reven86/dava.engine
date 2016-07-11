@@ -13,9 +13,9 @@ public:
     DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex);
     virtual ~DeleteLODCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const override;
 
     const DAVA::Vector<DeleteRenderBatchCommand*>& GetRenderBatchCommands() const;
 

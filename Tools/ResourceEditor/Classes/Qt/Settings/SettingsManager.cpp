@@ -79,7 +79,6 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_DebugBoxWaypointScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DragAndDropWithShift, DAVA::VariantType(false));
     CreateValue(Settings::Scene_AutoselectNewEntities, DAVA::VariantType(true));
-    CreateValue(Settings::Scene_RefreshLodForNonSolid, DAVA::VariantType(true));
     CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SaveEmitters, DAVA::VariantType(false));
 
@@ -104,7 +103,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType(static_cast<DAVA::int32>(EditorMaterialSystem::LIGHTVIEW_ALL)));
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType(static_cast<bool>(false)));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType(static_cast<bool>(false)));
-    CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType(static_cast<bool>(false)));
+    CreateValue(Settings::Internal_LODEditor_Mode, DAVA::VariantType(static_cast<bool>(false)));
+    CreateValue(Settings::Internal_LODEditor_Recursive, DAVA::VariantType(false));
     CreateValue(DAVA::FastName("Internal/RunActionEventWidget/CurrentType"), DAVA::VariantType(static_cast<DAVA::uint32>(0)));
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
     CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));
