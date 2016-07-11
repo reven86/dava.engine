@@ -43,6 +43,11 @@ NSBitmapImageRep* WindowInteropService::BitmapImageRepForCachingDisplayInRect(co
     return [bridge->openGLView bitmapImageRepForCachingDisplayInRect:rect];
 }
 
+NSView* WindowInteropService::GetNSView()
+{
+    return bridge->openGLView;
+}
+
 } // namespace Private
 } // namespace DAVA
 

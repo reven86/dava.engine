@@ -1,8 +1,6 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "UI/UITextFieldMacOS.h"
 
-#if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_TEXTFIELD
+#if defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 
 #import <AppKit/NSBitmapImageRep.h>
 #import <AppKit/NSTextField.h>
@@ -15,9 +13,18 @@
 #import <AppKit/NSSecureTextField.h>
 #include "Utils/UTF8Utils.h"
 #include "Utils/NSStringUtils.h"
+#include "Render/Image/Image.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "UI/UIControlSystem.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Private/NativeWindow.h"
+#include "Engine/Private/OsX/WindowInteropService.h"
+#else
+#include "Platform/TemplateMacOS/CorePlatformMacOS.h"
+#endif
 // +-----------+          +------+
 // |ObjCWrapper+----------+IField|
 // +-----+-----+          +----+-+
@@ -105,17 +112,37 @@ namespace DAVA
 class IField
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    IField(UITextField* davaText_, ObjCWrapper* wrapper_, Window* w)
+        : davaText(davaText_)
+        , wrapper(wrapper_)
+        , window(w)
+#else
     IField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : davaText(davaText_)
         , wrapper(wrapper_)
+#endif
     {
         DVASSERT(davaText != nullptr);
         DVASSERT(wrapper != nullptr);
+        
+#if defined(__DAVAENGINE_COREV2__)
+        windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &IField::OnWindowVisibilityChanged);
+#else
+        CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
+        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &IField::OnAppMinimizedRestored);
+#endif
     }
     virtual ~IField()
     {
         davaText = nullptr;
         wrapper = nullptr;
+#if defined(__DAVAENGINE_COREV2__)
+        window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+#else
+        CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
+        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
+#endif
     }
     virtual void OpenKeyboard() = 0;
     virtual void CloseKeyboard() = 0;
@@ -269,10 +296,52 @@ public:
         return true;
     }
 
+    NSRect ConvertToNativeWindowRect(Rect srcRect)
+    {
+        VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+     
+#if defined(__DAVAENGINE_COREV2__)
+        // 1. map virtual to physical
+        Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
+        rect += coordSystem->GetPhysicalDrawOffset();
+        rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
+
+        rect.dx = std::max(0.0f, rect.dx);
+        rect.dy = std::max(0.0f, rect.dy);
+
+        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+        NSRect controlRect = interop->ConvertRectFromBacking(NSMakeRect(rect.x, rect.y, rect.dx, rect.dy));
+        return controlRect;
+#else
+        Rect rect = coordSystem->ConvertVirtualToInput(srcRect);
+
+        NSView* openglView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        rect.y = openglView.frame.size.height - (rect.y + rect.dy);
+        return NSMakeRect(rect.x, rect.y, rect.dx, rect.dy);
+#endif
+    }
+
+#if defined(__DAVAENGINE_COREV2__)
+    void OnWindowVisibilityChanged(Window&, bool visible)
+    {
+        SetVisible(visible);
+    }
+
+    size_t windowVisibilityChangedConnection = 0;
+#else
+    void OnAppMinimizedRestored(bool minimized)
+    {
+        SetVisible(!minimized);
+    }
+
     SigConnectionID signalMinimizeRestored;
+#endif
 
     UITextField* davaText = nullptr;
     ObjCWrapper* wrapper = nullptr;
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
 
     Rect currentRect;
     Color currentColor;
@@ -290,22 +359,16 @@ public:
     NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
 };
 
-static NSRect ConvertToNativeWindowRect(Rect rectSrc)
-{
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
-
-    Rect rect = coordSystem->ConvertVirtualToInput(rectSrc);
-
-    NSView* openglView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    rect.y = openglView.frame.size.height - (rect.y + rect.dy);
-    return NSMakeRect(rect.x, rect.y, rect.dx, rect.dy);
-}
-
 class MultilineField : public IField
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_, Window* w)
+        : IField(davaText_, wrapper_, w)
+#else
     MultilineField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : IField(davaText_, wrapper_)
+#endif
     {
         nsScrollView = [[NSScrollView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
 
@@ -334,19 +397,23 @@ public:
 
         [nsScrollView setDocumentView:nsTextView];
 
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+        interop->AddNSView(nsScrollView);
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsScrollView];
-
-        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &MultilineField::OnAppMinimazedResored);
+#endif
     }
 
     ~MultilineField()
     {
-        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
-
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+        interop->RemoveNSView(nsScrollView);
+#else
         [nsScrollView removeFromSuperview];
+#endif
         [nsScrollView release];
         nsScrollView = nullptr;
         [nsTextView removeFromSuperview];
@@ -357,14 +424,14 @@ public:
         objcDelegate = nullptr;
     }
 
-    void OnAppMinimazedResored(bool value)
-    {
-        SetVisible(!value);
-    }
-
     void OpenKeyboard() override
     {
+#if defined(__DAVAENGINE_COREV2__)
+        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+        
+#endif
         [openGLView.window makeFirstResponder:nsTextView];
 
         if (!isKeyboardOpened)
@@ -385,7 +452,11 @@ public:
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+#if defined(__DAVAENGINE_COREV2__)
+        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+#endif
         [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
@@ -464,7 +535,11 @@ public:
 
         float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
 
+#if defined(__DAVAENGINE_COREV2__)
+        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+#endif
         NSSize origSz = NSMakeSize(size, 0);
         NSSize convSz = [openGLView convertSizeFromBacking:origSz];
 
@@ -603,8 +678,13 @@ public:
 class SingleLineOrPasswordField : public IField
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_, Window* w)
+        : IField(davaText_, wrapper_, w)
+#else
     explicit SingleLineOrPasswordField(UITextField* davaText_, ObjCWrapper* wrapper_)
         : IField(davaText_, wrapper_)
+#endif
     {
         [CustomTextField setCellClass:[RSVerticallyCenteredTextFieldCell class]];
         nsTextField = [[CustomTextField alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
@@ -622,8 +702,13 @@ public:
 
         [nsTextField setDelegate:objcDelegate];
 
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+        interop->AddNSView(nsTextField);
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsTextField];
+#endif
 
         [nsTextField setEditable:YES];
         [nsTextField setEnabled:YES];
@@ -631,28 +716,23 @@ public:
         nsTextField.drawsBackground = NO;
         nsTextField.bezeled = NO;
 
-        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-        signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &SingleLineOrPasswordField::OnAppMinimazedResored);
         SetMultiline(false);
     }
 
     ~SingleLineOrPasswordField()
     {
-        CoreMacOSPlatform* xcore = static_cast<CoreMacOSPlatform*>(Core::Instance());
-        xcore->signalAppMinimizedRestored.Disconnect(signalMinimizeRestored);
-
+#if defined(__DAVAENGINE_COREV2__)
+        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+        interop->RemoveNSView(nsTextField);
+#else
         [nsTextField removeFromSuperview];
+#endif
         [nsTextField release];
         nsTextField = nullptr;
         [formatter release];
         formatter = nullptr;
         [objcDelegate release];
         objcDelegate = nullptr;
-    }
-
-    void OnAppMinimazedResored(bool value)
-    {
-        SetVisible(!value);
     }
 
     void OpenKeyboard() override
@@ -716,7 +796,11 @@ public:
         }
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
+#if defined(__DAVAENGINE_COREV2__)
+        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+#else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
+#endif
         [[NSApp keyWindow] makeFirstResponder:openGLView];
     }
 
@@ -1024,8 +1108,13 @@ public:
             nsTextField.drawsBackground = NO;
             nsTextField.bezeled = NO;
 
+#if defined(__DAVAENGINE_COREV2__)
+            Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
+            interop->AddNSView(nsTextField);
+#else
             NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
             [openGLView addSubview:nsTextField];
+#endif
 
             // copy all current properties
             SetFontSize(currentFontSize);
@@ -1072,10 +1161,18 @@ public:
 class ObjCWrapper
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    ObjCWrapper(UITextField* tf, Window* w)
+        : window(w)
+    {
+        ctrl = new SingleLineOrPasswordField(tf, this, window);
+    }
+#else
     ObjCWrapper(UITextField* tf)
     {
         ctrl = new SingleLineOrPasswordField(tf, this);
     }
+#endif
     ~ObjCWrapper()
     {
         delete ctrl;
@@ -1093,6 +1190,16 @@ public:
         {
             IField* prevCtrl = ctrl;
             IField* newField = nullptr;
+#if defined(__DAVAENGINE_COREV2__)
+            if (value)
+            {
+                newField = new MultilineField(ctrl->davaText, this, window);
+            }
+            else
+            {
+                newField = new SingleLineOrPasswordField(ctrl->davaText, this, window);
+            }
+#else
             if (value)
             {
                 newField = new MultilineField(ctrl->davaText, this);
@@ -1101,6 +1208,7 @@ public:
             {
                 newField = new SingleLineOrPasswordField(ctrl->davaText, this);
             }
+#endif
 
             newField->SetFontSize(prevCtrl->currentFontSize);
             newField->SetTextColor(prevCtrl->currentColor);
@@ -1118,11 +1226,24 @@ public:
         }
     }
 
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
     IField* ctrl = nullptr;
 };
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
-    : objcWrapper{ *(new ObjCWrapper(tf)) }
+#if defined(__DAVAENGINE_COREV2__)
+    : objcWrapper
+{
+    *(new ObjCWrapper(tf, Engine::Instance()->PrimaryWindow()))
+}
+#else
+    : objcWrapper
+{
+    *(new ObjCWrapper(tf))
+}
+#endif
 {
 }
 
@@ -1539,7 +1660,7 @@ doCommandBySelector:(SEL)commandSelector
 
 - (void)textDidChange:(NSNotification*)notification
 {
-    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && text->ctrl->davaText->GetDelegate() != nullptr)
     {
         const DAVA::WideString& newText = text->ctrl->davaText->GetText();
         if (newText != lastString)
@@ -1729,8 +1850,12 @@ doCommandBySelector:(SEL)commandSelector
 - (void)mouseDown:(NSEvent*)theEvent
 {
     // pass event to DAVA input for selection and focus work
+#if defined(__DAVAENGINE_COREV2__)
+    [[self superview] mouseDown:theEvent];
+#else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView mouseDown:theEvent];
+#endif
 }
 
 @end
@@ -1755,8 +1880,12 @@ doCommandBySelector:(SEL)commandSelector
     }
     else
     {
+#if defined(__DAVAENGINE_COREV2__)
+        [[self superview] mouseUp:theEvent];
+#else
         NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
         [openGLView mouseUp:theEvent];
+#endif
     }
 }
 
@@ -1768,8 +1897,12 @@ doCommandBySelector:(SEL)commandSelector
     }
     else
     {
+#if defined(__DAVAENGINE_COREV2__)
+        [[self superview] mouseDown:theEvent];
+#else
         NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
         [openGLView mouseDown:theEvent];
+#endif
     }
 }
 
@@ -1781,13 +1914,15 @@ doCommandBySelector:(SEL)commandSelector
     }
     else
     {
+#if defined(__DAVAENGINE_COREV2__)
+        [[self superview] rightMouseDown:theEvent];
+#else
         NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
         [openGLView rightMouseDown:theEvent];
+#endif
     }
 }
 
 @end
 
 #endif //__DAVAENGINE_MACOS__ && !DISABLE_NATIVE_TEXTFIELD
-
-#endif // !__DAVAENGINE_COREV2__

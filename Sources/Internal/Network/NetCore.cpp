@@ -16,10 +16,10 @@ const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 
 #if defined(__DAVAENGINE_COREV2__)
 NetCore::NetCore(Engine* e)
-    : loop(true)
+    : engine(e)
+    , loop(true)
     , isFinishing(false)
     , allStopped(false)
-    , engine(e)
 {
     sigUpdateId = e->update.Connect(this, &NetCore::Poll);
 }

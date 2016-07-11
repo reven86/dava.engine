@@ -31,6 +31,8 @@ public:
     NSRect ConvertRectFromBacking(const NSRect& rect);
     NSBitmapImageRep* BitmapImageRepForCachingDisplayInRect(const NSRect& rect);
 
+    NSView* GetNSView();
+
 private:
     WindowOsX* nativeWindow = nullptr;
     WindowOsXObjcBridge* bridge = nullptr;
