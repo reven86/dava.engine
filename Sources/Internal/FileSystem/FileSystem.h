@@ -305,9 +305,9 @@ public:
     void Init();
 
 private:
-    bool IsAPKPath(const String& path) const;
-    Set<String> fileSet;
-    Set<String> dirSet;
+//bool IsAPKPath(const String& path) const;
+//Set<String> fileSet;
+//Set<String> dirSet;
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };

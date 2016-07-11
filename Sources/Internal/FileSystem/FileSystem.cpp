@@ -441,10 +441,18 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 
 #if defined(__DAVAENGINE_ANDROID__)
     const String& path = pathToCheck.GetAbsolutePathname();
-    if (IsAPKPath(path))
     {
-        return fileSet.find(path) != end(fileSet);
+        File* f = File::Create(path, File::OPEN | File::READ);
+        if (nullptr != f)
+        {
+            f->Release();
+            return true;
+        }
     }
+//if (IsAPKPath(path))
+//{
+//    return fileSet.find(path) != end(fileSet);
+//}
 #endif
 
     FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
@@ -482,16 +490,23 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 #else //defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_ANDROID__)
 
-    String path = pathToCheck.GetAbsolutePathname();
-    if (path.length() && path.at(path.length() - 1) == '/')
+    //String path = pathToCheck.GetAbsolutePathname();
+    //if (path.length() && path.at(path.length() - 1) == '/')
+    //{
+    //    path.erase(path.begin() + path.length() - 1);
+    //}
+
+    FileList* fl = new FileList(pathToCheck);
+    if (fl->GetCount() > 0)
     {
-        path.erase(path.begin() + path.length() - 1);
+        fl->Release();
+        return true;
     }
 
-    if (IsAPKPath(path))
-    {
-        return (dirSet.find(path) != dirSet.end());
-    }
+//if (IsAPKPath(path))
+//{
+//    return (dirSet.find(path) != dirSet.end());
+//}
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
@@ -864,36 +879,36 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath& folder)
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-bool FileSystem::IsAPKPath(const String& path) const
-{
-    if (!path.empty() && path.c_str()[0] == '/')
-        return false;
-    return true;
-}
+//bool FileSystem::IsAPKPath(const String& path) const
+//{
+//    if (!path.empty() && path.c_str()[0] == '/')
+//        return false;
+//    return true;
+//}
 
 void FileSystem::Init()
 {
-    YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
+    //YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 
-    if (parser)
-    {
-        const YamlNode* node = parser->GetRootNode();
-        const YamlNode* dirList = node->Get("dirList");
-        if (dirList)
-        {
-            const Vector<YamlNode*> vec = dirList->AsVector();
-            for (uint32 i = 0; i < vec.size(); ++i)
-                dirSet.insert(vec[i]->AsString());
-        }
-        const YamlNode* fileList = node->Get("fileList");
-        if (fileList)
-        {
-            const Vector<YamlNode*> vec = fileList->AsVector();
-            for (uint32 i = 0; i < vec.size(); ++i)
-                fileSet.insert(vec[i]->AsString());
-        }
-    }
-    SafeRelease(parser);
+    //if (parser)
+    //    {
+    //        const YamlNode* node = parser->GetRootNode();
+    //        const YamlNode* dirList = node->Get("dirList");
+    //        if (dirList)
+    //        {
+    //            const Vector<YamlNode*> vec = dirList->AsVector();
+    //            for (uint32 i = 0; i < vec.size(); ++i)
+    //                dirSet.insert(vec[i]->AsString());
+    //        }
+    //        const YamlNode* fileList = node->Get("fileList");
+    //        if (fileList)
+    //        {
+    //            const Vector<YamlNode*> vec = fileList->AsVector();
+    //            for (uint32 i = 0; i < vec.size(); ++i)
+    //                fileSet.insert(vec[i]->AsString());
+    //        }
+    //    }
+    //    SafeRelease(parser);
 }
 #endif
 
