@@ -42,7 +42,7 @@
 #include <QMessageBox>
 #include <QTimer>
 
-namespace ErrorDialogInternal
+namespace ErrorDialogDetail
 {
 static const DAVA::uint32 maxErrorsPerDialog = 6;
 static const DAVA::String errorDivideLine("--------------------\n");
@@ -51,7 +51,7 @@ bool ShouldWaitForUI()
 {
     //should wait the wait bar until refactoring of wait bar
 
-    return QtMainWindow::Instance()->IsWaitDialogOnScreen();
+    return QtMainWindow::Instance()->IsWaitDialogOnScreen() || QtMainWindow::Instance()->IsParticelsArePacking();
 }
 
 bool ShouldBeHiddenByUI()
@@ -65,7 +65,7 @@ ErrorDialogOutput::ErrorDialogOutput()
     DAVA::Function<void()> fn(this, &ErrorDialogOutput::ShowErrorDialog);
     dialogUpdater = new LazyUpdater(fn, nullptr);
 
-    errors.reserve(ErrorDialogInternal::maxErrorsPerDialog);
+    errors.reserve(ErrorDialogDetail::maxErrorsPerDialog);
 }
 
 ErrorDialogOutput::~ErrorDialogOutput()
@@ -83,7 +83,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
 
     {
         DAVA::LockGuard<DAVA::Mutex> lock(errorsLocker);
-        if (errors.size() < ErrorDialogInternal::maxErrorsPerDialog)
+        if (errors.size() < ErrorDialogDetail::maxErrorsPerDialog)
         {
             errors.insert(text);
         }
@@ -94,13 +94,13 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
 
 void ErrorDialogOutput::ShowErrorDialog()
 {
-    if (ErrorDialogInternal::ShouldWaitForUI())
+    if (ErrorDialogDetail::ShouldWaitForUI())
     {
         dialogUpdater->Update();
         return;
     }
 
-    if (ErrorDialogInternal::ShouldBeHiddenByUI())
+    if (ErrorDialogDetail::ShouldBeHiddenByUI())
     {
         DAVA::LockGuard<DAVA::Mutex> lock(errorsLocker);
         errors.clear();
@@ -116,18 +116,18 @@ void ErrorDialogOutput::ShowErrorDialog()
 
         if (totalErrors == 1)
         {
-            title = "Error occured";
+            title = "Error occurred";
             errorMessage = *errors.begin();
         }
         else
         {
-            title = DAVA::Format("%u errors occured", totalErrors);
+            title = DAVA::Format("%u errors occurred", totalErrors);
             for (const auto& message : errors)
             {
-                errorMessage += message + ErrorDialogInternal::errorDivideLine;
+                errorMessage += message + ErrorDialogDetail::errorDivideLine;
             }
 
-            if (totalErrors == ErrorDialogInternal::maxErrorsPerDialog)
+            if (totalErrors == ErrorDialogDetail::maxErrorsPerDialog)
             {
                 errorMessage += "\nSee console log for details.";
             }

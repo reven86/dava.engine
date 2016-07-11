@@ -67,6 +67,9 @@ public:
 
     bool CanBeClosed();
 
+    bool IsParticelsArePacking() const;
+
+
     // qt actions slots
 public slots:
     void OnProjectOpen();

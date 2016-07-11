@@ -3228,3 +3228,9 @@ void QtMainWindow::SetLandscapeInstancingEnabled(bool enabled)
                              DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
                              DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING);
 }
+
+bool QtMainWindow::IsParticelsArePacking() const
+{
+    DVASSERT(spritesPacker);
+    return spritesPacker->IsRunning();
+}
