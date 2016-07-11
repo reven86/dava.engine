@@ -576,7 +576,8 @@ function WaitControlBecomeNotVisible(name, time)
     local waitTime = time or TIMEOUT
     local control = GetControl(name)
     Log("WaitControlBecomeNotVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local not_visible_control_lua = function() return not (control:GetVisibilityFlag() and control:IsVisible()) end
+    local not_visible_control_lua = function() return not (control and
+            control:GetVisibilityFlag() and control:IsVisible()) end
     local result = WaitUntil(waitTime, not_visible_control_lua, name)
     if not result then
         Log("Control is still visible: " .. name, "DEBUG")
