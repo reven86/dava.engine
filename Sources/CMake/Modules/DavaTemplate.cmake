@@ -44,13 +44,26 @@ load_property( PROPERTY_LIST
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
         BINARY_WIN32_DIR_RELWITHDEB
-        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
-        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE   
-        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG     
-        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+        BINARY_WIN64_DIR_RELEASE
+        BINARY_WIN64_DIR_DEBUG
+        BINARY_WIN64_DIR_RELWITHDEB
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE
+        STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
         DEPLOY_TO_BIN
         DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
+        INCLUDES
+        INCLUDES_${DAVA_PLATFORM_CURENT}
     )
+
+if( INCLUDES )
+    include_directories( ${INCLUDES})
+endif()
+
+if( INCLUDES_${DAVA_PLATFORM_CURENT} )
+    include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )
+endif()
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
 
@@ -274,7 +287,8 @@ if( DAVA_FOUND )
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
         elseif( MACOS )
-        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+            set( MACOS_PLATFORM_SRC  
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
@@ -285,8 +299,7 @@ if( DAVA_FOUND )
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
                         )
 
-
-
+            list( APPEND ADDED_SRC ${MACOS_PLATFORM_SRC} )
         endif()
 
     endif()
@@ -303,6 +316,8 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                IGNORE_LIST_MACOS ${UNIFIED_IGNORE_LIST_MACOS} ${MACOS_PLATFORM_SRC}
+                                                IGNORE_LIST_IOS   ${UNIFIED_IGNORE_LIST_IOS} 
                                                 CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
                                                 CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
                                                 CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
@@ -366,6 +381,7 @@ else()
 
     add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
         ${PROJECT_SOURCE_FILES}
+        ${PROJECT_HEADER_FILE_ONLY}
         ${RESOURCES_LIST}
     )
 
@@ -549,6 +565,9 @@ elseif ( WIN32 )
     set( DAVA_BINARY_WIN32_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELEASE} ) 
     set( DAVA_BINARY_WIN32_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_DEBUG}   ) 
     set( DAVA_BINARY_WIN32_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELWITHDEB}   ) 
+    set( DAVA_BINARY_WIN64_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN64_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_DEBUG}   ) 
+    set( DAVA_BINARY_WIN64_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELWITHDEB}   ) 
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
@@ -586,13 +605,12 @@ elseif ( WIN32 )
 
 endif()
 
+list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
-
-set( DAVA_FOLDERS PARENT_SCOPE )
 
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
@@ -648,14 +666,14 @@ endif()
 if( DEPLOY )
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
-
+    
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
         file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
         foreach( ITEM ${RESOURCES_LIST} )
             file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
         endforeach()
     endif()
-    
+
    append_property( DEPLOY_DIR_${PROJECT_NAME} ${DEPLOY_DIR} )
 
     if( WIN32 )
@@ -668,6 +686,10 @@ if( DEPLOY )
             )
 
         endif()
+
+		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+        endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )

@@ -52,6 +52,10 @@ class Foo
 }
 ```
 
+
+#####Local namespaces
+Local(private) namespaces should use `Detail` suffix, i.e. `MyUtilsDetail`.
+
 ####Header guard
 Header files are guarder by `#pragma once`
 
@@ -79,12 +83,13 @@ for(int32 i = 0; i < width; ++i) //i is only used inside small loop
 }
 ```
 
-####Classes, functions
+####Classes, functions, namespaces
 Camel notation begin with capital letter.
 
 ```cpp
 class MyObject;
 void Foo();
+namespace MyNamespace{}
 ```
 
 ####Variables

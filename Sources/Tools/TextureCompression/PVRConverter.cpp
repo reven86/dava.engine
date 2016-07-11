@@ -97,7 +97,13 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
             Logger::FrameworkDebug(procOutput.c_str());
         }
 
-        outputName = GetPVRToolOutput(descriptor, gpuFamily);
+        if (process.GetExitCode() != 0)
+        {
+            Logger::Error("PvrTexTool exited with code %d", process.GetExitCode());
+            return FilePath();
+        }
+
+        outputName = GetConvertedTexturePath(descriptor, gpuFamily);
     }
     else
     {
@@ -112,8 +118,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 
     if (addCRC)
     {
-        LibPVRHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
+        LibPVRHelper::AddCRCIntoMetaData(outputName);
     }
     return outputName;
 #endif
@@ -121,71 +126,99 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor& descriptor, eGPUFam
 
 FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
 {
-    FilePath filePath = descriptor.GetSourceTexturePathname();
+    FilePath sourcePath = descriptor.GetSourceTexturePathname();
 
-    Vector<Image*> images;
-    ImageSystem::Load(filePath, images);
+    ScopedPtr<Image> image(ImageSystem::LoadSingleMip(sourcePath));
 
-    if (!images.size())
+    if (!image)
     {
         return FilePath();
     }
 
-    DVASSERT(images.size() == 1);
-
-    Image* originalImage = images[0];
-    bool normalized = originalImage->Normalize();
+    bool normalized = image->Normalize();
     if (!normalized)
     {
-        Logger::Error("[PVRConverter::ConvertNormalMapToPvr] Cannot normalize image %s", filePath.GetStringValue().c_str());
-        SafeRelease(originalImage);
+        Logger::Error("[PVRConverter::ConvertNormalMapToPvr] Cannot normalize image %s", sourcePath.GetStringValue().c_str());
         return FilePath();
     }
+
+    Vector<Image *> srcImages, convertedImages;
+    SCOPE_EXIT
+    {
+        for_each(srcImages.begin(), srcImages.end(), SafeRelease<Image>);
+        for_each(convertedImages.begin(), convertedImages.end(), SafeRelease<Image>);
+    };
 
     if (descriptor.GetGenerateMipMaps())
     {
-        images = originalImage->CreateMipMapsImages(true);
-        SafeRelease(originalImage);
-    }
-
-    FilePath dirPath = filePath + "_mips";
-    dirPath.MakeDirectoryPathname();
-    FileSystem::Instance()->CreateDirectory(dirPath);
-
-    Vector<FilePath> convertedPVRs;
-
-    for (int32 i = 0, e = static_cast<int32>(images.size()); i < e; ++i)
-    {
-        ImageFormat targetFormat = IMAGE_FORMAT_PNG;
-
-        TextureDescriptor desc;
-        desc.Initialize(&descriptor);
-        desc.SetGenerateMipmaps(false);
-        desc.dataSettings.sourceFileFormat = targetFormat;
-        desc.dataSettings.sourceFileExtension = ImageSystem::GetExtensionsFor(targetFormat)[0];
-        desc.pathname = dirPath + Format("mip%d%s", i, desc.dataSettings.sourceFileExtension.c_str());
-
-        ImageSystem::Save(desc.pathname, images[i]);
-        FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
-
-        convertedPVRs.push_back(convertedImgPath);
-    }
-
-    FilePath outputName = GetPVRToolOutput(descriptor, gpuFamily);
-    bool ret = LibPVRHelper::WriteFileFromMipMapFiles(outputName, convertedPVRs);
-
-    FileSystem::Instance()->DeleteDirectory(dirPath, true);
-
-    if (ret)
-    {
-        LibPVRHelper helper;
-        helper.AddCRCIntoMetaData(outputName);
-        return outputName;
+        srcImages = image->CreateMipMapsImages(true);
     }
     else
     {
+        image->Retain();
+        srcImages.push_back(image);
+    }
+    image.reset();
+
+    ImageFormat targetFormat = IMAGE_FORMAT_PNG;
+    TextureDescriptor tempFileDescriptor;
+    tempFileDescriptor.Initialize(&descriptor);
+    tempFileDescriptor.SetGenerateMipmaps(false);
+    tempFileDescriptor.dataSettings.sourceFileFormat = targetFormat;
+    tempFileDescriptor.dataSettings.sourceFileExtension = ImageSystem::GetDefaultExtension(targetFormat);
+    tempFileDescriptor.pathname.ReplaceBasename(sourcePath.GetBasename() + "_temp");
+
+    tempFileDescriptor.compression[eGPUFamily::GPU_ORIGIN].format = PixelFormat::FORMAT_RGBA8888;
+    tempFileDescriptor.compression[eGPUFamily::GPU_ORIGIN].imageFormat = targetFormat;
+
+    FilePath tempConvertedPath = GetConvertedTexturePath(tempFileDescriptor, gpuFamily);
+    SCOPE_EXIT
+    {
+        FileSystem::Instance()->DeleteFile(tempFileDescriptor.pathname);
+        FileSystem::Instance()->DeleteFile(tempConvertedPath);
+    };
+
+    uint32 requestedWidth = tempFileDescriptor.compression[gpuFamily].compressToWidth;
+    uint32 requestedHeight = tempFileDescriptor.compression[gpuFamily].compressToHeight;
+
+    bool needSkipImages = (requestedWidth != 0 && requestedHeight != 0);
+    for (Image* srcImage : srcImages)
+    {
+        if (needSkipImages && (srcImage->width > requestedWidth || srcImage->height > requestedHeight))
+        {
+            continue;
+        }
+
+        if (ImageSystem::Save(tempFileDescriptor.GetSourceTexturePathname(), srcImage) != eErrorCode::SUCCESS)
+        {
+            return FilePath();
+        }
+
+        FilePath convertedImgPath = ConvertToPvr(tempFileDescriptor, gpuFamily, quality, false);
+        if (convertedImgPath.IsEmpty())
+        {
+            return FilePath();
+        }
+
+        Image* convertedImage = ImageSystem::LoadSingleMip(convertedImgPath);
+        if (!convertedImage)
+        {
+            return FilePath();
+        }
+
+        convertedImages.push_back(convertedImage);
+    }
+
+    DVASSERT(convertedImages.empty() == false);
+
+    FilePath convertedTexturePath = GetConvertedTexturePath(descriptor, gpuFamily);
+    if (ImageSystem::Save(convertedTexturePath, convertedImages, convertedImages[0]->format) != eErrorCode::SUCCESS)
+    {
         return FilePath();
     }
+
+    LibPVRHelper::AddCRCIntoMetaData(convertedTexturePath);
+    return convertedTexturePath;
 }
 
 void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const FilePath& fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args)
@@ -194,7 +227,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
     const TextureDescriptor::Compression* compression = &descriptor.compression[gpuFamily];
 
     String format = pixelFormatToPVRFormat[static_cast<PixelFormat>(compression->format)];
-    FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
+    FilePath outputFile = GetConvertedTexturePath(descriptor, gpuFamily);
 
     // input file
     args.push_back("-i");
@@ -286,9 +319,9 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor& descriptor, const
     //args.push_back("-l"); //Alpha Bleed: Discards any data in fully transparent areas to optimise the texture for better compression.
 }
 
-FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
+FilePath PVRConverter::GetConvertedTexturePath(const TextureDescriptor& descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    return descriptor.CreateMultiMipPathnameForGPU(gpuFamily);
 }
 
 void PVRConverter::SetPVRTexTool(const FilePath& textToolPathname)

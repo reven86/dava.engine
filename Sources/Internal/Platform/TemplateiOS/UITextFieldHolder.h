@@ -11,6 +11,7 @@
 @interface UITextFieldHolder : UIView<UITextFieldDelegate, UITextViewDelegate>
 {
     NSString* cachedText;
+    BOOL isKeyboardHidden;
 @public
     // hold single line text field if user switch to multiline mode
     // otherwise nullptr

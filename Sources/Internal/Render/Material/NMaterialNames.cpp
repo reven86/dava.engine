@@ -169,6 +169,8 @@ const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATIO
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
 
+const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
+
 //quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");
 const FastName NMaterialQualityName::QUALITY_GROUP_FLAG_NAME = FastName("QualityGroup");
