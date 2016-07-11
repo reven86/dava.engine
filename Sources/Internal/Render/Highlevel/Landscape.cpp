@@ -203,7 +203,10 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath& heightmapPathna
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     heightmapPath = heightmapPathname;
-    BuildHeightmap();
+    if (!BuildHeightmap())
+    {
+        heightmapPath = DAVA::FilePath();
+    }
 
     bbox = _box;
 
@@ -1330,6 +1333,7 @@ void Landscape::Save(KeyedArchive* archive, SerializationContext* serializationC
     {
         heightmap->Save(heightmapPath);
     }
+
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
 }
@@ -1393,7 +1397,6 @@ void Landscape::Load(KeyedArchive* archive, SerializationContext* serializationC
 
     FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
-
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);
 }
 
