@@ -44,7 +44,7 @@ class UIGeometricData;
 class IWebViewControl
 {
 public:
-    virtual ~IWebViewControl();
+    virtual ~IWebViewControl() = default;
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;

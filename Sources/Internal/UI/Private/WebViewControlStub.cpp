@@ -2,8 +2,8 @@
 
 #include "UI/Private/WebViewControlStub.h"
 
-using namespace DAVA;
-
+namespace DAVA
+{
 WebViewControl::WebViewControl(UIWebView&)
 {
 }
@@ -62,5 +62,6 @@ bool WebViewControl::IsRenderToTexture() const
 {
     return false;
 }
+} // namespace DAVA
 
 #endif //DISABLE_NATIVE_WEBVIEW && !ENABLE_CEF_WEBVIEW
