@@ -62,6 +62,8 @@ enum MoviePlayerHelperPlaybackState
 
 #if defined(__DAVAENGINE_COREV2__)
 - (id)init:(DAVA::Private::WindowInteropService*)interopServiceObj;
+#else
+- (id)init;
 #endif
 
 // Set the video rectangle.
@@ -85,12 +87,18 @@ enum MoviePlayerHelperPlaybackState
 
 @implementation MoviePlayerHelper
 
+#if defined(__DAVAENGINE_COREV2__)
 - (MoviePlayerHelper*)init:(DAVA::Private::WindowInteropService*)interopServiceObj
+#else
+- (id)init
+#endif
 {
     self = [super init];
     if (self != nullptr)
     {
+#if defined(__DAVAENGINE_COREV2__)
         interopService = interopServiceObj;
+#endif
         videoPlayer = nil;
         videoView = nil;
 
@@ -333,12 +341,14 @@ MovieViewControl::MovieViewControl()
     : window(Engine::Instance()->PrimaryWindow())
 #endif
 {
+#if defined(__DAVAENGINE_COREV2__)
     Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
     moviePlayerHelper = [[MoviePlayerHelper alloc] init:interop];
 
-#if defined(__DAVAENGINE_COREV2__)
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &MovieViewControl::OnWindowVisibilityChanged);
 #else
+    moviePlayerHelper = [[MoviePlayerHelper alloc] init];
+
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
 #endif
