@@ -118,8 +118,8 @@ void CacheDB::Load()
         ServerCacheEntry entry;
         entry.Deserialize(itemArchieve);
 
-        fullCache[key] = std::move(entry);
         occupiedSize += entry.GetValue().GetSize();
+        fullCache[key] = std::move(entry);
     }
 
     dbStateChanged = false;
