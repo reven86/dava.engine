@@ -351,6 +351,7 @@ void SceneCameraSystem::Draw()
                 {
                     DAVA::AABBox3 worldBox;
                     DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
+                    DVASSERT(!collBox.IsEmpty());
 
                     DAVA::Matrix4 transform;
                     transform.Identity();
@@ -591,7 +592,11 @@ void SceneCameraSystem::MoveToSelection()
     const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
-        LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
+        DAVA::AABBox3 bbox = sceneEditor->selectionSystem->GetTransformedBoundingBox(selection);
+        if (!bbox.IsEmpty())
+        {
+            LookAt(bbox);
+        }
     }
 }
 
