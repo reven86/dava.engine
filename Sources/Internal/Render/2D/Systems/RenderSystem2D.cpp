@@ -239,7 +239,7 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderTargetPassConfig.depthStencilBuffer.texture = desc.depthAttachment;
     renderTargetPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    renderTargetPassConfig.depthStencilBuffer.loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderTargetPassConfig.priority = desc.priority;
     renderTargetPassConfig.viewport.width = desc.width;
     renderTargetPassConfig.viewport.height = desc.height;
