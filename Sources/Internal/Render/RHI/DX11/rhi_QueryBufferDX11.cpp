@@ -92,7 +92,7 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
 {
     int32 pendingCount = static_cast<int32>(buf->pendingQueries.size());
     uint64 val = 0;
-    ;
+
     for (int32 q = pendingCount - 1; q >= 0; --q)
     {
         ID3D11Query* iq = buf->pendingQueries[q].first;
