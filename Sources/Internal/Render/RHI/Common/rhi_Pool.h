@@ -261,7 +261,7 @@ ResourcePool<T, RT, DT, nr>::ReleaseAll()
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 
     unsigned count = 0;
-    for (auto i = Begin(), i_end = End(); i != i_end; ++i)
+    for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
         i->SetRecreatePending(true);
         i->Destroy(true);
