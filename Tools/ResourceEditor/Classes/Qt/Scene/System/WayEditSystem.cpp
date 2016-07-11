@@ -213,7 +213,9 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
         {
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
-                selectedWaypoints.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
+                AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+                DVASSERT(!bbox.IsEmpty());
+                selectedWaypoints.Add(entity, bbox);
             }
         }
     }
@@ -298,7 +300,9 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                     sceneEditor->EndBatch();
 
                     selectedWaypoints.Clear();
-                    selectedWaypoints.Add(newWaypoint, sceneEditor->selectionSystem->GetUntransformedBoundingBox(newWaypoint));
+                    DAVA::AABBox3 bbox = sceneEditor->selectionSystem->GetUntransformedBoundingBox(newWaypoint);
+                    DVASSERT(!bbox.IsEmpty());
+                    selectedWaypoints.Add(newWaypoint, bbox);
                     sceneEditor->selectionSystem->SetLocked(false);
                     newWaypoint->Release();
                 }
@@ -328,7 +332,9 @@ void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGr
     {
         if (parentEntity == entity->GetParent())
         {
-            ret.Add(entity, selectionSystem->GetUntransformedBoundingBox(entity));
+            DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+            DVASSERT(!bbox.IsEmpty());
+            ret.Add(entity, bbox);
         }
     }
 }
@@ -343,13 +349,15 @@ void WayEditSystem::DefineAddOrRemoveEdges(const SelectableGroup& srcPoints, DAV
             continue;
         }
 
+        DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(srcPoint);
+        DVASSERT(!bbox.IsEmpty());
         if (FindEdgeComponent(srcPoint, dstPoint))
         {
-            toRemoveEdge.Add(srcPoint, selectionSystem->GetUntransformedBoundingBox(srcPoint));
+            toRemoveEdge.Add(srcPoint, bbox);
         }
         else
         {
-            toAddEdge.Add(srcPoint, selectionSystem->GetUntransformedBoundingBox(srcPoint));
+            toAddEdge.Add(srcPoint, bbox);
         }
     }
 }
@@ -457,6 +465,7 @@ void WayEditSystem::Draw()
         }
 
         DAVA::AABBox3 localBox = selectionSystem->GetUntransformedBoundingBox(e);
+        DVASSERT(!localBox.IsEmpty());
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
     }
