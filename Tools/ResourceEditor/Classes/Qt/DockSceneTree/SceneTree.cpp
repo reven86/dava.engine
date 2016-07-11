@@ -1175,6 +1175,7 @@ void SceneTree::SyncSelectionToTree()
         return;
 
     QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+    QItemSelection itemSelection;
 
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
@@ -1198,17 +1199,18 @@ void SceneTree::SyncSelectionToTree()
             }
             else
             {
-                QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, selectionMode);
+                QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+                itemSelection.merge(subRange, selectionMode);
                 startIndex = i;
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
-        QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, selectionMode);
+        QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+        itemSelection.merge(subRange, selectionMode);
     }
 
+    selectModel->select(itemSelection, selectionMode);
     if (lastValidIndex.isValid())
     {
         selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);
