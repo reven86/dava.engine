@@ -20,6 +20,7 @@ using DAVA::Logger;
 #include <thread>
 
 #define RHI_DX9_TRACK_API_OBJECTS 0
+#define RHI_DX9_ABORT_ON_FAILED_RESTORE 0
 
 namespace rhi
 {
@@ -57,11 +58,13 @@ static DAVA::Mutex _DX9_PendingImmediateCmdSync;
 static std::atomic<bool> _DX9_ResetPending{ false };
 static std::atomic<bool> _DX9_ResetScheduled{ false };
 
-static uint32 _DX9_RestoreAttempts = 0;
-const uint32 _DX9_MaxRestoreAttempts = 15;
-
 HANDLE _DX9_FramePreparedEvent;
 HANDLE _DX9_FrameDoneEvent;
+
+#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
+static uint32 _DX9_RestoreAttempts = 0;
+const uint32 _DX9_MaxRestoreAttempts = 15;
+#endif
 
 #if (RHI_DX9_TRACK_API_OBJECTS)
 ULONG _DX9_RefCount(IUnknown* ptr)
@@ -1315,6 +1318,7 @@ _DX9_ExecuteQueuedCommands()
     {
         if (rhi::NeedRestoreResources())
         {
+#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
             ++_DX9_RestoreAttempts;
             if (_DX9_RestoreAttempts > _DX9_MaxRestoreAttempts)
             {
@@ -1324,12 +1328,14 @@ _DX9_ExecuteQueuedCommands()
                 IndexBufferDX9::LogUnrestoredBacktraces();
                 abort();
             }
+#endif
             _RejectAllFrames();
         }
         else
         {
+#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
             _DX9_RestoreAttempts = 0;
-
+#endif
             std::vector<Handle> pass_h;
             std::vector<RenderPassDX9_t*> pass;
 
