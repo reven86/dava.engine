@@ -18,6 +18,7 @@ class HeightDeltaTool
 
 public:
     explicit HeightDeltaTool(QWidget* p = NULL);
+    ~HeightDeltaTool();
 
 private slots:
     void OnRun();

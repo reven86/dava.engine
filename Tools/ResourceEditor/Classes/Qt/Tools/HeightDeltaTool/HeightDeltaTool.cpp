@@ -23,11 +23,12 @@ HeightDeltaTool::HeightDeltaTool(QWidget* p)
 
     connect(ui->cancel, &QAbstractButton::clicked, this, &HeightDeltaTool::close);
     connect(ui->run, &QAbstractButton::clicked, this, &HeightDeltaTool::OnRun);
-    using TValueChangedFn = void (QDoubleSpinBox::*)(double);
-    connect(ui->angle, reinterpret_cast<TValueChangedFn>(&QDoubleSpinBox::valueChanged), this, &HeightDeltaTool::OnValueChanged);
+    connect(ui->angle, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &HeightDeltaTool::OnValueChanged);
 
     OnValueChanged();
 }
+
+HeightDeltaTool::~HeightDeltaTool() = default;
 
 double HeightDeltaTool::GetThresholdInMeters(double unitSize)
 {
