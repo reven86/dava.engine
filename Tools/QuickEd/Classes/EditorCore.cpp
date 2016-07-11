@@ -126,7 +126,7 @@ void EditorCore::OnReloadSpritesFinished()
         cacheClient.reset();
     }
 
-    Sprite::ReloadSprites();
+    Sprite::ReloadSprites(Texture::GetDefaultGPU());
 }
 
 void EditorCore::OnGLWidgedInitialized()

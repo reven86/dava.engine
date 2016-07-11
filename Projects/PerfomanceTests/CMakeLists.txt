@@ -45,8 +45,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source_folders( SRC_ROOT "Classes" "iOSSpecific" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
-generate_source_groups_project( )
+define_source ( SOURCE "Classes" "iOSSpecific" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 

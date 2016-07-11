@@ -26,9 +26,10 @@ CopyLastLODToLod0Command::CopyLastLODToLod0Command(DAVA::LodComponent* component
 
 CopyLastLODToLod0Command::~CopyLastLODToLod0Command()
 {
-    uint32 newBatchCount = newBatches.size();
-    for (uint32 ri = 0; ri < newBatchCount; ++ri)
-        newBatches[ri]->Release();
+    for (DAVA::RenderBatch* batch : newBatches)
+    {
+        DAVA::SafeRelease(batch);
+    }
 
     newBatches.clear();
     switchIndices.clear();

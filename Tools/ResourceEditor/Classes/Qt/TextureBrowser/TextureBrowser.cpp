@@ -5,6 +5,7 @@
 #include "TextureBrowser/TextureCache.h"
 #include "Main/QtUtils.h"
 #include "Main/mainwindow.h"
+#include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibDdsHelper.h"
 #include "Qt/Settings/SettingsManager.h"
@@ -702,12 +703,20 @@ void TextureBrowser::textureBgMaskPressed(bool checked)
 
 void TextureBrowser::texturePropertyChanged(int type)
 {
+    DVASSERT(ui->textureProperties->getTextureDescriptor() == curDescriptor);
+
     // settings that need texture to reconvert
     if (type == TextureProperties::PROP_FORMAT ||
         type == TextureProperties::PROP_MIPMAP ||
         type == TextureProperties::PROP_NORMALMAP ||
         type == TextureProperties::PROP_SIZE)
     {
+        if (type == TextureProperties::PROP_FORMAT)
+        { // add ImageFormat by pixel format
+            DAVA::PixelFormat format = static_cast<DAVA::PixelFormat>(curDescriptor->compression[curTextureView].format);
+            curDescriptor->compression[curTextureView].imageFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(curTextureView, format);
+        }
+
         // set current Texture view and force texture conversion
         // new texture will be applied to scene after conversion (by signal)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));

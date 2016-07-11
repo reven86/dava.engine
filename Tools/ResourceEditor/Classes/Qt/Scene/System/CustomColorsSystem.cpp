@@ -9,12 +9,13 @@
 #include "Commands2/KeyedArchiveCommand.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Scene/SceneSignals.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
 #include "Project/ProjectManager.h"
+#include "Main/QtUtils.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
 {
     SetColor(colorIndex);
 }
@@ -68,7 +69,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     if (!toolImageTexture)
     {
-        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
+        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.png");
     }
 
     enabled = true;
@@ -181,7 +182,7 @@ void CustomColorsSystem::UpdateToolImage(bool force)
 
 void CustomColorsSystem::CreateToolImage(const DAVA::FilePath& filePath)
 {
-    DAVA::Texture* toolTexture = DAVA::Texture::CreateFromFile(filePath);
+    DAVA::Texture* toolTexture = CreateSingleMipTexture(filePath);
     if (!toolTexture)
     {
         return;

@@ -35,6 +35,8 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+#include "CommandLine/SceneExporter/SceneExporter.h"
+
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"
 
@@ -107,7 +109,7 @@ public:
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
     DAVA::SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
     DAVA::SceneFileV2::eError SaveScene();
-    bool Export(const DAVA::eGPUFamily newGPU);
+    bool Export(const SceneExporter::Params& exportingParams);
 
     const DAVA::FilePath& GetScenePath();
     void SetScenePath(const DAVA::FilePath& newScenePath);

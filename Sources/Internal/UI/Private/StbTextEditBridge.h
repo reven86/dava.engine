@@ -112,18 +112,18 @@ public:
      * \brief Send key to STB text edit
      * \param[in] codePoint key code
      */
-    virtual void SendKey(uint32 codePoint);
+    virtual bool SendKey(uint32 codePoint);
 
     /**
      * \brief Cut (delete) selected text
      */
-    virtual void Cut();
+    virtual bool Cut();
 
     /**
      * \brief Insert (replace selected) new text in field
      * \param[in] str string to pasting
      */
-    virtual void Paste(const WideString& str);
+    virtual bool Paste(const WideString& str);
 
     /**
      * \brief Send mouse click to STB text edit

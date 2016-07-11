@@ -12,6 +12,7 @@
 #include "CommandLine/CommandLineManager.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
+#include "Render/Texture.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/RunGuard/RunGuard.h"
@@ -121,6 +122,8 @@ void RunConsole(int argc, char* argv[], CommandLineManager& cmdLineManager)
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
+    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
+
     cmdLineManager.Process();
 }
 
@@ -149,10 +152,6 @@ int RunGui(int argc, char* argv[], CommandLineManager& cmdLine)
 
     DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
     DAVA::LocalizationSystem::Instance()->SetCurrentLocale("en");
-
-    DAVA::int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
 
     // check and unpack help documents
     UnpackHelpDoc();
