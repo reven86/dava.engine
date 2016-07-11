@@ -14,6 +14,7 @@
 #import <Foundation/NSGeometry.h>
 
 @class NSView;
+@class NSBitmapImageRep;
 
 namespace DAVA
 {
@@ -28,6 +29,7 @@ public:
     void RemoveNSView(NSView* nsview);
 
     NSRect ConvertRectFromBacking(const NSRect& rect);
+    NSBitmapImageRep* BitmapImageRepForCachingDisplayInRect(const NSRect& rect);
 
 private:
     WindowOsX* nativeWindow = nullptr;

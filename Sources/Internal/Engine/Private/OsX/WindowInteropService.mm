@@ -38,6 +38,11 @@ NSRect WindowInteropService::ConvertRectFromBacking(const NSRect& rect)
     return [bridge->openGLView convertRectFromBacking:rect];
 }
 
+NSBitmapImageRep* WindowInteropService::BitmapImageRepForCachingDisplayInRect(const NSRect& rect)
+{
+    return [bridge->openGLView bitmapImageRepForCachingDisplayInRect:rect];
+}
+
 } // namespace Private
 } // namespace DAVA
 
