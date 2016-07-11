@@ -118,9 +118,18 @@ void LodSystem::Process(float32 timeElapsed)
             {
                 fast.currentLod = newLod;
                 SlowStruct& slow = slowVector[index];
-                fast.nearSquare = slow.nearSquares[fast.currentLod];
-                fast.farSquare = slow.farSquares[fast.currentLod];
                 slow.lod->currentLod = fast.currentLod;
+
+                if (newLod == LodComponent::INVALID_LOD_LAYER)
+                {
+                    fast.nearSquare = fast.farSquare;
+                    fast.farSquare = std::numeric_limits<float32>::max();
+                }
+                else
+                {
+                    fast.nearSquare = slow.nearSquares[fast.currentLod];
+                    fast.farSquare = slow.farSquares[fast.currentLod];
+                }
 
                 ParticleEffectComponent* effect = slow.effect;
                 if (effect)
@@ -150,7 +159,7 @@ void LodSystem::UpdateDistances(LodComponent* from, LodSystem::SlowStruct* to)
     to->farSquares[0] = from->GetLodLayerDistance(0) * 1.05f;
     to->farSquares[0] *= to->farSquares[0];
 
-    for (int32 i = 1; i < LodComponent::MAX_LOD_LAYERS - 1; ++i)
+    for (int32 i = 1; i < LodComponent::MAX_LOD_LAYERS; ++i)
     {
         to->nearSquares[i] = from->GetLodLayerDistance(i - 1) * 0.95f;
         to->nearSquares[i] *= to->nearSquares[i];
@@ -158,10 +167,6 @@ void LodSystem::UpdateDistances(LodComponent* from, LodSystem::SlowStruct* to)
         to->farSquares[i] = from->GetLodLayerDistance(i) * 1.05f;
         to->farSquares[i] *= to->farSquares[i];
     }
-
-    to->nearSquares[LodComponent::MAX_LOD_LAYERS - 1] = from->GetLodLayerDistance(LodComponent::MAX_LOD_LAYERS - 2) * 0.95f;
-    to->nearSquares[LodComponent::MAX_LOD_LAYERS - 1] *= to->nearSquares[LodComponent::MAX_LOD_LAYERS - 1];
-    to->farSquares[LodComponent::MAX_LOD_LAYERS - 1] = std::numeric_limits<float32>::max();
 }
 
 void LodSystem::AddEntity(Entity* entity)
