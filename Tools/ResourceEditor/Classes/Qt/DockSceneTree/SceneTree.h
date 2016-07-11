@@ -27,6 +27,7 @@ protected:
 private slots:
     void ShowContextMenu(const QPoint& pos);
     void SetFilter(const QString& filter);
+    void RemoveSelection();
 
     void CollapseSwitch();
     void CollapseAll();
