@@ -5,10 +5,14 @@
 
 #include <QStatusBar>
 
+namespace DAVA
+{
+class Command;
+}
 class QLabel;
 class SceneEditor2;
 class SelectableGroup;
-class RECommand;
+
 class StatusBar : public QStatusBar
 {
     Q_OBJECT
@@ -20,7 +24,7 @@ public:
 public slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
 
     void UpdateByTimer();

@@ -166,12 +166,12 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     emit ValueChanged();
 }
 
-void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommand* command, bool redo)
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (blockSignals || (GetActiveScene() != scene))
         return;
 
-    auto tryRemoveSelectedEmitter = [this, scene](const RECommand* inCommand) {
+    auto tryRemoveSelectedEmitter = [this, scene](const DAVA::Command* inCommand) {
         if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
             auto cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
@@ -184,8 +184,7 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECom
 
     if (command->GetID() == DAVA::CMDID_BATCH)
     {
-        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
-        const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
+        const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)
         {
             tryRemoveSelectedEmitter(batch->GetCommand(i));

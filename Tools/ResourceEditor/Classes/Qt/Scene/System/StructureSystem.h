@@ -1,7 +1,6 @@
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 
-#include "Commands2/Base/RECommand.h"
 #include "Scene/SelectableGroup.h"
 #include "StringConstants.h"
 #include "SystemDelegates.h"
@@ -15,6 +14,11 @@
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Functional/Function.h"
+
+namespace DAVA
+{
+class Command;
+}
 
 class StructureSystem : public DAVA::SceneSystem
 {
@@ -51,7 +55,7 @@ private:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const DAVA::Command* command, bool redo);
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;

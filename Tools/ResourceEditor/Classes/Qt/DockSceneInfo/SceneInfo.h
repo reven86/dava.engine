@@ -7,10 +7,14 @@
 
 #include <QShowEvent>
 
+namespace DAVA
+{
+class Command;
+}
+
 class SceneEditor2;
 class SelectableGroup;
 class EditorStatisticsSystem;
-class RECommand;
 
 class SceneInfo : public QtPropertyEditor
 {
@@ -49,7 +53,7 @@ protected slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void OnCommmandExecuted(SceneEditor2* scene, const RECommand* command, bool isRedo);
+    void OnCommmandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool isRedo);
     void OnThemeChanged();
 
 private:

@@ -508,7 +508,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const RECommand*, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), this, SLOT(commandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(autoExpand()));
 
     // material tree
@@ -739,7 +739,7 @@ void MaterialEditor::materialSelected(const QItemSelection& selected, const QIte
     SetCurMaterial(materials);
 }
 
-void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void MaterialEditor::commandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (scene != QtMainWindow::Instance()->GetCurrentScene())
     {
@@ -769,7 +769,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommand* comma
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const RECommand* command, bool redo)
+        auto ProcessSingleCommand = [this](const DAVA::Command* command, bool redo)
         {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
@@ -816,8 +816,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommand* comma
 
         if (command->GetID() == DAVA::CMDID_BATCH)
         {
-            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {

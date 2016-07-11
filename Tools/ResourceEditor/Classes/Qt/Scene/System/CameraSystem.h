@@ -7,8 +7,6 @@
 
 #include "Base/Introspection.h"
 
-class RECommand;
-
 class SceneCameraSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
@@ -62,7 +60,6 @@ protected:
     void OnKeyboardInput(DAVA::UIEvent* event);
 
     void Draw();
-    void ProcessCommand(const RECommand* command, bool redo);
 
     void CreateDebugCameras();
     void RecalcCameraAspect();

@@ -46,11 +46,17 @@ public:
     */
     uint32 Size() const;
 
+    /**
+    \brief check that the one of commands ID is equal to given command ID.
+    \returns returns true if any one commands ID is equal to given command ID. Otherwise return false.
+    */
+    bool MatchCommandID(DAVA::CommandID_t commandID) const override;
+
 protected:
     using CommandsContainer = Vector<Pointer>;
     CommandsContainer commandList;
 
-    UnorderedSet<int32> commandIDs;
+    UnorderedSet<CommandID_t> commandIDs;
 };
 
 inline bool CommandBatch::IsEmpty() const

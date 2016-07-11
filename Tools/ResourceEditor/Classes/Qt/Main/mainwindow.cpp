@@ -147,7 +147,7 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
 
     connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(ProjectOpened(const QString&)));
     connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
-    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const RECommand*, bool)));
+    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
     connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
@@ -650,7 +650,7 @@ void QtMainWindow::SetupStatusBar()
 {
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const RECommand*, bool)));
+    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
     QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
     QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
     QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
@@ -1098,7 +1098,7 @@ void QtMainWindow::UpdateModificationActionsState()
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
 }
 
-void QtMainWindow::UpdateWayEditor(const RECommand* command, bool redo)
+void QtMainWindow::UpdateWayEditor(const DAVA::Command* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
@@ -1112,7 +1112,7 @@ void QtMainWindow::UpdateWayEditor(const RECommand* command, bool redo)
     }
 }
 
-void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (scene == GetCurrentScene())
     {
@@ -1130,8 +1130,7 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* co
 
         if (command->GetID() == DAVA::CMDID_BATCH)
         {
-            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {
@@ -1144,7 +1143,8 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* co
         }
         else
         {
-            UpdateCameraState(command->GetEntity());
+            const RECommand* reCommand = DAVA::DynamicTypeCheck<const RECommand*>(command);
+            UpdateCameraState(reCommand->GetEntity());
         }
 
         UpdateWayEditor(command, redo);

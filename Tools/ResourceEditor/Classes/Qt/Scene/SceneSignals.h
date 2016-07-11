@@ -29,7 +29,7 @@ signals:
     void Deactivated(SceneEditor2* scene);
 
     void UndoRedoStateChanged(SceneEditor2* scene);
-    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
@@ -103,7 +103,7 @@ public:
         emit UndoRedoStateChanged(scene);
     }
 
-    void EmitCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+    void EmitCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
     {
         emit CommandExecuted(scene, command, redo);
     };

@@ -21,7 +21,7 @@ RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
     return nullptr;
 }
 
-void RECommandBatch::RemoveCommands(DAVA::int32 commandId)
+void RECommandBatch::RemoveCommands(DAVA::CommandID_t commandId)
 {
     auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const Pointer& cmd) {
         return cmd->GetID() == commandId;
@@ -29,24 +29,6 @@ void RECommandBatch::RemoveCommands(DAVA::int32 commandId)
 
     commandList.erase(it, commandList.end());
     commandIDs.erase(commandId);
-}
-
-bool RECommandBatch::MatchCommandID(DAVA::int32 commandId) const
-{
-    return commandIDs.count(commandId) > 0;
-}
-
-bool RECommandBatch::MatchCommandIDs(const DAVA::Vector<DAVA::int32>& commandIdVector) const
-{
-    for (auto id : commandIdVector)
-    {
-        if (MatchCommandID(id))
-        {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 bool RECommandBatch::IsMultiCommandBatch() const

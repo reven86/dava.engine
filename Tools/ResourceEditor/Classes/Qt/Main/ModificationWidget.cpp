@@ -236,7 +236,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const RECommand* command, bool redo)
+void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (curScene == scene)
     {

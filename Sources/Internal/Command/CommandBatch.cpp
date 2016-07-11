@@ -43,4 +43,9 @@ void CommandBatch::AddAndExec(Pointer&& command)
     commandIDs.insert(actualCommand->GetID());
     actualCommand->Execute();
 }
+
+bool CommandBatch::MatchCommandID(DAVA::CommandID_t commandId) const
+{
+    return commandIDs.count(commandId) > 0;
+}
 }

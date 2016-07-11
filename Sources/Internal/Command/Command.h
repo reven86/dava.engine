@@ -44,7 +44,7 @@ public:
     As an example it can be selection command or command which toggle view state in the editor;
     \returns true if command change save state aka modify any files or serializable objects.
     */
-    bool IsModifying() const;
+    virtual bool IsModifying() const;
 
     /**
     \brief Returns true if command have Undo realization.
@@ -53,7 +53,19 @@ public:
     */
     virtual bool CanUndo() const;
 
-    //reimplement pure virtual function Undo for commands which can not make Undo itself
+    /**
+    \brief check that the class command ID is equal to given command ID.
+    \returns returns true if command ID is equal to given command ID. Otherwise return false.
+    */
+    virtual bool MatchCommandID(DAVA::CommandID_t commandID) const;
+
+    /**
+    \brief check that the command is equal to the any one of given command IDs.
+    \returns returns true if command command ID is equal to the any one of given command IDs. Otherwise return false.
+    */
+    bool MatchCommandIDs(const DAVA::Vector<DAVA::CommandID_t>& commandIDVector) const;
+
+    //re implement pure virtual function Undo for commands which can not make Undo itself
     void Undo() override;
 
 protected:

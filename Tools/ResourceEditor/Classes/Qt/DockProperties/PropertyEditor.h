@@ -63,7 +63,7 @@ public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
     void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
 
     void ActionEditComponent();
     void ActionEditMaterial();

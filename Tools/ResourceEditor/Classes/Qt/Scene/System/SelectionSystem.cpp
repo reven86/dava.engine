@@ -448,24 +448,6 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::ProcessCommand(const RECommand* command, bool redo)
-{
-    if (nullptr != command)
-    {
-        auto commandId = command->GetID();
-
-        if ((CMDID_ENTITY_REMOVE == commandId))
-        {
-            // remove from selection entity that was removed by command
-            ExcludeEntityFromSelection(command->GetEntity());
-        }
-        else if ((CMDID_ENTITY_CHANGE_PARENT == commandId) || (CMDID_TRANSFORM == commandId))
-        {
-            invalidSelectionBoxes = true;
-        }
-    }
-}
-
 void SceneSelectionSystem::SetSelection(SelectableGroup& newSelection)
 {
     if (IsLocked())

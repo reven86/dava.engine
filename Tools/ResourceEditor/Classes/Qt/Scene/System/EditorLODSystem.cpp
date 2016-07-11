@@ -531,13 +531,12 @@ void EditorLODSystem::DispatchSignals()
     invalidateUIFlag = FLAG_NONE;
 }
 
-void EditorLODSystem::ProcessCommand(const RECommand* command, bool redo)
+void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
 {
     if (generateCommands)
     {
         return;
     }
-
     if (command->MatchCommandID(CMDID_LOD_DISTANCE_CHANGE))
     {
         RecalculateData();
@@ -572,8 +571,7 @@ void EditorLODSystem::ProcessCommand(const RECommand* command, bool redo)
 
         if (command->GetID() == CMDID_BATCH)
         {
-            const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandBase);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {

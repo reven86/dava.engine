@@ -36,7 +36,7 @@ private slots:
     void OnSceneActivated(SceneEditor2* scene);
     void OnSceneDeactivated(SceneEditor2* scene);
     void OnSceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void OnSceneCommand(SceneEditor2* scene, const RECommand* command, bool redo);
+    void OnSceneCommand(SceneEditor2* scene, const DAVA::Command* command, bool redo);
 
     void OnXChanged();
     void OnYChanged();

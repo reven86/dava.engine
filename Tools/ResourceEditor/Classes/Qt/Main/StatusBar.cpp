@@ -87,7 +87,7 @@ void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     UpdateSelectionBoxSize(scene);
 }
 
-void StatusBar::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void StatusBar::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_TRANSFORM))
     {

@@ -38,7 +38,7 @@ BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent, QDialogButtonBox::Stan
 
     ui->buttonBox->setStandardButtons(buttons);
 
-    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const RECommand*, bool)));
+    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
 }
 
 BaseAddEntityDialog::~BaseAddEntityDialog()
@@ -190,7 +190,7 @@ void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
     }
 }
 
-void BaseAddEntityDialog::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void BaseAddEntityDialog::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (propEditor)
     {

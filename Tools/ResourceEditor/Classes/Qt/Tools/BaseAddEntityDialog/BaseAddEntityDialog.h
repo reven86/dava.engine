@@ -39,7 +39,7 @@ public:
 
 protected slots:
     virtual void OnItemEdited(const QModelIndex&);
-    virtual void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    virtual void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
 
 protected:
     virtual void FillPropertyEditorWithContent() = 0;

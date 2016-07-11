@@ -60,7 +60,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
     {
         QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const RECommand*, bool)));
+        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
         QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
         QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &PropertyEditor::ResetProperties);
     }
@@ -722,7 +722,7 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     SetEntities(selected);
 }
 
-void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void PropertyEditor::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -755,11 +755,10 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* comma
 
     bool resetPropertyPanel = false;
 
-    DAVA::int32 commandID = command->GetID();
+    DAVA::CommandID_t commandID = command->GetID();
     if (commandID == DAVA::CMDID_BATCH)
     {
-        const DAVA::Command* commandBase = static_cast<const DAVA::Command*>(command);
-        const RECommandBatch* batch = DAVA::DynamicTypeCheck<const RECommandBatch*>(commandBase);
+        const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         const DAVA::uint32 count = batch->Size();
         for (DAVA::uint32 i = 0; !resetPropertyPanel && i < count; ++i)
         {
@@ -768,7 +767,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* comma
     }
     else
     {
-        resetPropertyPanel = ShouldResetPanel(command);
+        const RECommand* reCommand = DAVA::DynamicTypeCheck<const RECommand*>(command);
+        resetPropertyPanel = ShouldResetPanel(reCommand);
     }
 
     if (resetPropertyPanel)

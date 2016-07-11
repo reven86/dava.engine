@@ -222,7 +222,7 @@ private slots:
     void ProjectClosed();
 
     void SceneUndoRedoStateChanged(SceneEditor2* scene);
-    void SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
@@ -257,7 +257,7 @@ private:
     void EnableProjectActions(bool enable);
     void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
-    void UpdateWayEditor(const RECommand* command, bool redo);
+    void UpdateWayEditor(const DAVA::Command* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);

@@ -1056,14 +1056,14 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     }
 }
 
-void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (curScene != scene || command == nullptr)
     {
         return;
     }
 
-    static DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    static DAVA::Vector<DAVA::CommandID_t> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
     if (command->MatchCommandIDs(commandIds))
     {
         Update();

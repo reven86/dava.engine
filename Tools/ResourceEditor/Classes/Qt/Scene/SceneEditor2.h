@@ -38,6 +38,11 @@
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"
 
+namespace DAVA
+{
+class Command;
+}
+
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
