@@ -7,6 +7,7 @@ using DAVA::Logger;
 
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
+#include "RenderLoop.h"
 
 namespace rhi
 {
@@ -1062,7 +1063,8 @@ void Present()
     if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
 
-    PresentImpl(frameSyncObjects[currFrameSyncId]);
+    //PresentImpl(frameSyncObjects[currFrameSyncId]);
+    RenderLoop::Present(frameSyncObjects[currFrameSyncId]);
 
     currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
     DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting

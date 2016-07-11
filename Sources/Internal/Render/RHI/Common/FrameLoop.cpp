@@ -1,4 +1,4 @@
-
+#include "FrameLoop.h"
 #include "rhi_Pool.h"
 #include "CommonImpl.h"
 
@@ -7,6 +7,9 @@ namespace rhi
 namespace FrameLoop
 {
 static uint32 currFrameNumber = 0;
+static DAVA::Vector<FrameBase> frames;
+static DAVA::Spinlock frameSync;
+static bool frameStarted = false;
 
 static void ExecuteFrameCommands()
 {
@@ -83,6 +86,36 @@ static void ExecuteFrameCommands()
 }
 void RejectFrames()
 {
+    frameSync.Lock();
+    for (std::vector<FrameBase>::iterator f = frames.begin(); f != frames.end();)
+    {
+        if (f->readyToExecute)
+        {
+            if (f->sync != InvalidHandle)
+            {
+                SyncObjectBase* s = DispatchPlatform::GetSyncObject(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
+            }
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassBase* pp = DispatchPlatform::GetRenderPass(*p);
+
+                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+                {
+                    DispatchPlatform::RejectCommandBuffer(*c);
+                }
+                DispatchPlatform::FreeRenderPass(*p);
+            }
+            f = frames.erase(f);
+        }
+        else
+        {
+            ++f;
+        }
+    }
+
+    frameSync.Unlock();
 }
 
 void ProcessFrame()
@@ -114,6 +147,49 @@ void ProcessFrame()
     DispatchPlatform::UpdateSyncObjects(currFrameNumber);
 
     TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
+}
+
+bool FinishFrame(Handle sync)
+{
+    size_t frame_cnt = 0;
+    frameSync.Lock();
+    {
+        frame_cnt = frames.size();
+        if (frame_cnt)
+        {
+            frames.back().readyToExecute = true;
+            frames.back().sync = sync;
+            frameStarted = false;
+        }
+    }
+    FrameLoop::frameSync.Unlock();
+
+    if (!frame_cnt)
+    {
+        if (sync != InvalidHandle) //frame is empty - still need to sync if required
+        {
+            SyncObjectBase* syncObject = DispatchPlatform::GetSyncObject(sync);
+            syncObject->is_signaled = true;
+        }
+        return false;
+    }
+
+    return true;
+}
+bool FrameReady()
+{
+    frameSync.Lock();
+    bool res = (FrameLoop::frames.size() && FrameLoop::frames.begin()->readyToExecute);
+    frameSync.Unlock();
+    return res;
+}
+
+uint32 FramesCount()
+{
+    FrameLoop::frameSync.Lock();
+    uint32 frame_cnt = static_cast<uint32>(FrameLoop::frames.size());
+    FrameLoop::frameSync.Unlock();
+    return frame_cnt;
 }
 }
 }

@@ -28,62 +28,20 @@ static DAVA::Atomic<bool> renderThreadExitPending = false;
 
 using namespace Details;
 
-void PresentFrame()
-{
-    if (!CommonDetail::renderContextReady)
-    {
-        //no render context - just reject frames and do nothing;
-        FrameLoop::RejectFrames();
-        return;
-    }
-
-    bool presentResult = false;
-    if (!CommonDetail::resetPending)
-    {
-        FrameLoop::ProcessFrame();
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
-        presentResult = DispatchPlatform::PresntBuffer();
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
-    }
-
-    if (!presentResult)
-    {
-        FrameLoop::RejectFrames();
-        DispatchPlatform::ResetBlock();
-    }
-}
 
 void Present(Handle syncHandle) // called from main thread
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
     Trace("rhi-gl.present\n");
 
-    uint32 frame_cnt = 0;
-    FrameLoop::frameSync.Lock();
-    {
-        frame_cnt = FrameLoop::frames.size();
-        if (frame_cnt)
-        {
-            FrameLoop::frames.back().readyToExecute = true;
-            FrameLoop::frames.back().sync = syncHandle;
-            /*??????? do we really need frame started?*/ //_GLES2_FrameStarted = false;
-        }
-    }
-    FrameLoop::frameSync.Unlock();
-
-    if (!frame_cnt)
-    {
-        if (syncHandle != InvalidHandle) //frame is empty - still need to sync if required
-        {
-            SyncObjectBase* syncObject = DispatchPlatform::GetSyncObject(syncHandle);
-            syncObject->is_signaled = true;
-        }
+    bool res = FrameLoop::FinishFrame(syncHandle);
+    if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
         return;
-    }
 
+    uint32 frame_cnt = 0;
     if (renderThreadFrameCount == 0) //single thread render
     {
-        PresentFrame();
+        FrameLoop::ProcessFrame();
     }
     else //wait for render thread if needed
     {
@@ -93,10 +51,7 @@ void Present(Handle syncHandle) // called from main thread
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
-            FrameLoop::frameSync.Lock();
-            frame_cnt = static_cast<uint32>(FrameLoop::frames.size());
-            FrameLoop::frameSync.Unlock();
-
+            frame_cnt = FrameLoop::FramesCount();
             if (frame_cnt >= renderThreadFrameCount)
                 frameDoneEvent.Wait();
 
@@ -138,10 +93,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 break;
 
             DispatchPlatform::ProcessImmediateCommands();
-
-            FrameLoop::frameSync.Lock();
-            do_wait = !(FrameLoop::frames.size() && FrameLoop::frames.begin()->readyToExecute) && !renderThreadSuspended.Get();
-            FrameLoop::frameSync.Unlock();
+            do_wait = !(FrameLoop::FrameReady() || renderThreadSuspended.Get());
 
             if (do_wait)
             {
@@ -152,7 +104,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         if (!renderThreadExitPending)
         {
-            PresentFrame();
+            FrameLoop::ProcessFrame();
         }
 
         frameDoneEvent.Signal();
@@ -182,29 +134,6 @@ void InitializeRenderThread(uint32 frameCount)
     }
 }
 
-//------------------------------------------------------------------------------
-
-void UninitializeRenderThread()
-{
-    if (renderThreadFrameCount) //?ASSERT
-    {
-        renderThreadExitPending = true;
-        if (renderThreadSuspended.Get())
-        {
-            Logger::Info("RenderThread is suspended. Need resume it to be able to join.");
-            ResumeRender();
-        }
-
-        framePreparedEvent.Signal();
-
-        Logger::Info("UninitializeRenderThread join begin");
-        renderThread->Join();
-        Logger::Info("UninitializeRenderThread join end");
-    }
-}
-
-//------------------------------------------------------------------------------
-
 void SuspendRender()
 {
     if (renderThreadFrameCount)
@@ -224,8 +153,6 @@ void SuspendRender()
     Logger::Error("Render  Suspended");
 }
 
-//------------------------------------------------------------------------------
-
 void ResumeRender()
 {
     Logger::Error("Render Resumed");
@@ -233,6 +160,25 @@ void ResumeRender()
     {
         renderThreadSuspended.Set(false);
         renderThreadSuspendSync.Post();
+    }
+}
+
+void UninitializeRenderThread()
+{
+    if (renderThreadFrameCount) //?ASSERT
+    {
+        renderThreadExitPending = true;
+        if (renderThreadSuspended.Get())
+        {
+            Logger::Info("RenderThread is suspended. Need resume it to be able to join.");
+            ResumeRender();
+        }
+
+        framePreparedEvent.Signal();
+
+        Logger::Info("UninitializeRenderThread join begin");
+        renderThread->Join();
+        Logger::Info("UninitializeRenderThread join end");
     }
 }
 }
