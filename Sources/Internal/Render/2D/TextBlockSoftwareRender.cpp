@@ -71,7 +71,7 @@ void TextBlockSoftwareRender::Prepare()
     }
     else
     {
-        currentTexture->TexImage(0, width, height, buffer.data(), buffer.size(), Texture::INVALID_CUBEMAP_FACE);
+        currentTexture->TexImage(0, width, height, buffer.data(), static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
     }
 
     sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
