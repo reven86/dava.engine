@@ -18,7 +18,7 @@ void Init(uint32 maxCount);
 void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride);
 void ReleaseAll();
 void ReCreateAll();
-void VerifyReleased();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -29,7 +29,7 @@ void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle vb);
 void ReleaseAll();
 void ReCreateAll();
-void VerifyReleased();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -73,7 +73,7 @@ void SetAsRenderTarget(Handle tex);
 void SetAsDepthStencil(Handle tex);
 void ReleaseAll();
 void ReCreateAll();
-void VerifyReleased();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -97,7 +97,6 @@ void SetupDispatch(Dispatch* dispatch);
 namespace CommandBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
-void BlockNonRenderThreads();
 }
 
 

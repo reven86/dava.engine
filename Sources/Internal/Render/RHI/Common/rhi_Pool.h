@@ -1,9 +1,16 @@
 #pragma once
 
+#define RHI_RESOURCE_INCLUDE_BACKTRACE 0
+#define RHI_POOL_USE_FAST_RESTORE_COUNTER 1
+
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+#include "Debug/Backtrace.h"
+#endif
 
 namespace rhi
 {
@@ -39,7 +46,7 @@ public:
     static void Reserve(unsigned maxCount);
     static unsigned ReleaseAll();
     static unsigned ReCreateAll();
-    static void VerifyReleased();
+    static void LogUnrestoredBacktraces();
 
     static uint32 PendingRestoreCount();
 
@@ -263,17 +270,6 @@ ResourcePool<T, RT, DT, nr>::ReleaseAll()
     return count;
 }
 
-template <class T, ResourceType RT, typename DT, bool nr>
-inline void
-ResourcePool<T, RT, DT, nr>::VerifyReleased()
-{
-    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
-    for (auto i = Begin(), i_end = End(); i != i_end; ++i)
-    {
-        DVASSERT(i->isReleased);
-    }
-}
-
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
@@ -294,6 +290,30 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
         ++count;
     }
     return count;
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
+{
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    Lock();
+    for (Iterator i = Begin(), e = End(); i != e; ++i)
+    {
+        if (i->NeedRestore())
+        {
+            DAVA::Logger::Error("----------------------------");
+            for (const DAVA::Debug::StackFrame& frame : i->backtrace)
+            {
+                DAVA::Logger::Error(frame.function.c_str());
+            }
+            DAVA::Logger::Error("----------------------------");
+        }
+    }
+    Unlock();
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -343,7 +363,10 @@ public:
             return;
 
         needRestore = true;
+
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
         ++ObjectsToRestore;
+#endif
     }
 
     void MarkRestored()
@@ -351,8 +374,10 @@ public:
         if (needRestore)
         {
             needRestore = false;
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
             DVASSERT(PendingRestoreCount() > 0);
             --ObjectsToRestore;
+#endif
         }
     }
 
@@ -366,18 +391,54 @@ public:
         recreatePending = value;
     }
 
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     static uint32 PendingRestoreCount()
     {
         return ObjectsToRestore.Get();
     }
+#endif
 
-    bool isReleased = false;
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
+
+    void CaptureBacktrace()
+    {
+        if (backtrace.empty())
+        {
+            backtrace = DAVA::Debug::GetBacktrace();
+            // remove redundant stack frames
+            if (backtrace.size() > 2)
+            {
+                backtrace.erase(backtrace.begin(), backtrace.begin() + 2);
+            }
+            if (backtrace.size() > 8)
+            {
+                backtrace.erase(backtrace.end() - 8, backtrace.end());
+            }
+        }
+    }
+
+    void CleanupBacktrace()
+    {
+        backtrace.clear();
+    }
+#else
+    void CaptureBacktrace()
+    {
+    }
+    void CleanupBacktrace()
+    {
+    }
+#endif
 
 private:
     DT creationDesc;
     bool needRestore = false;
     bool recreatePending = false;
+
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     static DAVA::Atomic<uint32> ObjectsToRestore;
+#endif
 };
 
 //------------------------------------------------------------------------------
@@ -386,9 +447,23 @@ template <class T, ResourceType RT, typename DT, bool nr>
 inline uint32
 ResourcePool<T, RT, DT, nr>::PendingRestoreCount()
 {
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     return ResourceImpl<T, DT>::PendingRestoreCount();
+#else
+    uint32 result = 0;
+    Lock();
+    for (Iterator i = Begin(), e = End(); i != e; ++i)
+    {
+        result += i->NeedRestore() ? 1 : 0;
+    }
+    Unlock();
+    return result;
+#endif
 }
 
-#define RHI_IMPL_RESOURCE(T, DT) \
-template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
+#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
+#define RHI_IMPL_RESOURCE(T, DT) template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
+#else
+#define RHI_IMPL_RESOURCE(T, DT)
+#endif
 }

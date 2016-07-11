@@ -44,6 +44,8 @@ VertexBufferDX9_t::VertexBufferDX9_t()
 
 bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
 {
+    CaptureBacktrace();
+
     DVASSERT(desc.size);
     bool success = false;
 
@@ -89,7 +91,6 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
         {
             size = desc.size;
             success = true;
-            isReleased = false;
         }
         else
         {
@@ -116,15 +117,17 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         buffer = nullptr;
     }
 
-    if (!RecreatePending() && mappedData)
+    if (!RecreatePending())
     {
         DVASSERT(!isMapped)
-        ::free(mappedData);
-        mappedData = nullptr;
+        if (mappedData)
+        {
+            ::free(mappedData);
+            mappedData = nullptr;
+        }
         updatePending = false;
+        CleanupBacktrace();
     }
-
-    isReleased = true;
 }
 
 //==============================================================================
@@ -134,8 +137,6 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     Handle handle = VertexBufferDX9Pool::Alloc();
     VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
 
@@ -153,8 +154,6 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 static void
 dx9_VertexBuffer_Delete(Handle vb)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->SetRecreatePending(false);
     self->MarkRestored();
@@ -306,9 +305,9 @@ void ReCreateAll()
     VertexBufferDX9Pool::ReCreateAll();
 }
 
-void VerifyReleased()
+void LogUnrestoredBacktraces()
 {
-    VertexBufferDX9Pool::VerifyReleased();
+    VertexBufferDX9Pool::LogUnrestoredBacktraces();
 }
 
 unsigned
