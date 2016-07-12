@@ -9,7 +9,7 @@
 #include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/WindowBackendiOS.h"
-#include "Engine/Private/iOS/WindowDelegateiOS.h"
+//#include "Engine/Private/iOS/WindowDelegateiOS.h"
 
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"

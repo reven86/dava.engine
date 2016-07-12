@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 
@@ -56,3 +58,4 @@
 #endif //#if defined (__DAVAENGINE_IPHONE__)
 
 #endif // __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
+#endif // !__DAVAENGINE_COREV2__

@@ -8,6 +8,7 @@
 
 #if defined(__DAVAENGINE_QT__) || \
     defined(__DAVAENGINE_MACOS__) || \
+    defined(__DAVAENGINE_IPHONE__) || \
     (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])

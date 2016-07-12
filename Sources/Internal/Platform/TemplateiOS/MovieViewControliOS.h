@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
 #define __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
 
@@ -45,3 +47,4 @@ private:
 };
 
 #endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__) */
+#endif // !__DAVAENGINE_COREV2__

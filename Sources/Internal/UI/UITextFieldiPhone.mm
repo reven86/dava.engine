@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
@@ -792,3 +794,4 @@ void* TextFieldPlatformImpl::TruncateText(void* text, int maxLength)
 }
 
 #endif
+#endif // !__DAVAENGINE_COREV2__

@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
@@ -688,3 +690,4 @@ void WebViewControl::WillDraw()
 } // end namespace DAVA
 
 #endif //defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
+#endif // !__DAVAENGINE_COREV2__

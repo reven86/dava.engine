@@ -34,6 +34,7 @@ struct CoreNativeBridgeOsX;
 struct WindowNativeBridgeOsX;
 #elif defined(__DAVAENGINE_IPHONE__)
 struct CoreNativeBridgeiOS;
+struct WindowNativeBridgeiOS;
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation 

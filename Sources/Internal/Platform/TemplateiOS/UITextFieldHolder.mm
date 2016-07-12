@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "UITextFieldHolder.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -612,3 +614,4 @@
 @end
 
 #endif //#if defined(__DAVAENGINE_IPHONE__)
+#endif // !__DAVAENGINE_COREV2__

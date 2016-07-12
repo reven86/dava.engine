@@ -6,8 +6,6 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_IPHONE__)
 
-#include <AppKit/NSScreen.h>
-
 #include "Engine/Public/iOS/WindowNativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -38,7 +36,7 @@ WindowBackend::~WindowBackend()
 
 void* WindowBackend::GetHandle() const
 {
-    return bridge->openGLView;
+    return nullptr;
 }
 
 bool WindowBackend::Create(float32 width, float32 height)

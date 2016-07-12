@@ -6,7 +6,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
-#elif defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldWinUAP.h"
@@ -104,7 +104,7 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
 #endif
@@ -112,7 +112,7 @@ void UITextField::OnActive()
 
 void UITextField::OnInactive()
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
     textFieldImpl->HideField();
 #endif
 }

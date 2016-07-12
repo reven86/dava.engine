@@ -8,7 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_IPHONE__)
 
-#import <AppKit/NSApplication.h>
+#import <UIKit/UIApplication.h>
 
 #include "Engine/Private/EnginePrivateFwd.h"
 

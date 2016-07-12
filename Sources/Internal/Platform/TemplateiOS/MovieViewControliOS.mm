@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "MovieViewControliOS.h"
 
 #import <MediaPlayer/MediaPlayer.h>
@@ -134,3 +136,5 @@ int MovieViewControl::ConvertScalingModeToPlatform(eMovieScalingMode scalingMode
     }
 }
 }
+
+#endif // !__DAVAENGINE_COREV2__
