@@ -10,7 +10,9 @@ class TextBlockSoftwareRender : public TextBlockRender
 public:
     TextBlockSoftwareRender(TextBlock*);
     ~TextBlockSoftwareRender();
+
     void Prepare() override;
+    TextBlockRender* Clone() override;
 
 #if defined(LOCALIZATION_DEBUG)
     //in physical coordinates

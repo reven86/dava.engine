@@ -26,6 +26,14 @@ TextBlockSoftwareRender::~TextBlockSoftwareRender()
     SafeRelease(currentTexture);
 }
 
+TextBlockRender* TextBlockSoftwareRender::Clone()
+{
+    TextBlockSoftwareRender* result = new TextBlockSoftwareRender(textBlock);
+    result->sprite = SafeRetain(sprite);
+    result->currentTexture = SafeRetain(currentTexture);
+    return result;
+}
+
 void TextBlockSoftwareRender::Prepare()
 {
     TextBlockRender::Prepare();
