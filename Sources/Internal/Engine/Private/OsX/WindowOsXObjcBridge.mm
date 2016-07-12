@@ -14,7 +14,6 @@
 #include "Engine/Private/OsX/WindowOsX.h"
 #include "Engine/Private/OsX/OpenGLViewOsX.h"
 #include "Engine/Private/OsX/OsXWindowDelegate.h"
-#include "Engine/Private/OsX/WindowInteropService.h"
 
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
@@ -25,7 +24,6 @@ namespace Private
 {
 WindowOsXObjcBridge::WindowOsXObjcBridge(WindowOsX* w)
     : window(w)
-    , interopService(std::make_unique<WindowInteropService>(window, this))
 {
 }
 

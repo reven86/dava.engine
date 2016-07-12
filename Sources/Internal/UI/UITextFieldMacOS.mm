@@ -21,7 +21,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #include "Engine/Private/NativeWindow.h"
-#include "Engine/Private/OsX/WindowInteropService.h"
+#include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #endif
@@ -296,7 +296,7 @@ public:
         return true;
     }
 
-    NSRect ConvertToNativeWindowRect(Rect srcRect)
+    NSRect ConvertToNativeWindowRect(const Rect& srcRect, NSView* parent)
     {
         VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
      
@@ -309,8 +309,7 @@ public:
         rect.dx = std::max(0.0f, rect.dx);
         rect.dy = std::max(0.0f, rect.dy);
 
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        NSRect controlRect = interop->ConvertRectFromBacking(NSMakeRect(rect.x, rect.y, rect.dx, rect.dy));
+        NSRect controlRect = [[parent superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
         return controlRect;
 #else
         Rect rect = coordSystem->ConvertVirtualToInput(srcRect);
@@ -398,8 +397,7 @@ public:
         [nsScrollView setDocumentView:nsTextView];
 
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        interop->AddNSView(nsScrollView);
+        window->GetNativeService()->AddNSView(nsScrollView);
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsScrollView];
@@ -409,8 +407,7 @@ public:
     ~MultilineField()
     {
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        interop->RemoveNSView(nsScrollView);
+        window->GetNativeService()->RemoveNSView(nsScrollView);
 #else
         [nsScrollView removeFromSuperview];
 #endif
@@ -427,12 +424,12 @@ public:
     void OpenKeyboard() override
     {
 #if defined(__DAVAENGINE_COREV2__)
-        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+        [[nsScrollView superview]
+         .window makeFirstResponder:nsTextView];
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        
-#endif
         [openGLView.window makeFirstResponder:nsTextView];
+#endif
 
         if (!isKeyboardOpened)
         {
@@ -453,11 +450,11 @@ public:
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
 #if defined(__DAVAENGINE_COREV2__)
-        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+        [[NSApp keyWindow] makeFirstResponder:[nsScrollView superview]];
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-#endif
         [[NSApp keyWindow] makeFirstResponder:openGLView];
+#endif
     }
 
     void GetText(WideString& string) const override
@@ -505,7 +502,7 @@ public:
         if (currentRect != rectSrc)
         {
             currentRect = rectSrc;
-            NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+            NSRect controlRect = ConvertToNativeWindowRect(rectSrc, [nsScrollView superview]);
 
             controlRect.size.width = std::max(0.0, controlRect.size.width);
             controlRect.size.height = std::max(0.0, controlRect.size.height);
@@ -535,14 +532,14 @@ public:
 
         float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
 
+        NSSize origSz = NSMakeSize(size, 0);
 #if defined(__DAVAENGINE_COREV2__)
-        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+        [[nsScrollView superview] convertSizeFromBacking:origSz];
+        NSSize convSz = [[nsScrollView superview] convertSizeFromBacking:origSz];
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-#endif
-        NSSize origSz = NSMakeSize(size, 0);
         NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-
+#endif
         [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
     }
 
@@ -703,8 +700,7 @@ public:
         [nsTextField setDelegate:objcDelegate];
 
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        interop->AddNSView(nsTextField);
+        window->GetNativeService()->AddNSView(nsTextField);
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [openGLView addSubview:nsTextField];
@@ -722,8 +718,7 @@ public:
     ~SingleLineOrPasswordField()
     {
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        interop->RemoveNSView(nsTextField);
+        window->GetNativeService()->RemoveNSView(nsTextField);
 #else
         [nsTextField removeFromSuperview];
 #endif
@@ -797,11 +792,11 @@ public:
 
         // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
 #if defined(__DAVAENGINE_COREV2__)
-        NSView* openGLView = window->GetNativeWindow()->GetInteropService()->GetNSView();
+        [[NSApp keyWindow] makeFirstResponder:[nsTextField superview]];
 #else
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-#endif
         [[NSApp keyWindow] makeFirstResponder:openGLView];
+#endif
     }
 
     void GetText(WideString& string) const override
@@ -889,7 +884,7 @@ public:
 
         // we have to convert coord every time
         // if user change window/fullscreen mode
-        NSRect controlRect = ConvertToNativeWindowRect(rectSrc);
+        NSRect controlRect = ConvertToNativeWindowRect(rectSrc, [nsTextField superview]);
 
         if (renderInTexture && !isFocused)
         {
@@ -1109,8 +1104,7 @@ public:
             nsTextField.bezeled = NO;
 
 #if defined(__DAVAENGINE_COREV2__)
-            Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-            interop->AddNSView(nsTextField);
+            window->GetNativeService()->AddNSView(nsTextField);
 #else
             NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
             [openGLView addSubview:nsTextField];

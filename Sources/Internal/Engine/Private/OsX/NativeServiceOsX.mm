@@ -1,8 +1,6 @@
-#include "Engine/Public/Win32/NativeServiceWin32.h"
-
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Osx/WindowNativeServiceOsX.h"
+#include "Engine/Public/Osx/NativeServiceOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines

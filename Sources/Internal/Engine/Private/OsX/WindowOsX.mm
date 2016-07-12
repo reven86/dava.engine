@@ -8,7 +8,7 @@
 
 #include <AppKit/NSScreen.h>
 
-#include "Engine/Public/WinUWP/WindowNativeServiceOsX.h"
+#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/OsX/CoreOsX.h"

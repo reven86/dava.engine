@@ -1,6 +1,6 @@
-#include "Engine/Private/OsX/WindowNativeServiceOsX.h"
-
 #if defined(__DAVAENGINE_COREV2__)
+
+#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
 
 #include "Base/BaseTypes.h"
 
@@ -28,21 +28,6 @@ void WindowNativeService::AddNSView(NSView* nsview)
 void WindowNativeService::RemoveNSView(NSView* nsview)
 {
     [nsview removeFromSuperview];
-}
-
-NSRect WindowNativeService::ConvertRectFromBacking(const NSRect& rect)
-{
-    return [bridge->openGLView convertRectFromBacking:rect];
-}
-
-NSBitmapImageRep* WindowNativeService::BitmapImageRepForCachingDisplayInRect(const NSRect& rect)
-{
-    return [bridge->openGLView bitmapImageRepForCachingDisplayInRect:rect];
-}
-
-NSView* WindowNativeService::GetNSView()
-{
-    return bridge->openGLView;
 }
 
 } // namespace DAVA

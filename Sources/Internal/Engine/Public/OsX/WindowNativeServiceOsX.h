@@ -23,16 +23,14 @@ public:
     void AddNSView(NSView* nsview);
     void RemoveNSView(NSView* nsview);
 
-    NSRect ConvertRectFromBacking(const NSRect& rect);
-    NSBitmapImageRep* BitmapImageRepForCachingDisplayInRect(const NSRect& rect);
-
-    NSView* GetNSView();
-
 private:
     WindowNativeService(Private::WindowOsXObjcBridge* objcBridge);
 
 private:
     Private::WindowOsXObjcBridge* bridge = nullptr;
+
+    // Friends
+    friend class Private::WindowOsX;
 };
 
 } // namespace DAVA

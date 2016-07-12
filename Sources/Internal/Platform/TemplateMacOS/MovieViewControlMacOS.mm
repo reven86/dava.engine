@@ -4,8 +4,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
-#include "Engine/Private/OsX/WindowInteropService.h"
+#include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #endif
@@ -56,12 +55,12 @@ enum MoviePlayerHelperPlaybackState
     double videoDuration;
     
 #if defined(__DAVAENGINE_COREV2__)
-    DAVA::Private::WindowInteropService* interopService;
+    DAVA::Window* window;
 #endif
 }
 
 #if defined(__DAVAENGINE_COREV2__)
-- (id)init:(DAVA::Private::WindowInteropService*)interopServiceObj;
+- (id)init:(DAVA::Window*)w;
 #else
 - (id)init;
 #endif
@@ -88,7 +87,7 @@ enum MoviePlayerHelperPlaybackState
 @implementation MoviePlayerHelper
 
 #if defined(__DAVAENGINE_COREV2__)
-- (MoviePlayerHelper*)init:(DAVA::Private::WindowInteropService*)interopServiceObj
+- (MoviePlayerHelper*)init:(DAVA::Window*)w
 #else
 - (id)init
 #endif
@@ -97,7 +96,7 @@ enum MoviePlayerHelperPlaybackState
     if (self != nullptr)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        interopService = interopServiceObj;
+        window = w;
 #endif
         videoPlayer = nil;
         videoView = nil;
@@ -115,7 +114,7 @@ enum MoviePlayerHelperPlaybackState
 - (void)dealloc
 {
 #if defined(__DAVAENGINE_COREV2__)
-    interopService->RemoveNSView(videoView);
+    window->GetNativeService()->RemoveNSView(videoView);
 #else
     [videoView removeFromSuperview];
 #endif
@@ -191,7 +190,7 @@ enum MoviePlayerHelperPlaybackState
     [videoView setWantsLayer:YES];
     videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
 #if defined(__DAVAENGINE_COREV2__)
-    interopService->AddNSView(videoView);
+    window->GetNativeService()->AddNSView(videoView);
 #else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView addSubview:videoView];
@@ -286,7 +285,7 @@ enum MoviePlayerHelperPlaybackState
 
     // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
-    NSRect controlRect = interopService->ConvertRectFromBacking(NSMakeRect(rect.x, rect.y, rect.dx, rect.dy));
+    NSRect controlRect = [[videoView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
@@ -342,8 +341,7 @@ MovieViewControl::MovieViewControl()
 #endif
 {
 #if defined(__DAVAENGINE_COREV2__)
-    Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-    moviePlayerHelper = [[MoviePlayerHelper alloc] init:interop];
+    moviePlayerHelper = [[MoviePlayerHelper alloc] init:window];
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &MovieViewControl::OnWindowVisibilityChanged);
 #else
