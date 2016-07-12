@@ -6,6 +6,6 @@
 namespace wgt
 {
 BEGIN_EXPOSE( PropertyPanel, MetaNone() )
-    EXPOSE( "PropertyTree", GetPropertyTree, SetPropertyTree, wgt::MetaNone() )
+    EXPOSE( "PropertyTree", GetPropertyTree, SetPropertyTree, MetaNone() )
 END_EXPOSE()
 }

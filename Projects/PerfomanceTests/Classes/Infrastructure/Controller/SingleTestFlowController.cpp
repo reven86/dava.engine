@@ -1,4 +1,5 @@
 #include "SingleTestFlowController.h"
+#include "Infrastructure/GameCore.h"
 
 SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams, bool _showUI)
     : showUI(_showUI)
@@ -37,7 +38,7 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
         if (nullptr == currentScreen)
         {
             Logger::Error(DAVA::Format("Test with name: %s not found", testForRunName.c_str()).c_str());
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 }
@@ -71,6 +72,6 @@ void SingleTestFlowController::EndFrame()
         testForRun->OnFinish();
 
         Logger::Info("Finish all tests.");
-        Core::Instance()->Quit();
+        GameCore::Instance()->Quit();
     }
 }
