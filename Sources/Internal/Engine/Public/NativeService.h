@@ -6,7 +6,7 @@
 #elif defined(__DAVAENGINE_WIN32__)
 #include "Engine/Public/Win32/NativeServiceWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Engine/Public/WinUWP/NativeServiceWinUWP.h"
+#include "Engine/Public/UWP/NativeServiceUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Public/OsX/NativeServiceOsX.h"
 #else

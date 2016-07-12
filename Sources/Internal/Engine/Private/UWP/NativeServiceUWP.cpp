@@ -1,14 +1,14 @@
-#include "Engine/Public/Win32/NativeServiceWin32.h"
+#include "Engine/Public/UWP/NativeServiceUWP.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
+#include "Engine/Public/UWP/WindowNativeServiceUWP.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/Private/Win32/PlatformCoreWin32.h"
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 
 namespace DAVA
 {
@@ -19,5 +19,5 @@ NativeService::NativeService(Private::PlatformCore* c)
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN32__
+#endif // __DAVAENGINE_WIN_UAP__
 #endif // __DAVAENGINE_COREV2__

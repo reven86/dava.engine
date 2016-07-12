@@ -6,12 +6,12 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/Private/Win32/WindowWin32.h"
+#include "Engine/Private/Win32/WindowBackendWin32.h"
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowWin32* w)
-    : nativeWindow(w)
+WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
+    : windowBackend(wbackend)
 {
 }
 

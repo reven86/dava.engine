@@ -6,7 +6,7 @@
 #include "Functional/Functional.h"
 
 #include "Engine/Public/EngineContext.h"
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {

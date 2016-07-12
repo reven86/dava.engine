@@ -6,7 +6,7 @@
 #include "Functional/Functional.h"
 
 #include "Engine/Public/Window.h"
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 #include "UI/UIEvent.h"
 
@@ -37,7 +37,7 @@ public:
     const Vector<String>& GetCommandLine() const;
 
     Engine* GetEngine() const;
-    Dispatcher* GetDispatcher() const;
+    MainDispatcher* GetDispatcher() const;
     NativeService* GetNativeService() const;
     PlatformCore* GetPlatformCore() const;
 
@@ -74,10 +74,10 @@ private:
     void OnDraw();
     void OnEndFrame();
 
-    void EventHandler(const DispatcherEvent& e);
-    void HandleWindowCreated(const DispatcherEvent& e);
-    void HandleWindowDestroyed(const DispatcherEvent& e);
-    void HandleAppTerminate(const DispatcherEvent& e);
+    void EventHandler(const MainDispatcherEvent& e);
+    void HandleWindowCreated(const MainDispatcherEvent& e);
+    void HandleWindowDestroyed(const MainDispatcherEvent& e);
+    void HandleAppTerminate(const MainDispatcherEvent& e);
 
     Window* CreatePrimaryWindowBackend();
 
@@ -86,7 +86,7 @@ private:
 
 private:
     // TODO: replace raw pointers with std::unique_ptr after work is done
-    Dispatcher* dispatcher = nullptr;
+    MainDispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;
     EngineContext* context = nullptr;
     Vector<String> cmdargs;
@@ -143,7 +143,7 @@ inline Engine* EngineBackend::GetEngine() const
     return engine;
 }
 
-inline Dispatcher* EngineBackend::GetDispatcher() const
+inline MainDispatcher* EngineBackend::GetDispatcher() const
 {
     return dispatcher;
 }

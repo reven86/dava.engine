@@ -3,7 +3,7 @@
 #include "Engine/Public/Engine.h"
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA
 {

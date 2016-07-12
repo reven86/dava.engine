@@ -10,7 +10,7 @@
 
 #import <AppKit/NSOpenGLView.h>
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 // Subclass of NSOpenGLView
 // Responsibilities:
@@ -18,10 +18,10 @@
 //  - mouse and event forwarding to WindowOsXObjcBridge
 @interface OpenGLViewOsX : NSOpenGLView
 {
-    DAVA::Private::WindowOsXObjcBridge* bridge;
+    DAVA::Private::WindowNativeBridgeOsX* bridge;
 }
 
-- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowOsXObjcBridge*)objcBridge;
+- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowNativeBridgeOsX*)objcBridge;
 
 @end
 

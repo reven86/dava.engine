@@ -8,7 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 #import <Foundation/NSGeometry.h>
 
@@ -24,13 +24,13 @@ public:
     void RemoveNSView(NSView* nsview);
 
 private:
-    WindowNativeService(Private::WindowOsXObjcBridge* objcBridge);
+    WindowNativeService(Private::WindowNativeBridgeOsX* objcBridge);
 
 private:
-    Private::WindowOsXObjcBridge* bridge = nullptr;
+    Private::WindowNativeBridgeOsX* bridge = nullptr;
 
     // Friends
-    friend class Private::WindowOsX;
+    friend class Private::WindowBackend;
 };
 
 } // namespace DAVA

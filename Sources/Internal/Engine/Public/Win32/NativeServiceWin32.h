@@ -8,7 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {
@@ -16,13 +16,13 @@ class NativeService final
 {
 public:
 private:
-    NativeService(Private::CoreWin32* c);
+    NativeService(Private::PlatformCore* c);
 
 private:
-    Private::CoreWin32* core = nullptr;
+    Private::PlatformCore* core = nullptr;
 
     // Friends
-    friend Private::CoreWin32;
+    friend Private::PlatformCore;
 };
 
 } // namespace DAVA

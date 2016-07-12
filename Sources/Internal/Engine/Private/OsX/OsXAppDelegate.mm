@@ -6,11 +6,11 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/CoreOsXObjcBridge.h"
+#include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
 @implementation OsXAppDelegate
 
-- (id)init:(DAVA::Private::CoreOsXObjcBridge*)objcBridge
+- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)objcBridge
 {
     self = [super init];
     if (self != nullptr)

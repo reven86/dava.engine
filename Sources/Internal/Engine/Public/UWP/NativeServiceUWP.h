@@ -6,26 +6,26 @@
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {
-class WindowNativeService final
+class NativeService final
 {
 public:
 private:
-    WindowNativeService(Private::WindowBackend* wbackend);
+    NativeService(Private::PlatformCore* c);
 
 private:
-    Private::WindowBackend* windowBackend = nullptr;
+    Private::PlatformCore* core = nullptr;
 
-    // friends
-    friend class Private::WindowBackend;
+    // Friends
+    friend Private::PlatformCore;
 };
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN32__
+#endif // __DAVAENGINE_WIN_UAP__
 #endif // __DAVAENGINE_COREV2__

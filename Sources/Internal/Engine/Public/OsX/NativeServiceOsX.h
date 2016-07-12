@@ -8,7 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {
@@ -16,13 +16,13 @@ class NativeService final
 {
 public:
 private:
-    NativeService(Private::CoreOsX* c);
+    NativeService(Private::PlatformCore* c);
 
 private:
-    Private::CoreOsX* core = nullptr;
+    Private::PlatformCore* core = nullptr;
 
     // Friends
-    friend Private::CoreOsX;
+    friend Private::PlatformCore;
 };
 
 } // namespace DAVA

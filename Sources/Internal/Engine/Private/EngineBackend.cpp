@@ -5,7 +5,7 @@
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Render/Renderer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -59,7 +59,7 @@ EngineBackend* EngineBackend::Instance()
 }
 
 EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
-    : dispatcher(new Dispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
+    : dispatcher(new MainDispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
     , cmdargs(cmdargs_)
@@ -169,8 +169,8 @@ void EngineBackend::Quit(int exitCode_)
 
 void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
 {
-    DispatcherEvent e;
-    e.type = DispatcherEvent::FUNCTOR;
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::FUNCTOR;
     e.window = nullptr;
     e.functor = task;
     dispatcher->PostEvent(e);
@@ -178,8 +178,8 @@ void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
 
 void EngineBackend::RunAndWaitOnMainThread(const Function<void()>& task)
 {
-    DispatcherEvent e;
-    e.type = DispatcherEvent::FUNCTOR;
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::FUNCTOR;
     e.window = nullptr;
     e.functor = task;
     dispatcher->SendEvent(e);
@@ -306,20 +306,20 @@ void EngineBackend::OnEndFrame()
     Renderer::EndFrame();
 }
 
-void EngineBackend::EventHandler(const DispatcherEvent& e)
+void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 {
     switch (e.type)
     {
-    case DispatcherEvent::FUNCTOR:
+    case MainDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case DispatcherEvent::WINDOW_CREATED:
+    case MainDispatcherEvent::WINDOW_CREATED:
         HandleWindowCreated(e);
         break;
-    case DispatcherEvent::WINDOW_DESTROYED:
+    case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
-    case DispatcherEvent::APP_TERMINATE:
+    case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
     default:
@@ -331,13 +331,13 @@ void EngineBackend::EventHandler(const DispatcherEvent& e)
     }
 }
 
-void EngineBackend::HandleWindowCreated(const DispatcherEvent& e)
+void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
 {
     e.window->EventHandler(e);
     engine->windowCreated.Emit(*e.window);
 }
 
-void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
+void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
 {
     e.window->EventHandler(e);
     engine->windowDestroyed.Emit(*e.window);
@@ -361,7 +361,7 @@ void EngineBackend::HandleWindowDestroyed(const DispatcherEvent& e)
     }
 }
 
-void EngineBackend::HandleAppTerminate(const DispatcherEvent& e)
+void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
 {
     for (Window* w : windows)
     {
@@ -373,9 +373,9 @@ void EngineBackend::PostAppTerminate()
 {
     if (!appIsTerminating)
     {
-        DispatcherEvent e;
+        MainDispatcherEvent e;
         e.window = nullptr;
-        e.type = DispatcherEvent::APP_TERMINATE;
+        e.type = MainDispatcherEvent::APP_TERMINATE;
         e.timestamp = context->systemTimer->FrameStampTimeMS();
         dispatcher->PostEvent(e);
 

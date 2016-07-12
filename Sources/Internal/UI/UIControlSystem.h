@@ -10,7 +10,7 @@
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 #define FRAME_SKIP 5
 

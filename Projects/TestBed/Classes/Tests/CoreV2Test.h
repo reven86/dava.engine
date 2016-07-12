@@ -5,7 +5,7 @@
 #include "Infrastructure/BaseScreen.h"
 
 #include "Engine/EngineFwd.h"
-#include "Engine/Private/Dispatcher/DispatcherT.h"
+#include "Engine/Public/Dispatcher.h"
 
 namespace DAVA
 {
@@ -61,7 +61,7 @@ private:
     size_t tokenOnWindowDestroyed = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    using TestDispatcher = DAVA::Private::DispatcherT<int>;
+    using TestDispatcher = DAVA::Dispatcher<int>;
 
     DAVA::Vector<DAVA::RefPtr<DAVA::Thread>> dispatcherThreads;
     DAVA::Vector<std::unique_ptr<TestDispatcher>> dispatchers;
