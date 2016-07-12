@@ -201,7 +201,7 @@ protected:
 class CommandUpdateParticleLayerBase : public CommandAction
 {
 public:
-    CommandUpdateParticleLayerBase(CommandID cmdID)
+    CommandUpdateParticleLayerBase(DAVA::CommandID_t cmdID)
         : CommandAction(cmdID)
     {
     }
