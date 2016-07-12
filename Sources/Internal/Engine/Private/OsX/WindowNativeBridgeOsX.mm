@@ -22,7 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridgeOsX::WindowNativeBridgeOsX(WindowOsX* wbackend)
+WindowNativeBridgeOsX::WindowNativeBridgeOsX(WindowBackend* wbackend)
     : windowBackend(wbackend)
 {
 }
@@ -52,8 +52,8 @@ bool WindowNativeBridgeOsX::DoCreateWindow(float32 x, float32 y, float32 width, 
         viewRect = [openGLView frame];
         float32 scale = [nswindow backingScaleFactor];
 
-        window->GetWindow()->PostWindowCreated(window, viewRect.size.width, viewRect.size.height, scale, scale);
-        window->GetWindow()->PostVisibilityChanged(true);
+        windowBackend->GetWindow()->PostWindowCreated(windowBackend, viewRect.size.width, viewRect.size.height, scale, scale);
+        windowBackend->GetWindow()->PostVisibilityChanged(true);
     }
 
     [nswindow makeKeyAndOrderFront:nil];
@@ -73,7 +73,7 @@ void WindowNativeBridgeOsX::DoCloseWindow()
 void WindowNativeBridgeOsX::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
-        window->ProcessPlatformEvents();
+        windowBackend->ProcessPlatformEvents();
     });
 }
 
@@ -85,7 +85,7 @@ void WindowNativeBridgeOsX::ApplicationDidHideUnhide(bool hidden)
 void WindowNativeBridgeOsX::WindowDidMiniaturize()
 {
     isMiniaturized = true;
-    window->GetWindow()->PostVisibilityChanged(false);
+    windowBackend->GetWindow()->PostVisibilityChanged(false);
 }
 
 void WindowNativeBridgeOsX::WindowDidDeminiaturize()
@@ -97,17 +97,17 @@ void WindowNativeBridgeOsX::WindowDidBecomeKey()
 {
     if (isMiniaturized || isAppHidden)
     {
-        window->GetWindow()->PostVisibilityChanged(true);
+        windowBackend->GetWindow()->PostVisibilityChanged(true);
     }
-    window->GetWindow()->PostFocusChanged(true);
+    windowBackend->GetWindow()->PostFocusChanged(true);
 }
 
 void WindowNativeBridgeOsX::WindowDidResignKey()
 {
-    window->GetWindow()->PostFocusChanged(false);
+    windowBackend->GetWindow()->PostFocusChanged(false);
     if (isAppHidden)
     {
-        window->GetWindow()->PostVisibilityChanged(false);
+        windowBackend->GetWindow()->PostVisibilityChanged(false);
     }
 }
 
@@ -116,7 +116,7 @@ void WindowNativeBridgeOsX::WindowDidResize()
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [openGLView frame].size;
 
-    window->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
+    windowBackend->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
 }
 
 void WindowNativeBridgeOsX::WindowDidChangeScreen()
@@ -130,7 +130,7 @@ bool WindowNativeBridgeOsX::WindowShouldClose()
 
 void WindowNativeBridgeOsX::WindowWillClose()
 {
-    window->GetWindow()->PostWindowDestroyed();
+    windowBackend->GetWindow()->PostWindowDestroyed();
 
     [nswindow setContentView:nil];
     [nswindow setDelegate:nil];
@@ -141,8 +141,8 @@ void WindowNativeBridgeOsX::WindowWillClose()
 
 void WindowNativeBridgeOsX::MouseClick(NSEvent* theEvent)
 {
-    DispatcherEvent e;
-    e.window = window->window;
+    MainDispatcherEvent e;
+    e.window = windowBackend->window;
     e.mclickEvent.clicks = 1;
     e.mclickEvent.button = [theEvent buttonNumber] + 1;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -152,12 +152,12 @@ void WindowNativeBridgeOsX::MouseClick(NSEvent* theEvent)
     case NSLeftMouseDown:
     case NSRightMouseDown:
     case NSOtherMouseDown:
-        e.type = DispatcherEvent::MOUSE_BUTTON_DOWN;
+        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
         break;
     case NSLeftMouseUp:
     case NSRightMouseUp:
     case NSOtherMouseUp:
-        e.type = DispatcherEvent::MOUSE_BUTTON_UP;
+        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
         break;
     default:
         break;
@@ -167,21 +167,21 @@ void WindowNativeBridgeOsX::MouseClick(NSEvent* theEvent)
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
-    window->GetDispatcher()->PostEvent(e);
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridgeOsX::MouseMove(NSEvent* theEvent)
 {
-    DispatcherEvent e;
-    e.window = window->window;
-    e.type = DispatcherEvent::MOUSE_MOVE;
+    MainDispatcherEvent e;
+    e.window = windowBackend->window;
+    e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
     NSSize sz = [openGLView frame].size;
     NSPoint pt = theEvent.locationInWindow;
     e.mmoveEvent.x = pt.x;
     e.mmoveEvent.y = sz.height - pt.y;
-    window->GetDispatcher()->PostEvent(e);
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridgeOsX::MouseWheel(NSEvent* theEvent)
@@ -202,9 +202,9 @@ void WindowNativeBridgeOsX::MouseWheel(NSEvent* theEvent)
     float32 deltaX = [theEvent scrollingDeltaX];
     float32 deltaY = [theEvent scrollingDeltaY];
 
-    DispatcherEvent e;
-    e.window = window->window;
-    e.type = DispatcherEvent::MOUSE_WHEEL;
+    MainDispatcherEvent e;
+    e.window = windowBackend->window;
+    e.type = MainDispatcherEvent::MOUSE_WHEEL;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
     if ([theEvent hasPreciseScrollingDeltas] == YES)
@@ -220,29 +220,29 @@ void WindowNativeBridgeOsX::MouseWheel(NSEvent* theEvent)
         e.mwheelEvent.y = deltaY * scrollK;
     }
 
-    window->GetDispatcher()->PostEvent(e);
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridgeOsX::KeyEvent(NSEvent* theEvent)
 {
-    DispatcherEvent e;
-    e.window = window->window;
+    MainDispatcherEvent e;
+    e.window = windowBackend->window;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = [theEvent type] == NSKeyDown ? DispatcherEvent::KEY_DOWN : DispatcherEvent::KEY_UP;
+    e.type = [theEvent type] == NSKeyDown ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     e.keyEvent.key = [theEvent keyCode];
     e.keyEvent.isRepeated = [theEvent isARepeat];
-    window->dispatcher->PostEvent(e);
+    windowBackend->dispatcher->PostEvent(e);
 
     if ([theEvent type] == NSKeyDown)
     {
-        e.type = DispatcherEvent::KEY_CHAR;
+        e.type = MainDispatcherEvent::KEY_CHAR;
 
         NSString* chars = [theEvent characters];
         NSUInteger n = [chars length];
         for (NSUInteger i = 0; i < n; ++i)
         {
             e.keyEvent.key = [chars characterAtIndex:i];
-            window->GetDispatcher()->PostEvent(e);
+            windowBackend->GetDispatcher()->PostEvent(e);
         }
     }
 }

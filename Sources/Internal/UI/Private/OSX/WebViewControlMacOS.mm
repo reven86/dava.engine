@@ -4,7 +4,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"

@@ -12,7 +12,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
-#include "Engine/Private/OsX/WindowBackendObjcBridge.h"
+#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
@@ -23,19 +23,19 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
+    : engineBackend(e)
+    , dispatcher(engineBackend->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
-    , bridge(new WindowBackendObjcBridge(this))
+    , bridge(new WindowNativeBridgeOsX(this))
     , nativeService(new WindowNativeService(bridge))
 {
-    hideUnhideSignalId = engine->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowBackendObjcBridge::ApplicationDidHideUnhide);
+    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridgeOsX::ApplicationDidHideUnhide);
 }
 
 WindowBackend::~WindowBackend()
 {
-    engine->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
     delete bridge;
 }
 
@@ -54,8 +54,8 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PlatformEvent e;
-    e.type = PlatformEvent::RESIZE_WINDOW;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::RESIZE_WINDOW;
     e.resizeEvent.width = width;
     e.resizeEvent.height = height;
     platformDispatcher.PostEvent(e);
@@ -63,15 +63,15 @@ void WindowBackend::Resize(float32 width, float32 height)
 
 void WindowBackend::Close()
 {
-    PlatformEvent e;
-    e.type = PlatformEvent::CLOSE_WINDOW;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CLOSE_WINDOW;
     platformDispatcher.PostEvent(e);
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
-    PlatformEvent e;
-    e.type = PlatformEvent::FUNCTOR;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::FUNCTOR;
     e.functor = task;
     platformDispatcher.PostEvent(e);
 }
@@ -86,17 +86,17 @@ void WindowBackend::ProcessPlatformEvents()
     platformDispatcher.ProcessEvents();
 }
 
-void WindowBackend::EventHandler(const PlatformEvent& e)
+void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
-    case PlatformEvent::RESIZE_WINDOW:
+    case UIDispatcherEvent::RESIZE_WINDOW:
         bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
-    case PlatformEvent::CLOSE_WINDOW:
+    case UIDispatcherEvent::CLOSE_WINDOW:
         bridge->DoCloseWindow();
         break;
-    case PlatformEvent::FUNCTOR:
+    case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
     default:

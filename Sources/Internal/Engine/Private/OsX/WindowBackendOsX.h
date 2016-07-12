@@ -41,7 +41,7 @@ private:
     void EventHandler(const UIDispatcherEvent& e);
 
 private:
-    EngineBackend* engine = nullptr;
+    EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
     Window* window = nullptr;
 

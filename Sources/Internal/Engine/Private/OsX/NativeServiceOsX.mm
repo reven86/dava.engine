@@ -6,11 +6,11 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/CoreOsX.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
 
 namespace DAVA
 {
-NativeService::NativeService(Private::CoreOsX* c)
+NativeService::NativeService(Private::PlatformCore* c)
     : core(c)
 {
 }

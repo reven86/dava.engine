@@ -7,8 +7,8 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/CoreOsx.h"
-#include "Engine/Private/OsX/WindowOsX.h"
+#include "Engine/Private/OsX/PlatformCoreOsx.h"
+#include "Engine/Private/OsX/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Engine/Private/OsX/OsXAppDelegate.h"
@@ -24,7 +24,7 @@
     NSTimer* timer;
 }
 
-- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)objcBridge;
+- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)nativeBridge;
 - (void)set:(double)interval;
 - (void)cancel;
 - (void)timerFired:(NSTimer*)timer;
@@ -33,12 +33,12 @@
 
 @implementation FrameTimer
 
-- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)objcBridge
+- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)nativeBridge
 {
     self = [super init];
     if (self != nil)
     {
-        bridge = objcBridge;
+        bridge = nativeBridge;
     }
     return self;
 }

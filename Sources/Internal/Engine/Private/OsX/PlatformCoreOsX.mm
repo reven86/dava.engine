@@ -10,8 +10,8 @@
 
 #include "Engine/Public/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/WindowOsX.h"
-#include "Engine/Private/OsX/PlatformCorebridge.h"
+#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
 namespace DAVA
 {
@@ -19,7 +19,7 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
-    , bridge(new PlatformCorebridge(this))
+    , bridge(new CoreNativeBridgeOsX(this))
     , nativeService(new NativeService(this))
 {
 }
@@ -49,15 +49,15 @@ int32 PlatformCore::OnFrame()
     return engineBackend->OnFrame();
 }
 
-WindowOsX* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
+WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
 {
-    WindowOsX* nativeWindow = new WindowOsX(engineBackend, w);
-    if (!nativeWindow->Create(width, height))
+    WindowBackend* wbackend = new WindowBackend(engineBackend, w);
+    if (!wbackend->Create(width, height))
     {
-        delete nativeWindow;
-        nativeWindow = nullptr;
+        delete wbackend;
+        wbackend = nullptr;
     }
-    return nativeWindow;
+    return wbackend;
 }
 
 } // namespace Private

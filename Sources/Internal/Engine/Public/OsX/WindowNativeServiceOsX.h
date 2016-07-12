@@ -24,7 +24,7 @@ public:
     void RemoveNSView(NSView* nsview);
 
 private:
-    WindowNativeService(Private::WindowNativeBridgeOsX* objcBridge);
+    WindowNativeService(Private::WindowNativeBridgeOsX* nativeBridge);
 
 private:
     Private::WindowNativeBridgeOsX* bridge = nullptr;

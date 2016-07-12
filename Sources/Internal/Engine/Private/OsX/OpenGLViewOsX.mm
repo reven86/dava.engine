@@ -9,15 +9,15 @@
 #import <AppKit/NSOpenGL.h>
 #import <OpenGL/OpenGL.h>
 
-#include "Engine/Private/OsX/WindowOsXObjcBridge.h"
+#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
 
 #include "Logger/Logger.h"
 
 @implementation OpenGLViewOsX
 
-- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowOsXObjcBridge*)objcBridge;
+- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowNativeBridgeOsX*)nativeBridge;
 {
-    bridge = objcBridge;
+    bridge = nativeBridge;
 
     uint32_t bitsPerPixel = [self displayBitsPerPixel:kCGDirectMainDisplay];
     // Pixel Format Attributes for the view-based (non-fullscreen) NSOpenGLContext

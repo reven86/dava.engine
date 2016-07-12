@@ -40,7 +40,7 @@ private:
 private:
     EngineBackend* engineBackend = nullptr;
     // TODO: std::unique_ptr
-    CoreNativeBridgeOsX* objcBridge = nullptr;
+    CoreNativeBridgeOsX* bridge = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     // Friends
