@@ -10,6 +10,8 @@
 #include "Engine/Private/UWP/WindowBackendUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Private/OsX/WindowBackendOsX.h"
+#elif defined(__DAVAENGINE_IPHONE__)
+#include "Engine/Private/iOS/WindowBackendiOS.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

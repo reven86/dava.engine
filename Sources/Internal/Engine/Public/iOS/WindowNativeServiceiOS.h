@@ -6,25 +6,20 @@
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
-
-@class NSView;
 
 namespace DAVA
 {
 class WindowNativeService final
 {
 public:
-    void AddNSView(NSView* nsview);
-    void RemoveNSView(NSView* nsview);
+private:
+    WindowNativeService(Private::WindowNativeBridgeiOS* nativeBridge);
 
 private:
-    WindowNativeService(Private::WindowNativeBridgeOsX* nativeBridge);
-
-private:
-    Private::WindowNativeBridgeOsX* bridge = nullptr;
+    Private::WindowNativeBridgeiOS* bridge = nullptr;
 
     // Friends
     friend class Private::WindowBackend;
@@ -32,5 +27,5 @@ private:
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_MACOS__
+#endif // __DAVAENGINE_IPHONE__
 #endif // __DAVAENGINE_COREV2__

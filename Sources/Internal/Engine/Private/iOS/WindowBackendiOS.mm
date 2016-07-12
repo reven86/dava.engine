@@ -1,18 +1,18 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/iOS/WindowBackendiOS.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_IPHONE__)
 
 #include <AppKit/NSScreen.h>
 
-#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
+#include "Engine/Public/iOS/WindowNativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "Engine/Private/OsX/PlatformCoreOsX.h"
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/iOS/PlatformCoreiOS.h"
+#include "Engine/Private/iOS/WindowNativeBridgeiOS.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -26,15 +26,13 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     , dispatcher(engineBackend->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
-    , bridge(new WindowNativeBridgeOsX(this))
+    , bridge(new WindowNativeBridgeiOS(this))
     , nativeService(new WindowNativeService(bridge))
 {
-    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridgeOsX::ApplicationDidHideUnhide);
 }
 
 WindowBackend::~WindowBackend()
 {
-    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
     delete bridge;
 }
 
@@ -45,9 +43,8 @@ void* WindowBackend::GetHandle() const
 
 bool WindowBackend::Create(float32 width, float32 height)
 {
-    NSSize screenSize = [[NSScreen mainScreen] frame].size;
-    float32 x = (screenSize.width - width) / 2.0f;
-    float32 y = (screenSize.height - height) / 2.0f;
+    float32 x = 0.0f;
+    float32 y = 0.0f;
     return bridge->DoCreateWindow(x, y, width, height);
 }
 
@@ -106,5 +103,5 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_MACOS__
+#endif // __DAVAENGINE_IPHONE__
 #endif // __DAVAENGINE_COREV2__

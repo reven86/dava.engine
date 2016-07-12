@@ -19,7 +19,7 @@ namespace DAVA
 {
 namespace Private
 {
-// Bridge between C++ and Objective-C for WindowOsX class
+// Bridge between C++ and Objective-C for OsX's WindowBackend class
 // Responsibilities:
 //  - holds neccesary Objective-C objects
 //  - creates NSWindow
@@ -27,7 +27,7 @@ namespace Private
 //    interface NSWindowDelegate
 //  - posts events to dispatcher
 //
-// WindowNativeBridgeOsX is friend of WindowOsX
+// WindowNativeBridgeOsX is friend of OsX's WindowBackend
 struct WindowNativeBridgeOsX final
 {
     WindowNativeBridgeOsX(WindowBackend* wbackend);
