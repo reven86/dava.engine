@@ -20,7 +20,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
+#include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -228,11 +228,11 @@ PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
         EventRegistrationToken tokenHiding = tokenKeyboardHiding;
         EventRegistrationToken tokenShowing = tokenKeyboardShowing;
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowWinUWP* nativeWindow = window->GetNativeWindow();
-        window->RunAsyncOnUIThread([p, nativeWindow, tokenHiding, tokenShowing]() {
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice, tokenHiding, tokenShowing]() {
             InputPane::GetForCurrentView()->Showing -= tokenHiding;
             InputPane::GetForCurrentView()->Hiding -= tokenShowing;
-            nativeWindow->RemoveXamlControl(p);
+            nservice->RemoveXamlControl(p);
         });
 #else
         core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
@@ -555,7 +555,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->AddXamlControl(nativeControlHolder);
+    window->GetNativeService()->AddXamlControl(nativeControlHolder);
 #else
     core->XamlApplication()->AddUIElement(nativeControlHolder);
 #endif
@@ -564,7 +564,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 void PrivateTextFieldWinUAP::DeleteNativeControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->RemoveXamlControl(nativeControlHolder);
+    window->GetNativeService()->RemoveXamlControl(nativeControlHolder);
 #else
     core->XamlApplication()->RemoveUIElement(nativeControlHolder);
 #endif
@@ -894,7 +894,7 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
             nativeControl->Focus(FocusState::Pointer);
         else if (HasFocus())
 #if defined(__DAVAENGINE_COREV2__)
-            window->GetNativeWindow()->UnfocusXamlControl();
+            window->GetNativeService()->UnfocusXamlControl();
 #else
             core->XamlApplication()->UnfocusUIElement();
 #endif
@@ -975,7 +975,7 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
     nativeControlHolder->Width = std::max(0.0f, rect.dx);
     nativeControlHolder->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->PositionXamlControl(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+    window->GetNativeService()->PositionXamlControl(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #endif

@@ -8,6 +8,7 @@
 
 #include <AppKit/NSScreen.h>
 
+#include "Engine/Public/WinUWP/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/OsX/CoreOsX.h"
@@ -27,6 +28,7 @@ WindowOsX::WindowOsX(EngineBackend* e, Window* w)
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowOsX::EventHandler))
     , bridge(new WindowOsXObjcBridge(this))
+    , nativeService(new WindowNativeService(bridge))
 {
     hideUnhideSignalId = engine->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowOsXObjcBridge::ApplicationDidHideUnhide);
 }
@@ -40,11 +42,6 @@ WindowOsX::~WindowOsX()
 void* WindowOsX::GetHandle() const
 {
     return bridge->openGLView;
-}
-
-WindowInteropService* WindowOsX::GetInteropService() const
-{
-    return bridge->interopService.get();
 }
 
 bool WindowOsX::Create(float32 width, float32 height)

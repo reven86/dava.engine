@@ -53,6 +53,12 @@ void* Window::GetNativeHandle() const
     return nativeWindow->GetHandle();
 }
 
+WindowNativeService* Window::GetNativeService() const
+{
+    DVASSERT(nativeWindow != nullptr);
+    return nativeWindow->GetNativeService();
+}
+
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
     DVASSERT(nativeWindow != nullptr);

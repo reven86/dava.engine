@@ -100,6 +100,11 @@ KeyedArchive* EngineBackend::GetOptions()
     return options;
 }
 
+NativeService* EngineBackend::GetNativeService() const
+{
+    return platformCore->GetNativeService();
+}
+
 void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 {
     consoleMode = consoleMode_;

@@ -1,4 +1,4 @@
-#include "Engine/Private/OsX/WindowInteropService.h"
+#include "Engine/Private/OsX/WindowNativeServiceOsX.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -15,40 +15,36 @@
 
 namespace DAVA
 {
-namespace Private
-{
-WindowInteropService::WindowInteropService(WindowOsX* w, WindowOsXObjcBridge* objcBridge)
-    : nativeWindow(w)
-    , bridge(objcBridge)
+WindowNativeService::WindowNativeService(Private::WindowOsXObjcBridge* objcBridge)
+    : bridge(objcBridge)
 {
 }
 
-void WindowInteropService::AddNSView(NSView* nsview)
+void WindowNativeService::AddNSView(NSView* nsview)
 {
     [bridge->openGLView addSubview:nsview];
 }
 
-void WindowInteropService::RemoveNSView(NSView* nsview)
+void WindowNativeService::RemoveNSView(NSView* nsview)
 {
     [nsview removeFromSuperview];
 }
 
-NSRect WindowInteropService::ConvertRectFromBacking(const NSRect& rect)
+NSRect WindowNativeService::ConvertRectFromBacking(const NSRect& rect)
 {
     return [bridge->openGLView convertRectFromBacking:rect];
 }
 
-NSBitmapImageRep* WindowInteropService::BitmapImageRepForCachingDisplayInRect(const NSRect& rect)
+NSBitmapImageRep* WindowNativeService::BitmapImageRepForCachingDisplayInRect(const NSRect& rect)
 {
     return [bridge->openGLView bitmapImageRepForCachingDisplayInRect:rect];
 }
 
-NSView* WindowInteropService::GetNSView()
+NSView* WindowNativeService::GetNSView()
 {
     return bridge->openGLView;
 }
 
-} // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_MACOS__

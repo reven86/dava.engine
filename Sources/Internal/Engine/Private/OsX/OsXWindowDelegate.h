@@ -10,7 +10,7 @@
 
 #import <AppKit/NSWindow.h>
 
-#include "Engine/Private/OsX/OsXFwd.h"
+#include "Engine/Private/EngineFwd.h"
 
 // Implementation of NSWindowDelegate
 // Forwards all necessary methods to WindowOsXObjcBridge

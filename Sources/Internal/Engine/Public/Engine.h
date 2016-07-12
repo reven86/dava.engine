@@ -24,6 +24,7 @@ public:
     Engine& operator=(const Engine&) = delete;
 
     EngineContext* GetContext() const;
+    NativeService* GetNativeService() const;
     Window* PrimaryWindow() const;
 
     void Init(bool consoleMode, const Vector<String>& modules);

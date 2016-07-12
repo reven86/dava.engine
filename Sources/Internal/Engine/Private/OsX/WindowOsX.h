@@ -8,18 +8,15 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Concurrency/Mutex.h"
 #include "Functional/Function.h"
 
 #include "Engine/Private/EngineFwd.h"
-#include "Engine/Private/OsX/OsXFwd.h"
 #include "Engine/Private/Dispatcher/PlatformDispatcher.h"
 
 namespace DAVA
 {
 namespace Private
 {
-class WindowInteropService;
 class WindowOsX final
 {
 public:
@@ -29,8 +26,7 @@ public:
     void* GetHandle() const;
     Dispatcher* GetDispatcher() const;
     Window* GetWindow() const;
-
-    WindowInteropService* GetInteropService() const;
+    WindowNativeService* GetNativeService() const;
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
@@ -52,6 +48,7 @@ private:
     PlatformDispatcher platformDispatcher;
 
     WindowOsXObjcBridge* bridge = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
     size_t hideUnhideSignalId = 0;
@@ -69,6 +66,11 @@ inline Dispatcher* WindowOsX::GetDispatcher() const
 inline Window* WindowOsX::GetWindow() const
 {
     return window;
+}
+
+inline WindowNativeService* WindowOsX::GetNativeService() const
+{
+    return nativeService.get();
 }
 
 } // namespace Private

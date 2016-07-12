@@ -10,7 +10,7 @@
 
 #import <AppKit/NSApplication.h>
 
-#include "Engine/Private/OsX/OsXFwd.h"
+#include "Engine/Private/EngineFwd.h"
 
 // Implementation of NSApplicationDelegate
 // Forwards all necessary methods to CoreOsXObjcBridge

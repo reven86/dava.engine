@@ -30,6 +30,7 @@ public:
     WindowWin32& operator=(const WindowWin32&) = delete;
 
     void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
@@ -70,6 +71,7 @@ private:
     bool isMinimized = false;
 
     PlatformDispatcher platformDispatcher;
+    std::unique_ptr<WindowNativeService> nativeService;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
@@ -81,6 +83,11 @@ private:
 inline void* WindowWin32::GetHandle() const
 {
     return static_cast<void*>(hwnd);
+}
+
+inline WindowNativeService* WindowWin32::GetNativeService() const
+{
+    return nativeService.get();
 }
 
 } // namespace Private

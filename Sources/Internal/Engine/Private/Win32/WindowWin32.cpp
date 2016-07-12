@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
+#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/Win32/CoreWin32.h"
@@ -26,6 +27,7 @@ WindowWin32::WindowWin32(EngineBackend* e, Window* w)
     , dispatcher(engine->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowWin32::EventHandler))
+    , nativeService(new WindowNativeService(this))
 {
 }
 

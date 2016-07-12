@@ -5,6 +5,8 @@ namespace DAVA
 class Engine;
 class Window;
 class EngineContext;
+class NativeService;
+class WindowNativeService;
 
 namespace Private
 {
@@ -36,12 +38,17 @@ using PlatformCore = CoreWinUWP;
 
 class WindowWinUWP;
 using NativeWindow = WindowWinUWP;
+
+ref struct WindowWinUWPBridge;
 #elif defined(__DAVAENGINE_MACOS__)
 class CoreOsX;
 using PlatformCore = CoreOsX;
 
 class WindowOsX;
 using NativeWindow = WindowOsX;
+
+struct CoreOsXObjcBridge;
+struct WindowOsXObjcBridge;
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation 

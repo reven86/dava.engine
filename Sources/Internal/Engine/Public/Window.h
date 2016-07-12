@@ -48,7 +48,7 @@ public:
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
-    Private::NativeWindow* GetNativeWindow() const;
+    WindowNativeService* GetNativeService() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -206,11 +206,6 @@ inline Vector2 Window::GetScale() const
 inline void Window::Resize(Vector2 size)
 {
     Resize(size.dx, size.dy);
-}
-
-inline Private::NativeWindow* Window::GetNativeWindow() const
-{
-    return nativeWindow;
 }
 
 } // namespace DAVA

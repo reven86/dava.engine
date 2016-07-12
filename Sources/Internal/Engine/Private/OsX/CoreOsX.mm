@@ -8,6 +8,7 @@
 
 #import <AppKit/NSApplication.h>
 
+#include "Engine/Public/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/WindowOsX.h"
 #include "Engine/Private/OsX/CoreOsXObjcBridge.h"
@@ -19,17 +20,13 @@ namespace Private
 CoreOsX::CoreOsX(EngineBackend* e)
     : engineBackend(e)
     , objcBridge(new CoreOsXObjcBridge(this))
+    , nativeService(new NativeService(this))
 {
 }
 
 CoreOsX::~CoreOsX()
 {
     delete objcBridge;
-}
-
-Vector<String> CoreOsX::GetCommandLine(int argc, char* argv[])
-{
-    return Vector<String>();
 }
 
 void CoreOsX::Init()

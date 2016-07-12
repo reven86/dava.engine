@@ -29,8 +29,7 @@ public:
 
     static HINSTANCE Win32AppInstance();
 
-    Vector<String> GetCommandLine(int argc, char* argv[]);
-    Vector<String> GetCommandArgs() const;
+    NativeService* GetNativeService() const;
 
     void Init();
     void Run();
@@ -41,6 +40,7 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
+    std::unique_ptr<NativeService> nativeService;
 
     static HINSTANCE hinstance;
 };
@@ -48,6 +48,11 @@ private:
 inline HINSTANCE CoreWin32::Win32AppInstance()
 {
     return hinstance;
+}
+
+inline NativeService* CoreWin32::GetNativeService() const
+{
+    return nativeService.get();
 }
 
 } // namespace Private

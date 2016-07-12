@@ -10,7 +10,7 @@
 
 #import <AppKit/NSOpenGLView.h>
 
-#include "Engine/Private/OsX/OsXFwd.h"
+#include "Engine/Private/EngineFwd.h"
 
 // Subclass of NSOpenGLView
 // Responsibilities:

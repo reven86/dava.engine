@@ -11,7 +11,6 @@
 #include "Functional/Signal.h"
 
 #include "Engine/Private/EngineFwd.h"
-#include "Engine/Private/OsX/OsXFwd.h"
 
 namespace DAVA
 {
@@ -23,7 +22,7 @@ public:
     CoreOsX(EngineBackend* e);
     ~CoreOsX();
 
-    Vector<String> GetCommandLine(int argc, char* argv[]);
+    NativeService* GetNativeService() const;
 
     void Init();
     void Run();
@@ -42,10 +41,16 @@ private:
     EngineBackend* engineBackend = nullptr;
     // TODO: std::unique_ptr
     CoreOsXObjcBridge* objcBridge = nullptr;
+    std::unique_ptr<NativeService> nativeService;
 
     // Friends
     friend struct CoreOsXObjcBridge;
 };
+
+inline NativeService* CoreOsX::GetNativeService() const
+{
+    return nativeService.get();
+}
 
 } // namespace Private
 } // namespace DAVA

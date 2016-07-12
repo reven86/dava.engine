@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/Public/WinUWP/WindowNativeServiceWinUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/Dispatcher.h"
 #include "Engine/Private/WinUWP/CoreWinUWP.h"
@@ -21,6 +22,7 @@ WindowWinUWP::WindowWinUWP(EngineBackend* e, Window* w)
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowWinUWP::PlatformEventHandler))
     , bridge(ref new WindowWinUWPBridge(this))
+    , nativeService(new WindowNativeService(bridge))
 {
 }
 
@@ -70,26 +72,6 @@ void WindowWinUWP::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     // Method executes in context of XAML::Window's UI thread
     bridge->BindToXamlWindow(xamlWindow);
-}
-
-void WindowWinUWP::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
-{
-    bridge->AddXamlControl(xamlControl);
-}
-
-void WindowWinUWP::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
-{
-    bridge->RemoveXamlControl(xamlControl);
-}
-
-void WindowWinUWP::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
-{
-    bridge->PositionXamlControl(xamlControl, x, y);
-}
-
-void WindowWinUWP::UnfocusXamlControl()
-{
-    bridge->UnfocusXamlControl();
 }
 
 void WindowWinUWP::PlatformEventHandler(const PlatformEvent& e)

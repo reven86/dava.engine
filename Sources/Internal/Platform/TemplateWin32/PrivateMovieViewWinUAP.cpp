@@ -11,7 +11,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
+#include "Engine/Public/WindowNativeService.h"
 #include "Render/RHI/rhi_Public.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -54,9 +54,9 @@ PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
     {
         MediaElement ^ p = nativeControl;
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowWinUWP* nativeWindow = window->GetNativeWindow();
-        window->RunAsyncOnUIThread([p, nativeWindow]() {
-            nativeWindow->RemoveXamlControl(p);
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice]() {
+            nservice->RemoveXamlControl(p);
         });
 #else
         core->RunOnUIThread([p]() { // We don't need blocking call here
@@ -248,7 +248,7 @@ void PrivateMovieViewWinUAP::ProcessProperties(const MovieViewProperties& props)
         nativeControl->Volume = 1.0;
 
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetNativeWindow()->AddXamlControl(nativeControl);
+        window->GetNativeService()->AddXamlControl(nativeControl);
 #else
         core->XamlApplication()->AddUIElement(nativeControl);
 #endif
@@ -363,7 +363,7 @@ void PrivateMovieViewWinUAP::SetNativePositionAndSize(const Rect& rect)
     nativeControl->Width = std::max(0.0f, rect.dx);
     nativeControl->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->PositionXamlControl(nativeControl, rect.x, rect.y);
+    window->GetNativeService()->PositionXamlControl(nativeControl, rect.x, rect.y);
 #else
     core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
 #endif

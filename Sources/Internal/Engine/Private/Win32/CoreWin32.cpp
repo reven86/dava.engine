@@ -8,6 +8,7 @@
 
 #include <shellapi.h>
 
+#include "Engine/Public/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/WindowWin32.h"
 
@@ -22,49 +23,12 @@ HINSTANCE CoreWin32::hinstance = nullptr;
 
 CoreWin32::CoreWin32(EngineBackend* e)
     : engineBackend(e)
+    , nativeService(new NativeService(this))
 {
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 
 CoreWin32::~CoreWin32() = default;
-
-Vector<String> CoreWin32::GetCommandLine(int argc, char* argv[])
-{
-    Vector<String> cmdargs;
-
-    int nargs = 0;
-    LPWSTR cmdline = GetCommandLineW();
-    LPWSTR* arglist = CommandLineToArgvW(cmdline, &nargs);
-    if (arglist != nullptr)
-    {
-        cmdargs.reserve(nargs);
-        for (int i = 0; i < nargs; ++i)
-        {
-            cmdargs.push_back(WStringToString(arglist[i]));
-        }
-        LocalFree(arglist);
-    }
-    return cmdargs;
-}
-
-Vector<String> CoreWin32::GetCommandArgs() const
-{
-    Vector<String> cmdargs;
-
-    int nargs = 0;
-    LPWSTR cmdline = ::GetCommandLineW();
-    LPWSTR* arglist = ::CommandLineToArgvW(cmdline, &nargs);
-    if (arglist != nullptr)
-    {
-        cmdargs.reserve(nargs);
-        for (int i = 0; i < nargs; ++i)
-        {
-            cmdargs.push_back(WStringToString(arglist[i]));
-        }
-        LocalFree(arglist);
-    }
-    return cmdargs;
-}
 
 void CoreWin32::Init()
 {

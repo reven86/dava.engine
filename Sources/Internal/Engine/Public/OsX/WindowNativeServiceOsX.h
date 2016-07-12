@@ -9,7 +9,6 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EngineFwd.h"
-#include "Engine/Private/OsX/OsXFwd.h"
 
 #import <Foundation/NSGeometry.h>
 
@@ -18,13 +17,9 @@
 
 namespace DAVA
 {
-namespace Private
-{
-class WindowInteropService final
+class WindowNativeService final
 {
 public:
-    WindowInteropService(WindowOsX* w, WindowOsXObjcBridge* objcBridge);
-
     void AddNSView(NSView* nsview);
     void RemoveNSView(NSView* nsview);
 
@@ -34,11 +29,12 @@ public:
     NSView* GetNSView();
 
 private:
-    WindowOsX* nativeWindow = nullptr;
-    WindowOsXObjcBridge* bridge = nullptr;
+    WindowNativeService(Private::WindowOsXObjcBridge* objcBridge);
+
+private:
+    Private::WindowOsXObjcBridge* bridge = nullptr;
 };
 
-} // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_MACOS__

@@ -38,6 +38,7 @@ public:
 
     Engine* GetEngine() const;
     Dispatcher* GetDispatcher() const;
+    NativeService* GetNativeService() const;
     PlatformCore* GetPlatformCore() const;
 
     void SetOptions(KeyedArchive* options_);

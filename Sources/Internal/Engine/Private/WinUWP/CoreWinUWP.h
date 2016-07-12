@@ -10,8 +10,6 @@
 
 #include "Engine/Private/EngineFwd.h"
 
-#include "Concurrency/Mutex.h"
-
 namespace DAVA
 {
 namespace Private
@@ -22,7 +20,7 @@ public:
     CoreWinUWP(EngineBackend* e);
     ~CoreWinUWP();
 
-    Vector<String> GetCommandLine(int argc, char* argv[]);
+    NativeService* GetNativeService() const;
 
     void Init();
     void Run();
@@ -40,10 +38,16 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
+    std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
 };
+
+inline NativeService* CoreWinUWP::GetNativeService() const
+{
+    return nativeService.get();
+}
 
 } // namespace Private
 } // namespace DAVA

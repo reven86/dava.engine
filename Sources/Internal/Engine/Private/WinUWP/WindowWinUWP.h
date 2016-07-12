@@ -26,6 +26,7 @@ public:
     void* GetHandle() const;
     Dispatcher* GetDispatcher() const;
     Window* GetWindow() const;
+    WindowNativeService* GetNativeService() const;
 
     void Resize(float32 width, float32 height);
     void Close();
@@ -36,11 +37,6 @@ public:
     void ProcessPlatformEvents();
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
-
-    void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
-    void PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);
-    void UnfocusXamlControl();
 
 private:
     void PlatformEventHandler(const PlatformEvent& e);
@@ -53,6 +49,7 @@ private:
     PlatformDispatcher platformDispatcher;
 
     ref struct WindowWinUWPBridge ^ bridge = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
 };
 
 inline Dispatcher* WindowWinUWP::GetDispatcher() const
@@ -63,6 +60,11 @@ inline Dispatcher* WindowWinUWP::GetDispatcher() const
 inline Window* WindowWinUWP::GetWindow() const
 {
     return window;
+}
+
+inline WindowNativeService* WindowWinUWP::GetNativeService() const
+{
+    return nativeService.get();
 }
 
 } // namespace Private

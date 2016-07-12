@@ -6,12 +6,12 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/Public/WinUWP/NativeServiceWinUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WinUWP/WindowWinUWP.h"
 
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
-#include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
@@ -22,15 +22,11 @@ namespace Private
 {
 CoreWinUWP::CoreWinUWP(EngineBackend* e)
     : engineBackend(e)
+    , nativeService(new NativeService(this))
 {
 }
 
 CoreWinUWP::~CoreWinUWP() = default;
-
-Vector<String> CoreWinUWP::GetCommandLine(int /*argc*/, char* /*argv*/ [])
-{
-    return Vector<String>();
-}
 
 void CoreWinUWP::Init()
 {
