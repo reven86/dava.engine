@@ -6,4 +6,6 @@ namespace DAVA
 class EngineContext;
 class Engine;
 class Window;
+class NativeService;
+class WindowNativeService;
 } // namespace DAVA

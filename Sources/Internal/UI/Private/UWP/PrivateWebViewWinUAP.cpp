@@ -10,7 +10,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
+#include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -168,9 +168,9 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowWinUWP* nativeWindow = window->GetNativeWindow();
-        window->RunAsyncOnUIThread([p, nativeWindow]() {
-            nativeWindow->RemoveXamlControl(p);
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice]() {
+            nservice->RemoveXamlControl(p);
         });
 #else
         core->RunOnUIThread([p]() { // We don't need blocking call here
@@ -347,7 +347,7 @@ void PrivateWebViewWinUAP::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->AddXamlControl(nativeWebView);
+    window->GetNativeService()->AddXamlControl(nativeWebView);
 #else
     core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
@@ -493,7 +493,7 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeWindow()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+    window->GetNativeService()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif

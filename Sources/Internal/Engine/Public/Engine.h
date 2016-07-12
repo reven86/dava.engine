@@ -6,7 +6,7 @@
 #include "Functional/Functional.h"
 
 #include "Engine/Public/EngineContext.h"
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {
@@ -24,6 +24,7 @@ public:
     Engine& operator=(const Engine&) = delete;
 
     EngineContext* GetContext() const;
+    NativeService* GetNativeService() const;
     Window* PrimaryWindow() const;
 
     void Init(bool consoleMode, const Vector<String>& modules);

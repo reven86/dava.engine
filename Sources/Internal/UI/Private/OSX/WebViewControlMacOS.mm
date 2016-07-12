@@ -4,8 +4,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/Private/NativeWindow.h"
-#include "Engine/Private/OsX/WindowInteropService.h"
+#include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -211,8 +210,7 @@ WebViewControl::WebViewControl(UIWebView& uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-    interop->AddNSView(bridge->webView);
+    window->GetNativeService()->AddNSView(bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -239,8 +237,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-    interop->RemoveNSView(bridge->webView);
+    window->GetNativeService()->RemoveNSView(bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -329,8 +326,7 @@ void WebViewControl::SetRect(const Rect& srcRect)
 
     // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
-    Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-    NSRect controlRect = interop->ConvertRectFromBacking(NSMakeRect(rect.x, rect.y, rect.dx, rect.dy));
+    NSRect controlRect = [[bridge->webView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
@@ -394,8 +390,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
     {
         [bridge->bitmapImageRep release];
 #if defined(__DAVAENGINE_COREV2__)
-        Private::WindowInteropService* interop = window->GetNativeWindow()->GetInteropService();
-        bridge->bitmapImageRep = interop->BitmapImageRepForCachingDisplayInRect([bridge->webView frame]);
+        bridge->bitmapImageRep = [[bridge->webView superview] bitmapImageRepForCachingDisplayInRect:[bridge->webView frame]];
 #else
         bridge->bitmapImageRep = [openGLView bitmapImageRepForCachingDisplayInRect:[bridge->webView frame]];
 #endif

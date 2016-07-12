@@ -3,7 +3,7 @@
 #include "Engine/Public/Engine.h"
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA
 {
@@ -38,6 +38,11 @@ Engine::~Engine()
 EngineContext* Engine::GetContext() const
 {
     return engineBackend->GetEngineContext();
+}
+
+NativeService* Engine::GetNativeService() const
+{
+    return engineBackend->GetNativeService();
 }
 
 Window* Engine::PrimaryWindow() const

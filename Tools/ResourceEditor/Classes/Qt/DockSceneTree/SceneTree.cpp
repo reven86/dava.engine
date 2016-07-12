@@ -206,7 +206,7 @@ protected:
 
             if ((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
         }
         else
@@ -220,7 +220,7 @@ protected:
             menu.addSeparator();
             if (entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
 
             menu.addSeparator();
@@ -763,6 +763,12 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
+
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &SceneTree::RemoveSelection);
+    addAction(deleteSelection);
 }
 
 void SceneTree::SetFilter(const QString& filter)
@@ -775,6 +781,11 @@ void SceneTree::SetFilter(const QString& filter)
     {
         ExpandFilteredItems();
     }
+}
+
+void SceneTree::RemoveSelection()
+{
+    ::RemoveSelection(treeModel->GetScene());
 }
 
 void SceneTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col)

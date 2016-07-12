@@ -8,7 +8,7 @@
 
 #include "UI/UIEvent.h"
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
 {
@@ -48,7 +48,7 @@ public:
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
-    Private::NativeWindow* GetNativeWindow() const;
+    WindowNativeService* GetNativeService() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -57,7 +57,7 @@ public:
     void PostFocusChanged(bool focus);
     void PostVisibilityChanged(bool visibility);
     void PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
-    void PostWindowCreated(Private::NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowCreated(Private::WindowBackend* wbackend, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void PostWindowDestroyed();
 
     void PostKeyDown(uint32 key, bool isRepeated);
@@ -87,19 +87,19 @@ private:
     void Update(float32 frameDelta);
     void Draw();
 
-    void EventHandler(const Private::DispatcherEvent& e);
+    void EventHandler(const Private::MainDispatcherEvent& e);
     void FinishEventHandlingOnCurrentFrame();
 
-    void HandleWindowCreated(const Private::DispatcherEvent& e);
-    void HandleWindowDestroyed(const Private::DispatcherEvent& e);
-    void HandleSizeChanged(const Private::DispatcherEvent& e);
-    void HandleFocusChanged(const Private::DispatcherEvent& e);
-    void HandleVisibilityChanged(const Private::DispatcherEvent& e);
-    void HandleMouseClick(const Private::DispatcherEvent& e);
-    void HandleMouseWheel(const Private::DispatcherEvent& e);
-    void HandleMouseMove(const Private::DispatcherEvent& e);
-    void HandleKeyPress(const Private::DispatcherEvent& e);
-    void HandleKeyChar(const Private::DispatcherEvent& e);
+    void HandleWindowCreated(const Private::MainDispatcherEvent& e);
+    void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
+    void HandleSizeChanged(const Private::MainDispatcherEvent& e);
+    void HandleFocusChanged(const Private::MainDispatcherEvent& e);
+    void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
+    void HandleMouseClick(const Private::MainDispatcherEvent& e);
+    void HandleMouseWheel(const Private::MainDispatcherEvent& e);
+    void HandleMouseMove(const Private::MainDispatcherEvent& e);
+    void HandleKeyPress(const Private::MainDispatcherEvent& e);
+    void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
     void HandlePendingSizeChanging();
 
@@ -107,8 +107,8 @@ private:
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
-    Private::Dispatcher* dispatcher = nullptr;
-    Private::NativeWindow* nativeWindow = nullptr;
+    Private::MainDispatcher* dispatcher = nullptr;
+    Private::WindowBackend* windowBackend = nullptr;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
@@ -130,7 +130,7 @@ private:
 
     // Friends
     friend class Private::EngineBackend;
-    friend Private::NativeWindow;
+    friend Private::WindowBackend;
 };
 
 inline bool Window::IsPrimary() const
@@ -206,11 +206,6 @@ inline Vector2 Window::GetScale() const
 inline void Window::Resize(Vector2 size)
 {
     Resize(size.dx, size.dy);
-}
-
-inline Private::NativeWindow* Window::GetNativeWindow() const
-{
-    return nativeWindow;
 }
 
 } // namespace DAVA

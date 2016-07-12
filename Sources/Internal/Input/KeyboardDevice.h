@@ -3,7 +3,7 @@
 
 #include "Base/BaseObject.h"
 
-#include "Engine/Private/EngineFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 /**
     \defgroup inputsystem    Input System

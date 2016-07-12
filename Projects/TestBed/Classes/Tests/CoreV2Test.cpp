@@ -103,8 +103,6 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
 {
-    using DAVA::Private::DispatcherEvent;
-
     if (obj == buttonRunOnMain)
     {
         engine->RunAsyncOnMainThread([]() {

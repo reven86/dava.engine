@@ -6,16 +6,16 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/WindowOsXObjcBridge.h"
+#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
 
 @implementation OsXWindowDelegate
 
-- (id)init:(DAVA::Private::WindowOsXObjcBridge*)objcBridge
+- (id)init:(DAVA::Private::WindowNativeBridgeOsX*)nativeBridge
 {
     self = [super init];
     if (self != nullptr)
     {
-        bridge = objcBridge;
+        bridge = nativeBridge;
     }
     return self;
 }

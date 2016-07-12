@@ -10,16 +10,16 @@
 
 #import <AppKit/NSApplication.h>
 
-#include "Engine/Private/OsX/OsXFwd.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 
 // Implementation of NSApplicationDelegate
-// Forwards all necessary methods to CoreOsXObjcBridge
+// Forwards all necessary methods to CoreNativeBridgeOsX
 @interface OsXAppDelegate : NSObject<NSApplicationDelegate>
 {
-    DAVA::Private::CoreOsXObjcBridge* bridge;
+    DAVA::Private::CoreNativeBridgeOsX* bridge;
 }
 
-- (id)init:(DAVA::Private::CoreOsXObjcBridge*)objcBridge;
+- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)objcBridge;
 
 @end
 

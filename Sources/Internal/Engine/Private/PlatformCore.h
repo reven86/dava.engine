@@ -3,13 +3,13 @@
 #pragma once
 
 #if defined(__DAVAENGINE_QT__)
-#include "Engine/Private/Qt/CoreQt.h"
+#include "Engine/Private/Qt/PlatformCoreQt.h"
 #elif defined(__DAVAENGINE_WIN32__)
-#include "Engine/Private/Win32/CoreWin32.h"
+#include "Engine/Private/Win32/PlatformCoreWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Engine/Private/WinUWP/CoreWinUWP.h"
+#include "Engine/Private/UWP/PlatformCoreUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Engine/Private/OsX/CoreOsX.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

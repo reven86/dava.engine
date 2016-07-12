@@ -4,8 +4,8 @@
 
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
-#include "Engine/Private/NativeWindow.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/WindowBackend.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -24,22 +24,22 @@ Window::Window(Private::EngineBackend* engine, bool primary)
 
 Window::~Window()
 {
-    delete nativeWindow;
-    nativeWindow = nullptr;
+    delete windowBackend;
+    windowBackend = nullptr;
 }
 
 void Window::Resize(float32 w, float32 h)
 {
-    if (nativeWindow != nullptr)
+    if (windowBackend != nullptr)
     {
-        nativeWindow->Resize(w, h);
+        windowBackend->Resize(w, h);
     }
 }
 
 void Window::Close()
 {
-    DVASSERT(nativeWindow != nullptr);
-    nativeWindow->Close();
+    DVASSERT(windowBackend != nullptr);
+    windowBackend->Close();
 }
 
 Engine* Window::GetEngine() const
@@ -49,19 +49,25 @@ Engine* Window::GetEngine() const
 
 void* Window::GetNativeHandle() const
 {
-    DVASSERT(nativeWindow != nullptr);
-    return nativeWindow->GetHandle();
+    DVASSERT(windowBackend != nullptr);
+    return windowBackend->GetHandle();
+}
+
+WindowNativeService* Window::GetNativeService() const
+{
+    DVASSERT(windowBackend != nullptr);
+    return windowBackend->GetNativeService();
 }
 
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
-    DVASSERT(nativeWindow != nullptr);
-    nativeWindow->RunAsyncOnUIThread(task);
+    DVASSERT(windowBackend != nullptr);
+    windowBackend->RunAsyncOnUIThread(task);
 }
 
 void Window::Update(float32 frameDelta)
 {
-    if (nativeWindow != nullptr)
+    if (windowBackend != nullptr)
     {
         uiControlSystem->Update();
         update.Emit(*this, frameDelta);
@@ -70,7 +76,7 @@ void Window::Update(float32 frameDelta)
 
 void Window::Draw()
 {
-    if (nativeWindow != nullptr && isVisible)
+    if (windowBackend != nullptr && isVisible)
     {
         uiControlSystem->Draw();
     }
@@ -78,36 +84,36 @@ void Window::Draw()
 
 void Window::PostFocusChanged(bool focus)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
+    MainDispatcherEvent e;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = DispatcherEvent::WINDOW_FOCUS_CHANGED;
+    e.type = MainDispatcherEvent::WINDOW_FOCUS_CHANGED;
     e.stateEvent.state = focus;
     dispatcher->PostEvent(e);
 }
 
 void Window::PostVisibilityChanged(bool visibility)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
+    MainDispatcherEvent e;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = DispatcherEvent::WINDOW_VISIBILITY_CHANGED;
+    e.type = MainDispatcherEvent::WINDOW_VISIBILITY_CHANGED;
     e.stateEvent.state = visibility;
     dispatcher->PostEvent(e);
 }
 
 void Window::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
+    MainDispatcherEvent e;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED;
+    e.type = MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED;
 
     e.sizeEvent.width = width;
     e.sizeEvent.height = height;
@@ -116,16 +122,16 @@ void Window::PostSizeChanged(float32 width, float32 height, float32 scaleX, floa
     dispatcher->PostEvent(e);
 }
 
-void Window::PostWindowCreated(Private::NativeWindow* native, float32 width, float32 height, float32 scaleX, float32 scaleY)
+void Window::PostWindowCreated(Private::WindowBackend* wbackend, float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
+    MainDispatcherEvent e;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = DispatcherEvent::WINDOW_CREATED;
+    e.type = MainDispatcherEvent::WINDOW_CREATED;
 
-    e.windowCreatedEvent.nativeWindow = native;
+    e.windowCreatedEvent.windowBackend = wbackend;
     e.windowCreatedEvent.size.width = width;
     e.windowCreatedEvent.size.height = height;
     e.windowCreatedEvent.size.scaleX = scaleX;
@@ -135,21 +141,21 @@ void Window::PostWindowCreated(Private::NativeWindow* native, float32 width, flo
 
 void Window::PostWindowDestroyed()
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
+    MainDispatcherEvent e;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = DispatcherEvent::WINDOW_DESTROYED;
+    e.type = MainDispatcherEvent::WINDOW_DESTROYED;
     dispatcher->PostEvent(e);
 }
 
 void Window::PostKeyDown(uint32 key, bool isRepeated)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
-    e.type = DispatcherEvent::KEY_DOWN;
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::KEY_DOWN;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
@@ -159,10 +165,10 @@ void Window::PostKeyDown(uint32 key, bool isRepeated)
 
 void Window::PostKeyUp(uint32 key)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
-    e.type = DispatcherEvent::KEY_UP;
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::KEY_UP;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
@@ -172,10 +178,10 @@ void Window::PostKeyUp(uint32 key)
 
 void Window::PostKeyChar(uint32 key, bool isRepeated)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
 
-    DispatcherEvent e;
-    e.type = DispatcherEvent::KEY_CHAR;
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::KEY_CHAR;
     e.window = this;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
@@ -183,41 +189,41 @@ void Window::PostKeyChar(uint32 key, bool isRepeated)
     dispatcher->PostEvent(e);
 }
 
-void Window::EventHandler(const Private::DispatcherEvent& e)
+void Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
-    using Private::DispatcherEvent;
+    using Private::MainDispatcherEvent;
     switch (e.type)
     {
-    case DispatcherEvent::MOUSE_MOVE:
+    case MainDispatcherEvent::MOUSE_MOVE:
         HandleMouseMove(e);
         break;
-    case DispatcherEvent::MOUSE_BUTTON_DOWN:
-    case DispatcherEvent::MOUSE_BUTTON_UP:
+    case MainDispatcherEvent::MOUSE_BUTTON_DOWN:
+    case MainDispatcherEvent::MOUSE_BUTTON_UP:
         HandleMouseClick(e);
         break;
-    case DispatcherEvent::MOUSE_WHEEL:
+    case MainDispatcherEvent::MOUSE_WHEEL:
         HandleMouseWheel(e);
         break;
-    case DispatcherEvent::KEY_DOWN:
-    case DispatcherEvent::KEY_UP:
+    case MainDispatcherEvent::KEY_DOWN:
+    case MainDispatcherEvent::KEY_UP:
         HandleKeyPress(e);
         break;
-    case DispatcherEvent::KEY_CHAR:
+    case MainDispatcherEvent::KEY_CHAR:
         HandleKeyChar(e);
         break;
-    case DispatcherEvent::WINDOW_SIZE_SCALE_CHANGED:
+    case MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED:
         HandleSizeChanged(e);
         break;
-    case DispatcherEvent::WINDOW_FOCUS_CHANGED:
+    case MainDispatcherEvent::WINDOW_FOCUS_CHANGED:
         HandleFocusChanged(e);
         break;
-    case DispatcherEvent::WINDOW_VISIBILITY_CHANGED:
+    case MainDispatcherEvent::WINDOW_VISIBILITY_CHANGED:
         HandleVisibilityChanged(e);
         break;
-    case DispatcherEvent::WINDOW_CREATED:
+    case MainDispatcherEvent::WINDOW_CREATED:
         HandleWindowCreated(e);
         break;
-    case DispatcherEvent::WINDOW_DESTROYED:
+    case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
     default:
@@ -233,17 +239,17 @@ void Window::FinishEventHandlingOnCurrentFrame()
         pendingSizeChanging = false;
     }
 
-    if (nativeWindow != nullptr)
+    if (windowBackend != nullptr)
     {
-        nativeWindow->TriggerPlatformEvents();
+        windowBackend->TriggerPlatformEvents();
     }
 }
 
-void Window::HandleWindowCreated(const Private::DispatcherEvent& e)
+void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::Error("****** WINDOW_CREATED: this=%p, w=%.1f, h=%.1f", this, e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
 
-    nativeWindow = e.windowCreatedEvent.nativeWindow;
+    windowBackend = e.windowCreatedEvent.windowBackend;
 
     width = e.windowCreatedEvent.size.width;
     height = e.windowCreatedEvent.size.height;
@@ -261,7 +267,7 @@ void Window::HandleWindowCreated(const Private::DispatcherEvent& e)
     virtualCoordSystem->EnableReloadResourceOnResize(true);
 }
 
-void Window::HandleWindowDestroyed(const Private::DispatcherEvent& e)
+void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
     Logger::Error("****** WINDOW_DESTROYED: this=%p", this);
 
@@ -274,7 +280,7 @@ void Window::HandleWindowDestroyed(const Private::DispatcherEvent& e)
     engineBackend->DeinitRender(this);
 }
 
-void Window::HandleSizeChanged(const Private::DispatcherEvent& e)
+void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
     width = e.sizeEvent.width;
     height = e.sizeEvent.height;
@@ -283,7 +289,7 @@ void Window::HandleSizeChanged(const Private::DispatcherEvent& e)
     pendingSizeChanging = true;
 }
 
-void Window::HandleFocusChanged(const Private::DispatcherEvent& e)
+void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::Error("****** WINDOW_FOCUS_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
 
@@ -294,7 +300,7 @@ void Window::HandleFocusChanged(const Private::DispatcherEvent& e)
     focusChanged.Emit(*this, hasFocus);
 }
 
-void Window::HandleVisibilityChanged(const Private::DispatcherEvent& e)
+void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::Error("****** WINDOW_VISIBILITY_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
 
@@ -302,9 +308,9 @@ void Window::HandleVisibilityChanged(const Private::DispatcherEvent& e)
     visibilityChanged.Emit(*this, isVisible);
 }
 
-void Window::HandleMouseClick(const Private::DispatcherEvent& e)
+void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 {
-    bool pressed = e.type == Private::DispatcherEvent::MOUSE_BUTTON_DOWN;
+    bool pressed = e.type == Private::MainDispatcherEvent::MOUSE_BUTTON_DOWN;
 
     Logger::Debug("****** %s: this=%p, x=%.1f, y=%.1f, button=%d", pressed ? "MOUSE_BUTTON_DOWN" : "MOUSE_BUTTON_UP", this, e.mclickEvent.x, e.mclickEvent.y, e.mclickEvent.button);
 
@@ -335,7 +341,7 @@ void Window::HandleMouseClick(const Private::DispatcherEvent& e)
     //}
 }
 
-void Window::HandleMouseWheel(const Private::DispatcherEvent& e)
+void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
     Logger::Debug("****** MOUSE_WHEEL: this=%p, x=%.1f, y=%.1f, delta=%d", this, e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
 
@@ -356,7 +362,7 @@ void Window::HandleMouseWheel(const Private::DispatcherEvent& e)
     uiControlSystem->OnInput(&uie);
 }
 
-void Window::HandleMouseMove(const Private::DispatcherEvent& e)
+void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
@@ -387,9 +393,9 @@ void Window::HandleMouseMove(const Private::DispatcherEvent& e)
     }
 }
 
-void Window::HandleKeyPress(const Private::DispatcherEvent& e)
+void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 {
-    bool pressed = e.type == Private::DispatcherEvent::KEY_DOWN;
+    bool pressed = e.type == Private::MainDispatcherEvent::KEY_DOWN;
 
     Logger::Debug("****** %s: this=%p", pressed ? "KEY_DOWN" : "KEY_UP", this);
 
@@ -420,7 +426,7 @@ void Window::HandleKeyPress(const Private::DispatcherEvent& e)
     }
 }
 
-void Window::HandleKeyChar(const Private::DispatcherEvent& e)
+void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 {
     Logger::Debug("****** KEY_CHAR: this=%p", this);
 
