@@ -7,6 +7,8 @@
 
 namespace DAVA
 {
+namespace Debug
+{
 // Class InterthreadBlockingCallMonitor helps in detection deadlocks when performing interthread blocking calls
 class InterthreadBlockingCallMonitor final : public StaticSingleton<InterthreadBlockingCallMonitor>
 {
@@ -24,6 +26,8 @@ private:
 
 private:
     Mutex mutex;
-    Map<uint64, uint64> map;
+    Map<uint64, uint64> map; // key is caller thread id, value is target thread id
 };
+
+} // namespace Debug
 } // namespace DAVA

@@ -4,6 +4,8 @@
 
 namespace DAVA
 {
+namespace Debug
+{
 InterthreadBlockingCallMonitor::InterthreadBlockingCallMonitor() = default;
 InterthreadBlockingCallMonitor::~InterthreadBlockingCallMonitor() = default;
 
@@ -80,4 +82,5 @@ bool InterthreadBlockingCallMonitor::DetectDeadlock(uint64 callerThreadId, Vecto
     return false;
 }
 
+} // namespace Debug
 } // namespace DAVA
