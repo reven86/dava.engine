@@ -118,6 +118,7 @@ int REApplication::Run()
 
     if (cmdLineManager->IsEnabled())
     {
+        DAVA::Logger::Info("Run in console");
         RunConsole();
     }
     else if (argc == 1
@@ -245,22 +246,33 @@ void REApplication::RunConsole()
 //    WinConsoleIOLocker locker; //temporary disabled because of freezes of Windows Console
 #endif //platforms
 
+    DAVA::Logger::Info("Start in console");
     DAVA::Core::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->EnableConsoleMode();
+    //DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
+    DAVA::Logger::Info("Query IApplication");
     wgt::IApplication* application = NGTLayer::queryInterface<wgt::IApplication>();
 
+    DAVA::Logger::Info("Widget create");
     DavaGLWidget glWidget;
+    DAVA::Logger::Info("MakeInvisible");
     glWidget.MakeInvisible();
 
     // Delayed initialization throught event loop
+    DAVA::Logger::Info("Show");
     glWidget.show();
 #ifdef Q_OS_WIN
-    QObject::connect(&glWidget, &DavaGLWidget::Initialized, [application]() { application->quitApplication(); });
+    QObject::connect(&glWidget, &DavaGLWidget::Initialized, [application]()
+                     {
+                         DAVA::Logger::Info("GL initialized");
+                         application->quitApplication();
+                     });
+    DAVA::Logger::Info("Start application");
     application->startApplication();
 #endif
     glWidget.hide();
+    DAVA::Logger::Info("After hide");
 
     //Trick for correct loading of sprites.
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
@@ -268,5 +280,7 @@ void REApplication::RunConsole()
 
     DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
 
+    DAVA::Logger::Info("Start command line");
     cmdLineManager->Process();
+    DAVA::Logger::Info("End command line");
 }

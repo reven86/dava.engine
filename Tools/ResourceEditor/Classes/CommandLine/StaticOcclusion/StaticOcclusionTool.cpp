@@ -46,12 +46,15 @@ void StaticOcclusionTool::ProcessInternal()
     const rhi::HTexture nullTexture;
     const rhi::Viewport nullViewport(0, 0, 1, 1);
 
+    DAVA::Logger::Info("Run static occlusion");
     if (commandAction == ACTION_BUILD)
     {
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
         if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
         {
+            DAVA::Logger::Info("Before update");
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
+            DAVA::Logger::Info("After update");
             scene->staticOcclusionBuildSystem->Build();
             RenderObjectsFlusher::Flush();
 
@@ -63,7 +66,9 @@ void StaticOcclusionTool::ProcessInternal()
                 Renderer::EndFrame();
             }
 
+            DAVA::Logger::Info("Before save Scene");
             scene->SaveScene();
+            DAVA::Logger::Info("Save scene");
         }
         RenderObjectsFlusher::Flush();
     }
