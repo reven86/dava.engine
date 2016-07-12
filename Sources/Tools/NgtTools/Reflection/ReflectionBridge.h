@@ -34,7 +34,7 @@ private:
     const DAVA::MetaInfo* objectType;
     const DAVA::InspMember* memberInsp;
     wgt::MetaHandle metaBase;
-    DAVA::WideString dysplayName;
+    DAVA::WideString enumString;
 };
 
 class NGTTypeDefinition : public wgt::IClassDefinitionDetails
