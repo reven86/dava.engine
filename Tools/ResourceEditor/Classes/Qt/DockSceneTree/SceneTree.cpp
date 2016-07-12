@@ -141,6 +141,51 @@ protected:
         return treeWidget->filteringProxyModel;
     }
 
+    struct RemoveInfo
+    {
+        RemoveInfo(Command2::Pointer&& command_, Selectable::Object* selectedObject_)
+            : command(std::move(command_))
+            , selectedObject(selectedObject_)
+        {
+        }
+
+        RemoveInfo(RemoveInfo&& info)
+            : command(std::move(info.command))
+            , selectedObject(info.selectedObject)
+        {
+        }
+
+        Command2::Pointer command;
+        Selectable::Object* selectedObject;
+    };
+
+    void RemoveCommandsHelper(const DAVA::String& text, SceneTreeItem::eItemType type, const DAVA::Function<RemoveInfo(SceneTreeItem*)>& callback)
+    {
+        SceneEditor2* sceneEditor = GetScene();
+        SelectableGroup currentGroup = sceneEditor->selectionSystem->GetSelection();
+        DAVA::Vector<Command2::Pointer> commands;
+        commands.reserve(GetSelectedItemsCount());
+        ForEachSelectedByType(type, [&commands, &currentGroup, callback](SceneTreeItem* item)
+                              {
+                                  RemoveInfo info = callback(item);
+                                  currentGroup.Remove(info.selectedObject);
+                                  commands.push_back(std::move(info.command));
+                              });
+
+        if (!commands.empty())
+        {
+            sceneEditor->BeginBatch(text, commands.size());
+            sceneEditor->selectionSystem->SetSelection(currentGroup);
+            static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
+            for (Command2::Pointer& command : commands)
+            {
+                sceneEditor->Exec(std::move(command));
+            }
+            MarkStructureChanged();
+            sceneEditor->EndBatch();
+        }
+    }
+
     void ForEachSelectedByType(SceneTreeItem::eItemType type, const DAVA::Function<void(SceneTreeItem*)>& callback)
     {
         foreach (QModelIndex index, treeWidget->selectionModel()->selectedRows())
@@ -534,25 +579,12 @@ private:
 
     void RemoveLayer()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedLayers = false;
-        sceneEditor->BeginBatch("Remove layers", GetSelectedItemsCount());
-        DAVA::Vector<Command2::Pointer> commands;
-        commands.reserve(GetSelectedItemsCount());
-        ForEachSelectedByType(SceneTreeItem::EIT_Layer, [&commands, &hasSelectedLayers](SceneTreeItem* item)
-                              {
-                                  hasSelectedLayers = true;
-                                  SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
-                                  commands.push_back(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layerItem->GetLayer()));
-                              });
-
-        DVASSERT(hasSelectedLayers == true);
-        for (Command2::Pointer& command : commands)
-        {
-            sceneEditor->Exec(std::move(command));
-        }
-        MarkStructureChanged();
-        sceneEditor->EndBatch();
+        RemoveCommandsHelper("Remove layers", SceneTreeItem::EIT_Layer, [](SceneTreeItem* item) -> RemoveInfo
+                             {
+                                 SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
+                                 DAVA::ParticleLayer* layer = layerItem->GetLayer();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
+                             });
     }
 
     void AddForce()
@@ -585,25 +617,12 @@ protected:
 private:
     void RemoveForce()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedForces = false;
-        sceneEditor->BeginBatch("Remove forces", GetSelectedItemsCount());
-        DAVA::Vector<Command2::Pointer> commands;
-        commands.reserve(GetSelectedItemsCount());
-        ForEachSelectedByType(SceneTreeItem::EIT_Force, [&commands, &hasSelectedForces](SceneTreeItem* item)
-                              {
-                                  hasSelectedForces = true;
-                                  SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
-                                  commands.push_back(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, forceItem->GetForce()));
-                              });
-
-        DVASSERT(hasSelectedForces == true);
-        for (Command2::Pointer& command : commands)
-        {
-            sceneEditor->Exec(std::move(command));
-        }
-        MarkStructureChanged();
-        sceneEditor->EndBatch();
+        RemoveCommandsHelper("Remove forces", SceneTreeItem::EIT_Force, [](SceneTreeItem* item)
+                             {
+                                 SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
+                                 DAVA::ParticleForce* force = forceItem->GetForce();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
+                             });
     }
 };
 
@@ -646,24 +665,12 @@ protected:
 
     void RemoveEmitter()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedForces = false;
-        sceneEditor->BeginBatch("Remove Emitters", GetSelectedItemsCount());
-        DAVA::Vector<Command2::Pointer> commands;
-        commands.reserve(GetSelectedItemsCount());
-        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&commands, &hasSelectedForces](SceneTreeItem* item) {
-            hasSelectedForces = true;
-            SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-
-            commands.push_back(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->GetEmitterInstance()));
-        });
-
-        DVASSERT(hasSelectedForces == true);
-        for (Command2::Pointer& command : commands)
-        {
-            sceneEditor->Exec(std::move(command));
-        }
-        sceneEditor->EndBatch();
+        RemoveCommandsHelper("Remove Emitters", SceneTreeItem::EIT_Emitter, [](SceneTreeItem* item)
+                             {
+                                 SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
+                                 DAVA::ParticleEmitterInstance* emitterInstance = emitterItem->GetEmitterInstance();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterInstance), emitterInstance);
+                             });
     }
 
     void AddLayer()
@@ -761,6 +768,8 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
+
+    modelUpdater = new LazyUpdater(DAVA::Function<void()>(this, &SceneTree::UpdateModel), this);
 
     setModel(filteringProxyModel);
 
@@ -983,7 +992,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        modelUpdater->Update();
         treeUpdater->Update();
     }
 }
@@ -1042,7 +1051,7 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
     if (itemLayer->hasInnerEmmiter != needEmmiter)
     {
         itemLayer->hasInnerEmmiter = needEmmiter;
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        modelUpdater->Update();
     }
 }
 
@@ -1069,7 +1078,7 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
         menu.Show(globalPos);
         if (menu.IsStructureChanged())
         {
-            treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+            modelUpdater->Update();
         }
     };
 
@@ -1341,6 +1350,11 @@ void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelInd
 void SceneTree::UpdateTree()
 {
     dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SceneTree::UpdateModel()
+{
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
 }
 
 void SceneTree::PropagateSolidFlag()
