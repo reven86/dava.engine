@@ -128,6 +128,8 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         updatePending = false;
         CleanupBacktrace();
     }
+
+    MarkRestored();
 }
 
 //==============================================================================
@@ -156,7 +158,6 @@ dx9_VertexBuffer_Delete(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->SetRecreatePending(false);
-    self->MarkRestored();
     self->Destroy();
     VertexBufferDX9Pool::Free(vb);
 }

@@ -299,11 +299,17 @@ inline void
 ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
 {
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    uint32 total = 0;
+    uint32 restore = 0;
+    uint32 counter = ResourceImpl<T, DT>::PendingRestoreCount();
+
     Lock();
     for (Iterator i = Begin(), e = End(); i != e; ++i)
     {
+        ++total;
         if (i->NeedRestore())
         {
+            ++restore;
             DAVA::Logger::Error("----------------------------");
             for (const DAVA::Debug::StackFrame& frame : i->backtrace)
             {
@@ -313,6 +319,10 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
         }
     }
     Unlock();
+
+    DAVA::Logger::Error("----------------------------------------------");
+    DAVA::Logger::Error("%u / %u, counter = %u", total, restore, counter);
+    DAVA::Logger::Error("----------------------------------------------");
 #endif
 }
 

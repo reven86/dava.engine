@@ -20,7 +20,7 @@ using DAVA::Logger;
 #include <thread>
 
 #define RHI_DX9_TRACK_API_OBJECTS 0
-#define RHI_DX9_ABORT_ON_FAILED_RESTORE 0
+#define RHI_DX9_ABORT_ON_FAILED_RESTORE 1
 
 namespace rhi
 {
@@ -1438,6 +1438,10 @@ _DX9_ExecuteQueuedCommands()
                 Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+
+#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
+            _DX9_RestoreAttempts = 0;
+#endif
         }
 
         TextureDX9::ReCreateAll();

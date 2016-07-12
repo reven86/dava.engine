@@ -133,6 +133,8 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         isMapped = false;
         CleanupBacktrace();
     }
+
+    MarkRestored();
 }
 
 //------------------------------------------------------------------------------
@@ -159,7 +161,6 @@ dx9_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->SetRecreatePending(false);
-    self->MarkRestored();
     self->Destroy();
     IndexBufferDX9Pool::Free(ib);
 }
