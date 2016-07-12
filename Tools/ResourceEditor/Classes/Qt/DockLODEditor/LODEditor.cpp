@@ -193,6 +193,7 @@ void LODEditor::SetupDistancesUI()
 
         distanceWidgets[i]->SetMinMax(LodComponent::MIN_LOD_DISTANCE, LodComponent::MAX_LOD_DISTANCE);
         distanceWidgets[i]->SetDistance(LodComponent::MIN_LOD_DISTANCE, false);
+        distanceWidgets[i]->SetIndex(i);
 
         connect(distanceWidgets[i], &LODDistanceWidget::DistanceChanged, this, &LODEditor::LODDistanceChangedByDistanceWidget);
         connect(distanceWidgets[i], &LODDistanceWidget::DistanceRemoved, this, &LODEditor::DeleteLOD);

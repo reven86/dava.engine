@@ -17,6 +17,13 @@ const FastName Settings::General_MaterialEditor_LodColor0 = FastName("General/Ma
 const FastName Settings::General_MaterialEditor_LodColor1 = FastName("General/MaterialEditor/LodColor1");
 const FastName Settings::General_MaterialEditor_LodColor2 = FastName("General/MaterialEditor/LodColor2");
 const FastName Settings::General_MaterialEditor_LodColor3 = FastName("General/MaterialEditor/LodColor3");
+
+const FastName Settings::General_LODEditor_LodColor0 = FastName("General/LODEditor/LodColor0");
+const FastName Settings::General_LODEditor_LodColor1 = FastName("General/LODEditor/LodColor1");
+const FastName Settings::General_LODEditor_LodColor2 = FastName("General/LODEditor/LodColor2");
+const FastName Settings::General_LODEditor_LodColor3 = FastName("General/LODEditor/LodColor3");
+const FastName Settings::General_LODEditor_InactiveColor = FastName("General/LODEditor/InactiveColor");
+
 const FastName Settings::General_HeighMaskTool_Color0 = FastName("General/HeighMaskTool/Color0");
 const FastName Settings::General_HeighMaskTool_Color1 = FastName("General/HeighMaskTool/Color1");
 const FastName Settings::General_ColorMultiplyMax = FastName("General/ColorPicker/Maximum multiplier");
