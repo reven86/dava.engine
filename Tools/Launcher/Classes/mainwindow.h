@@ -57,7 +57,7 @@ private:
 
     void GetTableApplicationIDs(int rowNumber, QString& appID, QString& installedVersionID, QString& avalibleVersionID);
 
-    QWidget* CreateAppNameTableItem(const QString& stringID);
+    QWidget* CreateAppNameTableItem(const QString& stringID, int rowNum);
     QWidget* CreateAppInstalledTableItem(const QString& stringID);
     QWidget* CreateAppAvalibleTableItem(Application* app);
 

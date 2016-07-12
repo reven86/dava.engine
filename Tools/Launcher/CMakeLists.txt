@@ -37,8 +37,7 @@ qt5_add_resources     ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                   ( Generated  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
-define_source_folders          ( SRC_ROOT "Classes"  )
-generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
+define_source ( SOURCE    "Classes" "DataQt" )
 
 if ( MACOS )
 	set( APP_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)

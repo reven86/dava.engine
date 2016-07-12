@@ -160,7 +160,8 @@ macro( setup_main_module )
              list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
         endif()
 
-
+        set( ALL_SRC )
+        set( ALL_SRC_HEADER_FILE_ONLY )
         set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ) 
         
         if( SRC_FOLDERS OR EXTERNAL_MODULES )
@@ -175,10 +176,12 @@ macro( setup_main_module )
             endif()
             
             if( SRC_FOLDERS_DIR_NAME )
-                define_source_folders  ( SRC_ROOT            ${SRC_FOLDERS_DIR_NAME}
-                                         ERASE_FOLDERS       ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
+                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
                                          
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+                list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
+                list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
             endif()
  
             foreach( VALUE ${MAIN_MODULE_VALUES} )
@@ -187,17 +190,14 @@ macro( setup_main_module )
 
         endif()
 
-        #"DEFINE SOURCE"
-        define_source_files (
-            GLOB_CPP_PATTERNS          ${CPP_FILES}         ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
-            GLOB_H_PATTERNS            ${HPP_FILES}         ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
-            GLOB_RECURSE_CPP_PATTERNS  ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
-            GLOB_RECURSE_H_PATTERNS    ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
-
-            GLOB_ERASE_FILES           ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
-        )
-
-        set( ALL_SRC ${CPP_FILES} ${PROJECT_SOURCE_FILES} ${H_FILES} )
+        define_source( SOURCE         ${CPP_FILES} ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
+                                      ${HPP_FILES} ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
+                       SOURCE_RECURSE ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+                                      ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+                       IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
+                     )
+        list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
+        list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
         set_project_files_properties( "${ALL_SRC}" )
 
@@ -256,21 +256,19 @@ macro( setup_main_module )
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
-            set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
-            set (${DIR_NAME}_H_FILES ${H_FILES}     PARENT_SCOPE)
+            set (${DIR_NAME}_PROJECT_SOURCE_FILES_CPP ${PROJECT_SOURCE_FILES_CPP} PARENT_SCOPE)
+            set (${DIR_NAME}_PROJECT_SOURCE_FILES_HPP ${PROJECT_SOURCE_FILES_HPP} PARENT_SCOPE)
         else()
             project( ${NAME_MODULE} )
-
-            generate_source_groups_project ()
-
+            
             generated_unity_sources( ALL_SRC  IGNORE_LIST ${UNITY_IGNORE_LIST}
                                               IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}} ) 
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
-                add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} )
+                add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-                add_library( ${NAME_MODULE} SHARED  ${ALL_SRC}  )
+                add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
                 add_definitions( -DDAVA_MODULE_EXPORTS )                
