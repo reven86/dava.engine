@@ -395,6 +395,7 @@ void SceneCameraSystem::CreateDebugCameras()
 
         DAVA::ScopedPtr<DAVA::Entity> topCameraEntity(new DAVA::Entity());
         topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->SetNotRemovable(true);
         topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
