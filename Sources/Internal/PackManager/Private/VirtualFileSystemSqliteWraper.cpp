@@ -202,6 +202,16 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     }
 
     memset(p, 0, sizeof(WrapFile));
+
+    // little optimization for sqlite not working with journal file and WriteAheadLog file
+    // TODO is any better solution? Disable with some defines?
+    if (strstr(zName, ".db-journal") != nullptr ||
+        strstr(zName, ".db-wal") != nullptr)
+    {
+        p->file = nullptr;
+        return SQLITE_CANTOPEN;
+    }
+
     p->file = DAVA::File::Create(zName, oflags);
     if (p->file == nullptr)
     {
@@ -241,6 +251,13 @@ static int Delete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
 */
 static int Access(sqlite3_vfs* /*pVfs*/, const char* zPath, int flags, int* pResOut)
 {
+    if (strstr(zPath, ".db-journal") != nullptr ||
+        strstr(zPath, ".db-wal") != nullptr)
+    {
+        *pResOut = 0;
+        return SQLITE_OK;
+    }
+
     if (!DAVA::FileSystem::Instance()->IsFile(zPath))
     {
         *pResOut = 0;

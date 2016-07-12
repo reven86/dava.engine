@@ -4,6 +4,8 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 
+#include <mutex>
+
 namespace DAVA
 {
 void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
@@ -82,13 +84,27 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                   });
 }
 
+File* file = nullptr;
+std::string relativeFileName;
+std::mutex gFileMutex;
+
 PackArchive::PackArchive(const FilePath& archiveName_)
     : archiveName(archiveName_)
 {
     using namespace PackFormat;
 
-    ScopedPtr<File> file(File::Create(archiveName, File::OPEN | File::READ));
+    std::lock_guard<std::mutex> lock(gFileMutex);
+
+    if (file != nullptr)
+    {
+        file->Release();
+        file = nullptr;
+        relativeFileName = "";
+    }
+
+    file = (File::Create(archiveName, File::OPEN | File::READ));
     String fileName = archiveName.GetAbsolutePathname();
+    relativeFileName = fileName;
 
     if (!file)
     {
@@ -194,7 +210,22 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
 
-    ScopedPtr<File> file(File::Create(archiveName, File::OPEN | File::READ));
+    std::lock_guard<std::mutex> lock(gFileMutex);
+
+    if (file != nullptr)
+    {
+        if (relativeFileName != archiveName.GetAbsolutePathname())
+        {
+            file->Release();
+            file = File::Create(archiveName, File::OPEN | File::READ);
+            relativeFileName = archiveName.GetAbsolutePathname();
+        }
+    }
+    else
+    {
+        file = (File::Create(archiveName, File::OPEN | File::READ));
+        relativeFileName = archiveName.GetAbsolutePathname();
+    }
 
     if (!file)
     {
