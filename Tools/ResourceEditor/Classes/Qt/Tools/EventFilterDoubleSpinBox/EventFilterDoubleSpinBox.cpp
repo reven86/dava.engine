@@ -4,6 +4,7 @@
 
 #include <QChar>
 #include <QLocale>
+#include <QLineEdit>
 
 namespace EventFilterDoubleSpinBoxDetail
 {

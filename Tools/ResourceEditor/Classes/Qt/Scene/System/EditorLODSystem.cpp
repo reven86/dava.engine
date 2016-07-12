@@ -454,7 +454,16 @@ void EditorLODSystem::SetLODDistances(const Vector<float32>& distances)
 
 void EditorLODSystem::SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected)
 {
-    lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
+    { //reset force values
+        ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
+
+        resetForceValues.flag = ForceValues::APPLY_ALL;
+        resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
+        resetForceValues.distance = LodComponent::INVALID_DISTANCE;
+
+        lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
+        lodData[eEditorMode::MODE_SELECTION].lodComponents.clear();
+    }
 
     bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
 

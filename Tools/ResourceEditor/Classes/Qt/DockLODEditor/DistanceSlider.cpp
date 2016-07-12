@@ -15,24 +15,6 @@
 
 namespace DistanceSliderDetail
 {
-const DAVA::Vector<QColor> frameColors =
-{
-  Qt::green,
-  Qt::red,
-  Qt::yellow,
-  Qt::blue,
-};
-
-const DAVA::Vector<QColor> frameColorsMultiple =
-{
-  Qt::darkGreen,
-  Qt::darkRed,
-  Qt::darkYellow,
-  Qt::darkBlue,
-};
-
-const QColor infColor = Qt::darkGray;
-const QColor inactiveColor = Qt::lightGray;
 
 const DAVA::int32 MIN_WIDGET_WIDTH = 1;
 const DAVA::uint32 MAX_FRAMES_COUNT = DAVA::LodComponent::MAX_LOD_LAYERS + 1; // for layer at the end of distances
@@ -197,6 +179,18 @@ void DistanceSlider::BuildUI()
 
 void DistanceSlider::ColorizeUI()
 {
+    SettingsManager* settingsManager = SettingsManager::Instance();
+    DAVA::Vector<DAVA::Color> colors =
+    {
+      settingsManager->GetValue(Settings::General_LODEditor_LodColor0).AsColor(),
+      settingsManager->GetValue(Settings::General_LODEditor_LodColor1).AsColor(),
+      settingsManager->GetValue(Settings::General_LODEditor_LodColor2).AsColor(),
+      settingsManager->GetValue(Settings::General_LODEditor_LodColor3).AsColor()
+    };
+    DVASSERT(colors.size() == DAVA::LodComponent::MAX_LOD_LAYERS);
+
+    const QColor inactiveColor = ColorToQColor(settingsManager->GetValue(Settings::General_LODEditor_InactiveColor).AsColor());
+
     DAVA::uint32 coloredCount = DAVA::Min(layersCount, notInfDistancesCount);
     for (DAVA::uint32 i = 0; i < DistanceSliderDetail::MAX_FRAMES_COUNT; ++i)
     {
@@ -205,23 +199,16 @@ void DistanceSlider::ColorizeUI()
         {
             if (multiple[i])
             {
-                pallete.setColor(QPalette::Background, DistanceSliderDetail::frameColorsMultiple[i]);
+                pallete.setColor(QPalette::Background, ColorToQColor(DAVA::MakeGrayScale(colors[i])));
             }
             else
             {
-                pallete.setColor(QPalette::Background, DistanceSliderDetail::frameColors[i]);
+                pallete.setColor(QPalette::Background, ColorToQColor(colors[i]));
             }
         }
         else
         {
-            if (i < layersCount)
-            {
-                pallete.setColor(QPalette::Background, DistanceSliderDetail::infColor);
-            }
-            else
-            {
-                pallete.setColor(QPalette::Background, DistanceSliderDetail::inactiveColor);
-            }
+            pallete.setColor(QPalette::Background, inactiveColor);
         }
         frames[i]->setPalette(pallete);
         frames[i]->setVisible(i <= notInfDistancesCount);

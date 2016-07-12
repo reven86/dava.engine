@@ -47,6 +47,13 @@ void SettingsManager::Init()
     CreateValue(Settings::General_MaterialEditor_LodColor1, DAVA::VariantType(DAVA::Color(0.7f, 0.7f, 0.7f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f)));
+
+    CreateValue(Settings::General_LODEditor_LodColor0, DAVA::VariantType(DAVA::Color(0.2f, 0.35f, 0.62f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor1, DAVA::VariantType(DAVA::Color(0.25f, 0.45f, 0.78f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.33f, 0.56f, 0.97f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.62f, 0.75f, 0.98f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_InactiveColor, DAVA::VariantType(DAVA::Color(0.59f, 0.59f, 0.59f, 1.0f)));
+
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
