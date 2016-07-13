@@ -99,4 +99,3 @@ protected:
 
     DAVA::Texture* cursorTexture = nullptr;
 };
-
