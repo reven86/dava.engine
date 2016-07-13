@@ -61,6 +61,12 @@ bool AABBox3::IsIntersectsWithRay(Ray3& r, float32& tmin, float32& tmax, float32
 
 void AABBox3::GetTransformedBox(const Matrix4& transform, AABBox3& result) const
 {
+    if (IsEmpty())
+    {
+        result.Empty();
+        return;
+    }
+
     result.min.x = transform.data[12];
     result.min.y = transform.data[13];
     result.min.z = transform.data[14];

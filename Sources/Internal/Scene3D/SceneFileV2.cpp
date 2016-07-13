@@ -393,7 +393,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     case VersionInfo::INVALID:
     {
         const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(scene->version);
-        Logger::Error("SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
+        Logger::Error("SceneFileV2::LoadScene scene(%d) is incompatible with current version(%d). Wrong tags: %s", header.version, SCENE_FILE_CURRENT_VERSION, tags.c_str());
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
