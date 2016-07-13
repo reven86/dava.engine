@@ -2709,6 +2709,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             if (!executed)
             {
                 _GLES2_FramePreparedEvent.Signal();
+                DAVA::Thread::Yield();
             }
         }
 
