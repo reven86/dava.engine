@@ -272,7 +272,7 @@ void CustomColorsSystem::StoreOriginalState()
 void CustomColorsSystem::CreateUndoPoint()
 {
     DAVA::Rect updatedRect = GetUpdatedRect();
-    if (updatedRect.dx > 0 || updatedRect.dy > 0)
+    if (updatedRect.dx > 0 && updatedRect.dy > 0)
     {
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
