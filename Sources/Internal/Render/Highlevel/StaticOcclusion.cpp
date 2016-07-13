@@ -102,7 +102,6 @@ bool StaticOcclusion::ProccessBlock()
     if (renderPassConfigs.empty())
     {
         AdvanceToNextBlock();
-        DAVA::Logger::Info("Block process: {%d, %d, %d}", currentFrameX, currentFrameY, currentFrameZ);
 
         auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
         stats.buildDuration += static_cast<double>(currentTime - stats.blockProcessingTime) / 1e+9;
