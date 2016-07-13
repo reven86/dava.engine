@@ -12,6 +12,7 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     , appManager(manager)
     , networkManager(new QNetworkAccessManager(this))
 {
+    setModal(true);
     ui->setupUi(this);
     connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
 }

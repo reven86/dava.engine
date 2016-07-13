@@ -238,6 +238,7 @@ void MainWindow::OnRemove(int rowNumber)
 
 void MainWindow::OnRefreshClicked()
 {
+    ui->action_updateConfiguration->setEnabled(false);
     FileManager::DeleteDirectory(FileManager::GetTempDirectory());
 
     ConfigDownloader downloader(appManager, this);
@@ -247,6 +248,7 @@ void MainWindow::OnRefreshClicked()
     }
 
     RefreshApps();
+    ui->action_updateConfiguration->setEnabled(true);
 }
 
 void MainWindow::CheckUpdates()
