@@ -196,21 +196,6 @@ bool LandscapeProxy::InitTilemaskImageCopy(const FilePath& sourceTilemaskPath)
     return (tilemaskImageCopy != nullptr);
 }
 
-DAVA::FilePath LandscapeProxy::GetPathForSourceTexture() const
-{
-    DAVA::NMaterial* material = baseLandscape->GetMaterial();
-    if (nullptr != material)
-    {
-        DAVA::Texture* tiletexture = material->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
-        if (nullptr != tiletexture)
-        {
-            return tiletexture->GetDescriptor()->GetSourceTexturePathname();
-        }
-    }
-
-    return DAVA::FilePath();
-}
-
 DAVA::Image* LandscapeProxy::GetTilemaskImageCopy()
 {
     return tilemaskImageCopy;

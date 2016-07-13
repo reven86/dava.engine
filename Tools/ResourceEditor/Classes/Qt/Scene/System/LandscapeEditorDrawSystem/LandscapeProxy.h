@@ -74,9 +74,6 @@ public:
     void SwapTilemaskDrawTextures();
 
 protected:
-    DAVA::FilePath GetPathForSourceTexture() const;
-
-protected:
     enum eToolTextureType
     {
         TEXTURE_TYPE_NOT_PASSABLE = 0,
