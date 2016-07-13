@@ -72,16 +72,8 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    if ((currentTexture == nullptr) || (currentTexture->width != width) || (currentTexture->height != height))
-    {
-        SafeRelease(currentTexture);
-        currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
-    }
-    else
-    {
-        currentTexture->TexImage(0, width, height, buffer.data(), static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
-    }
-
+    SafeRelease(currentTexture);
+    currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
     sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
 }
 
