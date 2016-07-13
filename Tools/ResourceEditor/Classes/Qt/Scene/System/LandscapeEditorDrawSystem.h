@@ -90,6 +90,8 @@ public:
 
     static DAVA::String GetDescriptionByError(eErrorType error);
 
+    void InitTilemaskImageCopy();
+
 private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();

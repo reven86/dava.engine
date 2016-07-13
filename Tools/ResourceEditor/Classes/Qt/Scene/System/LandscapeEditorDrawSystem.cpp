@@ -10,6 +10,7 @@
 #include "Commands2/InspDynamicModifyCommand.h"
 #include "Commands2/Base/CommandBatch.h"
 
+#include "Debug/DVAssert.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
@@ -691,4 +692,10 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     }
 
     return false;
+}
+
+void LandscapeEditorDrawSystem::InitTilemaskImageCopy()
+{
+    DVASSERT(landscapeProxy != nullptr);
+    landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
 }
