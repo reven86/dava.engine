@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>350</width>
-    <height>146</height>
+    <height>117</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -61,13 +61,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="suffix">
-       <property name="text">
-        <string>Add to file name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -79,49 +72,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>40</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Input:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="input"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="browse">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Browse...</string>
-       </property>
-       <property name="icon">
-        <iconset resource="QtIcons.qrc">
-         <normaloff>:/QtIcons/openscene.png</normaloff>:/QtIcons/openscene.png</iconset>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -147,26 +97,13 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="output">
-       <property name="readOnly">
-        <bool>true</bool>
+      <widget class="QLabel" name="outputPath">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>1</width>
-       <height>1</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -202,7 +139,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="QtIcons.qrc"/>
+  <include location="Resources.qrc"/>
  </resources>
  <connections/>
 </ui>

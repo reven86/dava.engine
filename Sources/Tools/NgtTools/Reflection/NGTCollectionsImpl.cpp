@@ -20,7 +20,7 @@ wgt::TypeId GetItemKeyTypeId(const DAVA::InspColl* collection)
 {
     const DAVA::MetaInfo* itemType = collection->ItemKeyType();
     if (itemType == nullptr)
-        return wgt::getClassIdentifier<int>();
+        return wgt::TypeId::getType<int>();
     else
         return itemType->GetTypeName();
 }
@@ -47,6 +47,11 @@ public:
                 iterator = collection->Next(iterator);
                 --counter;
             }
+        }
+
+        if (iterator == nullptr)
+        {
+            linearKey = END_ITERATOR_POSITION;
         }
 
 #ifdef __DAVAENGINE_DEBUG__
@@ -114,7 +119,10 @@ public:
     void inc() override
     {
         iterator = collection->Next(iterator);
-        ++linearKey;
+        if (iterator == nullptr)
+            linearKey = END_ITERATOR_POSITION;
+        else
+            ++linearKey;
     }
 
     bool equals(const CollectionIteratorImplBase& that) const override
@@ -169,7 +177,7 @@ NGTCollection::NGTCollection(void* object_, const DAVA::InspColl* collectionImpl
 {
     const DAVA::MetaInfo* itemType = collectionImpl->ItemKeyType();
     if (itemType == nullptr)
-        keyId = wgt::getClassIdentifier<int>();
+        keyId = wgt::TypeId::getType<int>();
     else
         keyId = itemType->GetTypeName();
 }
@@ -273,7 +281,7 @@ public:
         keyTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
         if (itemKey == END_KEY_VALUE)
         {
-            valueTypeId = wgt::getClassIdentifier<void>();
+            valueTypeId = wgt::TypeId::getType<void>();
         }
         else
         {
@@ -369,7 +377,7 @@ NGTKeyedArchiveImpl::NGTKeyedArchiveImpl(DAVA::KeyedArchive* keyedArchive)
     DVASSERT(archive != nullptr);
     containerTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<DAVA::KeyedArchive>()->GetTypeName());
     keyTypeId = wgt::TypeId(DAVA::MetaInfo::Instance<typename DAVA::KeyedArchive::UnderlyingMap::key_type>()->GetTypeName());
-    valueTypeId = wgt::getClassIdentifier<DAVA::VariantType>();
+    valueTypeId = wgt::TypeId::getType<DAVA::VariantType>();
 }
 
 bool NGTKeyedArchiveImpl::empty() const
