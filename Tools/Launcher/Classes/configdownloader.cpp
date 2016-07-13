@@ -49,7 +49,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     }
     QNetworkReply::NetworkError error = reply->error();
 
-    if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
+    if (error != QNetworkReply::NoError)
     {
         aborted = true;
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
