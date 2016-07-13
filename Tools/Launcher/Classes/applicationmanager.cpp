@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
+#include "QtTools/Utils/Utils.h"
 
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
@@ -181,29 +182,48 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
-void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
+QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
-    if (version)
+    if (version == nullptr)
     {
-        QString runPath = GetApplicationDirectory(branchID, appID);
-        if (runPath.isEmpty())
-        {
-            return;
-        }
-        runPath += version->runPath;
-        if (!QFile::exists(runPath))
-        {
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
-        }
-        else
-        {
-            if (!ProcessHelper::IsProcessRuning(runPath))
-                ProcessHelper::RunProcess(runPath);
-            else
-                ErrorMessenger::ShowNotificationDlg("Application is already launched.");
-        }
+        return "";
     }
+    QString runPath = GetApplicationDirectory(branchID, appID);
+    if (runPath.isEmpty())
+    {
+        return "";
+    }
+    runPath += version->runPath;
+    if (!QFile::exists(runPath))
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
+        return "";
+    }
+    return runPath;
+}
+
+void ApplicationManager::ShowApplicataionInFinder(const QString& branchID, const QString& appID, const QString& versionID)
+{
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    if (runPath.isEmpty())
+    {
+        return;
+    }
+    ShowFileInExplorer(runPath);
+}
+
+void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
+{
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    if (runPath.isEmpty())
+    {
+        return;
+    }
+    if (!ProcessHelper::IsProcessRuning(runPath))
+        ProcessHelper::RunProcess(runPath);
+    else
+        ErrorMessenger::ShowNotificationDlg("Application is already launched.");
 }
 
 bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)

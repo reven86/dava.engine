@@ -280,17 +280,6 @@ void MainWindow::OnListItemClicked(QModelIndex qindex)
     }
 }
 
-void MainWindow::OnCellClicked(const QPoint& pos)
-{
-    QWidget* cell = (QWidget*)(QObject::sender());
-
-    QMenu menu(this);
-    QAction* u = menu.addAction("Copy");
-    QAction* a = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + cell->pos());
-    if (a == u)
-        QApplication::clipboard()->setText(cell->property(DAVA_CUSTOM_PROPERTY_NAME).toString());
-}
-
 void MainWindow::ShowWebpage()
 {
     ui->stackedWidget->setCurrentIndex(0);
@@ -341,7 +330,7 @@ void MainWindow::ShowTable(const QString& branchID)
                 item->setMinimumWidth(120);
                 ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, item);
 
-                ui->tableWidget->setCellWidget(i, COLUMN_APP_AVAL, CreateAppAvalibleTableItem(remoteApp));
+                ui->tableWidget->setCellWidget(i, COLUMN_APP_AVAL, CreateAppAvalibleTableItem(remoteApp, i));
 
                 int versCount = remoteApp->GetVerionsCount();
                 if (versCount == 1)
@@ -354,7 +343,7 @@ void MainWindow::ShowTable(const QString& branchID)
                     Application* localApp = localConfig->GetApplication(branchID, remoteApp->id);
                     if (localApp)
                     {
-                        ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+                        ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id, i));
 
                         state |= ButtonsWidget::BUTTONS_STATE_INSTALLED;
                         if (avalibleVersion != localApp->GetVersion(0)->id)
@@ -383,7 +372,7 @@ void MainWindow::ShowTable(const QString& branchID)
                 int rowCount = ui->tableWidget->rowCount();
                 ui->tableWidget->setRowCount(rowCount + 1);
                 ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id, i));
-                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id, rowCount));
 
                 states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
             }
@@ -400,7 +389,7 @@ void MainWindow::ShowTable(const QString& branchID)
             {
                 Application* localApp = localBranch->GetApplication(i);
                 ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id, i));
-                ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
+                ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id, i));
 
                 states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
             }
@@ -517,7 +506,7 @@ QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID, int rowNum)
             return;
         }
         QMenu menu(this);
-        QAction* copyURLAction = menu.addAction("Copy " + appID + " URL");
+        QAction* copyURLAction = menu.addAction(tr("Copy URL to the %1 remote zip file").arg(appID));
         QAction* selectedAction = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + item->pos());
         if (selectedAction == copyURLAction)
             QApplication::clipboard()->setText(version->url);
@@ -528,24 +517,40 @@ QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID, int rowNum)
     return item;
 }
 
-QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID)
+QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID, int rowNum)
 {
     QLabel* item = new QLabel(appManager->GetString(stringID));
     item->setFont(tableFont);
     item->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     item->setContextMenuPolicy(Qt::CustomContextMenu);
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
-    connect(item, &QLabel::customContextMenuRequested, this, &MainWindow::OnCellClicked);
+    connect(item, &QLabel::customContextMenuRequested, [this, item, rowNum](const QPoint& pos) {
+        QMenu menu(this);
+        QAction* copyAction = menu.addAction("Copy version");
+        QAction* showInFinderAction = menu.addAction("Show in finder");
+        QAction* resultAction = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + item->pos());
+
+        if (resultAction == copyAction)
+        {
+            QApplication::clipboard()->setText(item->property(DAVA_CUSTOM_PROPERTY_NAME).toString());
+        }
+        else if (resultAction == showInFinderAction)
+        {
+            QString appID, insVersionID, avVersionID;
+            GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
+            appManager->ShowApplicataionInFinder(selectedBranchID, appID, insVersionID);
+        }
+    });
 
     return item;
 }
 
-QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app)
+QWidget* MainWindow::CreateAppAvalibleTableItem(Application* app, int rowNum)
 {
     int versCount = app->GetVerionsCount();
     if (versCount == 1)
     {
-        return CreateAppInstalledTableItem(app->GetVersion(0)->id);
+        return CreateAppInstalledTableItem(app->GetVersion(0)->id, rowNum);
     }
     else
     {
