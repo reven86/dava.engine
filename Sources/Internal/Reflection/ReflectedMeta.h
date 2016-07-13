@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Base/Type.h"
 
 namespace DAVA
@@ -43,5 +41,3 @@ protected:
 };
 
 } // namespace DAVA
-
-#endif

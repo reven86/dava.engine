@@ -2,8 +2,6 @@
 #include "Reflection/Reflection.h"
 #include "Logger/Logger.h"
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace ReflectionPrinterDetails
 {
 struct TypePrinter
@@ -172,5 +170,3 @@ void Reflection::Dump(std::ostream& out)
 }
 
 } // namespace DAVA
-
-#endif

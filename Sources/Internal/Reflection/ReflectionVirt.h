@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 class ReflectionDB;
@@ -41,5 +39,3 @@ private:
     }
 };
 }
-
-#endif

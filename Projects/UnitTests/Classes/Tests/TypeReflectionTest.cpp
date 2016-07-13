@@ -8,8 +8,6 @@
 
 using namespace DAVA;
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 struct SimpleStruct
 {
     SimpleStruct()
@@ -239,5 +237,3 @@ DAVA_TESTCLASS (TypeReflection)
         }
     }
 };
-
-#endif

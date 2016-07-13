@@ -1,8 +1,6 @@
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionDB.h"
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 const CtorWrapper* ReflectionDB::GetCtor() const
@@ -56,5 +54,3 @@ const DtorWrapper* ReflectionDB::GetDtor() const
 }
 
 } // namespace DAVA
-
-#endif

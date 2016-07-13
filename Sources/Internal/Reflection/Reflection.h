@@ -3,8 +3,6 @@
 
 #include <cassert>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Base/Any.h"
 #include "Base/BaseTypes.h"
 #include "Reflection/ReflectedObject.h"
@@ -71,5 +69,3 @@ private:
 } // namespace DAVA
     
 #include "Private/ReflectionImpl.h"
-
-#endif

@@ -4,8 +4,6 @@
 #include <memory>
 #include <cassert>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Base/BaseTypes.h"
 #include "Reflection/ReflectionVirt.h"
 #include "Reflection/ReflectionWrappers.h"
@@ -45,5 +43,3 @@ protected:
 } // namespace DAVA
 
 #include "Private/ReflectionDBImpl.h"
-
-#endif

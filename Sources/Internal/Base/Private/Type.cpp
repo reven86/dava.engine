@@ -1,8 +1,6 @@
 #include "Base/Type.h"
 #include <cassert>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 UnorderedMap<String, const Type*> Type::nameToTypeMap;
@@ -35,5 +33,3 @@ void Type::RegisterPermanentName(const String& permanentName_) const
 }
 
 } // namespace DAVA
-
-#endif

@@ -6,8 +6,6 @@
 
 #include <functional>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 struct RelfCollectionsHolder
 {
     /// VectorTest
@@ -259,5 +257,3 @@ DAVA_TESTCLASS (TestReflectedCollections)
         CollectionSetTestHelper<int>(setField, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
     }
 };
-
-#endif

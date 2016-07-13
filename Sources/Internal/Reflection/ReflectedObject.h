@@ -2,8 +2,6 @@
 #include <type_traits>
 #include <cassert>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Base/Type.h"
 #include "Reflection/ReflectedMeta.h"
 
@@ -96,5 +94,3 @@ protected:
 };
 
 } // namespace DAVA
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #ifndef DAVA_REFLECTION__H
 #include "Reflection/Reflection.h"
 #endif
@@ -76,5 +74,3 @@ inline const StructureWrapper* Reflection::GetStructure() const
 }
 
 } // namespace DAVA
-
-#endif

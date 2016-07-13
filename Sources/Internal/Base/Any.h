@@ -4,8 +4,6 @@
 #include <typeindex>
 #include <string>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Type.h"
 #include "AutoStorage.h"
 #include "Base/BaseTypes.h"
@@ -106,5 +104,3 @@ private:
 } // namespace DAVA
 
 #include "Private/Any_impl.h"
-
-#endif
