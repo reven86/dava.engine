@@ -769,8 +769,6 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
 
-    modelUpdater = new LazyUpdater(DAVA::Function<void()>(this, &SceneTree::UpdateModel), this);
-
     setModel(filteringProxyModel);
 
     treeDelegate = new SceneTreeDelegate();
@@ -992,7 +990,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
-        modelUpdater->Update();
+        UpdateModel();
         treeUpdater->Update();
     }
 }
@@ -1051,7 +1049,7 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
     if (itemLayer->hasInnerEmmiter != needEmmiter)
     {
         itemLayer->hasInnerEmmiter = needEmmiter;
-        modelUpdater->Update();
+        UpdateModel();
     }
 }
 
@@ -1078,7 +1076,7 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
         menu.Show(globalPos);
         if (menu.IsStructureChanged())
         {
-            modelUpdater->Update();
+            UpdateModel();
         }
     };
 

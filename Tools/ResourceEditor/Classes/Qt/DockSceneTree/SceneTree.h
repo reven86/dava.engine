@@ -72,7 +72,6 @@ private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
     SceneTreeDelegate* treeDelegate = nullptr;
-    LazyUpdater* modelUpdater = nullptr;
     LazyUpdater* treeUpdater = nullptr;
     bool isInSync = false;
 };
