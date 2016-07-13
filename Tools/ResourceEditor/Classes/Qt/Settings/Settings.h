@@ -98,4 +98,3 @@ public:
     static const DAVA::FastName Internal_LogWidget;
 
 }; //End of Settings
-

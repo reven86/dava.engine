@@ -18,4 +18,3 @@ protected:
     DAVA::float32 newDistance;
     DAVA::float32 oldDistance;
 };
-

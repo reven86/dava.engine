@@ -15,7 +15,6 @@
 
 namespace DistanceSliderDetail
 {
-
 const DAVA::int32 MIN_WIDGET_WIDTH = 1;
 const DAVA::uint32 MAX_FRAMES_COUNT = DAVA::LodComponent::MAX_LOD_LAYERS + 1; // for layer at the end of distances
 

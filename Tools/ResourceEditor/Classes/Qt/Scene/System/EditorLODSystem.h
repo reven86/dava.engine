@@ -33,8 +33,8 @@ struct ForceValues
         : distance(distance_)
         , layer(layer_)
         , flag(flag_)
-          {
-          }
+    {
+    }
 
     DAVA::float32 distance;
     DAVA::int32 layer;
@@ -187,4 +187,3 @@ public:
     {
     }
 };
-

@@ -59,4 +59,3 @@ inline DAVA::uint32 DistanceSlider::GetLayersCount() const
 {
     return layersCount;
 }
-

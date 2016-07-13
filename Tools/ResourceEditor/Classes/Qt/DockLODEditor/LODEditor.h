@@ -90,4 +90,3 @@ private:
 
     LazyUpdater* panelsUpdater = nullptr;
 };
-
