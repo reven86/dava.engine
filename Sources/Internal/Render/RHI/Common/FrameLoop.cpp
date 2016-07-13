@@ -84,6 +84,7 @@ static void ExecuteFrameCommands()
 
     TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
 }
+
 void RejectFrames()
 {
     frameSync.Lock();
@@ -176,6 +177,7 @@ bool FinishFrame(Handle sync)
 
     return true;
 }
+
 bool FrameReady()
 {
     frameSync.Lock();

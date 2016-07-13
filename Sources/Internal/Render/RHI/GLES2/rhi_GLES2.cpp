@@ -214,6 +214,11 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+        if (_GLES2_IsSeamlessCubmapSupported)
+            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+#endif
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
@@ -406,17 +411,7 @@ gles2_NeedRestoreResources()
 
 #if defined(__DAVAENGINE_WIN32__)
 
-void wgl_AcquireContext()
-{
-    wglMakeCurrent(_GLES2_WindowDC, (HGLRC)_GLES2_Context);
-}
-
-void wgl_ReleaseContext()
-{
-    wglMakeCurrent(NULL, NULL);
-}
-
-void gles2_Initialize(const InitParam& param)
+void win32_gl_init(const InitParam& param)
 {
     _GLES2_Native_Window = param.window;
 
@@ -493,9 +488,6 @@ void gles2_Initialize(const InitParam& param)
                     _GLES2_Context = (void*)ctx;
                 }
 
-                _GLES2_AcquireContext = &wgl_AcquireContext;
-                _GLES2_ReleaseContext = &wgl_ReleaseContext;
-
                 success = true;
             }
             else
@@ -510,325 +502,62 @@ void gles2_Initialize(const InitParam& param)
     }
     else
     {
-        _GLES2_AcquireContext = param.acquireContextFunc;
-        _GLES2_ReleaseContext = param.releaseContextFunc;
         if (glewInit() == GLEW_OK)
             success = true;
     }
-
-    DVASSERT(_GLES2_AcquireContext);
-    DVASSERT(_GLES2_ReleaseContext);
-
+    DVASSERT(success); //not sure assert should be here, so if afterwards
     if (success)
     {
-        VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
-        IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
-        QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-        PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
-        TextureGLES2::SetupDispatch(&DispatchGLES2);
-        PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
-        ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
-        DepthStencilStateGLES2::SetupDispatch(&DispatchGLES2);
-        SamplerStateGLES2::SetupDispatch(&DispatchGLES2);
-        RenderPassGLES2::SetupDispatch(&DispatchGLES2);
-        CommandBufferGLES2::SetupDispatch(&DispatchGLES2);
-
-        DispatchGLES2.impl_Reset = &gles2_Reset;
-        DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
-        DispatchGLES2.impl_HostApi = &gles2_HostApi;
-        DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-        DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
-        DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
-        DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
-        DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
-        DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-        DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
-
-        SetDispatchTable(DispatchGLES2);
-
-        gles_check_GL_extensions();
-
-        if (param.maxVertexBufferCount)
-            VertexBufferGLES2::Init(param.maxVertexBufferCount);
-        if (param.maxIndexBufferCount)
-            IndexBufferGLES2::Init(param.maxIndexBufferCount);
-        if (param.maxConstBufferCount)
-            ConstBufferGLES2::Init(param.maxConstBufferCount);
-        if (param.maxTextureCount)
-            TextureGLES2::Init(param.maxTextureCount);
-
-        if (param.maxTextureSetCount)
-            InitTextreSetPool(param.maxTextureSetCount);
-        if (param.maxSamplerStateCount)
-            SamplerStateGLES2::Init(param.maxSamplerStateCount);
-        if (param.maxPipelineStateCount)
-            PipelineStateGLES2::Init(param.maxPipelineStateCount);
-        if (param.maxDepthStencilStateCount)
-            DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
-        if (param.maxRenderPassCount)
-            RenderPassGLES2::Init(param.maxRenderPassCount);
-        if (param.maxCommandBuffer)
-            CommandBufferGLES2::Init(param.maxCommandBuffer);
-        if (param.maxPacketListCount)
-            InitPacketListPool(param.maxPacketListCount);
-
-        uint32 ringBufferSize = 4 * 1024 * 1024;
-        if (param.shaderConstRingBufferSize)
-            ringBufferSize = param.shaderConstRingBufferSize;
-        ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
-
-        Logger::FrameworkDebug("GL inited\n");
-        Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
-        Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
-        Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
-        Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-#if 1
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-        glDebugMessageCallback(&_OGLErrorCallback, 0);
-
-#endif
-        if (_GLES2_IsSeamlessCubmapSupported)
-            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
+        if (_GLES2_Native_Window)
+        {
+            RECT rc;
+            GetClientRect((HWND)_GLES2_Native_Window, &rc);
+            _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
+            _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
+        }
         if (wglSwapIntervalEXT != nullptr)
         {
             wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);
             DAVA::Logger::Info("GLES2 V-Sync: %s", param.vsyncEnabled ? "ON" : "OFF");
         }
-
-        stat_DIP = StatSet::AddStat("rhi'dip", "dip");
-        stat_DP = StatSet::AddStat("rhi'dp", "dp");
-        stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
-        stat_DTS = StatSet::AddStat("rhi'dts", "dts");
-        stat_DLL = StatSet::AddStat("rhi'dll", "dll");
-        stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
-        stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
-        stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
-        stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
-        stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
-        stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-
-        RECT rc;
-        if (_GLES2_Native_Window)
-        {
-            GetClientRect((HWND)_GLES2_Native_Window, &rc);
-            _GLES2_DefaultFrameBuffer_Width = rc.right - rc.left;
-            _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
-        }
-
-        InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
-
-        _Inited = true;
     }
 }
 
-#elif defined(__DAVAENGINE_MACOS__)
+void win32_gl_acquire_context()
+{
+    wglMakeCurrent(_GLES2_WindowDC, (HGLRC)_GLES2_Context);
+}
+
+void win32_gl_release_context()
+{
+    wglMakeCurrent(NULL, NULL);
+}
+#endif
 
 void gles2_Initialize(const InitParam& param)
 {
-    macos_gl_init(param);
-
     _GLES2_DefaultFrameBuffer_Width = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
 
+#define ENABLE_DEBUG_OUTPUT 0
+#if defined(__DAVAENGINE_WIN32__)
+    win32_gl_init(param);
+    _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &win32_gl_acquire_context;
+    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &win32_gl_release_context;    
+    #define ENABLE_DEBUG_OUTPUT 1
+#elif defined(__DAVAENGINE_MACOS__)
+    macos_gl_init(param);
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
-    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;
-
-    if (param.maxVertexBufferCount)
-        VertexBufferGLES2::Init(param.maxVertexBufferCount);
-    if (param.maxIndexBufferCount)
-        IndexBufferGLES2::Init(param.maxIndexBufferCount);
-    if (param.maxConstBufferCount)
-        ConstBufferGLES2::Init(param.maxConstBufferCount);
-    if (param.maxTextureCount)
-        TextureGLES2::Init(param.maxTextureCount);
-
-    if (param.maxTextureSetCount)
-        InitTextreSetPool(param.maxTextureSetCount);
-    if (param.maxSamplerStateCount)
-        SamplerStateGLES2::Init(param.maxSamplerStateCount);
-    if (param.maxPipelineStateCount)
-        PipelineStateGLES2::Init(param.maxPipelineStateCount);
-    if (param.maxDepthStencilStateCount)
-        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
-    if (param.maxRenderPassCount)
-        RenderPassGLES2::Init(param.maxRenderPassCount);
-    if (param.maxCommandBuffer)
-        CommandBufferGLES2::Init(param.maxCommandBuffer);
-    if (param.maxPacketListCount)
-        InitPacketListPool(param.maxPacketListCount);
-
-    uint32 ringBufferSize = 4 * 1024 * 1024;
-    if (param.shaderConstRingBufferSize)
-        ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
-
-    _Inited = true;
-
-    Logger::FrameworkDebug("GL inited");
-    Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-    VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
-    IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
-    QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
-    TextureGLES2::SetupDispatch(&DispatchGLES2);
-    PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
-    ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
-    DepthStencilStateGLES2::SetupDispatch(&DispatchGLES2);
-    SamplerStateGLES2::SetupDispatch(&DispatchGLES2);
-    RenderPassGLES2::SetupDispatch(&DispatchGLES2);
-    CommandBufferGLES2::SetupDispatch(&DispatchGLES2);
-
-    DispatchGLES2.impl_Reset = &gles2_Reset;
-    DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
-    DispatchGLES2.impl_HostApi = &gles2_HostApi;
-    DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-    DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
-    DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
-    DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
-    DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
-    DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
-
-    SetDispatchTable(DispatchGLES2);
-
-    gles_check_GL_extensions();
-
-    InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
-
-    #if 0
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-    glDebugMessageCallback(&_OGLErrorCallback, 0);
-    #endif
-
-    if (_GLES2_IsSeamlessCubmapSupported)
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
-    stat_DP = StatSet::AddStat("rhi'dp", "dp");
-    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
-    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
-    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
-    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
-    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
-    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
-    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
-    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
-    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-}
-
+    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;    
 #elif defined(__DAVAENGINE_IPHONE__)
-
-void gles2_Initialize(const InitParam& param)
-{
     ios_gl_init(param.window);
-
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &ios_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &ios_gl_release_context;
-
-    if (param.maxVertexBufferCount)
-        VertexBufferGLES2::Init(param.maxVertexBufferCount);
-    if (param.maxIndexBufferCount)
-        IndexBufferGLES2::Init(param.maxIndexBufferCount);
-    if (param.maxConstBufferCount)
-        ConstBufferGLES2::Init(param.maxConstBufferCount);
-    if (param.maxTextureCount)
-        TextureGLES2::Init(param.maxTextureCount);
-
-    if (param.maxTextureSetCount)
-        InitTextreSetPool(param.maxTextureSetCount);
-    if (param.maxSamplerStateCount)
-        SamplerStateGLES2::Init(param.maxSamplerStateCount);
-    if (param.maxPipelineStateCount)
-        PipelineStateGLES2::Init(param.maxPipelineStateCount);
-    if (param.maxDepthStencilStateCount)
-        DepthStencilStateGLES2::Init(param.maxDepthStencilStateCount);
-    if (param.maxRenderPassCount)
-        RenderPassGLES2::Init(param.maxRenderPassCount);
-    if (param.maxCommandBuffer)
-        CommandBufferGLES2::Init(param.maxCommandBuffer);
-    if (param.maxPacketListCount)
-        InitPacketListPool(param.maxPacketListCount);
-
-    uint32 ringBufferSize = 4 * 1024 * 1024;
-    if (param.shaderConstRingBufferSize)
-        ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
-
-    _Inited = true;
-
-    Logger::FrameworkDebug("GL inited");
-    Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-    VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
-    IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
-    QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
-    TextureGLES2::SetupDispatch(&DispatchGLES2);
-    PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
-    ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
-    DepthStencilStateGLES2::SetupDispatch(&DispatchGLES2);
-    SamplerStateGLES2::SetupDispatch(&DispatchGLES2);
-    RenderPassGLES2::SetupDispatch(&DispatchGLES2);
-    CommandBufferGLES2::SetupDispatch(&DispatchGLES2);
-
-    DispatchGLES2.impl_Reset = &gles2_Reset;
-    DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
-    DispatchGLES2.impl_HostApi = &gles2_HostApi;
-    DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-    DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
-    DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
-    DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
-    DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
-    DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
-
-    SetDispatchTable(DispatchGLES2);
-
-    gles_check_GL_extensions();
-
-    InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
-
-#if 0
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-    glDebugMessageCallback(&_OGLErrorCallback, 0);
-#endif
-
-    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
-    stat_DP = StatSet::AddStat("rhi'dp", "dp");
-    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
-    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
-    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
-    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
-    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
-    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
-    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
-    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
-    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-}
-
 #elif defined(__DAVAENGINE_ANDROID__)
-
-void gles2_Initialize(const InitParam& param)
-{
-    _GLES2_AcquireContext = &android_gl_acquire_context;
-    _GLES2_ReleaseContext = &android_gl_release_context;
-
-    _GLES2_DefaultFrameBuffer_Width = param.width;
-    _GLES2_DefaultFrameBuffer_Height = param.height;
-
     android_gl_init(param.window);
+    _GLES2_AcquireContext = &android_gl_acquire_context;
+    _GLES2_ReleaseContext = &android_gl_release_context;                
+#endif
 
     if (param.maxVertexBufferCount)
         VertexBufferGLES2::Init(param.maxVertexBufferCount);
@@ -859,9 +588,7 @@ void gles2_Initialize(const InitParam& param)
         ringBufferSize = param.shaderConstRingBufferSize;
     ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
 
-    _Inited = true;
-
-    Logger::FrameworkDebug("GL inited");
+    Logger::FrameworkDebug("GL inited\n");
     Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
     Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
     Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
@@ -892,15 +619,14 @@ void gles2_Initialize(const InitParam& param)
 
     SetDispatchTable(DispatchGLES2);
 
-    gles_check_GL_extensions();
+    gles_check_GL_extensions();    
+    
 
-    InitializeRenderThreadGLES2((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
-
-    #if 0
+#if ENABLE_DEBUG_OUTPUT
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     glDebugMessageCallback(&_OGLErrorCallback, 0);
-    #endif
+#endif
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -913,9 +639,9 @@ void gles2_Initialize(const InitParam& param)
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-}
 
-#endif
+    _Inited = true;
+}
 
 } // namespace rhi
 

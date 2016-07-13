@@ -78,6 +78,11 @@ void Initialize(Api api, const InitParam& param)
         // error 'unsupported' here
     }
     }
+
+    uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
+    if (api == RHI_METAL)
+        renderTreadFrameCount = 0; //no render thread for metal
+    RenderLoop::InitializeRenderThread(renderTreadFrameCount);
 }
 
 void Reset(const ResetParam& param)

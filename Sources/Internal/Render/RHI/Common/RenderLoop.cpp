@@ -20,10 +20,10 @@ static uint32 renderThreadFrameCount = 0;
 static DAVA::Semaphore renderThredStartedSync(1);
 
 static DAVA::Semaphore renderThreadSuspendSync;
-static DAVA::Atomic<bool> renderThreadSuspendSyncReached = false;
-static DAVA::Atomic<bool> renderThreadSuspended = false;
+static DAVA::Atomic<bool> renderThreadSuspendSyncReached(false);
+static DAVA::Atomic<bool> renderThreadSuspended(false);
 
-static DAVA::Atomic<bool> renderThreadExitPending = false;
+static DAVA::Atomic<bool> renderThreadExitPending(false);
 }
 
 using namespace Details;
