@@ -68,6 +68,7 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
+    //Logger::Info("open file: %s", filePath.GetStringValue().c_str());
     if (!files_log.is_open())
     {
         FilePath log("/storage/emulated/0/DCIM/files_access_log.txt");

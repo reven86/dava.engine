@@ -7,6 +7,9 @@
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
 
+#include "Platform/SystemTimer.h"
+#include "Platform/DeviceInfo.h"
+
 namespace DAVA
 {
 static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
@@ -285,14 +288,80 @@ void PackManagerImpl::InitStarting()
 
 void PackManagerImpl::MountReadOnlyPacks()
 {
-    Logger::FrameworkDebug("pack manager mount_local_packs");
+    double start_time = SystemTimer::Instance()->AbsoluteMS();
+
+    Logger::Info("pack manager mount_local_packs");
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
     db.reset(new PacksDB(dbInDoc));
+
+    double end_time = SystemTimer::Instance()->AbsoluteMS();
+    double mount_time = (end_time - start_time) / 1000.0;
+    Logger::Info("mount_read_only_packs new PacksDB time: %f", mount_time);
+
     db->InitializePacks(packs);
 
-    MountPacks(readOnlyPacksDir + "common/");
-    MountPacks(readOnlyPacksDir + architecture + "/");
+    end_time = SystemTimer::Instance()->AbsoluteMS();
+    mount_time = (end_time - start_time) / 1000.0;
+    Logger::Info("mount_read_only_packs init packs: %f", mount_time);
+
+    // TODO temp set local packs dir (later move it to Init interface
+    localPacksDir = "~doc:/packs/";
+
+    // TODO copy packs from assets to ~doc on android
+    // TODO rewrite code (now only speed test)
+    if (DeviceInfo().GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    {
+        FileList* common = new FileList(readOnlyPacksDir + "common/");
+        for (uint32 i = 0u; i < common->GetCount(); ++i)
+        {
+            FilePath path = common->GetPathname(i);
+            if (path.GetExtension() == ".dvpk")
+            {
+                FilePath docPath(localPacksDir + "/" + path.GetFilename());
+                if (!FileSystem::Instance()->Exists(docPath))
+                {
+                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
+                    if (!result)
+                    {
+                        Logger::Error("can't copy pack from assets to pack dir");
+                        throw std::runtime_error("can't copy pack from assets to pack dir");
+                    }
+                }
+            }
+        }
+        common = new FileList(readOnlyPacksDir + architecture + "/");
+        for (uint32 i = 0u; i < common->GetCount(); ++i)
+        {
+            FilePath path = common->GetPathname(i);
+            if (path.GetExtension() == ".dvpk")
+            {
+                FilePath docPath(localPacksDir + "/" + path.GetFilename());
+                if (!FileSystem::Instance()->Exists(docPath))
+                {
+                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
+                    if (!result)
+                    {
+                        Logger::Error("can't copy pack from assets to pack dir");
+                        throw std::runtime_error("can't copy pack from assets to pack dir");
+                    }
+                }
+            }
+        }
+    }
+
+    end_time = SystemTimer::Instance()->AbsoluteMS();
+    mount_time = (end_time - start_time) / 1000.0;
+    Logger::Info("mount_read_only_packs finish copy from assets: %f", mount_time);
+
+    MountPacks(localPacksDir);
+
+    end_time = SystemTimer::Instance()->AbsoluteMS();
+    mount_time = (end_time - start_time) / 1000.0;
+    Logger::Info("mount_read_only_packs mount on ssd: %f", mount_time);
+
+    //    MountPacks(readOnlyPacksDir + "common/");
+    //    MountPacks(readOnlyPacksDir + architecture + "/");
 
     for_each(begin(packs), end(packs), [](PackManager::Pack& p)
              {
@@ -304,6 +373,10 @@ void PackManagerImpl::MountReadOnlyPacks()
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::ReadOnlyPacksReady;
+
+    end_time = SystemTimer::Instance()->AbsoluteMS();
+    mount_time = (end_time - start_time) / 1000.0;
+    Logger::Info("mount_read_only_packs finish: %f", mount_time);
 }
 
 void PackManagerImpl::AskFooter()
