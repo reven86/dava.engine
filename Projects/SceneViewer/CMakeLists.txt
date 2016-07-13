@@ -45,3 +45,5 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+
+convert_graphics()

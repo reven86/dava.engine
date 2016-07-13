@@ -31,6 +31,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 
     DAVA::AABBox3 worldBox;
     DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
+    DVASSERT(!collBox.IsEmpty());
     collBox.GetTransformedBox(effectEntity->GetWorldTransform(), worldBox);
     DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
@@ -47,6 +48,7 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     center += owner->GetWorldTransform().GetTranslationVector();
 
     DAVA::AABBox3 boundingBox = collisionSystem->GetBoundingBox(owner);
+    DVASSERT(!boundingBox.IsEmpty());
     DAVA::float32 radius = (boundingBox.max - boundingBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, radius, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
 

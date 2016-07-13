@@ -755,7 +755,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const Selectable& 
         }
     }
 
-    DAVA::AABBox3 ret = DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 0.0f);
+    DAVA::AABBox3 ret;
     if (entityBox.IsEmpty() == false)
     {
         entityBox.GetTransformedBox(transform, ret);
@@ -772,7 +772,7 @@ DAVA::AABBox3 SceneSelectionSystem::GetTransformedBoundingBox(const SelectableGr
         object.GetBoundingBox().GetTransformedBox(object.GetWorldTransform(), transformed);
         result.AddAABBox(transformed);
     }
-    return result.IsEmpty() ? DAVA::AABBox3(DAVA::Vector3(0.0f, 0.0f, 0.0f), 1.0f) : result;
+    return result;
 }
 
 void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
