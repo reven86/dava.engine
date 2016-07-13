@@ -1031,7 +1031,7 @@ void TextBlock::CopyDataFrom(TextBlock* block)
 
     if (block->font != nullptr)
     {
-        if (block->textBlockRender)
+        if (block->textBlockRender != nullptr)
         {
             SafeRelease(font);
             SafeRelease(textBlockRender);
@@ -1042,9 +1042,7 @@ void TextBlock::CopyDataFrom(TextBlock* block)
         }
         else
         {
-            SafeRetain(font);
-            SetFontInternal(font);
-            SafeRelease(font);
+            SetFont(block->font);
         }
     }
 
