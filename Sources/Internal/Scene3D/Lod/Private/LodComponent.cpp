@@ -41,7 +41,7 @@ void LodComponent::Deserialize(KeyedArchive* archive, SerializationContext* seri
         KeyedArchive* lodDistArch = archive->GetArchive("lc.loddist");
         if (lodDistArch)
         {
-            if (serializationContext->GetVersion() < 19) //before lodsystem refactoring
+            if (serializationContext->GetVersion() < LODSYSTEM2) //before lodsystem refactoring
             {
                 for (uint32 i = 1; i < MAX_LOD_LAYERS; ++i)
                 {

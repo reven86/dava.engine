@@ -24,6 +24,7 @@ static const int32 DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION = 16;
 static const int32 ALPHATEST_VALUE_FLAG_SCENE_VERSION = 17;
 static const int32 RHI_SCENE_VERSION = 18;
 static const int32 FIXED_VEGETATION_SCENE_VERSION = 19;
+static const int32 LODSYSTEM2 = 20;
 
 class VersionInfo
 : public Singleton<VersionInfo>
