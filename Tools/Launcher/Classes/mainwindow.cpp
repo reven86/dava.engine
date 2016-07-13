@@ -497,22 +497,7 @@ QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID, int rowNum)
 {
     QString string = appManager->GetString(stringID);
     QLabel* item = new QLabel(string);
-    item->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(item, &QLabel::customContextMenuRequested, [this, item, rowNum](const QPoint& pos) {
-        QString appID, insVersionID, avVersionID;
-        GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
 
-        AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
-        if (version == nullptr)
-        {
-            return;
-        }
-        QMenu menu(this);
-        QAction* copyURLAction = menu.addAction(tr("Copy URL to the %1 remote zip file").arg(appID));
-        QAction* selectedAction = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + item->pos());
-        if (selectedAction == copyURLAction)
-            QApplication::clipboard()->setText(version->url);
-    });
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
     item->setFont(tableFont);
 
@@ -529,7 +514,13 @@ QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID, int ro
     connect(item, &QLabel::customContextMenuRequested, [this, item, rowNum](const QPoint& pos) {
         QMenu menu(this);
         QAction* copyAction = menu.addAction("Copy version");
-        QAction* showInFinderAction = menu.addAction("Show in finder");
+        QString actionText =
+#if defined(Q_OS_WIN)
+        "Show in explorer";
+#elif defined(Q_OS_MAC)
+        "Show in finder";
+#endif //platform
+        QAction* showInFinderAction = menu.addAction(actionText);
         QAction* resultAction = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + item->pos());
 
         if (resultAction == copyAction)

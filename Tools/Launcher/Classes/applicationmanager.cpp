@@ -2,10 +2,12 @@
 #include "filemanager.h"
 #include "errormessenger.h"
 #include "processhelper.h"
+
+#include "QtTools/Utils/Utils.h"
+
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
-#include "QtTools/Utils/Utils.h"
 
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
