@@ -3,6 +3,7 @@
 namespace DAVA
 {
 class Entity;
+class AABBox3;
 }
 
 class SelectableGroup;
