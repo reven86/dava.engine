@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NgtTools/Application/NGTApplication.h"
+#include "NGTPropertyEditor/ComponentProvider.h"
 
 class QtMainWindow;
 class WGTCommand;
@@ -32,5 +33,6 @@ protected:
 private:
     wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<WGTCommand> wgtCommand;
+    std::unique_ptr<wgt::IComponentProvider> componentProvider;
     QtMainWindow* mainWindow = nullptr;
 };

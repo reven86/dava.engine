@@ -895,7 +895,9 @@ void PropertyEditor::ActionEditComponent()
 
         SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
         SelectableGroup newSelection;
-        newSelection.Add(node, curScene->selectionSystem->GetUntransformedBoundingBox(node));
+        DAVA::AABBox3 bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
+        DVASSERT(!bbox.IsEmpty());
+        newSelection.Add(node, bbox);
         curScene->selectionSystem->SetSelection(newSelection);
 
         if (editor.IsModified())

@@ -16,6 +16,9 @@
 #include <core_command_system/i_command_manager.hpp>
 #include <core_command_system/i_history_panel.h>
 
+#include <core_reflection/i_definition_manager.hpp>
+#include <core_ui_framework/i_ui_framework.hpp>
+
 REApplication::REApplication(int argc, char** argv)
     : BaseApplication(argc, argv)
     , wgtCommand(new WGTCommand())
@@ -69,6 +72,15 @@ void REApplication::OnPostLoadPlugins()
     commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
     commandManager->SetHistorySerializationEnabled(false);
     commandManager->registerCommand(wgtCommand.get());
+
+    wgt::IUIFramework* uiFramework = NGTLayer::queryInterface<wgt::IUIFramework>();
+    DVASSERT(uiFramework != nullptr);
+
+    wgt::IDefinitionManager* defManager = NGTLayer::queryInterface<wgt::IDefinitionManager>();
+    DVASSERT(defManager);
+
+    componentProvider.reset(new NGTLayer::ComponentProvider(*defManager));
+    uiFramework->registerComponentProvider(*componentProvider);
 
     const char* settingsPath = "ResourceEditorSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);

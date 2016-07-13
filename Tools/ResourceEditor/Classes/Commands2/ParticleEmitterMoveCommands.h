@@ -14,9 +14,10 @@ public:
     void Redo() override;
     DAVA::Entity* GetEntity() const override;
 
-    DAVA::ParticleEmitterInstance* instance = nullptr;
-    DAVA::ParticleEffectComponent* oldEffect = nullptr;
-    DAVA::ParticleEffectComponent* newEffect = nullptr;
+private:
+    DAVA::RefPtr<DAVA::ParticleEmitterInstance> instance;
+    DAVA::ParticleEffectComponent* oldEffect;
+    DAVA::ParticleEffectComponent* newEffect;
     DAVA::int32 oldIndex = -1;
     DAVA::int32 newIndex;
 };
