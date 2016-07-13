@@ -188,12 +188,12 @@ void LandscapeProxy::DecreaseTilemaskChanges()
     --tilemaskWasChanged;
 }
 
-void LandscapeProxy::InitTilemaskImageCopy(const FilePath& sourceTilemaskPath)
+bool LandscapeProxy::InitTilemaskImageCopy(const FilePath& sourceTilemaskPath)
 {
     SafeRelease(tilemaskImageCopy);
 
     tilemaskImageCopy = ImageSystem::LoadSingleMip(sourceTilemaskPath);
-    DVASSERT(tilemaskImageCopy != nullptr);
+    return (tilemaskImageCopy != nullptr);
 }
 
 DAVA::FilePath LandscapeProxy::GetPathForSourceTexture() const

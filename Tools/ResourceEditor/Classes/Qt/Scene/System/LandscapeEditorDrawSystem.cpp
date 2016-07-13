@@ -694,8 +694,8 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     return false;
 }
 
-void LandscapeEditorDrawSystem::InitTilemaskImageCopy()
+bool LandscapeEditorDrawSystem::InitTilemaskImageCopy()
 {
     DVASSERT(landscapeProxy != nullptr);
-    landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
+    return landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
 }

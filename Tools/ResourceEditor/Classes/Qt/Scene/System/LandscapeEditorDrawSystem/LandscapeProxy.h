@@ -66,7 +66,7 @@ public:
     void IncreaseTilemaskChanges();
     void DecreaseTilemaskChanges();
 
-    void InitTilemaskImageCopy(const DAVA::FilePath& sourceTilemaskPath);
+    bool InitTilemaskImageCopy(const DAVA::FilePath& sourceTilemaskPath);
     DAVA::Image* GetTilemaskImageCopy();
 
     void InitTilemaskDrawTextures();
