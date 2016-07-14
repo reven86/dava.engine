@@ -1,7 +1,6 @@
 #pragma once
 
 #define RHI_RESOURCE_INCLUDE_BACKTRACE 0
-#define RHI_POOL_USE_FAST_RESTORE_COUNTER 1
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
@@ -373,10 +372,7 @@ public:
             return;
 
         needRestore = true;
-
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
         ++ObjectsToRestore;
-#endif
     }
 
     void MarkRestored()
@@ -384,10 +380,8 @@ public:
         if (needRestore)
         {
             needRestore = false;
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
             DVASSERT(PendingRestoreCount() > 0);
             --ObjectsToRestore;
-#endif
         }
     }
 
@@ -401,12 +395,10 @@ public:
         recreatePending = value;
     }
 
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     static uint32 PendingRestoreCount()
     {
         return ObjectsToRestore.Get();
     }
-#endif
 
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
     DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
@@ -445,10 +437,7 @@ private:
     DT creationDesc;
     bool needRestore = false;
     bool recreatePending = false;
-
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     static DAVA::Atomic<uint32> ObjectsToRestore;
-#endif
 };
 
 //------------------------------------------------------------------------------
@@ -457,23 +446,8 @@ template <class T, ResourceType RT, typename DT, bool nr>
 inline uint32
 ResourcePool<T, RT, DT, nr>::PendingRestoreCount()
 {
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
     return ResourceImpl<T, DT>::PendingRestoreCount();
-#else
-    uint32 result = 0;
-    Lock();
-    for (Iterator i = Begin(), e = End(); i != e; ++i)
-    {
-        result += i->NeedRestore() ? 1 : 0;
-    }
-    Unlock();
-    return result;
-#endif
 }
 
-#if (RHI_POOL_USE_FAST_RESTORE_COUNTER)
 #define RHI_IMPL_RESOURCE(T, DT) template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
-#else
-#define RHI_IMPL_RESOURCE(T, DT)
-#endif
 }
