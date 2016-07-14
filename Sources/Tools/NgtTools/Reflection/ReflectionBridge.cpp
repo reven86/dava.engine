@@ -12,36 +12,29 @@
 
 namespace NGTLayer
 {
-class EnumGenerator : public wgt::IEnumGenerator
+DAVA::WideString BuildEnumString(const DAVA::InspMember* insp)
 {
-public:
-    EnumGenerator(const DAVA::InspMember* insp)
-        : memberInsp(insp)
+    std::wstringstream ss;
+    DAVA::InspDesc const& desc = insp->Desc();
+
+    DVASSERT(desc.enumMap != nullptr);
+    size_t enumValuesCount = desc.enumMap->GetCount();
+
+    for (size_t i = 0; i < enumValuesCount; ++i)
     {
-    }
+        int value = 0;
+        desc.enumMap->GetValue(i, value);
+        const char* name = desc.enumMap->ToString(value);
 
-    wgt::Collection getCollection(const wgt::ObjectHandle& provider, const wgt::IDefinitionManager& definitionManager) override
-    {
-        DAVA::InspDesc const& desc = memberInsp->Desc();
-
-        DVASSERT(desc.enumMap != nullptr);
-
-        using TCollection = std::map<int, char const*>;
-        TCollection* enumMap = new TCollection;
-
-        for (size_t i = 0; i < desc.enumMap->GetCount(); ++i)
+        ss << DAVA::StringToWString(name) << L"=" << std::to_wstring(value);
+        if (i < enumValuesCount - 1)
         {
-            int value = 0;
-            if (desc.enumMap->GetValue(i, value))
-                enumMap->insert(std::make_pair(static_cast<int>(i), desc.enumMap->ToString(value)));
+            ss << L"|";
         }
-
-        return wgt::Collection(*enumMap);
     }
 
-private:
-    const DAVA::InspMember* memberInsp;
-};
+    return ss.str();
+}
 
 class DavaObjectStorage : public wgt::IObjectHandleStorage
 {
@@ -120,7 +113,7 @@ const char* NGTTypeDefinition::getParentName() const
 {
     const DAVA::InspInfo* parentInfo = info->BaseInfo();
     if (parentInfo != nullptr)
-        parentInfo->Type()->GetTypeName();
+        return parentInfo->Type()->GetTypeName();
 
     return nullptr;
 }
@@ -163,7 +156,10 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
 
     const DAVA::InspDesc& desc = memberInsp->Desc();
     if (desc.enumMap != nullptr)
-        metaBase = metaBase + wgt::MetaEnum(wgt::IEnumGeneratorPtr(new EnumGenerator(memberInsp)));
+    {
+        enumString = BuildEnumString(memberInsp);
+        metaBase = metaBase + wgt::MetaEnum(enumString.c_str());
+    }
 
     const DAVA::MetaInfo* metaType = member->Type();
 
@@ -178,12 +174,12 @@ NGTMemberProperty::NGTMemberProperty(const DAVA::InspMember* member, const DAVA:
         setType(wgt::TypeId(DAVA::MetaInfo::Instance<DAVA::String>()->GetTypeName()));
     }
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector2>())
-        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector2>()));
+        setType(wgt::TypeId(wgt::TypeId::getType<wgt::Vector2>()));
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Vector3>())
-        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector3>()));
+        setType(wgt::TypeId(wgt::TypeId::getType<wgt::Vector3>()));
     else if (metaType == DAVA::MetaInfo::Instance<DAVA::Color>())
     {
-        setType(wgt::TypeId(wgt::getClassIdentifier<wgt::Vector4>()));
+        setType(wgt::TypeId(wgt::TypeId::getType<wgt::Vector4>()));
         metaBase = metaBase + wgt::MetaColor();
     }
 }
