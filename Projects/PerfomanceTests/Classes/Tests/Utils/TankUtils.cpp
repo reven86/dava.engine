@@ -69,7 +69,7 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
         child->RemoveComponent(Component::RENDER_COMPONENT);
     }
 
-    LodSystem::MergeChildLods(skinnedTank);
+    MergeChildLods(skinnedTank);
     sourceTank->AddNode(skinnedTank);
 }
 
@@ -91,4 +91,42 @@ void TankUtils::Animate(Entity* tank, const Vector<uint16>& jointIndexes, float3
     // rotate gun shot effect
     turret->SetLocalTransform(turrentRotation.GetMatrix());
     skeleton->SetJointOrientation(skeleton->GetJointId(TankUtils::TankNode::TURRET), turrentRotation);
+}
+
+void DAVA::TankUtils::MergeChildLods(Entity* target)
+{
+    Vector<Entity*> allLods;
+    GetLodComponentsRecursive(target, target, allLods);
+
+    uint32 count = static_cast<uint32>(allLods.size());
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (i == 0)
+        {
+            LodComponent* fromLod = GetLodComponent(allLods[i]);
+            LodComponent* toLod = static_cast<LodComponent*>(fromLod->Clone(target));
+            toLod->EnableRecursiveUpdate();
+            target->AddComponent(toLod);
+        }
+
+        allLods[i]->RemoveComponent(Component::LOD_COMPONENT);
+    }
+}
+
+void DAVA::TankUtils::GetLodComponentsRecursive(Entity* target, Entity* fromEntity, Vector<Entity*>& allLods)
+{
+    if (fromEntity != target)
+    {
+        LodComponent* lod = GetLodComponent(fromEntity);
+        ParticleEffectComponent* effect = GetEffectComponent(fromEntity);
+        if (lod && (!effect)) //as emitters have separate LOD logic
+        {
+            allLods.push_back(fromEntity);
+        }
+    }
+    int32 count = fromEntity->GetChildrenCount();
+    for (int32 i = 0; i < count; ++i)
+    {
+        GetLodComponentsRecursive(target, fromEntity->GetChild(i), allLods);
+    }
 }

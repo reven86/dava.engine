@@ -19,6 +19,8 @@ struct TankNode
 
 void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
 void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
+void MergeChildLods(Entity* target);
+void GetLodComponentsRecursive(Entity* target, Entity* fromEntity, Vector<Entity*>& allLods);
 }
 }
 
