@@ -49,6 +49,7 @@ public:
 
         bool optimizeOnExport = false;
         bool useHDTextures = false;
+        bool forceCompressTextures = false;
     };
 
     SceneExporter() = default;
