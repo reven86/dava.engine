@@ -213,7 +213,7 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
         {
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
-                AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+                DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
                 DVASSERT(!bbox.IsEmpty());
                 selectedWaypoints.Add(entity, bbox);
             }

@@ -7,6 +7,13 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Utils/StringFormat.h"
 
+#include "Scene/System/EditorLODSystem.h"
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
+#include "QtTools/Utils/Utils.h"
+
+
 #include <QApplication>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -224,7 +231,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
     const DAVA::float32 widthCoef = scaleSize / availableSplitterWidth;
 
     QList<int> sizes = splitter->sizes();
-    DVASSERT(notInfDistancesCount < sizes.size());
+    DVASSERT(static_cast<DAVA::int32>(notInfDistancesCount) < sizes.size());
 
     QList<int> newHandlePositions;
     const DAVA::int32 handleWidth = splitter->handleWidth();
