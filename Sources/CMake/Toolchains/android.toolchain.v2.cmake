@@ -79,7 +79,12 @@ set( ANDROID_INCLUDES "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libcxx/include
                       "${ANDROID_SYSROOT}/usr/include" )
                       
 # Libraries
-set ( ANDROID_LINK_LIBRARIES "-lc++abi -landroid_support -lunwind -latomic -lm \"${ANDROID_STL_SO_PATH}\"" )                      
+set ( ANDROID_LINK_LIBRARIES "-lc++abi -landroid_support -latomic -lm \"${ANDROID_STL_SO_PATH}\"" )
+
+# Unwind is presented for arm only
+if ( ARMEABI_V7A )
+    set ( ANDROID_LINK_LIBRARIES "${ANDROID_LINK_LIBRARIES} -lunwind" )
+endif ()
                       
 # Install libs search directories
 include_directories( SYSTEM  ${ANDROID_INCLUDES} )
@@ -132,7 +137,7 @@ set( ANDROID_CXX_FLAGS
 -Wno-invalid-command-line-argument \
 -Wno-unused-command-line-argument \
 -no-canonical-prefixes \
--frtti -fexceptions" )
+-frtti -fexceptions -O2 -DNDEBUG" )
                        
 set( ANDROID_CXX_FLAGS_RELEASE "-O2 -DNDEBUG" )
 set( ANDROID_CXX_FLAGS_DEBUG   "-O0 -UNDEBUG -fno-limit-debug-info -DNDK_DEBUG=1 -g" )
@@ -238,10 +243,3 @@ set( CMAKE_C_LINK_EXECUTABLE
 set ( CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} ${ANDROID_LINK_LIBRARIES}" )
 set ( CMAKE_CXX_CREATE_SHARED_MODULE  "${CMAKE_CXX_CREATE_SHARED_MODULE} ${ANDROID_LINK_LIBRARIES}" )
 set ( CMAKE_CXX_LINK_EXECUTABLE       "${CMAKE_CXX_LINK_EXECUTABLE} ${ANDROID_LINK_LIBRARIES}" )
-
-# Copy shared stl library to build directory
-set( OUTPUT_LIBS_PATH "${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" )
-execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
-if( NOT RESULT EQUAL 0 OR NOT EXISTS "${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}")
-    message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}" )
-endif()

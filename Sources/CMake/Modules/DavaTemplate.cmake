@@ -625,6 +625,11 @@ endif()
 if( ANDROID )
     set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
     set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
+    
+    execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
+    if( NOT RESULT EQUAL 0 OR NOT EXISTS "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}")
+        message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" )
+    endif()
 
     foreach( LIB_1 ${TARGET_LIBRARIES} )
         foreach( LIB_2 ${TARGET_LIBRARIES} )
