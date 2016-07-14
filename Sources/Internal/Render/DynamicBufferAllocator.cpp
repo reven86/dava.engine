@@ -115,7 +115,7 @@ struct BufferAllocator
             else
             {
                 currentlyMappedBuffer = freeBuffers.front();
-                freeBuffers.pop();
+                freeBuffers.pop_front();
             }
 
             if (requiredSize > currentlyMappedBuffer->allocatedSize)
@@ -156,12 +156,12 @@ struct BufferAllocator
         }
         usedBuffers.clear();
 
-        while (!freeBuffers.empty())
+        for (auto b : freeBuffers)
         {
-            BufferProxy<HBuffer>::DeleteBuffer(freeBuffers.front()->buffer);
-            SafeDelete(freeBuffers.front());
-            freeBuffers.pop();
+            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
+            SafeDelete(b);
         }
+        freeBuffers.clear();
     }
 
     void BeginFrame()
@@ -172,7 +172,7 @@ struct BufferAllocator
         {
             if (rhi::SyncObjectSignaled((*it)->readySync))
             {
-                freeBuffers.push(*it);
+                freeBuffers.push_back(*it);
                 it = usedBuffers.erase(it);
             }
             else
@@ -206,7 +206,7 @@ private:
     uint32 currentlyUsedSize = 0;
     Vector<BufferInfo*> usedBuffers;
     Vector<BufferInfo*> buffersToUnmap;
-    std::queue<BufferInfo*> freeBuffers;
+    List<BufferInfo*> freeBuffers;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
