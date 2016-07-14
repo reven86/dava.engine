@@ -1,9 +1,17 @@
 #ifndef __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 #define __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Base/FastName.h"
 
-class MaterialRemoveTexture : public RECommand
+namespace DAVA
+{
+    class Entity;
+    class Texture;
+    class NMaterial;
+}
+
+class MaterialRemoveTexture : public CommandWithoutExecute
 {
 public:
     MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_);
@@ -11,8 +19,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-
-    DAVA::Entity* GetEntity() const override;
 
 private:
     DAVA::NMaterial* material = nullptr;

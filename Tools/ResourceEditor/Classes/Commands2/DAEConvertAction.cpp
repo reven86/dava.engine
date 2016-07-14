@@ -5,6 +5,7 @@
 
 #include "Scene/SceneHelper.h"
 #include "Commands2/ConvertToShadowCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 using namespace DAVA;
 

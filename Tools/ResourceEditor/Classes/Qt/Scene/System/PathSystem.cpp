@@ -305,7 +305,7 @@ void PathSystem::ProcessCommand(const DAVA::Command* command, bool redo)
             const DAVA::uint32 count = batch->Size();
             for (DAVA::uint32 i = 0; i < count; ++i)
             {
-                const RECommand* cmd = batch->GetCommand(i);
+                const CommandWithoutExecute* cmd = batch->GetCommand(i);
                 if (cmd->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
                 {
                     ProcessInspCommand(static_cast<const InspMemberModifyCommand*>(cmd), redo);

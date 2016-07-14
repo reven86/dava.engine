@@ -1,17 +1,22 @@
 #ifndef __ENTITY_PARENT_CHANGE_COMMAND_H__
 #define __ENTITY_PARENT_CHANGE_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class EntityParentChangeCommand : public RECommand
+namespace DAVA
+{
+    class Entity;
+}
+
+class EntityParentChangeCommand : public CommandWithoutExecute
 {
 public:
     EntityParentChangeCommand(DAVA::Entity* entity, DAVA::Entity* newParent, DAVA::Entity* newBefore = NULL);
     ~EntityParentChangeCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::Entity* entity;
     DAVA::Entity* oldParent;

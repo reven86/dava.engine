@@ -1,4 +1,5 @@
 #include "SaveEntityAsAction.h"
+#include "Commands2/RECommandIDs.h"
 #include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"

@@ -1,7 +1,7 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "Commands2/Base/CommandAction.h"
 
 #include "Base/FastName.h"
@@ -18,7 +18,7 @@ class Image;
 class Texture;
 }
 
-class ModifyTilemaskCommand : public RECommand
+class ModifyTilemaskCommand : public CommandWithoutExecute
 {
 public:
     ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const DAVA::Rect& updatedRect);
@@ -26,7 +26,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
 protected:
     DAVA::Image* undoImageMask = nullptr;
@@ -37,7 +36,7 @@ protected:
     void ApplyImageToTexture(DAVA::Image* image, DAVA::Texture* dstTex);
 };
 
-class SetTileColorCommand : public RECommand
+class SetTileColorCommand : public CommandWithoutExecute
 {
 public:
     SetTileColorCommand(LandscapeProxy* landscapeProxy, const DAVA::FastName& level, const DAVA::Color& color);
@@ -45,7 +44,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
 protected:
     const DAVA::FastName& level;

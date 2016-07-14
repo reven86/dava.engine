@@ -1,8 +1,9 @@
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "DAVAEngine.h"
 
 RemoveComponentCommand::RemoveComponentCommand(DAVA::Entity* _entity, DAVA::Component* _component)
-    : RECommand(CMDID_COMPONENT_REMOVE, "Remove Component")
+    : CommandWithoutExecute(CMDID_COMPONENT_REMOVE, "Remove Component")
     , entity(_entity)
     , component(_component)
 {

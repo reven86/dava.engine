@@ -17,7 +17,7 @@ public:
 
     ~PaintHeightDeltaAction();
 
-    virtual void Redo();
+    void Redo() override;
 
 protected:
     DAVA::Image* CreateHeightDeltaImage(DAVA::uint32 width, DAVA::uint32 height);
@@ -48,6 +48,5 @@ private:
     DAVA::float32 terrainHeight;
     DAVA::Vector<DAVA::Color> colors;
 };
-
 
 #endif

@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-#include "Commands2/Base/RECommand.h"
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/StaticSingleton.h"

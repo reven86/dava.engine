@@ -1,27 +1,19 @@
 #ifndef __KEYEDARCHIVE_COMMAND_H__
 #define __KEYEDARCHIVE_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "FileSystem/VariantType.h"
 
-class KeyedArchiveAddValueCommand : public RECommand
+namespace DAVA
+{
+    class KeyedArchive;
+}
+
+class KeyedArchiveAddValueCommand : public CommandWithoutExecute
 {
 public:
     KeyedArchiveAddValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);
     ~KeyedArchiveAddValueCommand();
-
-    virtual void Undo() override;
-    virtual void Redo() override;
-
-    DAVA::KeyedArchive* archive = nullptr;
-    DAVA::String key;
-    DAVA::VariantType val;
-};
-
-class KeyeadArchiveRemValueCommand : public RECommand
-{
-public:
-    KeyeadArchiveRemValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
-    ~KeyeadArchiveRemValueCommand();
 
     void Undo() override;
     void Redo() override;
@@ -31,7 +23,21 @@ public:
     DAVA::VariantType val;
 };
 
-class KeyeadArchiveSetValueCommand : public RECommand
+class KeyeadArchiveRemValueCommand : public CommandWithoutExecute
+{
+public:
+    KeyeadArchiveRemValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
+    ~KeyeadArchiveRemValueCommand();
+
+    void Undo() override;
+    void Redo() override;
+
+    DAVA::KeyedArchive* archive = nullptr;
+    DAVA::String key; 
+    DAVA::VariantType val;
+};
+
+class KeyeadArchiveSetValueCommand : public CommandWithoutExecute
 {
 public:
     KeyeadArchiveSetValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);

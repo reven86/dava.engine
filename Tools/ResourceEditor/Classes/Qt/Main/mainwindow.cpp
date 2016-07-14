@@ -1127,10 +1127,34 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command
     if (scene == GetCurrentScene())
     {
         UpdateModificationActionsState();
-
-        auto UpdateCameraState = [this, scene](const DAVA::Entity* entity)
+        UpdateWayEditor(command, redo);
+        
+        std::function<bool(const DAVA::Command*)> updateCameraState;
+        updateCameraState = [this, scene, &updateCameraState](const DAVA::Command* command)
         {
-            if (entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+            DAVA::Entity *entity = nullptr;
+            if (command->GetID() == DAVA::CMDID_BATCH)
+            {
+                const RECommandBatch *batch = static_cast<const RECommandBatch*>(command);
+                for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
+                {
+                    if (updateCameraState(batch->GetCommand(i)))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (command->GetID() == CMDID_COMPONENT_ADD)
+            {
+                const AddComponentCommand *addCommand = static_cast<const AddComponentCommand*>(command);
+                entity = addCommand->GetEntity();
+            }
+            else if (command->GetID() == CMDID_COMPONENT_REMOVE)
+            {
+                const RemoveComponentCommand *removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                entity = removeCommand->GetEntity();
+            }
+            if (entity != nullptr && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
             {
                 SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
                 return true;
@@ -1138,26 +1162,7 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command
             return false;
         };
 
-        if (command->GetID() == DAVA::CMDID_BATCH)
-        {
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-            const DAVA::uint32 count = batch->Size();
-            for (DAVA::uint32 i = 0; i < count; ++i)
-            {
-                const RECommand* cmd = batch->GetCommand(i);
-                if (UpdateCameraState(cmd->GetEntity()))
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            const RECommand* reCommand = DAVA::DynamicTypeCheck<const RECommand*>(command);
-            UpdateCameraState(reCommand->GetEntity());
-        }
-
-        UpdateWayEditor(command, redo);
+        updateCameraState(command);
     }
 }
 

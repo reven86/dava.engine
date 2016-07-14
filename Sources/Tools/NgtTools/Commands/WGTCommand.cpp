@@ -58,20 +58,9 @@ bool WGTCommand::redo(const wgt::ObjectHandle& arguments) const
 
 wgt::ObjectHandle WGTCommand::getCommandDescription(const wgt::ObjectHandle& arguments) const
 {
-    DAVA::String text;
     DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(nullptr != command);
-    DAVA::Command* qeCommand = dynamic_cast<DAVA::Command*>(command);
-    if (qeCommand != nullptr)
-    {
-        text = qeCommand->GetText();
-    }
-    else
-    {
-        DAVA::CommandBatch* batch = dynamic_cast<DAVA::CommandBatch*>(command);
-        DVASSERT(nullptr != batch);
-        text = batch->GetText();
-    }
+    DAVA::String text = command->GetText();
 
     wgt::IDefinitionManager* defManager = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defManager != nullptr);

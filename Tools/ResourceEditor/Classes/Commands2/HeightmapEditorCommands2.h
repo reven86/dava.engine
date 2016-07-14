@@ -3,19 +3,21 @@
 
 #include "Base/BaseTypes.h"
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Math/Rect.h"
 #include "Commands2/Base/CommandAction.h"
 
 namespace DAVA
 {
 class Heightmap;
+class Entity;
 }
 
 class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ModifyHeightmapCommand : public RECommand
+class ModifyHeightmapCommand : public CommandWithoutExecute
 {
 public:
     ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);
@@ -24,7 +26,6 @@ public:
 private:
     void Redo() override;
     void Undo() override;
-    DAVA::Entity* GetEntity() const override;
 
     DAVA::uint16* GetHeightmapRegion(DAVA::Heightmap* heightmap);
     void ApplyHeightmapRegion(DAVA::uint16* region);

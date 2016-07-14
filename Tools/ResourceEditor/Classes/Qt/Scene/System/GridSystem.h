@@ -1,8 +1,6 @@
 #ifndef __SCENE_GRID_SYSTEM_H__
 #define __SCENE_GRID_SYSTEM_H__
 
-#include "Commands2/Base/RECommand.h"
-
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 #include "Base/Introspection.h"

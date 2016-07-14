@@ -1,8 +1,9 @@
 #include "MaterialGlobalCommand.h"
 #include "Scene3D/Scene.h"
+#include "Commands2/RECommandIDs.h"
 
 MaterialGlobalSetCommand::MaterialGlobalSetCommand(DAVA::Scene* _scene, DAVA::NMaterial* global)
-    : RECommand(CMDID_MATERIAL_GLOBAL_SET, "Set global material")
+    : CommandWithoutExecute(CMDID_MATERIAL_GLOBAL_SET, "Set global material")
     , scene(_scene)
 {
     DVASSERT(nullptr != scene);

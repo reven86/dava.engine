@@ -8,7 +8,6 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
-#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
@@ -21,6 +20,8 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/SelectionSystem.h"
+
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 using namespace DAVA;
 
@@ -551,7 +552,7 @@ void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
         EmitInvalidateUI(FLAG_ALL);
     };
 
-    static const Vector<int32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
+    static const Vector<CommandID_t> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
     if (command->MatchCommandIDs(commands))
     {
         InvalidateAllData();
@@ -575,7 +576,7 @@ void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const RECommand* cmd = batch->GetCommand(i);
+                const CommandWithoutExecute* cmd = batch->GetCommand(i);
                 if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
                 {
                     break;

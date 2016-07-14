@@ -1,7 +1,9 @@
 #include "Commands2/EntityParentChangeCommand.h"
+#include "Commands2/RECommandIDs.h"
+#include "Scene3D/Entity.h"
 
 EntityParentChangeCommand::EntityParentChangeCommand(DAVA::Entity* _entity, DAVA::Entity* _newParent, DAVA::Entity* _newBefore /* = NULL */)
-    : RECommand(CMDID_ENTITY_CHANGE_PARENT, "Move entity")
+    : CommandWithoutExecute(CMDID_ENTITY_CHANGE_PARENT, "Move entity")
     , entity(_entity)
     , oldParent(NULL)
     , oldBefore(NULL)

@@ -1,7 +1,8 @@
 #include "DeleteRenderBatchCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity* en, DAVA::RenderObject* ro, DAVA::uint32 batchIndex)
-    : RECommand(CMDID_DELETE_RENDER_BATCH, "Delete Render Batch")
+    : CommandWithoutExecute(CMDID_DELETE_RENDER_BATCH, "Delete Render Batch")
     , entity(en)
     , renderObject(ro)
 {

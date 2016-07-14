@@ -4,6 +4,7 @@
 #include "QtPropertyDataDavaKeyedArchive.h"
 #include "QtPropertyDataKeyedArchiveMember.h"
 #include "Deprecated/EditorConfig.h"
+#include "Commands2/RECommandIDs.h"
 
 #include <QSet>
 #include <QMenu>
@@ -251,7 +252,7 @@ DAVA::Command::Pointer QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
         }
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }
 
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()

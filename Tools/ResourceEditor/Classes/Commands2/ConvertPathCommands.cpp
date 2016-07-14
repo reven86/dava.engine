@@ -1,9 +1,11 @@
 #include "Base/BaseTypes.h"
+#include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/RECommandIDs.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
-    : RECommand(CMDID_EXPAND_PATH, "Expand entity path")
+    : CommandWithoutExecute(CMDID_EXPAND_PATH, "Expand entity path")
     , pathEntity(nullptr)
 {
     DVASSERT(pathComponent);
@@ -123,7 +125,7 @@ DAVA::PathComponent::Waypoint* NewWaypoint()
 }
 
 CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
-    : RECommand(CMDID_COLLAPSE_PATH, "Collapse path entities")
+    : CommandWithoutExecute(CMDID_COLLAPSE_PATH, "Collapse path entities")
     , pathEntity(nullptr)
     , origPathComponent(pathComponent)
     , destPathComponent(nullptr)

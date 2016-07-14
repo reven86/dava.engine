@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 RemoveComponentCommand::RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section)
-    : QECommand(CMDID_REMOVE_COMPONENT, "RemoveComponent")
+    : CommandWithoutExecute(CMDID_REMOVE_COMPONENT, "RemoveComponent")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , componentSection(SafeRetain(_section))

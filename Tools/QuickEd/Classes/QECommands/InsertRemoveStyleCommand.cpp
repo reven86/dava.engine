@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 InsertRemoveStyleCommand::InsertRemoveStyleCommand(PackageNode* _root, StyleSheetNode* _node, StyleSheetsNode* _dest, int _index, bool _insert)
-    : QECommand(CMDID_INSERT_REMOVE_STYLE, "InsertRemoveStyle")
+    : CommandWithoutExecute(CMDID_INSERT_REMOVE_STYLE, "InsertRemoveStyle")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , dest(SafeRetain(_dest))

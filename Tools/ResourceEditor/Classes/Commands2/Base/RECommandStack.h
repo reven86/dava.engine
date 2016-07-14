@@ -13,8 +13,8 @@ public:
     RECommandStack();
     ~RECommandStack() override;
 
-    bool CanRedo() const;
-    bool CanUndo() const;
+    bool CanRedo() const override;
+    bool CanUndo() const override;
 
     void Clear();
     void RemoveCommands(DAVA::CommandID_t commandId);
@@ -22,20 +22,16 @@ public:
     void Activate();
     void Undo() override;
     void Redo() override;
-    void Push(DAVA::Command::Pointer&& command) override;
+    void Exec(DAVA::Command::Pointer&& command) override;
 
     bool IsUncleanCommandExists(DAVA::CommandID_t commandId) const;
 
-    void EndMacro() override;
+    void EndBatch() override;
 
     bool IsClean() const override;
     void SetClean() override;
 
 private:
-    //base class CanUndo and CanRedo can be called only by base class and reimplemented functions CanUndo and CanRedo must be called by other classes using public interface
-    using CommandStack::CanUndo;
-    using CommandStack::CanRedo;
-
     void commandExecuted(const wgt::CommandInstance& commandInstance, wgt::CommandOperation operation) override;
     void CleanCheck();
 

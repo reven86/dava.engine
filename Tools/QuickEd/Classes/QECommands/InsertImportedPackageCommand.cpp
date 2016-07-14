@@ -7,7 +7,7 @@
 using namespace DAVA;
 
 InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex)
-    : QECommand(CMDID_INSERT_IMPORTED_PACKAGE, "InsertImportedPackage")
+    : CommandWithoutExecute(CMDID_INSERT_IMPORTED_PACKAGE, "InsertImportedPackage")
     , root(SafeRetain(aRoot))
     , importedPackage(SafeRetain(anImportedPackage))
     , index(anIndex)

@@ -1,7 +1,8 @@
 #include "MaterialSwitchParentCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 MaterialSwitchParentCommand::MaterialSwitchParentCommand(DAVA::NMaterial* instance, DAVA::NMaterial* _newParent)
-    : RECommand(CMDID_MATERIAL_SWITCH_PARENT, "Switch Material Parent")
+    : CommandWithoutExecute(CMDID_MATERIAL_SWITCH_PARENT, "Switch Material Parent")
 {
     DVASSERT(instance);
     DVASSERT(_newParent);
@@ -27,9 +28,4 @@ void MaterialSwitchParentCommand::Redo()
 void MaterialSwitchParentCommand::Undo()
 {
     currentInstance->SetParent(oldParent);
-}
-
-DAVA::Entity* MaterialSwitchParentCommand::GetEntity() const
-{
-    return NULL;
 }

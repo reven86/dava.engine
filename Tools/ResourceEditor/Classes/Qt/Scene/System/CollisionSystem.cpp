@@ -1,4 +1,5 @@
 #include "Base/AlignedAllocator.h"
+#include "Math/AABBox3.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 #include "Scene/System/CollisionSystem/CollisionLandscape.h"
@@ -10,6 +11,8 @@
 #include "Commands2/TransformCommand.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
+#include "Commands2/CreatePlaneLODCommand.h"
+#include "Commands2/DeleteLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/Base/RECommandBatch.h"
 
@@ -134,7 +137,7 @@ const SelectableGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(cons
         {
             auto entity = collisionToObject[hit.first];
             rayIntersectedEntities.emplace_back(entity);
-            AABBox3 bbox = GetBoundingBox(entity);
+            DAVA::AABBox3 bbox = GetBoundingBox(entity);
             if (!bbox.IsEmpty())
             {
                 rayIntersectedEntities.back().SetBoundingBox(bbox);
@@ -391,7 +394,7 @@ void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool red
         UpdateCollisionObject(Selectable(curLandscapeEntity));
     }
 
-    static DAVA::Vector<DAVA::int32> acceptableCommands =
+    static DAVA::Vector<DAVA::CommandID_t> acceptableCommands =
     {
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
@@ -413,10 +416,15 @@ void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool red
                 UpdateCollisionObject(Selectable(curLandscapeEntity));
             }
         }
-        else if (command->MatchCommandIDs({ CMDID_LOD_CREATE_PLANE, CMDID_LOD_DELETE }))
+        else if (command->MatchCommandID(CMDID_LOD_CREATE_PLANE))
         {
-            const RECommand* reCommand = static_cast<const RECommand*>(command);
-            UpdateCollisionObject(Selectable(reCommand->GetEntity()));
+            const CreatePlaneLODCommand* createPlaneLODCommand = static_cast<const CreatePlaneLODCommand*>(command);
+            UpdateCollisionObject(Selectable(createPlaneLODCommand->GetEntity()));
+        }
+        else if (command->MatchCommandIDs({ CMDID_LOD_DELETE }))
+        {
+            const DeleteLODCommand* deleteLODCommand = static_cast<const DeleteLODCommand*>(command);
+            UpdateCollisionObject(Selectable(deleteLODCommand->GetEntity()));
         }
         else if (command->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {

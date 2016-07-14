@@ -2,18 +2,18 @@
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
 #include "Functional/Function.h"
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
 
 class SceneEditor2;
 
-class LandscapeToolsToggleCommand : public RECommand
+class LandscapeToolsToggleCommand : public CommandWithoutExecute
 {
 public:
     LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,
                                 const DAVA::String& commandDescr, bool isEnabling,
                                 DAVA::uint32 allowedTools, DAVA::String disablingError);
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
 
     void Redo() override;
     void Undo() override;

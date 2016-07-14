@@ -1,9 +1,11 @@
 #include "Commands2/ParticleEmitterMoveCommands.h"
+#include "Commands2/RECommandIDs.h"
+
 #include "Base/RefPtr.h"
 
 ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect_, DAVA::ParticleEmitterInstance* emitter_,
                                                        DAVA::ParticleEffectComponent* newEffect_, int newIndex_)
-    : RECommand(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
+    : CommandWithoutExecute(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
     , oldEffect(oldEffect_)
     , newEffect(newEffect_)
     , oldIndex(-1)

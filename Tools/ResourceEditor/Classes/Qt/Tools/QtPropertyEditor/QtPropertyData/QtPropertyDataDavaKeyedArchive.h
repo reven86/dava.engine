@@ -26,7 +26,7 @@ public:
     DAVA::KeyedArchive* archive;
 
 protected:
-    mutable RECommand* lastCommand;
+    mutable CommandWithoutExecute* lastCommand;
     int lastAddedType;
 
     QtConnections connections;

@@ -1,19 +1,19 @@
 #ifndef __MATERIAL_GLOBAL_COMMAND_H__
 #define __MATERIAL_GLOBAL_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "Render/Material/NMaterial.h"
 
-class MaterialGlobalSetCommand : public RECommand
+class MaterialGlobalSetCommand : public CommandWithoutExecute
 {
 public:
     MaterialGlobalSetCommand(DAVA::Scene* _scene, DAVA::NMaterial* global);
     ~MaterialGlobalSetCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const;
+    DAVA::Entity* GetEntity() const;
 
 protected:
     DAVA::Scene* scene;

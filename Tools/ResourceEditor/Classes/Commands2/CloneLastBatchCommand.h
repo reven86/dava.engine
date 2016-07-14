@@ -1,21 +1,19 @@
 #ifndef __CLONE_LAST_BATCH_COMMAND_H__
 #define __CLONE_LAST_BATCH_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 
-class CloneLastBatchCommand : public RECommand
+class CloneLastBatchCommand : public CommandWithoutExecute
 {
 public:
     CloneLastBatchCommand(DAVA::RenderObject* renderObject);
     virtual ~CloneLastBatchCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
 
     inline const DAVA::Vector<DAVA::RenderBatch*>& GetNewBatches() const;
 

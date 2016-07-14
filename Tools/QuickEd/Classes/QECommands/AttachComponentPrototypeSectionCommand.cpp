@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode* aRoot, ControlNode* aNode, ComponentPropertiesSection* aDestSection, ComponentPropertiesSection* aPrototypeSection)
-    : QECommand(CMDID_ATTACH_COMPONENT_PROTOTYPE_SECTION, "AttachComponentPrototypeSection")
+    : CommandWithoutExecute(CMDID_ATTACH_COMPONENT_PROTOTYPE_SECTION, "AttachComponentPrototypeSection")
     , root(SafeRetain(aRoot))
     , node(SafeRetain(aNode))
     , destSection(SafeRetain(aDestSection))

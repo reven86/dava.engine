@@ -1,12 +1,12 @@
 #ifndef __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 #define __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 
-#include "Document/CommandsBase/QECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 class PackageNode;
 class PackageControlsNode;
 
-class RemoveImportedPackageCommand : public QECommand
+class RemoveImportedPackageCommand : public CommandWithoutExecute
 {
 public:
     RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage);

@@ -12,10 +12,7 @@ CommandBatch::CommandBatch(const String& text, uint32 commandsCount)
 
 void CommandBatch::Execute()
 {
-    for (CommandsContainer::iterator it = commandList.begin(), end = commandList.end(); it != end; ++it)
-    {
-        (*it)->Execute();
-    }
+    //Execute aready called in method "add and exec"
 }
 
 void CommandBatch::Redo()

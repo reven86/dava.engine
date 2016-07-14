@@ -97,5 +97,5 @@ DAVA::Command::Pointer QtPropertyDataInspMember::CreateLastCommand() const
         return DAVA::Command::Create<InspMemberModifyCommand>(*lastCommand);
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }

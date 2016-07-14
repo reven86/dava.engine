@@ -1,18 +1,23 @@
 #ifndef __ENTITY_ADD_COMMAND_H__
 #define __ENTITY_ADD_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class EntityAddCommand : public RECommand
+namespace DAVA
+{
+class Entity;
+}
+
+class EntityAddCommand : public CommandWithoutExecute
 {
 public:
     EntityAddCommand(DAVA::Entity* entityToAdd, DAVA::Entity* toParent);
     ~EntityAddCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::Entity* entityToAdd;
     DAVA::Entity* parentToAdd;

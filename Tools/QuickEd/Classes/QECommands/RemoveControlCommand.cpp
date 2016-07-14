@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 RemoveControlCommand::RemoveControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _from, int _index)
-    : QECommand(CMDID_REMOVE_CONTROL, "RemoveControl")
+    : CommandWithoutExecute(CMDID_REMOVE_CONTROL, "RemoveControl")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , from(SafeRetain(_from))

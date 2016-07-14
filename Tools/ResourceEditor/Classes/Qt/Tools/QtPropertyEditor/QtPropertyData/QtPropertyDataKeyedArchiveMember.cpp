@@ -118,5 +118,5 @@ DAVA::Command::Pointer QtPropertyKeyedArchiveMember::CreateLastCommand() const
         return DAVA::Command::Create<KeyeadArchiveSetValueCommand>(*lastCommand);
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }

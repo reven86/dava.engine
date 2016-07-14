@@ -29,6 +29,10 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/RebuildTangentSpaceCommand.h"
+#include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/SoundComponentEditCommands.h"
+#include "Commands2/ConvertPathCommands.h"
+
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -722,56 +726,83 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     SetEntities(selected);
 }
 
+template <typename T>
+bool IsCurNodesContainsEntityFromCommand(const DAVA::Command* command, const SelectableGroup &curNodes)
+{
+    static_assert(std::is_base_of<DAVA::Command, T>::value, "it work only with commands, derived from DAVA::Command");
+    const T* derivedCommand = static_cast<const T*>(command);
+    DAVA::Entity* entity = derivedCommand->GetEntity();
+    if ((entity == nullptr) || curNodes.ContainsObject(entity))
+    {
+        return true;
+    }
+    return false;
+}
+
 void PropertyEditor::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (command == nullptr)
     {
         return;
     }
-
-    static const DAVA::Vector<DAVA::int32> idsForUpdate =
-    { {
-    CMDID_COMPONENT_ADD,
-    CMDID_COMPONENT_REMOVE,
-    CMDID_CONVERT_TO_SHADOW,
-    CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
-    CMDID_SOUND_ADD_EVENT,
-    CMDID_SOUND_REMOVE_EVENT,
-    CMDID_DELETE_RENDER_BATCH,
-    CMDID_CLONE_LAST_BATCH,
-    CMDID_EXPAND_PATH,
-    CMDID_COLLAPSE_PATH,
-    } };
-
-    auto ShouldResetPanel = [this](const RECommand* cmd) {
-        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetID()) > 0)
+    std::function<bool(const DAVA::Command*)> shouldResetPanel;
+    shouldResetPanel = [this, &shouldResetPanel](const DAVA::Command* cmd) {
+        const DAVA::CommandID_t cmdID = cmd->GetID();
+        if (cmdID == DAVA::CMDID_BATCH)
         {
-            DAVA::Entity* entity = cmd->GetEntity();
-            if ((entity == nullptr) || curNodes.ContainsObject(entity))
-                return true;
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(cmd);
+            for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
+            {
+                if (shouldResetPanel(batch->GetCommand(i)))
+                {
+                    break;
+                }
+            }
+        }
+        else if (cmdID == CMDID_COMPONENT_ADD)
+        {
+            return IsCurNodesContainsEntityFromCommand<AddComponentCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_COMPONENT_REMOVE)
+        {
+            return IsCurNodesContainsEntityFromCommand<RemoveComponentCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CONVERT_TO_SHADOW)
+        {
+            return IsCurNodesContainsEntityFromCommand<ConvertToShadowCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
+        {
+            return true; //there is no "GetEntity" for this command
+        }
+        else if (cmdID == CMDID_SOUND_ADD_EVENT)
+        {
+            return IsCurNodesContainsEntityFromCommand<AddSoundEventCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_SOUND_REMOVE_EVENT)
+        {
+            return IsCurNodesContainsEntityFromCommand<RemoveSoundEventCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_DELETE_RENDER_BATCH)
+        {
+            return IsCurNodesContainsEntityFromCommand<DeleteRenderBatchCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CLONE_LAST_BATCH)
+        {
+            return true; //there is no "GetEntity" for this command
+        }
+        else if (cmdID == CMDID_EXPAND_PATH)
+        {
+            return IsCurNodesContainsEntityFromCommand<ExpandPathCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_COLLAPSE_PATH)
+        {
+            return IsCurNodesContainsEntityFromCommand<CollapsePathCommand>(cmd, curNodes);
         }
         return false;
     };
 
-    bool resetPropertyPanel = false;
-
-    DAVA::CommandID_t commandID = command->GetID();
-    if (commandID == DAVA::CMDID_BATCH)
-    {
-        const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-        const DAVA::uint32 count = batch->Size();
-        for (DAVA::uint32 i = 0; !resetPropertyPanel && i < count; ++i)
-        {
-            resetPropertyPanel = ShouldResetPanel(batch->GetCommand(i));
-        }
-    }
-    else
-    {
-        const RECommand* reCommand = DAVA::DynamicTypeCheck<const RECommand*>(command);
-        resetPropertyPanel = ShouldResetPanel(reCommand);
-    }
-
-    if (resetPropertyPanel)
+    if (shouldResetPanel(command))
     {
         propertiesUpdater->Update();
     }

@@ -1,7 +1,7 @@
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "Commands2/Base/CommandAction.h"
 
 #include "DAVAEngine.h"
@@ -10,7 +10,7 @@
 class CustomColorsProxy;
 class SceneEditor2;
 
-class ModifyCustomColorsCommand : public RECommand
+class ModifyCustomColorsCommand : public CommandWithoutExecute
 {
 public:
     ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy,
@@ -19,7 +19,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
 private:
     void ApplyImage(DAVA::Image* image, bool disableBlend);

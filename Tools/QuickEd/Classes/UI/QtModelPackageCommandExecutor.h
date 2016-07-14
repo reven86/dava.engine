@@ -4,7 +4,9 @@
 #include "Base/BaseObject.h"
 #include "Base/Result.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Document/CommandsBase/QECommand.h"
+
+#include "QtTools/Commands/CommandWithoutExecute.h"
+
 #include <QString>
 
 class Document;
@@ -67,7 +69,7 @@ private:
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 
     CommandStack* GetCommandStack() const;
-    void PushCommand(DAVA::Command::Pointer&& cmd);
+    void ExecCommand(DAVA::Command::Pointer&& cmd);
 
 private:
     Document* document = nullptr;

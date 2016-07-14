@@ -1,13 +1,13 @@
 #ifndef __QUICKED_REMOVE_COMPONENT_COMMAND_H__
 #define __QUICKED_REMOVE_COMPONENT_COMMAND_H__
 
-#include "Document/CommandsBase/QECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class RemoveComponentCommand : public QECommand
+class RemoveComponentCommand : public CommandWithoutExecute
 {
 public:
     RemoveComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section);

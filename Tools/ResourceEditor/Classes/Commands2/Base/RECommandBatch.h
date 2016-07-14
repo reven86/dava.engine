@@ -3,7 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Command/CommandBatch.h"
 
-class RECommand;
+class CommandWithoutExecute;
 
 class RECommandBatch final : public DAVA::CommandBatch
 {
@@ -12,7 +12,7 @@ public:
 
     void RemoveCommands(DAVA::CommandID_t commandId);
 
-    RECommand* GetCommand(DAVA::uint32 index) const;
+    CommandWithoutExecute* GetCommand(DAVA::uint32 index) const;
 
     bool IsMultiCommandBatch() const;
 };

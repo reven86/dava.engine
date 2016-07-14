@@ -1,5 +1,6 @@
 #include <QApplication>
 #include "WayEditSystem.h"
+#include "Math/AABBox3.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
@@ -9,6 +10,7 @@
 #include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Math/AABBox3.h"
 #include "Utils/Utils.h"
 
 #include "Debug/DVAssert.h"
@@ -213,7 +215,7 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
         {
             if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
             {
-                AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
+                DAVA::AABBox3 bbox = selectionSystem->GetUntransformedBoundingBox(entity);
                 DVASSERT(!bbox.IsEmpty());
                 selectedWaypoints.Add(entity, bbox);
             }

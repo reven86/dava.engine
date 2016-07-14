@@ -68,7 +68,7 @@ public:
     //re implement pure virtual function Undo for commands which can not make Undo itself
     void Undo() override;
 
-protected:
+private:
     const CommandID_t id;
     const String text;
 };
@@ -101,5 +101,10 @@ inline bool Command::CanUndo() const
 
 inline void Command::Undo()
 {
+}
+
+inline bool Command::MatchCommandID(DAVA::CommandID_t commandID) const
+{
+    return (id == commandID);
 }
 }

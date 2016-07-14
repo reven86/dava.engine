@@ -1,8 +1,9 @@
 #include "Commands2/ParticleLayerMoveCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitterInstance* oldEmitter_, DAVA::ParticleLayer* layer_,
                                                    DAVA::ParticleEmitterInstance* newEmitter_, DAVA::ParticleLayer* newBefore_ /* = nullptr */)
-    : RECommand(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
+    : CommandWithoutExecute(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
     , layer(layer_)
     , oldEmitter(oldEmitter_)
     , newEmitter(newEmitter_)

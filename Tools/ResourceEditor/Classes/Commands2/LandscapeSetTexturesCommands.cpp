@@ -5,7 +5,7 @@
 LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity_,
                                                            const DAVA::FilePath& heightMapPath_,
                                                            const DAVA::AABBox3& newLandscapeBox_)
-    : RECommand(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
+    : CommandWithoutExecute(CMDID_LANDSCAPE_SET_HEIGHTMAP, "Set Landscape heightmap")
 {
     landscape = FindLandscape(landscapeEntity_);
     if (NULL == landscape)

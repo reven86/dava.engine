@@ -1,13 +1,13 @@
 #ifndef __WAYEDIT_COMMANDS_H__
 #define __WAYEDIT_COMMANDS_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class EnableWayEditCommand : public RECommand
+class EnableWayEditCommand : public CommandWithoutExecute
 {
 public:
     EnableWayEditCommand()
-        : RECommand(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
+        : CommandWithoutExecute(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
     {
     }
     void Undo() override
@@ -15,18 +15,14 @@ public:
     }
     void Redo() override
     {
-    }
-    DAVA::Entity* GetEntity() const override
-    {
-        return nullptr;
     }
 };
 
-class DisableWayEditCommand : public RECommand
+class DisableWayEditCommand : public CommandWithoutExecute
 {
 public:
     DisableWayEditCommand()
-        : RECommand(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
+        : CommandWithoutExecute(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
     {
     }
     void Undo() override
@@ -34,10 +30,6 @@ public:
     }
     void Redo() override
     {
-    }
-    DAVA::Entity* GetEntity() const override
-    {
-        return nullptr;
     }
 };
 

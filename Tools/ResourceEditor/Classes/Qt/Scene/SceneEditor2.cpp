@@ -316,12 +316,12 @@ void SceneEditor2::Redo()
 
 void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
 {
-    commandStack->BeginMacro(text, commandsCount);
+    commandStack->BeginBatch(text, commandsCount);
 }
 
 void SceneEditor2::EndBatch()
 {
-    commandStack->EndMacro();
+    commandStack->EndBatch();
 }
 
 void SceneEditor2::ActivateCommandStack()
@@ -333,7 +333,7 @@ void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
 {
     if (command)
     {
-        commandStack->Push(std::move(command));
+        commandStack->Exec(std::move(command));
     }
 }
 

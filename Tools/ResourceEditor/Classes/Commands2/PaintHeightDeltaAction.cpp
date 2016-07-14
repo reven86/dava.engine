@@ -1,4 +1,6 @@
 #include "Commands2/PaintHeightDeltaAction.h"
+#include "Commands2/RECommandIDs.h"
+
 #include "Qt/Settings/SettingsManager.h"
 
 PaintHeightDeltaAction::PaintHeightDeltaAction(const DAVA::FilePath& targetImagePath,

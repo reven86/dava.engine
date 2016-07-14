@@ -2,9 +2,9 @@
 #define __TRANSFORM_COMMAND_H__
 
 #include "Qt/Scene/Selectable.h"
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class TransformCommand : public RECommand
+class TransformCommand : public CommandWithoutExecute
 {
 public:
     TransformCommand(Selectable object, const DAVA::Matrix4& origTransform, const DAVA::Matrix4& newTransform);
@@ -12,7 +12,7 @@ public:
     void Undo() override;
     void Redo() override;
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     const Selectable& GetTransformedObject() const;
 
 protected:

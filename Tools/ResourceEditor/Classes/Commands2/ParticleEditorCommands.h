@@ -20,7 +20,7 @@ class CommandStartStopParticleEffect : public CommandAction
 public:
     CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart);
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     void Redo() override;
 
     bool GetStarted() const
@@ -38,7 +38,7 @@ class CommandRestartParticleEffect : public CommandAction
 public:
     CommandRestartParticleEffect(DAVA::Entity* effect);
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     void Redo() override;
 
 protected:
@@ -80,7 +80,7 @@ protected:
     DAVA::ParticleLayer* selectedLayer = nullptr;
 };
 
-class CommandRemoveParticleEmitter : public RECommand
+class CommandRemoveParticleEmitter : public CommandWithoutExecute
 {
 public:
     CommandRemoveParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
@@ -89,7 +89,6 @@ public:
     void Redo() override;
     void Undo() override;
 
-    DAVA::Entity* GetEntity() const;
     DAVA::ParticleEffectComponent* GetEffect() const;
     DAVA::ParticleEmitterInstance* GetEmitterInstance() const
     {
@@ -100,11 +99,6 @@ protected:
     DAVA::ParticleEffectComponent* selectedEffect = nullptr;
     DAVA::ParticleEmitterInstance* instance = nullptr;
 };
-
-inline DAVA::Entity* CommandRemoveParticleEmitter::GetEntity() const
-{
-    return nullptr;
-}
 
 inline DAVA::ParticleEffectComponent* CommandRemoveParticleEmitter::GetEffect() const
 {

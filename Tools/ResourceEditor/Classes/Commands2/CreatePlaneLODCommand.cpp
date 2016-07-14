@@ -5,11 +5,12 @@
 #include "Scene/SceneHelper.h"
 
 #include "Render/Material/NMaterialNames.h"
+#include "Commands2/RECommandIDs.h"
 
 using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request_)
-    : RECommand(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
+    : CommandWithoutExecute(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
     , request(request_)
 {
     DVASSERT(GetRenderObject(GetEntity()));

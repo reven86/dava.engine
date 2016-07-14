@@ -1,13 +1,13 @@
 #ifndef __QUICKED_ADD_COMPONENT_COMMAND_H__
 #define __QUICKED_ADD_COMPONENT_COMMAND_H__
 
-#include "Document/CommandsBase/QECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AddComponentCommand : public QECommand
+class AddComponentCommand : public CommandWithoutExecute
 {
 public:
     AddComponentCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* section);

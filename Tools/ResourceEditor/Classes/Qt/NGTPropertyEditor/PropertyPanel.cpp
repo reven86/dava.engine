@@ -151,7 +151,7 @@ void PropertyPanel::BeginBatch(const DAVA::String& name, DAVA::uint32 commandCou
     scene->BeginBatch(name, commandCount);
 }
 
-void PropertyPanel::Exec(Command2::Pointer&& command)
+void PropertyPanel::Exec(DAVA::Command::Pointer&& command)
 {
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DVASSERT(scene != nullptr);

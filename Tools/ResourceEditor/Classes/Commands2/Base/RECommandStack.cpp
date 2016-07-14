@@ -243,14 +243,14 @@ void RECommandStack::Redo()
     CommandStack::Redo();
 }
 
-void RECommandStack::Push(DAVA::Command::Pointer&& command)
+void RECommandStack::Exec(DAVA::Command::Pointer&& command)
 {
     ActiveStackGuard guard(this);
     if (command != nullptr)
     {
         uncleanCommandIds.insert(command->GetID());
     }
-    CommandStack::Push(std::move(command));
+    CommandStack::Exec(std::move(command));
 }
 
 bool RECommandStack::IsUncleanCommandExists(DAVA::CommandID_t commandId) const
@@ -258,10 +258,10 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::CommandID_t commandId) const
     return uncleanCommandIds.count(commandId) > 0;
 }
 
-void RECommandStack::EndMacro()
+void RECommandStack::EndBatch()
 {
     ActiveStackGuard guard(this);
-    CommandStack::EndMacro();
+    CommandStack::EndBatch();
 }
 
 bool RECommandStack::IsClean() const

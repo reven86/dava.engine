@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-using CommandID_t = DAVA::int32;
+using CommandID_t = DAVA::uint32;
 
 enum CommandID : CommandID_t
 {

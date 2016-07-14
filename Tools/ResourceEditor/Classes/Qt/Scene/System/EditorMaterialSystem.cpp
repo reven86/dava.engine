@@ -10,6 +10,7 @@
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)

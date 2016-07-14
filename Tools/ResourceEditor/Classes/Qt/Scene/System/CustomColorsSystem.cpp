@@ -421,7 +421,7 @@ DAVA::Command::Pointer CustomColorsSystem::CreateSaveFileNameCommand(const DAVA:
         return DAVA::Command::Create<KeyedArchiveAddValueCommand>(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, DAVA::VariantType(filePath));
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }
 
 DAVA::FilePath CustomColorsSystem::GetCurrentSaveFileName()

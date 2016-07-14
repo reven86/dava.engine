@@ -1,7 +1,6 @@
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 
-#include "Commands2/Base/RECommand.h"
 #include "SystemDelegates.h"
 
 #include "Entity/SceneSystem.h"
@@ -11,6 +10,8 @@
 #include "Scene/SceneTypes.h"
 #include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderObject.h"
+
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;

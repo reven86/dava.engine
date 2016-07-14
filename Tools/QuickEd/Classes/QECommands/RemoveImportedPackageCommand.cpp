@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage)
-    : QECommand(CMDID_REMOVE_IMPORTED_PACKAGE, "RemoveImportedPackage")
+    : CommandWithoutExecute(CMDID_REMOVE_IMPORTED_PACKAGE, "RemoveImportedPackage")
     , root(SafeRetain(aRoot))
     , importedPackage(SafeRetain(anImportedPackage))
     , index(0)

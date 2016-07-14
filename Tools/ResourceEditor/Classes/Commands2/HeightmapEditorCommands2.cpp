@@ -9,7 +9,7 @@
 ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
                                                DAVA::Heightmap* originalHeightmap,
                                                const DAVA::Rect& updatedRect)
-    : RECommand(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
+    : CommandWithoutExecute(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
     , heightmapProxy(heightmapProxy)
 {
     if (originalHeightmap && heightmapProxy)
@@ -24,11 +24,6 @@ ModifyHeightmapCommand::~ModifyHeightmapCommand()
 {
     DAVA::SafeDeleteArray(undoRegion);
     DAVA::SafeDeleteArray(redoRegion);
-}
-
-DAVA::Entity* ModifyHeightmapCommand::GetEntity() const
-{
-    return NULL;
 }
 
 void ModifyHeightmapCommand::Redo()

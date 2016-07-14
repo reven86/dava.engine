@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class CommandAction : public RECommand
+class CommandAction : public CommandWithoutExecute
 {
 public:
     CommandAction(DAVA::CommandID_t id, const DAVA::String& text = DAVA::String());

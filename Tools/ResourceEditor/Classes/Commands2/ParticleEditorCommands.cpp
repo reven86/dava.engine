@@ -1,4 +1,6 @@
 #include "ParticleEditorCommands.h"
+#include "Commands2/RECommandIDs.h"
+
 #include "DAVAEngine.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/ParticlesEditorNodeNameHelper.h"
@@ -428,7 +430,7 @@ void CommandRemoveParticleEmitterLayer::Redo()
 }
 
 CommandRemoveParticleEmitter::CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter)
-    : RECommand(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
+    : CommandWithoutExecute(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
     , selectedEffect(effect)
     , instance(SafeRetain(emitter))
 {

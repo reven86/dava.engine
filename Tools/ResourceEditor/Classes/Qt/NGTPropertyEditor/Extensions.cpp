@@ -321,7 +321,7 @@ void EntityInjectDataExtension::RemoveComponent(const wgt::RefPropertyItem* item
         DAVA::Component* component = wgt::reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
         DVASSERT(component != nullptr);
 
-        delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
+        delegateObj.Exec(DAVA::Command::Create<RemoveComponentCommand>(component->GetEntity(), component));
     }
     delegateObj.EndBatch();
 }
@@ -345,7 +345,7 @@ void EntityInjectDataExtension::RemoveRenderBatch(const wgt::RefPropertyItem* it
     DVASSERT(batchIndex != static_cast<DAVA::uint32>(-1));
 
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, renderObject);
-    delegateObj.Exec(Command2::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
+    delegateObj.Exec(DAVA::Command::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
 }
 
 void EntityInjectDataExtension::ConvertBatchToShadow(const wgt::RefPropertyItem* item)
@@ -354,14 +354,14 @@ void EntityInjectDataExtension::ConvertBatchToShadow(const wgt::RefPropertyItem*
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
 
-    delegateObj.Exec(Command2::Create<ConvertToShadowCommand>(entity, batch));
+    delegateObj.Exec(DAVA::Command::Create<ConvertToShadowCommand>(entity, batch));
 }
 
 void EntityInjectDataExtension::RebuildTangentSpace(const wgt::RefPropertyItem* item)
 {
     INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
-    delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
+    delegateObj.Exec(DAVA::Command::Create<RebuildTangentSpaceCommand>(batch, true));
 }
 
 void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
@@ -374,7 +374,7 @@ void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
 
     DAVA::NMaterial* material = wgt::reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
-    delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
+    delegateObj.Exec(DAVA::Command::Create<ShowMaterialAction>(material));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* item)
@@ -396,7 +396,7 @@ void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* it
                                       NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
                                       DVASSERT(archImpl != nullptr);
                                       DAVA::KeyedArchive* archive = archImpl->GetArchive();
-                                      delegateObj.Exec(Command2::Create<KeyedArchiveAddValueCommand>(archive, name, value));
+                                      delegateObj.Exec(DAVA::Command::Create<KeyedArchiveAddValueCommand>(archive, name, value));
                                   }
                               }
 

@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const VariantType& newVal)
-    : QECommand(CMDID_CHANGE_PROPERTY_VALUE, DAVA::String("changed property: ") + prop->GetName().c_str())
+    : CommandWithoutExecute(CMDID_CHANGE_PROPERTY_VALUE, DAVA::String("changed property: ") + prop->GetName().c_str())
     , root(root_)
     , node(node_)
     , property(prop)

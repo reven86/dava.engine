@@ -1,9 +1,15 @@
 #ifndef __REMOVE_COMPONENT_COMMAND_H__
 #define __REMOVE_COMPONENT_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
-class RemoveComponentCommand : public RECommand
+namespace DAVA
+{
+    class Entity;
+    class Component;
+}
+
+class RemoveComponentCommand : public CommandWithoutExecute
 {
 public:
     RemoveComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
@@ -12,7 +18,7 @@ public:
     void Undo() override;
     void Redo() override;
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     const DAVA::Component* GetComponent() const;
 
 private:

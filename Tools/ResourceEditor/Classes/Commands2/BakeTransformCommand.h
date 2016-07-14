@@ -1,10 +1,10 @@
 #ifndef __BAKE_TRANSFORM_COMMAND_H__
 #define __BAKE_TRANSFORM_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "Render/Highlevel/RenderObject.h"
 
-class BakeGeometryCommand : public RECommand
+class BakeGeometryCommand : public CommandWithoutExecute
 {
 public:
     BakeGeometryCommand(DAVA::RenderObject* _object, DAVA::Matrix4 _transform);

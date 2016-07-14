@@ -31,7 +31,7 @@ CommandStack::~CommandStack()
     indexChanged.disconnect();
 }
 
-void CommandStack::Push(DAVA::Command::Pointer&& command)
+void CommandStack::Exec(DAVA::Command::Pointer&& command)
 {
     DVASSERT(command != nullptr);
     if (command == nullptr)
@@ -56,7 +56,7 @@ void CommandStack::Push(DAVA::Command::Pointer&& command)
     commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(command)));
 }
 
-void CommandStack::BeginMacro(const DAVA::String& name, DAVA::uint32 commandsCount)
+void CommandStack::BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCount)
 {
     //we call BeginMacro first time
     if (batchesStack.empty())
@@ -74,7 +74,7 @@ void CommandStack::BeginMacro(const DAVA::String& name, DAVA::uint32 commandsCou
     }
 }
 
-void CommandStack::EndMacro()
+void CommandStack::EndBatch()
 {
     DVASSERT(!batchesStack.empty() && "CommandStack::EndMacro called without BeginMacro");
     if (batchesStack.size() == 1)
@@ -124,7 +124,7 @@ void CommandStack::Redo()
 
 bool CommandStack::CanUndo() const
 {
-    return commandManager->canUndo();
+    return CanUndoImpl();
 }
 
 bool CommandStack::CanRedo() const
@@ -147,11 +147,21 @@ void CommandStack::ConnectToCommandManager()
     indexChanged.enable();
 }
 
+bool CommandStack::CanUndoImpl() const
+{
+    return commandManager->canUndo();
+}
+
+bool CommandStack::CanRedoImpl() const
+{
+    return commandManager->canRedo();
+}
+
 void CommandStack::OnHistoryIndexChanged(int currentIndex)
 {
     UpdateCleanState();
-    SetCanUndo(CanUndo());
-    SetCanRedo(CanRedo());
+    SetCanUndo(CanUndoImpl());
+    SetCanRedo(CanRedoImpl());
 }
 
 void CommandStack::UpdateCleanState()

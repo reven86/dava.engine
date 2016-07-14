@@ -1,20 +1,22 @@
 #ifndef __INSP_MEMEBER_MODIFY_COMMAND_H__
 #define __INSP_MEMEBER_MODIFY_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "FileSystem/VariantType.h"
 
-class InspMemberModifyCommand : public RECommand
+namespace DAVA
+{
+    class InspMember;
+}
+
+class InspMemberModifyCommand : public CommandWithoutExecute
 {
 public:
     InspMemberModifyCommand(const DAVA::InspMember* member, void* object, const DAVA::VariantType& value);
     ~InspMemberModifyCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    };
+    void Undo() override;
+    void Redo() override;
 
     const DAVA::InspMember* member;
     void* object;

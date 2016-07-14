@@ -1,8 +1,9 @@
 #include "RebuildTangentSpaceCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "Render/3D/MeshUtils.h"
 
 RebuildTangentSpaceCommand::RebuildTangentSpaceCommand(DAVA::RenderBatch* _renderBatch, bool _computeBinormal)
-    : RECommand(CMDID_REBUILD_TANGENT_SPACE, "Rebuild Tangent Space")
+    : CommandWithoutExecute(CMDID_REBUILD_TANGENT_SPACE, "Rebuild Tangent Space")
     , renderBatch(_renderBatch)
     , computeBinormal(_computeBinormal)
 {

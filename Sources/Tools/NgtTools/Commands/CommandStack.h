@@ -20,10 +20,10 @@ public:
     CommandStack();
     virtual ~CommandStack();
 
-    virtual void Push(DAVA::Command::Pointer&& command);
+    virtual void Exec(DAVA::Command::Pointer&& command);
 
-    virtual void BeginMacro(const DAVA::String& name, DAVA::uint32 commandsCount = 0);
-    virtual void EndMacro();
+    virtual void BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCount = 0);
+    virtual void EndBatch();
 
     virtual bool IsClean() const;
     virtual void SetClean();
@@ -31,8 +31,8 @@ public:
     virtual void Undo();
     virtual void Redo();
 
-    bool CanUndo() const;
-    bool CanRedo() const;
+    virtual bool CanUndo() const;
+    virtual bool CanRedo() const;
 
     DAVA::int32 GetID() const;
 
@@ -44,6 +44,8 @@ public:
     void ConnectToCommandManager();
 
 protected:
+    bool CanUndoImpl() const;
+    bool CanRedoImpl() const;
     wgt::ICommandManager* commandManager = nullptr;
 
 private:

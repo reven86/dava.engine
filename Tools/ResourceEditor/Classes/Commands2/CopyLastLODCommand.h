@@ -1,19 +1,19 @@
 #ifndef __COPY_LAST_LOD_COMMAND_H__
 #define __COPY_LAST_LOD_COMMAND_H__
 
-#include "Commands2/Base/RECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 #include "DAVAEngine.h"
 
-class CopyLastLODToLod0Command : public RECommand
+class CopyLastLODToLod0Command : public CommandWithoutExecute
 {
 public:
     //TODO: remove after lod editing implementation
     DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent* lod));
     ~CopyLastLODToLod0Command();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::LodComponent* lodComponent;
     DAVA::Vector<DAVA::RenderBatch*> newBatches;

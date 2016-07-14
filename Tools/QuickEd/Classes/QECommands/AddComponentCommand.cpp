@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 AddComponentCommand::AddComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section)
-    : QECommand(CMDID_ADD_COMPONENT, "Add component")
+    : CommandWithoutExecute(CMDID_ADD_COMPONENT, "Add component")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , section(SafeRetain(_section))

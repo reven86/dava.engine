@@ -1,9 +1,10 @@
 #include "Commands2/ImageRegionCopyCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 
 ImageRegionCopyCommand::ImageRegionCopyCommand(DAVA::Image* _dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect& srcRect, DAVA::FilePath _savePath, DAVA::Image* _orig)
-    : RECommand(CMDID_IMAGE_REGION_COPY, "Remove entity")
+    : CommandWithoutExecute(CMDID_IMAGE_REGION_COPY, "Remove entity")
     , dst(_dst)
     , orig(NULL)
     , copy(NULL)

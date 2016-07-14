@@ -1,13 +1,13 @@
 #ifndef __QUICKED_ADD_REMOVE_STYLE_SELECTOR_COMMAND_H__
 #define __QUICKED_ADD_REMOVE_STYLE_SELECTOR_COMMAND_H__
 
-#include "Document/CommandsBase/QECommand.h"
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 class PackageNode;
 class StyleSheetNode;
 class StyleSheetSelectorProperty;
 
-class AddRemoveStyleSelectorCommand : public QECommand
+class AddRemoveStyleSelectorCommand : public CommandWithoutExecute
 {
 public:
     AddRemoveStyleSelectorCommand(PackageNode* root, StyleSheetNode* node, StyleSheetSelectorProperty* property, bool add);

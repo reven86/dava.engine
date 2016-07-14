@@ -1,5 +1,6 @@
 #include "QtPropertyDataInspDynamic.h"
-#include "Commands2/Base/RECommand.h"
+
+#include "QtTools/Commands/CommandWithoutExecute.h"
 
 #include <QDebug>
 
@@ -130,5 +131,5 @@ DAVA::Command::Pointer QtPropertyDataInspDynamic::CreateLastCommand() const
         return DAVA::Command::Create<InspDynamicModifyCommand>(*lastCommand);
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }

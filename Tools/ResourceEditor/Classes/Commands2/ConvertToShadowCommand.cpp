@@ -3,7 +3,7 @@
 #include "Qt/Scene/SceneEditor2.h"
 
 ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity* entity_, DAVA::RenderBatch* batch)
-    : RECommand(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
+    : CommandWithoutExecute(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
     , entity(SafeRetain(entity_))
     , oldBatch(batch)
     , newBatch(NULL)

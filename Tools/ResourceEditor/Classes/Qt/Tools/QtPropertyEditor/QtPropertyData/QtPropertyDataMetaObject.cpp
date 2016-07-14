@@ -70,5 +70,5 @@ DAVA::Command::Pointer QtPropertyDataMetaObject::CreateLastCommand() const
         return DAVA::Command::Create<MetaObjModifyCommand>(*lastCommand);
     }
 
-    return RECommand::CreateEmptyCommand();
+    return DAVA::Command::Pointer();
 }

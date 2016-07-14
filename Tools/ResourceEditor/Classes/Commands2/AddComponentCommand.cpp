@@ -1,8 +1,9 @@
 #include "Commands2/AddComponentCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "DAVAEngine.h"
 
 AddComponentCommand::AddComponentCommand(DAVA::Entity* _entity, DAVA::Component* _component)
-    : RECommand(CMDID_COMPONENT_ADD, "Add Component")
+    : CommandWithoutExecute(CMDID_COMPONENT_ADD, "Add Component")
     , entity(_entity)
     , component(_component)
 {
