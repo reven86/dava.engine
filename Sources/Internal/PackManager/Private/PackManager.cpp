@@ -17,14 +17,16 @@ PackManager::ISync::~ISync() = default;
 
 void PackManager::Initialize(const String& dbFileName_,
                              const FilePath& readOnlyPacksDir_,
-                             const String& architecture_)
+                             const FilePath& downloadPacksDir_,
+                             const String& architecture_,
+                             const Hints& hints_)
 {
-    impl->Initialize(dbFileName_, readOnlyPacksDir_, architecture_, this);
+    impl->Initialize(dbFileName_, readOnlyPacksDir_, downloadPacksDir_, architecture_, hints_, this);
 }
 
-void PackManager::SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir)
+void PackManager::SyncWithServer(const String& urlToServerSuperpack)
 {
-    impl->SyncWithServer(urlToServerSuperpack, downloadPacksDir);
+    impl->SyncWithServer(urlToServerSuperpack);
 }
 
 PackManager::ISync& PackManager::GetISync()

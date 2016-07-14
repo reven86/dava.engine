@@ -118,13 +118,22 @@ public:
     PackManager();
     ~PackManager();
 
+    struct Hints
+    {
+        bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
+        bool copyBasePacksToDocs = true; // on Android true improve perfomance (need play with it with different pack size and compression and loading order)
+        // on PC, Mac, iOS - better false
+    };
+
     // throw exception if can't initialize
     void Initialize(const String& dbFileName,
                     const FilePath& readOnlyPacksDir,
-                    const String& architecture);
+                    const FilePath& downloadPacksDir,
+                    const String& architecture,
+                    const Hints& hints);
 
     // complex async connect to server
-    void SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir);
+    void SyncWithServer(const String& urlToServerSuperpack);
 
     ISync& GetISync();
 

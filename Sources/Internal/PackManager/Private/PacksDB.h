@@ -11,7 +11,7 @@ class PacksDBData;
 class PacksDB final
 {
 public:
-    PacksDB(const FilePath& filePath);
+    PacksDB(const FilePath& filePath, bool dbInMemory);
     ~PacksDB();
 
     const String& FindPack(const FilePath& relativeFilePath) const;

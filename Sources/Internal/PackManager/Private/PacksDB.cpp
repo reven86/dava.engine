@@ -103,7 +103,7 @@ static void SqliteMemShutdown(void* pAppData)
 class PacksDBData
 {
 public:
-    PacksDBData(const String& dbPath)
+    PacksDBData(const String& dbPath, bool dbInMemory)
     {
 #ifdef DAVA_MEMORY_PROFILING_ENABLE
         sqlite3_mem_methods mem = {
@@ -119,7 +119,7 @@ public:
         DVVERIFY(result == SQLITE_OK);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
 
-        RegisterDavaVFSForSqlite3();
+        RegisterDavaVFSForSqlite3(dbInMemory);
 
         if (FileSystem::Instance()->IsFile(dbPath))
         {
@@ -142,9 +142,9 @@ public:
     FilePath dbPath;
 };
 
-PacksDB::PacksDB(const FilePath& filePath)
+PacksDB::PacksDB(const FilePath& filePath, bool dbInMemory)
 {
-    data.reset(new PacksDBData(filePath.GetAbsolutePathname()));
+    data.reset(new PacksDBData(filePath.GetAbsolutePathname(), dbInMemory));
 }
 
 PacksDB::~PacksDB() = default;
@@ -169,6 +169,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
 {
     packs.clear();
+    packs.reserve(911); // now we have 911 packs
 
     auto selectQuery = data->GetDB() << "SELECT name, hash, is_gpu, size FROM packs";
 

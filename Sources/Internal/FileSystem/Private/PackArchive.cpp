@@ -84,9 +84,9 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                   });
 }
 
-File* file = nullptr;
-std::string relativeFileName;
-std::mutex gFileMutex;
+static File* file = nullptr;
+static std::string relativeFileName;
+static std::mutex gFileMutex;
 
 PackArchive::PackArchive(const FilePath& archiveName_)
     : archiveName(archiveName_)

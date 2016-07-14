@@ -7,9 +7,6 @@
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
 
-#include "Platform/SystemTimer.h"
-#include "Platform/DeviceInfo.h"
-
 namespace DAVA
 {
 static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
@@ -29,10 +26,13 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 
 void PackManagerImpl::Initialize(const String& dbFile_,
                                  const FilePath& readOnlyPacksDir_,
+                                 const FilePath& downloadPacksDir_,
                                  const String& architecture_,
+                                 const PackManager::Hints& hints_,
                                  PackManager* packManager_)
 {
     readOnlyPacksDir = readOnlyPacksDir_;
+    localPacksDir = downloadPacksDir_;
 
     architecture = architecture_;
 
@@ -43,6 +43,8 @@ void PackManagerImpl::Initialize(const String& dbFile_,
 
     packManager = packManager_;
     DVASSERT(packManager != nullptr);
+
+    hints = hints_;
 
     initLocalDBFileName = dbFile_;
 
@@ -57,13 +59,12 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     // now init all pack in local read only dir
     FirstTimeInit();
     InitStarting();
-    MountReadOnlyPacks();
+    MountBasePacks();
 }
 
-void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir)
+void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
 {
     superPackUrl = urlToServerSuperpack;
-    localPacksDir = downloadPacksDir;
 
     if (initState != PackManager::InitState::ReadOnlyPacksReady
         && initState != PackManager::InitState::Ready)
@@ -196,7 +197,7 @@ void PackManagerImpl::ContinueInitialization()
     }
     else if (PackManager::InitState::CalculateLocalDBHashAndCompare == initState)
     {
-        CalcLocalDBWitnRemoteCrc32();
+        CompareLocalDBWitnRemoteHash();
     }
     else if (PackManager::InitState::LoadingRequestAskDB == initState)
     {
@@ -286,82 +287,62 @@ void PackManagerImpl::InitStarting()
     initState = PackManager::InitState::MountingReadOnlyPacks;
 }
 
-void PackManagerImpl::MountReadOnlyPacks()
+void PackManagerImpl::InitializePacks()
 {
-    double start_time = SystemTimer::Instance()->AbsoluteMS();
+    db->InitializePacks(packs);
+    packsIndex.clear();
 
-    Logger::Info("pack manager mount_local_packs");
+    uint32 packIndex = 0;
+    for (const auto& pack : packs)
+    {
+        packsIndex[pack.name] = packIndex++;
+    }
+}
+
+void PackManagerImpl::MountBasePacks()
+{
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
-    db.reset(new PacksDB(dbInDoc));
+    db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
 
-    double end_time = SystemTimer::Instance()->AbsoluteMS();
-    double mount_time = (end_time - start_time) / 1000.0;
-    Logger::Info("mount_read_only_packs new PacksDB time: %f", mount_time);
+    InitializePacks();
 
-    db->InitializePacks(packs);
+    Set<FilePath> basePacks;
 
-    end_time = SystemTimer::Instance()->AbsoluteMS();
-    mount_time = (end_time - start_time) / 1000.0;
-    Logger::Info("mount_read_only_packs init packs: %f", mount_time);
-
-    // TODO temp set local packs dir (later move it to Init interface
-    localPacksDir = "~doc:/packs/";
-
-    // TODO copy packs from assets to ~doc on android
-    // TODO rewrite code (now only speed test)
-    if (DeviceInfo().GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+    auto listPacksInDir = [&](const FilePath& dir, bool needCopyToDocs, Set<FilePath>& resultSet)
     {
-        FileList* common = new FileList(readOnlyPacksDir + "common/");
+        ScopedPtr<FileList> common(new FileList(dir));
         for (uint32 i = 0u; i < common->GetCount(); ++i)
         {
             FilePath path = common->GetPathname(i);
-            if (path.GetExtension() == ".dvpk")
+            if (path.GetExtension() == RequestManager::packPostfix)
             {
-                FilePath docPath(localPacksDir + "/" + path.GetFilename());
-                if (!FileSystem::Instance()->Exists(docPath))
+                if (needCopyToDocs)
                 {
-                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
-                    if (!result)
+                    FilePath docPath(localPacksDir + "/" + path.GetFilename());
+                    if (!FileSystem::Instance()->Exists(docPath))
                     {
-                        Logger::Error("can't copy pack from assets to pack dir");
-                        throw std::runtime_error("can't copy pack from assets to pack dir");
+                        bool result = FileSystem::Instance()->CopyFile(path, docPath);
+                        if (!result)
+                        {
+                            Logger::Error("can't copy pack from assets to pack dir");
+                            throw std::runtime_error("can't copy pack from assets to pack dir");
+                        }
                     }
+                    resultSet.insert(docPath);
+                }
+                else
+                {
+                    resultSet.insert(path);
                 }
             }
         }
-        common = new FileList(readOnlyPacksDir + architecture + "/");
-        for (uint32 i = 0u; i < common->GetCount(); ++i)
-        {
-            FilePath path = common->GetPathname(i);
-            if (path.GetExtension() == ".dvpk")
-            {
-                FilePath docPath(localPacksDir + "/" + path.GetFilename());
-                if (!FileSystem::Instance()->Exists(docPath))
-                {
-                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
-                    if (!result)
-                    {
-                        Logger::Error("can't copy pack from assets to pack dir");
-                        throw std::runtime_error("can't copy pack from assets to pack dir");
-                    }
-                }
-            }
-        }
-    }
+    };
 
-    end_time = SystemTimer::Instance()->AbsoluteMS();
-    mount_time = (end_time - start_time) / 1000.0;
-    Logger::Info("mount_read_only_packs finish copy from assets: %f", mount_time);
+    listPacksInDir(readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
+    listPacksInDir(readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
 
-    MountPacks(localPacksDir);
-
-    end_time = SystemTimer::Instance()->AbsoluteMS();
-    mount_time = (end_time - start_time) / 1000.0;
-    Logger::Info("mount_read_only_packs mount on ssd: %f", mount_time);
-
-    //    MountPacks(readOnlyPacksDir + "common/");
-    //    MountPacks(readOnlyPacksDir + architecture + "/");
+    MountPacks(basePacks);
 
     for_each(begin(packs), end(packs), [](PackManager::Pack& p)
              {
@@ -373,10 +354,6 @@ void PackManagerImpl::MountReadOnlyPacks()
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::ReadOnlyPacksReady;
-
-    end_time = SystemTimer::Instance()->AbsoluteMS();
-    mount_time = (end_time - start_time) / 1000.0;
-    Logger::Info("mount_read_only_packs finish: %f", mount_time);
 }
 
 void PackManagerImpl::AskFooter()
@@ -526,7 +503,7 @@ void PackManagerImpl::GetFileTable()
     }
 }
 
-void PackManagerImpl::CalcLocalDBWitnRemoteCrc32()
+void PackManagerImpl::CompareLocalDBWitnRemoteHash()
 {
     Logger::FrameworkDebug("pack manager calc_local_db_with_remote_crc32");
 
@@ -701,25 +678,30 @@ void PackManagerImpl::LoadPacksDataFromDB()
     Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
     // open DB and load packs state then mount all archives to FileSystem
-    FilePath path(dbInDoc);
-    if (FileSystem::Instance()->IsFile(path))
+    if (FileSystem::Instance()->IsFile(dbInDoc))
     {
-        db.reset(new PacksDB(path));
-        db->InitializePacks(packs);
+        for (auto& pack : packs)
+        {
+            if (pack.state == PackManager::Pack::Status::Mounted)
+            {
+                FileSystem::Instance()->Unmount(pack.name);
+            }
+        }
+
+        MountBasePacks();
 
         initState = PackManager::InitState::MountingDownloadedPacks;
     }
     else
     {
-        throw std::runtime_error("no local DB file: " + path.GetStringValue());
+        throw std::runtime_error("no local DB file: " + dbInDoc.GetStringValue());
     }
 }
 
 void PackManagerImpl::MountDownloadedPacks()
 {
     Logger::FrameworkDebug("pack manager mount_downloaded_packs");
-
-    MountPacks(localPacksDir);
+    // better mount pack on every request - faster startup time
     initState = PackManager::InitState::Ready;
 }
 
@@ -730,12 +712,49 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
         PackManager::Pack& pack = GetPack(packName);
         if (pack.state == PackManager::Pack::Status::NotRequested)
         {
-            float order = 1.0f; // last order by default
-            requestManager->Push(packName, order);
+            // first try mount pack in it exist on local dounload dir
+            FilePath path = localPacksDir + "/" + packName + RequestManager::packPostfix;
+            FileSystem* fs = FileSystem::Instance();
+            if (fs->Exists(path))
+            {
+                try
+                {
+                    fs->Mount(path, "Data/");
+                    pack.state = PackManager::Pack::Status::Mounted;
+                }
+                catch (std::exception& ex)
+                {
+                    Logger::Info("%s", ex.what());
+                    requestManager->Push(packName, 1.0f); // 1.0f last order by default
+                }
+            }
+            else
+            {
+                requestManager->Push(packName, 1.0f); // 1.0f last order by default
+            }
+        }
+        else if (pack.state == PackManager::Pack::Status::Mounted)
+        {
+            // pass
+        }
+        else if (pack.state == PackManager::Pack::Status::Downloading)
+        {
+            // pass
+        }
+        else if (pack.state == PackManager::Pack::Status::ErrorLoading)
+        {
+            requestManager->Push(packName, 1.0f);
+        }
+        else if (pack.state == PackManager::Pack::Status::OtherError)
+        {
+            requestManager->Push(packName, 1.0f);
+        }
+        else if (pack.state == PackManager::Pack::Status::Requested)
+        {
+            // pass
         }
         return pack;
     }
-
     throw std::runtime_error("can't process request initialization not finished");
 }
 
@@ -747,51 +766,29 @@ void PackManagerImpl::ChangePackPriority(const String& packName, float newPriori
     }
 }
 
-void PackManagerImpl::MountPacks(const FilePath& packsDir)
+void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 {
-    if (packsDir.IsEmpty())
-    {
-        return;
-    }
     FileSystem* fs = FileSystem::Instance();
 
-    // build packIndex
-    if (packsIndex.empty())
+    for (const FilePath& filePath : basePacks)
     {
-        for (uint32 packIndex = 0; packIndex < packs.size(); ++packIndex)
-        {
-            PackManager::Pack& pack = packs.at(packIndex);
-            packsIndex[pack.name] = packIndex;
-        }
-    }
-
-    ScopedPtr<FileList> fileList(new FileList(packsDir, false));
-
-    uint32 numFilesAndDirs = fileList->GetCount();
-
-    for (uint32 fileIndex = 0; fileIndex < numFilesAndDirs; ++fileIndex)
-    {
-        if (fileList->IsDirectory(fileIndex))
-        {
-            continue;
-        }
-        const FilePath& filePath = fileList->GetPathname(fileIndex);
         String fileName = filePath.GetBasename();
         auto it = packsIndex.find(fileName);
-        if (it != end(packsIndex) && filePath.GetExtension() == RequestManager::packPostfix)
+        if (it == end(packsIndex))
         {
-            FilePath packPath(filePath);
-            PackManager::Pack& pack = packs.at(it->second);
+            throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
+        }
 
-            try
-            {
-                fs->Mount(packPath, "Data/");
-                pack.state = PackManager::Pack::Status::Mounted;
-            }
-            catch (std::exception& ex)
-            {
-                Logger::Error("%s", ex.what());
-            }
+        PackManager::Pack& pack = packs.at(it->second);
+
+        try
+        {
+            fs->Mount(filePath, "Data/");
+            pack.state = PackManager::Pack::Status::Mounted;
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
         }
     } // end for fileIndex
 }

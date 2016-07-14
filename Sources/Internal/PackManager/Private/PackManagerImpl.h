@@ -16,10 +16,12 @@ public:
 
     void Initialize(const String& dbFile_,
                     const FilePath& readOnlyPacksDir_,
+                    const FilePath& downloadPacksDir_,
                     const String& architecture_,
+                    const PackManager::Hints& hints_,
                     PackManager* packManager_);
 
-    void SyncWithServer(const String& urlToServerSuperpack, const FilePath& downloadPacksDir);
+    void SyncWithServer(const String& urlToServerSuperpack);
 
     // start PackManager::IInitialization ///////////////////////////////
     PackManager::InitState GetState() const override;
@@ -49,7 +51,7 @@ public:
 
     PackManager::Pack& GetPack(const String& packName);
 
-    void MountPacks(const FilePath&);
+    void MountPacks(const Set<FilePath>& basePacks);
 
     void DeletePack(const String& packName);
 
@@ -71,17 +73,23 @@ public:
         return initFooterOnServer;
     }
 
+    const PackManager::Hints& GetHints() const
+    {
+        return hints;
+    }
+
 private:
     void ContinueInitialization();
 
     void FirstTimeInit();
     void InitStarting();
-    void MountReadOnlyPacks();
+    void InitializePacks();
+    void MountBasePacks();
     void AskFooter();
     void GetFooter();
     void AskFileTable();
     void GetFileTable();
-    void CalcLocalDBWitnRemoteCrc32();
+    void CompareLocalDBWitnRemoteHash();
     void AskDB();
     void GetDB();
     void UnpackingDB();
@@ -116,6 +124,8 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
+
+    PackManager::Hints hints;
 };
 
 struct PackPriorityComparator

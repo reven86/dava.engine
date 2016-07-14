@@ -113,8 +113,11 @@ void RequestManager::CheckRestartLoading()
     else if (!currrentTopLoadingPack.empty() && top.GetRootPack().name != currrentTopLoadingPack)
     {
         // we have to cancel current pack request and start new with higher priority
-        PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
-        prevTopRequest.Stop();
+        if (IsInQueue(currrentTopLoadingPack))
+        {
+            PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
+            prevTopRequest.Stop();
+        }
         currrentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
