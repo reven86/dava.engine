@@ -4,12 +4,15 @@
 
 #include "Utils/StringFormat.h"
 
+#include "Scene/System/EditorLODSystem.h"
+
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QBoxLayout>
 #include <QPalette>
+#include <QApplication>
 
 namespace LODDistanceWidgetDetail
 {
