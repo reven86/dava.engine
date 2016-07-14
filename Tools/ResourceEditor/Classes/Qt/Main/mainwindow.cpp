@@ -92,6 +92,7 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QShortcut>
+#include <QList>
 
 #include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 
@@ -923,9 +924,14 @@ void QtMainWindow::SetupShortCuts()
     // select mode
     connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 
+    DavaGLWidget* glWidget = GetSceneWidget()->GetDavaWidget();
+
     // delete
-    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WindowShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
+    glWidget->addAction(deleteSelection);
 
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
@@ -1371,6 +1377,7 @@ void QtMainWindow::ExportTriggered()
         exportingParams.quality = dlg.GetQuality();
         exportingParams.optimizeOnExport = dlg.GetOptimizeOnExport();
         exportingParams.useHDTextures = dlg.GetUseHDTextures();
+        exportingParams.forceCompressTextures = dlg.GetForceCompressTextures();
 
         scene->Export(exportingParams);
 
@@ -3127,7 +3134,6 @@ void QtMainWindow::OnGenerateHeightDelta()
     HeightDeltaTool* w = new HeightDeltaTool(this);
     w->setWindowFlags(Qt::Window);
     w->setAttribute(Qt::WA_DeleteOnClose);
-    w->SetOutputTemplate("h_", QString());
 
     w->show();
 }

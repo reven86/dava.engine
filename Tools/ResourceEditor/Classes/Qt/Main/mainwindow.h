@@ -25,7 +25,9 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
+#if defined(NEW_PROPERTY_PANEL)
 class PropertyPanel;
+#endif
 class DeviceListController;
 class SpritesPackerModule;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
