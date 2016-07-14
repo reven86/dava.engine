@@ -5,6 +5,7 @@ import os
 import re
 import platform
 import argparse
+from subprocess import call
 
 g_framework_path = ""
 g_toolchains_full_path = ""
@@ -219,10 +220,10 @@ def main():
         call_string.append("-DUNITY_BUILD=true")
     print call_string
 
-    subprocess.check_output(call_string)
+    call(call_string)
     
     if "android" == destination_platform:
-        subprocess.check_output(call_string)    
+        call(call_string)    
 
 if __name__ == '__main__':
     main()
