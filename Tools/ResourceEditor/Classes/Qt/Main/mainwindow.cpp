@@ -1388,6 +1388,7 @@ void QtMainWindow::ExportTriggered()
         exportingParams.quality = dlg.GetQuality();
         exportingParams.optimizeOnExport = dlg.GetOptimizeOnExport();
         exportingParams.useHDTextures = dlg.GetUseHDTextures();
+        exportingParams.forceCompressTextures = dlg.GetForceCompressTextures();
 
         scene->Export(exportingParams);
 

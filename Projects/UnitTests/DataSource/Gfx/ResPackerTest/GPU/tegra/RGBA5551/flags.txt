@@ -1,1 +1,0 @@
---tegra RGBA5551
