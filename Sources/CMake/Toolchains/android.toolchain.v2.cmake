@@ -69,7 +69,8 @@ set( ANDROID_TOOLCHAIN_ROOT "${ANDROID_GCC_TOOLCHAIN_ROOT}/${ANDROID_TARGET}" )
 
 set ( ANDROID_STL_PATH "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++" )
 set ( ANDROID_STL_LIB_DIR "${ANDROID_STL_PATH}/libs/${ANDROID_NDK_ABI_NAME}" )
-set ( ANDROID_STL_SO_PATH "${ANDROID_STL_LIB_DIR}/libc++_shared.so" )
+set ( ANDROID_STL_SO_NAME "libc++_shared.so" )
+set ( ANDROID_STL_SO_PATH "${ANDROID_STL_LIB_DIR}/${ANDROID_STL_SO_NAME}" )
 
 # Include dirs
 set( ANDROID_INCLUDES "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libcxx/include"
@@ -131,7 +132,7 @@ set( ANDROID_CXX_FLAGS
 -frtti -fexceptions" )
                        
 set( ANDROID_CXX_FLAGS_RELEASE "-O2 -DNDEBUG" )
-set( ANDROID_CXX_FLAGS_DEBUG   "-O0 -UNDEBUG -fno-limit-debug-info" )
+set( ANDROID_CXX_FLAGS_DEBUG   "-O0 -UNDEBUG -fno-limit-debug-info -DNDK_DEBUG=1 -g" )
                        
 # Linker flags
 set ( ANDROID_LINKER_FLAGS "${ANDROID_TOOLCHAIN_OPTION} -no-canonical-prefixes" )
@@ -229,3 +230,10 @@ set( CMAKE_C_LINK_EXECUTABLE
 <CMAKE_C_LINK_FLAGS> \
 <LINK_FLAGS> \
 <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" )
+
+# Copy shared stl library to build directory
+set( OUTPUT_LIBS_PATH "${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" )
+execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
+if( NOT RESULT EQUAL 0 OR NOT EXISTS "${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}")
+    message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${OUTPUT_LIBS_PATH}/${ANDROID_STL_SO_NAME}" )
+endif()
