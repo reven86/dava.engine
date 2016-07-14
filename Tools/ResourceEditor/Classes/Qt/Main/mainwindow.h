@@ -69,7 +69,7 @@ public:
 
     bool CanBeClosed();
 
-    bool ParticelsArePacking() const;
+    bool ParticlesArePacking() const;
 
     // qt actions slots
 public slots:

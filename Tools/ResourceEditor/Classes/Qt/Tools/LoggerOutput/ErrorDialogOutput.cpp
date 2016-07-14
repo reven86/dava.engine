@@ -51,7 +51,7 @@ bool ShouldWaitForUI()
 {
     //should wait the wait bar until refactoring of wait bar
 
-    return QtMainWindow::Instance()->IsWaitDialogOnScreen() || QtMainWindow::Instance()->ParticelsArePacking();
+    return QtMainWindow::Instance()->IsWaitDialogOnScreen() || QtMainWindow::Instance()->ParticlesArePacking();
 }
 
 bool ShouldBeHiddenByUI()
