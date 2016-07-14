@@ -10,8 +10,8 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-@class ViewiOS;
-@class ViewControlleriOS;
+@class RenderView;
+@class RenderViewController;
 @class UIWindow;
 @class UIEvent;
 @class UITouch;
@@ -27,10 +27,10 @@ namespace Private
 //  - posts events to dispatcher
 //
 // WindowNativeBridgeiOS is friend of iOS's WindowBackend
-struct WindowNativeBridgeiOS final
+struct WindowNativeBridge final
 {
-    WindowNativeBridgeiOS(WindowBackend* wbackend);
-    ~WindowNativeBridgeiOS();
+    WindowNativeBridge(WindowBackend* wbackend);
+    ~WindowNativeBridge();
 
     void* GetHandle() const;
     bool DoCreateWindow();
@@ -56,8 +56,8 @@ struct WindowNativeBridgeiOS final
     WindowBackend* windowBackend = nullptr;
 
     UIWindow* uiwindow = nullptr;
-    ViewiOS* view = nullptr;
-    ViewControlleriOS* viewController = nullptr;
+    RenderView* renderView = nullptr;
+    RenderViewController* renderViewController = nullptr;
 };
 
 } // namespace Private

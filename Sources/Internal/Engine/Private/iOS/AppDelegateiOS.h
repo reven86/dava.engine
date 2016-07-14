@@ -13,10 +13,10 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 // Implementation of UIApplicationDelegate
-// Forwards all necessary methods to CoreNativeBridgeiOS
+// Forwards all necessary methods to CoreNativeBridge
 @interface AppDelegateiOS : NSObject<UIApplicationDelegate>
 {
-    DAVA::Private::CoreNativeBridgeiOS* bridge;
+    DAVA::Private::CoreNativeBridge* bridge;
 }
 
 @end

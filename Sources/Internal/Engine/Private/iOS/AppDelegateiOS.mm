@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace Private
 {
-extern CoreNativeBridgeiOS* nativeBridgeiOS;
+extern CoreNativeBridge* coreNativeBridge;
 }
 }
 
@@ -20,7 +20,7 @@ extern CoreNativeBridgeiOS* nativeBridgeiOS;
 
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    bridge = DAVA::Private::nativeBridgeiOS;
+    bridge = DAVA::Private::coreNativeBridge;
     return bridge->applicationWillFinishLaunchingWithOptions(launchOptions) ? YES : NO;
 }
 

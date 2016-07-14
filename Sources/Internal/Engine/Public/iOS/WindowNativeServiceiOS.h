@@ -16,10 +16,10 @@ class WindowNativeService final
 {
 public:
 private:
-    WindowNativeService(Private::WindowNativeBridgeiOS* nativeBridge);
+    WindowNativeService(Private::WindowNativeBridge* nativeBridge);
 
 private:
-    Private::WindowNativeBridgeiOS* bridge = nullptr;
+    Private::WindowNativeBridge* bridge = nullptr;
 
     // Friends
     friend class Private::WindowBackend;

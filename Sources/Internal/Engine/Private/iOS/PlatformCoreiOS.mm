@@ -18,7 +18,7 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
     , dispatcher(e->GetDispatcher())
-    , bridge(new CoreNativeBridgeiOS(this))
+    , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
 }

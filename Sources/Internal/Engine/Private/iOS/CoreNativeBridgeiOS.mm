@@ -17,15 +17,15 @@
 #import <UIKit/UIKit.h>
 
 // Wrapper over CADisplayLink to connect Objective-C's CADisplayLink object to
-// C++ class CoreNativeBridgeiOS
+// C++ class CoreNativeBridge
 @interface FrameTimer : NSObject
 {
-    DAVA::Private::CoreNativeBridgeiOS* bridge;
+    DAVA::Private::CoreNativeBridge* bridge;
     CADisplayLink* displayLink;
     DAVA::int32 curInterval;
 }
 
-- (id)init:(DAVA::Private::CoreNativeBridgeiOS*)nativeBridge;
+- (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
 - (void)set:(DAVA::int32)interval;
 - (void)cancel;
 - (void)timerFired:(CADisplayLink*)dispLink;
@@ -34,7 +34,7 @@
 
 @implementation FrameTimer
 
-- (id)init:(DAVA::Private::CoreNativeBridgeiOS*)nativeBridge
+- (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge
 {
     self = [super init];
     if (self != nil)
@@ -78,23 +78,23 @@ namespace Private
 {
 // UIApplicationMain instantiates UIApplicationDelegate-derived class, user cannot
 // create UIApplicationDelegate-derived class, pass init parameters and set it to UIApplication
-// AppDelegateiOS will receive pointer to CoreNativeBridgeiOS instance through nativeBridgeiOS
-CoreNativeBridgeiOS* nativeBridgeiOS = nullptr;
+// AppDelegateiOS will receive pointer to CoreNativeBridge instance through nativeBridgeiOS
+CoreNativeBridge* coreNativeBridge = nullptr;
 
-CoreNativeBridgeiOS::CoreNativeBridgeiOS(PlatformCore* c)
+CoreNativeBridge::CoreNativeBridge(PlatformCore* c)
     : core(c)
 {
-    nativeBridgeiOS = this;
+    coreNativeBridge = this;
 }
 
-CoreNativeBridgeiOS::~CoreNativeBridgeiOS() = default;
+CoreNativeBridge::~CoreNativeBridge() = default;
 
-void CoreNativeBridgeiOS::Run()
+void CoreNativeBridge::Run()
 {
     ::UIApplicationMain(0, nil, nil, @"AppDelegateiOS");
 }
 
-void CoreNativeBridgeiOS::OnFrameTimer()
+void CoreNativeBridge::OnFrameTimer()
 {
     int32 fps = core->OnFrame();
     if (fps <= 0)
@@ -106,13 +106,13 @@ void CoreNativeBridgeiOS::OnFrameTimer()
     [frameTimer set:interval];
 }
 
-bool CoreNativeBridgeiOS::applicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::applicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
     Logger::Debug("******** applicationWillFinishLaunchingWithOptions");
     return true;
 }
 
-bool CoreNativeBridgeiOS::applicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::applicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
     Logger::Debug("******** applicationDidFinishLaunchingWithOptions");
 
@@ -124,21 +124,21 @@ bool CoreNativeBridgeiOS::applicationDidFinishLaunchingWithOptions(NSDictionary*
     return true;
 }
 
-void CoreNativeBridgeiOS::applicationDidBecomeActive()
+void CoreNativeBridge::applicationDidBecomeActive()
 {
     Logger::Debug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
 }
 
-void CoreNativeBridgeiOS::applicationWillResignActive()
+void CoreNativeBridge::applicationWillResignActive()
 {
     Logger::Debug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
 }
 
-void CoreNativeBridgeiOS::applicationDidEnterBackground()
+void CoreNativeBridge::applicationDidEnterBackground()
 {
     core->didEnterForegroundBackground.Emit(false);
 
@@ -147,7 +147,7 @@ void CoreNativeBridgeiOS::applicationDidEnterBackground()
     core->dispatcher->SendEvent(e); // Blocking call !!!
 }
 
-void CoreNativeBridgeiOS::applicationWillEnterForeground()
+void CoreNativeBridge::applicationWillEnterForeground()
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::APP_RESUMED;
@@ -156,7 +156,7 @@ void CoreNativeBridgeiOS::applicationWillEnterForeground()
     core->didEnterForegroundBackground.Emit(true);
 }
 
-void CoreNativeBridgeiOS::applicationWillTerminate()
+void CoreNativeBridge::applicationWillTerminate()
 {
     Logger::Debug("******** applicationWillTerminate");
 
@@ -166,7 +166,7 @@ void CoreNativeBridgeiOS::applicationWillTerminate()
     core->engineBackend->OnBeforeTerminate();
 }
 
-void CoreNativeBridgeiOS::applicationDidReceiveMemoryWarning()
+void CoreNativeBridge::applicationDidReceiveMemoryWarning()
 {
     Logger::Debug("******** applicationDidReceiveMemoryWarning");
 }

@@ -24,7 +24,7 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     , dispatcher(engineBackend->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
-    , bridge(new WindowNativeBridgeiOS(this))
+    , bridge(new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
 }
@@ -49,8 +49,8 @@ bool WindowBackend::Create(float32 /*width*/, float32 /*height*/)
     if (bridge->DoCreateWindow())
     {
         PlatformCore* core = engineBackend->GetPlatformCore();
-        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge, &WindowNativeBridgeiOS::ApplicationDidBecomeOrResignActive);
-        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge, &WindowNativeBridgeiOS::ApplicationDidEnterForegroundOrBackground);
+        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge, &WindowNativeBridge::ApplicationDidBecomeOrResignActive);
+        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge, &WindowNativeBridge::ApplicationDidEnterForegroundOrBackground);
         return true;
     }
     return false;

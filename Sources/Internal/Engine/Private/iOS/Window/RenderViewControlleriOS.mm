@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/iOS/Window/ViewControlleriOS.h"
+#include "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -8,12 +8,15 @@
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
-@implementation ViewControlleriOS
+@implementation RenderViewController
 
-- (id)init:(DAVA::Private::WindowNativeBridgeiOS*)nativeBridge
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge
 {
-    [super init];
-    bridge = nativeBridge;
+    self = [super init];
+    if (self != nil)
+    {
+        bridge = nativeBridge;
+    }
     return self;
 }
 

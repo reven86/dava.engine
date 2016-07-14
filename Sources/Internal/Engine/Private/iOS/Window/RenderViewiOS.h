@@ -12,14 +12,14 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-@interface ViewiOS : UIView
+@interface RenderView : UIView
 {
-    DAVA::Private::WindowNativeBridgeiOS* bridge;
+    DAVA::Private::WindowNativeBridge* bridge;
 }
 
 + (Class)layerClass;
 
-- (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridgeiOS*)nativeBridge;
+- (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
 @end
 

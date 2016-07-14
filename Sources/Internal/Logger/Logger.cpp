@@ -62,9 +62,6 @@ void Logger::Logv(const FilePath& customLogFilename, eLogLevel ll, const char8* 
     if (!text || text[0] == '\0')
         return;
 
-    if (!(strncmp(text, "****", 4) == 0 || strncmp(text, "####", 4) == 0))
-        return;
-
     // try use stack first
     Array<char8, defaultBufferSize> stackbuf;
 

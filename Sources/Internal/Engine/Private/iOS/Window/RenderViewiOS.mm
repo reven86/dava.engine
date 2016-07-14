@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/iOS/Window/ViewiOS.h"
+#include "Engine/Private/iOS/Window/RenderViewiOS.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -10,23 +10,23 @@
 
 #import <QuartzCore/CAEAGLLayer.h>
 
-@implementation ViewiOS
+@implementation RenderView
 
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
 }
 
-- (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridgeiOS*)nativeBridge;
+- (id)initWithFrame:(CGRect)frame andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 {
     self = [super initWithFrame:frame];
     if (self != nil)
     {
         bridge = nativeBridge;
 
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.autoresizesSubviews = YES;
-        self.multipleTouchEnabled = YES;
+        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+        [self setAutoresizesSubviews:YES];
+        [self setMultipleTouchEnabled:YES];
     }
     return self;
 }

@@ -12,12 +12,12 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-@interface ViewControlleriOS : UIViewController
+@interface RenderViewController : UIViewController
 {
-    DAVA::Private::WindowNativeBridgeiOS* bridge;
+    DAVA::Private::WindowNativeBridge* bridge;
 }
 
-- (id)init:(DAVA::Private::WindowNativeBridgeiOS*)nativeBridge;
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
 @end
 

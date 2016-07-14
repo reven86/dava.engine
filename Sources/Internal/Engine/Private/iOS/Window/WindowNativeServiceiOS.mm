@@ -13,7 +13,7 @@
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowNativeBridgeiOS* nativeBridge)
+WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBridge)
     : bridge(nativeBridge)
 {
 }

@@ -21,11 +21,11 @@ namespace Private
 // Responsibilities:
 //  - holds neccesary Objective-C objects
 //
-// CoreNativeBridgeiOS is friend of iOS's PlatformCore
-struct CoreNativeBridgeiOS final
+// CoreNativeBridge is friend of iOS's PlatformCore
+struct CoreNativeBridge final
 {
-    CoreNativeBridgeiOS(PlatformCore* c);
-    ~CoreNativeBridgeiOS();
+    CoreNativeBridge(PlatformCore* c);
+    ~CoreNativeBridge();
 
     void Run();
     void OnFrameTimer();

@@ -47,7 +47,7 @@ private:
 
     UIDispatcher platformDispatcher;
 
-    WindowNativeBridgeiOS* bridge = nullptr;
+    WindowNativeBridge* bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
     size_t sigidAppBecomeOrResignActive = 0;
@@ -55,7 +55,7 @@ private:
 
     // Friends
     friend class PlatformCore;
-    friend struct WindowNativeBridgeiOS;
+    friend struct WindowNativeBridge;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const

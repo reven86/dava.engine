@@ -14,26 +14,26 @@
 #include "Logger/Logger.h"
 
 #import <UIKit/UIKit.h>
-#import "Engine/Private/iOS/Window/ViewiOS.h"
-#import "Engine/Private/iOS/Window/ViewControlleriOS.h"
+#import "Engine/Private/iOS/Window/RenderViewiOS.h"
+#import "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
 
 namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridgeiOS::WindowNativeBridgeiOS(WindowBackend* wbackend)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* wbackend)
     : windowBackend(wbackend)
 {
 }
 
-WindowNativeBridgeiOS::~WindowNativeBridgeiOS() = default;
+WindowNativeBridge::~WindowNativeBridge() = default;
 
-void* WindowNativeBridgeiOS::GetHandle() const
+void* WindowNativeBridge::GetHandle() const
 {
-    return [view layer];
+    return [renderView layer];
 }
 
-bool WindowNativeBridgeiOS::DoCreateWindow()
+bool WindowNativeBridge::DoCreateWindow()
 {
     UIScreen* screen = [UIScreen mainScreen];
     CGRect rect = [screen bounds];
@@ -42,46 +42,46 @@ bool WindowNativeBridgeiOS::DoCreateWindow()
     uiwindow = [[UIWindow alloc] initWithFrame:rect];
     [uiwindow makeKeyAndVisible];
 
-    viewController = [[ViewControlleriOS alloc] init:this];
-    view = [[ViewiOS alloc] initWithFrame:rect andBridge:this];
-    [view setContentScaleFactor:scale];
+    renderViewController = [[RenderViewController alloc] initWithBridge:this];
+    renderView = [[RenderView alloc] initWithFrame:rect andBridge:this];
+    [renderView setContentScaleFactor:scale];
 
-    [uiwindow setRootViewController:viewController];
+    [uiwindow setRootViewController:renderViewController];
 
     windowBackend->GetWindow()->PostWindowCreated(windowBackend, rect.size.width, rect.size.height, scale, scale);
     windowBackend->GetWindow()->PostVisibilityChanged(true);
     return true;
 }
 
-void WindowNativeBridgeiOS::TriggerPlatformEvents()
+void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
         windowBackend->ProcessPlatformEvents();
     });
 }
 
-void WindowNativeBridgeiOS::ApplicationDidBecomeOrResignActive(bool becomeActive)
+void WindowNativeBridge::ApplicationDidBecomeOrResignActive(bool becomeActive)
 {
     windowBackend->GetWindow()->PostFocusChanged(becomeActive);
 }
 
-void WindowNativeBridgeiOS::ApplicationDidEnterForegroundOrBackground(bool foreground)
+void WindowNativeBridge::ApplicationDidEnterForegroundOrBackground(bool foreground)
 {
     windowBackend->GetWindow()->PostVisibilityChanged(foreground);
 }
 
-void WindowNativeBridgeiOS::loadView()
+void WindowNativeBridge::loadView()
 {
-    viewController.view = view;
+    [renderViewController setView:renderView];
 }
 
-void WindowNativeBridgeiOS::viewWillTransitionToSize(float32 w, float32 h)
+void WindowNativeBridge::viewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[UIScreen mainScreen] scale];
     windowBackend->GetWindow()->PostSizeChanged(w, h, scale, scale);
 }
 
-void WindowNativeBridgeiOS::touchesBegan(NSSet* touches)
+void WindowNativeBridge::touchesBegan(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_DOWN;
@@ -99,7 +99,7 @@ void WindowNativeBridgeiOS::touchesBegan(NSSet* touches)
     }
 }
 
-void WindowNativeBridgeiOS::touchesMoved(NSSet* touches)
+void WindowNativeBridge::touchesMoved(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_MOVE;
@@ -117,7 +117,7 @@ void WindowNativeBridgeiOS::touchesMoved(NSSet* touches)
     }
 }
 
-void WindowNativeBridgeiOS::touchesEnded(NSSet* touches)
+void WindowNativeBridge::touchesEnded(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_UP;
