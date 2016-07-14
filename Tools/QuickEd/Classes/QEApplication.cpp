@@ -20,7 +20,7 @@ QEApplication::QEApplication(int argc, char** argv)
 
 QEApplication::~QEApplication() = default;
 
-int QEApplication::Run()
+void QEApplication::Run()
 {
     wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
@@ -31,10 +31,8 @@ int QEApplication::Run()
     editorCore = new EditorCore();
 
     editorCore->Start();
-    int exitCode = StartApplication(editorCore->GetMainWindow());
-    delete editorCore;
+    StartApplication(editorCore->GetMainWindow());
     editorCore = nullptr;
-    return exitCode;
 }
 
 void QEApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const

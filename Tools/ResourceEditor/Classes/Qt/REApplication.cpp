@@ -4,7 +4,6 @@
 #include "ResourceEditorLauncher.h"
 #include "NgtTools/Commands/WGTCommand.h"
 
-#include "NgtTools/Commands/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
 #include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
@@ -27,7 +26,7 @@ REApplication::REApplication(int argc, char** argv)
 
 REApplication::~REApplication() = default;
 
-int REApplication::Run()
+void REApplication::Run()
 {
     wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
     if (historyPanel != nullptr)
@@ -44,11 +43,10 @@ int REApplication::Run()
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
-    int exitCode = StartApplication(mainWindow);
+    StartApplication(mainWindow);
 
     DAVA::SafeRelease(mainWindow);
     ControlsFactory::ReleaseFonts();
-    return exitCode;
 }
 
 void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const

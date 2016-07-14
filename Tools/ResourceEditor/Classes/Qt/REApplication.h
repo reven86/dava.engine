@@ -21,7 +21,7 @@ public:
     REApplication(int argc, char** argv);
     ~REApplication();
 
-    int Run();
+    void Run();
 
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;

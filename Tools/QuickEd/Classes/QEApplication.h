@@ -14,7 +14,7 @@ public:
     QEApplication(int argc, char** argv);
     ~QEApplication();
 
-    int Run();
+    void Run();
 
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;

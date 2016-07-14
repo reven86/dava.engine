@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
     const char* settingsPath = "QuickEdSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-    int returnCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
         ToolsAssetGuard::Instance()->Init();
@@ -44,7 +43,7 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
 
         InitPVRTexTool();
-        returnCode = a.Run();
+        a.Run();
     }
-    return returnCode;
+    return 0;
 }
