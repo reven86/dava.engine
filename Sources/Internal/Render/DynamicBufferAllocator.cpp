@@ -147,20 +147,21 @@ struct BufferAllocator
         {
             BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
         }
-        for (auto b : freeBuffers)
-        {
-            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
-            SafeDelete(b);
-        }
+        buffersToUnmap.clear();
+
         for (auto b : usedBuffers)
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
             SafeDelete(b);
         }
-
-        freeBuffers.clear();
         usedBuffers.clear();
-        buffersToUnmap.clear();
+
+        while (!freeBuffers.empty())
+        {
+            BufferProxy<HBuffer>::DeleteBuffer(freeBuffers.front()->buffer);
+            SafeDelete(freeBuffers.front());
+            freeBuffers.pop();
+        }
     }
 
     void BeginFrame()
