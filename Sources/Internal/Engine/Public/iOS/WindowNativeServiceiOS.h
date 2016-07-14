@@ -10,11 +10,21 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class UIView;
+@class UIImage;
+
 namespace DAVA
 {
+class Image;
 class WindowNativeService final
 {
 public:
+    UIView* CreateNativeControl(const char8* className);
+    void ReleaseNativeControl(UIView* view);
+
+    static UIImage* RenderUIViewToUIImage(UIView* view);
+    static Image* ConvertUIImageToImage(UIImage* nativeImage);
+
 private:
     WindowNativeService(Private::WindowNativeBridge* nativeBridge);
 

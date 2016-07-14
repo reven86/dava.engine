@@ -16,6 +16,7 @@
 #import <UIKit/UIKit.h>
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
 #import "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
+#import "Engine/Private/iOS/Window/NativeViewPooliOS.h"
 
 namespace DAVA
 {
@@ -46,6 +47,8 @@ bool WindowNativeBridge::DoCreateWindow()
     renderView = [[RenderView alloc] initWithFrame:rect andBridge:this];
     [renderView setContentScaleFactor:scale];
 
+    nativeViewPool = [[NativeViewPool alloc] init];
+
     [uiwindow setRootViewController:renderViewController];
 
     windowBackend->GetWindow()->PostWindowCreated(windowBackend, rect.size.width, rect.size.height, scale, scale);
@@ -68,6 +71,21 @@ void WindowNativeBridge::ApplicationDidBecomeOrResignActive(bool becomeActive)
 void WindowNativeBridge::ApplicationDidEnterForegroundOrBackground(bool foreground)
 {
     windowBackend->GetWindow()->PostVisibilityChanged(foreground);
+}
+
+UIView* WindowNativeBridge::CreateNativeControl(const char8* className)
+{
+    UIView* view = [nativeViewPool queryView:[NSString stringWithUTF8String:className]];
+    [renderView addSubview:view];
+    [view setHidden:YES];
+    return view;
+}
+
+void WindowNativeBridge::ReleaseNativeControl(UIView* view)
+{
+    [view setHidden:YES];
+    [view removeFromSuperview];
+    [nativeViewPool returnView:view];
 }
 
 void WindowNativeBridge::loadView()
@@ -133,6 +151,36 @@ void WindowNativeBridge::touchesEnded(NSSet* touches)
         e.tclickEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
         dispatcher->PostEvent(e);
     }
+}
+
+UIImage* RenderUIViewToImage(UIView* view)
+{
+    DVASSERT(view != nullptr);
+
+    size_t w = view.frame.size.width;
+    size_t h = view.frame.size.height;
+
+    if (w == 0 || h == 0)
+    {
+        return nullptr; // empty rect on start, just skip it
+    }
+
+    // Workaround! render text view directly without scrolling
+    if ([ ::UITextView class] == [view class])
+    {
+        ::UITextView* textView = (::UITextView*)view;
+        view = textView.textInputView;
+    }
+
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
+    // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+
+    UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    DVASSERT(image);
+    return image;
 }
 
 } // namespace Private

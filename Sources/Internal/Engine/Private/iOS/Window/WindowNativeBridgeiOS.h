@@ -10,12 +10,13 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class UIWindow;
+@class UIView;
+@class NSSet;
+
 @class RenderView;
 @class RenderViewController;
-@class UIWindow;
-@class UIEvent;
-@class UITouch;
-@class NSSet;
+@class NativeViewPool;
 
 namespace DAVA
 {
@@ -40,6 +41,9 @@ struct WindowNativeBridge final
     void ApplicationDidBecomeOrResignActive(bool becomeActive);
     void ApplicationDidEnterForegroundOrBackground(bool foreground);
 
+    UIView* CreateNativeControl(const char8* className);
+    void ReleaseNativeControl(UIView* view);
+
     //////////////////////////////////////////////////////////////////////////
 
     void loadView();
@@ -56,8 +60,10 @@ struct WindowNativeBridge final
     WindowBackend* windowBackend = nullptr;
 
     UIWindow* uiwindow = nullptr;
+    UIView* x = nullptr;
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
+    NativeViewPool* nativeViewPool = nullptr;
 };
 
 } // namespace Private

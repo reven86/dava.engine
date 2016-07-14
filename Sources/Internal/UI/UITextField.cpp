@@ -6,7 +6,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
-#elif defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
+#elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldWinUAP.h"
