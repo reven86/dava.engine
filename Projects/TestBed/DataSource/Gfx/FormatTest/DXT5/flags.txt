@@ -1,1 +1,0 @@
---generateMipMaps --adreno DXT5 --tegra DXT5
