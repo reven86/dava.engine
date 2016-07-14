@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/iOS/WindowBackendiOS.h"
+#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -10,7 +10,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
-#include "Engine/Private/iOS/WindowNativeBridgeiOS.h"
+#include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -31,35 +31,39 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
 
 WindowBackend::~WindowBackend()
 {
+    PlatformCore* core = engineBackend->GetPlatformCore();
+    core->didBecomeResignActive.Disconnect(sigidAppBecomeOrResignActive);
+    core->didEnterForegroundBackground.Disconnect(sigidAppDidEnterForegroundOrBackground);
+
     delete bridge;
 }
 
 void* WindowBackend::GetHandle() const
 {
-    return nullptr;
+    return bridge->GetHandle();
 }
 
-bool WindowBackend::Create(float32 width, float32 height)
+bool WindowBackend::Create(float32 /*width*/, float32 /*height*/)
 {
-    float32 x = 0.0f;
-    float32 y = 0.0f;
-    return bridge->DoCreateWindow(x, y, width, height);
+    // iOS windows are always created with size same as screen size
+    if (bridge->DoCreateWindow())
+    {
+        PlatformCore* core = engineBackend->GetPlatformCore();
+        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge, &WindowNativeBridgeiOS::ApplicationDidBecomeOrResignActive);
+        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge, &WindowNativeBridgeiOS::ApplicationDidEnterForegroundOrBackground);
+        return true;
+    }
+    return false;
 }
 
-void WindowBackend::Resize(float32 width, float32 height)
+void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    // iOS windows are always stretched to screen size
 }
 
 void WindowBackend::Close()
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+    // iOS windows cannot be closed
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -84,12 +88,6 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
-    case UIDispatcherEvent::RESIZE_WINDOW:
-        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
-        break;
-    case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow();
-        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;

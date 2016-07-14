@@ -98,6 +98,8 @@ private:
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
     void HandleMouseWheel(const Private::MainDispatcherEvent& e);
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
+    void HandleTouchClick(const Private::MainDispatcherEvent& e);
+    void HandleTouchMove(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 

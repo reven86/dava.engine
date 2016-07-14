@@ -8,8 +8,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/Private/iOS/WindowBackendiOS.h"
-#include "Engine/Private/iOS/WindowNativeBridgeiOS.h"
+#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
+#include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
 namespace DAVA
 {

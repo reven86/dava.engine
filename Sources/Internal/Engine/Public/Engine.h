@@ -53,6 +53,8 @@ public:
     Signal<float32> update;
     Signal<> draw;
     Signal<> endFrame;
+    Signal<> suspended;
+    Signal<> resumed;
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

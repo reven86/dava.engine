@@ -8,16 +8,16 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_IPHONE__)
 
-#import <UIKit/UIApplication.h>
+#import <UIKit/UIViewController.h>
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-// Implementation of UIApplicationDelegate
-// Forwards all necessary methods to CoreNativeBridgeiOS
-@interface AppDelegateiOS : NSObject<UIApplicationDelegate>
+@interface ViewControlleriOS : UIViewController
 {
-    DAVA::Private::CoreNativeBridgeiOS* bridge;
+    DAVA::Private::WindowNativeBridgeiOS* bridge;
 }
+
+- (id)init:(DAVA::Private::WindowNativeBridgeiOS*)nativeBridge;
 
 @end
 

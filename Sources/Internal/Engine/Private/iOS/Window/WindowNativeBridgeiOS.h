@@ -10,6 +10,13 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class ViewiOS;
+@class ViewControlleriOS;
+@class UIWindow;
+@class UIEvent;
+@class UITouch;
+@class NSSet;
+
 namespace DAVA
 {
 namespace Private
@@ -25,15 +32,32 @@ struct WindowNativeBridgeiOS final
     WindowNativeBridgeiOS(WindowBackend* wbackend);
     ~WindowNativeBridgeiOS();
 
-    bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    void* GetHandle() const;
+    bool DoCreateWindow();
 
     void TriggerPlatformEvents();
+
+    void ApplicationDidBecomeOrResignActive(bool becomeActive);
+    void ApplicationDidEnterForegroundOrBackground(bool foreground);
+
+    //////////////////////////////////////////////////////////////////////////
+
+    void loadView();
+    void viewWillTransitionToSize(float32 w, float32 h);
+
+    //////////////////////////////////////////////////////////////////////////
+
+    void touchesBegan(NSSet* touches);
+    void touchesMoved(NSSet* touches);
+    void touchesEnded(NSSet* touches);
 
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
+
+    UIWindow* uiwindow = nullptr;
+    ViewiOS* view = nullptr;
+    ViewControlleriOS* viewController = nullptr;
 };
 
 } // namespace Private

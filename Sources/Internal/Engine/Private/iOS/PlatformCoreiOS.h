@@ -28,6 +28,9 @@ public:
     void Run();
     void Quit();
 
+    Signal<bool> didBecomeResignActive;
+    Signal<bool> didEnterForegroundBackground;
+
 private:
     int OnFrame();
 
@@ -35,6 +38,7 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
     // TODO: std::unique_ptr
     CoreNativeBridgeiOS* bridge = nullptr;
     std::unique_ptr<NativeService> nativeService;

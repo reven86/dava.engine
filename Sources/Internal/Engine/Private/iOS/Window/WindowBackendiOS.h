@@ -50,6 +50,9 @@ private:
     WindowNativeBridgeiOS* bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
+    size_t sigidAppBecomeOrResignActive = 0;
+    size_t sigidAppDidEnterForegroundOrBackground = 0;
+
     // Friends
     friend class PlatformCore;
     friend struct WindowNativeBridgeiOS;

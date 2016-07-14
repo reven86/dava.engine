@@ -8,16 +8,55 @@
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
+namespace DAVA
+{
+namespace Private
+{
+extern CoreNativeBridgeiOS* nativeBridgeiOS;
+}
+}
+
 @implementation AppDelegateiOS
 
-- (id)init:(DAVA::Private::CoreNativeBridgeiOS*)nativeBridge
+- (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    self = [super init];
-    if (self != nullptr)
-    {
-        bridge = nativeBridge;
-    }
-    return self;
+    bridge = DAVA::Private::nativeBridgeiOS;
+    return bridge->applicationWillFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+}
+
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
+{
+    return bridge->applicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication*)application
+{
+    bridge->applicationDidBecomeActive();
+}
+
+- (void)applicationWillResignActive:(UIApplication*)application
+{
+    bridge->applicationWillResignActive();
+}
+
+- (void)applicationDidEnterBackground:(UIApplication*)application
+{
+    bridge->applicationDidEnterBackground();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication*)application
+{
+    bridge->applicationWillEnterForeground();
+}
+
+- (void)applicationWillTerminate:(UIApplication*)application
+{
+    bridge->applicationWillTerminate();
+}
+
+- (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
+{
+    bridge->applicationDidReceiveMemoryWarning();
 }
 
 @end

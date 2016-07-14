@@ -8,7 +8,7 @@
 
 #include "Engine/Public/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/iOS/WindowBackendiOS.h"
+#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
 namespace DAVA
@@ -17,6 +17,7 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
+    , dispatcher(e->GetDispatcher())
     , bridge(new CoreNativeBridgeiOS(this))
     , nativeService(new NativeService(this))
 {
@@ -33,11 +34,12 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    bridge->Run();
 }
 
 void PlatformCore::Quit()
 {
-    bridge->Quit();
+    // Quit is not supported on iOS
 }
 
 int32 PlatformCore::OnFrame()

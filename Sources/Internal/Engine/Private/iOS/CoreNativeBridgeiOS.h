@@ -10,6 +10,9 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class NSDictionary;
+@class FrameTimer;
+
 namespace DAVA
 {
 namespace Private
@@ -24,9 +27,21 @@ struct CoreNativeBridgeiOS final
     CoreNativeBridgeiOS(PlatformCore* c);
     ~CoreNativeBridgeiOS();
 
-    void Quit();
+    void Run();
+    void OnFrameTimer();
+
+    // Callbacks from AppDelegateiOS
+    bool applicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions);
+    bool applicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions);
+    void applicationDidBecomeActive();
+    void applicationWillResignActive();
+    void applicationDidEnterBackground();
+    void applicationWillEnterForeground();
+    void applicationWillTerminate();
+    void applicationDidReceiveMemoryWarning();
 
     PlatformCore* core = nullptr;
+    FrameTimer* frameTimer = nullptr;
 };
 
 } // namespace Private
