@@ -78,9 +78,12 @@ set( ANDROID_INCLUDES "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libcxx/include
                       "${ANDROID_NDK}/sources/android/support/include"
                       "${ANDROID_SYSROOT}/usr/include" )
                       
+# Libraries
+set ( ANDROID_LINK_LIBRARIES "-lc++abi -landroid_support -lunwind -latomic -lm \"${ANDROID_STL_SO_PATH}\"" )                      
+                      
 # Install libs search directories
 include_directories( SYSTEM  ${ANDROID_INCLUDES} )
-#link_directories( "${ANDROID_TOOLCHAIN_ROOT}/lib" )
+link_directories( "${ANDROID_STL_LIB_DIR}" )
 
 # Configure compiler and other tools
 set( CMAKE_C_COMPILER_ID   Clang )
@@ -230,6 +233,11 @@ set( CMAKE_C_LINK_EXECUTABLE
 <CMAKE_C_LINK_FLAGS> \
 <LINK_FLAGS> \
 <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" )
+
+# Link additional libraries
+set ( CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} ${ANDROID_LINK_LIBRARIES}" )
+set ( CMAKE_CXX_CREATE_SHARED_MODULE  "${CMAKE_CXX_CREATE_SHARED_MODULE} ${ANDROID_LINK_LIBRARIES}" )
+set ( CMAKE_CXX_LINK_EXECUTABLE       "${CMAKE_CXX_LINK_EXECUTABLE} ${ANDROID_LINK_LIBRARIES}" )
 
 # Copy shared stl library to build directory
 set( OUTPUT_LIBS_PATH "${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" )
