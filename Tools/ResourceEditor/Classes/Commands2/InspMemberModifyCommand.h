@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-    class InspMember;
+class InspMember;
 }
 
 class InspMemberModifyCommand : public CommandWithoutExecute

@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-    class MetaInfo;
+class MetaInfo;
 }
 
 class MetaObjModifyCommand : public CommandWithoutExecute

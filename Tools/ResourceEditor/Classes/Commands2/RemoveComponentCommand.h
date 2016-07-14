@@ -5,8 +5,8 @@
 
 namespace DAVA
 {
-    class Entity;
-    class Component;
+class Entity;
+class Component;
 }
 
 class RemoveComponentCommand : public CommandWithoutExecute

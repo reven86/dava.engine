@@ -727,7 +727,7 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
 }
 
 template <typename T>
-bool IsCurNodesContainsEntityFromCommand(const DAVA::Command* command, const SelectableGroup &curNodes)
+bool IsCurNodesContainsEntityFromCommand(const DAVA::Command* command, const SelectableGroup& curNodes)
 {
     static_assert(std::is_base_of<DAVA::Command, T>::value, "it work only with commands, derived from DAVA::Command");
     const T* derivedCommand = static_cast<const T*>(command);

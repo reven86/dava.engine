@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-    class KeyedArchive;
+class KeyedArchive;
 }
 
 class KeyedArchiveAddValueCommand : public CommandWithoutExecute
@@ -33,7 +33,7 @@ public:
     void Redo() override;
 
     DAVA::KeyedArchive* archive = nullptr;
-    DAVA::String key; 
+    DAVA::String key;
     DAVA::VariantType val;
 };
 

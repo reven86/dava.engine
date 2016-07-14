@@ -1128,14 +1128,14 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command
     {
         UpdateModificationActionsState();
         UpdateWayEditor(command, redo);
-        
+
         std::function<bool(const DAVA::Command*)> updateCameraState;
         updateCameraState = [this, scene, &updateCameraState](const DAVA::Command* command)
         {
-            DAVA::Entity *entity = nullptr;
+            DAVA::Entity* entity = nullptr;
             if (command->GetID() == DAVA::CMDID_BATCH)
             {
-                const RECommandBatch *batch = static_cast<const RECommandBatch*>(command);
+                const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
                 for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
                 {
                     if (updateCameraState(batch->GetCommand(i)))
@@ -1146,12 +1146,12 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command
             }
             else if (command->GetID() == CMDID_COMPONENT_ADD)
             {
-                const AddComponentCommand *addCommand = static_cast<const AddComponentCommand*>(command);
+                const AddComponentCommand* addCommand = static_cast<const AddComponentCommand*>(command);
                 entity = addCommand->GetEntity();
             }
             else if (command->GetID() == CMDID_COMPONENT_REMOVE)
             {
-                const RemoveComponentCommand *removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
                 entity = removeCommand->GetEntity();
             }
             if (entity != nullptr && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)

@@ -6,9 +6,9 @@
 
 namespace DAVA
 {
-    class Entity;
-    class Texture;
-    class NMaterial;
+class Entity;
+class Texture;
+class NMaterial;
 }
 
 class MaterialRemoveTexture : public CommandWithoutExecute
