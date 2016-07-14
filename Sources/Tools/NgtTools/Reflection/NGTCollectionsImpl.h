@@ -68,6 +68,11 @@ public:
     const void* container() const override;
     int flags() const override;
 
+    DAVA::KeyedArchive* GetArchive() const
+    {
+        return archive;
+    }
+
 private:
     DAVA::KeyedArchive* archive;
     wgt::TypeId keyTypeId;

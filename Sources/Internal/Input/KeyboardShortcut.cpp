@@ -113,9 +113,9 @@ int32 KeyboardShortcut::ConvertKeyToModifier(Key key)
     case Key::LCTRL:
         return MODIFIER_CTRL;
 
-    case Key::RWIN:
-    case Key::LWIN:
-        return MODIFIER_WIN;
+    case Key::RCMD:
+    case Key::LCMD:
+        return MODIFIER_CMD;
 
     default:
         return 0;

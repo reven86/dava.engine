@@ -287,7 +287,8 @@ if( DAVA_FOUND )
                                     ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
 
         elseif( MACOS )
-        list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+            set( MACOS_PLATFORM_SRC  
+                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
@@ -298,8 +299,7 @@ if( DAVA_FOUND )
                                 ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
                         )
 
-
-
+            list( APPEND ADDED_SRC ${MACOS_PLATFORM_SRC} )
         endif()
 
     endif()
@@ -316,6 +316,8 @@ list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
+                                                IGNORE_LIST_MACOS ${UNIFIED_IGNORE_LIST_MACOS} ${MACOS_PLATFORM_SRC}
+                                                IGNORE_LIST_IOS   ${UNIFIED_IGNORE_LIST_IOS} 
                                                 CUSTOM_PACK_1     ${UNIFIED_CUSTOM_PACK_1}
                                                 CUSTOM_PACK_2     ${UNIFIED_CUSTOM_PACK_2}
                                                 CUSTOM_PACK_3     ${UNIFIED_CUSTOM_PACK_3}
@@ -379,6 +381,7 @@ else()
 
     add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
         ${PROJECT_SOURCE_FILES}
+        ${PROJECT_HEADER_FILE_ONLY}
         ${RESOURCES_LIST}
     )
 
@@ -602,13 +605,12 @@ elseif ( WIN32 )
 
 endif()
 
+list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
-
-set( DAVA_FOLDERS PARENT_SCOPE )
 
 if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
@@ -748,7 +750,10 @@ macro( DEPLOY_SCRIPT )
         endif()
 
         execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
-        execute_process( COMMAND python ${ARG_PYTHON} )
+
+        if( ARG_PYTHON)
+            execute_process( COMMAND python ${ARG_PYTHON} )
+        endif()
 
         if( ARG_COPY )
             list( APPEND COPY_LIST ${ARG_COPY} )
