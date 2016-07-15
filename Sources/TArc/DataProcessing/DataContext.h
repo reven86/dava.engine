@@ -3,6 +3,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/Type.h"
 
+#include "Functional/Function.h"
+
 #include "DataNode.h"
 
 namespace tarc
@@ -45,6 +47,10 @@ public:
 
     void Subscribe(DataContextListener& listener);
     void Unsubscribe(DataContextListener& listener);
+
+    void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
+    void UnregisterAction(int id);
+    void CallAction(int id, const DAVA::Any& args);
 
 protected:
     void SendNotifications();
