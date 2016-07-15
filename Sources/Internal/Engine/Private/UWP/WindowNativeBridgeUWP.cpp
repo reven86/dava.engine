@@ -288,7 +288,8 @@ void WindowNativeBridgeUWP::OnPointerWheelChanged(::Platform::Object ^ sender, :
     e.window = uwpWindow->GetWindow();
     e.mwheelEvent.x = pointerPoint->Position.X;
     e.mwheelEvent.y = pointerPoint->Position.Y;
-    e.mwheelEvent.delta = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
+    e.mwheelEvent.deltaX = 0.0f;
+    e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
     uwpWindow->GetDispatcher()->PostEvent(e);
 }
 

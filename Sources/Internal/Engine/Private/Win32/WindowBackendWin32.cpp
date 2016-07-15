@@ -195,7 +195,8 @@ LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x
     e.window = window;
     e.mwheelEvent.x = static_cast<float32>(x);
     e.mwheelEvent.y = static_cast<float32>(y);
-    e.mwheelEvent.delta = delta;
+    e.mwheelEvent.deltaX = 0.0f;
+    e.mwheelEvent.deltaY = static_cast<float32>(delta);
     dispatcher->PostEvent(e);
     return 0;
 }
