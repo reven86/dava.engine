@@ -8,7 +8,7 @@
 
 #include "Engine/Public/UWP/NativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/UWP/WindowBackendUWP.h"
+#include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"

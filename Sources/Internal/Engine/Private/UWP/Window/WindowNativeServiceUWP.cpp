@@ -6,7 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/Private/UWP/WindowNativeBridgeUWP.h"
+#include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
 
 namespace DAVA
 {

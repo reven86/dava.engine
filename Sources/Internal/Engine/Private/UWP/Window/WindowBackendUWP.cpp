@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/UWP/WindowBackendUWP.h"
+#include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -10,7 +10,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
-#include "Engine/Private/UWP/WindowNativeBridgeUWP.h"
+#include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
 
 namespace DAVA
 {

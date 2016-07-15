@@ -10,7 +10,7 @@
 
 #include "Engine/Public/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Win32/WindowBackendWin32.h"
+#include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"

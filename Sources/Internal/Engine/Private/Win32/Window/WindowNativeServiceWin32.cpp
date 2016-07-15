@@ -6,7 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/Private/Win32/WindowBackendWin32.h"
+#include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
 namespace DAVA
 {
