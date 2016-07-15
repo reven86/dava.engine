@@ -30,7 +30,7 @@ public:
     unsigned size;
     void* data;
     id<MTLBuffer> uid;
-    BufferAllocator::Block block;
+    MetalBufferAllocator::Block block;
     MTLIndexType type;
 };
 
@@ -66,7 +66,7 @@ _CheckAllIndexBuffers()
     }
 }
 
-static BufferAllocator _IB_Pool("IB", 2 * 1024 * 1024, 256);
+static MetalBufferAllocator _IB_Pool("IB", 2 * 1024 * 1024, 256);
 
 //==============================================================================
 
@@ -99,7 +99,7 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
     }
     else
     {
-        BufferAllocator::Block block;
+        MetalBufferAllocator::Block block;
 
         if (_IB_Pool.alloc(desc.size, &block))
         {
@@ -111,11 +111,10 @@ metal_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
             ib->block = block;
             ib->size = desc.size;
             ib->type = (desc.indexSize == INDEX_SIZE_32BIT) ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
-            ib->data = block.ptr;
             ib->uid = nil;
 
             if (desc.initialData)
-                memcpy(block.ptr, desc.initialData, desc.size);
+                block.Update(desc.initialData);
         }
     }
 
@@ -143,8 +142,7 @@ metal_IndexBuffer_Delete(Handle ib)
         {
             _IB_Pool.free(self->block);
             self->data = nullptr;
-            self->block.ptr = nullptr;
-            self->block.buffer = nil;
+            self->block.uid = nil;
             self->block.base = 0;
             //_IB_Pool.dump_stats();
         }
@@ -167,12 +165,12 @@ metal_IndexBuffer_Update(Handle ib, const void* data, unsigned offset, unsigned 
 
     if (offset + size <= self->size)
     {
-        memcpy(((uint8*)self->data) + offset, data, size);
+        if (self->uid)
+            memcpy(((uint8*)self->data) + offset, data, size);
+        else
+            self->block.Update(data);
         success = true;
     }
-
-    //DVASSERT(_NonZero( self->data, self->size ));
-    //   self->data = nullptr;
 
     return success;
 }
@@ -246,7 +244,7 @@ GetBuffer(Handle ib, unsigned* base)
     }
     else
     {
-        uid = self->block.buffer;
+        uid = self->block.uid;
         *base = self->block.base;
     }
 

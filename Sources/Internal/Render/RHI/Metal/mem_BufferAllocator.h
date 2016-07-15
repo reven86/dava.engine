@@ -7,8 +7,47 @@
 
 #define RHI_METAL__USE_BUF_PURGABLE_STATE 0
 
+/*
+struct
+BufferTraits
+{
+    BufUID; // expected to be typedef'ed to proper render-API type (id<MTLBuffer>, IDirect3DVertexBuffer*, GLuint  etc.)
+
+    static BufUID   Create( unsigned size );
+    static void     Delete( BufUID uid );
+    static void     Update( BufUID uid, unsigned offset, const void* data, unsigned data_size );
+};
+*/
+
 namespace rhi
 {
+struct
+MetalBufferTraits
+{
+    typedef id<MTLBuffer> BufUID;
+
+    static BufUID Create(unsigned size)
+    {
+        id<MTLBuffer> buf = [_Metal_Device newBufferWithLength:size options:MTLResourceOptionCPUCacheModeDefault];
+
+        [buf retain];
+        return buf;
+    }
+    static void Delete(BufUID uid)
+    {
+        [uid release];
+        [uid release];
+        uid = nil;
+    }
+    static void Update(BufUID uid, unsigned offset, const void* data, unsigned data_size)
+    {
+        uint8* buf = (uint8*)([uid contents]);
+
+        memcpy(buf + offset, data, data_size);
+    }
+};
+
+template <class T>
 class
 BufferAllocator
 {
@@ -16,9 +55,14 @@ public:
     struct
     Block
     {
-        id<MTLBuffer> buffer;
-        void* ptr;
+        typename T::BufUID uid;
         unsigned base; // offset from start in buffer
+        unsigned size;
+
+        void Update(const void* data)
+        {
+            T::Update(uid, base, data, size);
+        }
     };
 
     BufferAllocator(const char* name, unsigned page_size = 2 * 1024 * 1024, unsigned granularity = 1024);
@@ -38,7 +82,7 @@ private:
     page_t
     {
         unsigned size;
-        id<MTLBuffer> buffer;
+        typename T::BufUID bufferUid;
         SimpleRemoteHeap<8 * 1024>* heap;
     };
 
@@ -48,10 +92,15 @@ private:
     const unsigned _granularity;
 };
 
+static void* MemBase = (void*)0xF0;
+
+typedef BufferAllocator<MetalBufferTraits> MetalBufferAllocator;
+
 //------------------------------------------------------------------------------
 
+template <class T>
 inline
-BufferAllocator::BufferAllocator(const char* name, unsigned page_size, unsigned granularity)
+BufferAllocator<T>::BufferAllocator(const char* name, unsigned page_size, unsigned granularity)
     : _name(name)
     ,
     _page_sz(page_size)
@@ -63,15 +112,17 @@ BufferAllocator::BufferAllocator(const char* name, unsigned page_size, unsigned 
 
 //------------------------------------------------------------------------------
 
+template <class T>
 inline
-BufferAllocator::~BufferAllocator()
+BufferAllocator<T>::~BufferAllocator()
 {
 }
 
 //------------------------------------------------------------------------------
 
+template <class T>
 inline bool
-BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
+BufferAllocator<T>::alloc(unsigned size, BufferAllocator<T>::Block* block)
 {
     bool success = false;
     void* mem = nullptr;
@@ -82,9 +133,9 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
 
         if (mem)
         {
-            block->buffer = _page[p].buffer;
-            block->ptr = mem;
-            block->base = (uint8*)(mem) - (uint8*)([_page[p].buffer contents]);
+            block->uid = _page[p].bufferUid;
+            block->base = (uint8*)mem - (uint8*)MemBase;
+            block->size = size;
 
             success = true;
             break;
@@ -98,15 +149,10 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
         page.size = _page_sz;
         while (page.size < size)
             page.size *= 2;
-        page.buffer = [_Metal_Device newBufferWithLength:page.size options:MTLResourceOptionCPUCacheModeDefault];
-        DVASSERT(page.buffer);
-        [page.buffer retain];
-        #if RHI_METAL__USE_BUF_PURGABLE_STATE
-        [page.buffer setPurgeableState:MTLPurgeableStateNonVolatile];
-        #endif
+        page.bufferUid = T::Create(page.size);
 
         page.heap = new SimpleRemoteHeap<8 * 1024>();
-        page.heap->initialize([page.buffer contents], page.size);
+        page.heap->initialize(MemBase, page.size);
 
         _page.push_back(page);
         DAVA::Logger::Info("\"%s\" allocated page (%u in total)", _name.c_str(), _page.size());
@@ -115,9 +161,9 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
 
         if (mem)
         {
-            block->buffer = page.buffer;
-            block->ptr = mem;
-            block->base = (uint8*)(mem) - (uint8*)([page.buffer contents]);
+            block->uid = page.bufferUid;
+            block->base = (uint8*)mem - (uint8*)MemBase;
+            block->size = size;
 
             success = true;
         }
@@ -128,16 +174,17 @@ BufferAllocator::alloc(unsigned size, BufferAllocator::Block* block)
 
 //------------------------------------------------------------------------------
 
+template <class T>
 inline bool
-BufferAllocator::free(const BufferAllocator::Block& block)
+BufferAllocator<T>::free(const BufferAllocator<T>::Block& block)
 {
     bool success = false;
 
-    for (std::vector<page_t>::iterator p = _page.begin(), p_end = _page.end(); p != p_end; ++p)
+    for (typename std::vector<page_t>::iterator p = _page.begin(), p_end = _page.end(); p != p_end; ++p)
     {
-        if (block.buffer == p->buffer)
+        if (block.uid == p->bufferUid)
         {
-            p->heap->free(block.ptr);
+            p->heap->free((uint8*)MemBase + block.base);
             success = true;
 
             // de-allocate entire page, if possible
@@ -146,12 +193,7 @@ BufferAllocator::free(const BufferAllocator::Block& block)
                 p->heap->uninitialize();
                 delete p->heap;
 
-                #if RHI_METAL__USE_BUF_PURGABLE_STATE
-                [p->buffer setPurgeableState:MTLPurgeableStateEmpty];
-                #endif
-                [p->buffer release];
-                [p->buffer release];
-                p->buffer = nil;
+                T::Delete(p->bufferUid);
 
                 _page.erase(p);
                 DAVA::Logger::Info("\"%s\" de-allocated page (%u in total)", _name.c_str(), _page.size());
@@ -166,8 +208,9 @@ BufferAllocator::free(const BufferAllocator::Block& block)
 
 //------------------------------------------------------------------------------
 
+template <class T>
 inline void
-BufferAllocator::dump_stats() const
+BufferAllocator<T>::dump_stats() const
 {
     DAVA::Logger::Info("\"%s\" pages (%u)", _name.c_str(), _page.size());
     for (unsigned p = 0; p != _page.size(); ++p)

@@ -29,13 +29,13 @@ VertexBufferMetal_t
     uint32 size;
     void* data;
     id<MTLBuffer> uid;
-    BufferAllocator::Block block;
+    MetalBufferAllocator::Block block;
 };
 
 typedef ResourcePool<VertexBufferMetal_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, false> VertexBufferMetalPool;
 RHI_IMPL_POOL(VertexBufferMetal_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descriptor, false);
 
-static BufferAllocator _VB_Pool("VB", 4 * 1024 * 1024, 1024);
+static MetalBufferAllocator _VB_Pool("VB", 4 * 1024 * 1024, 1024);
 
 //==============================================================================
 
@@ -67,7 +67,7 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     }
     else
     {
-        BufferAllocator::Block block;
+        MetalBufferAllocator::Block block;
 
         if (_VB_Pool.alloc(desc.size, &block))
         {
@@ -76,11 +76,10 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 
             vb->block = block;
             vb->size = desc.size;
-            vb->data = block.ptr;
             vb->uid = nil;
 
             if (desc.initialData)
-                memcpy(block.ptr, desc.initialData, desc.size);
+                block.Update(desc.initialData);
 
             //DAVA::Logger::Info( "vb-create %i  sz= %u", RHI_HANDLE_INDEX(handle), desc.size );
             //_VB_Pool.dump_stats();
@@ -111,8 +110,7 @@ metal_VertexBuffer_Delete(Handle vb)
         {
             _VB_Pool.free(self->block);
             self->data = nullptr;
-            self->block.ptr = nullptr;
-            self->block.buffer = nil;
+            self->block.uid = nil;
             self->block.base = 0;
             //_VB_Pool.dump_stats();
         }
@@ -134,7 +132,10 @@ metal_VertexBuffer_Update(Handle vb, const void* data, uint32 offset, uint32 siz
 
     if (offset + size <= self->size)
     {
-        memcpy(((uint8*)self->data) + offset, data, size);
+        if (self->uid)
+            memcpy(((uint8*)self->data) + offset, data, size);
+        else
+            self->block.Update(data);
         success = true;
     }
 
@@ -207,7 +208,7 @@ GetBuffer(Handle ib, unsigned* base)
     }
     else
     {
-        uid = self->block.buffer;
+        uid = self->block.uid;
         *base = self->block.base;
     }
 
