@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommandLine/CommandLineManager.h"
+
 #include "NgtTools/Application/NGTApplication.h"
 #include "NGTPropertyEditor/ComponentProvider.h"
 
@@ -21,7 +23,7 @@ public:
     REApplication(int argc, char** argv);
     ~REApplication();
 
-    void Run();
+    int Run();
 
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const override;
@@ -31,8 +33,13 @@ protected:
     void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override;
 
 private:
+    void RunWindow();
+    void RunConsole();
+
+private:
     wgt::ICommandManager* commandManager = nullptr;
     std::unique_ptr<WGTCommand> wgtCommand;
     std::unique_ptr<wgt::IComponentProvider> componentProvider;
     QtMainWindow* mainWindow = nullptr;
+    std::unique_ptr<CommandLineManager> cmdLineManager;
 };

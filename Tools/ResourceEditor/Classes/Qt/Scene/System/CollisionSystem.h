@@ -73,11 +73,11 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    CollisionBaseObject* BuildFromEntity(DAVA::Entity* entity);
-    CollisionBaseObject* BuildFromObject(const Selectable& object);
-
     void DestroyFromObject(Selectable::Object* entity);
     void AddCollisionObject(Selectable::Object* obj, CollisionBaseObject* collision);
+
+    using TCallBack = DAVA::Function<void(Selectable::Object*, CollisionBaseObject*)>;
+    void EnumerateObjectHierarchy(const Selectable& object, bool createCollision, const TCallBack& callback);
 
 private:
     DAVA::Vector3 lastRayFrom;
