@@ -97,7 +97,8 @@ bool NeedRestoreResources()
 
 void Uninitialize()
 {
-    (*_Impl.impl_Uninitialize)();
+    RenderLoop::UninitializeRenderThread();
+    //(*_Impl.impl_Uninitialize)(); //now it just finishes render thread on backends - restore if some sort of platform shutdown will be required
 }
 
 void PresentImpl(Handle sync)

@@ -5,18 +5,19 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/dbg_StatSet.h"
+#include "../Common/CommonImpl.h"
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
 using DAVA::Logger;
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
-    #include "Concurrency/ConditionVariable.h"
-    #include "Concurrency/LockGuard.h"
-    #include "Concurrency/AutoResetEvent.h"
-    #include "Concurrency/ManualResetEvent.h"
-    #include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/ManualResetEvent.h"
+#include "Debug/Profiler.h"
 
 #include "_gl.h"
 
@@ -375,6 +376,30 @@ static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
 static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
 
 static void _ExecGL(GLCommand* command, uint32 cmdCount);
+
+static void ProcessImmediateCmd()
+{
+    _GLES2_PendingImmediateCmdSync.Lock();
+    if (_GLES2_PendingImmediateCmd)
+    {
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+        _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
+        _GLES2_PendingImmediateCmd = nullptr;
+        _GLES2_PendingImmediateCmdCount = 0;
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+    }
+    _GLES2_PendingImmediateCmdSync.Unlock();
+}
+static void UpdateSyncObjects(uint32 frame_n)
+{
+    _GLES2_SyncObjectsSync.Lock();
+    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
+    {
+        if (s->is_used && (frame_n - s->frame >= 2))
+            s->is_signaled = true;
+    }
+    _GLES2_SyncObjectsSync.Unlock();
+}
 
 static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
@@ -1839,19 +1864,7 @@ void CommandBufferGLES2_t::Execute()
 
         if (--immediate_cmd_ttw <= 0)
         {
-            _GLES2_PendingImmediateCmdSync.Lock();
-            if (_GLES2_PendingImmediateCmd)
-            {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-
-                _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
-                _GLES2_PendingImmediateCmd = nullptr;
-                _GLES2_PendingImmediateCmdCount = 0;
-
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-            }
-            _GLES2_PendingImmediateCmdSync.Unlock();
-
+            ProcessImmediateCmd();
             immediate_cmd_ttw = 10;
         }
         
@@ -2080,13 +2093,7 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
-    _GLES2_SyncObjectsSync.Lock();
-    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
-    {
-        if (s->is_used && (frame_n - s->frame >= 2))
-            s->is_signaled = true;
-    }
-    _GLES2_SyncObjectsSync.Unlock();
+    UpdateSyncObjects(frame_n);
 }
 
 //------------------------------------------------------------------------------
@@ -2157,8 +2164,7 @@ gles2_Present(Handle sync)
 static void
 _RenderFunc(DAVA::BaseObject* obj, void*, void*)
 {
-    DVASSERT(_GLES2_AcquireContext);
-    _GLES2_AcquireContext();
+    DispatchPlatform::AcquireContext();
 
     _GLES2_RenderThredStartedSync.Post();
     Trace("RHI render-thread started\n");
@@ -2197,22 +2203,8 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
                 if (do_exit)
                     break;
+                ProcessImmediateCmd();
 
-                _GLES2_PendingImmediateCmdSync.Lock();
-                if (_GLES2_PendingImmediateCmd)
-                {
-                    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-                    _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
-                    _GLES2_PendingImmediateCmd = nullptr;
-                    _GLES2_PendingImmediateCmdCount = 0;
-                    //Trace("exec-imm-cmd done\n");
-                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-                }
-                _GLES2_PendingImmediateCmdSync.Unlock();
-
-                //            _CmdQueueSync.Lock();
-                //            cnt = _RenderQueue.size();
-                //            _CmdQueueSync.Unlock();
                 _GLES2_FrameSync.Lock();
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
@@ -2247,8 +2239,7 @@ void InitializeRenderThreadGLES2(uint32 frameCount)
 
     if (_GLES2_RenderThreadFrameCount)
     {
-        DVASSERT(_GLES2_ReleaseContext);
-        _GLES2_ReleaseContext();
+        DispatchPlatform::ReleaseContext();
 
         _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
         _GLES2_RenderThread->SetName("RHI.gl-render");
@@ -2338,8 +2329,8 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     int err = GL_NO_ERROR;
 
 #if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
-    #define ACQUIRE_CONTEXT() _GLES2_AcquireContext()
-    #define RELEASE_CONTEXT() _GLES2_ReleaseContext()
+    #define ACQUIRE_CONTEXT() DispatchPlatform::AcquireContext()
+    #define RELEASE_CONTEXT() DispatchPlatform::ReleaseContext()
 #else
     #define ACQUIRE_CONTEXT()
     #define RELEASE_CONTEXT()
@@ -2779,6 +2770,9 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_IsSignaled = &gles2_SyncObject_IsSignaled;
 
     dispatch->impl_Present = &gles2_Present;
+
+    DispatchPlatform::ProcessImmediateCommands = &ProcessImmediateCmd;
+    DispatchPlatform::UpdateSyncObjects = &UpdateSyncObjects;
 }
 }
 

@@ -37,11 +37,9 @@ void (*InitContext)() = nullptr;
 void (*AcquireContext)() = nullptr;
 void (*ReleaseContext)() = nullptr;
 void (*CheckSurface)() = nullptr;
-
 void (*Suspend)() = nullptr;
 
 void (*ProcessImmediateCommands)() = nullptr;
-
 void (*UpdateSyncObjects)(uint32 frame_n) = nullptr; //platform as metal uses api callbacks and dx/gl on desktop can use queries in future
 
 void (*ExecuteCommandBuffer)(Handle cb) = nullptr; //should also handle command buffer sync here

@@ -1,16 +1,17 @@
 #include "rhi_GLES2.h"
 
-    #include "../rhi_Public.h"
+#include "../rhi_Public.h"
 
-    #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/dbg_StatSet.h"
+#include "../Common/rhi_Private.h"
+#include "../Common/rhi_Pool.h"
+#include "../Common/dbg_StatSet.h"
+#include "../Common/CommonImpl.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_gl.h"
+#include "_gl.h"
 
 #if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
 #define GL_RGBA32F GL_RGBA32F_ARB
@@ -30,8 +31,6 @@ GLuint _GLES2_Binded_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
 void* _GLES2_Context = nullptr;
-void (*_GLES2_AcquireContext)() = nullptr;
-void (*_GLES2_ReleaseContext)() = nullptr;
 int _GLES2_DefaultFrameBuffer_Width = 0;
 int _GLES2_DefaultFrameBuffer_Height = 0;
 GLuint _GLES2_LastSetIB = 0;
@@ -407,6 +406,20 @@ gles2_NeedRestoreResources()
     return needRestore;
 }
 
+static void gles2_CheckSurface()
+{
+#if defined __DAVAENGINE_ANDROID__
+    android_gl_checkSurface();
+#elif defined __DAVAENGINE_IPHONE__
+    ios_gl_check_layer();
+#endif
+}
+
+static void gles2_Suspend()
+{
+    GL_CALL(glFinish());
+}
+
 //------------------------------------------------------------------------------
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -542,22 +555,25 @@ void gles2_Initialize(const InitParam& param)
 #define ENABLE_DEBUG_OUTPUT 0
 #if defined(__DAVAENGINE_WIN32__)
     win32_gl_init(param);
-    _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &win32_gl_acquire_context;
-    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &win32_gl_release_context;    
+    DispatchPlatform::AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &win32_gl_acquire_context;
+    DispatchPlatform::ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &win32_gl_release_context;
     #define ENABLE_DEBUG_OUTPUT 1
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_init(param);
-    _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
-    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;    
+    DispatchPlatform::AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
+    DispatchPlatform::ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;    
 #elif defined(__DAVAENGINE_IPHONE__)
     ios_gl_init(param.window);
-    _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &ios_gl_acquire_context;
-    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &ios_gl_release_context;
+    DispatchPlatform::AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &ios_gl_acquire_context;
+    DispatchPlatform::ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &ios_gl_release_context;
 #elif defined(__DAVAENGINE_ANDROID__)
     android_gl_init(param.window);
-    _GLES2_AcquireContext = &android_gl_acquire_context;
-    _GLES2_ReleaseContext = &android_gl_release_context;                
+    DispatchPlatform::AcquireContext = &android_gl_acquire_context;
+    DispatchPlatform::ReleaseContext = &android_gl_release_context;                
 #endif
+    DispatchPlatform::InitContext = DispatchPlatform::AcquireContext;
+    DispatchPlatform::CheckSurface = &gles2_CheckSurface;
+    DispatchPlatform::Suspend = &gles2_Suspend;
 
     if (param.maxVertexBufferCount)
         VertexBufferGLES2::Init(param.maxVertexBufferCount);
