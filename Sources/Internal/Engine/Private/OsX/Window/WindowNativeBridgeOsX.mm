@@ -208,17 +208,22 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     e.type = MainDispatcherEvent::MOUSE_WHEEL;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = theEvent.locationInWindow;
+    e.mwheelEvent.x = pt.x;
+    e.mwheelEvent.y = sz.height - pt.y;
+
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
         // touchpad or other precise device sends integer values (-3, -1, 0, 1, 40, etc)
-        e.mwheelEvent.x = deltaX / scrollK;
-        e.mwheelEvent.y = deltaY / scrollK;
+        e.mwheelEvent.deltaX = deltaX / scrollK;
+        e.mwheelEvent.deltaY = deltaY / scrollK;
     }
     else
     {
         // mouse sends float values from 0.1 for one wheel tick
-        e.mwheelEvent.x = deltaX * scrollK;
-        e.mwheelEvent.y = deltaY * scrollK;
+        e.mwheelEvent.deltaX = deltaX * scrollK;
+        e.mwheelEvent.deltaY = deltaY * scrollK;
     }
 
     windowBackend->GetDispatcher()->PostEvent(e);

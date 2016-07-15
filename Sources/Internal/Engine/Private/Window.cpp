@@ -350,14 +350,12 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
-    Logger::Debug("****** MOUSE_WHEEL: this=%p, x=%.1f, y=%.1f, delta=%d", this, e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
-
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { 0.0f, static_cast<float32>(e.mwheelEvent.delta) };
+    uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
 
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))

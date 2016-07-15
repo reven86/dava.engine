@@ -74,7 +74,8 @@ struct MainDispatcherEvent final
     {
         float32 x;
         float32 y;
-        int32 delta;
+        float32 deltaX;
+        float32 deltaY;
     };
 
     struct MouseMoveEvent
