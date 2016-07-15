@@ -194,7 +194,7 @@ WebViewControl::WebViewControl(UIWebView& uiWeb)
 {
 #if defined(__DAVAENGINE_COREV2__)
     WindowNativeService* nativeService = window->GetNativeService();
-    bridge->nativeWebView = static_cast<::UIWebView*>(nativeService->CreateNativeControl("UIWebView"));
+    bridge->nativeWebView = static_cast<::UIWebView*>(nativeService->GetUIViewFromPool("UIWebView"));
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
@@ -364,7 +364,7 @@ WebViewControl::~WebViewControl()
 
 #if defined(__DAVAENGINE_COREV2__)
     WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReleaseNativeControl(innerWebView);
+    nativeService->ReturnUIViewToPool(innerWebView);
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;

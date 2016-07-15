@@ -42,7 +42,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     DVASSERT(isSingleLine);
 
     WindowNativeService* nativeService = window->GetNativeService();
-    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->CreateNativeControl("UITextFieldHolder"));
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->GetUIViewFromPool("UITextFieldHolder"));
     [bridge->textFieldHolder attachWindow:window];
 
     DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
@@ -77,7 +77,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
     }
 
     WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReleaseNativeControl(textFieldHolder);
+    nativeService->ReturnUIViewToPool(textFieldHolder);
 }
 #else // defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)

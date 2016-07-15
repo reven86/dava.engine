@@ -73,7 +73,17 @@ void WindowNativeBridge::ApplicationDidEnterForegroundOrBackground(bool foregrou
     windowBackend->GetWindow()->PostVisibilityChanged(foreground);
 }
 
-UIView* WindowNativeBridge::CreateNativeControl(const char8* className)
+void WindowNativeBridge::AddUIView(UIView* uiview)
+{
+    [renderView addSubview:uiview];
+}
+
+void WindowNativeBridge::RemoveUIView(UIView* uiview)
+{
+    [uiview removeFromSuperview];
+}
+
+UIView* WindowNativeBridge::GetUIViewFromPool(const char8* className)
 {
     UIView* view = [nativeViewPool queryView:[NSString stringWithUTF8String:className]];
     [renderView addSubview:view];
@@ -81,7 +91,7 @@ UIView* WindowNativeBridge::CreateNativeControl(const char8* className)
     return view;
 }
 
-void WindowNativeBridge::ReleaseNativeControl(UIView* view)
+void WindowNativeBridge::ReturnUIViewToPool(UIView* view)
 {
     [view setHidden:YES];
     [view removeFromSuperview];

@@ -19,8 +19,11 @@ class Image;
 class WindowNativeService final
 {
 public:
-    UIView* CreateNativeControl(const char8* className);
-    void ReleaseNativeControl(UIView* view);
+    void AddUIView(UIView* uiview);
+    void RemoveUIView(UIView* uiview);
+
+    UIView* GetUIViewFromPool(const char8* className);
+    void ReturnUIViewToPool(UIView* view);
 
     static UIImage* RenderUIViewToUIImage(UIView* view);
     static Image* ConvertUIImageToImage(UIImage* nativeImage);

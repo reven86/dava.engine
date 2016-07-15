@@ -22,14 +22,24 @@ WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBrid
 {
 }
 
-UIView* WindowNativeService::CreateNativeControl(const char8* className)
+void WindowNativeService::AddUIView(UIView* uiview)
 {
-    return bridge->CreateNativeControl(className);
+    bridge->AddUIView(uiview);
 }
 
-void WindowNativeService::ReleaseNativeControl(UIView* view)
+void WindowNativeService::RemoveUIView(UIView* uiview)
 {
-    bridge->ReleaseNativeControl(view);
+    bridge->RemoveUIView(uiview);
+}
+
+UIView* WindowNativeService::GetUIViewFromPool(const char8* className)
+{
+    return bridge->GetUIViewFromPool(className);
+}
+
+void WindowNativeService::ReturnUIViewToPool(UIView* view)
+{
+    bridge->ReturnUIViewToPool(view);
 }
 
 UIImage* WindowNativeService::RenderUIViewToUIImage(UIView* view)

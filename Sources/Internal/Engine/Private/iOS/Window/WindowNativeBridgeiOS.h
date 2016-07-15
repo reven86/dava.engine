@@ -41,8 +41,11 @@ struct WindowNativeBridge final
     void ApplicationDidBecomeOrResignActive(bool becomeActive);
     void ApplicationDidEnterForegroundOrBackground(bool foreground);
 
-    UIView* CreateNativeControl(const char8* className);
-    void ReleaseNativeControl(UIView* view);
+    void AddUIView(UIView* uiview);
+    void RemoveUIView(UIView* uiview);
+
+    UIView* GetUIViewFromPool(const char8* className);
+    void ReturnUIViewToPool(UIView* view);
 
     //////////////////////////////////////////////////////////////////////////
 

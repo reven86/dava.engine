@@ -1,10 +1,12 @@
-#if !defined(__DAVAENGINE_COREV2__)
+#pragma once
 
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
+#include "Base/BaseTypes.h"
 
-#include "DAVAEngine.h"
+#if defined(__DAVAENGINE_IPHONE__)
+
 #include "UI/IMovieViewControl.h"
+
+#include "Engine/EngineFwd.h"
 
 namespace DAVA
 {
@@ -36,15 +38,14 @@ public:
     // Whether the movie is being played?
     bool IsPlaying() const override;
 
-protected:
-    // Convert the DAVA Scaling Mode to platform-specific (iOS) one.
-    int ConvertScalingModeToPlatform(eMovieScalingMode scalingMode);
-
 private:
-    // Pointer to iOS movie player.
-    void* moviePlayerController;
+    struct MovieViewObjcBridge;
+    std::unique_ptr<MovieViewObjcBridge> bridge;
+    
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
 };
-};
+} // namespace DAVA
 
-#endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__) */
-#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_IPHONE__
