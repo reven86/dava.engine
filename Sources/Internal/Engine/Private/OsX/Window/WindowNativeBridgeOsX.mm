@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -11,9 +11,9 @@
 
 #include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "Engine/Private/OsX/WindowBackendOsX.h"
-#include "Engine/Private/OsX/OpenGLViewOsX.h"
-#include "Engine/Private/OsX/OsXWindowDelegate.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/OpenGLViewOsX.h"
+#include "Engine/Private/OsX/Window/OsXWindowDelegate.h"
 
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"

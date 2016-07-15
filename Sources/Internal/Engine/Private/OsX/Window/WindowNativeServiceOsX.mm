@@ -8,10 +8,10 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/WindowBackendOsX.h"
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
-#import "Engine/Private/OsX/OpenGLViewOsX.h"
+#import "Engine/Private/OsX/Window/OpenGLViewOsX.h"
 
 namespace DAVA
 {

@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -12,7 +12,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"

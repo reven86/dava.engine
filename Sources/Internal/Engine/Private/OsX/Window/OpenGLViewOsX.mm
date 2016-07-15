@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/OpenGLViewOsX.h"
+#include "Engine/Private/OsX/Window/OpenGLViewOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -9,7 +9,7 @@
 #import <AppKit/NSOpenGL.h>
 #import <OpenGL/OpenGL.h>
 
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
 #include "Logger/Logger.h"
 

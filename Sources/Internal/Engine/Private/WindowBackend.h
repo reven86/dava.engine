@@ -9,7 +9,7 @@
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "Engine/Private/UWP/WindowBackendUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #else

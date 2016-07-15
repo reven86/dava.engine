@@ -10,7 +10,7 @@
 
 #include "Engine/Public/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
 namespace DAVA

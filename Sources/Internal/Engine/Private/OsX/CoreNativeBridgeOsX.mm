@@ -8,7 +8,7 @@
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Engine/Private/OsX/OsXAppDelegate.h"
