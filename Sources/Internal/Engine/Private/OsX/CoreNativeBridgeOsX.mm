@@ -21,6 +21,8 @@
 @interface FrameTimer : NSObject
 {
     DAVA::Private::CoreNativeBridge* bridge;
+    double curInterval;
+
     NSTimer* timer;
 }
 
@@ -39,24 +41,31 @@
     if (self != nil)
     {
         bridge = nativeBridge;
+        curInterval = -1.0;
     }
     return self;
 }
 
 - (void)set:(double)interval
 {
-    [self cancel];
-    timer = [NSTimer scheduledTimerWithTimeInterval:interval
-                                             target:self
-                                           selector:@selector(timerFired:)
-                                           userInfo:nil
-                                            repeats:NO];
+    const double delta = 0.000001;
+    if (std::abs(interval - curInterval) > delta)
+    {
+        [self cancel];
+        timer = [NSTimer scheduledTimerWithTimeInterval:interval
+                                                 target:self
+                                               selector:@selector(timerFired:)
+                                               userInfo:nil
+                                                repeats:YES];
+        curInterval = interval;
+    }
 }
 
 - (void)cancel
 {
     [timer invalidate];
-    //[timer release];  // ?????
+    [timer release];
+    timer = nullptr;
 }
 
 - (void)timerFired:(NSTimer*)timer
@@ -84,12 +93,18 @@ CoreNativeBridge::~CoreNativeBridge()
     [frameTimer release];
 }
 
-void CoreNativeBridge::InitNSApplication()
+void CoreNativeBridge::Run()
 {
-    [NSApplication sharedApplication];
+    @autoreleasepool
+    {
+        [NSApplication sharedApplication];
 
-    appDelegate = [[AppDelegate alloc] initWithBridge:this];
-    [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+        appDelegate = [[AppDelegate alloc] initWithBridge:this];
+        [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+
+        // NSApplicationMain never returns
+        ::NSApplicationMain(0, nullptr);
+    }
 }
 
 void CoreNativeBridge::Quit()
@@ -110,8 +125,11 @@ void CoreNativeBridge::OnFrameTimer()
         fps = std::numeric_limits<int32>::max();
     }
 
-    double interval = 1.0 / fps;
-    [frameTimer set:interval];
+    if (curFps != fps)
+    {
+        double interval = 1.0 / fps;
+        [frameTimer set:interval];
+    }
 }
 
 void CoreNativeBridge::ApplicationWillFinishLaunching()

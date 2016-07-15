@@ -29,7 +29,7 @@ struct CoreNativeBridge final
     CoreNativeBridge(PlatformCore* c);
     ~CoreNativeBridge();
 
-    void InitNSApplication();
+    void Run();
     void Quit();
     void OnFrameTimer();
 
@@ -51,6 +51,7 @@ struct CoreNativeBridge final
     FrameTimer* frameTimer = nullptr;
 
     bool quitSent = false;
+    int32 curFps = 0;
 };
 
 } // namespace Private

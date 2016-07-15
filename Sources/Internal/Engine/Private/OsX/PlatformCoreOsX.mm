@@ -32,8 +32,7 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    bridge->InitNSApplication();
-    NSApplicationMain(0, nullptr);
+    bridge->Run();
 }
 
 void PlatformCore::Quit()
