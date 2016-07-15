@@ -37,6 +37,11 @@ private:
     Array<float32, MAX_LOD_LAYERS> distances = Array<float32, MAX_LOD_LAYERS>{ 300.f, 600.f, 900.f, 1000.f }; //cause list initialization for members not implemented in MSVC https://msdn.microsoft.com/en-us/library/dn793970.aspx
 
     friend class LodSystem;
+
+public:
+    INTROSPECTION_EXTEND(LodComponent, Component,
+                         MEMBER(currentLod, "Current Lod", I_VIEW)
+                         )
 };
 
 REGISTER_CLASS(LodComponent);
