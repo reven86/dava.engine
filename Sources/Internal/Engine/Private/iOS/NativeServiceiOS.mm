@@ -2,9 +2,7 @@
 
 #include "Engine/Public/iOS/NativeServiceiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 

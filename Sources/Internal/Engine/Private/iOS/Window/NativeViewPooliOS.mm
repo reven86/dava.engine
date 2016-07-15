@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/Window/NativeViewPooliOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Debug/DVAssert.h"
 
@@ -16,7 +14,7 @@
 - (id)init
 {
     self = [super init];
-    if (self != nullptr)
+    if (self != nil)
     {
         pool.reserve(10);
     }

@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Public/iOS/WindowNativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
@@ -88,6 +86,9 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
+    // iOS windows cannot be closed and are always stretched to screen size
+    // case UIDispatcherEvent::CLOSE_WINDOW:
+    // case UIDispatcherEvent::RESIZE_WINDOW:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;

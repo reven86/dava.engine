@@ -653,8 +653,6 @@ DownloadError CurlDownloader::DownloadIntoBuffer(const String& url,
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize = fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount * fileChunkSize);
 
-    uint32 chunksInList = 0;
-
     void* writeTo = buffer;
     uint32 nwritten = 0;
 

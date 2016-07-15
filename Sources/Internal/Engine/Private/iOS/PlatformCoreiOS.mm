@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Public/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
@@ -23,10 +21,7 @@ PlatformCore::PlatformCore(EngineBackend* e)
 {
 }
 
-PlatformCore::~PlatformCore()
-{
-    delete bridge;
-}
+PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {

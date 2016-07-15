@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
@@ -76,9 +74,10 @@ namespace DAVA
 {
 namespace Private
 {
-// UIApplicationMain instantiates UIApplicationDelegate-derived class, user cannot
-// create UIApplicationDelegate-derived class, pass init parameters and set it to UIApplication
-// AppDelegateiOS will receive pointer to CoreNativeBridge instance through nativeBridgeiOS
+// UIApplicationMain instantiates UIApplicationDelegate-derived class and user cannot
+// create UIApplicationDelegate-derived class, pass init parameters and set it to UIApplication.
+// AppDelegate will receive pointer to CoreNativeBridge instance through nativeBridge global
+// variable
 CoreNativeBridge* coreNativeBridge = nullptr;
 
 CoreNativeBridge::CoreNativeBridge(PlatformCore* c)
@@ -91,7 +90,11 @@ CoreNativeBridge::~CoreNativeBridge() = default;
 
 void CoreNativeBridge::Run()
 {
-    ::UIApplicationMain(0, nil, nil, @"AppDelegateiOS");
+    @autoreleasepool
+    {
+        // UIApplicationMain never returns
+        ::UIApplicationMain(0, nil, nil, @"AppDelegate");
+    }
 }
 
 void CoreNativeBridge::OnFrameTimer()
@@ -106,13 +109,13 @@ void CoreNativeBridge::OnFrameTimer()
     [frameTimer set:interval];
 }
 
-bool CoreNativeBridge::applicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
     Logger::Debug("******** applicationWillFinishLaunchingWithOptions");
     return true;
 }
 
-bool CoreNativeBridge::applicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
+bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
     Logger::Debug("******** applicationDidFinishLaunchingWithOptions");
 
@@ -124,21 +127,21 @@ bool CoreNativeBridge::applicationDidFinishLaunchingWithOptions(NSDictionary* la
     return true;
 }
 
-void CoreNativeBridge::applicationDidBecomeActive()
+void CoreNativeBridge::ApplicationDidBecomeActive()
 {
     Logger::Debug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
 }
 
-void CoreNativeBridge::applicationWillResignActive()
+void CoreNativeBridge::ApplicationWillResignActive()
 {
     Logger::Debug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
 }
 
-void CoreNativeBridge::applicationDidEnterBackground()
+void CoreNativeBridge::ApplicationDidEnterBackground()
 {
     core->didEnterForegroundBackground.Emit(false);
 
@@ -147,7 +150,7 @@ void CoreNativeBridge::applicationDidEnterBackground()
     core->dispatcher->SendEvent(e); // Blocking call !!!
 }
 
-void CoreNativeBridge::applicationWillEnterForeground()
+void CoreNativeBridge::ApplicationWillEnterForeground()
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::APP_RESUMED;
@@ -156,7 +159,7 @@ void CoreNativeBridge::applicationWillEnterForeground()
     core->didEnterForegroundBackground.Emit(true);
 }
 
-void CoreNativeBridge::applicationWillTerminate()
+void CoreNativeBridge::ApplicationWillTerminate()
 {
     Logger::Debug("******** applicationWillTerminate");
 
@@ -166,7 +169,7 @@ void CoreNativeBridge::applicationWillTerminate()
     core->engineBackend->OnBeforeTerminate();
 }
 
-void CoreNativeBridge::applicationDidReceiveMemoryWarning()
+void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
 {
     Logger::Debug("******** applicationDidReceiveMemoryWarning");
 }

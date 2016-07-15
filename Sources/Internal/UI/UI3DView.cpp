@@ -15,10 +15,10 @@ namespace DAVA
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)
+    , registeredInUIControlSystem(false)
     , drawToFrameBuffer(false)
     , fbScaleFactor(1.f)
     , fbRenderSize()
-    , registeredInUIControlSystem(false)
 {
 }
 

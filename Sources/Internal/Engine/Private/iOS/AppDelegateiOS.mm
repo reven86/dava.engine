@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/AppDelegateiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 
@@ -16,47 +14,47 @@ extern CoreNativeBridge* coreNativeBridge;
 }
 }
 
-@implementation AppDelegateiOS
+@implementation AppDelegate
 
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     bridge = DAVA::Private::coreNativeBridge;
-    return bridge->applicationWillFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationWillFinishLaunchingWithOptions(launchOptions) ? YES : NO;
 }
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    return bridge->applicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    bridge->applicationDidBecomeActive();
+    bridge->ApplicationDidBecomeActive();
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {
-    bridge->applicationWillResignActive();
+    bridge->ApplicationWillResignActive();
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
-    bridge->applicationDidEnterBackground();
+    bridge->ApplicationDidEnterBackground();
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    bridge->applicationWillEnterForeground();
+    bridge->ApplicationWillEnterForeground();
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application
 {
-    bridge->applicationWillTerminate();
+    bridge->ApplicationWillTerminate();
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
 {
-    bridge->applicationDidReceiveMemoryWarning();
+    bridge->ApplicationDidReceiveMemoryWarning();
 }
 
 @end

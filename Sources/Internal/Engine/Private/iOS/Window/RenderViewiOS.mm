@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/Window/RenderViewiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
@@ -33,17 +31,17 @@
 
 - (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    bridge->touchesBegan(touches);
+    bridge->TouchesBegan(touches);
 }
 
 - (void)touchesMoved:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    bridge->touchesMoved(touches);
+    bridge->TouchesMoved(touches);
 }
 
 - (void)touchesEnded:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    bridge->touchesEnded(touches);
+    bridge->TouchesEnded(touches);
 }
 
 - (void)touchesCancelled:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event

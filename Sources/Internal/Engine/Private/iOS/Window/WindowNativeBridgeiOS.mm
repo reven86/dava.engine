@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -98,18 +96,18 @@ void WindowNativeBridge::ReturnUIViewToPool(UIView* view)
     [nativeViewPool returnView:view];
 }
 
-void WindowNativeBridge::loadView()
+void WindowNativeBridge::LoadView()
 {
     [renderViewController setView:renderView];
 }
 
-void WindowNativeBridge::viewWillTransitionToSize(float32 w, float32 h)
+void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[UIScreen mainScreen] scale];
     windowBackend->GetWindow()->PostSizeChanged(w, h, scale, scale);
 }
 
-void WindowNativeBridge::touchesBegan(NSSet* touches)
+void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_DOWN;
@@ -127,7 +125,7 @@ void WindowNativeBridge::touchesBegan(NSSet* touches)
     }
 }
 
-void WindowNativeBridge::touchesMoved(NSSet* touches)
+void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_MOVE;
@@ -145,7 +143,7 @@ void WindowNativeBridge::touchesMoved(NSSet* touches)
     }
 }
 
-void WindowNativeBridge::touchesEnded(NSSet* touches)
+void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::TOUCH_UP;
@@ -167,29 +165,18 @@ UIImage* RenderUIViewToImage(UIView* view)
 {
     DVASSERT(view != nullptr);
 
+    UIImage* image = nil;
     size_t w = view.frame.size.width;
     size_t h = view.frame.size.height;
-
-    if (w == 0 || h == 0)
+    if (w > 0 && h > 0)
     {
-        return nullptr; // empty rect on start, just skip it
+        UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
+        // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
+        [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+
+        image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
     }
-
-    // Workaround! render text view directly without scrolling
-    if ([ ::UITextView class] == [view class])
-    {
-        ::UITextView* textView = (::UITextView*)view;
-        view = textView.textInputView;
-    }
-
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
-    // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
-    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
-
-    UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    DVASSERT(image);
     return image;
 }
 

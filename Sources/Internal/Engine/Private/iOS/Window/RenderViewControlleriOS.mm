@@ -2,9 +2,7 @@
 
 #include "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
@@ -22,12 +20,12 @@
 
 - (void)loadView
 {
-    bridge->loadView();
+    bridge->LoadView();
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-    bridge->viewWillTransitionToSize(size.width, size.height);
+    bridge->ViewWillTransitionToSize(size.width, size.height);
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 

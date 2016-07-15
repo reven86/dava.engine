@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Functional/Signal.h"
 
@@ -28,19 +26,24 @@ public:
     void Run();
     void Quit();
 
+    // Signals for distribution UIApplicationDelegate's notifications:
+    //  - applicationDidBecomeActive/applicationWillResignActive
+    //  - applicationWillEnterForeground/applicationDidEnterBackground
+    // WindowBackends usually connect to these signals to manage its focus
+    // and visibility states
     Signal<bool> didBecomeResignActive;
     Signal<bool> didEnterForegroundBackground;
 
 private:
-    int OnFrame();
+    int32 OnFrame();
 
     WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
 
 private:
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
-    // TODO: std::unique_ptr
-    CoreNativeBridge* bridge = nullptr;
+
+    std::unique_ptr<CoreNativeBridge> bridge;
     std::unique_ptr<NativeService> nativeService;
 
     // Friends

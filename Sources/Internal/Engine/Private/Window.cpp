@@ -330,7 +330,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     // NOTE: Taken from CoreWin32Platform::OnMouseClick
 
-    bool isAnyButtonDownBefore = mouseButtonState.any();
+    //bool isAnyButtonDownBefore = mouseButtonState.any();
     bool isButtonDown = uie.phase == UIEvent::Phase::BEGAN;
     uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
     mouseButtonState[buttonIndex] = isButtonDown;

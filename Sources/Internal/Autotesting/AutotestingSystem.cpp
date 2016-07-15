@@ -17,7 +17,8 @@
 namespace DAVA
 {
 AutotestingSystem::AutotestingSystem()
-    : startTimeMS(0)
+    : luaSystem(nullptr)
+    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -52,7 +53,6 @@ AutotestingSystem::AutotestingSystem()
     , multiplayerName("")
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
-    , luaSystem(nullptr)
 {
     new AutotestingDB();
 }

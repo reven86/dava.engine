@@ -19,10 +19,8 @@ namespace Private
 
 int EngineStart(const Vector<String>& cmdargs)
 {
-    // TODO: unique_ptr
-    EngineBackend* engineBackend = new EngineBackend(cmdargs);
+    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
     int returnCode = GameMain(cmdargs);
-    delete engineBackend;
     return returnCode;
 }
 

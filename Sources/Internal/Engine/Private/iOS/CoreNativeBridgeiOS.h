@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -31,14 +29,14 @@ struct CoreNativeBridge final
     void OnFrameTimer();
 
     // Callbacks from AppDelegateiOS
-    bool applicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions);
-    bool applicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions);
-    void applicationDidBecomeActive();
-    void applicationWillResignActive();
-    void applicationDidEnterBackground();
-    void applicationWillEnterForeground();
-    void applicationWillTerminate();
-    void applicationDidReceiveMemoryWarning();
+    bool ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions);
+    bool ApplicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions);
+    void ApplicationDidBecomeActive();
+    void ApplicationWillResignActive();
+    void ApplicationDidEnterBackground();
+    void ApplicationWillEnterForeground();
+    void ApplicationWillTerminate();
+    void ApplicationDidReceiveMemoryWarning();
 
     PlatformCore* core = nullptr;
     FrameTimer* frameTimer = nullptr;

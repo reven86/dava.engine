@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -27,7 +25,13 @@ namespace Private
 //  - holds neccesary Objective-C objects
 //  - posts events to dispatcher
 //
-// WindowNativeBridgeiOS is friend of iOS's WindowBackend
+// iOS window unions several Objective-C classes (UIView subclass,
+// UIViewController subclass, etc) and each of these classes
+// receive some kind of system notfications or events. WindowNativeBridge
+// combines all window-related logic and processes events from Objective-C classes.
+// Objective-C classes only forward its notifications to WindowNativeBridge.
+//
+// WindowNativeBridge is friend of iOS's WindowBackend
 struct WindowNativeBridge final
 {
     WindowNativeBridge(WindowBackend* wbackend);
@@ -48,22 +52,21 @@ struct WindowNativeBridge final
     void ReturnUIViewToPool(UIView* view);
 
     //////////////////////////////////////////////////////////////////////////
-
-    void loadView();
-    void viewWillTransitionToSize(float32 w, float32 h);
+    // Notifications from RenderViewController
+    void LoadView();
+    void ViewWillTransitionToSize(float32 w, float32 h);
 
     //////////////////////////////////////////////////////////////////////////
-
-    void touchesBegan(NSSet* touches);
-    void touchesMoved(NSSet* touches);
-    void touchesEnded(NSSet* touches);
+    // Notifications from RenderView
+    void TouchesBegan(NSSet* touches);
+    void TouchesMoved(NSSet* touches);
+    void TouchesEnded(NSSet* touches);
 
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
 
     UIWindow* uiwindow = nullptr;
-    UIView* x = nullptr;
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;

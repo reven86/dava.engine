@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
