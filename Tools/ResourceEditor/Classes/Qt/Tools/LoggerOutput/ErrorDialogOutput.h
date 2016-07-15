@@ -3,14 +3,25 @@
 #include "Concurrency/Mutex.h"
 #include "Logger/Logger.h"
 
-class LazyUpdater;
-class ErrorDialogOutput final : public DAVA::LoggerOutput
+#include <QObject>
+
+class ErrorDialogOutput final : public QObject, public DAVA::LoggerOutput
 {
+    Q_OBJECT
+
 public:
     ErrorDialogOutput();
     ~ErrorDialogOutput() override;
 
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+
+
+private slots:
+    void OnError();
+    
+signals:
+
+    void FireError();
 
 private:
     void ShowErrorDialog();
@@ -18,5 +29,5 @@ private:
     DAVA::UnorderedSet<DAVA::String> errors;
     DAVA::Mutex errorsLocker;
 
-    LazyUpdater* dialogUpdater = nullptr;
+    DAVA::uint32 firedErrorsCount = 0;
 };
