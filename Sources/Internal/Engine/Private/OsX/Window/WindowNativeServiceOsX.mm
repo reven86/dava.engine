@@ -11,7 +11,7 @@
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
-#import "Engine/Private/OsX/Window/OpenGLViewOsX.h"
+#import "Engine/Private/OsX/Window/RenderViewOsX.h"
 
 namespace DAVA
 {

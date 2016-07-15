@@ -11,7 +11,7 @@
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
-#include "Engine/Private/OsX/OsXAppDelegate.h"
+#include "Engine/Private/OsX/AppDelegateOsX.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"

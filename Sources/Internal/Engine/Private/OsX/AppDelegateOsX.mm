@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/OsXAppDelegate.h"
+#include "Engine/Private/OsX/AppDelegateOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines

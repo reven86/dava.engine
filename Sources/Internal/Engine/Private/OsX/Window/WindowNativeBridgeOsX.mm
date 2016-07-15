@@ -12,8 +12,8 @@
 #include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
-#include "Engine/Private/OsX/Window/OpenGLViewOsX.h"
-#include "Engine/Private/OsX/Window/OsXWindowDelegate.h"
+#include "Engine/Private/OsX/Window/RenderViewOsX.h"
+#include "Engine/Private/OsX/Window/WindowDelegateOsX.h"
 
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"

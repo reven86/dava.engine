@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/Window/OpenGLViewOsX.h"
+#include "Engine/Private/OsX/Window/RenderViewOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
