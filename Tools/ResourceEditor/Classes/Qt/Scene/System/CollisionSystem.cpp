@@ -135,7 +135,7 @@ const SelectableGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(cons
         {
             auto entity = collisionToObject[hit.first];
             rayIntersectedEntities.emplace_back(entity);
-            AABBox3 bbox = GetBoundingBox(entity);
+            DAVA::AABBox3 bbox = GetBoundingBox(entity);
             if (!bbox.IsEmpty())
             {
                 rayIntersectedEntities.back().SetBoundingBox(bbox);
