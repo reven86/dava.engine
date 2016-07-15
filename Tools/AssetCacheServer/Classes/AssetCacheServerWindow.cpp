@@ -22,6 +22,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+#include <QLabel>
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <QSettings>
@@ -48,16 +49,17 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelection);
-    connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cacheFolderLineEdit, &QLineEdit::clear);
-
+    connect(ui->systemStartupCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnSystemStartupChanged(int)));
     connect(ui->cacheSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnCacheSizeChanged(double)));
+    connect(ui->clearButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnClearButtonClicked);
+
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnAutoStartChanged(int)));
-    connect(ui->systemStartupCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnSystemStartupChanged(int)));
+    connect(ui->advancedLabel, &QLabel::linkActivated, this, &AssetCacheServerWindow::OnAdvancedLinkActivated);
 
-    connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnRemoteServerAdded);
+    connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnAddServerClicked);
 
     connect(ui->applyButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnApplyButtonClicked);
     connect(ui->closeButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnCloseButtonClicked);
@@ -66,14 +68,22 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     ui->scrollAreaWidgetContents->setLayout(serversBoxLayout);
     ui->scrollAreaWidgetContents->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
-    CreateTrayIcon();
+    ShowAdvancedSettings(showAdvanced);
+    CreateTrayMenu();
 
     ChangeSettingsState(NOT_EDITED);
 
     connect(&serverCore, &ServerCore::ServerStateChanged, this, &AssetCacheServerWindow::OnServerStateChanged);
+    connect(&serverCore, &ServerCore::StorageSpaceAltered, this, &AssetCacheServerWindow::UpdateUsageProgressbar);
+
     LoadSettings();
     SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
+
     OnServerStateChanged(&serverCore);
+
+    DAVA::uint64 occupied, overall;
+    serverCore.GetStorageSpaceUsage(occupied, overall);
+    UpdateUsageProgressbar(occupied, overall);
 }
 
 AssetCacheServerWindow::~AssetCacheServerWindow()
@@ -85,7 +95,7 @@ AssetCacheServerWindow::~AssetCacheServerWindow()
     delete ui;
 }
 
-void AssetCacheServerWindow::CreateTrayIcon()
+void AssetCacheServerWindow::CreateTrayMenu()
 {
     startAction = new QAction("Start server", this);
     connect(startAction, &QAction::triggered, this, &AssetCacheServerWindow::OnStartAction);
@@ -238,9 +248,6 @@ void AssetCacheServerWindow::OnFolderSelection()
 
 void AssetCacheServerWindow::OnFolderTextChanged()
 {
-    bool isEmpty = ui->cacheFolderLineEdit->text().isEmpty();
-
-    ui->clearDirectoryButton->setEnabled(!isEmpty);
     ui->cacheFolderLineEdit->setFocus();
     VerifyData();
 }
@@ -275,7 +282,29 @@ void AssetCacheServerWindow::OnSystemStartupChanged(int val)
     VerifyData();
 }
 
-void AssetCacheServerWindow::OnRemoteServerAdded()
+void AssetCacheServerWindow::OnAdvancedLinkActivated(const QString& link)
+{
+    ShowAdvancedSettings(!showAdvanced);
+}
+
+void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
+{
+    ui->emptyLabel->setVisible(show);
+    ui->numberOfFilesLabel->setVisible(show);
+    ui->numberOfFilesSpinBox->setVisible(show);
+    ui->autoSaveLabel->setVisible(show);
+    ui->autoSaveTimeoutSpinBox->setVisible(show);
+    ui->portLabel->setVisible(show);
+    ui->portSpinBox->setVisible(show);
+    ui->autoStartLabel->setVisible(show);
+    ui->autoStartCheckBox->setVisible(show);
+    ui->advancedLabel->setText(
+    QString("<html><head/><body><p><a href=\"adv\"><span style=\" text - decoration: underline; color:#0000ff; \">%1 advanced settings</span></a></p></body></html>")
+    .arg(show ? "Hide" : "Show"));
+    showAdvanced = show;
+}
+
+void AssetCacheServerWindow::OnAddServerClicked()
 {
     AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
     VerifyData();
@@ -367,6 +396,11 @@ void AssetCacheServerWindow::VerifyData()
     ChangeSettingsState(newState);
 }
 
+void AssetCacheServerWindow::OnClearButtonClicked()
+{
+    serverCore.ClearStorage();
+}
+
 void AssetCacheServerWindow::OnApplyButtonClicked()
 {
     bool toLaunchOnStartup = ui->systemStartupCheckBox->isChecked();
@@ -451,6 +485,7 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
             break;
         }
         case ServerCore::RemoteState::CONNECTING:
+        case ServerCore::RemoteState::VERIFYING:
         case ServerCore::RemoteState::WAITING_REATTEMPT:
         {
             trayIcon->setIcon(*greenRedTrayIcon);
@@ -479,4 +514,13 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
         break;
     }
     }
+}
+
+void AssetCacheServerWindow::UpdateUsageProgressbar(DAVA::uint64 occupied, DAVA::uint64 overall)
+{
+    float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
+    int val = p * static_cast<DAVA::float64>(occupied);
+    float64 v = p * static_cast<DAVA::float64>(occupied);
+    ui->occupiedSizeBar->setRange(0, 100);
+    ui->occupiedSizeBar->setValue(val);
 }

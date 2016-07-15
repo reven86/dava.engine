@@ -28,7 +28,7 @@ public:
     ~AssetCacheServerWindow() override;
     void OnFirstLaunch();
 
-protected:
+private:
     void closeEvent(QCloseEvent* e) override;
 
     void LoadSettings();
@@ -49,22 +49,27 @@ private slots:
     void OnPortChanged(int);
     void OnAutoStartChanged(int);
     void OnSystemStartupChanged(int);
+    void OnAdvancedLinkActivated(const QString&);
 
-    void OnRemoteServerAdded();
+    void OnAddServerClicked();
     void OnRemoteServerRemoved();
     void OnRemoteServerEdited();
     void OnRemoteServerChecked(bool);
 
+    void OnClearButtonClicked();
     void OnApplyButtonClicked();
     void OnCloseButtonClicked();
 
     void OnServerStateChanged(const ServerCore*);
+    void UpdateUsageProgressbar(DAVA::uint64, DAVA::uint64);
 
 private:
-    void CreateTrayIcon();
+    void CreateTrayMenu();
 
     void AddRemoteServer(const ServerData& newServer);
     void RemoveServers();
+
+    void ShowAdvancedSettings(bool show);
 
     void SetupLaunchOnStartup(bool toLaunchOnStartup);
 
@@ -90,11 +95,12 @@ private:
     std::unique_ptr<QIcon> redGrayTrayIcon;
 
     QVBoxLayout* serversBoxLayout = nullptr;
-    List<RemoteServerWidget*> remoteServers;
+    DAVA::List<RemoteServerWidget*> remoteServers;
 
     ServerCore& serverCore;
 
     SettingsState settingsState = NOT_EDITED;
+    bool showAdvanced = false;
 };
 
 #endif // __ASSETCACHESERVER_WINDOW_H__

@@ -3,7 +3,6 @@
 
 #include "CommandLine/CommandLineTool.h"
 #include "TextureCompression/TextureConverter.h"
-#include "AssetCache/AssetCache.h"
 #include "AssetCache/AssetCacheClient.h"
 
 #include "CommandLine/SceneExporter/SceneExporter.h"

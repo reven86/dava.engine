@@ -1,26 +1,20 @@
-#include "AssetCache/CacheDB.h"
-
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedItemValue.h"
-#include "AssetCache/ServerCacheEntry.h"
+#include "CacheDB.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
-
 #include "Debug/DVAssert.h"
-
 #include "Platform/SystemTimer.h"
 
-namespace DAVA
-{
-namespace AssetCache
-{
-const String CacheDB::DB_FILE_NAME = "cache.dat";
-const uint32 CacheDB::VERSION = 1;
+#include "AssetCache/CachedItemValue.h"
+#include "ServerCacheEntry.h"
 
-CacheDB::CacheDB()
-    : dbStateChanged(false)
+const DAVA::String CacheDB::DB_FILE_NAME = "cache.dat";
+const DAVA::uint32 CacheDB::VERSION = 1;
+
+CacheDB::CacheDB(CacheDBOwner& _owner)
+    : owner(_owner)
+    , dbStateChanged(false)
 {
 }
 
@@ -29,9 +23,14 @@ CacheDB::~CacheDB()
     Unload();
 }
 
-void CacheDB::UpdateSettings(const FilePath& folderPath, const uint64 size, const uint32 newMaxItemsInMemory, const uint64 _autoSaveTimeout)
+void CacheDB::NotifySizeChanged()
 {
-    FilePath newCacheRootFolder = folderPath;
+    owner.OnStorageSpaceAltered(occupiedSize, maxStorageSize);
+}
+
+void CacheDB::UpdateSettings(const DAVA::FilePath& folderPath, const DAVA::uint64 size, const DAVA::uint32 newMaxItemsInMemory, const DAVA::uint64 _autoSaveTimeout)
+{
+    DAVA::FilePath newCacheRootFolder = folderPath;
     newCacheRootFolder.MakeDirectoryPathname();
 
     if (cacheRootFolder != newCacheRootFolder)
@@ -52,11 +51,12 @@ void CacheDB::UpdateSettings(const FilePath& folderPath, const uint64 size, cons
         ReduceFullCacheToSize(size);
 
         maxStorageSize = size;
+        NotifySizeChanged();
     }
 
     if (maxItemsInMemory != newMaxItemsInMemory)
     {
-        int32 reducedByCount = maxItemsInMemory - newMaxItemsInMemory;
+        DAVA::int32 reducedByCount = maxItemsInMemory - newMaxItemsInMemory;
         if (reducedByCount > 0)
         {
             ReduceFastCacheByCount(reducedByCount);
@@ -75,45 +75,45 @@ void CacheDB::Load()
     DVASSERT(fastCache.empty());
     DVASSERT(fullCache.empty());
 
-    ScopedPtr<File> file(File::Create(cacheSettings, File::OPEN | File::READ));
+    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(cacheSettings, DAVA::File::OPEN | DAVA::File::READ));
     if (!file)
     {
         return;
     }
 
-    ScopedPtr<KeyedArchive> header(new KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> header(new DAVA::KeyedArchive());
     header->Load(file);
 
     if (header->GetString("signature") != "cache")
     {
-        Logger::Error("[CacheDB::%s] Wrong signature %s", __FUNCTION__, header->GetString("signature").c_str());
+        DAVA::Logger::Error("[CacheDB::%s] Wrong signature %s", __FUNCTION__, header->GetString("signature").c_str());
         return;
     }
 
     if (header->GetUInt32("version") != VERSION)
     {
-        Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetUInt32("version"));
+        DAVA::Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetUInt32("version"));
         return;
     }
 
-    auto cacheSize = header->GetUInt64("itemsCount");
+    DAVA::uint64 cacheSize = header->GetUInt64("itemsCount");
     fullCache.reserve(static_cast<size_t>(cacheSize));
 
-    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> cache(new DAVA::KeyedArchive());
     if (!cache->Load(file))
     {
-        Logger::Error("[%s] Can't load cache file", __FUNCTION__);
+        DAVA::Logger::Error("[%s] Can't load cache file", __FUNCTION__);
         return;
     }
 
     occupiedSize = 0;
-    for (uint64 index = 0; index < cacheSize; ++index)
+    for (DAVA::uint64 index = 0; index < cacheSize; ++index)
     {
-        KeyedArchive* itemArchieve = cache->GetArchive(Format("item_%d", index));
+        DAVA::KeyedArchive* itemArchieve = cache->GetArchive(DAVA::Format("item_%d", index));
         DVASSERT(nullptr != itemArchieve);
 
-        CacheItemKey key;
-        DeserializeKey(key, itemArchieve);
+        DAVA::AssetCache::CacheItemKey key;
+        key.Deserialize(itemArchieve);
 
         ServerCacheEntry entry;
         entry.Deserialize(itemArchieve);
@@ -122,6 +122,7 @@ void CacheDB::Load()
         fullCache[key] = std::move(entry);
     }
 
+    NotifySizeChanged();
     dbStateChanged = false;
 }
 
@@ -137,42 +138,43 @@ void CacheDB::Unload()
     fastCache.clear();
     fullCache.clear();
     occupiedSize = 0;
+    NotifySizeChanged();
 }
 
 void CacheDB::Save()
 {
-    FileSystem::Instance()->CreateDirectory(cacheRootFolder, true);
+    DAVA::FileSystem::Instance()->CreateDirectory(cacheRootFolder, true);
 
-    ScopedPtr<File> file(File::Create(cacheSettings, File::CREATE | File::WRITE));
+    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(cacheSettings, DAVA::File::CREATE | DAVA::File::WRITE));
     if (!file)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
+        DAVA::Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
         return;
     }
 
-    ScopedPtr<KeyedArchive> header(new KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> header(new DAVA::KeyedArchive());
     header->SetString("signature", "cache");
     header->SetUInt32("version", VERSION);
     header->SetUInt64("itemsCount", fullCache.size());
     header->Save(file);
 
-    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
-    uint64 index = 0;
+    DAVA::ScopedPtr<DAVA::KeyedArchive> cache(new DAVA::KeyedArchive());
+    DAVA::uint64 index = 0;
     for (auto& item : fullCache)
     {
-        ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
-        SerializeKey(item.first, itemArchieve);
+        DAVA::ScopedPtr<DAVA::KeyedArchive> itemArchieve(new DAVA::KeyedArchive());
+        item.first.Serialize(itemArchieve);
         item.second.Serialize(itemArchieve);
 
-        cache->SetArchive(Format("item_%d", index++), itemArchieve);
+        cache->SetArchive(DAVA::Format("item_%d", index++), itemArchieve);
     }
     cache->Save(file);
 
     dbStateChanged = false;
-    lastSaveTime = SystemTimer::Instance()->AbsoluteMS();
+    lastSaveTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
 }
 
-void CacheDB::ReduceFullCacheToSize(uint64 toSize)
+void CacheDB::ReduceFullCacheToSize(DAVA::uint64 toSize)
 {
     while (occupiedSize > toSize)
     {
@@ -188,15 +190,16 @@ void CacheDB::ReduceFullCacheToSize(uint64 toSize)
         {
             if (occupiedSize > 0)
             {
-                Logger::Warning("Occupied size is %u, should be 0", occupiedSize);
+                DAVA::Logger::Warning("Occupied size is %u, should be 0", occupiedSize);
                 occupiedSize = 0;
+                NotifySizeChanged();
                 break;
             }
         }
     }
 }
 
-void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
+void CacheDB::ReduceFastCacheByCount(DAVA::uint32 countToRemove)
 {
     for (; countToRemove > 0; --countToRemove)
     {
@@ -216,7 +219,7 @@ void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
     }
 }
 
-ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
+ServerCacheEntry* CacheDB::Get(const DAVA::AssetCache::CacheItemKey& key)
 {
     ServerCacheEntry* entry = FindInFastCache(key);
 
@@ -225,7 +228,7 @@ ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
         entry = FindInFullCache(key);
         if (nullptr != entry)
         {
-            const FilePath path = CreateFolderPath(key);
+            const DAVA::FilePath path = CreateFolderPath(key);
 
             if (true == entry->Fetch(path))
             {
@@ -233,8 +236,11 @@ ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
             }
             else
             {
-                Logger::Error("[CacheDB::%s] Fetch error. Entry '%s' will be removed from cache", __FUNCTION__, KeyToString(key).c_str());
-                Remove(key);
+                DAVA::Logger::Error("[CacheDB::%s] Fetch error. Entry '%s' will be removed from cache", __FUNCTION__, key.ToString().c_str());
+                if (false == Remove(key))
+                {
+                    DAVA::Logger::Error("[CacheDB::%s] Cannot find item in cache");
+                }
                 entry = nullptr;
             }
         }
@@ -245,7 +251,7 @@ ServerCacheEntry* CacheDB::Get(const CacheItemKey& key)
     return entry;
 }
 
-ServerCacheEntry* CacheDB::FindInFastCache(const CacheItemKey& key) const
+ServerCacheEntry* CacheDB::FindInFastCache(const DAVA::AssetCache::CacheItemKey& key) const
 {
     auto found = fastCache.find(key);
     if (found != fastCache.cend())
@@ -256,7 +262,7 @@ ServerCacheEntry* CacheDB::FindInFastCache(const CacheItemKey& key) const
     return nullptr;
 }
 
-ServerCacheEntry* CacheDB::FindInFullCache(const CacheItemKey& key)
+ServerCacheEntry* CacheDB::FindInFullCache(const DAVA::AssetCache::CacheItemKey& key)
 {
     auto found = fullCache.find(key);
     if (found != fullCache.cend())
@@ -267,7 +273,7 @@ ServerCacheEntry* CacheDB::FindInFullCache(const CacheItemKey& key)
     return nullptr;
 }
 
-const ServerCacheEntry* CacheDB::FindInFullCache(const CacheItemKey& key) const
+const ServerCacheEntry* CacheDB::FindInFullCache(const DAVA::AssetCache::CacheItemKey& key) const
 {
     auto found = fullCache.find(key);
     if (found != fullCache.cend())
@@ -278,13 +284,18 @@ const ServerCacheEntry* CacheDB::FindInFullCache(const CacheItemKey& key) const
     return nullptr;
 }
 
-void CacheDB::Insert(const CacheItemKey& key, const CachedItemValue& value)
+void CacheDB::ClearStorage()
+{
+    ReduceFullCacheToSize(0);
+}
+
+void CacheDB::Insert(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value)
 {
     ServerCacheEntry entry(value);
     Insert(key, std::forward<ServerCacheEntry>(entry));
 }
 
-void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
+void CacheDB::Insert(const DAVA::AssetCache::CacheItemKey& key, ServerCacheEntry&& entry)
 {
     auto found = fullCache.find(key);
     if (found != fullCache.end())
@@ -294,10 +305,11 @@ void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
 
     fullCache[key] = std::move(entry);
     ServerCacheEntry* insertedEntry = &fullCache[key];
-    FilePath savedPath = CreateFolderPath(key);
+    DAVA::FilePath savedPath = CreateFolderPath(key);
     insertedEntry->GetValue().ExportToFolder(savedPath);
     insertedEntry->UpdateAccessTimestamp();
     occupiedSize += insertedEntry->GetValue().GetSize();
+    NotifySizeChanged();
 
     InsertInFastCache(key, insertedEntry);
 
@@ -310,7 +322,7 @@ void CacheDB::Insert(const CacheItemKey& key, ServerCacheEntry&& entry)
     dbStateChanged = true;
 }
 
-void CacheDB::InsertInFastCache(const CacheItemKey& key, ServerCacheEntry* entry)
+void CacheDB::InsertInFastCache(const DAVA::AssetCache::CacheItemKey& key, ServerCacheEntry* entry)
 {
     if (fastCache.count(key) != 0)
     {
@@ -327,7 +339,7 @@ void CacheDB::InsertInFastCache(const CacheItemKey& key, ServerCacheEntry* entry
     fastCache[key] = entry;
 }
 
-void CacheDB::UpdateAccessTimestamp(const CacheItemKey& key)
+void CacheDB::UpdateAccessTimestamp(const DAVA::AssetCache::CacheItemKey& key)
 {
     ServerCacheEntry* entry = FindInFastCache(key);
     if (nullptr == entry)
@@ -347,17 +359,16 @@ void CacheDB::UpdateAccessTimestamp(ServerCacheEntry* entry)
     }
 }
 
-void CacheDB::Remove(const CacheItemKey& key)
+bool CacheDB::Remove(const DAVA::AssetCache::CacheItemKey& key)
 {
     auto found = fullCache.find(key);
     if (found != fullCache.end())
     {
         Remove(found);
+        return true;
     }
-    else
-    {
-        Logger::Error("[CacheDB::%s] Cannot find item in cache");
-    }
+
+    return false;
 }
 
 void CacheDB::Remove(const CacheMap::iterator& it)
@@ -376,13 +387,14 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator& it)
 {
     DVASSERT(it != fullCache.end());
 
-    FilePath dataPath = CreateFolderPath(it->first);
-    FileSystem::Instance()->DeleteDirectory(dataPath);
+    DAVA::FilePath dataPath = CreateFolderPath(it->first);
+    DAVA::FileSystem::Instance()->DeleteDirectory(dataPath);
 
-    uint64 itemSize = it->second.GetValue().GetSize();
+    DAVA::uint64 itemSize = it->second.GetValue().GetSize();
     DVASSERT(itemSize <= occupiedSize);
     occupiedSize -= itemSize;
     fullCache.erase(it);
+    NotifySizeChanged();
 }
 
 void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator& it)
@@ -394,9 +406,9 @@ void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator& it)
     fastCache.erase(it);
 }
 
-FilePath CacheDB::CreateFolderPath(const CacheItemKey& key) const
+DAVA::FilePath CacheDB::CreateFolderPath(const DAVA::AssetCache::CacheItemKey& key) const
 {
-    String keyString = KeyToString(key);
+    DAVA::String keyString = key.ToString();
     DVASSERT(keyString.length() > 2);
 
     return (cacheRootFolder + (keyString.substr(0, 2) + "/" + keyString.substr(2) + "/"));
@@ -406,7 +418,7 @@ void CacheDB::Update()
 {
     if (dbStateChanged && (autoSaveTimeout != 0))
     {
-        auto curTime = SystemTimer::Instance()->AbsoluteMS();
+        auto curTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
         if (curTime - lastSaveTime > autoSaveTimeout)
         {
             Save();
@@ -415,11 +427,8 @@ void CacheDB::Update()
     }
 }
 
-const uint64 CacheDB::GetAvailableSize() const
+const DAVA::uint64 CacheDB::GetAvailableSize() const
 {
-    DVASSERT(GetStorageSize() > GetUsedSize());
-    return (GetStorageSize() - GetUsedSize());
+    DVASSERT(GetStorageSize() > GetOccupiedSize());
+    return (GetStorageSize() - GetOccupiedSize());
 }
-
-}; // end of namespace AssetCache
-}; // end of namespace DAVA

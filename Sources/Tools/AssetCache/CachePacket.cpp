@@ -7,7 +7,7 @@ namespace DAVA
 namespace AssetCache
 {
 const uint16 PACKET_HEADER = 0xACCA;
-const uint8 PACKET_VERSION = 1;
+const uint8 PACKET_VERSION = 2;
 
 Map<const uint8*, ScopedPtr<DynamicMemoryFile>> CachePacket::sendingPackets;
 
@@ -33,7 +33,7 @@ void CachePacket::PacketSent(const uint8* buffer, size_t length)
     sendingPackets.erase(found);
 }
 
-std::unique_ptr<CachePacket> CachePacket::Create(const uint8* rawdata, uint32 length)
+CachePacket::CreateResult CachePacket::Create(const uint8* rawdata, uint32 length, std::unique_ptr<CachePacket>& packet)
 {
     ScopedPtr<File> buffer(StaticMemoryFile::Create(const_cast<uint8*>(rawdata), length, File::OPEN | File::READ));
 
@@ -41,27 +41,35 @@ std::unique_ptr<CachePacket> CachePacket::Create(const uint8* rawdata, uint32 le
     if (buffer->Read(&header) != sizeof(header))
     {
         Logger::Error("[CachePacket::%s] Cannot read header: %s", __FUNCTION__);
-        return nullptr;
+        return ERR_INCORRECT_DATA;
     }
 
-    if (header.headerID != PACKET_HEADER || header.version != PACKET_VERSION || header.packetType == PACKET_UNKNOWN)
+    if (header.headerID != PACKET_HEADER)
     {
-        Logger::Error("[CachePacket::%s] Wrong header: id(%d), version(%d), packet type(%d)", __FUNCTION__, header.headerID, header.version, header.packetType);
-        return nullptr;
+        Logger::Error("[CachePacket::%s] Unsupported header id: %d, expected is %d", __FUNCTION__, header.headerID, PACKET_HEADER);
+        return ERR_UNSUPPORTED_VERSION;
     }
-
-    std::unique_ptr<CachePacket> packet = CachePacket::CreateByType(header.packetType);
-    if (packet != nullptr)
+    if (header.version != PACKET_VERSION)
     {
-        bool loaded = packet->Load(buffer);
-        if (!loaded)
-        {
-            Logger::Error("[CachePacket::%s] Cannot load packet(type: %d)", __FUNCTION__, header.packetType);
-            packet.reset();
-        }
+        Logger::Error("[CachePacket::%s] Unsupported header version: %d, expected is %d", __FUNCTION__, header.version, PACKET_VERSION);
+        return ERR_UNSUPPORTED_VERSION;
     }
 
-    return packet;
+    packet = CachePacket::CreateByType(header.packetType);
+    if (!packet)
+    {
+        return ERR_INCORRECT_DATA;
+    }
+
+    bool loaded = packet->Load(buffer);
+    if (!loaded)
+    {
+        Logger::Error("[CachePacket::%s] Cannot load packet (type: %d)", __FUNCTION__, header.packetType);
+        packet.reset();
+        return ERR_INCORRECT_DATA;
+    }
+
+    return CREATED;
 }
 
 std::unique_ptr<CachePacket> CachePacket::CreateByType(ePacketID type)
@@ -78,6 +86,18 @@ std::unique_ptr<CachePacket> CachePacket::CreateByType(ePacketID type)
         return std::unique_ptr<CachePacket>(new GetResponsePacket());
     case PACKET_WARMING_UP_REQUEST:
         return std::unique_ptr<CachePacket>(new WarmupRequestPacket());
+    case PACKET_STATUS_REQUEST:
+        return std::unique_ptr<CachePacket>(new StatusRequestPacket());
+    case PACKET_STATUS_RESPONSE:
+        return std::unique_ptr<CachePacket>(new StatusResponsePacket());
+    case PACKET_REMOVE_REQUEST:
+        return std::unique_ptr<CachePacket>(new RemoveRequestPacket());
+    case PACKET_REMOVE_RESPONSE:
+        return std::unique_ptr<CachePacket>(new RemoveResponsePacket());
+    case PACKET_CLEAR_REQUEST:
+        return std::unique_ptr<CachePacket>(new ClearRequestPacket());
+    case PACKET_CLEAR_RESPONSE:
+        return std::unique_ptr<CachePacket>(new ClearResponsePacket());
     default:
     {
         Logger::Error("[CachePacket::%s] Wrong packet type: %d", __FUNCTION__, type);
@@ -175,6 +195,46 @@ bool WarmupRequestPacket::Load(File* file)
 {
     const uint32 keySize = static_cast<uint32>(key.size());
     return (file->Read(key.data(), keySize) == keySize);
+}
+
+RemoveRequestPacket::RemoveRequestPacket(const CacheItemKey& _key)
+    : CachePacket(PACKET_REMOVE_REQUEST, true)
+{
+    WriteHeader(serializationBuffer);
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
+}
+
+bool RemoveRequestPacket::Load(File* file)
+{
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return (file->Read(key.data(), keySize) == keySize);
+}
+
+RemoveResponsePacket::RemoveResponsePacket(const CacheItemKey& _key, bool _removed)
+    : CachePacket(PACKET_REMOVE_RESPONSE, true)
+{
+    WriteHeader(serializationBuffer);
+
+    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
+    serializationBuffer->Write(&_removed, sizeof(_removed));
+}
+
+bool RemoveResponsePacket::Load(File* file)
+{
+    const uint32 keySize = static_cast<uint32>(key.size());
+    return ((file->Read(key.data(), keySize) == keySize) && (file->Read(&removed) == sizeof(removed)));
+}
+
+ClearResponsePacket::ClearResponsePacket(bool _cleared)
+    : CachePacket(PACKET_CLEAR_RESPONSE, true)
+{
+    WriteHeader(serializationBuffer);
+    serializationBuffer->Write(&_cleared, sizeof(_cleared));
+}
+
+bool ClearResponsePacket::Load(File* file)
+{
+    return ((file->Read(&cleared) == sizeof(cleared)));
 }
 
 } //AssetCache
