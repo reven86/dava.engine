@@ -12,8 +12,9 @@
 
 @class NSEvent;
 @class NSWindow;
-@class OpenGLViewOsX;
-@class OsXWindowDelegate;
+
+@class RenderView;
+@class WindowDelegate;
 
 namespace DAVA
 {
@@ -23,15 +24,15 @@ namespace Private
 // Responsibilities:
 //  - holds neccesary Objective-C objects
 //  - creates NSWindow
-//  - processes notifications from OsXWindowDelegate which implements
+//  - processes notifications from WindowDelegate which implements
 //    interface NSWindowDelegate
 //  - posts events to dispatcher
 //
-// WindowNativeBridgeOsX is friend of OsX's WindowBackend
-struct WindowNativeBridgeOsX final
+// WindowNativeBridge is friend of OsX's WindowBackend
+struct WindowNativeBridge final
 {
-    WindowNativeBridgeOsX(WindowBackend* wbackend);
-    ~WindowNativeBridgeOsX();
+    WindowNativeBridge(WindowBackend* wbackend);
+    ~WindowNativeBridge();
 
     bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
     void DoResizeWindow(float32 width, float32 height);
@@ -62,8 +63,8 @@ struct WindowNativeBridgeOsX final
     WindowBackend* windowBackend = nullptr;
 
     NSWindow* nswindow = nullptr;
-    OpenGLViewOsX* openGLView = nullptr;
-    OsXWindowDelegate* windowDelegate = nullptr;
+    RenderView* renderView = nullptr;
+    WindowDelegate* windowDelegate = nullptr;
 
     bool isAppHidden = false;
     bool isMiniaturized = false;

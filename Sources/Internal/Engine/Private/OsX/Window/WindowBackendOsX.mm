@@ -26,25 +26,25 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     , dispatcher(engineBackend->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
-    , bridge(new WindowNativeBridgeOsX(this))
+    , bridge(new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
-    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridgeOsX::ApplicationDidHideUnhide);
 }
 
 WindowBackend::~WindowBackend()
 {
-    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
     delete bridge;
 }
 
 void* WindowBackend::GetHandle() const
 {
-    return bridge->openGLView;
+    return bridge->renderView;
 }
 
 bool WindowBackend::Create(float32 width, float32 height)
 {
+    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridge::ApplicationDidHideUnhide);
+
     NSSize screenSize = [[NSScreen mainScreen] frame].size;
     float32 x = (screenSize.width - width) / 2.0f;
     float32 y = (screenSize.height - height) / 2.0f;
@@ -62,6 +62,8 @@ void WindowBackend::Resize(float32 width, float32 height)
 
 void WindowBackend::Close()
 {
+    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CLOSE_WINDOW;
     platformDispatcher.PostEvent(e);

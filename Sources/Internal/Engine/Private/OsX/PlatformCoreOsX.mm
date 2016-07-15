@@ -19,15 +19,12 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
-    , bridge(new CoreNativeBridgeOsX(this))
+    , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
 }
 
-PlatformCore::~PlatformCore()
-{
-    delete bridge;
-}
+PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {

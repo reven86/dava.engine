@@ -15,14 +15,14 @@
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowNativeBridgeOsX* nativeBridge)
+WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBridge)
     : bridge(nativeBridge)
 {
 }
 
 void WindowNativeService::AddNSView(NSView* nsview)
 {
-    [bridge->openGLView addSubview:nsview];
+    [bridge->renderView addSubview:nsview];
 }
 
 void WindowNativeService::RemoveNSView(NSView* nsview)

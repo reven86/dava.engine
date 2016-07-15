@@ -30,8 +30,8 @@ class WindowBackend;
 #elif defined(__DAVAENGINE_WIN_UAP__)
 ref struct WindowNativeBridgeUWP;
 #elif defined(__DAVAENGINE_MACOS__)
-struct CoreNativeBridgeOsX;
-struct WindowNativeBridgeOsX;
+struct CoreNativeBridge;
+struct WindowNativeBridge;
 #elif defined(__DAVAENGINE_IPHONE__)
 struct CoreNativeBridge;
 struct WindowNativeBridge;

@@ -8,9 +8,9 @@
 
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
-@implementation OsXWindowDelegate
+@implementation WindowDelegate
 
-- (id)init:(DAVA::Private::WindowNativeBridgeOsX*)nativeBridge
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge
 {
     self = [super init];
     if (self != nullptr)

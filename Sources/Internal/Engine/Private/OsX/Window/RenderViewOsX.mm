@@ -13,9 +13,9 @@
 
 #include "Logger/Logger.h"
 
-@implementation OpenGLViewOsX
+@implementation RenderView
 
-- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowNativeBridgeOsX*)nativeBridge;
+- (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 {
     bridge = nativeBridge;
 

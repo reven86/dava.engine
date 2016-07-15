@@ -39,12 +39,12 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
-    // TODO: std::unique_ptr
-    CoreNativeBridgeOsX* bridge = nullptr;
+
+    std::unique_ptr<CoreNativeBridge> bridge;
     std::unique_ptr<NativeService> nativeService;
 
     // Friends
-    friend struct CoreNativeBridgeOsX;
+    friend struct CoreNativeBridge;
 };
 
 inline NativeService* PlatformCore::GetNativeService() const

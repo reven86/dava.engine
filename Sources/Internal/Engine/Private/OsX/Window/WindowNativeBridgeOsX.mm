@@ -22,34 +22,35 @@ namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridgeOsX::WindowNativeBridgeOsX(WindowBackend* wbackend)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* wbackend)
     : windowBackend(wbackend)
 {
 }
 
-WindowNativeBridgeOsX::~WindowNativeBridgeOsX() = default;
+WindowNativeBridge::~WindowNativeBridge() = default;
 
-bool WindowNativeBridgeOsX::DoCreateWindow(float32 x, float32 y, float32 width, float32 height)
+bool WindowNativeBridge::DoCreateWindow(float32 x, float32 y, float32 width, float32 height)
 {
+    // clang-format off
     NSUInteger style = NSTitledWindowMask |
-    NSMiniaturizableWindowMask |
-    NSClosableWindowMask |
-    NSResizableWindowMask;
+                       NSMiniaturizableWindowMask |
+                       NSClosableWindowMask |
+                       NSResizableWindowMask;
+    // clang-format on
 
     NSRect viewRect = NSMakeRect(x, y, width, height);
-    windowDelegate = [[OsXWindowDelegate alloc] init:this];
-    openGLView = [[OpenGLViewOsX alloc] initWithFrame:viewRect bridge:this];
+    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
+    renderView = [[RenderView alloc] initWithFrame:viewRect andBridge:this];
 
     nswindow = [[NSWindow alloc] initWithContentRect:viewRect
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-    [nswindow setContentView:openGLView];
+    [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
 
     {
-        viewRect = [openGLView frame];
         float32 scale = [nswindow backingScaleFactor];
 
         windowBackend->GetWindow()->PostWindowCreated(windowBackend, viewRect.size.width, viewRect.size.height, scale, scale);
@@ -60,40 +61,40 @@ bool WindowNativeBridgeOsX::DoCreateWindow(float32 x, float32 y, float32 width, 
     return true;
 }
 
-void WindowNativeBridgeOsX::DoResizeWindow(float32 width, float32 height)
+void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
 {
     [nswindow setContentSize:NSMakeSize(width, height)];
 }
 
-void WindowNativeBridgeOsX::DoCloseWindow()
+void WindowNativeBridge::DoCloseWindow()
 {
     [nswindow close];
 }
 
-void WindowNativeBridgeOsX::TriggerPlatformEvents()
+void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
         windowBackend->ProcessPlatformEvents();
     });
 }
 
-void WindowNativeBridgeOsX::ApplicationDidHideUnhide(bool hidden)
+void WindowNativeBridge::ApplicationDidHideUnhide(bool hidden)
 {
     isAppHidden = hidden;
 }
 
-void WindowNativeBridgeOsX::WindowDidMiniaturize()
+void WindowNativeBridge::WindowDidMiniaturize()
 {
     isMiniaturized = true;
     windowBackend->GetWindow()->PostVisibilityChanged(false);
 }
 
-void WindowNativeBridgeOsX::WindowDidDeminiaturize()
+void WindowNativeBridge::WindowDidDeminiaturize()
 {
     isMiniaturized = false;
 }
 
-void WindowNativeBridgeOsX::WindowDidBecomeKey()
+void WindowNativeBridge::WindowDidBecomeKey()
 {
     if (isMiniaturized || isAppHidden)
     {
@@ -102,7 +103,7 @@ void WindowNativeBridgeOsX::WindowDidBecomeKey()
     windowBackend->GetWindow()->PostFocusChanged(true);
 }
 
-void WindowNativeBridgeOsX::WindowDidResignKey()
+void WindowNativeBridge::WindowDidResignKey()
 {
     windowBackend->GetWindow()->PostFocusChanged(false);
     if (isAppHidden)
@@ -111,35 +112,35 @@ void WindowNativeBridgeOsX::WindowDidResignKey()
     }
 }
 
-void WindowNativeBridgeOsX::WindowDidResize()
+void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
-    CGSize size = [openGLView frame].size;
+    CGSize size = [renderView frame].size;
 
     windowBackend->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
 }
 
-void WindowNativeBridgeOsX::WindowDidChangeScreen()
+void WindowNativeBridge::WindowDidChangeScreen()
 {
 }
 
-bool WindowNativeBridgeOsX::WindowShouldClose()
+bool WindowNativeBridge::WindowShouldClose()
 {
     return true;
 }
 
-void WindowNativeBridgeOsX::WindowWillClose()
+void WindowNativeBridge::WindowWillClose()
 {
     windowBackend->GetWindow()->PostWindowDestroyed();
 
     [nswindow setContentView:nil];
     [nswindow setDelegate:nil];
 
-    [openGLView release];
+    [renderView release];
     [windowDelegate release];
 }
 
-void WindowNativeBridgeOsX::MouseClick(NSEvent* theEvent)
+void WindowNativeBridge::MouseClick(NSEvent* theEvent)
 {
     MainDispatcherEvent e;
     e.window = windowBackend->window;
@@ -163,28 +164,28 @@ void WindowNativeBridgeOsX::MouseClick(NSEvent* theEvent)
         break;
     }
 
-    NSSize sz = [openGLView frame].size;
+    NSSize sz = [renderView frame].size;
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
     windowBackend->GetDispatcher()->PostEvent(e);
 }
 
-void WindowNativeBridgeOsX::MouseMove(NSEvent* theEvent)
+void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
     MainDispatcherEvent e;
     e.window = windowBackend->window;
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
-    NSSize sz = [openGLView frame].size;
+    NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
     e.mmoveEvent.x = pt.x;
     e.mmoveEvent.y = sz.height - pt.y;
     windowBackend->GetDispatcher()->PostEvent(e);
 }
 
-void WindowNativeBridgeOsX::MouseWheel(NSEvent* theEvent)
+void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
 {
     // detect the wheel event device
     // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
@@ -223,7 +224,7 @@ void WindowNativeBridgeOsX::MouseWheel(NSEvent* theEvent)
     windowBackend->GetDispatcher()->PostEvent(e);
 }
 
-void WindowNativeBridgeOsX::KeyEvent(NSEvent* theEvent)
+void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
 {
     MainDispatcherEvent e;
     e.window = windowBackend->window;

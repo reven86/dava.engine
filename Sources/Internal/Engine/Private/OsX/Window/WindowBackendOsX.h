@@ -47,7 +47,7 @@ private:
 
     UIDispatcher platformDispatcher;
 
-    WindowNativeBridgeOsX* bridge = nullptr;
+    WindowNativeBridge* bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
@@ -55,7 +55,7 @@ private:
 
     // Friends
     friend class PlatformCore;
-    friend struct WindowNativeBridgeOsX;
+    friend struct WindowNativeBridge;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const

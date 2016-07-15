@@ -13,13 +13,13 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 // Implementation of NSWindowDelegate
-// Forwards all necessary methods to WindowOsXObjcBridge
-@interface OsXWindowDelegate : NSObject<NSWindowDelegate>
+// Forwards all necessary methods to WindowNativeBridge
+@interface WindowDelegate : NSObject<NSWindowDelegate>
 {
-    DAVA::Private::WindowNativeBridgeOsX* bridge;
+    DAVA::Private::WindowNativeBridge* bridge;
 }
 
-- (id)init:(DAVA::Private::WindowNativeBridgeOsX*)objcBridge;
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
 @end
 

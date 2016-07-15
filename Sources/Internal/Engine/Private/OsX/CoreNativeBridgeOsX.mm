@@ -17,14 +17,14 @@
 #include "Platform/SystemTimer.h"
 
 // Wrapper over NSTimer to connect Objective-C NSTimer object to
-// C++ class CoreNativeBridgeOsX
+// C++ class CoreNativeBridge
 @interface FrameTimer : NSObject
 {
-    DAVA::Private::CoreNativeBridgeOsX* bridge;
+    DAVA::Private::CoreNativeBridge* bridge;
     NSTimer* timer;
 }
 
-- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)nativeBridge;
+- (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
 - (void)set:(double)interval;
 - (void)cancel;
 - (void)timerFired:(NSTimer*)timer;
@@ -33,7 +33,7 @@
 
 @implementation FrameTimer
 
-- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)nativeBridge
+- (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge
 {
     self = [super init];
     if (self != nil)
@@ -72,27 +72,27 @@ namespace DAVA
 {
 namespace Private
 {
-CoreNativeBridgeOsX::CoreNativeBridgeOsX(PlatformCore* c)
+CoreNativeBridge::CoreNativeBridge(PlatformCore* c)
     : core(c)
 {
 }
 
-CoreNativeBridgeOsX::~CoreNativeBridgeOsX()
+CoreNativeBridge::~CoreNativeBridge()
 {
     [[NSApplication sharedApplication] setDelegate:nil];
     [appDelegate release];
     [frameTimer release];
 }
 
-void CoreNativeBridgeOsX::InitNSApplication()
+void CoreNativeBridge::InitNSApplication()
 {
     [NSApplication sharedApplication];
 
-    appDelegate = [[OsXAppDelegate alloc] init:this];
+    appDelegate = [[AppDelegate alloc] initWithBridge:this];
     [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 }
 
-void CoreNativeBridgeOsX::Quit()
+void CoreNativeBridge::Quit()
 {
     if (!quitSent)
     {
@@ -101,7 +101,7 @@ void CoreNativeBridgeOsX::Quit()
     }
 }
 
-void CoreNativeBridgeOsX::OnFrameTimer()
+void CoreNativeBridge::OnFrameTimer()
 {
     int32 fps = core->OnFrame();
     if (fps <= 0)
@@ -114,11 +114,11 @@ void CoreNativeBridgeOsX::OnFrameTimer()
     [frameTimer set:interval];
 }
 
-void CoreNativeBridgeOsX::ApplicationWillFinishLaunching()
+void CoreNativeBridge::ApplicationWillFinishLaunching()
 {
 }
 
-void CoreNativeBridgeOsX::ApplicationDidFinishLaunching()
+void CoreNativeBridge::ApplicationDidFinishLaunching()
 {
     core->engineBackend->OnGameLoopStarted();
     core->CreateNativeWindow(core->engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
@@ -127,30 +127,30 @@ void CoreNativeBridgeOsX::ApplicationDidFinishLaunching()
     [frameTimer set:1.0 / 60.0];
 }
 
-void CoreNativeBridgeOsX::ApplicationDidChangeScreenParameters()
+void CoreNativeBridge::ApplicationDidChangeScreenParameters()
 {
-    Logger::Debug("****** CoreNativeBridgeOsX::ApplicationDidChangeScreenParameters");
+    Logger::Debug("****** CoreNativeBridge::ApplicationDidChangeScreenParameters");
 }
 
-void CoreNativeBridgeOsX::ApplicationDidBecomeActive()
-{
-}
-
-void CoreNativeBridgeOsX::ApplicationDidResignActive()
+void CoreNativeBridge::ApplicationDidBecomeActive()
 {
 }
 
-void CoreNativeBridgeOsX::ApplicationDidHide()
+void CoreNativeBridge::ApplicationDidResignActive()
+{
+}
+
+void CoreNativeBridge::ApplicationDidHide()
 {
     core->didHideUnhide.Emit(true);
 }
 
-void CoreNativeBridgeOsX::ApplicationDidUnhide()
+void CoreNativeBridge::ApplicationDidUnhide()
 {
     core->didHideUnhide.Emit(false);
 }
 
-bool CoreNativeBridgeOsX::ApplicationShouldTerminate()
+bool CoreNativeBridge::ApplicationShouldTerminate()
 {
     if (!quitSent)
     {
@@ -160,12 +160,12 @@ bool CoreNativeBridgeOsX::ApplicationShouldTerminate()
     return true;
 }
 
-bool CoreNativeBridgeOsX::ApplicationShouldTerminateAfterLastWindowClosed()
+bool CoreNativeBridge::ApplicationShouldTerminateAfterLastWindowClosed()
 {
     return false;
 }
 
-void CoreNativeBridgeOsX::ApplicationWillTerminate()
+void CoreNativeBridge::ApplicationWillTerminate()
 {
     [frameTimer cancel];
 
