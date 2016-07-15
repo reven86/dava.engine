@@ -1,7 +1,7 @@
 #include "QtModelPackageCommandExecutor.h"
 
 #include "Document/Document.h"
-#include "NgtTools/Commands/CommandStack.h"
+#include "Command/CommandStack.h"
 
 #include "QECommands//ChangePropertyValueCommand.h"
 #include "QECommands/InsertControlCommand.h"
@@ -697,7 +697,7 @@ void QtModelPackageCommandExecutor::EndMacro()
     GetCommandStack()->EndBatch();
 }
 
-CommandStack* QtModelPackageCommandExecutor::GetCommandStack() const
+DAVA::CommandStack* QtModelPackageCommandExecutor::GetCommandStack() const
 {
     return document->GetCommandStack();
 }

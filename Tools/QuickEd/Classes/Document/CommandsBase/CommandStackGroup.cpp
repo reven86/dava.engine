@@ -1,17 +1,12 @@
 #include "Debug/DVAssert.h"
 #include "Document/CommandsBase/CommandStackGroup.h"
-#include "NgtTools/Commands/CommandStack.h"
-
-#include "NgtTools/Common/GlobalContext.h"
-#include <core_command_system/i_env_system.hpp>
+#include "Command/CommandStack.h"
 
 CommandStackGroup::CommandStackGroup()
 {
-    envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
-    DVASSERT(envManager);
 }
 
-void CommandStackGroup::RemoveStack(CommandStack* stackToRemove)
+void CommandStackGroup::RemoveStack(DAVA::CommandStack* stackToRemove)
 {
     if (activeStack == stackToRemove)
     {
@@ -20,12 +15,12 @@ void CommandStackGroup::RemoveStack(CommandStack* stackToRemove)
     stacks.erase(stackToRemove);
 }
 
-void CommandStackGroup::AddStack(CommandStack* stackToAdd)
+void CommandStackGroup::AddStack(DAVA::CommandStack* stackToAdd)
 {
     stacks.insert(stackToAdd);
 }
 
-void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
+void CommandStackGroup::SetActiveStack(DAVA::CommandStack* commandStack)
 {
     if (activeStack != nullptr)
     {
@@ -33,15 +28,11 @@ void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
         activeStack->canRedoChanged.Disconnect(this);
         activeStack->canUndoChanged.Disconnect(this);
 
-        activeStack->DisconnectFromCommandManager();
     }
     activeStack = commandStack;
     if (commandStack != nullptr)
     {
         DVASSERT(stacks.find(commandStack) != stacks.end());
-        envManager->selectEnv(activeStack->GetID());
-        activeStack->ConnectToCommandManager();
-
         activeStack->cleanChanged.Connect(&cleanChanged, &DAVA::Signal<bool>::Emit);
         activeStack->canRedoChanged.Connect(&canRedoChanged, &DAVA::Signal<bool>::Emit);
         activeStack->canUndoChanged.Connect(&canUndoChanged, &DAVA::Signal<bool>::Emit);

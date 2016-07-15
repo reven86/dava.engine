@@ -1,6 +1,6 @@
 #include "Document/Document.h"
 #include "Document/DocumentGroup.h"
-#include "NgtTools/Commands/CommandStack.h"
+#include "Command/CommandStack.h"
 #include "Document/CommandsBase/CommandStackGroup.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"

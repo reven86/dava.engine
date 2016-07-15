@@ -9,9 +9,13 @@
 
 #include <QString>
 
+namespace DAVA
+{
+class CommandStack;
+}
+
 class Document;
 class PackageBaseNode;
-class CommandStack;
 
 class ControlNode;
 class StyleSheetNode;
@@ -68,7 +72,7 @@ private:
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 
-    CommandStack* GetCommandStack() const;
+    DAVA::CommandStack* GetCommandStack() const;
     void ExecCommand(DAVA::Command::Pointer&& cmd);
 
 private:
