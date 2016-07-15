@@ -2,15 +2,13 @@
 
 #include "Engine/Public/UWP/WindowNativeServiceUWP.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowNativeBridgeUWP ^ cxxBridge)
+WindowNativeService::WindowNativeService(Private::WindowNativeBridge ^ cxxBridge)
     : bridge(cxxBridge)
 {
 }

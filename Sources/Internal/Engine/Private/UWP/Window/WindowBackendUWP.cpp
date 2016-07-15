@@ -2,9 +2,7 @@
 
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Public/UWP/WindowNativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
@@ -21,7 +19,7 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     , dispatcher(engine->GetDispatcher())
     , window(w)
     , platformDispatcher(MakeFunction(this, &WindowBackend::PlatformEventHandler))
-    , bridge(ref new WindowNativeBridgeUWP(this))
+    , bridge(ref new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
 }

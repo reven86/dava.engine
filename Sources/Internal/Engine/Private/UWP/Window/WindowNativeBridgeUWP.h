@@ -1,12 +1,10 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -16,10 +14,10 @@ namespace DAVA
 {
 namespace Private
 {
-ref struct WindowNativeBridgeUWP sealed
+ref struct WindowNativeBridge sealed
 {
     internal :
-    WindowNativeBridgeUWP(WindowBackend* window);
+    WindowNativeBridge(WindowBackend* window);
 
     void* GetHandle() const;
 
@@ -86,7 +84,7 @@ private:
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
 };
 
-inline void* WindowNativeBridgeUWP::GetHandle() const
+inline void* WindowNativeBridge::GetHandle() const
 {
     return reinterpret_cast<void*>(xamlSwapChainPanel);
 }

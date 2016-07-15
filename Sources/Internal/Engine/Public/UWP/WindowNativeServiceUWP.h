@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -21,10 +19,10 @@ public:
     void UnfocusXamlControl();
 
 private:
-    WindowNativeService(Private::WindowNativeBridgeUWP ^ cxxBridge);
+    WindowNativeService(Private::WindowNativeBridge ^ cxxBridge);
 
 private:
-    Private::WindowNativeBridgeUWP ^ bridge = nullptr;
+    Private::WindowNativeBridge ^ bridge = nullptr;
 
     // Friends
     friend Private::WindowBackend;

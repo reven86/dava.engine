@@ -28,7 +28,7 @@ class WindowBackend;
 #elif defined(__DAVAENGINE_WIN32__)
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
-ref struct WindowNativeBridgeUWP;
+ref struct WindowNativeBridge;
 #elif defined(__DAVAENGINE_MACOS__)
 struct CoreNativeBridge;
 struct WindowNativeBridge;

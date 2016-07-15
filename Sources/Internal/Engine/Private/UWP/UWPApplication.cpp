@@ -2,9 +2,7 @@
 
 #include "Engine/Private/UWP/UWPApplication.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
