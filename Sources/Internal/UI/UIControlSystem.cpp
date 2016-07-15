@@ -321,7 +321,7 @@ void UIControlSystem::Update()
     }
 
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearTarget = (ui3DViewCount == 0) && needClearMainPass;
+    newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
     RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
