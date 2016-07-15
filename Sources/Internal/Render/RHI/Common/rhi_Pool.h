@@ -77,6 +77,11 @@ public:
             return i.entry != this->entry;
         }
 
+        Entry* GetEntry() const
+        {
+            return entry;
+        }
+
     private:
         friend class ResourcePool<T, RT, DT, need_restore>;
 
@@ -101,6 +106,33 @@ private:
     struct Entry
     {
         T object;
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+        DAVA::Vector<void*> backtrace;
+
+        void CaptureBacktrace()
+        {
+            static const uint32 maxFramesToCapture = 64;
+            backtrace.resize(maxFramesToCapture);
+            size_t capturedFrames = DAVA::Debug::GetStackFrames(backtrace.data(), maxFramesToCapture);
+            backtrace.resize(capturedFrames);
+
+            // erase redundant frames
+            if (backtrace.size() > 3)
+            {
+                backtrace.erase(backtrace.begin(), backtrace.begin() + 3);
+            }
+            if (backtrace.size() > 8)
+            {
+                backtrace.erase(backtrace.end() - 8, backtrace.end());
+            }
+        }
+
+        void CleanBacktrace()
+        {
+            backtrace.clear();
+        }
+#endif
 
         uint32 allocated : 1;
         uint32 generation : 8;
@@ -172,6 +204,10 @@ ResourcePool<T, RT, DT, nr>::Alloc()
     e->allocated = true;
     ++e->generation;
 
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    e->CaptureBacktrace();
+#endif
+
     handle = 0;
     handle = ((uint32(e - Object) << HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) |
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
@@ -197,6 +233,11 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     DVASSERT(e->allocated);
 
     ObjectSync.Lock();
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    e->CleanBacktrace();
+#endif
+
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
     e->allocated = false;
@@ -299,28 +340,28 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
 {
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
     uint32 total = 0;
-    uint32 restore = 0;
+    uint32 unrestored = 0;
     uint32 counter = ResourceImpl<T, DT>::PendingRestoreCount();
 
     Lock();
     for (Iterator i = Begin(), e = End(); i != e; ++i)
     {
-        ++total;
         if (i->NeedRestore())
         {
-            ++restore;
             DAVA::Logger::Error("----------------------------");
-            for (const DAVA::Debug::StackFrame& frame : i->backtrace)
+            for (void* frame : i.GetEntry()->backtrace)
             {
-                DAVA::Logger::Error(frame.function.c_str());
+                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(frame);
+                DAVA::Logger::Error(symbol.c_str());
             }
-            DAVA::Logger::Error("----------------------------");
+            ++unrestored;
         }
+        ++total;
     }
     Unlock();
 
     DAVA::Logger::Error("----------------------------------------------");
-    DAVA::Logger::Error("%u / %u, counter = %u", total, restore, counter);
+    DAVA::Logger::Error("Unrestored resources: %u of %u, counter = %u", unrestored, total, counter);
     DAVA::Logger::Error("----------------------------------------------");
 #endif
 }
@@ -399,39 +440,6 @@ public:
     {
         return ObjectsToRestore.Get();
     }
-
-#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
-    DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
-
-    void CaptureBacktrace()
-    {
-        if (backtrace.empty())
-        {
-            backtrace = DAVA::Debug::GetBacktrace();
-            // remove redundant stack frames
-            if (backtrace.size() > 2)
-            {
-                backtrace.erase(backtrace.begin(), backtrace.begin() + 2);
-            }
-            if (backtrace.size() > 8)
-            {
-                backtrace.erase(backtrace.end() - 8, backtrace.end());
-            }
-        }
-    }
-
-    void CleanupBacktrace()
-    {
-        backtrace.clear();
-    }
-#else
-    void CaptureBacktrace()
-    {
-    }
-    void CleanupBacktrace()
-    {
-    }
-#endif
 
 private:
     DT creationDesc;

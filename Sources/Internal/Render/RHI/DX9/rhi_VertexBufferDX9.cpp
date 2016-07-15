@@ -44,8 +44,6 @@ VertexBufferDX9_t::VertexBufferDX9_t()
 
 bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
 {
-    CaptureBacktrace();
-
     DVASSERT(desc.size);
     bool success = false;
 
@@ -117,16 +115,12 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         buffer = nullptr;
     }
 
-    if (!RecreatePending())
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
-        if (mappedData)
-        {
-            ::free(mappedData);
-            mappedData = nullptr;
-        }
+        ::free(mappedData);
+        mappedData = nullptr;
         updatePending = false;
-        CleanupBacktrace();
     }
 
     MarkRestored();
@@ -311,8 +305,7 @@ void LogUnrestoredBacktraces()
     VertexBufferDX9Pool::LogUnrestoredBacktraces();
 }
 
-unsigned
-NeedRestoreCount()
+unsigned NeedRestoreCount()
 {
     return VertexBufferDX9Pool::PendingRestoreCount();
 }

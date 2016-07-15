@@ -73,8 +73,6 @@ TextureDX9_t::TextureDX9_t()
 
 bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 {
-    CaptureBacktrace();
-
     DVASSERT(desc.levelCount);
     bool success = false;
     UpdateCreationDesc(desc);
@@ -287,15 +285,11 @@ void TextureDX9_t::Destroy(bool force_immediate)
     width = 0;
     height = 0;
 
-    if (!RecreatePending())
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
-        if (mappedData)
-        {
-            ::free(mappedData);
-            mappedData = nullptr;
-        }
-        CleanupBacktrace();
+        ::free(mappedData);
+        mappedData = nullptr;
     }
 
     MarkRestored();
@@ -360,7 +354,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     }
     else
     {
-        bool shouldReadData = !self->isRenderTarget;
+        bool dataAvailable = !self->isRenderTarget;
 
         if (self->isRenderTarget)
         {
@@ -384,11 +378,11 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
             {
                 DX9Command cmd3 = { DX9Command::GET_RENDERTARGET_DATA, { uint64_t(&self->surf9), uint64_t(&self->rt_surf9) } };
                 ExecDX9(&cmd3, 1, false);
-                shouldReadData = cmd3.retval == D3D_OK;
+                dataAvailable = (cmd3.retval == D3D_OK);
             }
         }
 
-        if (shouldReadData)
+        if (dataAvailable)
         {
             DX9Command cmd = { DX9Command::READ_TEXTURE_LEVEL, { uint64_t(&self->tex9), level, data_sz, format, uint64(self->mappedData) } };
             ExecDX9(&cmd, 1, false);
@@ -557,8 +551,7 @@ void LogUnrestoredBacktraces()
     TextureDX9Pool::LogUnrestoredBacktraces();
 }
 
-unsigned
-NeedRestoreCount()
+unsigned NeedRestoreCount()
 {
     return TextureDX9Pool::PendingRestoreCount();
 }

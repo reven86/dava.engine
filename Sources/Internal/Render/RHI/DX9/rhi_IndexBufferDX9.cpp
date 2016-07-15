@@ -47,8 +47,6 @@ IndexBufferDX9_t::IndexBufferDX9_t()
 
 bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
 {
-    CaptureBacktrace();
-
     DVASSERT(desc.size);
     bool success = false;
 
@@ -120,18 +118,12 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         SetRecreatePending(false);
     }
 
-    if (!RecreatePending())
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
-
-        if (mappedData)
-        {
-            ::free(mappedData);
-            mappedData = nullptr;
-        }
+        ::free(mappedData);
+        mappedData = nullptr;
         updatePending = false;
-        isMapped = false;
-        CleanupBacktrace();
     }
 
     MarkRestored();
@@ -313,8 +305,7 @@ void LogUnrestoredBacktraces()
     IndexBufferDX9Pool::LogUnrestoredBacktraces();
 }
 
-unsigned
-NeedRestoreCount()
+unsigned NeedRestoreCount()
 {
     return IndexBufferDX9Pool::PendingRestoreCount();
 }

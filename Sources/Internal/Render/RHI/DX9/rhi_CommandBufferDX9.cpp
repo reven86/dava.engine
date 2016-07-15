@@ -19,9 +19,6 @@ using DAVA::Logger;
 #include <atomic>
 #include <thread>
 
-#define RHI_DX9_TRACK_API_OBJECTS 0
-#define RHI_DX9_ABORT_ON_FAILED_RESTORE 1
-
 namespace rhi
 {
 extern void _InitDX9();
@@ -61,19 +58,8 @@ static std::atomic<bool> _DX9_ResetScheduled{ false };
 HANDLE _DX9_FramePreparedEvent;
 HANDLE _DX9_FrameDoneEvent;
 
-#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
-static uint32 _DX9_RestoreAttempts = 0;
-const uint32 _DX9_MaxRestoreAttempts = 15;
-#endif
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-ULONG _DX9_RefCount(IUnknown* ptr)
-{
-    ptr->AddRef();
-    return ptr->Release();
-}
-static std::map<IUnknown*, DAVA::String> _DX9_ApiObjects;
-#endif
+static uint32 _DX9_FramesWithRestoreAttempt = 0;
+const uint32 _DX9_MaxFramesWithRestoreAttempt = 15;
 
 //------------------------------------------------------------------------------
 
@@ -1318,36 +1304,34 @@ _DX9_ExecuteQueuedCommands()
     {
         if (rhi::NeedRestoreResources())
         {
-#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
-            ++_DX9_RestoreAttempts;
-            if (_DX9_RestoreAttempts > _DX9_MaxRestoreAttempts)
+#if defined(ENABLE_ASSERT_MESSAGE) || defined(ENABLE_ASSERT_LOGGING)
+            ++_DX9_FramesWithRestoreAttempt;
+            if (_DX9_FramesWithRestoreAttempt > _DX9_MaxFramesWithRestoreAttempt)
             {
-                DAVA::Logger::Error("Failed to restore all resources in time:");
                 TextureDX9::LogUnrestoredBacktraces();
                 VertexBufferDX9::LogUnrestoredBacktraces();
                 IndexBufferDX9::LogUnrestoredBacktraces();
-                abort();
+                DVASSERT_MSG(0, "Failed to restore all resources in time.");
             }
 #endif
             _RejectAllFrames();
         }
         else
         {
-#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
-            _DX9_RestoreAttempts = 0;
-#endif
+            _DX9_FramesWithRestoreAttempt = 0;
+
             std::vector<Handle> pass_h;
             std::vector<RenderPassDX9_t*> pass;
 
             _DX9_FrameSync.Lock();
-            bool shouldExecute = !_DX9_Frame.empty();
-            if (shouldExecute)
+            bool hasFrames = !_DX9_Frame.empty();
+            if (hasFrames)
             {
                 _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
             }
             _DX9_FrameSync.Unlock();
 
-            if (shouldExecute)
+            if (hasFrames)
             {
                 for (RenderPassDX9_t* pp : pass)
                 {
@@ -1423,15 +1407,6 @@ _DX9_ExecuteQueuedCommands()
 
                 Logger::Error("[DX9 RESET] Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-                Logger::Error("[DX9 RESET] Tracked API objects:");
-                for (auto& obj : _DX9_ApiObjects)
-                {
-                    Logger::Info(obj.second.c_str());
-                }
-                abort();
-#endif
             }
             else
             {
@@ -1439,9 +1414,7 @@ _DX9_ExecuteQueuedCommands()
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
 
-#if (RHI_DX9_ABORT_ON_FAILED_RESTORE)
-            _DX9_RestoreAttempts = 0;
-#endif
+            _DX9_FramesWithRestoreAttempt = 0;
         }
 
         TextureDX9::ReCreateAll();
@@ -1489,11 +1462,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             DVASSERT(*(IDirect3DVertexBuffer9**)(arg[4]) == nullptr);
             cmd->retval = _D3D9_Device->CreateVertexBuffer(UINT(arg[0]), DWORD(arg[1]), DWORD(arg[2]), D3DPOOL(arg[3]), (IDirect3DVertexBuffer9**)(arg[4]), (HANDLE*)(arg[5]));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            IUnknown* ptr = *(IUnknown**)(arg[4]);
-            _DX9_ApiObjects[ptr] += DAVA::Format("+VB (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-#endif
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1541,11 +1509,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             DVASSERT(*(IDirect3DIndexBuffer9**)(arg[4]) == nullptr);
             cmd->retval = _D3D9_Device->CreateIndexBuffer(UINT(arg[0]), DWORD(arg[1]), D3DFORMAT(arg[2]), D3DPOOL(arg[3]), (IDirect3DIndexBuffer9**)(arg[4]), (HANDLE*)(arg[5]));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            IUnknown* ptr = *(IUnknown**)(arg[4]);
-            _DX9_ApiObjects[ptr] += DAVA::Format("+IB (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-#endif
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1593,11 +1556,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             DVASSERT(*(IDirect3DTexture9**)(arg[6]) == nullptr);
             cmd->retval = _D3D9_Device->CreateTexture(UINT(arg[0]), UINT(arg[1]), UINT(arg[2]), DWORD(arg[3]), D3DFORMAT(arg[4]), D3DPOOL(arg[5]), (IDirect3DTexture9**)(arg[6]), (HANDLE*)(arg[7]));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            IUnknown* ptr = *(IUnknown**)(arg[6]);
-            _DX9_ApiObjects[ptr] += DAVA::Format("+TEX (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-#endif
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1606,11 +1564,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             DVASSERT(*(IDirect3DCubeTexture9**)(arg[5]) == nullptr);
             cmd->retval = _D3D9_Device->CreateCubeTexture(UINT(arg[0]), UINT(arg[1]), DWORD(arg[2]), D3DFORMAT(arg[3]), D3DPOOL(arg[4]), (IDirect3DCubeTexture9**)(arg[5]), (HANDLE*)(arg[6]));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            IUnknown* ptr = *(IUnknown**)(arg[5]);
-            _DX9_ApiObjects[ptr] += DAVA::Format("+CUBE (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-#endif
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1864,11 +1817,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             IUnknown* ptr = *(IUnknown**)(arg[0]);
             cmd->retval = ptr->QueryInterface(*((const GUID*)(arg[1])), (void**)(arg[2]));
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            ptr = *(IUnknown**)(arg[2]);
-            _DX9_ApiObjects[ptr] += DAVA::Format("+QUERY (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-#endif
         }
         break;
 
@@ -1876,21 +1824,6 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             IUnknown* ptr = *(IUnknown**)(arg[0]);
             cmd->retval = ptr->Release();
-
-#if (RHI_DX9_TRACK_API_OBJECTS)
-            if (cmd->retval == 0)
-            {
-                _DX9_ApiObjects.erase(ptr);
-            }
-            else if (_DX9_ApiObjects.count(ptr) > 0)
-            {
-                _DX9_ApiObjects[ptr] += DAVA::Format("+RELEASE (%u): %u", _DX9_FrameNumber, _DX9_RefCount(ptr));
-            }
-            else
-            {
-                DAVA::Logger::Error("Attempt to release untracked DX9 object (reference counter = %u)", cmd->retval);
-            }
-#endif
         }
         break;
 
@@ -1974,10 +1907,10 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         _DX9_PendingImmediateCmdSync.Unlock();
 
         _DX9_FrameSync.Lock();
-        bool shouldExecute = _DX9_ResetPending || (!_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute);
+        bool frameReady = !_DX9_Frame.empty() && _DX9_Frame.front().readyToExecute;
         _DX9_FrameSync.Unlock();
 
-        if (shouldExecute)
+        if (_DX9_ResetPending || frameReady)
         {
             _DX9_ExecuteQueuedCommands();
         }
