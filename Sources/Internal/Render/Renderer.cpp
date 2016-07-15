@@ -175,8 +175,6 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
 
 void BeginFrame()
 {
-    StatSet::ResetAll();
-
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();
 }

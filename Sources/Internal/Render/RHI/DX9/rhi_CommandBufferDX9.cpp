@@ -1277,6 +1277,8 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
 static void
 _DX9_ExecuteQueuedCommands()
 {
+    StatSet::ResetAll();
+
     unsigned frame_n = 0;
 
     if (_DX9_ResetPending || rhi::NeedRestoreResources())

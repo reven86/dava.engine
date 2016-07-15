@@ -201,6 +201,8 @@ void RenderPass::ProcessVisibilityQuery()
 void RenderPass::BeginRenderPass()
 {
 #if __DAVAENGINE_RENDERSTATS__
+    ProcessVisibilityQuery();
+
     rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
     passConfig.queryBuffer = qBuffer;
     queryBuffers.push_back(qBuffer);
@@ -215,10 +217,6 @@ void RenderPass::EndRenderPass()
 {
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(renderPass);
-
-#if __DAVAENGINE_RENDERSTATS__
-    ProcessVisibilityQuery();
-#endif
 }
 
 void RenderPass::ClearLayersArrays()

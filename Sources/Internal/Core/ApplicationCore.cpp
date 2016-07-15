@@ -64,6 +64,8 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
+    Renderer::GetRenderStats().Reset();
+
     TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
 

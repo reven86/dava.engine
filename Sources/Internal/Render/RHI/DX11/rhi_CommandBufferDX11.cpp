@@ -1099,6 +1099,8 @@ dx11_SyncObject_IsSignaled(Handle obj)
 static void
 _ExecuteQueuedCommandsDX11()
 {
+    StatSet::ResetAll();
+
     Trace("rhi-dx11.exec-queued-cmd\n");
 
     if (_DX11_InitParam.FrameCommandExecutionSync)

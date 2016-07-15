@@ -1913,6 +1913,8 @@ _RejectAllFrames()
 static void
 _GLES2_ExecuteQueuedCommands()
 {
+    StatSet::ResetAll();
+
     Trace("rhi-gl.exec-queued-cmd\n");
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;

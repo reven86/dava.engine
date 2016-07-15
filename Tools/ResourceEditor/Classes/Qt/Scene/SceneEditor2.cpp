@@ -383,7 +383,6 @@ void SceneEditor2::Update(float timeElapsed)
     ++framesCount;
 
     renderStats = DAVA::Renderer::GetRenderStats();
-    DAVA::Renderer::GetRenderStats().Reset();
 
     Scene::Update(timeElapsed);
 }
