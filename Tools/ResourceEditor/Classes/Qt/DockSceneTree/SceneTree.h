@@ -27,6 +27,7 @@ protected:
 private slots:
     void ShowContextMenu(const QPoint& pos);
     void SetFilter(const QString& filter);
+    void RemoveSelection();
 
     void CollapseSwitch();
     void CollapseAll();
@@ -51,6 +52,7 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
+    void EmitParticleSignals();
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 

@@ -24,6 +24,7 @@ import argparse
 import re
 import sys
 import os.path
+import glob
 import signal
 
 
@@ -165,6 +166,11 @@ branch = branch.replace("/", "_")
 if not os.path.exists("../artifacts"):
     os.makedirs("../artifacts")
 
+files = glob.glob("../artifacts/*.txt")
+for f in files:
+    if os.path.isfile(f):
+        os.remove(f)
+
 if not os.path.exists("../artifacts/materials"):
     os.makedirs("../artifacts/materials")
 
@@ -195,8 +201,8 @@ while continue_process_stdout:
                     if 'statistic_file' in locals():
                         statistic_file.close()
 
-                    frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
-                    statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
+                    frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_device_" + device_name + ".txt", "w")
+                    statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_device_" + device_name + ".txt", "w")
 
                 if line.find("MaterialsTest") != -1:
 
@@ -228,8 +234,8 @@ while continue_process_stdout:
                     # append info to build statistic keys for compare on teamcity
                     else:
 
-                        # write fps and memory statistic to file
-                        if line.find("fps") != -1 or line.find("memory") != -1:
+                        # write loading time, fps and memory statistic to file
+                        if line.find("fps") != -1 or line.find("memory") != -1 or line.find("Loading") != -1:
                             statistic_file.write(key + " " + value + "\n")
 
                         #write material metrics

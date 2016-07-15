@@ -17,16 +17,17 @@
 #include <QFileInfo>
 #include <QApplication>
 
+namespace wgt
+{
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
-namespace wgt
-{
 PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
 }
-}
+
+} // namespace wgt
 
 namespace NGTLayer
 {
@@ -132,6 +133,11 @@ bool BaseApplication::OnRequestCloseApp()
 
 void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
 {
+}
+
+const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine() const
+{
+    return commandLineParser;
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const

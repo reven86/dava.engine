@@ -9,7 +9,7 @@
 
 const char* NGTCommand::getId() const
 {
-    return wgt::getClassIdentifier<NGTCommand>();
+    return wgt::TypeId::getType<NGTCommand>().getName();
 }
 
 wgt::ObjectHandle NGTCommand::execute(const wgt::ObjectHandle& arguments) const

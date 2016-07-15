@@ -442,7 +442,7 @@ static int32 oldModifersFlags = 0;
     // TODO add support for simultanious keys presed or released
     int32 newModifers = [event modifierFlags];
     static int32 masks[] = { NSAlphaShiftKeyMask, NSShiftKeyMask, NSControlKeyMask, NSAlternateKeyMask, NSCommandKeyMask };
-    static Key keyCodes[] = { Key::CAPSLOCK, Key::LSHIFT, Key::LCTRL, Key::LALT, Key::LWIN };
+    static Key keyCodes[] = { Key::CAPSLOCK, Key::LSHIFT, Key::LCTRL, Key::LALT, Key::LCMD };
 
     InputSystem* input = InputSystem::Instance();
     KeyboardDevice& keyboard = input->GetKeyboard();
@@ -479,11 +479,11 @@ static int32 oldModifersFlags = 0;
                         ev.key = Key::RALT;
                     }
                 }
-                else if (ev.key == Key::LWIN)
+                else if (ev.key == Key::LCMD)
                 {
                     if ((newModifers & NX_DEVICERCMDKEYMASK) || (oldModifersFlags & NX_DEVICERCMDKEYMASK))
                     {
-                        ev.key = Key::RWIN;
+                        ev.key = Key::RCMD;
                     }
                 }
             }

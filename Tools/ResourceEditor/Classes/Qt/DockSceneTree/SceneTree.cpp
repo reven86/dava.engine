@@ -206,7 +206,7 @@ protected:
 
             if ((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
         }
         else
@@ -220,7 +220,7 @@ protected:
             menu.addSeparator();
             if (entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
 
             menu.addSeparator();
@@ -763,6 +763,12 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
+
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &SceneTree::RemoveSelection);
+    addAction(deleteSelection);
 }
 
 void SceneTree::SetFilter(const QString& filter)
@@ -775,6 +781,11 @@ void SceneTree::SetFilter(const QString& filter)
     {
         ExpandFilteredItems();
     }
+}
+
+void SceneTree::RemoveSelection()
+{
+    ::RemoveSelection(treeModel->GetScene());
 }
 
 void SceneTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col)
@@ -909,6 +920,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         filteringProxyModel->invalidate();
 
         SyncSelectionToTree();
+        EmitParticleSignals();
 
         if (treeModel->IsFilterSet())
         {
@@ -954,6 +966,7 @@ void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItem
         return;
 
     SyncSelectionFromTree();
+    EmitParticleSignals();
 }
 
 void SceneTree::TreeItemClicked(const QModelIndex& index)
@@ -1173,6 +1186,7 @@ void SceneTree::SyncSelectionToTree()
         return;
 
     QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+    QItemSelection itemSelection;
 
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
@@ -1196,17 +1210,18 @@ void SceneTree::SyncSelectionToTree()
             }
             else
             {
-                QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, selectionMode);
+                QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+                itemSelection.merge(subRange, selectionMode);
                 startIndex = i;
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
-        QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, selectionMode);
+        QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+        itemSelection.merge(subRange, selectionMode);
     }
 
+    selectModel->select(itemSelection, selectionMode);
     if (lastValidIndex.isValid())
     {
         selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);
@@ -1237,6 +1252,37 @@ void SceneTree::SyncSelectionFromTree()
         // this should be done until we are inSync mode, to prevent unnecessary updates
         // when signals from selection system will be emitted on next frame
         curScene->selectionSystem->ForceEmitSignals();
+    }
+}
+void SceneTree::EmitParticleSignals()
+{
+    QModelIndexList indexList = selectionModel()->selection().indexes();
+    if (indexList.size() != 1)
+        return;
+
+    SceneTreeItem* item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
+    if (item != nullptr)
+    {
+        if (item->ItemType() == SceneTreeItem::eItemType::EIT_Layer)
+        {
+            // hack for widgets: select emitter instance first and then select layer
+            // emitter instance will be in "deselected" -> can handle in widgets
+            SelectableGroup selection;
+            selection.Add(static_cast<SceneTreeItemParticleLayer*>(item)->emitterInstance);
+            treeModel->GetScene()->selectionSystem->SetSelection(selection);
+        }
+        else if (item->ItemType() == SceneTreeItem::eItemType::EIT_Force)
+        {
+            // same hack here, but selecting layer
+            SelectableGroup selection;
+            selection.Add(static_cast<SceneTreeItemParticleForce*>(item)->layer);
+            treeModel->GetScene()->selectionSystem->SetSelection(selection);
+        }
+
+        SelectableGroup selection;
+        selection.Add(item->GetItemObject());
+        treeModel->GetScene()->selectionSystem->SetSelection(selection);
+        treeModel->GetScene()->selectionSystem->ForceEmitSignals();
     }
 }
 
