@@ -15,10 +15,9 @@ public:
 
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
 
-
 private slots:
     void OnError();
-    
+
 signals:
 
     void FireError();
