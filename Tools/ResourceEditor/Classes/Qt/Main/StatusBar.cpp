@@ -154,6 +154,13 @@ void StatusBar::UpdateFPS()
 
 void StatusBar::OnSelectionBoxChanged(const DAVA::AABBox3& newBox)
 {
-    DAVA::Vector3 size = newBox.GetSize();
-    selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+    if (newBox.IsEmpty())
+    {
+        selectionBoxSize->setText("Empty box");
+    }
+    else
+    {
+        DAVA::Vector3 size = newBox.GetSize();
+        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+    }
 }
