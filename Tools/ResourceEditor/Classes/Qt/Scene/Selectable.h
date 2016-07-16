@@ -1,5 +1,4 @@
-#ifndef __SELECTABLE_OBJECT_H__
-#define __SELECTABLE_OBJECT_H__
+#pragma once
 
 #include "Scene3D/Entity.h"
 #include <type_traits>
@@ -130,4 +129,3 @@ inline bool Selectable::ContainsObject() const
     return object != nullptr;
 }
 
-#endif // __SELECTABLE_OBJECT_H__

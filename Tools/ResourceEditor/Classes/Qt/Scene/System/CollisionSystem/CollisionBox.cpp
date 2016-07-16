@@ -34,11 +34,11 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAV
     return ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(plane));
 }
 
-CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes)
+CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane> &planes)
 {
-    for (size_t i = 0; i < numPlanes; ++i)
+    for (const DAVA::Plane& plane: planes)
     {
-        if (ClassifyToPlane(plane[i]) == CollisionBaseObject::ClassifyPlaneResult::Behind)
+        if (ClassifyToPlane(plane) == CollisionBaseObject::ClassifyPlaneResult::Behind)
         {
             return CollisionBaseObject::ClassifyPlanesResult::Outside;
         }

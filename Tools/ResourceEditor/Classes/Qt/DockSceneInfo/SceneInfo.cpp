@@ -153,10 +153,8 @@ void SceneInfo::RefreshSpeedTreeInfoSelection()
     QtPropertyData* header = GetInfoHeader("SpeedTree Info");
 
     float32 speedTreeLeafSquare = 0.f, speedTreeLeafSquareDivX = 0.f, speedTreeLeafSquareDivY = 0.f;
-    int32 infoCount = speedTreeLeafInfo.size();
-    for (int32 i = 0; i < infoCount; i++)
+    for (const SpeedTreeInfo& info : speedTreeLeafInfo)
     {
-        SpeedTreeInfo& info = speedTreeLeafInfo[i];
         speedTreeLeafSquare += info.leafsSquare;
         speedTreeLeafSquareDivX += info.leafsSquareDivX;
         speedTreeLeafSquareDivY += info.leafsSquareDivY;
@@ -904,19 +902,18 @@ void SceneInfo::RefreshLayersSection()
 
         Vector<FastName> queriesNames;
         FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
-        int32 namesCount = queriesNames.size();
-        for (int32 i = 0; i < namesCount; i++)
+        for (const FastName& queryName: queriesNames)
         {
-            if (queriesNames[i] == FRAME_QUERY_UI_DRAW)
+            if (queryName == FRAME_QUERY_UI_DRAW)
                 continue;
 
-            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queriesNames[i]);
+            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queryName);
             String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
 
-            if (!HasChild(queriesNames[i].c_str(), header))
-                AddChild(queriesNames[i].c_str(), header);
+            if (!HasChild(queryName.c_str(), header))
+                AddChild(queryName.c_str(), header);
 
-            SetChild(queriesNames[i].c_str(), str.c_str(), header);
+            SetChild(queryName.c_str(), str.c_str(), header);
         }
     }
 }
