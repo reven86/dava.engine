@@ -793,6 +793,11 @@ void SceneTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, i
     row = -1;
     col = -1;
     index = indexAt(pos);
+    if (!visualRect(index).contains(pos))
+    {
+        index = QModelIndex();
+        return;
+    }
 
     switch (dropIndicatorPosition())
     {
