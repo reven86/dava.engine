@@ -275,10 +275,10 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
 
     const DAVA::Vector<DAVA::Plane> planes =
     {
-        DAVA::Plane(p2, p1, p0),
-        DAVA::Plane(p3, p2, p0),
-        DAVA::Plane(p4, p3, p0),
-        DAVA::Plane(p1, p4, p0)
+      DAVA::Plane(p2, p1, p0),
+      DAVA::Plane(p3, p2, p0),
+      DAVA::Plane(p4, p3, p0),
+      DAVA::Plane(p1, p4, p0)
     };
 
     const SelectableGroup& allSelectedObjects = collisionSystem->ClipObjectsToPlanes(planes);
@@ -324,7 +324,6 @@ void SceneSelectionSystem::AddEntity(DAVA::Entity* entity)
 
 namespace SceneSelectionSystemDetails
 {
-
 void EnumerateSelectableObjects(DAVA::ParticleEmitter* emitter, DAVA::Vector<Selectable::Object*>& enumeratedObjects)
 {
     for (DAVA::ParticleLayer* layer : emitter->layers)
@@ -361,7 +360,7 @@ void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
         entitiesForSelection.remove(entity);
     }
 
-    DAVA::Vector<Selectable::Object *> potentiallySelectedObjects;
+    DAVA::Vector<Selectable::Object*> potentiallySelectedObjects;
     SceneSelectionSystemDetails::EnumerateSelectableObjects(entity, potentiallySelectedObjects);
     for (Selectable::Object* object : potentiallySelectedObjects)
     {

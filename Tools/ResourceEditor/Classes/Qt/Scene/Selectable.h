@@ -128,4 +128,3 @@ inline bool Selectable::ContainsObject() const
 {
     return object != nullptr;
 }
-

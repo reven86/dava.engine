@@ -510,7 +510,7 @@ void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
     }
 }
 
-const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane> &planes)
+const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : objectToCollision)

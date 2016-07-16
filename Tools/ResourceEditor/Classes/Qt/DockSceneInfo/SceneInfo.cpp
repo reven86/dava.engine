@@ -902,7 +902,7 @@ void SceneInfo::RefreshLayersSection()
 
         Vector<FastName> queriesNames;
         FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
-        for (const FastName& queryName: queriesNames)
+        for (const FastName& queryName : queriesNames)
         {
             if (queryName == FRAME_QUERY_UI_DRAW)
                 continue;

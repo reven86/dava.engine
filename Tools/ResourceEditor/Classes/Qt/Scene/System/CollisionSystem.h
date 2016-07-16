@@ -60,7 +60,7 @@ public:
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
-    const SelectableGroup& ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane> &planes);
+    const SelectableGroup& ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes);
 
 private:
     void Draw();

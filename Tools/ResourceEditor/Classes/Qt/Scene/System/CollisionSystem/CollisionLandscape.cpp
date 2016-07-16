@@ -62,7 +62,7 @@ CollisionBaseObject::ClassifyPlaneResult CollisionLandscape::ClassifyToPlane(con
     return ClassifyPlaneResult::Behind;
 }
 
-CollisionBaseObject::ClassifyPlanesResult CollisionLandscape::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane> &planes)
+CollisionBaseObject::ClassifyPlanesResult CollisionLandscape::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     return ClassifyPlanesResult::Outside;
 }

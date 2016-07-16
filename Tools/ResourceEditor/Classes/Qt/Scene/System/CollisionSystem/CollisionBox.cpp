@@ -34,9 +34,9 @@ CollisionBaseObject::ClassifyPlaneResult CollisionBox::ClassifyToPlane(const DAV
     return ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(plane));
 }
 
-CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane> &planes)
+CollisionBaseObject::ClassifyPlanesResult CollisionBox::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
-    for (const DAVA::Plane& plane: planes)
+    for (const DAVA::Plane& plane : planes)
     {
         if (ClassifyToPlane(plane) == CollisionBaseObject::ClassifyPlaneResult::Behind)
         {

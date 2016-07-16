@@ -157,7 +157,7 @@ struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleInde
     int numTriangles = 0;
     int trianglesBehind = 0;
 
-    ClassifyTrianglesToMultiplePlanesCallback(const DAVA::Vector<DAVA::Plane> &pl, int nt)
+    ClassifyTrianglesToMultiplePlanesCallback(const DAVA::Vector<DAVA::Plane>& pl, int nt)
         : planes(pl)
         , numTriangles(nt)
     {
@@ -165,7 +165,7 @@ struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleInde
 
     void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) override
     {
-        for (const DAVA::Plane& plane: planes)
+        for (const DAVA::Plane& plane : planes)
         {
             float distances[3] =
             {
@@ -195,12 +195,12 @@ CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(
     return cb.result;
 }
 
-CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane> &planes)
+CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     if (btShape == nullptr)
         return CollisionBaseObject::ClassifyPlanesResult::Outside;
 
-    for (const DAVA::Plane& plane: planes)
+    for (const DAVA::Plane& plane : planes)
     {
         if (ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(plane)) == ClassifyPlaneResult::Behind)
         {
