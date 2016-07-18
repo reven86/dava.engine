@@ -10,6 +10,7 @@
 #include "Main/QtUtils.h"
 #include "TextureBrowser/TextureCache.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 namespace MaterialItemLocal
 {
