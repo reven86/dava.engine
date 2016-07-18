@@ -97,8 +97,8 @@ public:
     void Draw();
     void CancelSelection();
 
-    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
-    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void AddDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveDelegate(SceneSelectionSystemDelegate* delegate_);
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
