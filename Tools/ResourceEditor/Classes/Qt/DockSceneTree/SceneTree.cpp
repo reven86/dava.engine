@@ -793,6 +793,11 @@ void SceneTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, i
     row = -1;
     col = -1;
     index = indexAt(pos);
+    if (!visualRect(index).contains(pos))
+    {
+        index = QModelIndex();
+        return;
+    }
 
     switch (dropIndicatorPosition())
     {
@@ -1186,6 +1191,7 @@ void SceneTree::SyncSelectionToTree()
         return;
 
     QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+    QItemSelection itemSelection;
 
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
@@ -1209,17 +1215,18 @@ void SceneTree::SyncSelectionToTree()
             }
             else
             {
-                QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, selectionMode);
+                QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+                itemSelection.merge(subRange, selectionMode);
                 startIndex = i;
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
-        QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, selectionMode);
+        QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+        itemSelection.merge(subRange, selectionMode);
     }
 
+    selectModel->select(itemSelection, selectionMode);
     if (lastValidIndex.isValid())
     {
         selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);

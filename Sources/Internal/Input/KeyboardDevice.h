@@ -23,8 +23,8 @@ enum class Key : uint32
     LCTRL,
     LALT,
 
-    LWIN,
-    RWIN,
+    LCMD, // on mac - left cmd button
+    RCMD, // on mac - right cmd button
     APPS, // https://en.wikipedia.org/wiki/Menu_key
 
     PAUSE,

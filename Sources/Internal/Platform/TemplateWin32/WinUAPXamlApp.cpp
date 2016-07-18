@@ -627,7 +627,6 @@ void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequested
 void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
     uint32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
-
     if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
         key |= 0x100;
