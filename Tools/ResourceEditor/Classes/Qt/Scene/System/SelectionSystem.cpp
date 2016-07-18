@@ -287,7 +287,11 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
         DAVA::Entity* entity = item.AsEntity();
         if (entity == nullptr)
         {
-            selectedObjects.Add(item.GetContainedObject(), GetUntransformedBoundingBox(item.GetContainedObject()));
+            Selectable::Object* object = item.GetContainedObject();
+            if (!selectedObjects.ContainsObject(object))
+            {
+                selectedObjects.Add(object, GetUntransformedBoundingBox(object));
+            }
         }
         else if (IsEntitySelectable(entity))
         {
