@@ -11,7 +11,7 @@ public:
     CommandLineManager(int argc, char* argv[]);
     ~CommandLineManager();
 
-    bool IsEnabled()
+    bool IsEnabled() const
     {
         return isConsoleModeEnabled;
     };
