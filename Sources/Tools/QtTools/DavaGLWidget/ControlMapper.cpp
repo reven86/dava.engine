@@ -52,9 +52,6 @@ DAVA::Key ConvertQtCommandKeysToDava(int qtKey)
     case Qt::Key_AltGr:
         result = DAVA::Key::RALT;
         break;
-    case Qt::Key_Meta:
-        result = DAVA::Key::LWIN;
-        break;
     default:
     {
         const int Kostil_KeyForRussianLanguage_A = 1060;
