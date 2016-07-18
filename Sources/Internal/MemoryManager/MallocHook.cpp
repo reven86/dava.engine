@@ -198,7 +198,7 @@ void MallocHook::Install()
             fptr = dlsym(libc, "malloc_usable_size");
         }
     }
-    
+
     RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
     if (nullptr == RealMallocSize)
     { // DAVA::Logger in not available yet
