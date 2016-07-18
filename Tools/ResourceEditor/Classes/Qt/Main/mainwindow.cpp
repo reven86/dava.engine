@@ -2612,16 +2612,17 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if (sceneWasChanged)
     {
         scene->MarkAsChanged();
+
+        bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
+        if (needSaveScene)
+        {
+            SaveScene(scene);
+        }
+
         ui->propertyEditor->ResetProperties();
     }
 
     delete waitOcclusionDlg;
-
-    bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
-    if (needSaveScene && sceneWasChanged)
-    {
-        SaveScene(scene);
-    }
 }
 
 void QtMainWindow::OnInavalidateStaticOcclusion()
