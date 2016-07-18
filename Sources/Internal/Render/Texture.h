@@ -146,6 +146,7 @@ public:
 
     void SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW = rhi::TEXADDR_WRAP);
     void SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter);
+    void SetAnisotropyLevel(uint32 level);
 
     /**
         \brief Function to receive pathname of texture object

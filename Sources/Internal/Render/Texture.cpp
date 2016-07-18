@@ -393,6 +393,15 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
+    
+void Texture::SetAnisotropyLevel(uint32 level)
+{
+    DVASSERT(level >= 1);
+    samplerState.anisotropyLevel = level;
+    
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
+}
 
 void Texture::GenerateMipmaps()
 {

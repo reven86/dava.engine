@@ -34,7 +34,7 @@ public:
         int8 magFilter = rhi::TEXFILTER_LINEAR;
         int8 mipFilter = rhi::TEXMIPFILTER_LINEAR;
 
-        int8 anisotropy = 1;
+        int8 anisotropy = 16;
 
         INTROSPECTION(TextureDrawSettings,
                       MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
