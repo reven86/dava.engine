@@ -505,6 +505,11 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     }
     OptimizeScene(scene);
 
+    if (serializationContext.GetVersion() < LODSYSTEM2)
+    {
+        FixLodForLodsystem2(scene);
+    }
+
     if (GetError() == ERROR_NO_ERROR)
     {
         scene->SceneDidLoaded();
@@ -921,6 +926,28 @@ bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
     }
     SafeRelease(archive);
     return resultLoad;
+}
+
+void SceneFileV2::FixLodForLodsystem2(Entity* entity)
+{
+    LodComponent* lod = GetLodComponent(entity);
+    RenderObject* ro = GetRenderObject(entity);
+    ParticleEffectComponent* effect = GetParticleEffectComponent(entity);
+    if (lod && ro && !effect)
+    {
+        int32 maxLod = ro->GetMaxLodIndex();
+        for (int32 i = maxLod; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        {
+            lod->SetLodLayerDistance(i, std::numeric_limits<float32>::max());
+        }
+    }
+
+    int32 size = entity->GetChildrenCount();
+    for (int32 i = 0; i < size; ++i)
+    {
+        Entity* child = entity->GetChild(i);
+        FixLodForLodsystem2(child);
+    }
 }
 
 Entity* SceneFileV2::LoadEntity(Scene* scene, KeyedArchive* archive)
