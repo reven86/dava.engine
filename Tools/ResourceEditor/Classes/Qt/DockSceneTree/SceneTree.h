@@ -57,6 +57,7 @@ private:
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
     void UpdateTree();
+    void UpdateModel();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
