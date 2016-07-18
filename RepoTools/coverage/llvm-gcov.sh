@@ -1,0 +1,1 @@
+exec llvm-cov gcov "$@"
