@@ -621,21 +621,43 @@ if( TARGET_FILE_TREE_FOUND )
 
 endif()
 
-
 if( ANDROID )
-    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
-    set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
+
+    # Copy STL .so to output dir on ANDROID    
+    if (DEFINED ANDROID_NDK 
+        AND DEFINED ANDROID_STL_PREFIX 
+        AND DEFINED ANDROID_ABI)
+        
+        set ( ANDROID_STL_SO_NAME "libc++_shared.so" )
+        set ( ANDROID_STL_SO_PATH "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/${ANDROID_STL_SO_NAME}" )
+        
+        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
+        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}")
+            message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" )
+        endif()
+        
+    endif ()
     
-    execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
-    if( NOT RESULT EQUAL 0 OR NOT EXISTS "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}")
-        message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" )
-    endif()
+    # add custom target to strip symbols from shared library
+    # strip symbols only in release configurations
+    set ( LIB_FILE_PATH "${LIBRARY_OUTPUT_PATH}/lib${PROJECT_NAME}.so" )
+    if ( CMAKE_STRIP )
+        add_custom_target( symbol-strip ALL
+            COMMAND if $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>> == 1 ${CMAKE_STRIP} --strip-unneeded ${LIB_FILE_PATH}
+        )
+        add_dependencies( symbol-strip ${PROJECT_NAME} )
+    endif ()
+
+    # link libraries
+    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive )
+    set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
 
     foreach( LIB_1 ${TARGET_LIBRARIES} )
         foreach( LIB_2 ${TARGET_LIBRARIES} )
             if( ${LIB_1} STREQUAL ${LIB_2} )
             else()
                 target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
+                message ( "target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )" )
             endif()
         endforeach()
     endforeach()
