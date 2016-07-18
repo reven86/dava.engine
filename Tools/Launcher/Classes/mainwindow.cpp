@@ -294,7 +294,14 @@ void MainWindow::ShowWebpage()
 
 void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr)
 {
-    ui->textBrowser->setHtml(QString(downloadedData));
+    if (errorCode != QNetworkReply::NoError && errorCode != QNetworkReply::OperationCanceledError)
+    {
+        ui->textBrowser->setHtml(tr("Network error: %1").arg(errorDescr));
+    }
+    else
+    {
+        ui->textBrowser->setHtml(QString(downloadedData));
+    }
 }
 
 void MainWindow::ShowTable(const QString& branchID)
