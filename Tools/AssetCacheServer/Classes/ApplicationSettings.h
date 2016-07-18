@@ -41,6 +41,7 @@ private:
     static const DAVA::uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
     static const bool DEFAULT_AUTO_START = true;
     static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
+    static const bool DEFAULT_RESTART_ON_CRASH = false;
 
 public:
     void Save() const;
@@ -69,6 +70,9 @@ public:
     const bool IsLaunchOnSystemStartup() const;
     void SetLaunchOnSystemStartup(bool);
 
+    const bool IsRestartOnCrash() const;
+    void SetRestartOnCrash(bool);
+
     const DAVA::List<ServerData>& GetServers() const;
     void ResetServers();
     void AddServer(const ServerData& server);
@@ -91,6 +95,7 @@ public:
     DAVA::uint16 listenPort = DEFAULT_PORT;
     bool autoStart = DEFAULT_AUTO_START;
     bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
+    bool restartOnCrash = DEFAULT_RESTART_ON_CRASH;
     DAVA::List<ServerData> remoteServers;
 
     bool isFirstLaunch = true;

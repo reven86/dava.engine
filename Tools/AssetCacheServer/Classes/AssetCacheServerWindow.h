@@ -47,8 +47,9 @@ private slots:
     void OnNumberOfFilesChanged(int);
     void OnAutoSaveTimeoutChanged(int);
     void OnPortChanged(int);
-    void OnAutoStartChanged(int);
-    void OnSystemStartupChanged(int);
+    void OnAutoStartToggled(bool);
+    void OnSystemStartupToggled(bool);
+    void OnRestartToggled(bool);
     void OnAdvancedLinkActivated(const QString&);
 
     void OnAddServerClicked();
@@ -71,7 +72,7 @@ private:
 
     void ShowAdvancedSettings(bool show);
 
-    void SetupLaunchOnStartup(bool toLaunchOnStartup);
+    void SetupLaunchOnStartup(bool toLaunchOnStartup, bool toRestartOnCrash);
 
     void VerifyData();
 

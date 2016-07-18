@@ -49,14 +49,15 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelection);
-    connect(ui->systemStartupCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnSystemStartupChanged(int)));
+    connect(ui->systemStartupCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSystemStartupToggled(bool)));
     connect(ui->cacheSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnCacheSizeChanged(double)));
     connect(ui->clearButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnClearButtonClicked);
 
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
-    connect(ui->autoStartCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnAutoStartChanged(int)));
+    connect(ui->autoStartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnAutoStartToggled(bool)));
+    connect(ui->restartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRestartToggled(bool)));
     connect(ui->advancedLabel, &QLabel::linkActivated, this, &AssetCacheServerWindow::OnAdvancedLinkActivated);
 
     connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnAddServerClicked);
@@ -77,7 +78,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     connect(&serverCore, &ServerCore::StorageSpaceAltered, this, &AssetCacheServerWindow::UpdateUsageProgressbar);
 
     LoadSettings();
-    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked());
+    SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked(), ui->restartCheckBox->isChecked());
 
     OnServerStateChanged(&serverCore);
 
@@ -156,7 +157,7 @@ void AssetCacheServerWindow::OnFirstLaunch()
     show();
 }
 
-void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
+void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool toRestartOnCrash)
 {
 #if defined(__DAVAENGINE_WINDOWS__)
 
@@ -196,9 +197,22 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
         xml.writeTextElement("key", "RunAtLoad");
         xml.writeStartElement("true");
         xml.writeEndElement();
+
         xml.writeTextElement("key", "KeepAlive");
-        xml.writeStartElement("false");
-        xml.writeEndElement();
+        if (toRestartOnCrash)
+        {
+            xml.writeStartElement("dict");
+            xml.writeTextElement("key", "SuccessfulExit");
+            xml.writeStartElement("false");
+            xml.writeEndElement();
+            xml.writeEndElement();
+        }
+        else
+        {
+            xml.writeStartElement("false");
+            xml.writeEndElement();
+        }
+
         xml.writeEndElement();
 
         xml.writeEndElement();
@@ -272,12 +286,18 @@ void AssetCacheServerWindow::OnPortChanged(int)
     VerifyData();
 }
 
-void AssetCacheServerWindow::OnAutoStartChanged(int)
+void AssetCacheServerWindow::OnAutoStartToggled(bool)
 {
     VerifyData();
 }
 
-void AssetCacheServerWindow::OnSystemStartupChanged(int val)
+void AssetCacheServerWindow::OnSystemStartupToggled(bool checked)
+{
+    ui->restartCheckBox->setEnabled(checked);
+    VerifyData();
+}
+
+void AssetCacheServerWindow::OnRestartToggled(bool)
 {
     VerifyData();
 }
@@ -290,14 +310,35 @@ void AssetCacheServerWindow::OnAdvancedLinkActivated(const QString& link)
 void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
 {
     ui->emptyLabel->setVisible(show);
+
     ui->numberOfFilesLabel->setVisible(show);
+    ui->numberOfFilesLabel2->setVisible(show);
     ui->numberOfFilesSpinBox->setVisible(show);
+
     ui->autoSaveLabel->setVisible(show);
+    ui->autoSaveLabel2->setVisible(show);
     ui->autoSaveTimeoutSpinBox->setVisible(show);
+
     ui->portLabel->setVisible(show);
+    ui->portLabel2->setVisible(show);
     ui->portSpinBox->setVisible(show);
+
     ui->autoStartLabel->setVisible(show);
+    ui->autoStartLabel2->setVisible(show);
     ui->autoStartCheckBox->setVisible(show);
+    
+#if defined(__DAVAENGINE_MACOS__) // restart functionality supported on macos platform only
+    ui->restartLabel->setVisible(show);
+    ui->restartLabel2->setVisible(show);
+    ui->restartLabel3->setVisible(show);
+    ui->restartCheckBox->setVisible(show);
+#else
+    ui->restartLabel->setVisible(false);
+    ui->restartLabel2->setVisible(false);
+    ui->restartLabel3->setVisible(false);
+    ui->restartCheckBox->setVisible(false);
+#endif
+
     ui->advancedLabel->setText(
     QString("<html><head/><body><p><a href=\"adv\"><span style=\" text - decoration: underline; color:#0000ff; \">%1 advanced settings</span></a></p></body></html>")
     .arg(show ? "Hide" : "Show"));
@@ -404,9 +445,10 @@ void AssetCacheServerWindow::OnClearButtonClicked()
 void AssetCacheServerWindow::OnApplyButtonClicked()
 {
     bool toLaunchOnStartup = ui->systemStartupCheckBox->isChecked();
+    bool toRestartOnCrash = ui->restartCheckBox->isChecked();
     if (serverCore.Settings().IsLaunchOnSystemStartup() != toLaunchOnStartup)
     {
-        SetupLaunchOnStartup(toLaunchOnStartup);
+        SetupLaunchOnStartup(toLaunchOnStartup, toRestartOnCrash);
     }
 
     SaveSettings();
@@ -431,6 +473,7 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetPort(ui->portSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
     serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
+    serverCore.Settings().SetRestartOnCrash(ui->restartCheckBox->isChecked());
 
     serverCore.Settings().ResetServers();
     for (auto& server : remoteServers)
@@ -453,6 +496,8 @@ void AssetCacheServerWindow::LoadSettings()
     ui->portSpinBox->setValue(serverCore.Settings().GetPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
     ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
+    ui->restartCheckBox->setEnabled(serverCore.Settings().IsLaunchOnSystemStartup());
+    ui->restartCheckBox->setChecked(serverCore.Settings().IsRestartOnCrash());
 
     RemoveServers();
     auto& servers = serverCore.Settings().GetServers();

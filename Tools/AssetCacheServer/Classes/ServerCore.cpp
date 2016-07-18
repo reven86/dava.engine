@@ -156,7 +156,7 @@ void ServerCore::OnClientProxyStateChanged()
 
     if (clientProxy.ChannelIsOpened())
     {
-        DVASSERT_MSG(remoteState == RemoteState::CONNECTING, DAVA::Format("Remote state is %d", remoteState));
+        DVASSERT(remoteState == RemoteState::CONNECTING);
         connectTimer->stop();
         reattemptWaitTimer->stop();
         VerifyRemote();
