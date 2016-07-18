@@ -143,7 +143,7 @@ protected:
 
     struct RemoveInfo
     {
-        RemoveInfo(Command2::Pointer&& command_, Selectable::Object* selectedObject_)
+        RemoveInfo(DAVA::Command::Pointer&& command_, Selectable::Object* selectedObject_)
             : command(std::move(command_))
             , selectedObject(selectedObject_)
         {
@@ -155,7 +155,7 @@ protected:
         {
         }
 
-        Command2::Pointer command;
+        DAVA::Command::Pointer command;
         Selectable::Object* selectedObject;
     };
 
@@ -163,7 +163,7 @@ protected:
     {
         SceneEditor2* sceneEditor = GetScene();
         SelectableGroup currentGroup = sceneEditor->selectionSystem->GetSelection();
-        DAVA::Vector<Command2::Pointer> commands;
+        DAVA::Vector<DAVA::Command::Pointer> commands;
         commands.reserve(GetSelectedItemsCount());
         ForEachSelectedByType(type, [&commands, &currentGroup, callback](SceneTreeItem* item)
                               {
@@ -177,7 +177,7 @@ protected:
             sceneEditor->BeginBatch(text, commands.size());
             sceneEditor->selectionSystem->SetSelection(currentGroup);
             static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
-            for (Command2::Pointer& command : commands)
+            for (DAVA::Command::Pointer& command : commands)
             {
                 sceneEditor->Exec(std::move(command));
             }
@@ -583,7 +583,7 @@ private:
                              {
                                  SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
                                  DAVA::ParticleLayer* layer = layerItem->GetLayer();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
+                                 return RemoveInfo(DAVA::Command::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
                              });
     }
 
@@ -621,7 +621,7 @@ private:
                              {
                                  SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
                                  DAVA::ParticleForce* force = forceItem->GetForce();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
+                                 return RemoveInfo(DAVA::Command::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
                              });
     }
 };
@@ -669,7 +669,7 @@ protected:
                              {
                                  SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
                                  DAVA::ParticleEmitterInstance* emitterInstance = emitterItem->GetEmitterInstance();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterInstance), emitterInstance);
+                                 return RemoveInfo(DAVA::Command::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterInstance), emitterInstance);
                              });
     }
 
