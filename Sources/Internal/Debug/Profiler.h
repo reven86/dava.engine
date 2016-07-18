@@ -6,7 +6,9 @@ using DAVA::uint32;
 using DAVA::uint64;
     #include <Base/Hash.h>
 
+#if !defined PROFILER_ENABLED
     #define PROFILER_ENABLED 0
+#endif
     #define TRACER_ENABLED 0
 
 namespace profiler

@@ -6,12 +6,19 @@
     #include "Render/RHI/rhi_ShaderCache.h"
     #include "Render/RHI/rhi_ShaderSource.h"
 
-    #include "Debug/Profiler.h"
+    #include "Render/RHI/Common/PreProcess.h"
+
 #include "Render/RenderBase.h"
 
     #include "Render/RHI/dbg_Draw.h"
 
     #include "FileSystem/DynamicMemoryFile.h"
+
+    #include "preprocessor.h"
+    #include "file.h"
+
+    #define PROFILER_ENABLED 1
+    #include "Debug/Profiler.h"
 
 using namespace DAVA;
 
@@ -607,7 +614,8 @@ void GameCore::SetupTank()
     rhi::Handle tex;*/
 }
 
-void GameCore::OnAppStarted()
+void
+GameCore::test_preprocessor()
 {
     struct
     {
@@ -620,8 +628,9 @@ void GameCore::OnAppStarted()
 */
     };
 
-    //    profiler::Start();
-    /*
+    profiler::EnsureInited();
+    profiler::Start();
+
     for (unsigned i = 0; i != countof(src); ++i)
     {
         File* file = File::CreateFromSystemPath(src[i].file, File::OPEN | File::READ);
@@ -650,8 +659,66 @@ void GameCore::OnAppStarted()
                     break;
                 }
             }
-            if (vp.Construct(rhi::PROG_VERTEX, buf, defines))
+
+#if 0 
             {
+            std::vector<std::string> def;
+            const char* argv[128];
+            int argc = 0;
+            std::string src;
+
+            def.reserve(defines.size() / 2);
+            for (size_t i = 0, n = defines.size() / 2; i != n; ++i)
+            {
+                const char* s1 = defines[i * 2 + 0].c_str();
+                const char* s2 = defines[i * 2 + 1].c_str();
+                def.push_back(DAVA::Format("-D %s=%s", s1, s2));
+            }
+            for (unsigned i = 0; i != def.size(); ++i)
+                argv[argc++] = def[i].c_str();
+
+            START_NAMED_TIMING("preproc.mcpp");
+            PreProcessText( buf, argv, argc, &src);
+            STOP_NAMED_TIMING("preproc.mcpp");
+            }
+#endif
+
+#if 0
+            {
+            CPreprocessor           preproc;
+            std::vector<CPreprocessor::CDefineDsc> def;
+            std::list<CToken>       token;
+
+            for (unsigned k = 0; k != countof(src[i].flag); ++k)
+            {
+                if (src[i].flag[k])
+                {
+                    def.push_back( CPreprocessor::CDefineDsc(src[i].flag[k]) );
+                }
+                else
+                {
+                    break;
+                }
+            }
+	        
+            TFile::SetCurFile( src[i].file );
+            bool success = preproc.Preprocess( src[i].file, token, &def );
+
+            if( !success )
+            {
+                Logger::Error( preproc.GetErrorString() );
+            }
+            }
+#endif
+
+#if 1
+            START_NAMED_TIMING("shader-source");
+            bool success = vp.Construct(rhi::PROG_VERTEX, buf, defines);
+            STOP_NAMED_TIMING("shader-source");
+
+            if (success)
+            {
+                /*
                 uint8 data[128 * 1024];
                 DAVA::File* f = DAVA::DynamicMemoryFile::Create(data, countof(data), DAVA::File::READ | DAVA::File::WRITE);
 
@@ -662,14 +729,22 @@ void GameCore::OnAppStarted()
                 vp.Load(f);
 
                 vp.Dump();
-
-                //vp.Dump();
+*/
             }
+#endif
         }
     }
-*/
-    //    profiler::Stop();
-    //    profiler::Dump();
+
+    profiler::Stop();
+    Logger::Info("profile:");
+    profiler::Dump();
+}
+
+void GameCore::OnAppStarted()
+{
+    for (unsigned k = 0; k != 5; ++k)
+        test_preprocessor();
+    exit(0);
 
     /*
 {
@@ -754,7 +829,7 @@ void GameCore::OnAppStarted()
     SetupCube();
     //SetupInstancedCube();
     //    SetupTank();
-    SetupRT();
+    //SetupRT();
 
     perfQuerySet = rhi::CreatePerfQuerySet(16);
     perfQuerySetFired = false;
@@ -1398,9 +1473,9 @@ void GameCore::Draw()
 
     //    sceneRenderTest->Render();
     //        rhiDraw();
-    //manticoreDraw();
+    manticoreDraw();
     //DrawInstancedCube();
-    rtDraw();
+    //rtDraw();
     //    visibilityTestDraw();
 }
 

@@ -64,6 +64,8 @@ protected:
 
     static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
 
+    void test_preprocessor();
+
     bool inited;
 
     struct

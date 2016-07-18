@@ -1,5 +1,8 @@
 #include "../rhi_ShaderSource.h"
     
+#define PROFILER_ENABLED 1
+#include "Debug/Profiler.h"
+
     #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "FileSystem/DynamicMemoryFile.h"
@@ -16,6 +19,7 @@ using DAVA::LockGuard;
 
     #define RHI__USE_STD_REGEX 0
     #define RHI__OPTIMIZED_REGEX 1
+
 
     #if RHI__USE_STD_REGEX
         #include <regex>
@@ -100,6 +104,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     if (in)
     {
+        START_NAMED_TIMING("shadersrc.setup");
         #if RHI__USE_STD_REGEX
         std::regex prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
@@ -157,7 +162,9 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         #endif
 
         _Reset();
+        STOP_NAMED_TIMING("shadersrc.setup");
 
+        START_NAMED_TIMING("shadersrc.parse");
         while (!in->IsEof())
         {
             char line[4 * 1024];
@@ -821,6 +828,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             }
 
         } // for each line
+        STOP_NAMED_TIMING("shadersrc.parse");
 
         type = progType;
 
@@ -829,6 +837,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     if (success)
     {
+        START_NAMED_TIMING("shadersrc.gen");
         // check if any const-buffer has more than one bigarray-prop
 
         for (size_t b = 0, b_end = buf.size(); b != b_end; ++b)
@@ -966,6 +975,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             code.insert(prog - code.c_str(), buf_def, buf_len);
             code.insert(var_pos, var_def, var_len);
         }
+        STOP_NAMED_TIMING("shadersrc.gen");
     }
 
     return success;
