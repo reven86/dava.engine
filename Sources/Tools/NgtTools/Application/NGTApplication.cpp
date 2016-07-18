@@ -135,6 +135,11 @@ void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
 {
 }
 
+const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine() const
+{
+    return commandLineParser;
+}
+
 DAVA::WideString BaseApplication::GetPluginsFolder() const
 {
     QFileInfo appFileInfo(commandLineParser.argv()[0]);

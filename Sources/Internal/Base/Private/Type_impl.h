@@ -69,7 +69,7 @@ void Type::Init()
     using T0 = typename std::remove_cv<T>::type;
     using T1 = typename std::remove_reference<T0>::type;
     using DerefT = typename std::remove_pointer<T1>::type;
-    using DecayT = std::conditional<std::is_pointer<T>::value, std::add_pointer<std::decay<std::remove_pointer<T>::type>::type>::type, std::decay<T>::type>;
+    using DecayT = typename std::conditional<std::is_pointer<T>::value, typename std::add_pointer<typename std::decay<typename std::remove_pointer<T>::type>::type>::type, typename std::decay<T>::type>;
 #else
     // standard c++14 way
     using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;

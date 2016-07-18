@@ -130,9 +130,9 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    selectionSystem->AddSelectionDelegate(modifSystem);
-    selectionSystem->AddSelectionDelegate(hoodSystem);
-    selectionSystem->AddSelectionDelegate(wayEditSystem);
+    selectionSystem->AddDelegate(modifSystem);
+    selectionSystem->AddDelegate(hoodSystem);
+    selectionSystem->AddDelegate(wayEditSystem);
 
     DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
@@ -666,9 +666,9 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveSelectionDelegate(modifSystem);
-        selectionSystem->RemoveSelectionDelegate(hoodSystem);
-        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+        selectionSystem->RemoveDelegate(modifSystem);
+        selectionSystem->RemoveDelegate(hoodSystem);
+        selectionSystem->RemoveDelegate(wayEditSystem);
     }
 
     if (editorLightSystem)
