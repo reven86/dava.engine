@@ -796,6 +796,15 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrModeGLES2(TextureAddrMode(sampler->addrV))));
 
+#if defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+        if (_GLES2_IsGlAnisotropySupported)
+        {
+            DVASSERT(sampler->anisotropyLevel >= 1);
+            uint32 targetLevel = std::min(sampler->anisotropyLevel, _GLES2_MaxAnisotropyLevel);
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, targetLevel));
+        }
+#endif
+
         self->samplerState = *sampler;
         self->forceSetSamplerState = false;
     }

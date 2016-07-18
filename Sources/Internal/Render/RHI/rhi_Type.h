@@ -594,7 +594,8 @@ Descriptor
         uint32 minFilter : 2;
         uint32 magFilter : 2;
         uint32 mipFilter : 2;
-        uint32 pad : 20;
+        uint32 anisotropyLevel : 8;
+        uint32 pad : 12;
 
         Sampler()
             : addrU(TEXADDR_WRAP)
@@ -603,6 +604,7 @@ Descriptor
             , minFilter(TEXFILTER_LINEAR)
             , magFilter(TEXFILTER_LINEAR)
             , mipFilter(TEXMIPFILTER_LINEAR)
+            , anisotropyLevel(16)
             , pad(0)
         {
         }
