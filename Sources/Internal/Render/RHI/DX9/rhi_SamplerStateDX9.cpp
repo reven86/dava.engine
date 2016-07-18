@@ -119,6 +119,8 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
     for (unsigned i = 0; i != desc.fragmentSamplerCount; ++i)
     {
         uint32 anisotropyLevel = desc.fragmentSampler[i].anisotropyLevel;
+        DVASSERT(anisotropyLevel >= 1);
+
         state->fragmentSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrU));
         state->fragmentSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrV));
         state->fragmentSampler[i].addrW = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrW));
@@ -132,6 +134,8 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
     for (unsigned i = 0; i != desc.vertexSamplerCount; ++i)
     {
         uint32 anisotropyLevel = desc.vertexSampler[i].anisotropyLevel;
+        DVASSERT(anisotropyLevel >= 1);
+
         state->vertexSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrU));
         state->vertexSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrV));
         state->vertexSampler[i].addrW = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrW));

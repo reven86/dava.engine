@@ -658,6 +658,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     samplerState.minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.minFilter;
     samplerState.magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.magFilter;
     samplerState.mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : texDescriptor->drawSettings.mipFilter;
+    samplerState.anisotropyLevel = pixelizationFlag ? 1 : texDescriptor->drawSettings.anisotropy;
 
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);

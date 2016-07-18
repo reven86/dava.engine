@@ -154,6 +154,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
+
         hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
 
         if (FAILED(hr))
@@ -180,6 +182,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.MaxAnisotropy = desc.vertexSampler[s].anisotropyLevel;
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
 
         hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
 

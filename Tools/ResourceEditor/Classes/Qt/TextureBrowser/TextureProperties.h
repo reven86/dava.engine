@@ -73,6 +73,7 @@ protected:
     QtPropertyDataInspMember* propMinFilter = nullptr;
     QtPropertyDataInspMember* propMagFilter = nullptr;
     QtPropertyDataInspMember* propMipFilter = nullptr;
+    QtPropertyDataInspMember* propAnisotropy = nullptr;
     QtPropertyDataInspMember* propFormat = nullptr;
     QtPropertyDataMetaObject* propSizes = nullptr;
 
@@ -87,6 +88,7 @@ protected:
     EnumMap enumFiltersMin;
     EnumMap enumFiltersMag;
     EnumMap enumFiltersMip;
+    EnumMap enumAnisotropy;
 
     QMap<int, QSize> availableSizes;
 
