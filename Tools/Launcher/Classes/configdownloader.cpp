@@ -71,8 +71,10 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 
 void ConfigDownloader::OnCancelClicked()
 {
+    aborted = true;
     for (QNetworkReply* networkReply : requests)
     {
         networkReply->abort();
     }
+    reject();
 }
