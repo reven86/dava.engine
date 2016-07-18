@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>649</width>
+    <width>520</width>
     <height>736</height>
    </rect>
   </property>
@@ -66,20 +66,20 @@
       <item row="10" column="0">
        <widget class="QLabel" name="restartLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -128,20 +128,20 @@
       <item row="7" column="0">
        <widget class="QLabel" name="autoSaveLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -156,20 +156,20 @@
       <item row="6" column="0">
        <widget class="QLabel" name="numberOfFilesLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -184,20 +184,20 @@
       <item row="0" column="0">
        <widget class="QLabel" name="cacheLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -212,20 +212,20 @@
       <item row="1" column="0">
        <widget class="QLabel" name="folderSizeLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -239,6 +239,18 @@
       </item>
       <item row="6" column="1">
        <widget class="QSpinBox" name="numberOfFilesSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
@@ -261,6 +273,18 @@
       </item>
       <item row="7" column="1">
        <widget class="QSpinBox" name="autoSaveTimeoutSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
@@ -286,6 +310,18 @@
       </item>
       <item row="1" column="1">
        <widget class="QDoubleSpinBox" name="cacheSizeSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
@@ -328,20 +364,20 @@
       <item row="9" column="0">
        <widget class="QLabel" name="autoStartLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -395,20 +431,20 @@
       <item row="4" column="0">
        <widget class="QLabel" name="label">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -422,6 +458,18 @@
       </item>
       <item row="8" column="1">
        <widget class="QSpinBox" name="portSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>100</width>
@@ -442,20 +490,20 @@
       <item row="8" column="0">
        <widget class="QLabel" name="portLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
-          <width>165</width>
+          <width>0</width>
           <height>25</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>165</width>
+          <width>16777215</width>
           <height>25</height>
          </size>
         </property>
@@ -748,11 +796,10 @@ QProgressBar::chunk {
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>611</width>
-           <height>81</height>
+           <width>498</width>
+           <height>197</height>
           </rect>
          </property>
-         <zorder>addNewServerButton</zorder>
         </widget>
        </widget>
       </item>
@@ -780,9 +827,6 @@ QProgressBar::chunk {
      </layout>
     </item>
    </layout>
-   <zorder>label_2</zorder>
-   <zorder>label_2</zorder>
-   <zorder>label_2</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

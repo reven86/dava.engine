@@ -45,6 +45,11 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     ui->setupUi(this);
 
+    // hint to force labels have same size (for better outlook)
+    ui->numberOfFilesLabel->setFixedSize(ui->numberOfFilesLabel->sizeHint());
+    // the same for spin boxes
+    ui->cacheSizeSpinBox->setFixedSize(ui->cacheSizeSpinBox->sizeHint());
+
     setWindowTitle(QString("Asset Cache Server | %1").arg(APPLICATION_BUILD_VERSION));
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
