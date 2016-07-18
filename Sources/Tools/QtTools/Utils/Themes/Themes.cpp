@@ -258,4 +258,9 @@ QColor GetRulerWidgetBackgroungColor()
 {
     return GetCurrentTheme() == Light ? lightWindowColor : darkWindowColor;
 }
+
+QColor GetMaterialEditorSelectedItemColor()
+{
+    return GetCurrentTheme() == Light ? QColor(0x37, 0x63, 0xAD) : QColor(0x88, 0xBB, 0xFF);
+};
 };

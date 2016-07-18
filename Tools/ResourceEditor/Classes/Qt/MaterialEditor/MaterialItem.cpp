@@ -66,7 +66,7 @@ QVariant MaterialItem::data(int role) const
         ret = QStandardItem::data(role);
         if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
         {
-            ret = QVariant::fromValue(qApp->palette().brush(QPalette::Highlight));
+            ret = QVariant::fromValue(Themes::GetMaterialEditorSelectedItemColor());
         }
     }
     break;
