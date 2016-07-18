@@ -29,6 +29,9 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut ):
     if not os.path.isdir( pathReportOut ):
         os.makedirs(pathReportOut) 
 
+
+    print '-->',get_exe( pathExecut )
+
     subprocess.call( get_exe( pathExecut ) )
 
     #coppy '.gcda','.gcno' files
@@ -52,11 +55,13 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut ):
     pathCoverageDir  = os.path.dirname(os.path.realpath(__file__))
     pathCallLlvmGcov = os.path.join(pathCoverageDir, 'llvm-gcov.sh')
     pathCovInfo      = os.path.join(pathExecutDir, 'cov.info')
+    pathLcov         = os.path.join(pathCoverageDir, 'lcov')
+    pathGenHtml      = os.path.join(pathCoverageDir, 'genhtml')
 
     os.chdir( pathCoverageDir ); 
 
     #
-    params = [ 'lcov',
+    params = [ pathLcov,
                 '--directory', pathExecutDir,  
                 '--base-directory', pathExecutDir,
                 '--gcov-tool', pathCallLlvmGcov,
@@ -67,7 +72,7 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut ):
     subprocess.call(params)
 
     #
-    params = [ 'genhtml',
+    params = [ pathGenHtml,
             pathCovInfo, 
             '-o', pathReportOut
              ]

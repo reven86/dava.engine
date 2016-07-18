@@ -445,6 +445,7 @@ if ( QT5_FOUND )
 endif()
 
 
+
 if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
@@ -657,6 +658,35 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
     foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS}  )
         add_dependencies( ${PROJECT_NAME} ${ITEM} )
     endforeach()
+
+endif()
+
+##
+
+if( MACOS AND COVERAGE )
+
+
+    if( MAC_DISABLE_BUNDLE )
+        set( APP_ATRIBUTE )
+    else()
+        set( APP_ATRIBUTE .app )
+
+    endif()
+
+    if( DEPLOY )
+        set( EXECUT_FILE ${DEPLOY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE})
+    else()
+        set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
+    endif()
+
+    add_custom_target ( COVERAGE_${PROJECT_NAME}  
+            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_html_report.py
+                    --pathExecut    ${EXECUT_FILE}
+                    --pathBuild     ${CMAKE_BINARY_DIR}
+                    --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
+            COMMAND open -a Safari  ${CMAKE_BINARY_DIR}/Coverage/index.html
+        )
+
 
 endif()
 
