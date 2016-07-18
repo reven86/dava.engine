@@ -76,7 +76,7 @@ private:
 template <typename CMD, typename... Arg>
 std::unique_ptr<CMD> Command::Create(Arg&&... arg)
 {
-    return std::unique_ptr<CMD>(new CMD(std::forward<Arg>(arg)...));
+    return std::make_unique<CMD>(std::forward<Arg>(arg)...);
 }
 
 inline CommandID_t Command::GetID() const

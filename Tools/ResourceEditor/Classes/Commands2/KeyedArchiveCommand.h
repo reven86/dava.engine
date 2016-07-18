@@ -43,8 +43,8 @@ public:
     KeyeadArchiveSetValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);
     ~KeyeadArchiveSetValueCommand();
 
-    virtual void Undo() override;
-    virtual void Redo() override;
+    void Undo() override;
+    void Redo() override;
 
     DAVA::KeyedArchive* archive = nullptr;
     DAVA::String key;

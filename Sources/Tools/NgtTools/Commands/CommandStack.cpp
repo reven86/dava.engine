@@ -38,7 +38,7 @@ void CommandStack::Exec(DAVA::Command::Pointer&& command)
     {
         return;
     }
-    if (!batchesStack.empty())
+    if (rootBatch != nullptr)
     {
         //when the macro started command without undo will cause undefined state of application
         DVASSERT_MSG(command->CanUndo(),
@@ -59,16 +59,17 @@ void CommandStack::Exec(DAVA::Command::Pointer&& command)
 void CommandStack::BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCount)
 {
     //we call BeginMacro first time
-    if (batchesStack.empty())
+    DAVA::Command::Pointer newCommandBatch = DAVA::Command::Create<DAVA::CommandBatch>(name, commandsCount);
+    DAVA::CommandBatch* newCommandBatchPtr = static_cast<DAVA::CommandBatch*>(newCommandBatch.get());
+    if (rootBatch == nullptr)
     {
-        //own first item before we move it to the command manager
-        batchesStack.push(new DAVA::CommandBatch(name, commandsCount));
+        DVASSERT(batchesStack.empty());
+        rootBatch = std::move(newCommandBatch);
+        batchesStack.push(newCommandBatchPtr);
     }
     //we already create one or more batches
     else
     {
-        DAVA::Command::Pointer newCommandBatch = DAVA::Command::Create<DAVA::CommandBatch>(name, commandsCount);
-        DAVA::CommandBatch* newCommandBatchPtr = static_cast<DAVA::CommandBatch*>(newCommandBatch.get());
         batchesStack.top()->AddAndExec(std::move(newCommandBatch));
         batchesStack.push(newCommandBatchPtr);
     }
@@ -76,14 +77,14 @@ void CommandStack::BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCou
 
 void CommandStack::EndBatch()
 {
-    DVASSERT(!batchesStack.empty() && "CommandStack::EndMacro called without BeginMacro");
+    DVASSERT(rootBatch != nullptr && "CommandStack::EndMacro called without BeginMacro");
     if (batchesStack.size() == 1)
     {
-        DAVA::CommandBatch* topLevelBatch = batchesStack.top();
-        DAVA::Command::Pointer commandPtr(topLevelBatch);
-        if (!topLevelBatch->IsEmpty())
+        DVASSERT(rootBatch != nullptr);
+        DAVA::CommandBatch* rootBatchPtr = static_cast<DAVA::CommandBatch*>(rootBatch.get());
+        if (!rootBatchPtr->IsEmpty())
         {
-            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(commandPtr)));
+            commandManager->queueCommand(wgt::getClassIdentifier<WGTCommand>(), wgt::ObjectHandle(std::move(rootBatch)));
         }
     }
     if (!batchesStack.empty())

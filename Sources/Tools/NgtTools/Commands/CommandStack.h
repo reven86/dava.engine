@@ -56,8 +56,11 @@ private:
     //enviroinment id given from envManager
     DAVA::int32 ID = 0;
     wgt::Connection indexChanged;
-    //we own only first item and than move it to the command manager
+
+    //this stack is created to hold nested batches hierarchy
     DAVA::Stack<DAVA::CommandBatch*> batchesStack;
+    //root command batch which created when "BeginBatch" is called first time
+    DAVA::Command::Pointer rootBatch;
 
     //members to remember stack state and do not emit extra signals
     bool isClean = true;
