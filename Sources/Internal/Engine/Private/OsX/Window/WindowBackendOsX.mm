@@ -1,36 +1,54 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/UWP/WindowBackendUWP.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Public/UWP/WindowNativeServiceUWP.h"
+#include <AppKit/NSScreen.h>
+
+#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "Engine/Private/UWP/PlatformCoreUWP.h"
-#include "Engine/Private/UWP/WindowNativeBridgeUWP.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
+
+#include "Logger/Logger.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
+    : engineBackend(e)
+    , dispatcher(engineBackend->GetDispatcher())
     , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::PlatformEventHandler))
-    , bridge(ref new WindowNativeBridgeUWP(this))
+    , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
+    , bridge(new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
 }
 
-WindowBackend::~WindowBackend() = default;
+WindowBackend::~WindowBackend()
+{
+    delete bridge;
+}
 
 void* WindowBackend::GetHandle() const
 {
-    return bridge->GetHandle();
+    return bridge->renderView;
+}
+
+bool WindowBackend::Create(float32 width, float32 height)
+{
+    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridge::ApplicationDidHideUnhide);
+
+    NSSize screenSize = [[NSScreen mainScreen] frame].size;
+    float32 x = (screenSize.width - width) / 2.0f;
+    float32 y = (screenSize.height - height) / 2.0f;
+    return bridge->DoCreateWindow(x, y, width, height);
 }
 
 void WindowBackend::Resize(float32 width, float32 height)
@@ -44,6 +62,8 @@ void WindowBackend::Resize(float32 width, float32 height)
 
 void WindowBackend::Close()
 {
+    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CLOSE_WINDOW;
     platformDispatcher.PostEvent(e);
@@ -64,19 +84,11 @@ void WindowBackend::TriggerPlatformEvents()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    // Method executes in context of XAML::Window's UI thread
     platformDispatcher.ProcessEvents();
 }
 
-void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
+void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
-    // Method executes in context of XAML::Window's UI thread
-    bridge->BindToXamlWindow(xamlWindow);
-}
-
-void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
-{
-    // Method executes in context of XAML::Window's UI thread
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
@@ -96,5 +108,5 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_MACOS__
 #endif // __DAVAENGINE_COREV2__

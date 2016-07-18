@@ -15,13 +15,13 @@
 // Subclass of NSOpenGLView
 // Responsibilities:
 //  - OpenGL-related tasks
-//  - mouse and event forwarding to WindowOsXObjcBridge
-@interface OpenGLViewOsX : NSOpenGLView
+//  - mouse and event forwarding to WindowNativeBridge
+@interface RenderView : NSOpenGLView
 {
-    DAVA::Private::WindowNativeBridgeOsX* bridge;
+    DAVA::Private::WindowNativeBridge* bridge;
 }
 
-- (id)initWithFrame:(NSRect)frameRect bridge:(DAVA::Private::WindowNativeBridgeOsX*)objcBridge;
+- (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 
 @end
 

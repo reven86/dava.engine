@@ -10,10 +10,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-#import <Foundation/NSGeometry.h>
-
 @class NSView;
-@class NSBitmapImageRep;
 
 namespace DAVA
 {
@@ -24,10 +21,10 @@ public:
     void RemoveNSView(NSView* nsview);
 
 private:
-    WindowNativeService(Private::WindowNativeBridgeOsX* nativeBridge);
+    WindowNativeService(Private::WindowNativeBridge* nativeBridge);
 
 private:
-    Private::WindowNativeBridgeOsX* bridge = nullptr;
+    Private::WindowNativeBridge* bridge = nullptr;
 
     // Friends
     friend class Private::WindowBackend;

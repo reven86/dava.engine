@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/OsXAppDelegate.h"
+#include "Engine/Private/OsX/AppDelegateOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -8,14 +8,14 @@
 
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
-@implementation OsXAppDelegate
+@implementation AppDelegate
 
-- (id)init:(DAVA::Private::CoreNativeBridgeOsX*)objcBridge
+- (id)initWithBridge:(DAVA::Private::CoreNativeBridge*)nativeBridge
 {
     self = [super init];
     if (self != nullptr)
     {
-        bridge = objcBridge;
+        bridge = nativeBridge;
     }
     return self;
 }

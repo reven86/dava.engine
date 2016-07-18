@@ -58,11 +58,11 @@ EngineBackend* EngineBackend::Instance()
     return instance;
 }
 
-EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
+EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     : dispatcher(new MainDispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
-    , cmdargs(cmdargs_)
+    , cmdargs(cmdargs)
 {
     DVASSERT(instance == nullptr);
     instance = this;
@@ -255,10 +255,13 @@ int32 EngineBackend::OnFrame()
 #endif
 
     DoEvents();
-    OnBeginFrame();
-    OnUpdate(frameDelta);
-    OnDraw();
-    OnEndFrame();
+    if (!appIsSuspended)
+    {
+        OnBeginFrame();
+        OnUpdate(frameDelta);
+        OnDraw();
+        OnEndFrame();
+    }
 
     return Renderer::GetDesiredFPS();
 }
@@ -319,6 +322,12 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
+    case MainDispatcherEvent::APP_SUSPENDED:
+        HandleAppSuspended(e);
+        break;
+    case MainDispatcherEvent::APP_RESUMED:
+        HandleAppResumed(e);
+        break;
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
@@ -369,6 +378,20 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     }
 }
 
+void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
+{
+    appIsSuspended = true;
+    rhi::SuspendRendering();
+    engine->suspended.Emit();
+}
+
+void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
+{
+    appIsSuspended = false;
+    rhi::ResumeRendering();
+    engine->resumed.Emit();
+}
+
 void EngineBackend::PostAppTerminate()
 {
     if (!appIsTerminating)
@@ -388,8 +411,11 @@ void EngineBackend::InitRenderer(Window* w)
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
 
     rhi::InitParam rendererParams;
-    rendererParams.threadedRenderEnabled = true;
-    rendererParams.threadedRenderFrameCount = 2;
+    rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
+    if (rendererParams.threadedRenderFrameCount > 1)
+    {
+        rendererParams.threadedRenderEnabled = true;
+    }
 
     rendererParams.maxIndexBufferCount = options->GetInt32("max_index_buffer_count");
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");

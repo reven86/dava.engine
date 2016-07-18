@@ -204,6 +204,13 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::MOUSE_WHEEL:
         HandleMouseWheel(e);
         break;
+    case MainDispatcherEvent::TOUCH_DOWN:
+    case MainDispatcherEvent::TOUCH_UP:
+        HandleTouchClick(e);
+        break;
+    case MainDispatcherEvent::TOUCH_MOVE:
+        HandleTouchMove(e);
+        break;
     case MainDispatcherEvent::KEY_DOWN:
     case MainDispatcherEvent::KEY_UP:
         HandleKeyPress(e);
@@ -323,7 +330,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     // NOTE: Taken from CoreWin32Platform::OnMouseClick
 
-    bool isAnyButtonDownBefore = mouseButtonState.any();
+    //bool isAnyButtonDownBefore = mouseButtonState.any();
     bool isButtonDown = uie.phase == UIEvent::Phase::BEGAN;
     uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
     mouseButtonState[buttonIndex] = isButtonDown;
@@ -343,14 +350,12 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
-    Logger::Debug("****** MOUSE_WHEEL: this=%p, x=%.1f, y=%.1f, delta=%d", this, e.mwheelEvent.x, e.mwheelEvent.y, e.mwheelEvent.delta);
-
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { 0.0f, static_cast<float32>(e.mwheelEvent.delta) };
+    uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
 
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
@@ -391,6 +396,34 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     {
         uiControlSystem->OnInput(&uie);
     }
+}
+
+void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
+{
+    bool pressed = e.type == Private::MainDispatcherEvent::TOUCH_DOWN;
+
+    Logger::Debug("****** %s: this=%p, x=%.1f, y=%.1f, touchId=%d", pressed ? "TOUCH_DOWN" : "TOUCH_UP", this, e.tclickEvent.x, e.tclickEvent.y, e.tclickEvent.touchId);
+
+    UIEvent uie;
+    uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.device = UIEvent::Device::TOUCH_SURFACE;
+    uie.timestamp = e.timestamp / 1000.0;
+    uie.touchId = e.tclickEvent.touchId;
+
+    uiControlSystem->OnInput(&uie);
+}
+
+void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
+{
+    UIEvent uie;
+    uie.phase = UIEvent::Phase::DRAG;
+    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.device = UIEvent::Device::TOUCH_SURFACE;
+    uie.timestamp = e.timestamp / 1000.0;
+    uie.touchId = e.tclickEvent.touchId;
+
+    uiControlSystem->OnInput(&uie);
 }
 
 void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)

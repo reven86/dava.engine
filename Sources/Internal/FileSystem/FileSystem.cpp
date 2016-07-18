@@ -12,6 +12,8 @@
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
 
+#include "Engine/Engine.h"
+
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
 #include <libproc.h>
@@ -390,8 +392,14 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
+
+#if defined(__DAVAENGINE_COREV2__)
+    const String& str = Engine::Instance()->GetCommandLine().at(0);
+#else
     const String& str = Core::Instance()->GetCommandLine().at(0);
+#endif
     currentExecuteDirectory = FilePath(str).GetDirectory();
+
 #endif //PLATFORMS
 
     return currentExecuteDirectory.MakeDirectoryPathname();

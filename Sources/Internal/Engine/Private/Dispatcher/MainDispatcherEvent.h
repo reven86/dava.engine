@@ -27,11 +27,18 @@ struct MainDispatcherEvent final
         MOUSE_WHEEL,
         MOUSE_MOVE,
 
+        TOUCH_DOWN,
+        TOUCH_UP,
+        TOUCH_MOVE,
+
         KEY_DOWN,
         KEY_UP,
         KEY_CHAR,
 
         FUNCTOR,
+
+        APP_SUSPENDED,
+        APP_RESUMED,
 
         APP_TERMINATE,
     };
@@ -67,11 +74,26 @@ struct MainDispatcherEvent final
     {
         float32 x;
         float32 y;
-        int32 delta;
+        float32 deltaX;
+        float32 deltaY;
     };
 
     struct MouseMoveEvent
     {
+        float32 x;
+        float32 y;
+    };
+
+    struct TouchClickEvent
+    {
+        uint32 touchId;
+        float32 x;
+        float32 y;
+    };
+
+    struct TouchMoveEvent
+    {
+        uint32 touchId;
         float32 x;
         float32 y;
     };
@@ -94,6 +116,8 @@ struct MainDispatcherEvent final
         MouseClickEvent mclickEvent;
         MouseWheelEvent mwheelEvent;
         MouseMoveEvent mmoveEvent;
+        TouchClickEvent tclickEvent;
+        TouchMoveEvent tmoveEvent;
         KeyEvent keyEvent;
     };
 };

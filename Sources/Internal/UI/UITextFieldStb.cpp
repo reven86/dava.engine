@@ -30,8 +30,8 @@ static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& con
 
 TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
     : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
-    , stb(new StbTextEditBridge(this))
     , control(control)
+    , stb(new StbTextEditBridge(this))
 {
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);

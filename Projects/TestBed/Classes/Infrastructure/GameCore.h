@@ -50,6 +50,9 @@ public:
     void OnWindowCreated(DAVA::Window& w);
     void OnWindowDestroyed(DAVA::Window& w);
 
+    void OnSuspended();
+    void OnResumed();
+
     void OnUpdateConsole(DAVA::float32 frameDelta);
 
 #else

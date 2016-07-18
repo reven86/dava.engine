@@ -1,16 +1,16 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/OsX/OsXWindowDelegate.h"
+#include "Engine/Private/OsX/Window/WindowDelegateOsX.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
-@implementation OsXWindowDelegate
+@implementation WindowDelegate
 
-- (id)init:(DAVA::Private::WindowNativeBridgeOsX*)nativeBridge
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge
 {
     self = [super init];
     if (self != nullptr)

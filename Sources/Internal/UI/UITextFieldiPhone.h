@@ -3,6 +3,8 @@
 
 #include "UI/UITextField.h"
 
+#include "Engine/EngineFwd.h"
+
 namespace DAVA
 {
 class UITextField;
@@ -63,11 +65,16 @@ private:
     void UpdateStaticTexture();
     void UpdateNativeRect(const Rect& virtualRect, int xOffset);
 
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
+    struct TextFieldObjcBridge;
+    std::unique_ptr<TextFieldObjcBridge> bridge;
+
     Rect nextRect;
     Rect prevRect;
     UITextField& davaTextField;
-    void* objcClassPtr;
-    bool renderToTexture;
+    bool renderToTexture = false;
     bool isSingleLine = true;
     int deltaMoveControl = 0;
     bool isNeedToUpdateTexture = false;

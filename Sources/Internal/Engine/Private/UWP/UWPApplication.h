@@ -1,12 +1,10 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -21,9 +19,6 @@ ref class UWPApplication sealed : public ::Windows::UI::Xaml::Application
 internal:
     UWPApplication(const Vector<String>& cmdargs);
 
-public:
-    virtual ~UWPApplication();
-
 protected:
     // ::Windows::UI::Xaml::Application overriden methods
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -33,9 +28,11 @@ protected:
 private:
     void OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg);
+    void OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg);
 
 private:
-    EngineBackend* engineBackend = nullptr;
+    std::unique_ptr<EngineBackend> engineBackend;
+    PlatformCore* core = nullptr;
 };
 
 // clang-format on

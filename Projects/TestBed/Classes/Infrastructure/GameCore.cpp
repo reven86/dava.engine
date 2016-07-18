@@ -49,6 +49,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_IPHONE__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_WIN32__)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -86,6 +88,9 @@ GameCore::GameCore(Engine* e)
     engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
     engine->beforeTerminate.Connect(this, &GameCore::OnBeforeTerminate);
 
+    engine->suspended.Connect(this, &GameCore::OnSuspended);
+    engine->resumed.Connect(this, &GameCore::OnResumed);
+
     if (engine->IsConsoleMode())
     {
         engine->update.Connect(this, &GameCore::OnUpdateConsole);
@@ -104,6 +109,7 @@ void GameCore::OnGameLoopStarted()
 {
     Logger::Debug("****** GameCore::OnGameLoopStarted");
 
+    InitNetwork();
     RunOnlyThisTest();
 
     if (engine->IsConsoleMode())
@@ -150,6 +156,16 @@ void GameCore::OnWindowDestroyed(DAVA::Window& w)
 void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
     Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+}
+
+void GameCore::OnSuspended()
+{
+    Logger::Error("****** GameCore::OnSuspended");
+}
+
+void GameCore::OnResumed()
+{
+    Logger::Error("****** GameCore::OnResumed");
 }
 
 void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)

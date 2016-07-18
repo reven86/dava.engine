@@ -19,7 +19,7 @@ class EngineBackend final
 public:
     static EngineBackend* Instance();
 
-    EngineBackend(const Vector<String>& cmdargs_);
+    EngineBackend(const Vector<String>& cmdargs);
     ~EngineBackend();
 
     EngineBackend(const EngineBackend&) = delete;
@@ -77,6 +77,8 @@ private:
     void EventHandler(const MainDispatcherEvent& e);
     void HandleWindowCreated(const MainDispatcherEvent& e);
     void HandleWindowDestroyed(const MainDispatcherEvent& e);
+    void HandleAppSuspended(const MainDispatcherEvent& e);
+    void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
 
     Window* CreatePrimaryWindowBackend();
@@ -98,6 +100,7 @@ private:
 
     bool consoleMode = false;
     bool quitConsole = false;
+    bool appIsSuspended = false;
     bool appIsTerminating = false;
 
     int32 exitCode = 0;

@@ -4,9 +4,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_IPHONE__)
 
 #include "Functional/Function.h"
 
@@ -47,15 +45,15 @@ private:
 
     UIDispatcher platformDispatcher;
 
-    WindowNativeBridgeOsX* bridge = nullptr;
+    WindowNativeBridge* bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
-    bool isMinimized = false;
-    size_t hideUnhideSignalId = 0;
+    size_t sigidAppBecomeOrResignActive = 0;
+    size_t sigidAppDidEnterForegroundOrBackground = 0;
 
     // Friends
     friend class PlatformCore;
-    friend struct WindowNativeBridgeOsX;
+    friend struct WindowNativeBridge;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const
@@ -76,5 +74,5 @@ inline WindowNativeService* WindowBackend::GetNativeService() const
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_MACOS__
+#endif // __DAVAENGINE_IPHONE__
 #endif // __DAVAENGINE_COREV2__

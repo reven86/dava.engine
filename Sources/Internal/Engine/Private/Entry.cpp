@@ -4,10 +4,12 @@
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineStartup.h"
 
+// clang-format off
+
 #if defined(__DAVAENGINE_QT__) || \
-defined(__DAVAENGINE_MACOS__) || \
-\
-(defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
+    defined(__DAVAENGINE_MACOS__) || \
+    defined(__DAVAENGINE_IPHONE__) || \
+    (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])
 {
@@ -33,8 +35,7 @@ int main(int argc, char* argv[])
 // WinMain should have attribute which specifies threading model
 [Platform::MTAThread]
 #endif
-int APIENTRY
-wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
     Vector<String> cmdargs = Private::GetCommandArgs();
@@ -42,5 +43,7 @@ wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 }
 
 #endif
+
+// clang-format on
 
 #endif // __DAVAENGINE_COREV2__

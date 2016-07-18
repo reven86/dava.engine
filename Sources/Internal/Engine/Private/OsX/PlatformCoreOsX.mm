@@ -10,7 +10,7 @@
 
 #include "Engine/Public/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
 
 namespace DAVA
@@ -19,15 +19,12 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
-    , bridge(new CoreNativeBridgeOsX(this))
+    , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
 }
 
-PlatformCore::~PlatformCore()
-{
-    delete bridge;
-}
+PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
@@ -35,8 +32,7 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    bridge->InitNSApplication();
-    NSApplicationMain(0, nullptr);
+    bridge->Run();
 }
 
 void PlatformCore::Quit()

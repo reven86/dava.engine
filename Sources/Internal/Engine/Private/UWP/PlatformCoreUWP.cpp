@@ -2,17 +2,17 @@
 
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Public/UWP/NativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/UWP/WindowBackendUWP.h"
+#include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+#include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
+#include "Utils/Utils.h"
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
@@ -22,6 +22,7 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* e)
     : engineBackend(e)
+    , dispatcher(engineBackend->GetDispatcher())
     , nativeService(new NativeService(this))
 {
 }
@@ -57,9 +58,6 @@ void PlatformCore::Run()
 
     engineBackend->OnGameLoopStopped();
     engineBackend->OnBeforeTerminate();
-
-    using namespace ::Windows::UI::Xaml;
-    Application::Current->Exit();
 }
 
 void PlatformCore::Quit()
@@ -100,21 +98,46 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 void PlatformCore::OnSuspending()
 {
     Logger::Debug("******** CoreWinUWP::OnSuspending: thread=%d", GetCurrentThreadId());
+
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::APP_SUSPENDED;
+    dispatcher->SendEvent(e); // Blocking call !!!
 }
 
 void PlatformCore::OnResuming()
 {
     Logger::Debug("******** CoreWinUWP::OnResuming: thread=%d", GetCurrentThreadId());
+
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::APP_RESUMED;
+    dispatcher->PostEvent(e);
+}
+
+void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg)
+{
+    Logger::Error("Unhandled exception: hresult=0x%08X, message=%s", arg->Exception, WStringToString(arg->Message->Data()).c_str());
 }
 
 void PlatformCore::GameThread()
 {
     Logger::Debug("****** CoreWinUWP::GameThread enter: thread=%d", GetCurrentThreadId());
 
-    Vector<String> cmdline;
-    GameMain(cmdline);
+    try
+    {
+        Vector<String> cmdline = engineBackend->GetCommandLine();
+        GameMain(std::move(cmdline));
+    }
+    catch (const std::exception& e)
+    {
+        Logger::Error("Unhandled exception in GameThread: %s", e.what());
+        // TODO: think about rethrow
+        // throw;
+    }
 
     Logger::Debug("****** CoreWinUWP::GameThread leave: thread=%d", GetCurrentThreadId());
+
+    using namespace ::Windows::UI::Xaml;
+    Application::Current->Exit();
 }
 
 } // namespace Private

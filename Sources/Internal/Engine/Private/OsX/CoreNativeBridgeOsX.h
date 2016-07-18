@@ -11,7 +11,7 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class FrameTimer;
-@class OsXAppDelegate;
+@class AppDelegate;
 
 namespace DAVA
 {
@@ -23,13 +23,13 @@ namespace Private
 //  - processes notifications from OsXAppDelegate which implements
 //    interface NSApplicationDelegate
 //
-// CoreNativeBridgeOsX is friend of OsX's PlatformCore
-struct CoreNativeBridgeOsX final
+// CoreNativeBridge is friend of OsX's PlatformCore
+struct CoreNativeBridge final
 {
-    CoreNativeBridgeOsX(PlatformCore* c);
-    ~CoreNativeBridgeOsX();
+    CoreNativeBridge(PlatformCore* c);
+    ~CoreNativeBridge();
 
-    void InitNSApplication();
+    void Run();
     void Quit();
     void OnFrameTimer();
 
@@ -47,10 +47,11 @@ struct CoreNativeBridgeOsX final
 
     PlatformCore* core = nullptr;
 
-    OsXAppDelegate* appDelegate = nullptr;
+    AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;
 
     bool quitSent = false;
+    int32 curFps = 0;
 };
 
 } // namespace Private

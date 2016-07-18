@@ -1,12 +1,10 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -32,12 +30,14 @@ public:
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();
+    void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
 
 private:
     void GameThread();
 
 private:
     EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;

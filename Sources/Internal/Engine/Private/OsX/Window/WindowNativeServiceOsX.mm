@@ -8,21 +8,21 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#include "Engine/Private/OsX/WindowBackendOsX.h"
-#include "Engine/Private/OsX/WindowNativeBridgeOsX.h"
+#include "Engine/Private/OsX/Window/WindowBackendOsX.h"
+#include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
 
-#import "Engine/Private/OsX/OpenGLViewOsX.h"
+#import "Engine/Private/OsX/Window/RenderViewOsX.h"
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowNativeBridgeOsX* nativeBridge)
+WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBridge)
     : bridge(nativeBridge)
 {
 }
 
 void WindowNativeService::AddNSView(NSView* nsview)
 {
-    [bridge->openGLView addSubview:nsview];
+    [bridge->renderView addSubview:nsview];
 }
 
 void WindowNativeService::RemoveNSView(NSView* nsview)

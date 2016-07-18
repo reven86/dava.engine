@@ -1,14 +1,12 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/UWP/WindowNativeBridgeUWP.h"
+#include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Public/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "Engine/Private/UWP/WindowBackendUWP.h"
+#include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
@@ -17,12 +15,12 @@ namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridgeUWP::WindowNativeBridgeUWP(WindowBackend* window)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* window)
     : uwpWindow(window)
 {
 }
 
-void WindowNativeBridgeUWP::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
+void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
 {
     DVASSERT(xamlWindow == nullptr);
     DVASSERT(xamlWnd != nullptr);
@@ -41,12 +39,12 @@ void WindowNativeBridgeUWP::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlW
     xamlWindow->Activate();
 }
 
-void WindowNativeBridgeUWP::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     xamlCanvas->Children->Append(xamlControl);
 }
 
-void WindowNativeBridgeUWP::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
+void WindowNativeBridge::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     unsigned int index = 0;
     for (auto x = xamlCanvas->Children->First(); x->HasCurrent; x->MoveNext(), ++index)
@@ -59,26 +57,26 @@ void WindowNativeBridgeUWP::RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xam
     }
 }
 
-void WindowNativeBridgeUWP::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
+void WindowNativeBridge::PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y)
 {
     xamlCanvas->SetLeft(xamlControl, x);
     xamlCanvas->SetTop(xamlControl, y);
 }
 
-void WindowNativeBridgeUWP::UnfocusXamlControl()
+void WindowNativeBridge::UnfocusXamlControl()
 {
     // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
     // So use dummy offscreen control that steals focus
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
 }
 
-void WindowNativeBridgeUWP::TriggerPlatformEvents()
+void WindowNativeBridge::TriggerPlatformEvents()
 {
     using namespace ::Windows::UI::Core;
-    xamlWindow->Dispatcher->TryRunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(this, &WindowNativeBridgeUWP::OnTriggerPlatformEvents));
+    xamlWindow->Dispatcher->TryRunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(this, &WindowNativeBridge::OnTriggerPlatformEvents));
 }
 
-void WindowNativeBridgeUWP::DoResizeWindow(float32 width, float32 height)
+void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
 {
     using namespace ::Windows::Foundation;
     using namespace ::Windows::UI::ViewManagement;
@@ -88,7 +86,7 @@ void WindowNativeBridgeUWP::DoResizeWindow(float32 width, float32 height)
     appView->TryResizeView(Size(width, height));
 }
 
-void WindowNativeBridgeUWP::DoCloseWindow()
+void WindowNativeBridge::DoCloseWindow()
 {
     // WinRT does not permit to close main window, so for primary window pretend that window has been closed.
     // For secondary window invoke Close() method, and also do not wait Closed event as stated in MSDN:
@@ -103,29 +101,29 @@ void WindowNativeBridgeUWP::DoCloseWindow()
     UninstallEventHandlers();
 }
 
-void WindowNativeBridgeUWP::OnTriggerPlatformEvents()
+void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     uwpWindow->ProcessPlatformEvents();
 }
 
-void WindowNativeBridgeUWP::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
+void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
     bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     uwpWindow->GetWindow()->PostFocusChanged(hasFocus);
 }
 
-void WindowNativeBridgeUWP::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
+void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
     uwpWindow->GetWindow()->PostVisibilityChanged(arg->Visible);
 }
 
-void WindowNativeBridgeUWP::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
+void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
     uwpWindow->GetWindow()->PostKeyChar(arg->KeyCode, arg->KeyStatus.WasKeyDown);
 }
 
-void WindowNativeBridgeUWP::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
+void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
 
@@ -151,7 +149,7 @@ void WindowNativeBridgeUWP::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreD
     }
 }
 
-void WindowNativeBridgeUWP::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
+void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
 {
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
@@ -160,7 +158,7 @@ void WindowNativeBridgeUWP::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Win
     uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
-void WindowNativeBridgeUWP::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
+void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
@@ -169,7 +167,7 @@ void WindowNativeBridgeUWP::OnCompositionScaleChanged(::Windows::UI::Xaml::Contr
     uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
-void WindowNativeBridgeUWP::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
@@ -201,7 +199,7 @@ void WindowNativeBridgeUWP::OnPointerPressed(::Platform::Object ^ sender, ::Wind
     }
 }
 
-void WindowNativeBridgeUWP::OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
@@ -231,7 +229,7 @@ void WindowNativeBridgeUWP::OnPointerReleased(::Platform::Object ^ sender, ::Win
     }
 }
 
-void WindowNativeBridgeUWP::OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Input;
     using namespace ::Windows::Devices::Input;
@@ -276,7 +274,7 @@ void WindowNativeBridgeUWP::OnPointerMoved(::Platform::Object ^ sender, ::Window
     }
 }
 
-void WindowNativeBridgeUWP::OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Input;
 
@@ -288,11 +286,12 @@ void WindowNativeBridgeUWP::OnPointerWheelChanged(::Platform::Object ^ sender, :
     e.window = uwpWindow->GetWindow();
     e.mwheelEvent.x = pointerPoint->Position.X;
     e.mwheelEvent.y = pointerPoint->Position.Y;
-    e.mwheelEvent.delta = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
+    e.mwheelEvent.deltaX = 0.0f;
+    e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
     uwpWindow->GetDispatcher()->PostEvent(e);
 }
 
-uint32 WindowNativeBridgeUWP::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
+uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
 {
     if (props->IsLeftButtonPressed)
         return 1;
@@ -307,7 +306,7 @@ uint32 WindowNativeBridgeUWP::GetMouseButtonIndex(::Windows::UI::Input::PointerP
     return 0;
 }
 
-uint32 WindowNativeBridgeUWP::GetMouseButtonIndex(std::bitset<5> state)
+uint32 WindowNativeBridge::GetMouseButtonIndex(std::bitset<5> state)
 {
     for (size_t i = 0, n = state.size(); i < n; ++i)
     {
@@ -317,7 +316,7 @@ uint32 WindowNativeBridgeUWP::GetMouseButtonIndex(std::bitset<5> state)
     return 0;
 }
 
-std::bitset<5> WindowNativeBridgeUWP::FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props)
+std::bitset<5> WindowNativeBridge::FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props)
 {
     std::bitset<5> state;
     state.set(0, props->IsLeftButtonPressed);
@@ -328,7 +327,7 @@ std::bitset<5> WindowNativeBridgeUWP::FillMouseButtonState(::Windows::UI::Input:
     return state;
 }
 
-void WindowNativeBridgeUWP::CreateBaseXamlUI()
+void WindowNativeBridge::CreateBaseXamlUI()
 {
     using ::Windows::UI::Xaml::Markup::XamlReader;
     using ::Windows::UI::Xaml::ResourceDictionary;
@@ -367,7 +366,7 @@ void WindowNativeBridgeUWP::CreateBaseXamlUI()
     xamlWindow->Content = xamlSwapChainPanel;
 }
 
-void WindowNativeBridgeUWP::InstallEventHandlers()
+void WindowNativeBridge::InstallEventHandlers()
 {
     using namespace ::Platform;
     using namespace ::Windows::Foundation;
@@ -378,22 +377,22 @@ void WindowNativeBridgeUWP::InstallEventHandlers()
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
 
-    tokenActivated = coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WindowNativeBridgeUWP::OnActivated);
-    tokenVisibilityChanged = coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WindowNativeBridgeUWP::OnVisibilityChanged);
+    tokenActivated = coreWindow->Activated += ref new TypedEventHandler<CoreWindow ^, WindowActivatedEventArgs ^>(this, &WindowNativeBridge::OnActivated);
+    tokenVisibilityChanged = coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &WindowNativeBridge::OnVisibilityChanged);
 
-    tokenCharacterReceived = coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WindowNativeBridgeUWP::OnCharacterReceived);
-    tokenAcceleratorKeyActivated = xamlWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WindowNativeBridgeUWP::OnAcceleratorKeyActivated);
+    tokenCharacterReceived = coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WindowNativeBridge::OnCharacterReceived);
+    tokenAcceleratorKeyActivated = xamlWindow->Dispatcher->AcceleratorKeyActivated += ref new TypedEventHandler<CoreDispatcher ^, AcceleratorKeyEventArgs ^>(this, &WindowNativeBridge::OnAcceleratorKeyActivated);
 
-    tokenSizeChanged = xamlSwapChainPanel->SizeChanged += ref new SizeChangedEventHandler(this, &WindowNativeBridgeUWP::OnSizeChanged);
-    tokenCompositionScaleChanged = xamlSwapChainPanel->CompositionScaleChanged += ref new TypedEventHandler<SwapChainPanel ^, Object ^>(this, &WindowNativeBridgeUWP::OnCompositionScaleChanged);
+    tokenSizeChanged = xamlSwapChainPanel->SizeChanged += ref new SizeChangedEventHandler(this, &WindowNativeBridge::OnSizeChanged);
+    tokenCompositionScaleChanged = xamlSwapChainPanel->CompositionScaleChanged += ref new TypedEventHandler<SwapChainPanel ^, Object ^>(this, &WindowNativeBridge::OnCompositionScaleChanged);
 
-    tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridgeUWP::OnPointerPressed);
-    tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridgeUWP::OnPointerReleased);
-    tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridgeUWP::OnPointerMoved);
-    tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridgeUWP::OnPointerWheelChanged);
+    tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerPressed);
+    tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
+    tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
+    tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
 }
 
-void WindowNativeBridgeUWP::UninstallEventHandlers()
+void WindowNativeBridge::UninstallEventHandlers()
 {
     using namespace ::Windows::UI::Core;
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
@@ -413,14 +412,14 @@ void WindowNativeBridgeUWP::UninstallEventHandlers()
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
 }
 
-::Platform::String ^ WindowNativeBridgeUWP::xamlWorkaroundWebViewProblems = LR"(
+::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(
 <WebView x:Name="dummyWebView" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
 )";
 
-::Platform::String ^ WindowNativeBridgeUWP::xamlWorkaroundTextBoxProblems = LR"(
+::Platform::String ^ WindowNativeBridge::xamlWorkaroundTextBoxProblems = LR"(
 <TextBox x:Name="dummyTextBox" Visibility="Collapsed"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">

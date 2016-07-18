@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Private/Win32/WindowBackendWin32.h"
+#include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
@@ -195,7 +195,8 @@ LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x
     e.window = window;
     e.mwheelEvent.x = static_cast<float32>(x);
     e.mwheelEvent.y = static_cast<float32>(y);
-    e.mwheelEvent.delta = delta;
+    e.mwheelEvent.deltaX = 0.0f;
+    e.mwheelEvent.deltaY = static_cast<float32>(delta);
     dispatcher->PostEvent(e);
     return 0;
 }

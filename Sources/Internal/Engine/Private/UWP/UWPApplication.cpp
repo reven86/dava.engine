@@ -2,9 +2,7 @@
 
 #include "Engine/Private/UWP/UWPApplication.h"
 
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
@@ -28,12 +26,8 @@ int StartUWPApplication(const Vector<String>& cmdargs)
 
 UWPApplication::UWPApplication(const Vector<String>& cmdargs)
     : engineBackend(new EngineBackend(cmdargs))
+    , core(engineBackend->GetPlatformCore())
 {
-}
-
-UWPApplication::~UWPApplication()
-{
-    delete engineBackend;
 }
 
 void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
@@ -44,28 +38,34 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
 
     Suspending += ref new SuspendingEventHandler(this, &UWPApplication::OnSuspending);
     Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
+    UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
 
-    engineBackend->GetPlatformCore()->OnLaunched();
+    core->OnLaunched();
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
 {
-    engineBackend->GetPlatformCore()->OnActivated();
+    core->OnActivated();
 }
 
 void UWPApplication::OnWindowCreated(::Windows::UI::Xaml::WindowCreatedEventArgs^ args)
 {
-    engineBackend->GetPlatformCore()->OnWindowCreated(args->Window);
+    core->OnWindowCreated(args->Window);
 }
 
 void UWPApplication::OnSuspending(::Platform::Object^ sender, ::Windows::ApplicationModel::SuspendingEventArgs^ arg)
 {
-    engineBackend->GetPlatformCore()->OnSuspending();
+    core->OnSuspending();
 }
 
 void UWPApplication::OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg)
 {
-    engineBackend->GetPlatformCore()->OnResuming();
+    core->OnResuming();
+}
+
+void UWPApplication::OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg)
+{
+    core->OnUnhandledException(arg);
 }
 
 } // namespace Private
