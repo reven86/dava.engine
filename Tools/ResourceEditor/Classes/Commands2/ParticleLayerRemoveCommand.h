@@ -11,8 +11,8 @@ public:
     ParticleLayerRemoveCommand(DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
     ~ParticleLayerRemoveCommand();
 
-    virtual void Undo() override;
-    virtual void Redo() override;
+    void Undo() override;
+    void Redo() override;
 
     DAVA::ParticleLayer* layer;
     DAVA::ParticleLayer* before;

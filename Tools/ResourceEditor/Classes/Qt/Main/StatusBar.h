@@ -1,7 +1,7 @@
-#ifndef __STATUS_BAR_H__
-#define __STATUS_BAR_H__
+#pragma once
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "Scene/System/SystemDelegates.h"
 
 #include <QStatusBar>
 
@@ -12,26 +12,27 @@ class Command;
 class QLabel;
 class SceneEditor2;
 class SelectableGroup;
-
-class StatusBar : public QStatusBar
+class StatusBar final : public QStatusBar, public SceneSelectionSystemDelegate
 {
     Q_OBJECT
 
 public:
     explicit StatusBar(QWidget* parent = 0);
-    ~StatusBar();
+
+    //SceneSelectionSystemDelegate
+    void OnSelectionBoxChanged(const DAVA::AABBox3& newBox) override;
 
 public slots:
     void SceneActivated(SceneEditor2* scene);
+    void SceneDeactivated(SceneEditor2* scene);
+
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
 
     void UpdateByTimer();
-
     void OnSceneGeometryChaged(int width, int height);
 
-protected:
+private:
     void UpdateDistanceToCamera();
     void UpdateFPS();
     void SetDistanceToCamera(DAVA::float32 distance);
@@ -45,5 +46,3 @@ protected:
 
     DAVA::uint64 lastTimeMS = 0;
 };
-
-#endif // __STATUS_BAR_H__

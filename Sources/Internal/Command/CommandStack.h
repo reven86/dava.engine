@@ -43,8 +43,12 @@ private:
     int32 cleanIndex = -1;
     int32 currentIndex = -1;
 
-    Stack<CommandBatch*> batchesInWork;
     Vector<Command::Pointer> commands;
+
+    //this stack is created to hold nested batches hierarchy
+    DAVA::Stack<DAVA::CommandBatch*> batchesStack;
+    //root command batch which created when "BeginBatch" is called first time
+    DAVA::Command::Pointer rootBatch;
 
     //members to remember stack state and do not emit extra signals
     bool isClean = true;

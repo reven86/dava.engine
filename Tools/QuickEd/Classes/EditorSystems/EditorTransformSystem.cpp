@@ -76,7 +76,7 @@ struct EditorTransformSystem::MagnetLine
     Vector2::eAxis axis;
 };
 
-namespace EditorTransformSystem_local
+namespace EditorTransformSystemDetail
 {
 const float32 TRANSFORM_EPSILON = 0.0005f;
 
@@ -266,7 +266,7 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
-    Vector<EditorTransformSystem_local::ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
     ControlNode* activeNode = activeControlNode;
@@ -320,7 +320,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
-    for (const EditorTransformSystem_local::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
         systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
@@ -386,7 +386,7 @@ void EditorTransformSystem::ExtractMatchedLines(Vector<MagnetLineInfo>& magnets,
     const UIGeometricData* parentGD = &parent->GetGeometricData();
     for (const MagnetLine& line : magnetLines)
     {
-        if (fabs(line.interval) < EditorTransformSystem_local::TRANSFORM_EPSILON)
+        if (fabs(line.interval) < EditorTransformSystemDetail::TRANSFORM_EPSILON)
         {
             const Vector2::eAxis oppositeAxis = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
 
@@ -543,7 +543,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     deltaPosition *= control->GetScale();
     deltaPosition = ::Rotate(deltaPosition, control->GetAngle());
 
-    Vector<EditorTransformSystem_local::ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
 
     if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
@@ -554,7 +554,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    for (const EditorTransformSystem_local::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
         systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
@@ -695,7 +695,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
 
 void EditorTransformSystem::MovePivot(Vector2 delta)
 {
-    Vector<EditorTransformSystem_local::ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
@@ -705,7 +705,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    for (const EditorTransformSystem_local::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
         systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
@@ -832,8 +832,8 @@ float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, floa
             nearestTargetAngle += step * (finalAngle >= 0.0f ? 1 : -1);
         }
         //disable rotate backwards if we move cursor forward
-        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + EditorTransformSystem_local::TRANSFORM_EPSILON)
-            || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - EditorTransformSystem_local::TRANSFORM_EPSILON))
+        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + EditorTransformSystemDetail::TRANSFORM_EPSILON)
+            || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - EditorTransformSystemDetail::TRANSFORM_EPSILON))
         {
             extraDelta.dx = deltaAngle;
             return originalAngle;
@@ -927,7 +927,7 @@ void EditorTransformSystem::ClampAngle()
     float32 angle = angleProperty->GetValue().AsFloat();
     if (fabs(angle) > 360)
     {
-        angle += angle > 0.0f ? EditorTransformSystem_local::TRANSFORM_EPSILON : -EditorTransformSystem_local::TRANSFORM_EPSILON;
+        angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
     systemsManager->PropertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));

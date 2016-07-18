@@ -18,18 +18,18 @@ void CommandStack::Exec(Command::Pointer&& command)
     {
         return;
     }
-    if (!batchesInWork.empty())
+    if (rootBatch != nullptr)
     {
         //when the macro started command without undo will cause undefined state of application
         DVASSERT_MSG(command->CanUndo(),
                      Format("Command %s, which can not make undo passed to CommandStack within macro %s",
                             command->GetText().c_str(),
-                            batchesInWork.top()->GetText().c_str())
+                            batchesStack.top()->GetText().c_str())
                      .c_str()
                      );
         if (command->CanUndo())
         {
-            batchesInWork.top()->AddAndExec(std::move(command));
+            batchesStack.top()->AddAndExec(std::move(command));
             return;
         }
     }
@@ -38,37 +38,38 @@ void CommandStack::Exec(Command::Pointer&& command)
 
 void CommandStack::BeginBatch(const String& name, uint32 commandsCount)
 {
+    DAVA::Command::Pointer newCommandBatch = DAVA::Command::Create<DAVA::CommandBatch>(name, commandsCount);
+    DAVA::CommandBatch* newCommandBatchPtr = static_cast<DAVA::CommandBatch*>(newCommandBatch.get());
     //we call BeginMacro first time
-    if (batchesInWork.empty())
+    if (rootBatch == nullptr)
     {
-        //own first item before we move it to the command manager
-        batchesInWork.push(new CommandBatch(name, commandsCount));
+        DVASSERT(batchesStack.empty());
+        rootBatch = std::move(newCommandBatch);
+        batchesStack.push(newCommandBatchPtr);
     }
     //we already create one or more batches
     else
     {
-        Command::Pointer newCommandBatch = Command::Create<CommandBatch>(name, commandsCount);
-        CommandBatch* newCommandBatchPtr = static_cast<CommandBatch*>(newCommandBatch.get());
-        batchesInWork.top()->AddAndExec(std::move(newCommandBatch));
-        batchesInWork.push(newCommandBatchPtr);
+        batchesStack.top()->AddAndExec(std::move(newCommandBatch));
+        batchesStack.push(newCommandBatchPtr);
     }
 }
 
 void CommandStack::EndBatch()
 {
-    DVASSERT(!batchesInWork.empty() && "CommandStack::EndMacro called without BeginMacro");
-    if (batchesInWork.size() == 1)
+    DVASSERT(rootBatch != nullptr && "CommandStack::EndMacro called without BeginMacro");
+    if (batchesStack.size() == 1)
     {
-        CommandBatch* topLevelBatch = batchesInWork.top();
-        Command::Pointer commandPtr(topLevelBatch);
-        if (!topLevelBatch->IsEmpty())
+        DVASSERT(rootBatch != nullptr);
+        DAVA::CommandBatch* rootBatchPtr = static_cast<DAVA::CommandBatch*>(rootBatch.get());
+        if (!rootBatchPtr->IsEmpty())
         {
-            commands.push_back(std::move(commandPtr));
+            commands.push_back(std::move(rootBatch));
         }
     }
-    if (!batchesInWork.empty())
+    if (!batchesStack.empty())
     {
-        batchesInWork.pop();
+        batchesStack.pop();
     }
 }
 
