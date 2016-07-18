@@ -58,11 +58,11 @@ EngineBackend* EngineBackend::Instance()
     return instance;
 }
 
-EngineBackend::EngineBackend(const Vector<String>& cmdargs_)
+EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     : dispatcher(new MainDispatcher(MakeFunction(this, &EngineBackend::EventHandler)))
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
-    , cmdargs(cmdargs_)
+    , cmdargs(cmdargs)
 {
     DVASSERT(instance == nullptr);
     instance = this;

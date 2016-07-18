@@ -30,12 +30,14 @@ public:
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
     void OnSuspending();
     void OnResuming();
+    void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
 
 private:
     void GameThread();
 
 private:
     EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;

@@ -19,7 +19,7 @@ class EngineBackend final
 public:
     static EngineBackend* Instance();
 
-    EngineBackend(const Vector<String>& cmdargs_);
+    EngineBackend(const Vector<String>& cmdargs);
     ~EngineBackend();
 
     EngineBackend(const EngineBackend&) = delete;
