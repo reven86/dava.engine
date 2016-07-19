@@ -28,15 +28,6 @@ if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -fvisibility=hidden" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
-    
-    # If generator has no differentiation on debug and release config, merge config's flags into common
-    if ( ANDROID_MERGE_COMPILER_FLAGS_DEBUG )
-        set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}" )
-        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}" )
-    elseif ( ANDROID_MERGE_COMPILER_FLAGS_RELEASE )
-        set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}" )
-        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}" )
-    endif ()
 
 elseif ( IOS     )
     set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
