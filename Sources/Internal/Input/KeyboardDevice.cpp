@@ -20,8 +20,8 @@ static const char* keys[] =
   "LCTRL",
   "LALT",
 
-  "LWIN",
-  "RWIN",
+  "LCMD",
+  "RCMD",
   "APPS",
 
   "PAUSE",
@@ -250,9 +250,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;
     keyTranslator[256 + VK_APPS] = Key::APPS; // win api mark this key as extended
 
-    keyTranslator[256 + VK_LWIN] = Key::LWIN; // extended key
-    keyTranslator[256 + VK_RWIN] = Key::RWIN; // extended key
-
     keyTranslator[256 + VK_NUMLOCK] = Key::NUMLOCK;
     keyTranslator[VK_CAPITAL] = Key::CAPSLOCK;
     keyTranslator[VK_PAUSE] = Key::PAUSE;
@@ -334,7 +331,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[60] = Key::RSHIFT;
 
     keyTranslator[57] = Key::CAPSLOCK;
-    keyTranslator[55] = Key::LWIN; // LGUI in SDL
+    keyTranslator[55] = Key::LCMD; // LGUI in SDL
     keyTranslator[0x31] = Key::SPACE;
 
     // from SDL2 scancodes_darwin.h
@@ -555,8 +552,8 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[114] = Key::RCTRL;
     keyTranslator[115] = Key::CAPSLOCK;
     keyTranslator[116] = Key::SCROLLLOCK;
-    keyTranslator[117] = Key::LWIN;
-    keyTranslator[118] = Key::RWIN;
+    keyTranslator[117] = Key::LCMD;
+    keyTranslator[118] = Key::RCMD;
     //keyTranslator[119] = Key::FUNCTION;
     //keyTranslator[120] = Key::SYSRQ;
     keyTranslator[121] = Key::PAUSE;

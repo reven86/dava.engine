@@ -48,11 +48,11 @@ public:
     TexturePacker();
 
     // pack textures to single texture
-    void PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
+    void PackToTextures(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs);
     // page each PSD file to separate texture
-    void PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, eGPUFamily forGPU);
+    void PackToTexturesSeparate(const FilePath& outputPath, const DefinitionFile::Collection& defsList, const Vector<eGPUFamily>& forGPUs);
     // pack one sprite and use several textures if more than one needed
-    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& remainingList, eGPUFamily forGPU);
+    void PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& remainingList, const Vector<eGPUFamily>& forGPUs);
 
     void SetUseOnlySquareTextures();
     void SetMaxTextureSize(uint32 maxTextureSize);
@@ -78,12 +78,12 @@ private:
         ImageFormat imageFormat = IMAGE_FORMAT_UNKNOWN;
         PixelFormat pixelFormat = FORMAT_INVALID;
         ImageQuality imageQuality = DEFAULT_IMAGE_QUALITY;
-        bool toConvertOrigin = false;
         bool toComressForGPU = false;
+        bool toConvertOrigin = false;
     };
 
-    ImageExportKeys GetExportKeys(eGPUFamily forGPU);
-    void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
+    Vector<ImageExportKeys> GetExportKeys(const Vector<eGPUFamily>& forGPUs);
+    void ExportImage(const PngImageExt& image, const Vector<ImageExportKeys>& exportKeys, const FilePath& exportedPathname);
 
     rhi::TextureAddrMode GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
@@ -91,8 +91,8 @@ private:
     bool CheckFrameSize(const Size2i& spriteSize, const Size2i& frameSize);
 
     Vector<SpriteItem> PrepareSpritesVector(const DefinitionFile::Collection& defList);
-    Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const ImageExportKeys& imageExportKeys);
-    void SaveResultSheets(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const ImageExportKeys& imageExportKeys);
+    Vector<std::unique_ptr<SpritesheetLayout>> PackSprites(Vector<SpriteItem>& spritesToPack, const Vector<ImageExportKeys>& imageExportKeys);
+    void SaveResultSheets(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<std::unique_ptr<SpritesheetLayout>>& resultSheets, const Vector<ImageExportKeys>& imageExportKeys);
 
     int32 TryToPack(SpritesheetLayout* sheet, Vector<SpriteItem>& tempSortVector, bool fullPackOnly);
 
@@ -105,7 +105,7 @@ private:
     uint32 maxTextureSize;
 
     bool onlySquareTextures;
-    bool NeedSquareTextureForCompression(ImageExportKeys keys);
+    bool NeedSquareTextureForCompression(const Vector<ImageExportKeys>& keys);
 
     TextureConverter::eConvertQuality quality;
 

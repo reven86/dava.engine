@@ -1,4 +1,5 @@
 #include "Commands2/ParticleEmitterMoveCommands.h"
+#include "Base/RefPtr.h"
 
 ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect_, DAVA::ParticleEmitterInstance* emitter_,
                                                        DAVA::ParticleEffectComponent* newEffect_, int newIndex_)
@@ -8,53 +9,53 @@ ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectCompo
     , oldIndex(-1)
     , newIndex(newIndex_)
 {
-    if (nullptr != emitter_ && nullptr != oldEffect)
+    if (nullptr != emitter_ && nullptr != oldEffect_)
     {
         oldIndex = oldEffect->GetEmitterInstanceIndex(emitter_);
-        instance = oldEffect->GetEmitterInstance(oldIndex);
+        instance = DAVA::RefPtr<DAVA::ParticleEmitterInstance>::ConstructWithRetain(oldEffect->GetEmitterInstance(oldIndex));
         DVASSERT(instance->GetEmitter() == emitter_->GetEmitter());
     }
 }
 
 void ParticleEmitterMoveCommand::Undo()
 {
-    if ((instance == nullptr) || (instance->GetEmitter() == nullptr))
+    if ((instance.Get() == nullptr) || (instance->GetEmitter() == nullptr))
         return;
 
     if (nullptr != newEffect)
     {
-        newEffect->RemoveEmitterInstance(instance);
+        newEffect->RemoveEmitterInstance(instance.Get());
     }
 
     if (nullptr != oldEffect)
     {
         if (-1 != oldIndex)
         {
-            oldEffect->InsertEmitterInstanceAt(instance, oldIndex);
+            oldEffect->InsertEmitterInstanceAt(instance.Get(), oldIndex);
         }
         else
         {
-            oldEffect->AddEmitterInstance(instance);
+            oldEffect->AddEmitterInstance(instance.Get());
         }
     }
 }
 
 void ParticleEmitterMoveCommand::Redo()
 {
-    if ((instance == nullptr) || (instance->GetEmitter() == nullptr) || (newEffect == nullptr))
+    if ((instance.Get() == nullptr) || (instance->GetEmitter() == nullptr) || (newEffect == nullptr))
         return;
 
     if (nullptr != oldEffect)
     {
-        oldEffect->RemoveEmitterInstance(instance);
+        oldEffect->RemoveEmitterInstance(instance.Get());
     }
 
     if (-1 != newIndex)
     {
-        newEffect->InsertEmitterInstanceAt(instance, newIndex);
+        newEffect->InsertEmitterInstanceAt(instance.Get(), newIndex);
     }
     else
     {
-        newEffect->AddEmitterInstance(instance);
+        newEffect->AddEmitterInstance(instance.Get());
     }
 }

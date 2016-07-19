@@ -15,7 +15,7 @@ public:
         MODIFIER_SHIFT = 0x01,
         MODIFIER_CTRL = 0x02,
         MODIFIER_ALT = 0x04,
-        MODIFIER_WIN = 0x08,
+        MODIFIER_CMD = 0x08,
 
         LAST_MODIFIER = 0x08
     };

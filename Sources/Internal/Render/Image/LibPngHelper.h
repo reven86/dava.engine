@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LIBPNG_HELPERS_H__
-#define __DAVAENGINE_LIBPNG_HELPERS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -20,16 +19,15 @@ class LibPngHelper : public ImageFormatInterface
 public:
     LibPngHelper();
 
-    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
+    static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
 
-    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
     eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
     eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
+    ImageInfo GetImageInfo(File* infile) const override;
 
-    static eErrorCode ReadPngFile(File* infile, Image* image, PixelFormat targetFormat = FORMAT_INVALID);
+protected:
+    bool CanProcessFileInternal(File* infile) const override;
 };
 }
-
-#endif // __PNG_IMAGE_H__

@@ -127,6 +127,9 @@ public:
     bool GetMetalPreview();
     bool GetAllowMetalFeatures();
 
+    void SetRuntimeQualitySwitching(bool enabled);
+    bool GetRuntimeQualitySwitching();
+
     void UpdateEntityVisibility(Entity* e);
 
 protected:
@@ -181,6 +184,8 @@ protected:
     bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
 
     bool metalPreviewEnabled = false;
+
+    bool runtimeQualitySwitching = false;
 };
 
 inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
@@ -201,6 +206,16 @@ inline bool QualitySettingsSystem::GetMetalPreview()
 {
     return metalPreviewEnabled;
 }
+
+inline void QualitySettingsSystem::SetRuntimeQualitySwitching(bool enabled)
+{
+    runtimeQualitySwitching = enabled;
+}
+inline bool QualitySettingsSystem::GetRuntimeQualitySwitching()
+{
+    return runtimeQualitySwitching;
+}
+
 inline bool QualitySettingsSystem::GetAllowMetalFeatures()
 {
     //metal is turned on in 3 cases: preview metal in editor, preview metal in render option or metal renderer backend initialized

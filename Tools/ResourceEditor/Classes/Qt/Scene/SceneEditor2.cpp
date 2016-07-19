@@ -130,9 +130,9 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    selectionSystem->AddSelectionDelegate(modifSystem);
-    selectionSystem->AddSelectionDelegate(hoodSystem);
-    selectionSystem->AddSelectionDelegate(wayEditSystem);
+    selectionSystem->AddDelegate(modifSystem);
+    selectionSystem->AddDelegate(hoodSystem);
+    selectionSystem->AddDelegate(wayEditSystem);
 
     DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
@@ -263,46 +263,23 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
     return SaveScene(curScenePath);
 }
 
-bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
+bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 {
     DAVA::ScopedPtr<SceneEditor2> clonedScene(CreateCopyForExport());
     if (clonedScene)
     {
-        const DAVA::FilePath& projectPath = ProjectManager::Instance()->GetProjectPath();
-        DAVA::FilePath dataFolder = projectPath + "Data/3d/";
-        DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
-
-        DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
-        DAVA::TextureConverter::eConvertQuality qualityValue = static_cast<DAVA::TextureConverter::eConvertQuality>(quality.AsInt32());
-
-        LoggerErrorHandler handler;
-        DAVA::Logger::AddCustomOutput(&handler);
-
         SceneExporter exporter;
-        exporter.SetFolders(dataFolder, dataSourceFolder);
-        exporter.SetCompressionParams(newGPU, qualityValue);
-        exporter.EnableOptimizations(newGPU != DAVA::GPU_ORIGIN);
+        exporter.SetExportingParams(exportingParams);
 
         const DAVA::FilePath& scenePathname = GetScenePath();
-        DAVA::FilePath newScenePathname = dataFolder + scenePathname.GetRelativePathname(dataSourceFolder);
+        DAVA::FilePath newScenePathname = exportingParams.dataFolder + scenePathname.GetRelativePathname(exportingParams.dataSourceFolder);
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
         SceneExporter::ExportedObjectCollection exportedObjects;
-        exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
-        exporter.ExportObjects(exportedObjects);
+        bool sceneExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
+        bool objectExported = exporter.ExportObjects(exportedObjects);
 
-        DAVA::Logger::RemoveCustomOutput(&handler);
-        if (handler.HasErrors())
-        {
-            const auto& errorLog = handler.GetErrors();
-            for (auto& error : errorLog)
-            {
-                DAVA::Logger::Error("Export error: %s", error.c_str());
-            }
-            return false;
-        }
-
-        return true;
+        return (sceneExported && objectExported);
     }
     return false;
 }
@@ -689,9 +666,9 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveSelectionDelegate(modifSystem);
-        selectionSystem->RemoveSelectionDelegate(hoodSystem);
-        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+        selectionSystem->RemoveDelegate(modifSystem);
+        selectionSystem->RemoveDelegate(hoodSystem);
+        selectionSystem->RemoveDelegate(wayEditSystem);
     }
 
     if (editorLightSystem)
@@ -764,6 +741,8 @@ void SceneEditor2::Deactivate()
 void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
+
+    collisionSystem->EnableSystem();
 
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem(true);

@@ -15,6 +15,12 @@ class TextFieldPlatformImpl;
 class UITextFieldDelegate
 {
 public:
+    enum class eReason
+    {
+        USER = 0,
+        CODE = 1,
+    };
+
     virtual ~UITextFieldDelegate() = default;
 
     /**
@@ -51,8 +57,14 @@ public:
         return true;
     }
 
-    virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+    DAVA_DEPRECATED(virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+                    {
+                    });
+
+    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
     {
+        DVASSERT(newText != oldText);
+        TextFieldOnTextChanged(textField, newText, oldText);
     }
 
     /*

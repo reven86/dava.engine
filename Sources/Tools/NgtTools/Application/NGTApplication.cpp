@@ -2,6 +2,7 @@
 #include "NgtTools/Common/GlobalContext.h"
 
 #include "Debug/DVAssert.h"
+#include "Core/Core.h"
 
 #include <core_generic_plugin/interfaces/i_plugin_context_manager.hpp>
 #include <core_generic_plugin/interfaces/i_application.hpp>
@@ -16,16 +17,17 @@
 #include <QFileInfo>
 #include <QApplication>
 
+namespace wgt
+{
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
-namespace wgt
-{
 PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
 }
-}
+
+} // namespace wgt
 
 namespace NGTLayer
 {
@@ -59,7 +61,7 @@ void BaseApplication::LoadPlugins()
     NGTLayer::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
     wgt::Variant::setMetaTypeManager(NGTLayer::queryInterface<wgt::IMetaTypeManager>());
 
-    OnPostLoadPugins();
+    OnPostLoadPlugins();
 }
 
 wgt::IComponentContext& BaseApplication::GetComponentContext()
@@ -96,8 +98,28 @@ int BaseApplication::StartApplication()
     return app->startApplication();
 }
 
-void BaseApplication::OnPostLoadPugins()
+void BaseApplication::OnPostLoadPlugins()
 {
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
+    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
+                     {
+                         DAVA::Core* core = DAVA::Core::Instance();
+                         if (core == nullptr)
+                         {
+                             return;
+                         }
+                         if (state == Qt::ApplicationActive)
+                         {
+                             core->FocusReceived();
+                         }
+                         else
+                         {
+                             core->FocusLost();
+                         }
+                     });
 }
 
 void BaseApplication::OnPreUnloadPlugins()
@@ -111,6 +133,11 @@ bool BaseApplication::OnRequestCloseApp()
 
 void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
 {
+}
+
+const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine() const
+{
+    return commandLineParser;
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const

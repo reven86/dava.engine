@@ -403,6 +403,17 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     SafeRelease(image);
 }
 
+void AutotestingSystem::ClickSystemBack()
+{
+    Logger::Info("AutotestingSystem::ClickSystemBack");
+    UIEvent keyEvent;
+    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+    keyEvent.key = DAVA::Key::BACK;
+    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    UIControlSystem::Instance()->OnInput(&keyEvent);
+}
+
 void AutotestingSystem::OnTestsFinished()
 {
     Logger::Info("AutotestingSystem::OnTestsFinished");
@@ -417,6 +428,21 @@ void AutotestingSystem::OnTestsFinished()
 
     // Mark test as SUCCESS
     AutotestingDB::Instance()->Log("INFO", "Test finished.");
+
+    ExitApp();
+}
+
+void AutotestingSystem::OnTestSkipped()
+{
+    Logger::Info("AutotestingSystem::OnTestSkipped");
+
+    if (isDB && isInitMultiplayer)
+    {
+        AutotestingDB::Instance()->WriteState(deviceName, "State", "skipped");
+    }
+
+    // Mark test as SKIPPED
+    AutotestingDB::Instance()->Log("INFO", "Test skipped.");
 
     ExitApp();
 }

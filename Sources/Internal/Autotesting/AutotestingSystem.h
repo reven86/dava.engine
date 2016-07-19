@@ -26,6 +26,7 @@ public:
 
     void OnAppStarted();
     void OnAppFinished();
+    void OnTestSkipped();
 
     void Update(float32 timeElapsed);
     void Draw();
@@ -72,6 +73,7 @@ public:
     const String& GetScreenShotName();
     void MakeScreenShot();
     bool GetIsScreenShotSaving() const;
+    void ClickSystemBack();
 
     // DB Master-Helper relations
 

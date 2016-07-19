@@ -44,15 +44,22 @@ protected:
         names.push_back(L"plg_qt_common");
     }
 
-    void OnPostLoadPugins() override
+    void OnPostLoadPlugins() override
     {
         qApp->setOrganizationName("DAVA");
         qApp->setApplicationName("QuickEd");
+
+        BaseApplication::OnPostLoadPlugins();
     }
 
     bool OnRequestCloseApp() override
     {
         return editorCore->CloseProject();
+    }
+
+    void ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser) override
+    {
+        lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname() + "QuickEd/");
     }
 
 private:

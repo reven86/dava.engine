@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_TGA_HELPER_H__
-#define __DAVAENGINE_TGA_HELPER_H__
+#pragma once
 
 #include <memory>
 
@@ -12,15 +11,6 @@ class LibTgaHelper : public ImageFormatInterface
 {
 public:
     LibTgaHelper();
-
-    bool CanProcessFile(const ScopedPtr<File>& infile) const override;
-
-    eErrorCode ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
-
-    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
-
-    ImageInfo GetImageInfo(const ScopedPtr<File>& infile) const override;
 
     struct TgaInfo
     {
@@ -49,6 +39,13 @@ public:
     };
 
     eErrorCode ReadTgaHeader(const FilePath& filepath, TgaInfo& tgaHeader) const;
+
+    eErrorCode ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const override;
+
+    eErrorCode WriteFile(const FilePath& fileName, const Vector<Image*>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+    eErrorCode WriteFileAsCubeMap(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+
+    ImageInfo GetImageInfo(File* infile) const override;
 
 private:
     eErrorCode ReadTgaHeader(File* infile, TgaInfo& tgaHeader) const;
@@ -86,5 +83,3 @@ private:
     };
 };
 };
-
-#endif // __DAVAENGINE_TGA_HELPER_H__

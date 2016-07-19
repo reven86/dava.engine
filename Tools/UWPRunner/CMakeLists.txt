@@ -41,8 +41,8 @@ include_directories   ( "Classes/Qt/corecon" )
 
 set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
-define_source_folders ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  )
-generate_source_groups_project( SRC_ROOT "Classes" )
+define_source ( SOURCE  "Classes"  ${PLATFORM_SPECIFIC_FOLDER} )
+
 list ( APPEND UNIFIED_IGNORE_LIST "Classes/Qt/corecon/corecon.cpp" )
 
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
