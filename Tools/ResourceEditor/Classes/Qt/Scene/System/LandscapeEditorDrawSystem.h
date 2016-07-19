@@ -102,7 +102,6 @@ private:
 
     eErrorType IsNotPassableTerrainCanBeEnabled();
 
-
 private:
     DAVA::Entity* landscapeNode = nullptr;
     DAVA::Landscape* baseLandscape = nullptr;
