@@ -108,7 +108,7 @@ public:
     bool CheckText(UIControl* control, const String& expectedText);
     bool CheckMsgText(UIControl* control, const String& key);
     String GetText(UIControl* control);
-    
+
     // multiplayer api
     int32 GetServerQueueState(const String& serverName);
     bool SetServerQueueState(const String& serverName, int32 state);

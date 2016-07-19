@@ -402,7 +402,7 @@ void AutotestingSystem::OnScreenShotInternal(Image* image)
     isScreenShotSaving = false;
     SafeRelease(image);
 }
-    
+
 void AutotestingSystem::ClickSystemBack()
 {
     Logger::Info("AutotestingSystem::ClickSystemBack");
@@ -413,7 +413,7 @@ void AutotestingSystem::ClickSystemBack()
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
-    
+
 void AutotestingSystem::OnTestsFinished()
 {
     Logger::Info("AutotestingSystem::OnTestsFinished");
