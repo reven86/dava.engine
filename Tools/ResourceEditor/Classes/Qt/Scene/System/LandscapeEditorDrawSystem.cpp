@@ -683,7 +683,6 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     if (nullptr != baseLandscape)
     {
         auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
-        б
         if (nullptr != texture)
         {
             DAVA::FilePath path = texture->GetDescriptor()->GetSourceTexturePathname();
