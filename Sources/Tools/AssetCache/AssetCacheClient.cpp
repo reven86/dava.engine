@@ -366,7 +366,7 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
         request.result = AssetCache::Error::UNEXPECTED_PACKET;
         break;
     default:
-        DVASSERT_MSG(false, Format("Unexpected incorrect packet type: %d",type));
+        DVASSERT_MSG(false, Format("Unexpected incorrect packet type: %d", type).c_str());
         request.result = AssetCache::Error::CORRUPTED_DATA;
         break;
     }
