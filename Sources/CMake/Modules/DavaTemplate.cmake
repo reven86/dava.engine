@@ -445,7 +445,6 @@ if ( QT5_FOUND )
 endif()
 
 
-
 if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
