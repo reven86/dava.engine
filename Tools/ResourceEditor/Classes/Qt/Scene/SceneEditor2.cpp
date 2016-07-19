@@ -382,9 +382,9 @@ void SceneEditor2::Update(float timeElapsed)
 {
     ++framesCount;
 
-    renderStats = DAVA::Renderer::GetRenderStats();
-
     Scene::Update(timeElapsed);
+
+    renderStats = DAVA::Renderer::GetRenderStats();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)

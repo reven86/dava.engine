@@ -37,15 +37,15 @@ void StaticOcclusionSystem::UndoOcclusionVisibility()
 
     activeBlockIndex = 0;
     activePVSSet = nullptr;
+
+    occludedObjectsCount = 0;
+    visibleObjestsCount = 0;
 }
 
 void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData* data)
 {
-//#define LOG_DEBUG_OCCLUSION_APPLY
-#if defined(LOG_DEBUG_OCCLUSION_APPLY)
-    uint32 visCount = 0;
-    uint32 invisCount = 0;
-#endif
+    occludedObjectsCount = 0;
+    visibleObjestsCount = 0;
 
     uint32* bitdata = data->GetBlockVisibilityData(blockIndex);
     uint32 size = static_cast<uint32>(indexedRenderObjects.size());
@@ -61,23 +61,17 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
         if (bitdata[index] & (1 << shift))
         {
             ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
-
-#if defined(LOG_DEBUG_OCCLUSION_APPLY)
-            visCount++;
-#endif
+            ++visibleObjestsCount;
         }
         else
         {
             ro->SetFlags(ro->GetFlags() & ~RenderObject::VISIBLE_STATIC_OCCLUSION);
-
-#if defined(LOG_DEBUG_OCCLUSION_APPLY)
-            invisCount++;
-#endif
+            ++occludedObjectsCount;
         }
     }
 
 #if defined(LOG_DEBUG_OCCLUSION_APPLY)
-    Logger::Debug("apply cell: %d vis:%d invis:%d", blockIndex, visCount, invisCount);
+    Logger::Debug("apply cell: %d vis:%d invis:%d", blockIndex, visibleObjestsCount, occludedObjectsCount);
 #endif
 }
 
@@ -160,6 +154,10 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     {
         ProcessStaticOcclusionForOneDataSet(activeBlockIndex, activePVSSet);
     }
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+    Renderer::GetRenderStats().occludedRenderObjects += occludedObjectsCount;
+#endif
 }
 
 void StaticOcclusionSystem::RegisterEntity(Entity* entity)

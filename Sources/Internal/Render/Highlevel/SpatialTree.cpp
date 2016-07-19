@@ -443,15 +443,6 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
                 ++Renderer::GetRenderStats().visibleRenderObjects;
 #endif
             }
-            else
-            {
-#if defined(__DAVAENGINE_RENDERSTATS__)
-                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                {
-                    ++Renderer::GetRenderStats().occludedRenderObjects;
-                }
-#endif
-            }
         }
     }
     else
@@ -468,15 +459,6 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
                     visibilityArray.push_back(obj);
 #if defined(__DAVAENGINE_RENDERSTATS__)
                     ++Renderer::GetRenderStats().visibleRenderObjects;
-#endif
-                }
-                else
-                {
-#if defined(__DAVAENGINE_RENDERSTATS__)
-                    if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
-                    {
-                        ++Renderer::GetRenderStats().occludedRenderObjects;
-                    }
 #endif
                 }
             }
