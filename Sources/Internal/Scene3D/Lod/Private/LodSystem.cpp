@@ -301,6 +301,11 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
             int32 index = iter->second;
             SlowStruct* slow = &slowVector[index];
             UpdateDistances(lod, slow);
+
+            FastStruct* fast = &fastVector[index];
+            //force recalc nearSquare/farSquare on next Process
+            fast->nearSquare = -1.f;
+            fast->farSquare = -1.f;
         }
     }
     break;
