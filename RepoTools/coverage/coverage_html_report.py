@@ -28,7 +28,7 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut, buildConfig, not
     executName            = os.path.basename( pathExecut )
     executName, ExecutExt = os.path.splitext( executName )
 
-    pathTmpDir            = os.path.join(pathBuild, 'tmpCoverage')
+    pathTmpDir            = os.path.join(pathBuild, 'CoverageTmpData')
 
     print '-->',get_exe( pathExecut )
  
