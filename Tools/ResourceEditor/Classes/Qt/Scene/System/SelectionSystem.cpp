@@ -292,15 +292,19 @@ void SceneSelectionSystem::PerformSelectionInCurrentBox()
     SelectableGroup selectedObjects;
     for (const auto& item : allSelectedObjects.GetContent())
     {
-        auto entity = item.AsEntity();
+        DAVA::Entity* entity = item.AsEntity();
         if (entity == nullptr)
         {
-            selectedObjects.Add(item.GetContainedObject(), GetUntransformedBoundingBox(item.GetContainedObject()));
+            Selectable::Object* object = item.GetContainedObject();
+            if (!selectedObjects.ContainsObject(object))
+            {
+                selectedObjects.Add(object, GetUntransformedBoundingBox(object));
+            }
         }
         else if (IsEntitySelectable(entity))
         {
-            auto selectableEntity = GetSelectableEntity(entity);
-            if (!selectableEntity->GetLocked())
+            DAVA::Entity* selectableEntity = GetSelectableEntity(entity);
+            if (!selectableEntity->GetLocked() && !selectedObjects.ContainsObject(selectableEntity))
             {
                 selectedObjects.Add(selectableEntity, GetUntransformedBoundingBox(selectableEntity));
             }
