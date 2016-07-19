@@ -624,7 +624,7 @@ endif()
 
 if( ANDROID )
 
-    # Copy STL .so to output dir on ANDROID    
+    # Copy STL .so to output dir on Android
     if (DEFINED ANDROID_NDK 
         AND DEFINED ANDROID_STL_PREFIX 
         AND DEFINED ANDROID_ABI)
@@ -658,7 +658,6 @@ if( ANDROID )
             if( ${LIB_1} STREQUAL ${LIB_2} )
             else()
                 target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
-                message ( "target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )" )
             endif()
         endforeach()
     endforeach()
