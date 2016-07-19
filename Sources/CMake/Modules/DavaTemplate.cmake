@@ -488,11 +488,16 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    if ( ANDROID_BUILD_PACKAGE )
+    if ( NOT ANDROID_BUILD_NO_PACKAGE )
         if( NOT CMAKE_EXTRA_GENERATOR )
+            
+            if ( NOT ANDROID_PACKAGE_CONFIG )
+                set ( ANDROID_PACKAGE_CONFIG "release" )
+            endif ()
+        
             add_custom_target( ant-configure ALL
                 COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
-                COMMAND  ${ANT_COMMAND} ${ANDROID_BUILD_PACKAGE}
+                COMMAND  ${ANT_COMMAND} ${ANDROID_PACKAGE_CONFIG}
             )
 
             add_dependencies( ant-configure ${PROJECT_NAME} )
