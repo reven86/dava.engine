@@ -639,11 +639,11 @@ if( ANDROID )
     endif ()
     
     # add custom target to strip symbols from shared library
-    # strip symbols only in release configurations
-    set ( LIB_FILE_PATH "${LIBRARY_OUTPUT_PATH}/lib${PROJECT_NAME}.so" )
-    if ( CMAKE_STRIP )
+    # strip symbols only if needed
+    if ( ANDROID_STRIP_SYMBOLS )
+        set ( LIB_FILE_PATH "${LIBRARY_OUTPUT_PATH}/lib${PROJECT_NAME}.so" )
         add_custom_target( symbol-strip ALL
-            COMMAND if $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>> == 1 ${CMAKE_STRIP} --strip-unneeded ${LIB_FILE_PATH}
+            COMMAND ${CMAKE_STRIP} --strip-unneeded ${LIB_FILE_PATH}
         )
         add_dependencies( symbol-strip ${PROJECT_NAME} )
     endif ()
