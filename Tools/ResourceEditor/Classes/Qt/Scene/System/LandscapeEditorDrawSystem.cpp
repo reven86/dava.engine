@@ -632,7 +632,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
-    if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
         auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
@@ -650,6 +650,14 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
                         DAVA::float32 size = static_cast<DAVA::float32>(heightmapProxy->Size());
                         heightmapProxy->UpdateRect(DAVA::Rect(0.f, 0.f, size, size));
                     }
+                }
+            }
+            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
+            {
+                const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+                if (DAVA::Landscape::TEXTURE_TILEMASK == cmd->key)
+                {
+                    UpdateTilemaskPathname();
                 }
             }
         };
@@ -675,6 +683,7 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     if (nullptr != baseLandscape)
     {
         auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
+        б
         if (nullptr != texture)
         {
             DAVA::FilePath path = texture->GetDescriptor()->GetSourceTexturePathname();
