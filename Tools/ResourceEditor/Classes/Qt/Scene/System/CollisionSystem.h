@@ -62,6 +62,8 @@ public:
 
     const SelectableGroup& ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes);
 
+    void EnableSystem();
+
 private:
     void Draw();
 
@@ -77,7 +79,6 @@ private:
     using TCallBack = DAVA::Function<void(Selectable::Object*, CollisionBaseObject*)>;
     void EnumerateObjectHierarchy(const Selectable& object, bool createCollision, const TCallBack& callback);
 
-private:
     DAVA::Vector3 lastRayFrom;
     DAVA::Vector3 lastRayTo;
     DAVA::Vector2 lastMousePos;
@@ -105,6 +106,8 @@ private:
     bool rayIntersectCached = false;
     bool landIntersectCached = false;
     bool landIntersectCachedResult = false;
+
+    bool enabled = false;
 };
 
 class SceneCollisionDebugDrawer : public btIDebugDraw

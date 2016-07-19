@@ -51,6 +51,7 @@ const FastName Settings::Scene_AutoselectNewEntities = FastName("Scene/Autoselec
 const FastName Settings::Scene_RefreshLodForNonSolid = FastName("Scene/RefreshLodForNonSolid");
 const FastName Settings::Scene_RememberForceParameters = FastName("Scene/RememberForceParameters");
 const FastName Settings::Scene_SaveEmitters = FastName("Scene/SaveEmittersWithScene");
+const FastName Settings::Scene_SaveStaticOcclusion = FastName("Scene/SaveAfterStaticOcclusion");
 const FastName Settings::Scene_Sound_SoundObjectDraw = FastName("Scene/Sound/SoundObjectDraw");
 const FastName Settings::Scene_Sound_SoundObjectBoxColor = FastName("Scene/Sound/SoundObjectBoxColor");
 const FastName Settings::Scene_Sound_SoundObjectSphereColor = FastName("Scene/Sound/SoundObjectSphereColor");

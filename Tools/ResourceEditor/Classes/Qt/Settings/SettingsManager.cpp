@@ -82,6 +82,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_RefreshLodForNonSolid, DAVA::VariantType(true));
     CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SaveEmitters, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SaveStaticOcclusion, DAVA::VariantType(true));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));

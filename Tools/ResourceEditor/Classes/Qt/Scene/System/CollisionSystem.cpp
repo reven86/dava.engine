@@ -281,6 +281,11 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     // check in there are entities that should be added or removed
     if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
@@ -295,8 +300,6 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 
         for (auto obj : objectsToAdd)
         {
-            CollisionBaseObject* collisionObject = nullptr;
-
             Selectable wrapper(obj);
             if (wrapper.CanBeCastedTo<DAVA::Entity>() || wrapper.SupportsTransformType(Selectable::TransformType::Disabled))
             {
@@ -445,6 +448,11 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
@@ -461,7 +469,7 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (DAVA::GetLandscape(entity) != nullptr)
@@ -481,7 +489,7 @@ void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (curLandscapeEntity == entity)
@@ -523,6 +531,12 @@ const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vec
     }
 
     return planeClippedObjects;
+}
+
+void SceneCollisionSystem::EnableSystem()
+{
+    enabled = true;
+    AddEntity(GetScene());
 }
 
 namespace CollisionDetails
