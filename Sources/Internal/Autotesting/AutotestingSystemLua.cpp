@@ -560,7 +560,13 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
     }
     }
 }
-
+    
+void AutotestingSystemLua::ClickSystemBack()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::ClickSystemBack");
+    AutotestingSystem::Instance()->ClickSystemBack();
+}
+    
 String AutotestingSystemLua::GetText(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);

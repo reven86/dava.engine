@@ -101,13 +101,14 @@ public:
     void KeyPress(int32 keyChar);
 
     void ProcessInput(const UIEvent& input);
+    void ClickSystemBack();
 
     // helpers
     bool SetText(const String& path, const String& text); // lua uses ansi strings
     bool CheckText(UIControl* control, const String& expectedText);
     bool CheckMsgText(UIControl* control, const String& key);
     String GetText(UIControl* control);
-
+    
     // multiplayer api
     int32 GetServerQueueState(const String& serverName);
     bool SetServerQueueState(const String& serverName, int32 state);
