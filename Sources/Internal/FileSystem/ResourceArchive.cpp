@@ -19,30 +19,17 @@ namespace DAVA
 {
 ResourceArchive::ResourceArchive(const FilePath& archiveName)
 {
-    Logger::Info("line: start: %s, %d", __FUNCTION__, __LINE__);
-
     const String& fileName = archiveName.GetAbsolutePathname();
 
-    Logger::Info("fileName: %s, %d, fileName: ", __FUNCTION__, __LINE__, fileName.c_str());
-
-    ScopedPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
-
-    Logger::Info("f: %s, %d 0x%X", __FUNCTION__, __LINE__, f.get());
-
+    RefPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
     if (!f)
     {
-        Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
         throw std::runtime_error("can't open resource archive: " + fileName);
     }
 
-    Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
     Array<char8, 4> lastFourBytes;
 
-    Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
     uint64 fSize = f->GetSize();
-
     if (fSize < 4)
     {
         throw std::runtime_error("file not dvpk and not zip archive: " + fileName);
@@ -50,41 +37,23 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 
     if (!f->Seek(fSize - 4, File::SEEK_FROM_START))
     {
-        Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
         throw std::runtime_error("can't seek to last 4 bytes DVPK marker");
     }
 
-    Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
     uint32 count = f->Read(lastFourBytes.data(), static_cast<uint32>(lastFourBytes.size()));
-
-    Logger::Info("line: %s, %d %c, %c, %c, %c", __FUNCTION__, __LINE__, lastFourBytes[0], lastFourBytes[1],
-                 lastFourBytes[2], lastFourBytes[3]);
 
     if (count != lastFourBytes.size())
     {
-        Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
         throw std::runtime_error("can't read from resource archive: " + fileName);
     }
 
-    Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
-    f.reset();
-
-    Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
     if (PackFormat::FileMarker == lastFourBytes)
     {
-        Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
-        impl.reset(new PackArchive(fileName));
+        impl.reset(new PackArchive(f, fileName));
     }
     else
     {
-        Logger::Info("line: %s, %d", __FUNCTION__, __LINE__);
-
-        impl.reset(new ZipArchive(fileName));
+        impl.reset(new ZipArchive(f, fileName));
     }
 }
 

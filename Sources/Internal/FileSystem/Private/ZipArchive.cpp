@@ -5,8 +5,8 @@
 
 namespace DAVA
 {
-ZipArchive::ZipArchive(const FilePath& fileName)
-    : zipFile(fileName)
+ZipArchive::ZipArchive(RefPtr<File>& file_, const FilePath& fileName)
+    : zipFile(file_, fileName)
 {
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();

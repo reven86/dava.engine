@@ -6,6 +6,7 @@
 #include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
+#include <Platform/SystemTimer.h>
 
 namespace DAVA
 {
@@ -31,6 +32,8 @@ void PackManagerImpl::Initialize(const String& dbFile_,
                                  const PackManager::Hints& hints_,
                                  PackManager* packManager_)
 {
+    double startInit = SystemTimer::Instance()->AbsoluteMS();
+
     readOnlyPacksDir = readOnlyPacksDir_;
     localPacksDir = downloadPacksDir_;
 
@@ -56,10 +59,18 @@ void PackManagerImpl::Initialize(const String& dbFile_,
 
     initState = PackManager::InitState::Starting;
 
+    Logger::Info("init vars: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
+
+    startInit = SystemTimer::Instance()->AbsoluteMS();
     // now init all pack in local read only dir
     FirstTimeInit();
     InitStarting();
+
+    Logger::Info("init starting finish: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
+
+    startInit = SystemTimer::Instance()->AbsoluteMS();
     MountBasePacks();
+    Logger::Info("init mount base packs finish: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
@@ -260,7 +271,8 @@ void PackManagerImpl::InitStarting()
             throw std::runtime_error("can't copy local zipped DB from Data to Doc: " + dbZipInDoc.GetStringValue());
         }
         // 1. extract db file from zip
-        ZipArchive zip(dbZipInDoc);
+        RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
+        ZipArchive zip(fDb, dbZipInDoc);
         // only one file in archive
         const String& fileName = zip.GetFilesInfo().at(0).relativeFilePath;
         Vector<uint8> fileData;
@@ -301,11 +313,16 @@ void PackManagerImpl::InitializePacks()
 
 void PackManagerImpl::MountBasePacks()
 {
+    double start = SystemTimer::Instance()->AbsoluteMS();
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
     db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
 
+    double endReset = SystemTimer::Instance()->AbsoluteMS();
+
     InitializePacks();
+
+    double endInitPacks = SystemTimer::Instance()->AbsoluteMS();
 
     Set<FilePath> basePacks;
 
@@ -342,7 +359,11 @@ void PackManagerImpl::MountBasePacks()
     listPacksInDir(readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
     listPacksInDir(readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
 
+    double endListingDirs = SystemTimer::Instance()->AbsoluteMS();
+
     MountPacks(basePacks);
+
+    double endMountPacks = SystemTimer::Instance()->AbsoluteMS();
 
     for_each(begin(packs), end(packs), [](PackManager::Pack& p)
              {
@@ -354,6 +375,17 @@ void PackManagerImpl::MountBasePacks()
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::ReadOnlyPacksReady;
+
+    double endInit = SystemTimer::Instance()->AbsoluteMS();
+
+    Vector<double> t = { start, endReset, endInitPacks, endListingDirs, endMountPacks, endInit };
+    auto delta = [](double t2, double t1) { return (t2 - t1) / 1000.0; };
+    Logger::Info("endReset %f, endInitPacks %f, endListingDirs %f, endMountPacks %f, endInit %f",
+                 delta(endReset, start),
+                 delta(endInitPacks, endReset),
+                 delta(endListingDirs, endInitPacks),
+                 delta(endMountPacks, endListingDirs),
+                 delta(endInit, start));
 }
 
 void PackManagerImpl::AskFooter()
@@ -620,7 +652,9 @@ void PackManagerImpl::UnpackingDB()
 
     WriteBufferToFile(buffer, dbZipInDoc);
 
-    ZipArchive zip(dbZipInDoc);
+    RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
+
+    ZipArchive zip(fDb, dbZipInDoc);
     if (!zip.LoadFile(zip.GetFilesInfo().at(0).relativeFilePath, buffer))
     {
         throw std::runtime_error("can't unpack db from zip: " + dbZipInDoc.GetStringValue());

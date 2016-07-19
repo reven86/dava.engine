@@ -88,21 +88,22 @@ static File* file = nullptr;
 static std::string relativeFileName;
 static std::mutex gFileMutex;
 
-PackArchive::PackArchive(const FilePath& archiveName_)
+PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
     : archiveName(archiveName_)
+    , file(file_)
 {
     using namespace PackFormat;
 
-    std::lock_guard<std::mutex> lock(gFileMutex);
+    //std::lock_guard<std::mutex> lock(gFileMutex);
 
-    if (file != nullptr)
-    {
-        file->Release();
-        file = nullptr;
-        relativeFileName = "";
-    }
+    //if (file != nullptr)
+    //{
+    //    file->Release();
+    //    file = nullptr;
+    //    relativeFileName = "";
+    //}
 
-    file = (File::Create(archiveName, File::OPEN | File::READ));
+    //file = (File::Create(archiveName, File::OPEN | File::READ));
     String fileName = archiveName.GetAbsolutePathname();
     relativeFileName = fileName;
 
@@ -210,22 +211,22 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
 
-    std::lock_guard<std::mutex> lock(gFileMutex);
+    //std::lock_guard<std::mutex> lock(gFileMutex);
 
-    if (file != nullptr)
-    {
-        if (relativeFileName != archiveName.GetAbsolutePathname())
-        {
-            file->Release();
-            file = File::Create(archiveName, File::OPEN | File::READ);
-            relativeFileName = archiveName.GetAbsolutePathname();
-        }
-    }
-    else
-    {
-        file = (File::Create(archiveName, File::OPEN | File::READ));
-        relativeFileName = archiveName.GetAbsolutePathname();
-    }
+    //if (file != nullptr)
+    //{
+    //    if (relativeFileName != archiveName.GetAbsolutePathname())
+    //    {
+    //        file->Release();
+    //        file = File::Create(archiveName, File::OPEN | File::READ);
+    //        relativeFileName = archiveName.GetAbsolutePathname();
+    //    }
+    //}
+    //else
+    //{
+    //    file = (File::Create(archiveName, File::OPEN | File::READ));
+    //    relativeFileName = archiveName.GetAbsolutePathname();
+    //}
 
     if (!file)
     {

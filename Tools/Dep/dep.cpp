@@ -1,9 +1,19 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <set>
 #include <vector>
 #include <cstdint>
+#include <sstream>
+
+#ifdef _MSC_VER
+#include <filesystem>
+namespace fs = std::tr2::sys;
+#endif
 
 static const uint32_t crc32_tab[256] =
 {
@@ -99,10 +109,16 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
             ++i;
             rprefix = argv[i];
         }
-        if (arg == "-o" && (i + 1) < argc)
+        else if (arg == "-o" && (i + 1) < argc)
         {
             ++i;
-            output.open(argv[i]);
+            std::string output_name = argv[i];
+            output.open(output_name);
+            if (!output)
+            {
+                std::string err = std::strerror(errno);
+                throw std::runtime_error("can't open output file: " + output_name + " cause: " + err);
+            }
         }
         else
         {
@@ -113,6 +129,10 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
     if (output.is_open())
     {
         std::cout.rdbuf(output.rdbuf());
+    }
+    else
+    {
+        // write to console
     }
 
     // process files
@@ -134,7 +154,6 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
             }
 
             std::cout << aprefix << name << '\n';
-            file.close();
         }
     }
 
@@ -145,22 +164,32 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
     }
 }
 
+uint32_t calculate_crc32(const std::vector<char>& buff, std::streamsize sz)
+{
+    uint32_t crc32 = 0xffffffff;
+    for (auto i = 0u; i < sz; i++)
+    {
+        crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ buff[i]) & 0xff];
+    }
+    crc32 ^= 0xffffffff;
+    return crc32;
+}
+
 void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
 {
+    using namespace std;
     if (argc <= 2)
     {
-        throw std::runtime_error("no filename");
+        throw runtime_error("no filename");
     }
 
-    std::ofstream output;
-    uint32_t crc32 = 0xffffffff;
-
-    std::string path;
-    std::ifstream file;
+    ofstream output;
+    string path;
+    ifstream file;
 
     for (int i = 2; i < argc; ++i)
     {
-        std::string arg = argv[i];
+        string arg = argv[i];
         if (arg == "-o" && (i + 1) < argc)
         {
             i++;
@@ -177,59 +206,55 @@ void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
 
     if (output.is_open())
     {
-        std::cout.rdbuf(output.rdbuf());
+        cout.rdbuf(output.rdbuf());
     }
 
-    file.open(path, std::ios::binary);
+    file.open(path, ios::binary | ios::ate);
     if (file)
     {
-        char buff[2048];
-        for (;;)
+        streamsize file_size = file.tellg();
+        vector<char> buff(static_cast<size_t>(file_size));
+
+        file.seekg(0, ios::beg);
+        file.read(buff.data(), buff.size());
+        streamsize sz = file.gcount();
+        if (sz != file_size)
         {
-            file.read(buff, sizeof(buff));
-            std::streamsize sz = file.gcount();
-            if (sz > 0)
-            {
-                for (int i = 0; i < sz; i++)
-                {
-                    crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ buff[i]) & 0xff];
-                }
-            }
-            else
-            {
-                break;
-            }
+            throw runtime_error("can't read file in memory: " + path);
         }
+        uint32_t crc32 = calculate_crc32(buff, sz);
 
-        crc32 ^= 0xffffffff;
-        file.close();
+        cout << uppercase << hex << crc32 << '\n';
     }
-
-    std::cout << std::uppercase << std::hex << crc32 << '\n';
+    else
+    {
+        throw runtime_error("can't open file to calculate hash: " + path);
+    }
 
     if (output.is_open())
     {
-        std::cout.rdbuf(coutbuf);
+        cout.rdbuf(coutbuf);
         output.close();
     }
 }
 
 void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
 {
+    using namespace std;
     if (argc <= 2)
     {
         throw std::runtime_error("no params");
     }
 
-    std::vector<std::string> packs;
-    std::string listpath;
-    std::string hashpath;
+    vector<string> packs;
+    string listpath;
+    string hashpath;
     bool is_gpu = false;
-    std::ofstream output;
+    ofstream output;
 
     for (int i = 2; i < argc; ++i)
     {
-        std::string arg = argv[i];
+        string arg = argv[i];
         if (arg == "-l" && (i + 1) < argc)
         {
             ++i;
@@ -248,7 +273,7 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         else if (arg == "-g" && (i + 1) < argc)
         {
             ++i;
-            std::string next_arg = argv[i];
+            string next_arg = argv[i];
             is_gpu = (next_arg == "true");
         }
         else
@@ -259,16 +284,15 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
 
     if (output.is_open())
     {
-        std::cout.rdbuf(output.rdbuf());
+        cout.rdbuf(output.rdbuf());
     }
 
     if (packs.size() > 0)
     {
-        std::string pack = packs[0];
+        string pack = packs[0];
 
-        std::cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL);" << '\n';
-        std::cout << "CREATE TABLE IF NOT EXISTS dependency (key INTEGER PRIMARY KEY, pack TEXT NOT NULL, depends TEXT NOT NULL, FOREIGN KEY(depends) REFERENCES packs(name));" << '\n';
-        std::cout << "CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
+        cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL, dependency TEXT NOT NULL);" << '\n';
+        cout << "CREATE TABLE IF NOT EXISTS files (path TEXT PRIMARY KEY, pack TEXT NOT NULL, hash TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
 
         if (hashpath.empty())
         {
@@ -280,37 +304,52 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
             listpath = pack + ".list";
         }
 
-        std::string hash;
-        std::ifstream hashfile(hashpath);
+        string hash;
+        ifstream hashfile(hashpath);
         if (hashfile)
         {
             getline(hashfile, hash);
             hashfile.close();
         }
 
-        std::string packfile = hashpath;
+        string packfile = hashpath;
         packfile.replace(packfile.find(".hash"), 5, ".dvpk");
 
-        std::streamsize size = std::ifstream(packfile, std::ios_base::ate | std::ios_base::binary).tellg();
+        streamsize size = ifstream(packfile, ios::ate | ios::binary).tellg();
         if (size == -1)
         {
-            throw std::runtime_error("can't open file: " + packfile);
+            throw runtime_error("can't open file: " + packfile);
         }
 
-        std::cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "', '" << size << "');" << '\n';
-
+        stringstream dependency;
         for (size_t i = 1; i < packs.size(); ++i)
         {
-            std::cout << "INSERT INTO dependency VALUES(NULL, '" << pack << "', '" << packs[i] << "');" << '\n';
+            const string& pack_name = packs[i];
+            if (pack_name.find(' ') != string::npos)
+            {
+                throw runtime_error("pack name with SPACE char: " + pack_name);
+            }
+            dependency << pack_name << ' ';
         }
 
-        std::ifstream listfile(listpath);
+        cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "', '" << size << "', '" << dependency.str() << "');" << '\n';
+
+        ifstream listfile(listpath);
         if (listfile)
         {
-            std::string fileName;
+            string fileName;
             while (getline(listfile, fileName))
             {
-                std::cout << "INSERT INTO files VALUES('" << fileName << "', '" << pack << "');" << '\n';
+                ifstream file(fileName, ios::binary | ios::ate);
+                if (!file)
+                {
+                    throw runtime_error("can't open file to calculate hash: " + fileName);
+                }
+                vector<char> file_content(static_cast<size_t>(file.tellg()));
+                file.seekg(0, ios::beg);
+                file.read(file_content.data(), file_content.size());
+                uint32_t file_hash = calculate_crc32(file_content, file_content.size());
+                cout << "INSERT INTO files VALUES('" << fileName << "', '" << pack << "', '" << hex << file_hash << "');" << '\n';
             }
 
             listfile.close();
@@ -319,7 +358,7 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
 
     if (output.is_open())
     {
-        std::cout.rdbuf(coutbuf);
+        cout.rdbuf(coutbuf);
         output.close();
     }
 }
@@ -349,13 +388,13 @@ int main(int argc, const char* argv[])
 {
     using namespace std;
 
+    streambuf* coutbuf = cout.rdbuf();
+
     try
     {
         if (argc > 1)
         {
             const string cmd = argv[1];
-
-            streambuf* coutbuf = cout.rdbuf();
 
             if (cmd == "help" || cmd == "--help")
             {
@@ -386,10 +425,22 @@ int main(int argc, const char* argv[])
     catch (exception& ex)
     {
         cerr << ex.what() << '\n';
+        cerr << "input params:\n";
+        for (int i = 0; i < argc; ++i)
+        {
+            cerr << argv[i] << ' ';
+        }
+        cerr << '\n';
+#ifdef _MSC_VER
+        cerr << "current pwd: " << fs::current_path<fs::path>() << '\n';
+#endif
         cerr << "Use --help for help" << '\n';
 
         return EXIT_FAILURE;
     }
+
+    // restore initial buffer (in any case)
+    std::cout.rdbuf(coutbuf);
 
     return EXIT_SUCCESS;
 }
