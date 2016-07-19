@@ -27,13 +27,13 @@ class ClientNetProxyListener
 public:
     virtual ~ClientNetProxyListener() = default;
 
-    virtual void OnClientProxyStateChanged(){}
-    virtual void OnAddedToCache(const CacheItemKey& key, bool added){}
-    virtual void OnReceivedFromCache(const CacheItemKey& key, const CachedItemValue& value){}
-    virtual void OnRemovedFromCache(const CacheItemKey& key, bool removed){}
-    virtual void OnCacheCleared(bool cleared){}
-    virtual void OnServerStatusReceived(){}
-    virtual void OnIncorrectPacketReceived(IncorrectPacketType){}
+    virtual void OnClientProxyStateChanged(){};
+    virtual void OnAddedToCache(const CacheItemKey& key, bool added){};
+    virtual void OnReceivedFromCache(const CacheItemKey& key, const CachedItemValue& value){};
+    virtual void OnRemovedFromCache(const CacheItemKey& key, bool removed){};
+    virtual void OnCacheCleared(bool cleared){};
+    virtual void OnServerStatusReceived(){};
+    virtual void OnIncorrectPacketReceived(IncorrectPacketType){};
 };
 
 class ClientNetProxy : public DAVA::Net::IChannelListener
