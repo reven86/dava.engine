@@ -19,7 +19,7 @@ class ServerCacheEntry;
 
 struct CacheDBOwner
 {
-    virtual void OnStorageSpaceAltered(DAVA::uint64 occupied, DAVA::uint64 overall) = 0;
+    virtual void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) = 0;
 };
 
 class CacheDB final

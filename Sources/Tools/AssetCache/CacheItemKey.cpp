@@ -29,13 +29,13 @@ void CacheItemKey::FromString(const String& string)
 
 void CacheItemKey::Serialize(KeyedArchive* archive) const
 {
-    const int32 keySize = static_cast<uint32>(size());
+    const int32 keySize = static_cast<int32>(size());
     archive->SetByteArray("keyData", data(), keySize);
 }
 
 void CacheItemKey::Deserialize(const KeyedArchive* archive)
 {
-    auto size = archive->GetByteArraySize("keyData");
+    int32 size = archive->GetByteArraySize("keyData");
     DVASSERT(size == HASH_SIZE);
 
     Memcpy(data(), archive->GetByteArray("keyData"), size);

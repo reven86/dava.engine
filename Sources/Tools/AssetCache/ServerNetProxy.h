@@ -26,7 +26,7 @@ public:
     virtual void OnWarmingUp(Net::IChannel* channel, const CacheItemKey& key) = 0;
     virtual void OnStatusRequested(Net::IChannel* channel) = 0;
 
-    virtual void OnChannelClosed(Net::IChannel* channel, const char8* message){};
+    virtual void OnChannelClosed(Net::IChannel* channel, const char8* message){}
 };
 
 class ServerNetProxy final : public Net::IChannelListener

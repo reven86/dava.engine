@@ -55,11 +55,11 @@ public:
     void OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType) override;
 
     // CacheDBOwner
-    void OnStorageSpaceAltered(DAVA::uint64 occupied, DAVA::uint64 overall);
+    void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall);
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
-    void StorageSpaceAltered(DAVA::uint64 occupied, DAVA::uint64 overall) const;
+    void StorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) const;
 
 public slots:
     void OnSettingsUpdated(const ApplicationSettings* settings);
@@ -76,7 +76,7 @@ private:
     bool ConnectRemote();
     bool VerifyRemote();
     void DisconnectRemote();
-    void ReattemptRemoteLater();
+    void ReconnectRemoteLater();
 
 private:
     DAVA::AssetCache::ServerNetProxy serverProxy;
@@ -93,7 +93,7 @@ private:
 
     QTimer* updateTimer;
     QTimer* connectTimer;
-    QTimer* reattemptWaitTimer;
+    QTimer* reconnectWaitTimer;
 };
 
 inline ServerCore::State ServerCore::GetState() const

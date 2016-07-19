@@ -25,7 +25,7 @@ CacheDB::~CacheDB()
 
 void CacheDB::NotifySizeChanged()
 {
-    owner.OnStorageSpaceAltered(occupiedSize, maxStorageSize);
+    owner.OnStorageSizeChanged(occupiedSize, maxStorageSize);
 }
 
 void CacheDB::UpdateSettings(const DAVA::FilePath& folderPath, const DAVA::uint64 size, const DAVA::uint32 newMaxItemsInMemory, const DAVA::uint64 _autoSaveTimeout)

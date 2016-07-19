@@ -108,8 +108,8 @@ std::unique_ptr<CachePacket> CachePacket::CreateByType(ePacketID type)
     return nullptr;
 }
 
-CachePacket::CachePacket(ePacketID _type, bool createBuffer)
-    : type(_type)
+CachePacket::CachePacket(ePacketID type_, bool createBuffer)
+    : type(type_)
     , serializationBuffer(nullptr)
 {
     if (createBuffer)
@@ -124,13 +124,13 @@ void CachePacket::WriteHeader(File* file) const
     file->Write(&header);
 }
 
-AddRequestPacket::AddRequestPacket(const CacheItemKey& _key, const CachedItemValue& _value)
+AddRequestPacket::AddRequestPacket(const CacheItemKey& key_, const CachedItemValue& value_)
     : CachePacket(PACKET_ADD_REQUEST, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
-    _value.Serialize(serializationBuffer);
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
+    value_.Serialize(serializationBuffer);
 }
 
 bool AddRequestPacket::Load(File* file)
@@ -139,13 +139,13 @@ bool AddRequestPacket::Load(File* file)
     return ((file->Read(key.data(), keySize) == keySize) && value.Deserialize(file));
 }
 
-AddResponsePacket::AddResponsePacket(const CacheItemKey& _key, bool _added)
+AddResponsePacket::AddResponsePacket(const CacheItemKey& key_, bool added_)
     : CachePacket(PACKET_ADD_RESPONSE, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
-    serializationBuffer->Write(&_added, sizeof(_added));
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
+    serializationBuffer->Write(&added_, sizeof(added_));
 }
 
 bool AddResponsePacket::Load(File* file)
@@ -154,12 +154,12 @@ bool AddResponsePacket::Load(File* file)
     return ((file->Read(key.data(), keySize) == keySize) && (file->Read(&added) == sizeof(added)));
 }
 
-GetRequestPacket::GetRequestPacket(const CacheItemKey& _key)
+GetRequestPacket::GetRequestPacket(const CacheItemKey& key_)
     : CachePacket(PACKET_GET_REQUEST, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
 }
 
 bool GetRequestPacket::Load(File* file)
@@ -168,13 +168,13 @@ bool GetRequestPacket::Load(File* file)
     return (file->Read(key.data(), keySize) == keySize);
 }
 
-GetResponsePacket::GetResponsePacket(const CacheItemKey& _key, const CachedItemValue& _value)
+GetResponsePacket::GetResponsePacket(const CacheItemKey& key_, const CachedItemValue& value_)
     : CachePacket(PACKET_GET_RESPONSE, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
-    _value.Serialize(serializationBuffer);
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
+    value_.Serialize(serializationBuffer);
 }
 
 bool GetResponsePacket::Load(File* file)
@@ -183,12 +183,12 @@ bool GetResponsePacket::Load(File* file)
     return ((file->Read(key.data(), keySize) == keySize) && value.Deserialize(file));
 }
 
-WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& _key)
+WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& key_)
     : CachePacket(PACKET_WARMING_UP_REQUEST, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
 }
 
 bool WarmupRequestPacket::Load(File* file)
@@ -197,11 +197,11 @@ bool WarmupRequestPacket::Load(File* file)
     return (file->Read(key.data(), keySize) == keySize);
 }
 
-RemoveRequestPacket::RemoveRequestPacket(const CacheItemKey& _key)
+RemoveRequestPacket::RemoveRequestPacket(const CacheItemKey& key_)
     : CachePacket(PACKET_REMOVE_REQUEST, true)
 {
     WriteHeader(serializationBuffer);
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
 }
 
 bool RemoveRequestPacket::Load(File* file)
@@ -210,13 +210,13 @@ bool RemoveRequestPacket::Load(File* file)
     return (file->Read(key.data(), keySize) == keySize);
 }
 
-RemoveResponsePacket::RemoveResponsePacket(const CacheItemKey& _key, bool _removed)
+RemoveResponsePacket::RemoveResponsePacket(const CacheItemKey& key_, bool removed_)
     : CachePacket(PACKET_REMOVE_RESPONSE, true)
 {
     WriteHeader(serializationBuffer);
 
-    serializationBuffer->Write(_key.data(), static_cast<uint32>(_key.size()));
-    serializationBuffer->Write(&_removed, sizeof(_removed));
+    serializationBuffer->Write(key_.data(), static_cast<uint32>(key_.size()));
+    serializationBuffer->Write(&removed_, sizeof(removed_));
 }
 
 bool RemoveResponsePacket::Load(File* file)
@@ -225,11 +225,11 @@ bool RemoveResponsePacket::Load(File* file)
     return ((file->Read(key.data(), keySize) == keySize) && (file->Read(&removed) == sizeof(removed)));
 }
 
-ClearResponsePacket::ClearResponsePacket(bool _cleared)
+ClearResponsePacket::ClearResponsePacket(bool cleared_)
     : CachePacket(PACKET_CLEAR_RESPONSE, true)
 {
     WriteHeader(serializationBuffer);
-    serializationBuffer->Write(&_cleared, sizeof(_cleared));
+    serializationBuffer->Write(&cleared_, sizeof(cleared_));
 }
 
 bool ClearResponsePacket::Load(File* file)

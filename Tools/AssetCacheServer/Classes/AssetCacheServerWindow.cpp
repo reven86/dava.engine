@@ -80,7 +80,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     ChangeSettingsState(NOT_EDITED);
 
     connect(&serverCore, &ServerCore::ServerStateChanged, this, &AssetCacheServerWindow::OnServerStateChanged);
-    connect(&serverCore, &ServerCore::StorageSpaceAltered, this, &AssetCacheServerWindow::UpdateUsageProgressbar);
+    connect(&serverCore, &ServerCore::StorageSizeChanged, this, &AssetCacheServerWindow::UpdateUsageProgressbar);
 
     LoadSettings();
     SetupLaunchOnStartup(ui->systemStartupCheckBox->isChecked(), ui->restartCheckBox->isChecked());
@@ -569,8 +569,7 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
 void AssetCacheServerWindow::UpdateUsageProgressbar(DAVA::uint64 occupied, DAVA::uint64 overall)
 {
     float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
-    int val = p * static_cast<DAVA::float64>(occupied);
-    float64 v = p * static_cast<DAVA::float64>(occupied);
+    int val = static_cast<int>(p * static_cast<DAVA::float64>(occupied));
     ui->occupiedSizeBar->setRange(0, 100);
     ui->occupiedSizeBar->setValue(val);
 }

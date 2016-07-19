@@ -26,10 +26,10 @@ ServerCore::ServerCore()
     connectTimer->setSingleShot(true);
     QObject::connect(connectTimer, &QTimer::timeout, this, &ServerCore::OnConnectTimeout);
 
-    reattemptWaitTimer = new QTimer(this);
-    reattemptWaitTimer->setInterval(CONNECT_REATTEMPT_WAIT_SEC * 1000);
-    reattemptWaitTimer->setSingleShot(true);
-    QObject::connect(reattemptWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
+    reconnectWaitTimer = new QTimer(this);
+    reconnectWaitTimer->setInterval(CONNECT_REATTEMPT_WAIT_SEC * 1000);
+    reconnectWaitTimer->setSingleShot(true);
+    QObject::connect(reconnectWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
 
     settings.Load();
 }
@@ -115,16 +115,16 @@ bool ServerCore::VerifyRemote()
 void ServerCore::DisconnectRemote()
 {
     connectTimer->stop();
-    reattemptWaitTimer->stop();
+    reconnectWaitTimer->stop();
     remoteState = RemoteState::STOPPED;
     clientProxy.Disconnect();
 }
 
-void ServerCore::ReattemptRemoteLater()
+void ServerCore::ReconnectRemoteLater()
 {
     DisconnectRemote();
     remoteState = RemoteState::WAITING_REATTEMPT;
-    reattemptWaitTimer->start();
+    reconnectWaitTimer->start();
 }
 
 void ServerCore::OnTimerUpdate()
@@ -140,7 +140,7 @@ void ServerCore::OnTimerUpdate()
 
 void ServerCore::OnConnectTimeout()
 {
-    ReattemptRemoteLater();
+    ReconnectRemoteLater();
     emit ServerStateChanged(this);
 }
 
@@ -158,13 +158,13 @@ void ServerCore::OnClientProxyStateChanged()
     {
         DVASSERT(remoteState == RemoteState::CONNECTING);
         connectTimer->stop();
-        reattemptWaitTimer->stop();
+        reconnectWaitTimer->stop();
         VerifyRemote();
     }
     else
     {
         connectTimer->start();
-        reattemptWaitTimer->stop();
+        reconnectWaitTimer->stop();
         remoteState = RemoteState::CONNECTING;
     }
 
@@ -176,7 +176,7 @@ void ServerCore::OnServerStatusReceived()
     DVASSERT(remoteState == RemoteState::VERIFYING);
 
     connectTimer->stop();
-    reattemptWaitTimer->stop();
+    reconnectWaitTimer->stop();
     remoteState = RemoteState::STARTED;
 
     emit ServerStateChanged(this);
@@ -185,7 +185,7 @@ void ServerCore::OnServerStatusReceived()
 void ServerCore::OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType)
 {
     DVASSERT(remoteState != RemoteState::STOPPED);
-    ReattemptRemoteLater();
+    ReconnectRemoteLater();
     emit ServerStateChanged(this);
 }
 
@@ -258,7 +258,7 @@ void ServerCore::GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& over
     overall = dataBase.GetStorageSize();
 }
 
-void ServerCore::OnStorageSpaceAltered(DAVA::uint64 occupied, DAVA::uint64 overall)
+void ServerCore::OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall)
 {
-    emit StorageSpaceAltered(occupied, overall);
+    emit StorageSizeChanged(occupied, overall);
 }
