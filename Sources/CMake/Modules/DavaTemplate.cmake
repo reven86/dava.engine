@@ -662,7 +662,7 @@ endif()
 
 ##
 
-if( MACOS AND COVERAGE )
+if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     if( MAC_DISABLE_BUNDLE )
         set( APP_ATRIBUTE )
     else()
