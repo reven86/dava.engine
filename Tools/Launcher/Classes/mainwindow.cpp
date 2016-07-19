@@ -538,7 +538,7 @@ QWidget* MainWindow::CreateAppInstalledTableItem(const QString& stringID, int ro
         {
             QString appID, insVersionID, avVersionID;
             GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
-            appManager->ShowApplicataionInFinder(selectedBranchID, appID, insVersionID);
+            appManager->ShowApplicataionInExplorer(selectedBranchID, appID, insVersionID);
         }
     });
 

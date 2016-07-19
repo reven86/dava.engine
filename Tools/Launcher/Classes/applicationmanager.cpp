@@ -205,7 +205,7 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
     return runPath;
 }
 
-void ApplicationManager::ShowApplicataionInFinder(const QString& branchID, const QString& appID, const QString& versionID)
+void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID)
 {
     QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
     if (runPath.isEmpty())
