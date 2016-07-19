@@ -106,16 +106,6 @@ void CommandStack::Redo()
 
 bool CommandStack::CanUndo() const
 {
-    return CanUndoImpl();
-}
-
-bool CommandStack::CanRedo() const
-{
-    return CanRedoImpl();
-}
-
-bool CommandStack::CanUndoImpl() const
-{
     DVASSERT(currentIndex < commands.size());
     if (currentIndex >= 0)
     {
@@ -124,7 +114,7 @@ bool CommandStack::CanUndoImpl() const
     return false;
 }
 
-bool CommandStack::CanRedoImpl() const
+bool CommandStack::CanRedo() const
 {
     return currentIndex < (commands.size() - 1);
 }

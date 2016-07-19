@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "core_ui_framework/i_component_provider.hpp"
@@ -19,3 +20,4 @@ private:
     wgt::IDefinitionManager& definitionManager;
 };
 }
+#endif //0

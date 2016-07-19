@@ -5,13 +5,6 @@
 #include "NgtTools/Commands/WGTCommand.h"
 #include "NgtTools/Common/GlobalContext.h"
 
-#include <core_data_model/variant_list.hpp>
-#include <core_data_model/i_value_change_notifier.hpp>
-#include <core_command_system/command_instance.hpp>
-#include <core_command_system/i_env_system.hpp>
-#include <core_reflection/reflected_object.hpp>
-#include <core_command_system/i_command_manager.hpp>
-
 namespace CommandStackLocal
 {
 class CommandIdsAccumulator
@@ -20,15 +13,6 @@ public:
     CommandIdsAccumulator(DAVA::UnorderedSet<DAVA::CommandID_t>& commandIds_)
         : commandIds(commandIds_)
     {
-    }
-
-    void operator()(const wgt::CommandInstancePtr& instance)
-    {
-        DAVA::Command* cmd = instance->getArguments().getBase<DAVA::Command>();
-        if (cmd != nullptr)
-        {
-            this->operator()(cmd);
-        }
     }
 
     void operator()(const DAVA::Command* command)
@@ -58,8 +42,6 @@ class RECommandStack::ActiveCommandStack : public DAVA::StaticSingleton<ActiveCo
 public:
     ActiveCommandStack()
     {
-        envManager = NGTLayer::queryInterface<wgt::IEnvManager>();
-        DVASSERT(envManager);
     }
 
     void CommandStackDeleted(RECommandStack* commandStack)
@@ -86,7 +68,7 @@ public:
             activeStack->DisableConnections();
         }
 
-        SetActiveImpl(commandStack);
+        activeStack = commandStack;
         activeStack->EnableConections();
     }
 
@@ -101,7 +83,7 @@ public:
         }
 
         activationStack.push(activeStack);
-        SetActiveImpl(commandStack);
+        activeStack = commandStack;
 
         if (sameStacks == false)
         {
@@ -121,7 +103,7 @@ public:
             activeStack->DisableConnections();
         }
 
-        SetActiveImpl(cmdStack);
+        activeStack = cmdStack;
 
         if (activeStack != nullptr && sameStacks == false)
         {
@@ -130,19 +112,8 @@ public:
     }
 
 private:
-    void SetActiveImpl(RECommandStack* cmdStack)
-    {
-        activeStack = cmdStack;
-        if (activeStack)
-        {
-            envManager->selectEnv(activeStack->GetID());
-        }
-    }
-
-private:
     RECommandStack* activeStack = nullptr;
     DAVA::Stack<RECommandStack*> activationStack;
-    wgt::IEnvManager* envManager = nullptr;
 };
 
 class RECommandStack::ActiveStackGuard
@@ -162,7 +133,7 @@ public:
 RECommandStack::RECommandStack()
     : CommandStack()
 {
-    indexChanged = commandManager->signalPostCommandIndexChanged.connect(std::bind(&RECommandStack::HistoryIndexChanged, this, std::placeholders::_1));
+    indexChanged = currentIndexChanged.Connect(std::bind(&RECommandStack::HistoryIndexChanged, this, std::placeholders::_1));
 }
 
 RECommandStack::~RECommandStack()
@@ -293,13 +264,10 @@ bool RECommandStack::IsClean() const
         endCommandIndex = nextAfterCleanCommandIndex;
     }
 
-    const wgt::VariantList& history = commandManager->getHistory();
     DVASSERT(endCommandIndex < static_cast<DAVA::int32>(history.size()));
     for (DAVA::int32 i = startCommandIndex; i <= endCommandIndex; ++i)
     {
-        wgt::CommandInstancePtr instance = history[i].value<wgt::CommandInstancePtr>();
-        DAVA::Command* cmd = instance->getArguments().getBase<DAVA::Command>();
-
+        DAVA::Command* cmd = commands.at(i).get();
         if (cmd == nullptr || cmd->IsModifying())
             return false;
     }
@@ -313,13 +281,12 @@ void RECommandStack::SetClean()
 
     ActiveStackGuard guard(this);
     uncleanCommandIds.clear();
-    const wgt::VariantList& history = commandManager->getHistory();
     CommandStackLocal::CommandIdsAccumulator functor(uncleanCommandIds);
-    DAVA::int32 historySize = static_cast<DAVA::int32>(history.size());
+    DAVA::int32 historySize = commands.size();
     DVASSERT(nextAfterCleanCommandIndex < historySize);
     for (DAVA::int32 i = DAVA::Max(nextAfterCleanCommandIndex, 0); i < historySize; ++i)
     {
-        functor(history[i].value<wgt::CommandInstancePtr>());
+        functor(commands.at(i));
     }
 
     CleanCheck();

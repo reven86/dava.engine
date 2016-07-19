@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "Extensions.h"
@@ -70,3 +71,4 @@ private:
     bool isSelectionDirty = false;
     DAVA::Vector<DAVA::InspBase*> selectedObjects;
 };
+#endif //0

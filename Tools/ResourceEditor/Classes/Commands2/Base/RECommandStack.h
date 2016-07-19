@@ -4,10 +4,7 @@
 #include "NgtTools/Commands/CommandStack.h"
 #include "Commands2/Base/CommandNotify.h"
 
-#include <core_command_system/i_command_event_listener.hpp>
-#include <core_common/signal.hpp>
-
-class RECommandStack : public CommandStack, public CommandNotifyProvider, public wgt::ICommandEventListener
+class RECommandStack : public CommandStack, public CommandNotifyProvider
 {
 public:
     RECommandStack();
@@ -32,7 +29,6 @@ public:
     void SetClean() override;
 
 private:
-    void commandExecuted(const wgt::CommandInstance& commandInstance, wgt::CommandOperation operation) override;
     void CleanCheck();
 
     void HistoryIndexChanged(int currentIndex);
@@ -49,14 +45,9 @@ private:
     /// nextAfterCleanCommandIndex will not change and scene will not be marked as changed
     const DAVA::int32 SCENE_CHANGED_INDEX = -2;
 
-    class ActiveCommandStack;
-    class ActiveStackGuard;
-
     DAVA::int32 nextCommandIndex = EMPTY_INDEX;
     DAVA::int32 nextAfterCleanCommandIndex = EMPTY_INDEX;
     bool lastCheckCleanState = true;
 
     DAVA::UnorderedSet<DAVA::CommandID_t> uncleanCommandIds;
-
-    wgt::Connection indexChanged;
 };
