@@ -25,24 +25,25 @@ def get_exe( pathExecut ):
 def generate_report_html( pathBuild, pathExecut, pathReportOut, buildConfig, notRunExecutable ):
 
     pathExecutDir         = os.path.dirname ( pathExecut )
-    ExecutName            = os.path.basename( pathExecut )
-    ExecutName, ExecutExt = os.path.splitext(ExecutName)
+    executName            = os.path.basename( pathExecut )
+    executName, ExecutExt = os.path.splitext( executName )
+
+    pathTmpDir            = os.path.join(pathBuild, 'tmpCoverage')
 
     print '-->',get_exe( pathExecut )
  
-    if not os.path.isdir( pathReportOut ):
+    if os.path.isdir( pathReportOut ):
+        shutil.rmtree( pathReportOut )
+    else:
         os.makedirs(pathReportOut) 
 
+    if not os.path.isdir( pathTmpDir ):
+        os.makedirs(pathTmpDir) 
+
     if buildConfig:
-        pathConfigSegment = os.path.join(  '{0}.build'.format(ExecutName), buildConfig )
+        pathConfigSegment = os.path.join(  '{0}.build'.format(executName), buildConfig )
 
     if notRunExecutable == 'false':
-        #remove '.gcda','.gcno'
-        for rootdir, dirs, files in os.walk( pathBuild ):
-            for file in files:   
-                if file.endswith( ('.gcda','.gcno')  ): 
-                    os.remove( os.path.join(rootdir, file) )
-        # call execute 
         subprocess.call( get_exe( pathExecut ) )
 
     #coppy '.gcda','.gcno' files
@@ -62,12 +63,12 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut, buildConfig, not
         if os.path.exists(pathOutFile):
             os.remove(pathOutFile)
 
-        shutil.copy(file, pathExecutDir )
+        shutil.copy(file, pathTmpDir )
 
     #
     pathCoverageDir  = os.path.dirname(os.path.realpath(__file__))
     pathCallLlvmGcov = os.path.join(pathCoverageDir, 'llvm-gcov.sh')
-    pathCovInfo      = os.path.join(pathExecutDir, 'cov.info')
+    pathCovInfo      = os.path.join(pathTmpDir, 'cov.info')
     pathLcov         = os.path.join(pathCoverageDir, 'lcov')
     pathGenHtml      = os.path.join(pathCoverageDir, 'genhtml')
 
@@ -75,7 +76,7 @@ def generate_report_html( pathBuild, pathExecut, pathReportOut, buildConfig, not
 
     #
     params = [ pathLcov,
-                '--directory', pathExecutDir,  
+                '--directory', pathTmpDir,  
                 '--base-directory', pathExecutDir,
                 '--gcov-tool', pathCallLlvmGcov,
                 '--capture',   
