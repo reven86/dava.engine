@@ -806,6 +806,12 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     addAction(deleteSelection);
 }
 
+SceneTree::~SceneTree()
+{
+    delete filteringProxyModel;
+    delete treeModel;
+}
+
 void SceneTree::SetFilter(const QString& filter)
 {
     treeModel->SetFilter(filter);
