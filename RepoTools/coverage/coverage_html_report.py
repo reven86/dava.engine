@@ -22,25 +22,38 @@ def get_exe( pathExecut ):
         else:
             return pathExecut
 
-def generate_report_html( pathBuild, pathExecut, pathReportOut ):
+def generate_report_html( pathBuild, pathExecut, pathReportOut, buildConfig, notRunExecutable ):
 
-    pathExecutDir = os.path.dirname ( pathExecut )
+    pathExecutDir         = os.path.dirname ( pathExecut )
+    ExecutName            = os.path.basename( pathExecut )
+    ExecutName, ExecutExt = os.path.splitext(ExecutName)
 
+    print '-->',get_exe( pathExecut )
+ 
     if not os.path.isdir( pathReportOut ):
         os.makedirs(pathReportOut) 
 
+    if buildConfig:
+        pathConfigSegment = os.path.join(  '{0}.build'.format(ExecutName), buildConfig )
 
-    print '-->',get_exe( pathExecut )
-
-    subprocess.call( get_exe( pathExecut ) )
+    if notRunExecutable == 'false':
+        #remove '.gcda','.gcno'
+        for rootdir, dirs, files in os.walk( pathBuild ):
+            for file in files:   
+                if file.endswith( ('.gcda','.gcno')  ): 
+                    os.remove( os.path.join(rootdir, file) )
+        # call execute 
+        subprocess.call( get_exe( pathExecut ) )
 
     #coppy '.gcda','.gcno' files
     listCoverData = []
     for rootdir, dirs, files in os.walk( pathBuild ):
-        if rootdir.find( pathExecutDir ) == -1:
-            for file in files:   
-                if file.endswith( ('.gcda','.gcno')  ): 
-                    listCoverData += [os.path.join(rootdir, file)]
+        if rootdir.find( pathExecutDir ) == -1 :
+            if not buildConfig or rootdir.find( pathConfigSegment ) != -1:
+                print 'rootdir - ',rootdir
+                for file in files:   
+                    if file.endswith( ('.gcda','.gcno')  ): 
+                        listCoverData += [os.path.join(rootdir, file)]
     
     for file in listCoverData:
         baseName = os.path.basename( file )
@@ -85,11 +98,13 @@ def main():
     parser.add_argument( '--pathBuild', required = True )
     parser.add_argument( '--pathExecut', required = True )
     parser.add_argument( '--pathReportOut', required = True )
+    parser.add_argument( '--buildConfig', choices=['Debug', 'Release'] )
+    parser.add_argument( '--notRunExecutable', default = 'false', choices=['true', 'false'] )
+
     options = parser.parse_args()
 
-    generate_report_html( options.pathBuild, options.pathExecut, options.pathReportOut )
+    generate_report_html( options.pathBuild, options.pathExecut, options.pathReportOut, options.buildConfig, options.notRunExecutable )
  
-
 if __name__ == '__main__':
     main()
 

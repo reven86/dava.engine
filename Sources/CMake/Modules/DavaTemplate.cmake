@@ -674,7 +674,7 @@ if( MACOS AND COVERAGE )
     endif()
 
     if( DEPLOY )
-        set( EXECUT_FILE ${DEPLOY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE})
+        set( EXECUT_FILE ${DEPLOY_DIR}/${PROJECT_NAME}${APP_ATRIBUTE})
     else()
         set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
     endif()
@@ -684,9 +684,11 @@ if( MACOS AND COVERAGE )
                     --pathExecut    ${EXECUT_FILE}
                     --pathBuild     ${CMAKE_BINARY_DIR}
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
+                    --buildConfig   $(CONFIGURATION)
+
             COMMAND open -a Safari  ${CMAKE_BINARY_DIR}/Coverage/index.html
         )
-
+    add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
 endif()
 
