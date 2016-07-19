@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
-#define __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -320,4 +319,3 @@ const Vector2& VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
     return drawOffset;
 }
 };
-#endif

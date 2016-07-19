@@ -723,7 +723,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
 
     //now transform position and speed by emissionVector and worldTransfrom rotations - preserving length
     Matrix3 newTransform(worldTransform);
-    if ((std::fabs(currEmissionVector.x) < EPSILON) && (std::fabs(currEmissionVector.y) < EPSILON))
+    if ((std::abs(currEmissionVector.x) < EPSILON) && (std::abs(currEmissionVector.y) < EPSILON))
     {
         if (currEmissionVector.z < 0)
         {

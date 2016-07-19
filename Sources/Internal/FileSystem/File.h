@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILE_H__
-#define __DAVAENGINE_FILE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -221,6 +220,3 @@ uint32 File::Write(const T* value)
 }
 };
 
-
-
-#endif

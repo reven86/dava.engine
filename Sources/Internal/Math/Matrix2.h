@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATH2DMATRIX2_H__
-#define __DAVAENGINE_MATH2DMATRIX2_H__
+#pragma once
 
 #include <cmath>
 #include "Base/BaseTypes.h"
@@ -166,7 +165,3 @@ inline bool Matrix2::operator!=(const Matrix2& _m) const
 }
 
 }; // end of namespace DAVA
-
-
-
-#endif // __DAVAENGINE_MATH2DMATRIX2_H__

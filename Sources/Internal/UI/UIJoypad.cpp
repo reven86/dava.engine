@@ -84,15 +84,15 @@ const Vector2& UIJoypad::GetDigitalPosition()
     }
 
     Vector2 v = analogVector;
-    if (std::fabs(v.x) > std::fabs(v.y))
+    if (std::abs(v.x) > std::abs(v.y))
     {
-        float32 f = std::fabs(1.f / v.x);
+        float32 f = std::abs(1.f / v.x);
         v.y *= f;
         v.x *= f;
     }
     else
     {
-        float32 f = std::fabs(1.f / v.y);
+        float32 f = std::abs(1.f / v.y);
         v.x *= f;
         v.y *= f;
     }

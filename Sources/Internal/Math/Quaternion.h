@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_QUATERNION_H__
-#define __DAVAENGINE_QUATERNION_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -556,5 +555,3 @@ inline Quaternion Quaternion::MakeRotationFastZ(float32 angle)
     return ret;
 }
 };
-
-#endif // __DAVAENGINE_QUATERNION_H__

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATH2DBASE_H__
-#define __DAVAENGINE_MATH2DBASE_H__
+#pragma once
 
 #include <cmath>
 #include "Math/Matrix2.h"
@@ -450,6 +449,3 @@ inline Rect2Base<TYPE> Rect2Base<TYPE>::operator-(const Point2Base<TYPE>& pt) co
 }
 
 }; // end of namespace DAVA
-
-
-#endif // __DAVAENGINE_MATH2DBASE_H__

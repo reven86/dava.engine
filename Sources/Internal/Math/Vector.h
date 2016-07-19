@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_VECTOR_H__
-#define __DAVAENGINE_VECTOR_H__
+#pragma once
 
 #include <cmath>
 #include "Base/BaseTypes.h"
@@ -471,7 +470,7 @@ inline float32 Vector2::CrossProduct(const Vector2& b) const
 
 inline float32 Vector2::Angle() const
 {
-    float angle = (std::fabs(x) > std::fabs(y)) ? std::acos(std::fabs(x)) : std::asin(std::fabs(y));
+    float angle = (std::abs(x) > std::abs(y)) ? std::acos(std::abs(x)) : std::asin(std::abs(y));
 
     if (x >= 0 && y >= 0)
         return angle; // I
@@ -1162,6 +1161,3 @@ inline Vector4 Normalize(const Vector4& v)
     return res;
 }
 };
-
-
-#endif // __DAVAENGINE_VECTOR_H__

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATHHELPERS_H__
-#define __DAVAENGINE_MATHHELPERS_H__
+#pragma once
 
 #include <cmath>
 #include "Math/Math2D.h"
@@ -206,5 +205,3 @@ inline Vector3 Polar(DAVA::float32 angle, DAVA::float32 distance)
 };
 
 } // end of namespace DAVA
-
-#endif

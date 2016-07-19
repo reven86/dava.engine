@@ -1,8 +1,8 @@
-#ifndef __JNI_HELPERS_H__
-#define __JNI_HELPERS_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_ANDROID__)
+
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
@@ -807,7 +807,5 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 } // end namespace DAVA
 
 #pragma clang diagnostic pop
-
-#endif
 
 #endif

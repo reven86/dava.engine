@@ -1,7 +1,4 @@
-#ifndef __DAVAENGINE_MATHBASE_H__
-#define __DAVAENGINE_MATHBASE_H__
-
-
+#pragma once
 #include <cmath>
 
 /**
@@ -32,5 +29,3 @@
 #include "Math/Color.h"
 
 #include "Render/RGBColor.h"
-
-#endif // __DAVAENGINE_MATH_H__

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATRIX_H__
-#define __DAVAENGINE_MATRIX_H__
+#pragma once
 
 #include "Neon/NeonMath.h"
 #include "Math/Matrix3.h"
@@ -742,7 +741,3 @@ inline bool Matrix4::operator!=(const Matrix4& _m) const
 }
 
 }; // end of namespace DAVA
-
-
-
-#endif // __DAVAENGINE_MATRIX_H__

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UI_CONTROL_H__
-#define __DAVAENGINE_UI_CONTROL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
@@ -1473,6 +1472,3 @@ void UIControl::SetWheelSensitivity(float32 newSens)
     wheelSensitivity = newSens;
 }
 };
-
-
-#endif
