@@ -648,10 +648,12 @@ if( ANDROID )
     # strip symbols only if needed
     if ( ANDROID_STRIP_SYMBOLS )
         set ( LIB_FILE_PATH "${LIBRARY_OUTPUT_PATH}/lib${PROJECT_NAME}.so" )
-        add_custom_target( symbol-strip ALL
+        set ( STRIP_TARGET_NAME "${PROJECT_NAME}-symbol-strip" )
+        
+        add_custom_target( "${STRIP_TARGET_NAME}" ALL
             COMMAND ${CMAKE_STRIP} --strip-unneeded ${LIB_FILE_PATH}
         )
-        add_dependencies( symbol-strip ${PROJECT_NAME} )
+        add_dependencies( "${STRIP_TARGET_NAME}" ${PROJECT_NAME} )
     endif ()
 
     # link libraries
