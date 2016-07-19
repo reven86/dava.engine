@@ -632,7 +632,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
-    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
     {
         auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
@@ -652,15 +652,6 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
                     }
                 }
             }
-            else if (command->MatchCommandID(CMDID_INSP_DYNAMIC_MODIFY))
-            {
-                const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
-                if (DAVA::Landscape::TEXTURE_TILEMASK == cmd->key)
-                {
-                    UpdateTilemaskPathname();
-                }
-            }
-
         };
 
         if (command->GetId() == CMDID_BATCH)
@@ -686,7 +677,11 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
         auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
         if (nullptr != texture)
         {
-            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            DAVA::FilePath path = texture->GetDescriptor()->GetSourceTexturePathname();
+            if (path.GetType() == DAVA::FilePath::PATH_IN_FILESYSTEM)
+            {
+                sourceTilemaskPath = path;
+            }
             return true;
         }
     }

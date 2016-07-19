@@ -108,6 +108,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
         return enablingError;
     }
 
+    drawSystem->UpdateTilemaskPathname();
     bool inited = drawSystem->InitTilemaskImageCopy();
     if (!inited)
     {
