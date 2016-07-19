@@ -398,7 +398,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 
     if (customColorsProxy == nullptr)
     {
-        customColorsProxy = new CustomColorsProxy(static_cast<DAVA::int32>(GetTextureSize(DAVA::Landscape::TEXTURE_COLOR)));
+        customColorsProxy = new CustomColorsProxy(DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE);
     }
 
     if (rulerToolProxy == nullptr)
