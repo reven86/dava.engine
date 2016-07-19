@@ -17,7 +17,7 @@ protected:
     \param[in] id derived class ID, like CMDID_BATCH.
     \param[in] text command text description to be displayed in widgets / network packets / log texts.
     */
-    Command(CommandID_t id, const String& text = "");
+    Command(CommandID_t id, const String& description = "");
 
 public:
     /**
@@ -37,7 +37,7 @@ public:
     \brief Returns command's text description.
     \returns command's text description.
     */
-    const String& GetText() const;
+    const String& GetDescription() const;
 
     /**
     \brief Some commands passed to stack can make Redo and Undo, but do not change any files so do not change save state.
@@ -70,13 +70,13 @@ public:
 
 private:
     const CommandID_t id;
-    const String text;
+    const String description;
 };
 
 template <typename CMD, typename... Arg>
 std::unique_ptr<CMD> Command::Create(Arg&&... arg)
 {
-    return std::make_unique<CMD>(std::forward<Arg>(arg)...);
+    return std::unique_ptr<CMD>(new CMD(std::forward<Arg>(arg)...));
 }
 
 inline CommandID_t Command::GetID() const
@@ -84,9 +84,9 @@ inline CommandID_t Command::GetID() const
     return id;
 }
 
-inline const String& Command::GetText() const
+inline const String& Command::GetDescription() const
 {
-    return text;
+    return description;
 }
 
 inline bool Command::IsModifying() const

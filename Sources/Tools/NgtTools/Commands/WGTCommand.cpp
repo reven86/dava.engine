@@ -60,11 +60,11 @@ wgt::ObjectHandle WGTCommand::getCommandDescription(const wgt::ObjectHandle& arg
 {
     DAVA::Command* command = arguments.getBase<DAVA::Command>();
     DVASSERT(nullptr != command);
-    DAVA::String text = command->GetText();
+    DAVA::String description = command->GetDescription();
 
     wgt::IDefinitionManager* defManager = NGTLayer::queryInterface<wgt::IDefinitionManager>();
     DVASSERT(defManager != nullptr);
     auto handle = wgt::GenericObject::create(*defManager);
-    handle->set("Name", text);
+    handle->set("Name", description);
     return wgt::ObjectHandle(std::move(handle));
 }

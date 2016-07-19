@@ -12,7 +12,7 @@ public:
     \param[in] text command batch text description to be displayed in widgets / network packets / log texts.
     \param[in] commandsCoubnt commands count to reserve memory to optimize memory allocation count.
     */
-    CommandBatch(const String& text = "", uint32 commandsCount = 0);
+    CommandBatch(const String& description = "", uint32 commandsCount = 0);
 
     /**
     \brief Executes all commands in batch.

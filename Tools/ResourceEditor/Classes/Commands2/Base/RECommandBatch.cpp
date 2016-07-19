@@ -4,8 +4,8 @@
 #include "Utils/StringFormat.h"
 #include "QtTools/Commands/CommandWithoutExecute.h"
 
-RECommandBatch::RECommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount)
-    : CommandBatch(text, commandsCount)
+RECommandBatch::RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount)
+    : CommandBatch(description, commandsCount)
 {
 }
 

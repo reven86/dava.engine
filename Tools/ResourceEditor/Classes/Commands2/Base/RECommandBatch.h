@@ -8,7 +8,7 @@ class CommandWithoutExecute;
 class RECommandBatch final : public DAVA::CommandBatch
 {
 public:
-    RECommandBatch(const DAVA::String& text, DAVA::uint32 commandsCount);
+    RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount);
 
     void RemoveCommands(DAVA::CommandID_t commandId);
 

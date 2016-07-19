@@ -43,8 +43,8 @@ void CommandStack::Exec(DAVA::Command::Pointer&& command)
         //when the macro started command without undo will cause undefined state of application
         DVASSERT_MSG(command->CanUndo(),
                      DAVA::Format("Command %s, which can not make undo passed to CommandStack within macro %s",
-                                  command->GetText().c_str(),
-                                  batchesStack.top()->GetText().c_str())
+                                  command->GetDescription().c_str(),
+                                  batchesStack.top()->GetDescription().c_str())
                      .c_str()
                      );
         if (command->CanUndo())
@@ -65,14 +65,13 @@ void CommandStack::BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCou
     {
         DVASSERT(batchesStack.empty());
         rootBatch = std::move(newCommandBatch);
-        batchesStack.push(newCommandBatchPtr);
     }
     //we already create one or more batches
     else
     {
         batchesStack.top()->AddAndExec(std::move(newCommandBatch));
-        batchesStack.push(newCommandBatchPtr);
     }
+    batchesStack.push(newCommandBatchPtr);
 }
 
 void CommandStack::EndBatch()

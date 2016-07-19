@@ -4,8 +4,8 @@
 
 namespace DAVA
 {
-CommandBatch::CommandBatch(const String& text, uint32 commandsCount)
-    : Command(CMDID_BATCH, text)
+CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
+    : Command(CMDID_BATCH, description)
 {
     commandList.reserve(commandsCount);
 }

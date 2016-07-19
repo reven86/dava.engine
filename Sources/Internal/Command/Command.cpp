@@ -3,15 +3,15 @@
 
 namespace DAVA
 {
-Command::Command(CommandID_t id_, const String& text_)
+Command::Command(CommandID_t id_, const String& description_)
     : id(id_)
-    , text(text_)
+    , description(description_)
 {
 }
 
 bool Command::MatchCommandIDs(const DAVA::Vector<DAVA::CommandID_t>& commandIDVector) const
 {
-    auto functor = std::bind(&Command::MatchCommandID, this, std::placeholders::_1);
+    auto functor = [this](const DAVA::CommandID_t& id) { return MatchCommandID(id); };
     return std::find_if(commandIDVector.begin(), commandIDVector.end(), functor) != commandIDVector.end();
 }
 }
