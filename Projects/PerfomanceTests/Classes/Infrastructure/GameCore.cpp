@@ -9,6 +9,7 @@
 
 #include "Tests/UniversalTest.h"
 #include "Tests/MaterialsTest.h"
+#include "Tests/LoadingTest.h"
 
 using namespace DAVA;
 
@@ -31,7 +32,7 @@ void GameCore::OnAppStarted()
 
     if (testChain.empty())
     {
-        Core::Instance()->Quit();
+        GameCore::Instance()->Quit();
     }
 }
 
@@ -90,7 +91,7 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    // load material test
+    // material test
     Vector<std::pair<String, String>> scenes;
     LoadMaps(MaterialsTest::TEST_NAME, scenes);
 
@@ -103,9 +104,8 @@ void GameCore::RegisterTests()
         testChain.push_back(new MaterialsTest(params));
     }
 
+    // universal test
     scenes.clear();
-
-    // load universal test
     LoadMaps(UniversalTest::TEST_NAME, scenes);
 
     for (const auto& scene : scenes)
@@ -115,6 +115,19 @@ void GameCore::RegisterTests()
         params.scenePath = scene.second;
 
         testChain.push_back(new UniversalTest(params));
+    }
+
+    // loading test
+    scenes.clear();
+    LoadMaps(LoadingTest::TEST_NAME, scenes);
+
+    for (const auto& scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+
+        testChain.push_back(new LoadingTest(params));
     }
 }
 
@@ -129,14 +142,17 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
     YamlNode* testsRootNode = testsParser->GetRootNode();
     YamlNode* mapsRootNode = mapsParser->GetRootNode();
 
-    const auto& maps = testsRootNode->Get(testName)->AsVector();
-
-    for (auto mapNameNode : maps)
+    if (testsRootNode->Get(testName))
     {
-        const String& mapName = mapNameNode->AsString();
-        const String& mapPath = mapsRootNode->Get(mapName)->AsString();
+        const auto& maps = testsRootNode->Get(testName)->AsVector();
 
-        mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+        for (auto mapNameNode : maps)
+        {
+            const String& mapName = mapNameNode->AsString();
+            const String& mapPath = mapsRootNode->Get(mapName)->AsString();
+
+            mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+        }
     }
 
     SafeRelease(mapsParser);
@@ -218,7 +234,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetTime < 0)
         {
             Logger::Error("Incorrect params. TargetTime < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -227,7 +243,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (!endTimeFound)
         {
             Logger::Error("Incorrect params. Set end time for range");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
 
         String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
@@ -241,7 +257,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (timeRange < 100 || params.startTime < 0)
         {
             Logger::Error("Incorrect params. Too small time range");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -253,7 +269,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetFramesCount < 0)
         {
             Logger::Error("Incorrect params. TargetFramesCount < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -265,7 +281,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.targetFrameDelta < 0.0f)
         {
             Logger::Error("Incorrect params. TargetFrameDelta < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -277,7 +293,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.frameForDebug < 0)
         {
             Logger::Error("Incorrect params. DebugFrame < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -289,7 +305,7 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         if (params.maxDelta < 0.0f)
         {
             Logger::Error("Incorrect params. MaxDelta < 0");
-            Core::Instance()->Quit();
+            GameCore::Instance()->Quit();
         }
     }
 
@@ -300,4 +316,10 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
     Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
     Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
     Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
+}
+
+void GameCore::Quit()
+{
+    Core::Instance()->ReleaseRenderer();
+    Core::Instance()->Quit();
 }

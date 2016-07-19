@@ -337,7 +337,7 @@ void MainWindow::ShowTable(const QString& branchID)
                 QString avalibleVersion;
                 Application* remoteApp = remoteBranch->GetApplication(i);
 
-                QWidget* item = CreateAppNameTableItem(remoteApp->id);
+                QWidget* item = CreateAppNameTableItem(remoteApp->id, i);
                 item->setMinimumWidth(120);
                 ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, item);
 
@@ -382,7 +382,7 @@ void MainWindow::ShowTable(const QString& branchID)
                 }
                 int rowCount = ui->tableWidget->rowCount();
                 ui->tableWidget->setRowCount(rowCount + 1);
-                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
+                ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id, i));
                 ui->tableWidget->setCellWidget(rowCount, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
 
                 states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
@@ -399,7 +399,7 @@ void MainWindow::ShowTable(const QString& branchID)
             for (int i = 0; i < appCount; ++i)
             {
                 Application* localApp = localBranch->GetApplication(i);
-                ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id));
+                ui->tableWidget->setCellWidget(i, COLUMN_APP_NAME, CreateAppNameTableItem(localApp->id, i));
                 ui->tableWidget->setCellWidget(i, COLUMN_APP_INS, CreateAppInstalledTableItem(localApp->GetVersion(0)->id));
 
                 states.push_back(ButtonsWidget::BUTTONS_STATE_INSTALLED);
@@ -502,10 +502,26 @@ void MainWindow::RefreshBranchesList()
     }
 }
 
-QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID)
+QWidget* MainWindow::CreateAppNameTableItem(const QString& stringID, int rowNum)
 {
     QString string = appManager->GetString(stringID);
     QLabel* item = new QLabel(string);
+    item->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(item, &QLabel::customContextMenuRequested, [this, item, rowNum](const QPoint& pos) {
+        QString appID, insVersionID, avVersionID;
+        GetTableApplicationIDs(rowNum, appID, insVersionID, avVersionID);
+
+        AppVersion* version = appManager->GetRemoteConfig()->GetAppVersion(selectedBranchID, appID, avVersionID);
+        if (version == nullptr)
+        {
+            return;
+        }
+        QMenu menu(this);
+        QAction* copyURLAction = menu.addAction("Copy " + appID + " URL");
+        QAction* selectedAction = menu.exec(ui->tableWidget->viewport()->mapToGlobal(pos) + item->pos());
+        if (selectedAction == copyURLAction)
+            QApplication::clipboard()->setText(version->url);
+    });
     item->setProperty(DAVA_CUSTOM_PROPERTY_NAME, stringID);
     item->setFont(tableFont);
 

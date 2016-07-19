@@ -72,6 +72,11 @@ void FoliageSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("FoliageSystem::Process");
 
+    if (GetScene()->GetRenderSystem()->GetMainCamera() == nullptr)
+    {
+        return;
+    }
+
     for (auto foliageEntity : foliageEntities)
     {
         VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
