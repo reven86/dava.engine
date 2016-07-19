@@ -742,6 +742,8 @@ void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
 
+    collisionSystem->EnableSystem();
+
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem(true);
 }
