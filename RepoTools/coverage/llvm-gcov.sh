@@ -1,1 +1,1 @@
-exec llvm-cov gcov "$@"
+exec $(dirname "$0")/llvm-cov gcov "$@"

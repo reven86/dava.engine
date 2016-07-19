@@ -664,8 +664,6 @@ endif()
 ##
 
 if( MACOS AND COVERAGE )
-
-
     if( MAC_DISABLE_BUNDLE )
         set( APP_ATRIBUTE )
     else()
