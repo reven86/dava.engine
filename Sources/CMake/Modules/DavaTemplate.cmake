@@ -488,17 +488,18 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    if( NOT CMAKE_EXTRA_GENERATOR )
-        add_custom_target( ant-configure ALL
-            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
-            COMMAND  ${ANT_COMMAND} release
-        )
+    if ( ANDROID_BUILD_PACKAGE )
+        if( NOT CMAKE_EXTRA_GENERATOR )
+            add_custom_target( ant-configure ALL
+                COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
+                COMMAND  ${ANT_COMMAND} ${ANDROID_BUILD_PACKAGE}
+            )
 
-        add_dependencies( ant-configure ${PROJECT_NAME} )
-    else()
-        execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
+            add_dependencies( ant-configure ${PROJECT_NAME} )
+        else()
+            execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
+        endif()
     endif()
-
 
 elseif( IOS )
     set_target_properties( ${PROJECT_NAME} PROPERTIES
