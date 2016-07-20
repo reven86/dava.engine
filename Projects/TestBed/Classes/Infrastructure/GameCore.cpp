@@ -25,6 +25,7 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/AssertTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -64,6 +65,7 @@ void GameCore::RegisterTests()
     new GPUTest();
     new FloatingPointExceptionTest();
     new PackManagerTest();
+    new AssertTest();
     //$UNITTEST_CTOR
 }
 
