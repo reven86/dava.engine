@@ -895,6 +895,10 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
+    connect(ui->actionGenerate_Assert, &QAction::triggered, []()
+            {
+                DVASSERT_MSG(false, "Debug assert call");
+            });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
     ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -2614,6 +2618,13 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if (sceneWasChanged)
     {
         scene->MarkAsChanged();
+
+        bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
+        if (needSaveScene)
+        {
+            SaveScene(scene);
+        }
+
         ui->propertyEditor->ResetProperties();
     }
 

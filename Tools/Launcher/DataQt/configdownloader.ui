@@ -29,7 +29,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Please wait...</string>
+      <string>Downloading configuration...</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
