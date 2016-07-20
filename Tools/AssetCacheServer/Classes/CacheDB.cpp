@@ -92,7 +92,7 @@ void CacheDB::Load()
 
     if (header->GetUInt32("version") != VERSION)
     {
-        DAVA::Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetUInt32("version"));
+        DVASSERT_MSG(false, "cachedb file version is changed. Versions load functions should be implemented");
         return;
     }
 
