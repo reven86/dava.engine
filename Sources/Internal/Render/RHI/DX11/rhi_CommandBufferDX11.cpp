@@ -455,6 +455,8 @@ _GetRasterizerState(RasterizerParamDX11 param)
         desc.AntialiasedLineEnable = FALSE;
 
         hr = _D3D11_Device->CreateRasterizerState(&desc, &state);
+        CHECK_HR(hr);
+
         if (SUCCEEDED(hr))
         {
             RasterizerStateDX11 s;
@@ -503,6 +505,7 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
         if (!cb->context)
         {
             HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
+            CHECK_HR(hr);
 
             if (SUCCEEDED(hr))
             {
@@ -592,7 +595,7 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    cb->context->FinishCommandList(TRUE, &(cb->commandList));
+    CHECK_HR(cb->context->FinishCommandList(TRUE, &(cb->commandList)));
     cb->sync = syncObject;
     cb->isComplete = true;
 #else
@@ -964,7 +967,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     ctx->DrawIndexed(indexCount, startIndex, firstVertex);
 
     if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -1036,7 +1039,7 @@ dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType ty
     ctx->DrawIndexedInstanced(indexCount, instCount, startIndex, firstVertex, baseInstance);
 
     if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -1259,8 +1262,12 @@ _ExecuteQueuedCommandsDX11()
         // do present
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
-        _D3D11_SwapChain->Present(1, 0);
+        HRESULT hr = _D3D11_SwapChain->Present(1, 0);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
+
+        CHECK_HR(hr)
+        if (hr == DXGI_ERROR_DEVICE_REMOVED)
+            CHECK_HR(_D3D11_Device->GetDeviceRemovedReason())
 
         if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
             PerfQuerySetDX11::IssueFrameEndQuery(perfQuerySet, _D3D11_ImmediateContext);
@@ -1298,7 +1305,7 @@ _ExecuteQueuedCommandsDX11()
             desc.BindFlags = 0;
             desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-            _D3D11_Device->CreateTexture2D(&desc, NULL, &_D3D11_SwapChainBufferCopy);
+            CHECK_HR(_D3D11_Device->CreateTexture2D(&desc, NULL, &_D3D11_SwapChainBufferCopy));
         }
 
         if (_D3D11_SwapChainBufferCopy)
@@ -1330,14 +1337,6 @@ _ExecuteQueuedCommandsDX11()
 static void
 _ExecDX11(DX11Command* command, uint32 cmdCount)
 {
-#if 1
-    #define CHECK_HR(hr) \
-    if (FAILED(hr)) \
-        Logger::Error("%s", D3D11ErrorText(hr));
-#else
-    CHECK_HR(hr)
-#endif
-
     for (DX11Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
@@ -1368,8 +1367,6 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
             DVASSERT(!"unknown DX11-cmd");
         }
     }
-
-    #undef CHECK_HR
 }
 
 //------------------------------------------------------------------------------
@@ -1539,7 +1536,7 @@ dx11_Present(Handle sync)
             if (_DX11_Frame.size())
             {
                 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-                _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
+                CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
                 #endif
 
                 _DX11_Frame.back().readyToExecute = true;
@@ -1577,7 +1574,7 @@ dx11_Present(Handle sync)
         if (_DX11_Frame.size())
         {
             #if RHI_DX11__USE_DEFERRED_CONTEXTS
-            _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
+            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
             #endif
 
             _DX11_Frame.back().readyToExecute = true;
@@ -1589,7 +1586,7 @@ dx11_Present(Handle sync)
             #if RHI_DX11__USE_DEFERRED_CONTEXTS
             ID3D11CommandList* cl = nullptr;
 
-            _D3D11_SecondaryContext->FinishCommandList(TRUE, &cl);
+            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &cl));
             _D3D11_ImmediateContext->ExecuteCommandList(cl, FALSE);
             cl->Release();
             #endif
@@ -2300,6 +2297,7 @@ void DiscardAll()
                     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
                     HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
+                    CHECK_HR(hr)
 
                     DVASSERT(cb->context);
                     cb->Reset();
@@ -2315,11 +2313,11 @@ void DiscardAll()
         ID3D11CommandList* cl = nullptr;
 
         _D3D11_SecondaryContext->ClearState();
-        _D3D11_SecondaryContext->FinishCommandList(FALSE, &cl);
+        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
         cl->Release();
         _D3D11_SecondaryContext->Release();
 
-        _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+        CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
     }
 #endif
     _DX11_ResetPending = false;

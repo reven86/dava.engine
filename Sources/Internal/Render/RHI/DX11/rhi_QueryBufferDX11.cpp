@@ -94,6 +94,7 @@ dx11_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
         if (iq)
         {
             HRESULT hr = _D3D11_ImmediateContext->GetData(iq, NULL, 0, D3D11_ASYNC_GETDATA_DONOTFLUSH);
+            CHECK_HR(hr)
 
             if (SUCCEEDED(hr))
             {
@@ -119,6 +120,7 @@ dx11_QueryBuffer_Value(Handle handle, uint32 objectIndex)
         {
             UINT64 val;
             HRESULT hr = _D3D11_ImmediateContext->GetData(iq, &val, sizeof(UINT64), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+            CHECK_HR(hr)
 
             if (hr == S_OK)
             {
@@ -157,6 +159,7 @@ void BeginQuery(Handle handle, uint32 objectIndex, ID3D11DeviceContext* context)
             desc.MiscFlags = 0;
 
             HRESULT hr = _D3D11_Device->CreateQuery(&desc, &iq);
+            CHECK_HR(hr)
 
             if (SUCCEEDED(hr))
             {

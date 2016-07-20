@@ -140,7 +140,10 @@ dx11_SuspendRendering()
 
     IDXGIDevice3* dxgiDevice3 = NULL;
 
-    if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3))))
+    HRESULT hr = _D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3));
+    CHECK_HR(hr)
+
+    if (SUCCEEDED(hr))
     {
         _D3D11_ImmediateContext->ClearState();
         dxgiDevice3->Trim();
@@ -174,7 +177,7 @@ void _InitDX11()
 #if defined(__DAVAENGINE_WIN_UAP__)
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
-    _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
     get_device_description(_DeviceCapsDX11.deviceDescription);
 
 #else
