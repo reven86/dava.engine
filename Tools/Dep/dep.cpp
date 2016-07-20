@@ -159,6 +159,7 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
 
     if (output.is_open())
     {
+        output.flush();
         std::cout.rdbuf(coutbuf);
         output.close();
     }

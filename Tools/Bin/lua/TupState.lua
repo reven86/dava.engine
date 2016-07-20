@@ -220,7 +220,10 @@ function TupState.BuildLists(self)
             local packGroup = self:GetPackGroup(pack.name, gpu)
 
             for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-                local partCmd = self.cmd.fwdep .. " echo -ap \"" .. self.currentDir .. "/\" %\"f -o %o"
+                local partCmd = self.cmd.fwdep .. " echo " .. " %\"f -o %o"
+                if self.currentDir ~= "." then 
+                    partCmd = partCmd .. " -ap \"" ..  self.currentDir .. "/\""
+                end
                 local partCmdText = "^ Gen " .. gpu .. " list " .. i .. " for " .. pack.name .. "^ "
                 local partOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name 
                     .. self.conf.delimiter .. self.currentDirString 

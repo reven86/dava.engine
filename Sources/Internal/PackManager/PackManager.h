@@ -123,6 +123,7 @@ public:
         bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
         bool copyBasePacksToDocs = true; // on Android true improve perfomance (need play with it with different pack size and compression and loading order)
         // on PC, Mac, iOS - better false
+        bool developerMode = false; // create fake dummy_pack if file exist on hard disk but not in any pack
     };
 
     // throw exception if can't initialize
