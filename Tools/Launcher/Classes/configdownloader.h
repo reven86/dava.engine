@@ -25,6 +25,7 @@ public:
 
 private slots:
     void DownloadFinished(QNetworkReply* reply);
+    void OnCancelClicked();
 
 private:
     Ui::ConfigDownloader* ui = nullptr;
