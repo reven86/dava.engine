@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-const static float32 DEFAULT_TIMEOUT = 5.f;
+const static float32 DEFAULT_TIMEOUT = 3.f;
 
 AssertTest::AssertTest()
     : BaseScreen("AssertTest")
