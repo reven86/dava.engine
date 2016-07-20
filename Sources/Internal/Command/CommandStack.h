@@ -33,15 +33,13 @@ public:
     Signal<int32> currentIndexChanged;
 
 protected:
-    bool CanUndoImpl() const;
-    bool CanRedoImpl() const;
-
-private:
     void UpdateCleanState();
     void SetCurrentIndex(int32 currentIndex);
 
-    int32 cleanIndex = -1;
-    int32 currentIndex = -1;
+    static const DAVA::int32 EMPTY_INDEX = -1;
+
+    int32 cleanIndex = EMPTY_INDEX;
+    int32 currentIndex = EMPTY_INDEX;
 
     Vector<Command::Pointer> commands;
 

@@ -10,9 +10,6 @@ public:
     RECommandStack();
     ~RECommandStack() override;
 
-    bool CanRedo() const override;
-    bool CanUndo() const override;
-
     void Clear();
     void RemoveCommands(DAVA::CommandID_t commandId);
 
@@ -30,24 +27,6 @@ public:
 
 private:
     void CleanCheck();
-
-    void HistoryIndexChanged(int currentIndex);
-
-    void EnableConections();
-    void DisableConnections();
-    void DisconnectEvents();
-
-private:
-    static const DAVA::int32 EMPTY_INDEX = -1;
-    /// SCENE_CHANGED_INDEX we need to store state of command stack when Scene was changed without Command,
-    /// that support Undo operation. EMPTY_INDEX is not enough for that, because when we open scene nextCommandIndex and
-    /// nextAfterCleanCommandIndex are equal EMPTY_INDEX. If immediately after that user made changes without Command,
-    /// nextAfterCleanCommandIndex will not change and scene will not be marked as changed
-    const DAVA::int32 SCENE_CHANGED_INDEX = -2;
-
-    DAVA::int32 nextCommandIndex = EMPTY_INDEX;
-    DAVA::int32 nextAfterCleanCommandIndex = EMPTY_INDEX;
-    bool lastCheckCleanState = true;
 
     DAVA::UnorderedSet<DAVA::CommandID_t> uncleanCommandIds;
 };

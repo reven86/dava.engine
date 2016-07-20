@@ -137,8 +137,8 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
 {
     currentIndex = currentIndex_;
     UpdateCleanState();
-    SetCanUndo(CanUndoImpl());
-    SetCanRedo(CanRedoImpl());
+    SetCanUndo(CanUndo());
+    SetCanRedo(CanRedo());
     currentIndexChanged.Emit(currentIndex);
 }
 

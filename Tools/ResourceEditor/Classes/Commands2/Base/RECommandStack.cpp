@@ -2,167 +2,23 @@
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/CommandAction.h"
 
-#include "NgtTools/Commands/WGTCommand.h"
-#include "NgtTools/Common/GlobalContext.h"
-
-namespace CommandStackLocal
-{
-class CommandIdsAccumulator
-{
-public:
-    CommandIdsAccumulator(DAVA::UnorderedSet<DAVA::CommandID_t>& commandIds_)
-        : commandIds(commandIds_)
-    {
-    }
-
-    void operator()(const DAVA::Command* command)
-    {
-        DAVA::CommandID_t commandId = command->GetID();
-        if (commandId == DAVA::CMDID_BATCH)
-        {
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-            for (DAVA::uint32 i = 0; i < batch->Size(); ++i)
-            {
-                this->operator()(batch->GetCommand(i));
-            }
-        }
-        else
-        {
-            commandIds.insert(commandId);
-        }
-    }
-
-private:
-    DAVA::UnorderedSet<DAVA::CommandID_t>& commandIds;
-};
-}
-
-class RECommandStack::ActiveCommandStack : public DAVA::StaticSingleton<ActiveCommandStack>
-{
-public:
-    ActiveCommandStack()
-    {
-    }
-
-    void CommandStackDeleted(RECommandStack* commandStack)
-    {
-        DVASSERT(commandStack != nullptr);
-        if (activeStack == commandStack)
-        {
-            activeStack->DisableConnections();
-            activeStack = nullptr;
-        }
-    }
-
-    bool IsActive(const RECommandStack* commandStack)
-    {
-        return activeStack == commandStack;
-    }
-
-    void SetActive(RECommandStack* commandStack)
-    {
-        DVASSERT(activationStack.empty());
-        DVASSERT(commandStack != nullptr);
-        if (activeStack != nullptr)
-        {
-            activeStack->DisableConnections();
-        }
-
-        activeStack = commandStack;
-        activeStack->EnableConections();
-    }
-
-    void PushCommandStack(RECommandStack* commandStack)
-    {
-        DVASSERT(commandStack != nullptr);
-
-        bool sameStacks = activeStack == commandStack;
-        if (activeStack != nullptr && sameStacks == false)
-        {
-            activeStack->DisableConnections();
-        }
-
-        activationStack.push(activeStack);
-        activeStack = commandStack;
-
-        if (sameStacks == false)
-        {
-            activeStack->EnableConections();
-        }
-    }
-
-    void PopCommandStack()
-    {
-        DVASSERT(activeStack);
-        DVASSERT(!activationStack.empty());
-        RECommandStack* cmdStack = activationStack.top();
-        activationStack.pop();
-        bool sameStacks = cmdStack == activeStack;
-        if (sameStacks == false)
-        {
-            activeStack->DisableConnections();
-        }
-
-        activeStack = cmdStack;
-
-        if (activeStack != nullptr && sameStacks == false)
-        {
-            activeStack->EnableConections();
-        }
-    }
-
-private:
-    RECommandStack* activeStack = nullptr;
-    DAVA::Stack<RECommandStack*> activationStack;
-};
-
-class RECommandStack::ActiveStackGuard
-{
-public:
-    ActiveStackGuard(const RECommandStack* commandStack)
-    {
-        ActiveCommandStack::Instance()->PushCommandStack(const_cast<RECommandStack*>(commandStack));
-    }
-
-    ~ActiveStackGuard()
-    {
-        ActiveCommandStack::Instance()->PopCommandStack();
-    }
-};
-
 RECommandStack::RECommandStack()
     : CommandStack()
 {
-    indexChanged = currentIndexChanged.Connect(std::bind(&RECommandStack::HistoryIndexChanged, this, std::placeholders::_1));
+    canRedoChanged.Connect(DAVA::MakeFunction(this, &RECommandStack::EmitUndoRedoStateChanged));
+    canUndoChanged.Connect(DAVA::MakeFunction(this, &RECommandStack::EmitUndoRedoStateChanged));
 }
 
 RECommandStack::~RECommandStack()
 {
     DisconnectEvents();
-    ActiveCommandStack::Instance()->CommandStackDeleted(this);
-}
-
-bool RECommandStack::CanUndo() const
-{
-    ActiveStackGuard guard(this);
-    return CommandStack::CanUndo();
-}
-
-bool RECommandStack::CanRedo() const
-{
-    ActiveStackGuard guard(this);
-    return CommandStack::CanRedo();
 }
 
 void RECommandStack::Clear()
 {
-    ActiveStackGuard guard(this);
-    commandManager->removeCommands([this](const wgt::CommandInstancePtr&)
-                                   {
-                                       nextAfterCleanCommandIndex = DAVA::Max(nextAfterCleanCommandIndex - 1, EMPTY_INDEX);
-                                       return true;
-                                   });
-    CleanCheck();
+    commands.clear();
+    cleanIndex = EMPTY_INDEX;
+    SetCurrentIndex(EMPTY_INDEX);
 }
 
 void RECommandStack::RemoveCommands(DAVA::CommandID_t commandId)
@@ -308,13 +164,6 @@ void RECommandStack::commandExecuted(const wgt::CommandInstance& commandInstance
     {
         EmitNotify(cmd, operation != wgt::CommandOperation::UNDO);
     }
-}
-
-void RECommandStack::HistoryIndexChanged(int currentIndex)
-{
-    nextCommandIndex = currentIndex;
-    CleanCheck();
-    EmitUndoRedoStateChanged();
 }
 
 void RECommandStack::DisconnectEvents()
