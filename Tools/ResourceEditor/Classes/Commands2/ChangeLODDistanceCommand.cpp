@@ -33,5 +33,5 @@ Entity* ChangeLODDistanceCommand::GetEntity() const
     if (lodComponent)
         return lodComponent->GetEntity();
 
-    return NULL;
+    return nullptr;
 }
