@@ -74,6 +74,8 @@ using namespace DAVA::Net;
 
 void GameCore::OnAppStarted()
 {
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 

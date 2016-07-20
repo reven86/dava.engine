@@ -4,6 +4,8 @@
 
 using namespace DAVA;
 
+const static float32 DEFAULT_TIMEOUT = 5.f;
+
 AssertTest::AssertTest()
     : BaseScreen("AssertTest")
 {
@@ -12,11 +14,6 @@ AssertTest::AssertTest()
 void AssertTest::LoadResources()
 {
     BaseScreen::LoadResources();
-
-    DAVA::RefPtr<DAVA::Font> korinnaFont(DAVA::FTFont::Create("~res:/Fonts/korinna.ttf"));
-    DAVA::Map<DAVA::String, DAVA::Font*> fonts;
-    fonts["Font_18"] = korinnaFont.Get();
-    DAVA::FontManager::Instance()->RegisterFonts(fonts);
 
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/AssertTestScreen.yaml", &pkgBuilder);
@@ -28,22 +25,24 @@ void AssertTest::LoadResources()
     if (actions)
     {
         actions->GetActionMap().Put(DAVA::FastName("NON_MODAL_ASSERT"), [&]() {
-            DVASSERT_MSG(false, "Demo assert");
+            DVWARNING(false, "Demo assert");
         });
         actions->GetActionMap().Put(DAVA::FastName("MODAL_ASSERT"), [&]() {
             DVASSERT_MSG(false, "Demo assert");
         });
         actions->GetActionMap().Put(DAVA::FastName("DELAYED_MODAL_ASSERT"), [&]() {
-            timeOut = 5.f;
+            timeOut = DEFAULT_TIMEOUT;
         });
     }
 
-    SafeRelease(dialog);
+    countdownText = static_cast<UIStaticText*>(dialog->FindByName("Countdown"));
 }
 
 void AssertTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
+
+    countdownText.Set(nullptr);
 }
 
 void AssertTest::Update(float32 timeElapsed)
@@ -53,7 +52,12 @@ void AssertTest::Update(float32 timeElapsed)
         timeOut -= timeElapsed;
         if (timeOut <= 0.f)
         {
+            timeOut = 0.f;
             DVASSERT_MSG(false, "Demo assert");
         }
+    }
+    if (countdownText.Get())
+    {
+        countdownText->SetText(DAVA::Format(L"%1.1f", timeOut));
     }
 }
