@@ -1,0 +1,55 @@
+Header:
+    version: "4"
+Controls:
+-   class: "UIControl"
+    name: ""
+    size: [479.000000, 457.000000]
+    components:
+        ActionBinding:
+            actions: "NON_MODAL_ASSERT; MODAL_ASSERT; DELAYED_MODAL_ASSERT"
+    children:
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 20.000000]
+        size: [439.000000, 32.000000]
+        debugDraw: true
+        text: "Non-modal assert"
+        font: "Font_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            Action:
+                action: "NON_MODAL_ASSERT"
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 57.000000]
+        size: [439.000000, 32.000000]
+        debugDraw: true
+        text: "Modal assert"
+        font: "Font_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            Action:
+                action: "MODAL_ASSERT"
+    -   class: "UIStaticText"
+        name: ""
+        position: [20.000000, 94.000000]
+        size: [439.000000, 32.000000]
+        debugDraw: true
+        text: "Delayed modal assert"
+        font: "Font_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            Action:
+                action: "DELAYED_MODAL_ASSERT"
