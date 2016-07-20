@@ -31,7 +31,7 @@ public class JNIAssert {
 
 		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
 		alertDialog.setMessage(message);
-		if (isModal)
+		if (isModal && !JNIActivity.isPaused && JNIActivity.isFocused)
 		{
 		    waitUserInputOnAssertDialog = true;
 		    

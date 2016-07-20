@@ -5,13 +5,8 @@ namespace DAVA
 {
 SceneSystem::SceneSystem(Scene* _scene)
     : requiredComponents(0)
-    ,
-    scene(_scene)
+    , scene(_scene)
     , locked(false)
-{
-}
-
-SceneSystem::~SceneSystem()
 {
 }
 
