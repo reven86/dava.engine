@@ -22,10 +22,6 @@ const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCAT
 const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE("Disable half-space fog");
 
 QualitySettingsSystem::QualitySettingsSystem()
-    : curTextureQuality(0)
-    , curSoundQuality(0)
-    , cutUnusedVertexStreams(false) //default set to keep all streams
-    , keepUnusedQualityEntities(false)
 {
     Load("~res:/quality.yaml");
 
@@ -139,6 +135,48 @@ void QualitySettingsSystem::Load(const FilePath& path)
                             if (txq.name == defTxQualityName)
                             {
                                 curTextureQuality = i;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // anisotropy
+            const YamlNode* anisotropyNode = rootNode->Get("anisotropy");
+            if (anisotropyNode != nullptr)
+            {
+                const YamlNode* defltAn = anisotropyNode->Get("default");
+                const YamlNode* qualitiesNode = anisotropyNode->Get("qualities");
+
+                if (qualitiesNode != nullptr)
+                {
+                    FastName defAnQualityName;
+                    if (defltAn != nullptr && defltAn->GetType() == YamlNode::TYPE_STRING)
+                    {
+                        defAnQualityName = FastName(defltAn->AsString().c_str());
+                    }
+
+                    anisotropyQualities.reserve(qualitiesNode->GetCount());
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    {
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* name = qualityNode->Get("quality");
+                        const YamlNode* maxNode = qualityNode->Get("max");
+
+                        if ((name != nullptr) && (name->GetType() == YamlNode::TYPE_STRING) &&
+                            (maxNode != nullptr) && (maxNode->GetType() == YamlNode::TYPE_STRING))
+                        {
+                            ANQ anq;
+
+                            anq.name = FastName(name->AsString().c_str());
+                            anq.quality.weight = i;
+                            anq.quality.maxAnisotropy = maxNode->AsUInt32();
+
+                            anisotropyQualities.push_back(anq);
+
+                            if (anq.name == defAnQualityName)
+                            {
+                                curAnisotropyQuality = i;
                             }
                         }
                     }
@@ -312,6 +350,61 @@ const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName& name) 
     }
 
     //DVASSERT(NULL != ret && "No such quality");
+
+    return ret;
+}
+
+/*
+ * Anisotropy
+ */
+size_t QualitySettingsSystem::GetAnisotropyQualityCount() const
+{
+    return anisotropyQualities.size();
+}
+
+FastName QualitySettingsSystem::GetAnisotropyQualityName(size_t index) const
+{
+    FastName ret;
+
+    if (index < anisotropyQualities.size())
+    {
+        ret = anisotropyQualities[index].name;
+    }
+
+    return ret;
+}
+
+FastName QualitySettingsSystem::GetCurAnisotropyQuality() const
+{
+    return GetAnisotropyQualityName(curAnisotropyQuality);
+}
+
+void QualitySettingsSystem::SetCurAnisotropyQuality(const FastName& name)
+{
+    for (size_t i = 0; i < anisotropyQualities.size(); ++i)
+    {
+        if (anisotropyQualities[i].name == name)
+        {
+            curAnisotropyQuality = static_cast<int32>(i);
+            return;
+        }
+    }
+
+    DVASSERT(0 && "No such quality");
+}
+
+const AnisotropyQuality* QualitySettingsSystem::GetAnisotropyQuality(const FastName& name) const
+{
+    const AnisotropyQuality* ret = nullptr;
+
+    for (size_t i = 0; i < anisotropyQualities.size(); ++i)
+    {
+        if (anisotropyQualities[i].name == name)
+        {
+            ret = &anisotropyQualities[i].quality;
+            break;
+        }
+    }
 
     return ret;
 }

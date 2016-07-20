@@ -397,10 +397,25 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
 void Texture::SetAnisotropyLevel(uint32 level)
 {
     DVASSERT(level >= 1);
-    samplerState.anisotropyLevel = level;
-    
+    texDescriptor->drawSettings.maxAnisotropy = level;
+    samplerState.anisotropyLevel = GetAnisotropyLevel();
+
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);
+}
+
+DAVA::uint32 Texture::GetAnisotropyLevel() const
+{
+    uint32 maxAnisotropy = rhi::DeviceCaps().maxAnisotropy;
+
+    QualitySettingsSystem* qualitySystem = QualitySettingsSystem::Instance();
+    const AnisotropyQuality* curAnisotropyQuality = qualitySystem->GetAnisotropyQuality(qualitySystem->GetCurAnisotropyQuality());
+    if (curAnisotropyQuality != nullptr)
+    {
+        maxAnisotropy = std::min(maxAnisotropy, curAnisotropyQuality->maxAnisotropy);
+    }
+
+    return std::min<uint32>(texDescriptor->drawSettings.maxAnisotropy, maxAnisotropy);
 }
 
 void Texture::GenerateMipmaps()
@@ -667,7 +682,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     samplerState.minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.minFilter;
     samplerState.magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : texDescriptor->drawSettings.magFilter;
     samplerState.mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : texDescriptor->drawSettings.mipFilter;
-    samplerState.anisotropyLevel = pixelizationFlag ? 1 : texDescriptor->drawSettings.anisotropy;
+    samplerState.anisotropyLevel = pixelizationFlag ? 1 : GetAnisotropyLevel();
 
     rhi::ReleaseSamplerState(samplerStateHandle);
     samplerStateHandle = CreateSamplerStateHandle(samplerState);
