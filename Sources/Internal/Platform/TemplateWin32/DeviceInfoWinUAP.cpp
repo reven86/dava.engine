@@ -1,4 +1,4 @@
-#include "Base/Platform.h"
+﻿#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -60,7 +60,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     AnalyticsVersionInfo ^ versionInfo = AnalyticsInfo::VersionInfo;
     Platform::String ^ deviceVersion = versionInfo->DeviceFamilyVersion;
     Platform::String ^ deviceFamily = versionInfo->DeviceFamily;
-    String vertionString = RTStringToString(deviceVersion);
+    String vertionString = UTF8Utils::EncodeToUTF8(deviceVersion->Data());
     int64 versionInt = _atoi64(vertionString.c_str());
     std::stringstream versionStream;
     versionStream << ((versionInt & 0xFFFF000000000000L) >> 48) << ".";
@@ -68,19 +68,15 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     versionStream << ((versionInt & 0x00000000FFFF0000L) >> 16) << ".";
     versionStream << (versionInt & 0x000000000000FFFFL);
     version = versionStream.str();
-    platformString = RTStringToString(versionInfo->DeviceFamily);
+    platformString = UTF8Utils::EncodeToUTF8(versionInfo->DeviceFamily->Data());
 
-    manufacturer = "";
-    modelName = "";
-    deviceName = L"";
-    uDID = "";
     try
     {
         EasClientDeviceInformation deviceInfo;
-        manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
-        modelName = RTStringToString(deviceInfo.SystemSku);
+        manufacturer = UTF8Utils::EncodeToUTF8(deviceInfo.SystemManufacturer->Data());
+        modelName = UTF8Utils::EncodeToUTF8(deviceInfo.SystemSku->Data());
         deviceName = WideString(deviceInfo.FriendlyName->Data());
-        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+        uDID = UTF8Utils::EncodeToUTF8(Windows::System::UserProfile::AdvertisingManager::AdvertisingId->Data());
     }
     catch (Platform::Exception ^ e)
     {
