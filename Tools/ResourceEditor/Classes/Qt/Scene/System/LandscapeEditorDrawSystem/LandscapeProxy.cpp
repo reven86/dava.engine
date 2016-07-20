@@ -188,7 +188,7 @@ void LandscapeProxy::DecreaseTilemaskChanges()
     --tilemaskWasChanged;
 }
 
-bool LandscapeProxy::InitTilemaskImageCopy(const FilePath& sourceTilemaskPath)
+bool LandscapeProxy::InitTilemaskImageCopy(const DAVA::FilePath& sourceTilemaskPath)
 {
     SafeRelease(tilemaskImageCopy);
 
