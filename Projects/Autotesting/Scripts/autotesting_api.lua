@@ -851,6 +851,11 @@ function ShiftClickControl(name, x, y, touchId)
     return false
 end
 
+--Android purposes
+function ClickSystemBack()
+    autotestingSystem:ClickSystemBack()
+end
+
 -- Move touch actions
 function TouchMovePosition(pos, touchId)
     local position = Vector.Vector2(pos.x, pos.y)

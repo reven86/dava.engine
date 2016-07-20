@@ -3,8 +3,8 @@
 #include "Debug/DVAssert.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
-#include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/UpdatableComponent.h"
@@ -31,6 +31,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
 #include "Base/ObjectFactory.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
 
 namespace DAVA
 {
@@ -42,10 +43,10 @@ Component* Component::CreateByType(uint32 componentType)
         return new TransformComponent();
     case RENDER_COMPONENT:
         return new RenderComponent();
-    case DEBUG_RENDER_COMPONENT:
-        return new DebugRenderComponent();
     case LOD_COMPONENT:
         return new LodComponent();
+    case DEBUG_RENDER_COMPONENT:
+        return new DebugRenderComponent();
     case PARTICLE_EFFECT_COMPONENT:
         return new ParticleEffectComponent();
     case BULLET_COMPONENT:
@@ -103,6 +104,11 @@ Component* Component::CreateByType(uint32 componentType)
         DVASSERT(0);
         return 0;
     }
+}
+
+Component::~Component()
+{
+    GlobalEventSystem::Instance()->RemoveAllEvents(this);
 }
 
 void Component::SetEntity(Entity* _entity)

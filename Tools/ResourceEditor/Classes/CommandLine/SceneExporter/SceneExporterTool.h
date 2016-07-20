@@ -49,6 +49,7 @@ private:
     bool optimizeOnExport = true;
     bool useAssetCache = false;
     bool useHDTextures = false;
+    bool forceCompressTextures = false;
 };
 
 
