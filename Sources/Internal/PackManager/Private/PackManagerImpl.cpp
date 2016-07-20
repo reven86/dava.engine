@@ -32,8 +32,6 @@ void PackManagerImpl::Initialize(const String& dbFile_,
                                  const PackManager::Hints& hints_,
                                  PackManager* packManager_)
 {
-    double startInit = SystemTimer::Instance()->AbsoluteMS();
-
     readOnlyPacksDir = readOnlyPacksDir_;
     localPacksDir = downloadPacksDir_;
 
@@ -59,18 +57,10 @@ void PackManagerImpl::Initialize(const String& dbFile_,
 
     initState = PackManager::InitState::Starting;
 
-    Logger::Info("init vars: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
-
-    startInit = SystemTimer::Instance()->AbsoluteMS();
     // now init all pack in local read only dir
     FirstTimeInit();
     InitStarting();
-
-    Logger::Info("init starting finish: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
-
-    startInit = SystemTimer::Instance()->AbsoluteMS();
     MountBasePacks();
-    Logger::Info("init mount base packs finish: %f", SystemTimer::Instance()->AbsoluteMS() - startInit);
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
