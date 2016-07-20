@@ -103,12 +103,13 @@ RenderDeviceCaps
     bool is32BitIndicesSupported = false;
     bool isVertexTextureUnitsSupported = false;
     bool isFramebufferFetchSupported = false;
-
     bool isUpperLeftRTOrigin = false;
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
-
     bool isInstancingSupported = false;
+    bool isAnisotropicFilteringSupported = false;
+
+    uint32 maxAnisotropy = 1;
 
     char deviceDescription[128];
 };

@@ -397,6 +397,8 @@ void dx11_Initialize(const InitParam& param)
     _DeviceCapsDX11.isZeroBaseClipRange = true;
     _DeviceCapsDX11.isCenterPixelMapping = false;
     _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    _DeviceCapsDX11.isAnisotropicFilteringSupported = true;
+    _DeviceCapsDX11.maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 }
 
 //==============================================================================

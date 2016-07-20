@@ -300,7 +300,4 @@ extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
 extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
-extern bool _GLES2_IsGlAnisotropySupported;
-extern DAVA::uint32 _GLES2_MaxAnisotropyLevel;
-
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

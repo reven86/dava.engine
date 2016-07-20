@@ -44,8 +44,6 @@ bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
-bool _GLES2_IsGlAnisotropySupported = false;
-DAVA::uint32 _GLES2_MaxAnisotropyLevel = 1;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
 DAVA::Mutex _GLES2_ScreenshotCallbackSync;
@@ -218,12 +216,12 @@ gles_check_GL_extensions()
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
 
 #if defined(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT) && defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
-        _GLES2_IsGlAnisotropySupported = strstr(ext, "EXT_texture_filter_anisotropic") != nullptr;
-        if (_GLES2_IsGlAnisotropySupported)
+        _GLES2_DeviceCaps.isAnisotropicFilteringSupported = strstr(ext, "EXT_texture_filter_anisotropic") != nullptr;
+        if (_GLES2_DeviceCaps.isAnisotropicFilteringSupported)
         {
             float32 value = 0.0f;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
-            _GLES2_MaxAnisotropyLevel = static_cast<DAVA::uint32>(value);
+            _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
 #endif
     }
