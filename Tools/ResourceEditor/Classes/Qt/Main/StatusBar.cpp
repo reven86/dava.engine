@@ -40,10 +40,6 @@ StatusBar::StatusBar(QWidget* parent)
     setStyleSheet("QStatusBar::item {border: none;}");
 }
 
-StatusBar::~StatusBar()
-{
-}
-
 void StatusBar::SetDistanceToCamera(DAVA::float32 distance)
 {
     distanceToCamera->setText(QString::fromStdString(DAVA::Format("%0.6f", distance)));
@@ -76,23 +72,23 @@ void StatusBar::UpdateDistanceToCamera()
 
 void StatusBar::SceneActivated(SceneEditor2* scene)
 {
-    UpdateDistanceToCamera();
+    DVASSERT(scene != nullptr);
+    scene->selectionSystem->AddDelegate(this);
 
+    UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
+}
+
+void StatusBar::SceneDeactivated(SceneEditor2* scene)
+{
+    DVASSERT(scene != nullptr);
+    scene->selectionSystem->RemoveDelegate(this);
 }
 
 void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
     UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
-}
-
-void StatusBar::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
-{
-    if (command->MatchCommandID(CMDID_TRANSFORM))
-    {
-        UpdateSelectionBoxSize(scene);
-    }
 }
 
 void StatusBar::StructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
@@ -126,8 +122,7 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
     }
     else
     {
-        DAVA::Vector3 size = selection.GetIntegralBoundingBox().GetSize();
-        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+        OnSelectionBoxChanged(selection.GetIntegralBoundingBox());
         selectionBoxSize->setVisible(true);
     }
 }
@@ -155,4 +150,17 @@ void StatusBar::UpdateFPS()
     }
 
     lastTimeMS = currentTimeMS;
+}
+
+void StatusBar::OnSelectionBoxChanged(const DAVA::AABBox3& newBox)
+{
+    if (newBox.IsEmpty())
+    {
+        selectionBoxSize->setText("Empty box");
+    }
+    else
+    {
+        DAVA::Vector3 size = newBox.GetSize();
+        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+    }
 }

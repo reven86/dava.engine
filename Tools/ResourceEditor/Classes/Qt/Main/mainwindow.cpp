@@ -93,6 +93,7 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QShortcut>
+#include <QList>
 
 #include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 
@@ -562,6 +563,8 @@ void QtMainWindow::SetupThemeActions()
 
 void QtMainWindow::SetupToolBars()
 {
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
+
     QAction* actionMainToolBar = ui->mainToolBar->toggleViewAction();
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
@@ -652,12 +655,12 @@ void QtMainWindow::SetupToolBars()
 
 void QtMainWindow::SetupStatusBar()
 {
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
-    QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, ui->statusBar, &StatusBar::SceneActivated);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, ui->statusBar, &StatusBar::SceneDeactivated);
+
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, ui->statusBar, &StatusBar::SceneSelectionChanged);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, ui->statusBar, &StatusBar::StructureChanged);
+    QObject::connect(this, &QtMainWindow::GlobalInvalidateTimeout, ui->statusBar, &StatusBar::UpdateByTimer);
 
     auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
     {
@@ -892,6 +895,10 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
+    connect(ui->actionGenerate_Assert, &QAction::triggered, []()
+            {
+                DVASSERT_MSG(false, "Debug assert call");
+            });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
     ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -919,9 +926,14 @@ void QtMainWindow::SetupShortCuts()
     // select mode
     connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
 
+    DavaGLWidget* glWidget = GetSceneWidget()->GetDavaWidget();
+
     // delete
-    connect(new QShortcut(QKeySequence(Qt::Key_Delete), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace), ui->sceneTabWidget), SIGNAL(activated()), this, SLOT(RemoveSelection()));
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WindowShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
+    glWidget->addAction(deleteSelection);
 
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
@@ -1376,6 +1388,7 @@ void QtMainWindow::ExportTriggered()
         exportingParams.quality = dlg.GetQuality();
         exportingParams.optimizeOnExport = dlg.GetOptimizeOnExport();
         exportingParams.useHDTextures = dlg.GetUseHDTextures();
+        exportingParams.forceCompressTextures = dlg.GetForceCompressTextures();
 
         scene->Export(exportingParams);
 
@@ -2605,6 +2618,13 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if (sceneWasChanged)
     {
         scene->MarkAsChanged();
+
+        bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
+        if (needSaveScene)
+        {
+            SaveScene(scene);
+        }
+
         ui->propertyEditor->ResetProperties();
     }
 
@@ -3132,7 +3152,6 @@ void QtMainWindow::OnGenerateHeightDelta()
     HeightDeltaTool* w = new HeightDeltaTool(this);
     w->setWindowFlags(Qt::Window);
     w->setAttribute(Qt::WA_DeleteOnClose);
-    w->SetOutputTemplate("h_", QString());
 
     w->show();
 }

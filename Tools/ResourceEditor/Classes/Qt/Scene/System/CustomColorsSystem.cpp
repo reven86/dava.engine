@@ -14,6 +14,9 @@
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 
+#include "Render/RenderCallbacks.h"
+#include "Render/RHI/rhi_Type.h"
+
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.png")
 {
@@ -47,7 +50,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(DAVA::Landscape::TEXTURE_COLOR);
+    landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
     DAVA::FilePath filePath = GetCurrentSaveFileName();
     if (!filePath.IsEmpty())
@@ -272,7 +275,7 @@ void CustomColorsSystem::StoreOriginalState()
 void CustomColorsSystem::CreateUndoPoint()
 {
     DAVA::Rect updatedRect = GetUpdatedRect();
-    if (updatedRect.dx > 0 || updatedRect.dy > 0)
+    if (updatedRect.dx > 0 && updatedRect.dy > 0)
     {
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
@@ -291,12 +294,19 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
 
     DAVA::Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
-    DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
-    DAVA::ImageSystem::Save(filePath, image);
-    DAVA::SafeRelease(image);
+    rhi::HSyncObject frameSyncObject = rhi::GetCurrentFrameSyncObject();
+    DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [this, customColorsTexture, filePath, frameSyncObject](rhi::HSyncObject syncObject)
+                                                {
+                                                    if (frameSyncObject != syncObject)
+                                                        return;
 
-    StoreSaveFileName(filePath);
-    drawSystem->GetCustomColorsProxy()->ResetChanges();
+                                                    DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
+                                                    DAVA::ImageSystem::Save(filePath, image);
+                                                    DAVA::SafeRelease(image);
+
+                                                    StoreSaveFileName(filePath);
+                                                    drawSystem->GetCustomColorsProxy()->ResetChanges();
+                                                });
 }
 
 bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool createUndo)

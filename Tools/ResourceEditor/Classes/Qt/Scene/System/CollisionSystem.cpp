@@ -1,4 +1,5 @@
 #include "Base/AlignedAllocator.h"
+#include "Functional/Function.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 #include "Scene/System/CollisionSystem/CollisionLandscape.h"
@@ -134,7 +135,11 @@ const SelectableGroup::CollectionType& SceneCollisionSystem::ObjectsRayTest(cons
         {
             auto entity = collisionToObject[hit.first];
             rayIntersectedEntities.emplace_back(entity);
-            rayIntersectedEntities.back().SetBoundingBox(GetBoundingBox(entity));
+            DAVA::AABBox3 bbox = GetBoundingBox(entity);
+            if (!bbox.IsEmpty())
+            {
+                rayIntersectedEntities.back().SetBoundingBox(bbox);
+            }
         }
     }
 
@@ -238,8 +243,7 @@ void SceneCollisionSystem::UpdateCollisionObject(const Selectable& object)
 
 DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(Selectable::Object* object)
 {
-    DAVA::AABBox3 aabox = DAVA::AABBox3(DAVA::Vector3(0, 0, 0), 1.0f);
-
+    DAVA::AABBox3 aabox;
     if (object != nullptr)
     {
         CollisionBaseObject* collObj = objectToCollision[object];
@@ -277,28 +281,30 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     // check in there are entities that should be added or removed
     if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
         for (auto obj : objectsToRemove)
         {
-            DestroyFromObject(obj);
+            Selectable wrapper(obj);
+            EnumerateObjectHierarchy(wrapper, false, [this](Selectable::Object* object, CollisionBaseObject* collision)
+                                     {
+                                         DestroyFromObject(object);
+                                     });
         }
 
         for (auto obj : objectsToAdd)
         {
-            CollisionBaseObject* collisionObject = nullptr;
-
             Selectable wrapper(obj);
-            if (wrapper.CanBeCastedTo<DAVA::Entity>())
+            if (wrapper.CanBeCastedTo<DAVA::Entity>() || wrapper.SupportsTransformType(Selectable::TransformType::Disabled))
             {
-                collisionObject = BuildFromEntity(wrapper.AsEntity());
+                EnumerateObjectHierarchy(wrapper, true, DAVA::MakeFunction(this, &SceneCollisionSystem::AddCollisionObject));
             }
-            else if (wrapper.SupportsTransformType(Selectable::TransformType::Disabled))
-            {
-                collisionObject = BuildFromObject(wrapper);
-            }
-            AddCollisionObject(obj, collisionObject);
         }
 
         objectsToAdd.clear();
@@ -442,6 +448,11 @@ void SceneCollisionSystem::ProcessCommand(const Command2* command, bool redo)
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
@@ -458,7 +469,7 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (DAVA::GetLandscape(entity) != nullptr)
@@ -478,7 +489,7 @@ void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (curLandscapeEntity == entity)
@@ -496,78 +507,6 @@ void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
     }
 }
 
-CollisionBaseObject* SceneCollisionSystem::BuildFromObject(const Selectable& object)
-{
-    DAVA::float32 debugBoxScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxScale).AsFloat();
-    DAVA::float32 debugBoxParticleScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
-    DAVA::float32 scale = object.CanBeCastedTo<DAVA::ParticleEmitterInstance>() ? debugBoxParticleScale : debugBoxScale;
-    return new CollisionBox(object.GetContainedObject(), objectsCollWorld, object.GetWorldTransform().GetTranslationVector(), scale);
-}
-
-CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity* entity)
-{
-    CollisionBaseObject* cObj = nullptr;
-    DAVA::float32 debugBoxScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxScale).AsFloat();
-    DAVA::float32 debugBoxUserScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxUserScale).AsFloat();
-    DAVA::float32 debugBoxWaypointScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
-    DAVA::float32 debugBoxParticleScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
-
-    DAVA::Landscape* landscape = DAVA::GetLandscape(entity);
-    if (landscape != nullptr)
-    {
-        cObj = new CollisionLandscape(entity, landCollWorld, landscape);
-    }
-
-    DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
-    if ((cObj == nullptr) && (particleEffect != nullptr))
-    {
-        for (DAVA::int32 i = 0, e = particleEffect->GetEmittersCount(); i < e; ++i)
-        {
-            auto emitter = particleEffect->GetEmitterInstance(i);
-            AddCollisionObject(emitter, BuildFromObject(Selectable(emitter)));
-        }
-
-        cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxParticleScale);
-    }
-
-    DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
-    if ((cObj == nullptr) && (renderObject != nullptr) && entity->IsLodMain(0))
-    {
-        DAVA::RenderObject::eType objType = renderObject->GetType();
-        if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))
-        {
-            cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
-        }
-    }
-
-    DAVA::Camera* camera = DAVA::GetCamera(entity);
-    if ((cObj == nullptr) && (camera != nullptr))
-    {
-        cObj = new CollisionBox(entity, objectsCollWorld, camera->GetPosition(), debugBoxScale);
-    }
-
-    // build simple collision box for all other entities, that has more than two components
-    if ((cObj == nullptr) && (entity != nullptr))
-    {
-        if ((entity->GetComponent(DAVA::Component::SOUND_COMPONENT) != nullptr) ||
-            (entity->GetComponent(DAVA::Component::LIGHT_COMPONENT) != nullptr) ||
-            (entity->GetComponent(DAVA::Component::WIND_COMPONENT) != nullptr))
-        {
-            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxScale);
-        }
-        else if (entity->GetComponent(DAVA::Component::USER_COMPONENT) != nullptr)
-        {
-            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxUserScale);
-        }
-        else if (GetWaypointComponent(entity) != nullptr)
-        {
-            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxWaypointScale);
-        }
-    }
-
-    return cObj;
-}
-
 void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
 {
     CollisionBaseObject* cObj = objectToCollision[entity];
@@ -579,19 +518,125 @@ void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
     }
 }
 
-const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : objectToCollision)
     {
         if ((object.first != nullptr) && (object.second != nullptr) &&
-            (object.second->ClassifyToPlanes(planes, numPlanes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
+            (object.second->ClassifyToPlanes(planes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
         {
             planeClippedObjects.Add(object.first, DAVA::AABBox3());
         }
     }
 
     return planeClippedObjects;
+}
+
+void SceneCollisionSystem::EnableSystem()
+{
+    enabled = true;
+    AddEntity(GetScene());
+}
+
+namespace CollisionDetails
+{
+struct CollisionObj
+{
+    bool isValid = false;
+    CollisionBaseObject* collisionObject = nullptr;
+};
+
+template <typename T, class... Args>
+CollisionObj InitCollision(bool createCollision, Args... args)
+{
+    CollisionObj result;
+    result.isValid = true;
+    if (createCollision)
+    {
+        result.collisionObject = new T(args...);
+    }
+
+    return result;
+}
+}
+
+void SceneCollisionSystem::EnumerateObjectHierarchy(const Selectable& object, bool createCollision, const TCallBack& callback)
+{
+    DAVA::float32 debugBoxScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxScale).AsFloat();
+    DAVA::float32 debugBoxParticleScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxParticleScale).AsFloat();
+    if (object.CanBeCastedTo<DAVA::Entity>())
+    {
+        CollisionDetails::CollisionObj result;
+        DAVA::Entity* entity = object.AsEntity();
+
+        DAVA::float32 debugBoxUserScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxUserScale).AsFloat();
+        DAVA::float32 debugBoxWaypointScale = SIMPLE_COLLISION_BOX_SIZE * SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
+
+        DAVA::Landscape* landscape = DAVA::GetLandscape(entity);
+        if (landscape != nullptr)
+        {
+            result = CollisionDetails::InitCollision<CollisionLandscape>(createCollision, entity, landCollWorld, landscape);
+        }
+
+        DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
+        if ((result.isValid == false) && (particleEffect != nullptr))
+        {
+            for (DAVA::int32 i = 0, e = particleEffect->GetEmittersCount(); i < e; ++i)
+            {
+                EnumerateObjectHierarchy(Selectable(particleEffect->GetEmitterInstance(i)), createCollision, callback);
+            }
+
+            result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxParticleScale);
+        }
+
+        DAVA::RenderObject* renderObject = DAVA::GetRenderObject(entity);
+        if ((result.isValid == false) && (renderObject != nullptr) && entity->IsLodMain(0))
+        {
+            DAVA::RenderObject::eType objType = renderObject->GetType();
+            if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))
+            {
+                result = CollisionDetails::InitCollision<CollisionRenderObject>(createCollision, entity, objectsCollWorld, renderObject);
+            }
+        }
+
+        DAVA::Camera* camera = DAVA::GetCamera(entity);
+        if ((result.isValid == false) && (camera != nullptr))
+        {
+            result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, camera->GetPosition(), debugBoxScale);
+        }
+
+        // build simple collision box for all other entities, that has more than two components
+        if ((result.isValid == false) && (entity != nullptr))
+        {
+            if ((entity->GetComponent(DAVA::Component::SOUND_COMPONENT) != nullptr) ||
+                (entity->GetComponent(DAVA::Component::LIGHT_COMPONENT) != nullptr) ||
+                (entity->GetComponent(DAVA::Component::WIND_COMPONENT) != nullptr))
+            {
+                result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxScale);
+            }
+            else if (entity->GetComponent(DAVA::Component::USER_COMPONENT) != nullptr)
+            {
+                result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxUserScale);
+            }
+            else if (GetWaypointComponent(entity) != nullptr)
+            {
+                result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), debugBoxWaypointScale);
+            }
+        }
+
+        if (result.isValid == true)
+        {
+            callback(entity, result.collisionObject);
+        }
+    }
+    else
+    {
+        DAVA::float32 scale = object.CanBeCastedTo<DAVA::ParticleEmitterInstance>() ? debugBoxParticleScale : debugBoxScale;
+        Selectable::Object* containedObject = object.GetContainedObject();
+        CollisionDetails::CollisionObj result = CollisionDetails::InitCollision<CollisionBox>(createCollision, containedObject, objectsCollWorld, object.GetWorldTransform().GetTranslationVector(), scale);
+        callback(containedObject, result.collisionObject);
+    }
 }
 
 // -----------------------------------------------------------------------------------------------

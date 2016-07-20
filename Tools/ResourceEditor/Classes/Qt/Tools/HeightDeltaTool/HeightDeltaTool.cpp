@@ -18,49 +18,17 @@
 HeightDeltaTool::HeightDeltaTool(QWidget* p)
     : QWidget(p)
     , ui(new Ui::HeightDeltaTool())
-    , outTemplate("%1")
 {
     ui->setupUi(this);
 
-    connect(ui->browse, SIGNAL(clicked()), SLOT(OnBrowse()));
-    connect(ui->cancel, SIGNAL(clicked()), SLOT(close()));
-    connect(ui->run, SIGNAL(clicked()), SLOT(OnRun()));
-    connect(ui->suffix, SIGNAL(stateChanged(int)), SLOT(OnValueChanged()));
-    connect(ui->angle, SIGNAL(valueChanged(double)), SLOT(OnValueChanged()));
-    connect(ui->input, SIGNAL(textChanged(const QString&)), SLOT(OnValueChanged()));
-
-    const DAVA::FilePath defaultPath = ProjectManager::Instance()->GetProjectPath();
-    SetDefaultDir(defaultPath.GetAbsolutePathname().c_str());
+    connect(ui->cancel, &QAbstractButton::clicked, this, &HeightDeltaTool::close);
+    connect(ui->run, &QAbstractButton::clicked, this, &HeightDeltaTool::OnRun);
+    connect(ui->angle, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &HeightDeltaTool::OnValueChanged);
 
     OnValueChanged();
 }
 
-HeightDeltaTool::~HeightDeltaTool()
-{
-}
-
-void HeightDeltaTool::SetDefaultDir(QString const& path)
-{
-    defaultDir = path;
-}
-
-void HeightDeltaTool::SetOutputTemplate(QString const& prefix, QString const& suffix)
-{
-    outTemplate = QString("%1%2%3").arg(prefix).arg("%1").arg(suffix);
-    OnValueChanged();
-}
-
-void HeightDeltaTool::OnBrowse()
-{
-    const QString path = FileDialog::getOpenFileName(this, QString(), defaultDir, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-
-    if (path != NULL)
-    {
-        inPath = path;
-        ui->input->setText(inPath);
-        OnValueChanged();
-    }
-}
+HeightDeltaTool::~HeightDeltaTool() = default;
 
 double HeightDeltaTool::GetThresholdInMeters(double unitSize)
 {
@@ -75,75 +43,60 @@ double HeightDeltaTool::GetThresholdInMeters(double unitSize)
 
 void HeightDeltaTool::OnRun()
 {
-    const bool sourceExists = QFileInfo(inPath).exists();
-    if (!sourceExists)
-    {
-        QMessageBox::warning(this, "File doest not exists", QString("Input file could not be opened:\n\"%1\"").arg(inPath));
-        return;
-    }
+    DVASSERT(!outputFilePath.isEmpty());
 
     SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (scene != NULL)
-    {
-        DAVA::Landscape* landscapeRO = FindLandscape(scene);
-        if (landscapeRO != NULL)
-        {
-            const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
-            DAVA::Heightmap* heightmap = landscapeRO->GetHeightmap();
+    DVASSERT(scene);
+    DAVA::Landscape* landscapeRO = FindLandscape(scene);
+    DVASSERT(landscapeRO);
 
-            if (heightmap != NULL)
-            {
-                const double unitSize = (bbox.max.x - bbox.min.x) / heightmap->Size();
+    const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
+    DAVA::Heightmap* heightmap = landscapeRO->GetHeightmap();
+    DVASSERT(heightmap);
 
-                auto inputPathname = DAVA::FilePath(inPath.toStdString());
-                auto imInterface = DAVA::ImageSystem::GetImageFormatInterface(inputPathname);
-                DVASSERT(imInterface);
-                auto imageInfo = imInterface->GetImageInfo(inputPathname);
+    DAVA::int32 heightmapSize = heightmap->Size();
+    const double unitSize = (bbox.max.x - bbox.min.x) / heightmapSize;
 
-                const double threshold = GetThresholdInMeters(unitSize);
+    const double threshold = GetThresholdInMeters(unitSize);
 
-                DAVA::Vector<DAVA::Color> colors;
-                colors.resize(2);
-                colors[0] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color0).AsColor();
-                colors[1] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color1).AsColor();
+    DAVA::Vector<DAVA::Color> colors;
+    colors.resize(2);
+    colors[0] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color0).AsColor();
+    colors[1] = SettingsManager::GetValue(Settings::General_HeighMaskTool_Color1).AsColor();
 
-                PaintHeightDelta::Execute(outPath.toStdString(), (DAVA::float32)threshold, heightmap,
-                                          imageInfo.width, imageInfo.height, bbox.max.z - bbox.min.z, colors);
-            }
+    PaintHeightDelta::Execute(outputFilePath.toStdString(), (DAVA::float32)threshold, heightmap,
+                              heightmapSize, heightmapSize, bbox.max.z - bbox.min.z, colors);
+    QMessageBox::information(this, "Mask is ready", outputFilePath);
 
-            if (heightmap != NULL)
-            {
-                QMessageBox::information(this, "Mask is ready", outPath);
-            }
-            else
-            {
-                QMessageBox::warning(this, "An error occured", "Please check if landscape has proper setup.");
-            }
-        }
-    }
+    QWidget::close();
 }
 
-void HeightDeltaTool::OnValueChanged()
+void HeightDeltaTool::OnValueChanged(double /*v*/)
 {
-    inPath = ui->input->text();
-    if (inPath.isEmpty())
+    ui->run->setEnabled(false);
+
+    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    DVASSERT(scene != nullptr);
+    DAVA::Landscape* landscape = FindLandscape(scene);
+    if (landscape == nullptr)
     {
+        ui->outputPath->setText(tr("Landscape not found"));
         return;
     }
 
-    const QString name = QFileInfo(inPath).completeBaseName();
-    const QString ext = QFileInfo(inPath).suffix();
-    const QString outNameTemplate = QString(outTemplate).arg(name);
-    QString angle;
-
-    if (ui->suffix->isChecked())
+    if (landscape->GetHeightmap() == nullptr)
     {
-        angle = "_" + QString::number(ui->angle->value()).replace('.', '-').replace(',', '-');
+        ui->outputPath->setText(tr("Heightmap was not assigned"));
+        return;
     }
 
-    outName = QString("%1%2.%3").arg(outNameTemplate).arg(angle).arg(ext);
-    outPath = QString("%1/%2").arg(QFileInfo(inPath).absoluteDir().absolutePath()).arg(outName);
+    ui->run->setEnabled(true);
 
-    // ui->input->setText(inPath);
-    ui->output->setText(outName);
+    DAVA::FilePath heightMapPath = landscape->GetHeightmapPathname();
+    heightMapPath.ReplaceExtension("");
+
+    QString angle = QString::number(ui->angle->value()).replace('.', '-').replace(',', '-');
+
+    outputFilePath = QString("%1_delta_%2.png").arg(heightMapPath.GetAbsolutePathname().c_str()).arg(angle);
+    ui->outputPath->setText(QFileInfo(outputFilePath).fileName());
 }

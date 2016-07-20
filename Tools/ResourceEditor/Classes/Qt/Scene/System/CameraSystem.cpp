@@ -351,6 +351,7 @@ void SceneCameraSystem::Draw()
                 {
                     DAVA::AABBox3 worldBox;
                     DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
+                    DVASSERT(!collBox.IsEmpty());
 
                     DAVA::Matrix4 transform;
                     transform.Identity();
@@ -394,6 +395,7 @@ void SceneCameraSystem::CreateDebugCameras()
 
         DAVA::ScopedPtr<DAVA::Entity> topCameraEntity(new DAVA::Entity());
         topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->SetNotRemovable(true);
         topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
@@ -591,7 +593,11 @@ void SceneCameraSystem::MoveToSelection()
     const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
-        LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
+        DAVA::AABBox3 bbox = sceneEditor->selectionSystem->GetTransformedBoundingBox(selection);
+        if (!bbox.IsEmpty())
+        {
+            LookAt(bbox);
+        }
     }
 }
 

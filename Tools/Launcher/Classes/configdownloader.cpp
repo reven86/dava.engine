@@ -12,8 +12,10 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     , appManager(manager)
     , networkManager(new QNetworkAccessManager(this))
 {
+    setModal(true);
     ui->setupUi(this);
     connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
+    connect(ui->cancelButton, &QPushButton::clicked, this, &ConfigDownloader::OnCancelClicked);
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -47,7 +49,7 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
     }
     QNetworkReply::NetworkError error = reply->error();
 
-    if (error != QNetworkReply::NoError && error != QNetworkReply::OperationCanceledError)
+    if (error != QNetworkReply::NoError)
     {
         aborted = true;
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
@@ -65,4 +67,14 @@ void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
         appManager->localConfig.SaveToFile(appManager->localConfigFilePath);
         accept();
     }
+}
+
+void ConfigDownloader::OnCancelClicked()
+{
+    aborted = true;
+    for (QNetworkReply* networkReply : requests)
+    {
+        networkReply->abort();
+    }
+    reject();
 }

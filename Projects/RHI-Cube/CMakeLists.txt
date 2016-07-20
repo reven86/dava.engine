@@ -23,8 +23,7 @@ endif()
 
 file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
 
-define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER}  )
-generate_source_groups_project( SRC_ROOT "Classes" )
+define_source ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
 set( APP_DATA                     ${CMAKE_CURRENT_LIST_DIR}/Data )
 

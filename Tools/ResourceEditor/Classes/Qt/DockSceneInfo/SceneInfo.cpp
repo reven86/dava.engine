@@ -157,10 +157,8 @@ void SceneInfo::RefreshSpeedTreeInfoSelection()
     QtPropertyData* header = GetInfoHeader("SpeedTree Info");
 
     float32 speedTreeLeafSquare = 0.f, speedTreeLeafSquareDivX = 0.f, speedTreeLeafSquareDivY = 0.f;
-    int32 infoCount = speedTreeLeafInfo.size();
-    for (int32 i = 0; i < infoCount; i++)
+    for (const SpeedTreeInfo& info : speedTreeLeafInfo)
     {
-        SpeedTreeInfo& info = speedTreeLeafInfo[i];
         speedTreeLeafSquare += info.leafsSquare;
         speedTreeLeafSquareDivX += info.leafsSquareDivX;
         speedTreeLeafSquareDivY += info.leafsSquareDivY;
@@ -914,13 +912,20 @@ void SceneInfo::RefreshLayersSection()
         static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
         float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
 
-        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+        Vector<FastName> queriesNames;
+        FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
+        for (const FastName& queryName : queriesNames)
         {
-            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
-            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
+            if (queryName == FRAME_QUERY_UI_DRAW)
+                continue;
 
-            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
-            SetChild(layerName.c_str(), str.c_str(), header);
+            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queryName);
+            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
+
+            if (!HasChild(queryName.c_str(), header))
+                AddChild(queryName.c_str(), header);
+
+            SetChild(queryName.c_str(), str.c_str(), header);
         }
     }
 }
