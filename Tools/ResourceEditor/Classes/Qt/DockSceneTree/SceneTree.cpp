@@ -806,6 +806,12 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     addAction(deleteSelection);
 }
 
+SceneTree::~SceneTree()
+{
+    delete filteringProxyModel;
+    delete treeModel;
+}
+
 void SceneTree::SetFilter(const QString& filter)
 {
     treeModel->SetFilter(filter);
@@ -1246,13 +1252,13 @@ void SceneTree::SyncSelectionToTree()
             {
                 DVASSERT(currentRow - lastRow > 0);
                 lastRow = currentRow;
-                lastIndex = i;
+                lastIndex = static_cast<DAVA::int32>(i);
             }
             else
             {
                 QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
                 itemSelection.merge(subRange, selectionMode);
-                startIndex = i;
+                startIndex = static_cast<DAVA::int32>(i);
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }

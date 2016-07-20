@@ -1,6 +1,7 @@
 #include "DynamicBufferAllocator.h"
 #include "Render/RenderCallbacks.h"
 #include "Functional/Function.h"
+#include <queue>
 
 namespace DAVA
 {
@@ -113,8 +114,8 @@ struct BufferAllocator
             }
             else
             {
-                currentlyMappedBuffer = freeBuffers.back();
-                freeBuffers.pop_back();
+                currentlyMappedBuffer = freeBuffers.front();
+                freeBuffers.pop_front();
             }
 
             if (requiredSize > currentlyMappedBuffer->allocatedSize)
@@ -146,20 +147,21 @@ struct BufferAllocator
         {
             BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
         }
-        for (auto b : freeBuffers)
-        {
-            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
-            SafeDelete(b);
-        }
+        buffersToUnmap.clear();
+
         for (auto b : usedBuffers)
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
             SafeDelete(b);
         }
-
-        freeBuffers.clear();
         usedBuffers.clear();
-        buffersToUnmap.clear();
+
+        for (auto b : freeBuffers)
+        {
+            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
+            SafeDelete(b);
+        }
+        freeBuffers.clear();
     }
 
     void BeginFrame()
@@ -202,9 +204,9 @@ private:
     BufferInfo* currentlyMappedBuffer = nullptr;
     uint8* currentlyMappedData = nullptr;
     uint32 currentlyUsedSize = 0;
-    Vector<BufferInfo*> freeBuffers;
     Vector<BufferInfo*> usedBuffers;
     Vector<BufferInfo*> buffersToUnmap;
+    List<BufferInfo*> freeBuffers;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
