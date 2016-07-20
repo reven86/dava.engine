@@ -666,9 +666,8 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveDelegate(modifSystem);
-        selectionSystem->RemoveDelegate(hoodSystem);
-        selectionSystem->RemoveDelegate(wayEditSystem);
+        selectionSystem->EnableSystem(false);
+        selectionSystem->RemoveAllDelegates();
     }
 
     if (editorLightSystem)
