@@ -44,15 +44,6 @@ void CopyLastLODToLod0Command::Redo()
     RenderObject* ro = GetRenderObject(GetEntity());
     DVASSERT(ro);
 
-    for (int32 i = LodComponent::MAX_LOD_LAYERS - 1; i > 0; --i)
-    {
-        float32 distance = lodComponent->GetLodLayerDistance(i - 1);
-        lodComponent->SetLodLayerDistance(i, distance);
-    }
-
-    lodComponent->SetLodLayerDistance(0, 0.f);
-    lodComponent->SetLodLayerDistance(1, 2.f);
-
     uint32 batchCount = ro->GetRenderBatchCount();
     int32 lodIndex, switchIndex;
     for (uint32 ri = 0; ri < batchCount; ++ri)
@@ -75,11 +66,6 @@ void CopyLastLODToLod0Command::Undo()
 
     RenderObject* ro = GetRenderObject(GetEntity());
     DVASSERT(ro);
-
-    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS - 1; ++i)
-        lodComponent->SetLodLayerDistance(i, lodComponent->GetLodLayerDistance(i + 1));
-
-    lodComponent->SetLodLayerDistance(0, 0.f);
 
     uint32 newBatchCount = newBatches.size();
     for (uint32 ri = 0; ri < newBatchCount; ++ri)

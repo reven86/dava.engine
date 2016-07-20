@@ -1,8 +1,7 @@
-#ifndef __SCENE_LOD_SYSTEM_V2_H__
-#define __SCENE_LOD_SYSTEM_V2_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Commands2/CreatePlaneLODCommandHelper.h"
 #include "Scene/SceneTypes.h"
 
@@ -25,7 +24,7 @@ struct ForceValues
         APPLY_NONE = 0,
         APPLY_ALL = APPLY_DISTANCE | APPLY_LAYER,
 
-        APPLY_DEFAULT = APPLY_LAYER,
+        APPLY_DEFAULT = APPLY_DISTANCE
     };
 
     ForceValues(DAVA::float32 distance_ = DAVA::LodComponent::INVALID_DISTANCE,
@@ -34,8 +33,8 @@ struct ForceValues
         : distance(distance_)
         , layer(layer_)
         , flag(flag_)
-          {
-          };
+    {
+    }
 
     DAVA::float32 distance;
     DAVA::int32 layer;
@@ -49,10 +48,13 @@ class LODComponentHolder
     friend class EditorLODSystem;
 
 public:
+    LODComponentHolder();
+
     DAVA::int32 GetMaxLODLayer() const;
     DAVA::uint32 GetLODLayersCount() const;
 
-    const DAVA::LodComponent& GetLODComponent() const;
+    const DAVA::Vector<DAVA::float32>& GetDistances() const;
+    const DAVA::Vector<bool>& GetMultiple() const;
 
 protected:
     void BindToSystem(EditorLODSystem* system, SceneEditor2* scene);
@@ -64,10 +66,12 @@ protected:
     bool DeleteLOD(DAVA::int32 layer);
     bool CopyLod(DAVA::int32 from, DAVA::int32 to);
 
-protected:
-    DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
-    DAVA::LodComponent mergedComponent;
     DAVA::Vector<DAVA::LodComponent*> lodComponents;
+    DAVA::Vector<DAVA::float32> distances;
+    DAVA::Vector<bool> isMultiple;
+    DAVA::Vector<bool> isChanged;
+
+    DAVA::int32 maxLodLayerIndex = DAVA::LodComponent::INVALID_LOD_LAYER;
 
     EditorLODSystem* system = nullptr;
     SceneEditor2* scene = nullptr;
@@ -90,13 +94,16 @@ class EditorLODSystem : public DAVA::SceneSystem
     };
 
 public:
+    static const DAVA::int32 LAST_LOD_LAYER = 0x7fffffff;
+    static const DAVA::float32 LOD_DISTANCE_INFINITY;
+
     EditorLODSystem(DAVA::Scene* scene);
     ~EditorLODSystem() override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
-    void AddComponent(DAVA::Entity* entity, DAVA::Component* component);
-    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component);
+    void AddComponent(DAVA::Entity* entity, DAVA::Component* component) override;
+    void RemoveComponent(DAVA::Entity* entity, DAVA::Component* component) override;
 
     void Process(DAVA::float32 timeElapsed) override;
     void SceneDidLoaded() override;
@@ -104,13 +111,16 @@ public:
     eEditorMode GetMode() const;
     void SetMode(eEditorMode mode);
 
+    bool GetRecursive() const;
+    void SetRecursive(bool recursive);
+
     //actions
     bool CanDeleteLOD() const;
     bool CanCreateLOD() const;
 
+    void DeleteLOD(DAVA::int32 layer);
+
     void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
-    void DeleteFirstLOD();
-    void DeleteLastLOD();
     void CopyLastLODToFirst();
     //end of actions
 
@@ -122,7 +132,6 @@ public:
     void SetLODDistances(const DAVA::Vector<DAVA::float32>& distances);
 
     //scene signals
-    void SolidChanged(const DAVA::Entity* entity, bool value);
     void SelectionChanged(const SelectableGroup* selected, const SelectableGroup* deselected);
 
     void AddDelegate(EditorLODSystemUIDelegate* uiDelegate);
@@ -137,7 +146,6 @@ private:
     void RecalculateData();
     //actions
     void CopyLOD(DAVA::int32 fromLayer, DAVA::int32 toLayer);
-    void DeleteLOD(DAVA::int32 layer);
 
     //signals
     void EmitInvalidateUI(DAVA::uint32 flags);
@@ -146,7 +154,6 @@ private:
 
     void ProcessPlaneLODs();
 
-private:
     LODComponentHolder lodData[eEditorMode::MODE_COUNT];
     LODComponentHolder* activeLodData = nullptr;
     ForceValues forceValues;
@@ -158,6 +165,8 @@ private:
 
     DAVA::Vector<EditorLODSystemUIDelegate*> uiDelegates;
     DAVA::uint32 invalidateUIFlag = FLAG_NONE;
+
+    bool recursive = false;
 };
 
 class EditorLODSystemUIDelegate
@@ -165,11 +174,16 @@ class EditorLODSystemUIDelegate
 public:
     virtual ~EditorLODSystemUIDelegate() = default;
 
-    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode){};
-    virtual void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues){};
-    virtual void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData){};
-    virtual void UpdateActionUI(EditorLODSystem* forSystem){};
+    virtual void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode, bool recursive)
+    {
+    }
+    virtual void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues)
+    {
+    }
+    virtual void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData)
+    {
+    }
+    virtual void UpdateActionUI(EditorLODSystem* forSystem)
+    {
+    }
 };
-
-
-#endif // __SCENE_LOD_SYSTEM_V2_H__

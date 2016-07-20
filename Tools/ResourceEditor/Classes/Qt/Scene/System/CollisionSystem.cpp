@@ -284,6 +284,11 @@ void SceneCollisionSystem::AddCollisionObject(Selectable::Object* obj, Collision
 
 void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     // check in there are entities that should be added or removed
     if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
@@ -298,8 +303,6 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 
         for (auto obj : objectsToAdd)
         {
-            CollisionBaseObject* collisionObject = nullptr;
-
             Selectable wrapper(obj);
             if (wrapper.CanBeCastedTo<DAVA::Entity>() || wrapper.SupportsTransformType(Selectable::TransformType::Disabled))
             {
@@ -454,6 +457,11 @@ void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool red
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
 {
+    if (!enabled)
+    {
+        return;
+    }
+
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
@@ -470,7 +478,7 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (DAVA::GetLandscape(entity) != nullptr)
@@ -490,7 +498,7 @@ void SceneCollisionSystem::AddEntity(DAVA::Entity* entity)
 
 void SceneCollisionSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (entity == nullptr)
+    if (!enabled || entity == nullptr)
         return;
 
     if (curLandscapeEntity == entity)
@@ -519,19 +527,25 @@ void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
     }
 }
 
-const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : objectToCollision)
     {
         if ((object.first != nullptr) && (object.second != nullptr) &&
-            (object.second->ClassifyToPlanes(planes, numPlanes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
+            (object.second->ClassifyToPlanes(planes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
         {
             planeClippedObjects.Add(object.first, DAVA::AABBox3());
         }
     }
 
     return planeClippedObjects;
+}
+
+void SceneCollisionSystem::EnableSystem()
+{
+    enabled = true;
+    AddEntity(GetScene());
 }
 
 namespace CollisionDetails

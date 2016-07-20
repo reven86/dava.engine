@@ -4,7 +4,7 @@
 #include "QtTools/Commands/CommandWithoutExecute.h"
 
 #include "Render/Highlevel/RenderBatch.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 class DeleteRenderBatchCommand;
 class DeleteLODCommand : public CommandWithoutExecute
@@ -24,7 +24,6 @@ protected:
     DAVA::int32 deletedLodIndex;
     DAVA::int32 requestedSwitchIndex;
 
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     DAVA::Vector<DeleteRenderBatchCommand*> deletedBatches;
 };
 

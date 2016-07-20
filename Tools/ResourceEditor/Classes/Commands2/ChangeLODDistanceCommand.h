@@ -1,5 +1,4 @@
-#ifndef __CHANGE_LOD_DISTANCE_COMMAND_H__
-#define __CHANGE_LOD_DISTANCE_COMMAND_H__
+#pragma once
 
 #include "QtTools/Commands/CommandWithoutExecute.h"
 #include "DAVAEngine.h"
@@ -19,5 +18,3 @@ protected:
     DAVA::float32 newDistance;
     DAVA::float32 oldDistance;
 };
-
-#endif // __CHANGE_LOD_DISTANCE_COMMAND_H__

@@ -108,7 +108,12 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
         return enablingError;
     }
 
-    drawSystem->GetLandscapeProxy()->UpdateTileMaskPathname();
+    drawSystem->UpdateTilemaskPathname();
+    bool inited = drawSystem->InitTilemaskImageCopy();
+    if (!inited)
+    {
+        return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT;
+    }
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
@@ -123,8 +128,6 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     SetBrushSize(curToolSize);
 
     InitSprites();
-
-    drawSystem->GetLandscapeProxy()->InitTilemaskImageCopy();
 
     DAVA::Texture* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE);
     DAVA::Texture* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_DESTINATION);

@@ -50,7 +50,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(DAVA::Landscape::TEXTURE_COLOR);
+    landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
     DAVA::FilePath filePath = GetCurrentSaveFileName();
     if (!filePath.IsEmpty())
@@ -275,7 +275,7 @@ void CustomColorsSystem::StoreOriginalState()
 void CustomColorsSystem::CreateUndoPoint()
 {
     DAVA::Rect updatedRect = GetUpdatedRect();
-    if (updatedRect.dx > 0 || updatedRect.dy > 0)
+    if (updatedRect.dx > 0 && updatedRect.dy > 0)
     {
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);

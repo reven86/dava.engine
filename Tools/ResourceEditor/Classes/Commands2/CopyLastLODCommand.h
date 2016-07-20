@@ -1,5 +1,4 @@
-#ifndef __COPY_LAST_LOD_COMMAND_H__
-#define __COPY_LAST_LOD_COMMAND_H__
+#pragma once
 
 #include "QtTools/Commands/CommandWithoutExecute.h"
 #include "DAVAEngine.h"
@@ -19,5 +18,3 @@ public:
     DAVA::Vector<DAVA::RenderBatch*> newBatches;
     DAVA::Vector<DAVA::int32> switchIndices;
 };
-
-#endif // __COPY_LAST_LOD_COMMAND_H__
