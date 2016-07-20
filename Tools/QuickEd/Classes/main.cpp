@@ -2,17 +2,16 @@
 #include "Particles/ParticleEmitter.h"
 #include "FileSystem/FileSystem.h"
 
-#include <QApplication>
-
 #include "EditorCore.h"
-#include "QEApplication.h"
 
 #include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/MessageHandler.h"
 #include "QtTools/Utils/AssertGuard.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #include <QtGlobal>
+#include <QApplication>
 
 void InitPVRTexTool()
 {
@@ -33,17 +32,27 @@ int main(int argc, char* argv[])
     const char* settingsPath = "QuickEdSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+    int retCode = 0;
     {
         qInstallMessageHandler(DAVAMessageHandler);
         ToolsAssetGuard::Instance()->Init();
+        QApplication a(argc, argv);
+        qApp->setOrganizationName("DAVA");
+        qApp->setApplicationName("QuickEd");
 
-        QEApplication a(argc, argv);
-        a.LoadPlugins();
+        const char* settingsPath = "QuickEdSettings.archive";
+        DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+        PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
         Q_INIT_RESOURCE(QtToolsResources);
-
         InitPVRTexTool();
-        a.Run();
+
+        Themes::InitFromQApplication();
+
+        EditorCore editorCore;
+        editorCore.Start();
+
+        retCode = a.exec();
     }
-    return 0;
+    return retCode;
 }

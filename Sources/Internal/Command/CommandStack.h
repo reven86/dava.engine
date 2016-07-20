@@ -3,16 +3,9 @@
 #include "Command/Command.h"
 #include "Functional/Signal.h"
 
-#include <core_common/signal.hpp>
-
 namespace DAVA
 {
 class CommandBatch;
-}
-namespace wgt
-{
-class ICommandManager;
-}
 
 class CommandStack
 {
@@ -20,9 +13,9 @@ public:
     CommandStack();
     virtual ~CommandStack();
 
-    virtual void Exec(DAVA::Command::Pointer&& command);
+    virtual void Exec(Command::Pointer&& command);
 
-    virtual void BeginBatch(const DAVA::String& name, DAVA::uint32 commandsCount = 0);
+    virtual void BeginBatch(const String& name, uint32 commandsCount = 0);
     virtual void EndBatch();
 
     virtual bool IsClean() const;
@@ -31,31 +24,24 @@ public:
     virtual void Undo();
     virtual void Redo();
 
-    virtual bool CanUndo() const;
-    virtual bool CanRedo() const;
+    bool CanUndo() const;
+    bool CanRedo() const;
 
-    DAVA::int32 GetID() const;
-
-    DAVA::Signal<bool> cleanChanged;
-    DAVA::Signal<bool> canUndoChanged;
-    DAVA::Signal<bool> canRedoChanged;
-
-    void DisconnectFromCommandManager();
-    void ConnectToCommandManager();
+    Signal<bool> cleanChanged;
+    Signal<bool> canUndoChanged;
+    Signal<bool> canRedoChanged;
+    Signal<int32> currentIndexChanged;
 
 protected:
-    bool CanUndoImpl() const;
-    bool CanRedoImpl() const;
-    wgt::ICommandManager* commandManager = nullptr;
-
-private:
-    void OnHistoryIndexChanged(int currentIndex);
     void UpdateCleanState();
+    void SetCurrentIndex(int32 currentIndex);
 
-    DAVA::int32 cleanIndex = -1;
-    //enviroinment id given from envManager
-    DAVA::int32 ID = 0;
-    wgt::Connection indexChanged;
+    static const DAVA::int32 EMPTY_INDEX = -1;
+
+    int32 cleanIndex = EMPTY_INDEX;
+    int32 currentIndex = EMPTY_INDEX;
+
+    Vector<Command::Pointer> commands;
 
     //this stack is created to hold nested batches hierarchy
     DAVA::Stack<DAVA::CommandBatch*> batchesStack;
@@ -71,3 +57,4 @@ private:
     void SetCanUndo(bool canUndo);
     void SetCanRedo(bool canRedo);
 };
+}

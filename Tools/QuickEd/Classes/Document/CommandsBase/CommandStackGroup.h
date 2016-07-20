@@ -3,21 +3,18 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 
-class CommandStack;
-
-namespace wgt
+namespace DAVA
 {
-class IEnvManager;
+class CommandStack;
 }
-
 class CommandStackGroup : DAVA::TrackedObject
 {
 public:
     CommandStackGroup();
-    void RemoveStack(CommandStack* stackToRemove);
-    void AddStack(CommandStack* stackToAdd);
+    void RemoveStack(DAVA::CommandStack* stackToRemove);
+    void AddStack(DAVA::CommandStack* stackToAdd);
 
-    void SetActiveStack(CommandStack* commandStack);
+    void SetActiveStack(DAVA::CommandStack* commandStack);
 
     void Undo();
     void Redo();
@@ -31,7 +28,6 @@ public:
     DAVA::Signal<bool> canRedoChanged;
 
 private:
-    CommandStack* activeStack = nullptr;
-    DAVA::Set<CommandStack*> stacks;
-    wgt::IEnvManager* envManager = nullptr;
+    DAVA::CommandStack* activeStack = nullptr;
+    DAVA::Set<DAVA::CommandStack*> stacks;
 };

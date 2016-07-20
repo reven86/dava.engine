@@ -19,6 +19,7 @@ namespace DAVA
 class FilePath;
 class UIControl;
 class UIEvent;
+class CommandStack;
 }
 
 class PackageNode;
@@ -30,7 +31,6 @@ class ControlNode;
 class AbstractProperty;
 
 class QFileSystemWatcher;
-class CommandStack;
 
 class Document final : public QObject
 {
@@ -43,7 +43,7 @@ public:
 
     const DAVA::FilePath& GetPackageFilePath() const;
     QString GetPackageAbsolutePath() const;
-    CommandStack* GetCommandStack() const;
+    DAVA::CommandStack* GetCommandStack() const;
     PackageNode* GetPackage() const;
     QtModelPackageCommandExecutor* GetCommandExecutor() const;
     WidgetContext* GetContext(void* requester) const;
@@ -71,7 +71,7 @@ private:
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
-    std::unique_ptr<CommandStack> commandStack;
+    std::unique_ptr<DAVA::CommandStack> commandStack;
     QFileSystemWatcher* fileSystemWatcher = nullptr;
     bool fileExists = true;
     bool canSave = false;

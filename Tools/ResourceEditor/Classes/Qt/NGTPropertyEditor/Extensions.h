@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "Functional/Signal.h"
@@ -94,3 +95,4 @@ private:
     Delegate& delegateObj;
     wgt::Depends<wgt::IDefinitionManager> defManagerHolder;
 };
+#endif //0
