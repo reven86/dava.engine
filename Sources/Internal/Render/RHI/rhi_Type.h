@@ -604,7 +604,7 @@ Descriptor
             , minFilter(TEXFILTER_LINEAR)
             , magFilter(TEXFILTER_LINEAR)
             , mipFilter(TEXMIPFILTER_LINEAR)
-            , anisotropyLevel(16)
+            , anisotropyLevel(1)
             , pad(0)
         {
         }
