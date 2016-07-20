@@ -912,20 +912,13 @@ void SceneInfo::RefreshLayersSection()
         static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
         float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
 
-        Vector<FastName> queriesNames;
-        FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
-        for (const FastName& queryName : queriesNames)
+        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
         {
-            if (queryName == FRAME_QUERY_UI_DRAW)
-                continue;
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
 
-            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queryName);
-            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
-
-            if (!HasChild(queryName.c_str(), header))
-                AddChild(queryName.c_str(), header);
-
-            SetChild(queryName.c_str(), str.c_str(), header);
+            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
+            SetChild(layerName.c_str(), str.c_str(), header);
         }
     }
 }
