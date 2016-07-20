@@ -107,6 +107,11 @@ private:
     {
         T object;
 
+        uint32 allocated : 1;
+        uint32 generation : 8;
+        uint32 nextObjectIndex : 16;
+        uint32 pad : 7;
+
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
         DAVA::Vector<void*> backtrace;
 
@@ -133,10 +138,6 @@ private:
             backtrace.clear();
         }
 #endif
-
-        uint32 allocated : 1;
-        uint32 generation : 8;
-        uint32 nextObjectIndex : 16;
     };
 
     static Entry* Object;
