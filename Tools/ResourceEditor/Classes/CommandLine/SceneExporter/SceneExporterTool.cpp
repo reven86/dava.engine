@@ -123,9 +123,10 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 
-    options.AddOption(OptionName::HDTextures, VariantType(false), "Use 0-mip level as texture.hd.ext");
+    options.AddOption(OptionName::HDTextures, VariantType(useHDTextures), "Use 0-mip level as texture.hd.ext");
+    options.AddOption(OptionName::Force, VariantType(forceCompressTextures), "Force re-compress textures");
 
-    options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
+    options.AddOption(OptionName::UseAssetCache, VariantType(useAssetCache), "Enables using AssetCache for scene");
     options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::GetLocalHost()), "ip of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
@@ -163,6 +164,7 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     optimizeOnExport = !saveNormals;
 
     useHDTextures = options.GetOption(OptionName::HDTextures).AsBool();
+    forceCompressTextures = options.GetOption(OptionName::Force).AsBool();
 
     useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
     if (useAssetCache)
@@ -228,6 +230,7 @@ void SceneExporterTool::ProcessInternal()
     exportingParams.quality = quality;
     exportingParams.optimizeOnExport = optimizeOnExport;
     exportingParams.useHDTextures = useHDTextures;
+    exportingParams.forceCompressTextures = forceCompressTextures;
 
     SceneExporter exporter;
     exporter.SetExportingParams(exportingParams);

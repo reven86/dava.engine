@@ -750,7 +750,10 @@ macro( DEPLOY_SCRIPT )
         endif()
 
         execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${COPY_DIR} )
-        execute_process( COMMAND python ${ARG_PYTHON} )
+
+        if( ARG_PYTHON)
+            execute_process( COMMAND python ${ARG_PYTHON} )
+        endif()
 
         if( ARG_COPY )
             list( APPEND COPY_LIST ${ARG_COPY} )

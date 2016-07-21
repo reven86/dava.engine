@@ -20,23 +20,15 @@ public:
     explicit HeightDeltaTool(QWidget* p = NULL);
     ~HeightDeltaTool();
 
-    void SetDefaultDir(const QString& path);
-    void SetOutputTemplate(const QString& prefix, const QString& suffix);
-
 private slots:
-    void OnBrowse();
     void OnRun();
-    void OnValueChanged();
+    void OnValueChanged(double v = 0);
 
 private:
     double GetThresholdInMeters(double unitSize);
 
     QScopedPointer<Ui::HeightDeltaTool> ui;
-    QString defaultDir;
-    QString outTemplate;
-    QString inPath;
-    QString outPath;
-    QString outName;
+    QString outputFilePath;
 };
 
 

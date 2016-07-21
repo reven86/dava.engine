@@ -122,9 +122,22 @@ JavaClass::JavaClass(const String& className)
     JobManager::Instance()->WaitMainJobID(jobId);
 }
 
+JavaClass::JavaClass(const JavaClass& copy)
+    : name(copy.name)
+    , javaClass(nullptr)
+{
+    if (copy.javaClass != nullptr)
+    {
+        javaClass = static_cast<jclass>(JNI::GetEnv()->NewGlobalRef(copy.javaClass));
+    }
+}
+
 JavaClass::~JavaClass()
 {
-    GetEnv()->DeleteGlobalRef(javaClass);
+    if (javaClass != nullptr)
+    {
+        GetEnv()->DeleteGlobalRef(javaClass);
+    }
 }
 
 void JavaClass::FindJavaClass(String name)

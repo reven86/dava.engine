@@ -18,7 +18,7 @@ public:
     CollectionType& GetMutableContent();
 
     bool IsEmpty() const;
-    DAVA::size_type GetSize() const;
+    DAVA::uint32 GetSize() const;
     void Clear();
 
     void Add(Selectable::Object* object);
@@ -154,9 +154,9 @@ inline bool SelectableGroup::IsEmpty() const
     return objects.empty();
 }
 
-inline DAVA::size_type SelectableGroup::GetSize() const
+inline DAVA::uint32 SelectableGroup::GetSize() const
 {
-    return objects.size();
+    return static_cast<DAVA::uint32>(objects.size());
 }
 
 inline const DAVA::AABBox3& SelectableGroup::GetIntegralBoundingBox() const

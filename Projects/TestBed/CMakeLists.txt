@@ -59,6 +59,8 @@ endif ()
 
 setup_main_executable()
 
+convert_graphics()
+
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled
     # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager

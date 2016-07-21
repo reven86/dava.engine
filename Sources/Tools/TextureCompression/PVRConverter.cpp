@@ -171,10 +171,12 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
     tempFileDescriptor.compression[eGPUFamily::GPU_ORIGIN].format = PixelFormat::FORMAT_RGBA8888;
     tempFileDescriptor.compression[eGPUFamily::GPU_ORIGIN].imageFormat = targetFormat;
 
+    FilePath tempSourcePath = tempFileDescriptor.GetSourceTexturePathname();
     FilePath tempConvertedPath = GetConvertedTexturePath(tempFileDescriptor, gpuFamily);
     SCOPE_EXIT
     {
         FileSystem::Instance()->DeleteFile(tempFileDescriptor.pathname);
+        FileSystem::Instance()->DeleteFile(tempSourcePath);
         FileSystem::Instance()->DeleteFile(tempConvertedPath);
     };
 
@@ -189,7 +191,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
             continue;
         }
 
-        if (ImageSystem::Save(tempFileDescriptor.GetSourceTexturePathname(), srcImage) != eErrorCode::SUCCESS)
+        if (ImageSystem::Save(tempSourcePath, srcImage) != eErrorCode::SUCCESS)
         {
             return FilePath();
         }
@@ -199,6 +201,7 @@ FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor& descriptor
         {
             return FilePath();
         }
+        DVASSERT(convertedImgPath == tempConvertedPath);
 
         Image* convertedImage = ImageSystem::LoadSingleMip(convertedImgPath);
         if (!convertedImage)

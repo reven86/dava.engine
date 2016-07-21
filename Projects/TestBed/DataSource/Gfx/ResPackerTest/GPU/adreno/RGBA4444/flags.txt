@@ -1,1 +1,0 @@
---adreno RGBA4444

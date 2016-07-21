@@ -115,6 +115,7 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity* entity)
         RenderHelper* drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
 
         AABBox3 worldBox = selSystem->GetUntransformedBoundingBox(entity);
+        DVASSERT(!worldBox.IsEmpty());
         DAVA::float32 delta = worldBox.GetSize().Length() / 4;
 
         drawer->DrawAABoxTransformed(worldBox, entity->GetWorldTransform(), DAVA::Color(0.5f, 0.5f, 1.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
@@ -141,6 +142,7 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity* entity)
 
         AABBox3 worldBox;
         AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        DVASSERT(!localBox.IsEmpty());
         localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
 
         if (light->GetType() == Light::TYPE_DIRECTIONAL)
@@ -180,6 +182,7 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity* entity)
     {
         AABBox3 worldBox;
         AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        DVASSERT(!localBox.IsEmpty());
         localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
 
         Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
@@ -244,6 +247,7 @@ void DebugDrawSystem::DrawEntityBox(DAVA::Entity* entity, const DAVA::Color& col
 {
     AABBox3 worldBox;
     AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+    DVASSERT(!localBox.IsEmpty());
     localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, color, RenderHelper::DRAW_WIRE_DEPTH);
 }
@@ -359,6 +363,7 @@ void DebugDrawSystem::DrawSwitchesWithDifferentLods(DAVA::Entity* entity)
     {
         AABBox3 worldBox;
         AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
+        DVASSERT(!localBox.IsEmpty());
         localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
         GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, Color(1.0f, 0.f, 0.f, 1.f), RenderHelper::DRAW_WIRE_DEPTH);
     }
