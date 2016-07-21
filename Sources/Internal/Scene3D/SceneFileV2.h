@@ -181,6 +181,8 @@ private:
     bool SaveHierarchy(Entity* node, File* file, int32 level);
     bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
+    void FixLodForLodsystem2(Entity* entity);
+
     Entity* LoadEntity(Scene* scene, KeyedArchive* archive);
     Entity* LoadLandscape(Scene* scene, KeyedArchive* archive);
     Entity* LoadCamera(Scene* scene, KeyedArchive* archive);
