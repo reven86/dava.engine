@@ -1,12 +1,8 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX11.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-    
-    #include "_dx11.h"
+#include "../Common/rhi_Pool.h"
+#include "Debug/DVAssert.h"
+#include "rhi_DX11.h"
+#include "_dx11.h"
 
 namespace rhi
 {

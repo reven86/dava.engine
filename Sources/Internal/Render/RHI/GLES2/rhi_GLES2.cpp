@@ -215,7 +215,7 @@ gles_check_GL_extensions()
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
 
-#if defined(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT) && defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+#if (RHI_GL_HAS_ANISOTROPY)
         _GLES2_DeviceCaps.isAnisotropicFilteringSupported = strstr(ext, "EXT_texture_filter_anisotropic") != nullptr;
         if (_GLES2_DeviceCaps.isAnisotropicFilteringSupported)
         {

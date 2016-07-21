@@ -1,12 +1,8 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX9.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_dx9.h"
+#include "../Common/rhi_Pool.h"
+#include "Debug/DVAssert.h"
+#include "rhi_DX9.h"
+#include "_dx9.h"
 
 namespace rhi
 {
@@ -169,6 +165,8 @@ void SetToRHI(Handle hstate)
 {
     SamplerStateDX9_t* state = SamplerStateDX9Pool::Get(hstate);
 
+    bool anisotropySupported = rhi::DeviceCaps().isAnisotropicFilteringSupported;
+
     for (unsigned i = 0; i != state->fragmentSamplerCount; ++i)
     {
         _D3D9_Device->SetSamplerState(i, D3DSAMP_ADDRESSU, state->fragmentSampler[i].addrU);
@@ -177,7 +175,11 @@ void SetToRHI(Handle hstate)
         _D3D9_Device->SetSamplerState(i, D3DSAMP_MINFILTER, state->fragmentSampler[i].minFilter);
         _D3D9_Device->SetSamplerState(i, D3DSAMP_MAGFILTER, state->fragmentSampler[i].magFilter);
         _D3D9_Device->SetSamplerState(i, D3DSAMP_MIPFILTER, state->fragmentSampler[i].mipFilter);
-        _D3D9_Device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, state->fragmentSampler[i].anisotropyLevel);
+
+        if (anisotropySupported)
+        {
+            _D3D9_Device->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, state->fragmentSampler[i].anisotropyLevel);
+        }
     }
 
     for (unsigned i = 0; i != state->vertexSamplerCount; ++i)
@@ -189,7 +191,11 @@ void SetToRHI(Handle hstate)
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MINFILTER, state->vertexSampler[i].minFilter);
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAGFILTER, state->vertexSampler[i].magFilter);
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MIPFILTER, state->vertexSampler[i].mipFilter);
-        _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, state->vertexSampler[i].anisotropyLevel);
+
+        if (anisotropySupported)
+        {
+            _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, state->vertexSampler[i].anisotropyLevel);
+        }
     }
 }
 }

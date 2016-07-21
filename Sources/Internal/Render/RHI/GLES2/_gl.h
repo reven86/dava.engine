@@ -233,6 +233,12 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_RGB16F 0x881B
 #endif
 
+#if defined(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT) && defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+#define RHI_GL_HAS_ANISOTROPY 1
+#else
+#define RHI_GL_HAS_ANISOTROPY 0
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \

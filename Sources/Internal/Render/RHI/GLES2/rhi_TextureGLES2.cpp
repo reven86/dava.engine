@@ -792,7 +792,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrModeGLES2(TextureAddrMode(sampler->addrV))));
 
-#if defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+#if (RHI_GL_HAS_ANISOTROPY)
         if (rhi::DeviceCaps().isAnisotropicFilteringSupported)
         {
             DVASSERT(sampler->anisotropyLevel >= 1);
