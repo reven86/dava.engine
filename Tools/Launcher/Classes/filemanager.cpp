@@ -259,24 +259,12 @@ QString GetApplicationDirectory(const QString& branchID, const QString& appID)
     return path;
 }
 
-QString GetApplicationDirectoryOld(const QString& branchID, const QString& appID)
-{
-    QString path = GetBranchDirectoryOld(branchID) + appID + "/";
-    return path;
-}
-
 QString GetBranchDirectory(const QString& branchID)
 {
     QString dirName = branchID;
     dirName.remove("/");
     dirName.remove("\\");
     QString path = GetBaseAppsDirectory() + dirName + "/";
-    return path;
-}
-
-QString GetBranchDirectoryOld(const QString& branchID)
-{
-    QString path = GetBaseAppsDirectory() + branchID + "/";
     return path;
 }
 }

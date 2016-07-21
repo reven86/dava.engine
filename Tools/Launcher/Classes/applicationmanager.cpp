@@ -64,6 +64,20 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     localConfig.SaveToFile(localConfigFilePath);
 }
 
+namespace ApplicationManagerDetails
+{
+QString GetBranchDirectory_kostil(const QString& branchID)
+{
+    QString path = FileManager::GetBaseAppsDirectory() + branchID + "/";
+    return path;
+}
+QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
+{
+    QString path = GetBranchDirectoryOld(branchID) + appID + "/";
+    return path;
+}
+}
+
 QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
 {
     QRegularExpression spaceRegex("\\s+");
@@ -74,7 +88,7 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
     {
         return runPath;
     }
-    runPath = FileManager::GetApplicationDirectoryOld(branchID, appID);
+    runPath = ApplicationManagerDetails::GetApplicationDirectoryOld(branchID, appID);
     if (QFile::exists(runPath))
     {
         return runPath;
@@ -92,7 +106,7 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
             {
                 return newRunPath;
             }
-            newRunPath = FileManager::GetApplicationDirectoryOld(branchKey, appKey);
+            newRunPath = ApplicationManagerDetails::GetApplicationDirectoryOld(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;

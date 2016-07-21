@@ -20,10 +20,5 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn);
 void MakeDirectory(const QString& path);
 
 QString GetApplicationDirectory(const QString& branchID, const QString& appID);
-//legacy method to get old-style, wrong path to the application directory
-QString GetApplicationDirectoryOld(const QString& branchID, const QString& appID);
-
 QString GetBranchDirectory(const QString& branchID);
-//legacy method to get old-style, wrong path to the branch directory
-QString GetBranchDirectoryOld(const QString& branchID);
 };
