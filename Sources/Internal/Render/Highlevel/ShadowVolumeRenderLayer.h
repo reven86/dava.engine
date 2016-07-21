@@ -15,11 +15,10 @@ public:
     ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags);
     virtual ~ShadowVolumeRenderLayer() override;
 
-    virtual void Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList) override;
+    void Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList) override;
 
 private:
     void PrepareRenderData();
-    void UpdtateBufferData();
     void Restore();
 
     NMaterial* shadowRectMaterial = nullptr;
