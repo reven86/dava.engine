@@ -107,6 +107,8 @@ void SceneInfo::Initialize3DDrawSection()
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
     AddChild("Visible Render Object Count", header);
+    AddChild("Occluded Render Object Count", header);
+
     AddChild("DrawPrimitiveCalls", header);
     AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
@@ -127,6 +129,8 @@ void SceneInfo::Refresh3DDrawInfo()
     const RenderStats& renderStats = activeScene->GetRenderStats();
 
     SetChild("Visible Render Object Count", renderStats.visibleRenderObjects, header);
+    SetChild("Occluded Render Object Count", renderStats.occludedRenderObjects, header);
+
     SetChild("DrawPrimitiveCalls", renderStats.drawPrimitive, header);
     SetChild("DrawIndexedPrimitiveCalls", renderStats.drawIndexedPrimitive, header);
     SetChild("LineList", renderStats.primitiveLineListCount, header);
@@ -889,31 +893,32 @@ void SceneInfo::RefreshVegetationInfoSection()
 
 void SceneInfo::InitializeLayersSection()
 {
-    CreateInfoHeader("Fragments Info");
+    QtPropertyData* header = CreateInfoHeader("Fragments Info");
+
+    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+    {
+        FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+        AddChild(layerName.c_str(), header);
+    }
 }
 
 void SceneInfo::RefreshLayersSection()
 {
     if (activeScene)
     {
-        float32 viewportSize = (float32)Renderer::GetFramebufferWidth() * Renderer::GetFramebufferHeight();
-
+        const RenderStats& renderStats = activeScene->GetRenderStats();
         QtPropertyData* header = GetInfoHeader("Fragments Info");
 
-        Vector<FastName> queriesNames;
-        FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
-        for (const FastName& queryName : queriesNames)
+        static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
+        float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
+
+        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
         {
-            if (queryName == FRAME_QUERY_UI_DRAW)
-                continue;
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
 
-            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queryName);
-            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
-
-            if (!HasChild(queryName.c_str(), header))
-                AddChild(queryName.c_str(), header);
-
-            SetChild(queryName.c_str(), str.c_str(), header);
+            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
+            SetChild(layerName.c_str(), str.c_str(), header);
         }
     }
 }
