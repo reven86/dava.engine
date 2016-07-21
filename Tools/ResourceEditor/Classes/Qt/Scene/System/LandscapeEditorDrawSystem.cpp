@@ -475,10 +475,10 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 
         DeinitLandscape();
 
-        DAVA::Entity* entity = FindLandscapeEntity(sceneEditor);
-        if (entity != NULL)
+        DAVA::Entity* landEntity = FindLandscapeEntity(sceneEditor);
+        if (landEntity != nullptr && landEntity != entity)
         {
-            InitLandscape(entity, GetLandscape(entity));
+            InitLandscape(landEntity, GetLandscape(landEntity));
         }
     }
 }
