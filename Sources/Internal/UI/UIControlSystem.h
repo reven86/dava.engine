@@ -45,8 +45,6 @@ public:
 		Also ControlSystem processed all user input events to the controls.
 	 */
 
-extern const FastName FRAME_QUERY_UI_DRAW;
-
 class UIControlSystem : public Singleton<UIControlSystem>
 {
 protected:

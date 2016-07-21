@@ -1089,10 +1089,6 @@
 		02E7CB601BD624A7002F026D /* MipmapReplacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */; };
 		02E7CB611BD624A7002F026D /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4081BD624A5002F026D /* MipmapReplacer.h */; };
 		02E7CB621BD624A7002F026D /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4081BD624A5002F026D /* MipmapReplacer.h */; };
-		02E7CB631BD624A7002F026D /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */; };
-		02E7CB641BD624A7002F026D /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */; };
-		02E7CB651BD624A7002F026D /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40A1BD624A5002F026D /* OcclusionQuery.h */; };
-		02E7CB661BD624A7002F026D /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40A1BD624A5002F026D /* OcclusionQuery.h */; };
 		02E7CB671BD624A7002F026D /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */; };
 		02E7CB681BD624A7002F026D /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */; };
 		02E7CB691BD624A7002F026D /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */; };
@@ -2676,8 +2672,6 @@
 		02E7C4061BD624A5002F026D /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MipmapReplacer.cpp; sourceTree = "<group>"; };
 		02E7C4081BD624A5002F026D /* MipmapReplacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MipmapReplacer.h; sourceTree = "<group>"; };
-		02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
-		02E7C40A1BD624A5002F026D /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
 		02E7C40D1BD624A5002F026D /* PVRDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRDefines.h; sourceTree = "<group>"; };
@@ -3940,8 +3934,6 @@
 				02E7C3FA1BD624A5002F026D /* Material */,
 				02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */,
 				02E7C4081BD624A5002F026D /* MipmapReplacer.h */,
-				02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */,
-				02E7C40A1BD624A5002F026D /* OcclusionQuery.h */,
 				02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */,
 				02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */,
 				02E7C40D1BD624A5002F026D /* PVRDefines.h */,
@@ -5078,7 +5070,6 @@
 				02E7C8341BD624A7002F026D /* MemoryProfiler.h in Headers */,
 				02E7CADE1BD624A7002F026D /* RenderObject.h in Headers */,
 				02E7C8181BD624A7002F026D /* Sphere.h in Headers */,
-				02E7CB661BD624A7002F026D /* OcclusionQuery.h in Headers */,
 				02E7CD501BD624A7002F026D /* BaseProcessSystem.h in Headers */,
 				02E7CD601BD624A7002F026D /* DebugRenderSystem.h in Headers */,
 				02E7CF761BD639E1002F026D /* Downloader.h in Headers */,
@@ -6284,7 +6275,6 @@
 				02E7C8AC1BD624A7002F026D /* MMBigDataTransferService.cpp in Sources */,
 				02E7CF3F1BD639A4002F026D /* Profiler.cpp in Sources */,
 				02E7C6241BD624A6002F026D /* AutotestingSystemLua.cpp in Sources */,
-				02E7CB641BD624A7002F026D /* OcclusionQuery.cpp in Sources */,
 				02E7C62A1BD624A6002F026D /* dlmalloc.c in Sources */,
 				02E7CAB21BD624A7002F026D /* CullingSystem.cpp in Sources */,
 				02E7CAC01BD624A7002F026D /* Landscape.cpp in Sources */,
@@ -6765,7 +6755,6 @@
 				6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */,
 				02E7CF3E1BD639A4002F026D /* Profiler.cpp in Sources */,
 				02E7C6231BD624A6002F026D /* AutotestingSystemLua.cpp in Sources */,
-				02E7CB631BD624A7002F026D /* OcclusionQuery.cpp in Sources */,
 				0367CFF51C4FDC8C004D42A0 /* Reachability.mm in Sources */,
 				02E7C6291BD624A6002F026D /* dlmalloc.c in Sources */,
 				02E7CAB11BD624A7002F026D /* CullingSystem.cpp in Sources */,

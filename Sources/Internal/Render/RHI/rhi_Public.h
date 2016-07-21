@@ -200,6 +200,7 @@ HQueryBuffer CreateQueryBuffer(unsigned maxObjectCount);
 void ResetQueryBuffer(HQueryBuffer buf);
 void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
+bool QueryBufferIsReady(HQueryBuffer buf);
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
 
