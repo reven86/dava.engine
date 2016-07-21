@@ -108,6 +108,8 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
+    CloseAllTabsInternal(true);
+
     ReleaseDAVAUI();
 }
 
@@ -126,6 +128,7 @@ void SceneTabWidget::InitDAVAUI()
 
 void SceneTabWidget::ReleaseDAVAUI()
 {
+    SafeRelease(dava3DView);
     SafeRelease(davaUIScreen);
 }
 
@@ -237,12 +240,19 @@ void SceneTabWidget::updateTabBarVisibility()
 
 bool SceneTabWidget::CloseTab(int index)
 {
-    Request request;
+    return CloseTabInternal(index, false);
+}
 
-    emit CloseTabRequest(index, &request);
+bool SceneTabWidget::CloseTabInternal(int index, bool force)
+{
+    if (force == false)
+    {
+        Request request;
+        emit CloseTabRequest(index, &request);
 
-    if (!request.IsAccepted())
-        return false;
+        if (!request.IsAccepted())
+            return false;
+    }
 
     SceneEditor2* scene = GetTabScene(index);
     if (index == tabBar->currentIndex())
@@ -566,10 +576,15 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
 
 bool SceneTabWidget::CloseAllTabs()
 {
+    return CloseAllTabsInternal(false);
+}
+
+bool SceneTabWidget::CloseAllTabsInternal(bool force)
+{
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTab(GetCurrentTab()))
+        if (!CloseTabInternal(GetCurrentTab(), force))
         {
             return false;
         }

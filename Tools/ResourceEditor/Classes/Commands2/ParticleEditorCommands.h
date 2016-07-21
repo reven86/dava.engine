@@ -89,7 +89,7 @@ public:
     void Redo() override;
     void Undo() override;
 
-    DAVA::Entity* GetEntity() const;
+    DAVA::Entity* GetEntity() const override;
     DAVA::ParticleEffectComponent* GetEffect() const;
     DAVA::ParticleEmitterInstance* GetEmitterInstance() const
     {
