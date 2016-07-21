@@ -303,16 +303,11 @@ void PackManagerImpl::InitializePacks()
 
 void PackManagerImpl::MountBasePacks()
 {
-    double start = SystemTimer::Instance()->AbsoluteMS();
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
     db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
 
-    double endReset = SystemTimer::Instance()->AbsoluteMS();
-
     InitializePacks();
-
-    double endInitPacks = SystemTimer::Instance()->AbsoluteMS();
 
     Set<FilePath> basePacks;
 
@@ -346,14 +341,20 @@ void PackManagerImpl::MountBasePacks()
         }
     };
 
-    listPacksInDir(readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
-    listPacksInDir(readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
-
-    double endListingDirs = SystemTimer::Instance()->AbsoluteMS();
+    if (!FileSystem::Instance()->Exists(readOnlyPacksDir))
+    {
+        if (!hints.developerMode)
+        {
+            throw std::runtime_error("can't open dir: " + readOnlyPacksDir.GetStringValue());
+        }
+    }
+    else
+    {
+        listPacksInDir(readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
+        listPacksInDir(readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
+    }
 
     MountPacks(basePacks);
-
-    double endMountPacks = SystemTimer::Instance()->AbsoluteMS();
 
     for_each(begin(packs), end(packs), [](PackManager::Pack& p)
              {
@@ -365,17 +366,6 @@ void PackManagerImpl::MountBasePacks()
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
     initState = PackManager::InitState::ReadOnlyPacksReady;
-
-    double endInit = SystemTimer::Instance()->AbsoluteMS();
-
-    Vector<double> t = { start, endReset, endInitPacks, endListingDirs, endMountPacks, endInit };
-    auto delta = [](double t2, double t1) { return (t2 - t1) / 1000.0; };
-    Logger::Info("endReset %f, endInitPacks %f, endListingDirs %f, endMountPacks %f, endInit %f",
-                 delta(endReset, start),
-                 delta(endInitPacks, endReset),
-                 delta(endListingDirs, endInitPacks),
-                 delta(endMountPacks, endListingDirs),
-                 delta(endInit, start));
 }
 
 void PackManagerImpl::AskFooter()
