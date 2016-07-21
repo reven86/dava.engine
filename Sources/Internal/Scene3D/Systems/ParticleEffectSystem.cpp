@@ -7,7 +7,7 @@
 #include "Utils/Random.h"
 #include "Core/PerformanceSettings.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Systems/LodSystem.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
@@ -151,12 +151,6 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent* effect)
     if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_EFFECTS))
     {
         return;
-    }
-
-    Scene* scene = GetScene();
-    if (scene != nullptr)
-    {
-        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f / 60.0f);
     }
 
     if (effect->activeLodLevel != effect->desiredLodLevel)

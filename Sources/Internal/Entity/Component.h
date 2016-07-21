@@ -62,6 +62,8 @@ public:
 public:
     static Component* CreateByType(uint32 componentType);
 
+    ~Component() override;
+
     virtual uint32 GetType() const = 0;
     virtual Component* Clone(Entity* toEntity) = 0;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;

@@ -30,7 +30,6 @@ class SceneSystem;
 class RenderSystem;
 class RenderUpdateSystem;
 class TransformSystem;
-class LodSystem;
 class DebugRenderSystem;
 class EventSystem;
 class ParticleEffectSystem;
@@ -48,6 +47,7 @@ class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
 class LandscapeSystem;
+class LodSystem;
 
 class UIEvent;
 

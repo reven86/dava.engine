@@ -90,6 +90,9 @@ public:
 
     static DAVA::String GetDescriptionByError(eErrorType error);
 
+    bool UpdateTilemaskPathname();
+    bool InitTilemaskImageCopy();
+
 private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
@@ -98,8 +101,6 @@ private:
     void DeinitLandscape();
 
     eErrorType IsNotPassableTerrainCanBeEnabled();
-
-    bool UpdateTilemaskPathname();
 
 private:
     DAVA::Entity* landscapeNode = nullptr;
