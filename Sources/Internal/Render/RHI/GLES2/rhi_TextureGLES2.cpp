@@ -1,21 +1,15 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_GLES2.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Debug/Profiler.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_gl.h"
-
-    #include <string.h>
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "../rhi_Public.h"
+#include "rhi_GLES2.h"
+#include "Debug/DVAssert.h"
+#include "Debug/Profiler.h"
+#include "Logger/Logger.h"
+#include "_gl.h"
 
 namespace rhi
 {
-extern const RenderDeviceCaps& DeviceCaps();
-
 //==============================================================================
 
 class
@@ -896,7 +890,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
             }
             else
             {
-                Logger::Error("glCheckFramebufferStatus= %08X", status);
+                DAVA::Logger::Error("glCheckFramebufferStatus= %08X", status);
                 DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
             }
         }
