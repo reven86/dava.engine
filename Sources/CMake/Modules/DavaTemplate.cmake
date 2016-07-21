@@ -684,6 +684,14 @@ if( ANDROID )
             endif()
         endforeach()
     endforeach()
+    
+    # to avoid of unwind's symbol overriding by other SO, need to link it as whole archive
+    set ( LIB_UNWIND_NAME "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libunwind.a" )
+    string ( FIND "${CMAKE_CXX_STANDARD_LIBRARIES}" "${LIB_UNWIND_NAME}" LIB_UNWIND_NAME_POS )
+    if ( NOT LIB_UNWIND_NAME_POS STREQUAL "-1" )
+        string ( REPLACE "${LIB_UNWIND_NAME}" "" CMAKE_CXX_STANDARD_LIBRARIES ${CMAKE_CXX_STANDARD_LIBRARIES} )
+        target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_UNWIND_NAME} )
+    endif ()
 
 endif() 
 
