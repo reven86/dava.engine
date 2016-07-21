@@ -10,20 +10,6 @@
 namespace tarc
 {
 
-class DataContextListener
-{
-public:
-    virtual ~DataContextListener(); // unsubscribe itself in context
-
-    virtual void DataChanged(const DAVA::Type* type) = 0;
-
-private:
-    friend class DataContext;
-    void Init(DataContext* context); // called by DataContext on subscription
-
-    DataContext* context = nullptr;
-};
-
 class DataContext
 {
 public:
@@ -45,19 +31,12 @@ public:
     DataNode& GetData(const DAVA::Type* type); // throw std::runtime_exception if T not exists
     void DeleteData(const DAVA::Type* type);
 
-    void Subscribe(DataContextListener& listener);
-    void Unsubscribe(DataContextListener& listener);
-
     void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
     void UnregisterAction(int id);
     void CallAction(int id, const DAVA::Any& args);
 
-protected:
-    void SendNotifications();
-
 private:
-    DAVA::UnorderedMap<const DAVA::Type*, std::unique_ptr<DataNode>> dataMap;
-    DAVA::UnorderedSet<DataContextListener*> listeners;
+    //DAVA::UnorderedMap<const DAVA::Type*, std::unique_ptr<DataNode>> dataMap;
 };
 
 }

@@ -6,6 +6,10 @@
 namespace tarc
 {
 
+class Serializator
+{
+};
+
 class DataNode : public DAVA::VirtualReflection
 {
     DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION
@@ -13,8 +17,6 @@ class DataNode : public DAVA::VirtualReflection
 public:
     virtual void Load(const Serializator& s) = 0;
     virtual void Save(Serializator& s) = 0;
-
-    DAVA::Signal<void(const DataNode&)> DataNodeChanged;
 };
 
 }
