@@ -14,6 +14,8 @@ using DAVA::Logger;
 
 namespace rhi
 {
+extern const RenderDeviceCaps& DeviceCaps();
+
 //==============================================================================
 
 class

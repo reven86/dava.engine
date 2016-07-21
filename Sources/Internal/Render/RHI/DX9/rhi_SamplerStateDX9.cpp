@@ -118,7 +118,7 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for (unsigned i = 0; i != desc.fragmentSamplerCount; ++i)
     {
-        uint32 anisotropyLevel = desc.fragmentSampler[i].anisotropyLevel;
+        uint32 anisotropyLevel = std::min(rhi::DeviceCaps().maxAnisotropy, desc.fragmentSampler[i].anisotropyLevel);
         DVASSERT(anisotropyLevel >= 1);
 
         state->fragmentSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrU));

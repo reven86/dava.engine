@@ -142,15 +142,15 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         D3D11_SAMPLER_DESC s_desc;
         HRESULT hr;
 
+        s_desc.MaxAnisotropy = std::min(rhi::DeviceCaps().maxAnisotropy, desc.fragmentSampler[s].anisotropyLevel);
         s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.fragmentSampler[s].minFilter),
                                            TextureFilter(desc.fragmentSampler[s].magFilter),
                                            TextureMipFilter(desc.fragmentSampler[s].mipFilter),
-                                           desc.fragmentSampler[s].anisotropyLevel);
+                                           s_desc.MaxAnisotropy);
         s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrU));
         s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrV));
         s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrW));
         s_desc.MipLODBias = 0;
-        s_desc.MaxAnisotropy = desc.fragmentSampler[s].anisotropyLevel;
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
@@ -165,6 +165,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         }
     }
 
+    const uint32 vertexSamplerAnisotropyLevel = 1;
+
     state->vertexSamplerCount = desc.vertexSamplerCount;
     for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
     {
@@ -174,12 +176,12 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.vertexSampler[s].minFilter),
                                            TextureFilter(desc.vertexSampler[s].magFilter),
                                            TextureMipFilter(desc.vertexSampler[s].mipFilter),
-                                           desc.vertexSampler[s].anisotropyLevel);
+                                           vertexSamplerAnisotropyLevel);
         s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrU));
         s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrV));
         s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrW));
         s_desc.MipLODBias = 0;
-        s_desc.MaxAnisotropy = desc.vertexSampler[s].anisotropyLevel;
+        s_desc.MaxAnisotropy = vertexSamplerAnisotropyLevel;
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
