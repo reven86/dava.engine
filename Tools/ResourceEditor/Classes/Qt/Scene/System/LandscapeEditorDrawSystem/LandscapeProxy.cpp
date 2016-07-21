@@ -192,7 +192,7 @@ bool LandscapeProxy::InitTilemaskImageCopy(const DAVA::FilePath& sourceTilemaskP
 {
     SafeRelease(tilemaskImageCopy);
 
-    tilemaskImageCopy = ImageSystem::LoadSingleMip(sourceTilemaskPath);
+    tilemaskImageCopy = DAVA::ImageSystem::LoadSingleMip(sourceTilemaskPath);
     return (tilemaskImageCopy != nullptr);
 }
 

@@ -920,12 +920,13 @@ void SceneInfo::RefreshLayersSection()
 
 EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (scene != nullptr)
+    if (QtMainWindow::Instance() != nullptr)
     {
-        return scene->editorStatisticsSystem;
+        SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+        if (scene != nullptr)
+        {
+            return scene->editorStatisticsSystem;
+        }
     }
 
     return nullptr;
