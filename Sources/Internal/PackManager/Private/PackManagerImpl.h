@@ -24,6 +24,8 @@ public:
                     const PackManager::Hints& hints_,
                     PackManager* packManager_);
 
+    bool IsInitialized() const;
+
     void SyncWithServer(const String& urlToServerSuperpack);
 
     // start PackManager::IInitialization ///////////////////////////////
@@ -171,13 +173,6 @@ inline void PackManagerImpl::DisableProcessing()
 inline const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
     const String& result = db->FindPack(relativePathInPack);
-    if (result.empty() && hints.developerMode)
-    {
-        if (FileSystem::Instance()->Exists(relativePathInPack))
-        {
-            return devmode_file_exist_on_filesystem;
-        }
-    }
     return result;
 }
 
@@ -193,13 +188,6 @@ inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
 
 inline PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
-    if (hints.developerMode && packName == devmode_file_exist_on_filesystem)
-    {
-        static PackManager::Pack dummyPack;
-        dummyPack.name = devmode_file_exist_on_filesystem;
-        dummyPack.state = PackManager::Pack::Status::Mounted;
-        return dummyPack;
-    }
     uint32 index = GetPackIndex(packName);
     return packs.at(index);
 }

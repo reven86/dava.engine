@@ -24,6 +24,11 @@ void PackManager::Initialize(const String& dbFileName_,
     impl->Initialize(dbFileName_, readOnlyPacksDir_, downloadPacksDir_, architecture_, hints_, this);
 }
 
+bool PackManager::IsInitialized() const
+{
+    return impl->IsInitialized();
+}
+
 void PackManager::SyncWithServer(const String& urlToServerSuperpack)
 {
     impl->SyncWithServer(urlToServerSuperpack);

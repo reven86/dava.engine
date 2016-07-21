@@ -354,7 +354,7 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
 
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
-    return File::CreateFromSystemPath(frameworkPath, attributes);
+    return File::Create(frameworkPath, attributes);
 }
 
 const FilePath& FileSystem::GetCurrentWorkingDirectory()
@@ -433,9 +433,9 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 
         if (!relative.empty())
         {
-            for (auto& archive : resourceArchiveList)
+            for (auto& pair : resourceArchiveList)
             {
-                if (archive.archive->HasFile(relative))
+                if (pair.second.archive->HasFile(relative))
                 {
                     return true;
                 }
@@ -817,26 +817,18 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
         item.archive.reset(new ResourceArchive(archiveName));
         item.archiveFilePath = archiveName;
 
-        resourceArchiveList.push_back(std::move(item));
+        resourceArchiveList.emplace(archiveName.GetFilename(), std::move(item));
     }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
-    resourceArchiveList.remove_if([arhiveName](const ResourceArchiveItem& item) -> bool
-                                  {
-                                      return item.archiveFilePath == arhiveName;
-                                  });
+    resourceArchiveList.erase(arhiveName.GetFilename());
 }
 
 bool FileSystem::IsMounted(const FilePath& archiveName) const
 {
-    auto it = std::find_if(begin(resourceArchiveList), end(resourceArchiveList), [&](const ResourceArchiveItem& i)
-                           {
-                               return i.archiveFilePath == archiveName;
-                           });
-
-    return it != end(resourceArchiveList);
+    return resourceArchiveList.find(archiveName.GetFilename()) != end(resourceArchiveList);
 }
 
 int32 FileSystem::Spawn(const String& command)

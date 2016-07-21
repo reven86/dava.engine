@@ -8,6 +8,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -17,40 +18,6 @@
 
 #include <sys/stat.h>
 #include <time.h>
-
-#include <fstream>
-#include <iomanip>
-#include <mutex>
-
-#include "Platform/SystemTimer.h"
-
-struct FileAccess
-{
-    std::string name;
-    uint64_t startTime;
-    uint64_t loadTime;
-    uint64_t fileSize;
-    bool loaded;
-};
-
-std::ofstream files_log;
-
-std::mutex log_mutex;
-
-std::ostream& operator<<(std::ostream& stream, const FileAccess& f)
-{
-    std::stringstream ss;
-
-    ss << "loaded: " << f.loaded << " size: " << std::setw(10) << f.fileSize
-       << " load time: " << std::fixed << (f.loadTime / 1000.0) << std::setw(0) << " " << f.name << '\n';
-
-    {
-        std::lock_guard<std::mutex> lock(log_mutex);
-        stream << ss.rdbuf();
-    }
-
-    return stream;
-}
 
 namespace DAVA
 {
@@ -68,41 +35,9 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    if (false && !files_log.is_open())
-    {
-        FilePath log("/storage/emulated/0/DCIM/files_access_log.txt");
-        files_log.open(log.GetAbsolutePathname(), std::ios::out | std::ios::trunc);
-        if (!files_log)
-        {
-            throw std::runtime_error("can't create files_log");
-        }
-        Logger::Info("files_log=%s", log.GetAbsolutePathname().c_str());
-    }
-    FileAccess f;
-    f.name = filePath.GetAbsolutePathname();
-    f.startTime = SystemTimer::Instance()->AbsoluteMS();
-
-    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
-    if (result)
-    {
-        f.fileSize = result->GetSize();
-        f.loadTime = SystemTimer::Instance()->AbsoluteMS() - f.startTime;
-        f.loaded = true;
-    }
-    else
-    {
-        f.fileSize = 0;
-        f.loadTime = SystemTimer::Instance()->AbsoluteMS() - f.startTime;
-        f.loaded = false;
-    }
-
-    files_log << f;
-
+    File* result = CreateFromSystemPath(filePath, attributes);
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
-
-ResourceArchive* lastResArchiveRead = nullptr;
-std::mutex protectLastArchivePtr;
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
@@ -115,11 +50,28 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
         // from DB with all files, then check if such pack mounted and from
         // mountedPackIndex find by name archive with file or skip to next step
-
+        PackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
-        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
+
+        if (pm.IsInitialized())
         {
-            if (item.archive->LoadFile(relative, contentAndSize))
+            const String& packName = pm.FindPackName(relative);
+            if (!packName.empty())
+            {
+                auto it = fileSystem->resourceArchiveList.find(packName);
+                if (it != end(fileSystem->resourceArchiveList))
+                {
+                    if (it->second.archive->LoadFile(relative, contentAndSize))
+                    {
+                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                    }
+                }
+            }
+        }
+
+        for (auto& pair : fileSystem->resourceArchiveList)
+        {
+            if (pair.second.archive->LoadFile(relative, contentAndSize))
             {
                 return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }

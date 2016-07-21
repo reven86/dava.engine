@@ -63,6 +63,11 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     MountBasePacks();
 }
 
+bool PackManagerImpl::IsInitialized() const
+{
+    return initState >= PackManager::InitState::ReadOnlyPacksReady;
+}
+
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
 {
     superPackUrl = urlToServerSuperpack;
@@ -343,10 +348,7 @@ void PackManagerImpl::MountBasePacks()
 
     if (!FileSystem::Instance()->Exists(readOnlyPacksDir))
     {
-        if (!hints.developerMode)
-        {
-            throw std::runtime_error("can't open dir: " + readOnlyPacksDir.GetStringValue());
-        }
+        throw std::runtime_error("can't open dir: " + readOnlyPacksDir.GetStringValue());
     }
     else
     {

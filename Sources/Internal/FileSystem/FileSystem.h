@@ -161,8 +161,6 @@ public:
 	 */
     virtual bool IsFileLocked(const FilePath& filePath) const;
 
-    File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
-
     /**
 		\brief Copies an existing file to a new file.
 		\param[in] existingFile The name of an existing file.
@@ -273,6 +271,8 @@ public:
     */
     bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
+    File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
+
 private:
     bool HasLineEnding(File* f);
 
@@ -284,6 +284,7 @@ private:
     struct ResourceArchiveItem
     {
         ResourceArchiveItem() = default;
+        ResourceArchiveItem(const ResourceArchiveItem&) = delete;
         ResourceArchiveItem(ResourceArchiveItem&& other)
             : archive(std::move(other.archive))
             , attachPath(std::move(other.attachPath))
@@ -296,7 +297,7 @@ private:
         FilePath archiveFilePath;
     };
 
-    List<ResourceArchiveItem> resourceArchiveList;
+    UnorderedMap<String, ResourceArchiveItem> resourceArchiveList;
     Map<String, void*> lockedFileHandles;
 
     friend class File;
