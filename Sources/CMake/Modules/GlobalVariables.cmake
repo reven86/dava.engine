@@ -89,6 +89,19 @@ elseif( WIN32 AND WINDOWS_UAP )
     set( WINUAP true )
 endif()
 
+if ( ANDROID )
+
+    # force stl features as default
+    if ( NOT ANDROID_STL_FORCE_FEATURES )
+        set ( ANDROID_STL_FORCE_FEATURES true )
+    endif ()
+
+    # c++shared stl as default
+    if ( NOT ANDROID_STL )
+        set ( ANDROID_STL c++_shared )
+    endif ()
+    
+endif ()
 
 set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )

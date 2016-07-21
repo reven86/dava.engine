@@ -27,16 +27,6 @@ endif()
 set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
 include ( GlobalVariables )
 
-# force stl features as default
-if ( NOT ANDROID_STL_FORCE_FEATURES )
-    set ( ANDROID_STL_FORCE_FEATURES true )
-endif ()
-
-# c++shared stl as default
-if ( NOT ANDROID_STL )
-    set ( ANDROID_STL c++_shared )
-endif ()
-
 # Compatibility for configurable variables.
 # Compatible with configurable variables from the other toolchain file:
 #         https://github.com/taka-no-me/android-cmake
