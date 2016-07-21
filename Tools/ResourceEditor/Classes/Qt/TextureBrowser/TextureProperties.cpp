@@ -13,7 +13,6 @@ const DAVA::FastName WrapModeT("wrapModeT");
 const DAVA::FastName MinFilter("minFilter");
 const DAVA::FastName MagFilter("magFilter");
 const DAVA::FastName MipFilter("mipFilter");
-const DAVA::FastName Anisotropy("anisotropy");
 const DAVA::FastName Format("format");
 }
 
@@ -184,8 +183,6 @@ void TextureProperties::ReloadProperties()
         propMagFilter = AddPropertyItem(PropertyItemName::MagFilter, textureDrawSettings, headerIndex);
         propMipFilter = AddPropertyItem(PropertyItemName::MipFilter, textureDrawSettings, headerIndex);
 
-        propAnisotropy = AddPropertyItem(PropertyItemName::Anisotropy, textureDrawSettings, headerIndex);
-
         DAVA::InspBase* compressionSettings = &curTextureDescriptor->compression[curGPU];
 
         // add per-gpu drawSettings
@@ -206,7 +203,6 @@ void TextureProperties::ReloadProperties()
         SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
         SetPropertyItemValidValues(propMagFilter, &enumFiltersMag);
         SetPropertyItemValidValues(propMipFilter, &enumFiltersMip);
-        SetPropertyItemValidValues(propAnisotropy, &enumAnisotropy);
         SetPropertyItemValidValues(propFormat, &enumFormats);
         SetPropertyItemValidValues(propSizes, &enumSizes);
 
@@ -253,7 +249,6 @@ void TextureProperties::ReloadEnumFilters()
     enumFiltersMag.UnregistelAll();
     enumFiltersMin.UnregistelAll();
     enumFiltersMip.UnregistelAll();
-    enumAnisotropy.UnregistelAll();
 
     // Mag
     enumFiltersMag.Register(rhi::TEXFILTER_NEAREST, filterFormats->ToString(rhi::TEXFILTER_NEAREST));
@@ -279,12 +274,6 @@ void TextureProperties::ReloadEnumFilters()
             propMipFilter->SetValue(QVariant(rhi::TEXMIPFILTER_NONE));
         }
     }
-
-    // Anisotropy
-    enumAnisotropy.Register(1, "Disabled");
-    enumAnisotropy.Register(2, "Low");
-    enumAnisotropy.Register(4, "Medium");
-    enumAnisotropy.Register(8, "High");
 }
 
 void TextureProperties::ReloadEnumWrap()
@@ -367,7 +356,7 @@ void TextureProperties::OnItemEdited(const QModelIndex& index)
     {
         emit PropertyChanged(PROP_FORMAT);
     }
-    else if (data == propMinFilter || data == propMagFilter || data == propMipFilter || data == propAnisotropy)
+    else if (data == propMinFilter || data == propMagFilter || data == propMipFilter)
     {
         emit PropertyChanged(PROP_FILTER);
     }

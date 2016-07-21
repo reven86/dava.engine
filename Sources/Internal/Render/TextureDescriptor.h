@@ -34,15 +34,12 @@ public:
         int8 magFilter = rhi::TEXFILTER_LINEAR;
         int8 mipFilter = rhi::TEXMIPFILTER_LINEAR;
 
-        int8 maxAnisotropy = 1;
-
         INTROSPECTION(TextureDrawSettings,
                       MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
                       MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
                       MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
                       MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-                      MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-                      MEMBER(maxAnisotropy, "anisotropy", I_VIEW | I_EDIT | I_SAVE))
+                      MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE))
     };
 
     struct TextureDataSettings : public InspBase

@@ -316,7 +316,6 @@ Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderM
     tx->texDescriptor->pathname = "memoryfile_landscape_height";
     tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? rhi::TEXMIPFILTER_NEAREST : rhi::TEXMIPFILTER_NONE);
-    tx->SetAnisotropyLevel(1);
 
     uint32 level = 0;
     LockGuard<Mutex> lock(restoreDataMutex);
