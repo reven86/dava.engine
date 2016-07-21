@@ -926,8 +926,3 @@ void SceneSelectionSystem::RemoveDelegate(SceneSelectionSystemDelegate* delegate
     auto i = std::remove(selectionDelegates.begin(), selectionDelegates.end(), delegate_);
     selectionDelegates.erase(i, selectionDelegates.end());
 }
-
-void SceneSelectionSystem::RemoveAllDelegates()
-{
-    selectionDelegates.clear();
-}
