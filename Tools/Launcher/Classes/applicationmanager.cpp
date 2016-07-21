@@ -74,6 +74,11 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
     {
         return runPath;
     }
+    runPath = FileManager::GetApplicationDirectoryOld(branchID, appID);
+    if (QFile::exists(runPath))
+    {
+        return runPath;
+    }
     QList<QString> branchKeys = localConfig.GetStrings().keys(branchID);
     branchKeys.append(branchID);
     for (const QString& branchKey : branchKeys)
@@ -83,6 +88,11 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
         for (const QString& appKey : appKeys)
         {
             QString newRunPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            if (QFile::exists(newRunPath))
+            {
+                return newRunPath;
+            }
+            newRunPath = FileManager::GetApplicationDirectoryOld(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;
