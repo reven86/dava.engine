@@ -219,4 +219,3 @@ uint32 File::Write(const T* value)
     return Write(value, sizeof(T));
 }
 };
-
