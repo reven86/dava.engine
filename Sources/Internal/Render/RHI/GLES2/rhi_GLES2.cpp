@@ -215,7 +215,6 @@ gles_check_GL_extensions()
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
 
-#if (RHI_GL_HAS_ANISOTROPY)
         _GLES2_DeviceCaps.isAnisotropicFilteringSupported = strstr(ext, "EXT_texture_filter_anisotropic") != nullptr;
         if (_GLES2_DeviceCaps.isAnisotropicFilteringSupported)
         {
@@ -223,7 +222,6 @@ gles_check_GL_extensions()
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
             _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
-#endif
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
