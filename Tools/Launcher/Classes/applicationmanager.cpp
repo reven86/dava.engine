@@ -73,7 +73,7 @@ QString GetBranchDirectory_kostil(const QString& branchID)
 }
 QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
 {
-    QString path = GetBranchDirectoryOld(branchID) + appID + "/";
+    QString path = GetBranchDirectory_kostil(branchID) + appID + "/";
     return path;
 }
 }
@@ -88,7 +88,7 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
     {
         return runPath;
     }
-    runPath = ApplicationManagerDetails::GetApplicationDirectoryOld(branchID, appID);
+    runPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchID, appID);
     if (QFile::exists(runPath))
     {
         return runPath;
@@ -106,7 +106,7 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
             {
                 return newRunPath;
             }
-            newRunPath = ApplicationManagerDetails::GetApplicationDirectoryOld(branchKey, appKey);
+            newRunPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;
