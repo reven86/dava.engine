@@ -108,6 +108,11 @@ template <typename V>
 class FastNameMap : public HashMap<FastName, V>
 {
 public:
+    FastNameMap(size_t _hashSize = 128, V _defaultV = V())
+        : HashMap<FastName, V>(_hashSize, _defaultV){};
+    FastNameMap(std::initializer_list<std::pair<FastName, V>> init_list, size_t _hashSize = 128, V _defaultV = V())
+        : HashMap<FastName, V>(init_list, _hashSize, _defaultV){};
+
     void Insert(const char* name, const V& value)
     {
         HashMap<FastName, V>::insert(FastName(name), value);

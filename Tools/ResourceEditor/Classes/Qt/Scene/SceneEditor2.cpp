@@ -382,10 +382,9 @@ void SceneEditor2::Update(float timeElapsed)
 {
     ++framesCount;
 
-    renderStats = DAVA::Renderer::GetRenderStats();
-    DAVA::Renderer::GetRenderStats().Reset();
-
     Scene::Update(timeElapsed);
+
+    renderStats = DAVA::Renderer::GetRenderStats();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)
@@ -741,6 +740,8 @@ void SceneEditor2::Deactivate()
 void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
+
+    collisionSystem->EnableSystem();
 
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem(true);

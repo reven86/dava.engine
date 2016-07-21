@@ -591,6 +591,7 @@ class JavaClass
 {
 public:
     JavaClass(const String& className);
+    JavaClass(const JavaClass& copy);
     ~JavaClass();
 
     inline operator jclass() const;

@@ -10,6 +10,7 @@
 #include "Commands2/InspDynamicModifyCommand.h"
 #include "Commands2/Base/CommandBatch.h"
 
+#include "Debug/DVAssert.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
@@ -659,7 +660,6 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
                     UpdateTilemaskPathname();
                 }
             }
-
         };
 
         if (command->GetId() == CMDID_BATCH)
@@ -685,10 +685,20 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
         auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
         if (nullptr != texture)
         {
-            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            DAVA::FilePath path = texture->GetDescriptor()->GetSourceTexturePathname();
+            if (path.GetType() == DAVA::FilePath::PATH_IN_FILESYSTEM)
+            {
+                sourceTilemaskPath = path;
+            }
             return true;
         }
     }
 
     return false;
+}
+
+bool LandscapeEditorDrawSystem::InitTilemaskImageCopy()
+{
+    DVASSERT(landscapeProxy != nullptr);
+    return landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
 }

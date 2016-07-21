@@ -18,6 +18,7 @@ class SceneTree : public QTreeView
 
 public:
     explicit SceneTree(QWidget* parent = 0);
+    ~SceneTree();
 
 protected:
     void dropEvent(QDropEvent* event) override;

@@ -938,9 +938,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\ShaderCache.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\OcclusionQuery.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\UniqueStateSet.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
@@ -2315,9 +2312,6 @@
       <Filter>Internal\Scene3D\SceneFile</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\ShaderCache.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\OcclusionQuery.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.cpp">
