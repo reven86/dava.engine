@@ -24,6 +24,7 @@ if(CMAKE_TOOLCHAIN_FILE)
 endif()
 
 # Read global variables 
+set     ( ANDROID TRUE )
 set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
 include ( GlobalVariables )
 
@@ -202,7 +203,6 @@ set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
 	ANDROID_CCACHE)
 
 # Standard cross-compiling stuff.
-set(ANDROID TRUE)
 set(CMAKE_SYSTEM_NAME Android)
 set(CMAKE_SYSTEM_VERSION ${ANDROID_PLATFORM_LEVEL})
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
