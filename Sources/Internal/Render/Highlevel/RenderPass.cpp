@@ -164,6 +164,7 @@ void RenderPass::DrawLayers(Camera* camera)
         RenderLayer* layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
+
         layer->Draw(camera, batchArray, packetList);
     }
 }
@@ -177,8 +178,36 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
     }
 }
 
+#if __DAVAENGINE_RENDERSTATS__
+void RenderPass::ProcessVisibilityQuery()
+{
+    DVASSERT(queryBuffers.size() < 128);
+
+    while (queryBuffers.size() && rhi::QueryBufferIsReady(queryBuffers.front()))
+    {
+        RenderStats& stats = Renderer::GetRenderStats();
+        for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
+        {
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front(), i);
+        }
+
+        rhi::DeleteQueryBuffer(queryBuffers.front());
+        queryBuffers.pop_front();
+    }
+}
+#endif
+
 void RenderPass::BeginRenderPass()
 {
+#if __DAVAENGINE_RENDERSTATS__
+    ProcessVisibilityQuery();
+
+    rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
+    passConfig.queryBuffer = qBuffer;
+    queryBuffers.push_back(qBuffer);
+#endif
+
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);

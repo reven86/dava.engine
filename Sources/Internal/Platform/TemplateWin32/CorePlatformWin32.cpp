@@ -41,6 +41,7 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
         return 0;
     }
 #endif
+    SetProcessDPIAware();
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
