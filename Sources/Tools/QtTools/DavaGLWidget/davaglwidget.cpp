@@ -248,6 +248,7 @@ void DavaGLWidget::OnPaint()
     if (!nativeHandle.isValid())
     {
         DAVA::Logger::Error("GL context is not valid!");
+        qApp->quit();
     }
     else
     {
