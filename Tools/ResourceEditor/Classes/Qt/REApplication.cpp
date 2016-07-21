@@ -195,6 +195,10 @@ bool REApplication::OnRequestCloseApp()
 void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
 {
     lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
+    if (cmdLineManager->IsEnabled())
+    {
+        lineParser.addFlag("hideLogo");
+    }
 }
 
 void REApplication::RunWindow()
