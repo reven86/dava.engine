@@ -32,7 +32,7 @@ public:
     /**
     \brief Moves command to the batch and calls Execute to the moved command.
     */
-    void AddAndRedo(Pointer&& command);
+    virtual void AddAndRedo(Pointer&& command);
 
     /**
     \brief Returns whether the batch is empty (i.e. whether its size is 0)
@@ -59,5 +59,10 @@ inline bool CommandBatch::IsEmpty() const
 inline uint32 CommandBatch::Size() const
 {
     return static_cast<uint32>(commandList.size());
+}
+
+bool IsCommandBatch(const DAVA::Command* command)
+{
+    return dynamic_cast<DAVA::CommandBatch*>(command) != nullptr;
 }
 }

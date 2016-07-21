@@ -7,19 +7,8 @@
 
 RECommandBatch::RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount)
     : CommandBatch(description, commandsCount)
-    , RECommand(CMDID_BATCH, description)
+    , RECommand(description)
 {
-}
-
-void RECommandBatch::AddAndRedo(Pointer&& command)
-{
-    DAVA::Command* commandPtr = command.get();
-    RECommand* reCommandPtr = dynamic_cast<RECommand*>(commandPtr);
-    if (reCommandPtr != nullptr)
-    {
-        commandIDs.insert(reCommandPtr->GetID());
-    }
-    CommandBatch::AddAndRedo(command);
 }
 
 RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
@@ -30,7 +19,7 @@ RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
         return DAVA::DynamicTypeCheck<RECommand*>(cmd);
     }
 
-    DVASSERT_MSG(false, DAVA::Format("index %u, size %u", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
+    DVASSERT_MSG(false, DAVA::Format("command at index %u, in batch with size %u not found", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
     return nullptr;
 }
 
@@ -41,25 +30,58 @@ void RECommandBatch::RemoveCommands(DAVA::uint32 commandId)
     });
     commandList.erase(it, commandList.end());
 
-    if (commandId != CMDID_BATCH)
+    for (const Pointer& command : commandList)
     {
-        for (const Pointer& command : commandList)
+        if (IsCommandBatch(command.get()))
         {
-            if (command->GetID() == CMDID_BATCH)
-            {
-                RECommandBatch* batch = static_cast<RECommandBatch*>(command.get());
-                batch->RemoveCommands(commandId);
-            }
+            RECommandBatch* batch = static_cast<RECommandBatch*>(command.get());
+            batch->RemoveCommands(commandId);
         }
     }
 }
 
 bool RECommandBatch::IsMultiCommandBatch() const
 {
+    DAVA::uint32 size = commandList.size();
+
+    if (size < 2)
+    {
+        return false;
+    }
+
+    DAVA::UnorderedSet<DAVA::uint32> commandIDs;
+    for (DAVA::uint32 index = 0; index < size && commandIDs.size() < 2; ++index)
+    {
+        const RECommand* command = dynamic_cast<const RECommand*>(commandList.at(index).get());
+        if (command != nullptr)
+        {
+            commandIDs.insert(command->GetID());
+        }
+    }
     return commandIDs.size() > 1;
 }
 
 bool RECommandBatch::MatchCommandID(DAVA::uint32 commandId) const
 {
-    return commandIDs.count(commandId) > 0;
+    DAVA::uint32 size = commandList.size();
+
+    if (size < 2)
+    {
+        return false;
+    }
+
+    DAVA::UnorderedSet<DAVA::uint32> commandIDs;
+    for (DAVA::uint32 index = 0; index < size && commandIDs.size() < 2; ++index)
+    {
+        if ()
+            const RECommand* command = dynamic_cast<const RECommand*>(commandList.at(index).get());
+        if (command != nullptr)
+        {
+            if (command->GetID() == commandId)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
