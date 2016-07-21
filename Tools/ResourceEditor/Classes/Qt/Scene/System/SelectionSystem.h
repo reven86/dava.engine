@@ -99,7 +99,6 @@ public:
 
     void AddDelegate(SceneSelectionSystemDelegate* delegate_);
     void RemoveDelegate(SceneSelectionSystemDelegate* delegate_);
-    void RemoveAllDelegates();
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
