@@ -27,6 +27,7 @@ public:
     static const DAVA::FastName General_LODEditor_LodColor2;
     static const DAVA::FastName General_LODEditor_LodColor3;
     static const DAVA::FastName General_LODEditor_InactiveColor;
+    static const DAVA::FastName General_LODEditor_FitSliders;
 
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;
