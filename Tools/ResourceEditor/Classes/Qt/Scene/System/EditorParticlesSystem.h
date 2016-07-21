@@ -4,10 +4,7 @@
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 
-namespace DAVA
-{
-class Command;
-}
+class RECommand;
 
 class EditorParticlesSystem : public DAVA::SceneSystem
 {
@@ -24,7 +21,7 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ProcessCommand(const DAVA::Command* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
     void DrawEmitter(DAVA::ParticleEmitterInstance* emitter, DAVA::Entity* owner, bool selected);

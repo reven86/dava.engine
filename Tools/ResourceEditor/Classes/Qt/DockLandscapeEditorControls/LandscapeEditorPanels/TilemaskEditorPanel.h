@@ -6,10 +6,7 @@
 
 #include "Render/UniqueStateSet.h"
 
-namespace DAVA
-{
-class Command;
-}
+class RECommand;
 class QComboBox;
 class QRadioButton;
 class SliderWidget;
@@ -55,7 +52,7 @@ private slots:
     void PrevTool();
     void NextTool();
 
-    void OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const class RECommand* command, bool redo);
 
 protected:
     virtual bool GetEditorEnabled();

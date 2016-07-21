@@ -22,7 +22,7 @@ void CommandNotifyProvider::SetNotify(CommandNotify* notify)
     }
 }
 
-void CommandNotifyProvider::EmitNotify(const DAVA::Command* command, bool redo)
+void CommandNotifyProvider::EmitNotify(const RECommand* command, bool redo)
 {
     if (nullptr != curNotify)
     {

@@ -14,11 +14,6 @@
 #include <QDockWidget>
 #include <QPointer>
 
-namespace wgt
-{
-class IComponentContext;
-}
-
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
@@ -42,7 +37,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -224,7 +219,7 @@ private slots:
     void ProjectClosed();
 
     void SceneUndoRedoStateChanged(SceneEditor2* scene);
-    void SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
+    void SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
@@ -287,8 +282,8 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    wgt::IComponentContext& ngtContext;
 #if defined(NEW_PROPERTY_PANEL)
+    wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;

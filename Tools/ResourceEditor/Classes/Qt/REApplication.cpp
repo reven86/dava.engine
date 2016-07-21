@@ -7,8 +7,6 @@
 #include "TextureCompression/PVRConverter.h"
 #include "TextureCache.h"
 
-#include "NgtTools/Common/GlobalContext.h"
-#include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/RunGuard/RunGuard.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -66,9 +64,6 @@ void FixOSXFonts()
 #endif
 }
 }
-
-#include <core_reflection/i_definition_manager.hpp>
-#include <core_ui_framework/i_ui_framework.hpp>
 
 REApplication::REApplication(int argc, char** argv)
     : QApplication(argc, argv)

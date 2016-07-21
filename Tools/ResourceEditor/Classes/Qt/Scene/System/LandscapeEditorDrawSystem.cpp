@@ -628,13 +628,13 @@ DAVA::String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
     return ret;
 }
 
-void LandscapeEditorDrawSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void LandscapeEditorDrawSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const DAVA::Command* command, bool redo) {
+        auto ProcessSingleCommand = [this](const RECommand* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
                 const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
@@ -662,7 +662,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const DAVA::Command* command, boo
             }
         };
 
-        if (command->GetID() == DAVA::CMDID_BATCH)
+        if (IsCommandBatch(command))
         {
             const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const DAVA::uint32 count = batch->Size();

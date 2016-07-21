@@ -390,14 +390,14 @@ void SceneCollisionSystem::Draw()
     }
 }
 
-void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void SceneCollisionSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
         UpdateCollisionObject(Selectable(curLandscapeEntity));
     }
 
-    static DAVA::Vector<DAVA::CommandID_t> acceptableCommands =
+    static DAVA::Vector<DAVA::uint32> acceptableCommands =
     {
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
@@ -409,7 +409,7 @@ void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool red
     if (command->MatchCommandIDs(acceptableCommands) == false)
         return;
 
-    auto ProcessSingleCommand = [this](const DAVA::Command* command, bool redo) {
+    auto ProcessSingleCommand = [this](const RECommand* command, bool redo) {
         if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
             static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
@@ -441,7 +441,7 @@ void SceneCollisionSystem::ProcessCommand(const DAVA::Command* command, bool red
         }
     };
 
-    if (command->GetID() == DAVA::CMDID_BATCH)
+    if (IsCommandBatch(command))
     {
         const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)

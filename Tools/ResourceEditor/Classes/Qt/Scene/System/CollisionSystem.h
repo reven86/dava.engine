@@ -13,12 +13,9 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/RenderHelper.h"
 
+class RECommand;
 class CollisionBaseObject;
 class SceneCollisionDebugDrawer;
-namespace DAVA
-{
-class Command;
-}
 enum CollisionSystemDrawMode
 {
     CS_DRAW_NOTHING = 0x0,
@@ -69,7 +66,7 @@ public:
 private:
     void Draw();
 
-    void ProcessCommand(const DAVA::Command* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     void AddEntity(DAVA::Entity* entity) override;

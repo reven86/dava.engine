@@ -739,16 +739,16 @@ bool IsCurNodesContainsEntityFromCommand(const DAVA::Command* command, const Sel
     return false;
 }
 
-void PropertyEditor::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {
         return;
     }
     std::function<bool(const DAVA::Command*)> shouldResetPanel;
-    shouldResetPanel = [this, &shouldResetPanel](const DAVA::Command* cmd) {
-        const DAVA::CommandID_t cmdID = cmd->GetID();
-        if (cmdID == DAVA::CMDID_BATCH)
+    shouldResetPanel = [this, &shouldResetPanel](const RECommand* cmd) {
+        const DAVA::uint32 cmdID = cmd->GetID();
+        if (IsCommandBatch(cmd))
         {
             const RECommandBatch* batch = static_cast<const RECommandBatch*>(cmd);
             for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)

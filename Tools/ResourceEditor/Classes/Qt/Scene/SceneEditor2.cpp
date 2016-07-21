@@ -337,7 +337,7 @@ void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
     }
 }
 
-void SceneEditor2::RemoveCommands(DAVA::CommandID_t commandId)
+void SceneEditor2::RemoveCommands(DAVA::uint32 commandId)
 {
     commandStack->RemoveCommands(commandId);
 }

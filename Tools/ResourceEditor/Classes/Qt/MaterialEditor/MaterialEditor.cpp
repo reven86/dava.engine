@@ -739,7 +739,7 @@ void MaterialEditor::materialSelected(const QItemSelection& selected, const QIte
     SetCurMaterial(materials);
 }
 
-void MaterialEditor::commandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (scene != QtMainWindow::Instance()->GetCurrentScene())
     {
@@ -769,7 +769,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const DAVA::Command* c
 
     if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const DAVA::Command* command, bool redo)
+        auto ProcessSingleCommand = [this](const RECommand* command, bool redo)
         {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
@@ -814,7 +814,7 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const DAVA::Command* c
             }
         };
 
-        if (command->GetID() == DAVA::CMDID_BATCH)
+        if (IsCommandBatch(command))
         {
             const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const DAVA::uint32 count = batch->Size();

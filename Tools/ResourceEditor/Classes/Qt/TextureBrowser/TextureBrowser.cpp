@@ -1072,7 +1072,7 @@ void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command*
         return;
     }
 
-    static DAVA::Vector<DAVA::CommandID_t> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    static DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
     if (command->MatchCommandIDs(commandIds))
     {
         Update();

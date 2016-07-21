@@ -15,7 +15,5 @@ public:
 
     RECommand* GetCommand(DAVA::uint32 index) const;
 
-    bool IsMultiCommandBatch() const;
-
     bool MatchCommandID(DAVA::uint32 commandID) const override;
 };

@@ -232,10 +232,10 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
     UpdateFlags(material, LIGHTVIEW_AMBIENT, DAVA::NMaterialFlagName::FLAG_VIEWAMBIENT);
 }
 
-void EditorMaterialSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void EditorMaterialSystem::ProcessCommand(const RECommand* command, bool redo)
 {
-    const DAVA::CommandID_t commandID = command->GetID();
-    if (commandID == DAVA::CMDID_BATCH)
+    const DAVA::uint32 commandID = command->GetID();
+    if (IsCommandBatch(command))
     {
         const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))

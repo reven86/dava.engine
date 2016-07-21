@@ -83,8 +83,6 @@
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 
-#include <core_generic_plugin/interfaces/i_component_context.hpp>
-
 #include <QActionGroup>
 #include <QColorDialog>
 #include <QDesktopServices>
@@ -97,7 +95,7 @@
 
 #include "Tools/ExportSceneDialog/ExportSceneDialog.h"
 
-QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
+QtMainWindow::QtMainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , waitDialog(nullptr)
@@ -109,7 +107,6 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     , developerTools(new DeveloperTools(this))
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
-    , ngtContext(ngtContext_)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
@@ -1114,7 +1111,7 @@ void QtMainWindow::UpdateModificationActionsState()
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
 }
 
-void QtMainWindow::UpdateWayEditor(const DAVA::Command* command, bool redo)
+void QtMainWindow::UpdateWayEditor(const RECommand* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
@@ -1128,18 +1125,18 @@ void QtMainWindow::UpdateWayEditor(const DAVA::Command* command, bool redo)
     }
 }
 
-void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (scene == GetCurrentScene())
     {
         UpdateModificationActionsState();
         UpdateWayEditor(command, redo);
 
-        std::function<bool(const DAVA::Command*)> updateCameraState;
-        updateCameraState = [this, scene, &updateCameraState](const DAVA::Command* command)
+        std::function<bool(const RECommand*)> updateCameraState;
+        updateCameraState = [this, scene, &updateCameraState](const RECommand* command)
         {
             DAVA::Entity* entity = nullptr;
-            if (command->GetID() == DAVA::CMDID_BATCH)
+            if (IsCommandBatch(command))
             {
                 const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
                 for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)

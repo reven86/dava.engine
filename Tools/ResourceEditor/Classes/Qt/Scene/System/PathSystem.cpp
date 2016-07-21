@@ -255,7 +255,7 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void PathSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void PathSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
@@ -299,7 +299,7 @@ void PathSystem::ProcessCommand(const DAVA::Command* command, bool redo)
             }
         };
 
-        if (command->GetID() == DAVA::CMDID_BATCH)
+        if (IsCommandBatch(command))
         {
             const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const DAVA::uint32 count = batch->Size();

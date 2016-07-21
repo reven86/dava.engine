@@ -6,11 +6,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/UniqueStateSet.h"
 
-namespace DAVA
-{
-class Command;
-}
-
+class RECommand;
 class LandscapeProxy;
 class HeightmapProxy;
 class NotPassableTerrainProxy;
@@ -58,7 +54,7 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const DAVA::Command* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
     DAVA::float32 GetTextureSize(const DAVA::FastName& level);
     DAVA::Vector3 GetLandscapeSize();

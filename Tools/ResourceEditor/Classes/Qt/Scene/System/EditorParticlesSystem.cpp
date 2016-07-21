@@ -234,16 +234,14 @@ void EditorParticlesSystem::RestartParticleEffects()
     }
 }
 
-void EditorParticlesSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void EditorParticlesSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command == nullptr)
         return;
 
     // Notify that the Particles-related value is changed.
     SceneEditor2* activeScene = (SceneEditor2*)GetScene();
-    switch (command->GetID())
-    {
-    case DAVA::CMDID_BATCH:
+    if (IsCommandBatch(command))
     {
         const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         if (batch->MatchCommandIDs({ CMDID_PARTICLE_EMITTER_UPDATE, CMDID_PARTICLE_LAYER_UPDATE, CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES,
@@ -260,9 +258,10 @@ void EditorParticlesSystem::ProcessCommand(const DAVA::Command* command, bool re
                 ProcessCommand(batch->GetCommand(i), redo);
             }
         }
-        break;
+        return;
     }
-
+    switch (command->GetID())
+    {
     case CMDID_PARTICLE_EMITTER_UPDATE:
     {
         const CommandUpdateEmitter* castedCmd = static_cast<const CommandUpdateEmitter*>(command);

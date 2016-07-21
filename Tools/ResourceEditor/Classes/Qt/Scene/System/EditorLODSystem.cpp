@@ -582,7 +582,7 @@ void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
         EmitInvalidateUI(FLAG_ALL);
     };
 
-    static const Vector<CommandID_t> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
+    static const Vector<uint32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
     if (command->MatchCommandIDs(commands))
     {
         InvalidateAllData();
@@ -600,7 +600,7 @@ void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
             return false;
         };
 
-        if (command->GetID() == CMDID_BATCH)
+        if (IsCommandBatch(command))
         {
             const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
             const uint32 count = batch->Size();

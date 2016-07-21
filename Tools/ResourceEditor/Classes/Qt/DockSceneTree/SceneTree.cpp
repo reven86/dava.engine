@@ -975,9 +975,9 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneTree::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void SceneTree::CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
-    static const DAVA::Vector<DAVA::CommandID_t> idsForUpdate =
+    static const DAVA::Vector<DAVA::uint32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,
     CMDID_COMPONENT_REMOVE,

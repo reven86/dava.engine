@@ -368,7 +368,7 @@ void StructureSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void StructureSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void StructureSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandIDs({ CMDID_PARTICLE_LAYER_REMOVE, CMDID_PARTICLE_LAYER_MOVE, CMDID_PARTICLE_FORCE_REMOVE, CMDID_PARTICLE_FORCE_MOVE }))
     {

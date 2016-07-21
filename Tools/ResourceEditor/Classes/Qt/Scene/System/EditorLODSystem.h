@@ -9,9 +9,9 @@ namespace DAVA
 {
 class Entity;
 class RenderObject;
-class Command;
 }
 
+class RECommand;
 class SelectableGroup;
 
 struct ForceValues
@@ -140,7 +140,7 @@ public:
     DAVA::FilePath GetPathForPlaneEntity() const;
 
 protected:
-    void ProcessCommand(const DAVA::Command* command, bool redo);
+    void ProcessCommand(const RECommand* command, bool redo);
 
 private:
     void RecalculateData();

@@ -2,6 +2,7 @@
 
 enum CommandID : DAVA::uint32
 {
+    CMDID_BATCH1,
     CMDID_TRANSFORM,
 
     CMDID_ENTITY_ADD,

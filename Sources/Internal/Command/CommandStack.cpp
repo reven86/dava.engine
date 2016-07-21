@@ -20,13 +20,6 @@ void CommandStack::Exec(Command::Pointer&& command)
     }
     if (rootBatch != nullptr)
     {
-        //when the macro started command without undo will cause undefined state of application
-        DVASSERT_MSG(command->CanUndo(),
-                     Format("Command %s, which can not make undo passed to CommandStack within macro %s",
-                            command->GetDescription().c_str(),
-                            batchesStack.top()->GetDescription().c_str())
-                     .c_str()
-                     );
         batchesStack.top()->AddAndRedo(std::move(command));
     }
     else
@@ -49,7 +42,7 @@ void CommandStack::BeginBatch(const String& name, uint32 commandsCount)
     //we already create one or more batches
     else
     {
-        batchesStack.top()->AddAndExec(std::move(newCommandBatch));
+        batchesStack.top()->AddAndRedo(std::move(newCommandBatch));
         batchesStack.push(newCommandBatchPtr);
     }
 }
@@ -105,12 +98,7 @@ void CommandStack::Redo()
 
 bool CommandStack::CanUndo() const
 {
-    DVASSERT(currentIndex < commands.size());
-    if (currentIndex >= 0)
-    {
-        return commands.at(currentIndex)->CanUndo();
-    }
-    return false;
+    return currentIndex > 0;
 }
 
 bool CommandStack::CanRedo() const

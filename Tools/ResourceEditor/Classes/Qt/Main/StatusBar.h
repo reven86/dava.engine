@@ -5,10 +5,6 @@
 
 #include <QStatusBar>
 
-namespace DAVA
-{
-class Command;
-}
 class QLabel;
 class SceneEditor2;
 class SelectableGroup;

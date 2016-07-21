@@ -197,7 +197,7 @@ void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row
     }
 }
 
-void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {
@@ -217,7 +217,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* c
         }
         else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
         {
-            auto ProcessRemoveCommand = [this](const DAVA::Command* command, bool redo)
+            auto ProcessRemoveCommand = [this](const RECommand* command, bool redo)
             {
                 const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
                 DVASSERT(removeCommand->GetComponent() != nullptr);
@@ -227,7 +227,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* c
                 }
             };
 
-            if (command->GetID() == DAVA::CMDID_BATCH)
+            if (IsCommandBatch(command))
             {
                 const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
                 const DAVA::uint32 count = batch->Size();

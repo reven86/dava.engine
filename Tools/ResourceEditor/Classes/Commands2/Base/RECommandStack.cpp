@@ -24,7 +24,7 @@ void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
         const DAVA::Command* commandPtr = commands.at(index).get();
         if (DAVA::IsCommandBatch(commandPtr))
         {
-            const RECommandBatch* batch = static_cast<const RECommandBatch*>(commandPtr);
+            const RECommandBatch* batch = static_cast<const RECommandBatch*>(static_cast<const DAVA::CommandBatch*>(commandPtr));
             batch->RemoveCommands(commandId);
             if (batch->IsEmpty())
             {
@@ -33,11 +33,12 @@ void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
         }
         else if (IsRECommand(commandPtr))
         {
-            const RECommand* reCommand = dynamic_cast<const RECommand*>(commandPtr);
-            if (command->GetID() == commandId)
+            const RECommand* reCommand = static_cast<const RECommand*>(commandPtr);
+            if (reCommand->GetID() == commandId)
             {
                 RemoveCommand(index);
             }
+        }
     }
 }
 
@@ -54,7 +55,7 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
         const DAVA::Command* commandPtr = commands.at(index).get();
         if (IsRECommand(commandPtr))
         {
-            RECommand* reCommandPtr = dynamic_cast<const RECommand*>(commandPtr);
+            RECommand* reCommandPtr = static_cast<const RECommand*>(commandPtr);
             if (reCommandPtr->MatchCommandID(commandId))
             {
                 return true;

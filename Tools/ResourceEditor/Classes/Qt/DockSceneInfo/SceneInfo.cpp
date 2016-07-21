@@ -587,7 +587,7 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool /*isRedo*/)
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommand* command, bool /*isRedo*/)
 {
     switch (command->GetID())
     {
