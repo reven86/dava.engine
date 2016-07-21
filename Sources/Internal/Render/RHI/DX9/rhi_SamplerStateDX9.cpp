@@ -189,7 +189,7 @@ void SetToRHI(Handle hstate)
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MINFILTER, state->vertexSampler[i].minFilter);
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAGFILTER, state->vertexSampler[i].magFilter);
         _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MIPFILTER, state->vertexSampler[i].mipFilter);
-        _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, state->fragmentSampler[i].anisotropyLevel);
+        _D3D9_Device->SetSamplerState(sampler, D3DSAMP_MAXANISOTROPY, state->vertexSampler[i].anisotropyLevel);
     }
 }
 }
