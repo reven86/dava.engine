@@ -8,6 +8,7 @@
 #include "Debug/DVAssert.h"
 #include "Functional/Function.h"
 #include "Math/Rect.h"
+#include "Base/HashMap.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
 {\
@@ -591,10 +592,15 @@ public:
 class JavaClass
 {
 public:
-    JavaClass(const String& className);
+    static const JavaClass& RegisterClass(const String& className);
+    static const JavaClass* Get(const String& className);
+
+    JavaClass() = default;
+    JavaClass(const String& className, bool useJobManager = true);
     JavaClass(const JavaClass& copy);
     ~JavaClass();
 
+    JavaClass& operator=(const JavaClass& other);
     inline operator jclass() const;
 
     template <class Ret>
@@ -640,11 +646,12 @@ public:
     Function<Ret(P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
 
 private:
-    void FindJavaClass(String name);
+    void FindJavaClass();
 
-private:
-    jclass javaClass;
+    jclass javaClass = nullptr;
     String name;
+
+    static HashMap<String, JavaClass> registredClasses;
 };
 
 inline JavaClass::operator jclass() const

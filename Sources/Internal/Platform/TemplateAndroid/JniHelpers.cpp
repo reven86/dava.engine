@@ -110,26 +110,57 @@ jstring ToJNIString(const DAVA::WideString& string)
     return env->NewStringUTF(utf8.c_str());
 }
 
-JavaClass::JavaClass(const String& className)
+HashMap<String, JavaClass> JavaClass::registredClasses;
+
+const JavaClass& JavaClass::RegisterClass(const String& className)
+{
+    DVASSERT(Thread::IsMainThread());
+    DVASSERT(!className.empty());
+
+    const auto it = registredClasses.find(className);
+    if (it != registredClasses.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return registredClasses.insert(className, JavaClass(className, false))->second;
+    }
+}
+
+const JavaClass* JavaClass::Get(const String& className)
+{
+    auto it = registredClasses.find(className);
+    if (it != registredClasses.end())
+    {
+        return &it->second;
+    }
+    return nullptr;
+}
+
+JavaClass::JavaClass(const String& className, bool useJobManager)
     : javaClass(NULL)
 {
+    // TODO: make basic constructor with className independent from JobManager
     DVASSERT(!className.empty());
     name = className;
 
-    Function<void(String)> findJClass(this, &JavaClass::FindJavaClass);
-    auto findJClassName = Bind(findJClass, name);
-    uint32 jobId = JobManager::Instance()->CreateMainJob(findJClassName);
-    JobManager::Instance()->WaitMainJobID(jobId);
+    if (useJobManager)
+    {
+        Function<void()> findJClass(this, &JavaClass::FindJavaClass);
+        uint32 jobId = JobManager::Instance()->CreateMainJob(findJClass);
+        JobManager::Instance()->WaitMainJobID(jobId);
+    }
+    else
+    {
+        FindJavaClass();
+    }
 }
 
 JavaClass::JavaClass(const JavaClass& copy)
     : name(copy.name)
-    , javaClass(nullptr)
 {
-    if (copy.javaClass != nullptr)
-    {
-        javaClass = static_cast<jclass>(JNI::GetEnv()->NewGlobalRef(copy.javaClass));
-    }
+    javaClass = copy.javaClass ? static_cast<jclass>(JNI::GetEnv()->NewGlobalRef(copy.javaClass)) : nullptr;
 }
 
 JavaClass::~JavaClass()
@@ -140,7 +171,18 @@ JavaClass::~JavaClass()
     }
 }
 
-void JavaClass::FindJavaClass(String name)
+JavaClass& JavaClass::operator=(const JavaClass& other)
+{
+    name = other.name;
+    if (javaClass != nullptr)
+    {
+        GetEnv()->DeleteGlobalRef(javaClass);
+    }
+    javaClass = other.javaClass ? static_cast<jclass>(JNI::GetEnv()->NewGlobalRef(other.javaClass)) : nullptr;
+    return *this;
+}
+
+void JavaClass::FindJavaClass()
 {
     DVASSERT(Thread::IsMainThread());
 
