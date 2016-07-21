@@ -1,11 +1,11 @@
 #ifndef __PARTICLE_LAYER_MOVE_COMMAND_H__
 #define __PARTICLE_LAYER_MOVE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitterInstance.h"
 
-class ParticleLayerMoveCommand : public CommandWithoutExecute
+class ParticleLayerMoveCommand : public RECommand
 {
 public:
     ParticleLayerMoveCommand(DAVA::ParticleEmitterInstance* oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitterInstance* newEmitter, DAVA::ParticleLayer* newBefore = NULL);

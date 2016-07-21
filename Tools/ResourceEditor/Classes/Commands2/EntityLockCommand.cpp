@@ -3,7 +3,7 @@
 #include "Scene3D/Entity.h"
 
 EntityLockCommand::EntityLockCommand(DAVA::Entity* _entity, bool lock)
-    : CommandWithoutExecute(CMDID_ENTITY_LOCK, "Lock entity")
+    : RECommand(CMDID_ENTITY_LOCK, "Lock entity")
     , entity(_entity)
     , newState(lock)
 {

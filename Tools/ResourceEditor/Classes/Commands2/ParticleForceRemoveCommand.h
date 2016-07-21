@@ -1,11 +1,11 @@
 #ifndef __PARTICLE_FORCE_REMOVE_COMMAND_H__
 #define __PARTICLE_FORCE_REMOVE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleForce.h"
 
-class ParticleForceRemoveCommand : public CommandWithoutExecute
+class ParticleForceRemoveCommand : public RECommand
 {
 public:
     ParticleForceRemoveCommand(DAVA::ParticleForce* force, DAVA::ParticleLayer* layer);

@@ -430,7 +430,7 @@ void CommandRemoveParticleEmitterLayer::Redo()
 }
 
 CommandRemoveParticleEmitter::CommandRemoveParticleEmitter(ParticleEffectComponent* effect, ParticleEmitterInstance* emitter)
-    : CommandWithoutExecute(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
+    : RECommand(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE)
     , selectedEffect(effect)
     , instance(SafeRetain(emitter))
 {

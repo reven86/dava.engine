@@ -2,7 +2,7 @@
 #include "Commands2/RECommandIDs.h"
 
 ParticleForceRemoveCommand::ParticleForceRemoveCommand(DAVA::ParticleForce* _force, DAVA::ParticleLayer* _layer)
-    : CommandWithoutExecute(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle force")
+    : RECommand(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle force")
     , force(_force)
     , layer(_layer)
 {

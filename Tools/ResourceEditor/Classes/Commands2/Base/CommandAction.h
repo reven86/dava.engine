@@ -1,21 +1,15 @@
 #pragma once
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Base/BaseTypes.h"
 
-class CommandAction : public CommandWithoutExecute
+class CommandAction
 {
 public:
-    CommandAction(DAVA::CommandID_t id, const DAVA::String& text = DAVA::String());
+    CommandAction(DAVA::uint32 id, const DAVA::String& text = DAVA::String());
+    virtual void Redo() = 0;
 
-    bool CanUndo() const override;
-    void Undo() override;
+private:
+    const DAVA::uint32 id;
+    const DAVA::String text;
 };
 
-inline void CommandAction::Undo()
-{
-}
-
-inline bool CommandAction::CanUndo() const
-{
-    return false;
-}

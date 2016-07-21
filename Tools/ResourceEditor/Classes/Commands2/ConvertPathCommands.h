@@ -2,7 +2,7 @@
 #define __CONVERT_PATH_COMMANDS_H__
 
 #include "FileSystem/KeyedArchive.h"
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
@@ -12,7 +12,7 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
-class ExpandPathCommand : public CommandWithoutExecute
+class ExpandPathCommand : public RECommand
 {
 public:
     ExpandPathCommand(DAVA::PathComponent* _pathComponent);
@@ -31,7 +31,7 @@ protected:
     DAVA::Vector<EntityAddCommand*> entityAddCommands;
 };
 
-class CollapsePathCommand : public CommandWithoutExecute
+class CollapsePathCommand : public RECommand
 {
 public:
     CollapsePathCommand(DAVA::PathComponent* _pathComponent);

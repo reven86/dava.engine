@@ -5,7 +5,7 @@
 #include "Base/Result.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 #include <QString>
 

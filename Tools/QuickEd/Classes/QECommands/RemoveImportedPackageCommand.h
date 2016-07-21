@@ -1,12 +1,12 @@
 #ifndef __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 #define __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class PackageControlsNode;
 
-class RemoveImportedPackageCommand : public CommandWithoutExecute
+class RemoveImportedPackageCommand : public DAVA::Command
 {
 public:
     RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage);

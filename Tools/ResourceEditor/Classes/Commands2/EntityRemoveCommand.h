@@ -1,14 +1,14 @@
 #ifndef __ENTITY_REMOVE_COMMAND_H__
 #define __ENTITY_REMOVE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 namespace DAVA
 {
 class Entity;
 }
 
-class EntityRemoveCommand : public CommandWithoutExecute
+class EntityRemoveCommand : public RECommand
 {
 public:
     EntityRemoveCommand(DAVA::Entity* entity);

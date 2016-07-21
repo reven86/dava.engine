@@ -1,11 +1,11 @@
 #ifndef __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 #define __RESOURCEEDITOR_MATERIALCONFIGCOMMANDS_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Render/Material/NMaterial.h"
 
-class MaterialConfigModify : public CommandWithoutExecute
+class MaterialConfigModify : public RECommand
 {
 public:
     MaterialConfigModify(DAVA::NMaterial* material, int id, const DAVA::String& text = DAVA::String());

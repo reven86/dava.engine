@@ -1,10 +1,10 @@
 #ifndef __CONVERT_TO_SHADOW_COMMAND_H__
 #define __CONVERT_TO_SHADOW_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class ConvertToShadowCommand : public CommandWithoutExecute
+class ConvertToShadowCommand : public RECommand
 {
 public:
     ConvertToShadowCommand(DAVA::Entity* entity, DAVA::RenderBatch* batch);

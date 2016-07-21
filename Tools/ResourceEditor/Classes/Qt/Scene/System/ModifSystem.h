@@ -11,7 +11,7 @@
 #include "Scene/SelectableGroup.h"
 #include "Render/Highlevel/RenderObject.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;

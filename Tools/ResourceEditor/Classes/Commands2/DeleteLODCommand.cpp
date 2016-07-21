@@ -6,7 +6,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex)
-    : CommandWithoutExecute(CMDID_LOD_DELETE, "Delete LOD")
+    : RECommand(CMDID_LOD_DELETE, "Delete LOD")
     , lodComponent(lod)
     , deletedLodIndex(lodIndex)
     , requestedSwitchIndex(switchIndex)

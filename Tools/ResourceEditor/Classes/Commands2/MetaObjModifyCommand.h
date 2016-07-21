@@ -1,7 +1,7 @@
 #ifndef __META_OBJ_MODIFY_COMMAND_H__
 #define __META_OBJ_MODIFY_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
@@ -9,7 +9,7 @@ namespace DAVA
 struct MetaInfo;
 }
 
-class MetaObjModifyCommand : public CommandWithoutExecute
+class MetaObjModifyCommand : public RECommand
 {
 public:
     MetaObjModifyCommand(const DAVA::MetaInfo* info, void* object, const DAVA::VariantType& value);

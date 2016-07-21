@@ -1,13 +1,13 @@
 #ifndef __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
 #define __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class StyleSheetNode;
 class StyleSheetProperty;
 
-class AddRemoveStylePropertyCommand : public CommandWithoutExecute
+class AddRemoveStylePropertyCommand : public DAVA::Command
 {
 public:
     AddRemoveStylePropertyCommand(PackageNode* root, StyleSheetNode* node, StyleSheetProperty* property, bool add);

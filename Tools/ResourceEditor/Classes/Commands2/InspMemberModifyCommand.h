@@ -1,7 +1,7 @@
 #ifndef __INSP_MEMEBER_MODIFY_COMMAND_H__
 #define __INSP_MEMEBER_MODIFY_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
@@ -9,7 +9,7 @@ namespace DAVA
 class InspMember;
 }
 
-class InspMemberModifyCommand : public CommandWithoutExecute
+class InspMemberModifyCommand : public RECommand
 {
 public:
     InspMemberModifyCommand(const DAVA::InspMember* member, void* object, const DAVA::VariantType& value);

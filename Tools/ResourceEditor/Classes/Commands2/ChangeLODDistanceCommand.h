@@ -1,9 +1,9 @@
 #pragma once
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class ChangeLODDistanceCommand : public CommandWithoutExecute
+class ChangeLODDistanceCommand : public RECommand
 {
 public:
     ChangeLODDistanceCommand(DAVA::LodComponent* lod, DAVA::int32 lodLayer, DAVA::float32 distance);

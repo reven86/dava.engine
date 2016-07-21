@@ -1,14 +1,14 @@
 #ifndef __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
 #define __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 #include "FileSystem/VariantType.h"
 
 class PackageNode;
 class StyleSheetNode;
 class AbstractProperty;
 
-class ChangeStylePropertyCommand : public CommandWithoutExecute
+class ChangeStylePropertyCommand : public DAVA::Command
 {
 public:
     ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);

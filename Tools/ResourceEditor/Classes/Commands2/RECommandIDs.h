@@ -1,10 +1,8 @@
-#pragma once 
- 
-#include "Command/CommandIDs.h"
+#pragma once
 
-enum CommandID : DAVA::CommandID_t
+enum CommandID : DAVA::uint32
 {
-    CMDID_UNKNOWN = DAVA::CMDID_USER,
+    CMDID_BATCH,
 
     CMDID_TRANSFORM,
 
@@ -113,4 +111,5 @@ enum CommandID : DAVA::CommandID_t
     CMDID_DISABLE_WAYEDIT,
     CMDID_SHOW_MATERIAL,
 
+    CMDID_USER = 0xFFFF
 };

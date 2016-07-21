@@ -1,13 +1,13 @@
 #ifndef __WAYEDIT_COMMANDS_H__
 #define __WAYEDIT_COMMANDS_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
-class EnableWayEditCommand : public CommandWithoutExecute
+class EnableWayEditCommand : public RECommand
 {
 public:
     EnableWayEditCommand()
-        : CommandWithoutExecute(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
+        : RECommand(CMDID_ENABLE_WAYEDIT, "Enable waypoint edit mode")
     {
     }
     void Undo() override
@@ -18,11 +18,11 @@ public:
     }
 };
 
-class DisableWayEditCommand : public CommandWithoutExecute
+class DisableWayEditCommand : public RECommand
 {
 public:
     DisableWayEditCommand()
-        : CommandWithoutExecute(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
+        : RECommand(CMDID_DISABLE_WAYEDIT, "Disable waypoint edit mode")
     {
     }
     void Undo() override

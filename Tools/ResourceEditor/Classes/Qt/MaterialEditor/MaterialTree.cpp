@@ -233,7 +233,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* c
                 const DAVA::uint32 count = batch->Size();
                 for (DAVA::uint32 i = 0; i < count; ++i)
                 {
-                    const CommandWithoutExecute* cmd = batch->GetCommand(i);
+                    const RECommand* cmd = batch->GetCommand(i);
                     if (cmd->GetID() == CMDID_COMPONENT_REMOVE)
                     {
                         ProcessRemoveCommand(cmd, redo);

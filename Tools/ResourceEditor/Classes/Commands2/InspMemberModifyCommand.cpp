@@ -3,7 +3,7 @@
 #include "Base/Introspection.h"
 
 InspMemberModifyCommand::InspMemberModifyCommand(const DAVA::InspMember* _member, void* _object, const DAVA::VariantType& _newValue)
-    : CommandWithoutExecute(CMDID_INSP_MEMBER_MODIFY, "Modify value")
+    : RECommand(CMDID_INSP_MEMBER_MODIFY, "Modify value")
     , member(_member)
     , object(_object)
     , newValue(_newValue)

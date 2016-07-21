@@ -9,7 +9,7 @@
 ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
                                                DAVA::Heightmap* originalHeightmap,
                                                const DAVA::Rect& updatedRect)
-    : CommandWithoutExecute(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
+    : RECommand(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
     , heightmapProxy(heightmapProxy)
 {
     if (originalHeightmap && heightmapProxy)

@@ -1,7 +1,7 @@
 #ifndef __KEYEDARCHIVE_COMMAND_H__
 #define __KEYEDARCHIVE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
@@ -9,7 +9,7 @@ namespace DAVA
 class KeyedArchive;
 }
 
-class KeyedArchiveAddValueCommand : public CommandWithoutExecute
+class KeyedArchiveAddValueCommand : public RECommand
 {
 public:
     KeyedArchiveAddValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);
@@ -23,7 +23,7 @@ public:
     DAVA::VariantType val;
 };
 
-class KeyeadArchiveRemValueCommand : public CommandWithoutExecute
+class KeyeadArchiveRemValueCommand : public RECommand
 {
 public:
     KeyeadArchiveRemValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
@@ -37,7 +37,7 @@ public:
     DAVA::VariantType val;
 };
 
-class KeyeadArchiveSetValueCommand : public CommandWithoutExecute
+class KeyeadArchiveSetValueCommand : public RECommand
 {
 public:
     KeyeadArchiveSetValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);

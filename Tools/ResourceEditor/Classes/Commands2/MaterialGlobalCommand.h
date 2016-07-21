@@ -1,10 +1,10 @@
 #ifndef __MATERIAL_GLOBAL_COMMAND_H__
 #define __MATERIAL_GLOBAL_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Render/Material/NMaterial.h"
 
-class MaterialGlobalSetCommand : public CommandWithoutExecute
+class MaterialGlobalSetCommand : public RECommand
 {
 public:
     MaterialGlobalSetCommand(DAVA::Scene* _scene, DAVA::NMaterial* global);

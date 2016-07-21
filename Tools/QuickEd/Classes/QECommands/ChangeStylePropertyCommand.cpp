@@ -1,12 +1,11 @@
 #include "ChangeStylePropertyCommand.h"
 
-#include "Document/CommandsBase/QECommandIDs.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
 ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* prop, const DAVA::VariantType& newVal)
-    : CommandWithoutExecute(CMDID_CHANGE_STYLE_PROPERTY, DAVA::String("change ") + property->GetName().c_str())
+    : DAVA::Command(DAVA::String("change ") + property->GetName().c_str())
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , property(SafeRetain(prop))

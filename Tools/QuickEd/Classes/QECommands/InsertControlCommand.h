@@ -1,13 +1,13 @@
 #ifndef __QUICKED_INSERT_CONTROL_COMMAND_H__
 #define __QUICKED_INSERT_CONTROL_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 
-class InsertControlCommand : public CommandWithoutExecute
+class InsertControlCommand : public DAVA::Command
 {
 public:
     InsertControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _dest, int _index);

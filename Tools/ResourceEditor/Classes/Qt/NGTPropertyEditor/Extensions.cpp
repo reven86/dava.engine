@@ -1,3 +1,4 @@
+#if 0
 #include "Extensions.h"
 
 #include "Classes/Qt/Main/mainwindow.h"
@@ -553,3 +554,5 @@ void AddCustomPropertyWidget::PreSetSelected(int index)
         valueWidget->setEnabled(true);
     }
 }
+
+#endif 0

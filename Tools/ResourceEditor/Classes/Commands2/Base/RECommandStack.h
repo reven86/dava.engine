@@ -1,32 +1,22 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "NgtTools/Commands/CommandStack.h"
+#include "Command/CommandStack.h"
 #include "Commands2/Base/CommandNotify.h"
 
-class RECommandStack : public CommandStack, public CommandNotifyProvider
+class RECommandStack : public DAVA::CommandStack, public CommandNotifyProvider
 {
 public:
     RECommandStack();
-    ~RECommandStack() override;
+    ~RECommandStack() override = default;
 
     void Clear();
-    void RemoveCommands(DAVA::CommandID_t commandId);
+    void RemoveCommands(DAVA::uint32 commandId);
 
     void Activate();
-    void Undo() override;
-    void Redo() override;
-    void Exec(DAVA::Command::Pointer&& command) override;
 
-    bool IsUncleanCommandExists(DAVA::CommandID_t commandId) const;
-
-    void EndBatch() override;
-
-    bool IsClean() const override;
-    void SetClean() override;
+    bool IsUncleanCommandExists(DAVA::uint32 commandId) const;
 
 private:
-    void CleanCheck();
-
-    DAVA::UnorderedSet<DAVA::CommandID_t> uncleanCommandIds;
+    void RemoveCommand(DAVA::uint32 index);
 };

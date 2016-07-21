@@ -4,13 +4,13 @@
 #include "FileSystem/VariantType.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class ControlNode;
 class AbstractProperty;
 
-class ChangePropertyValueCommand : public CommandWithoutExecute
+class ChangePropertyValueCommand : public DAVA::Command
 {
 public:
     ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);

@@ -2,7 +2,7 @@
 #include "Commands2/RECommandIDs.h"
 
 MaterialSwitchParentCommand::MaterialSwitchParentCommand(DAVA::NMaterial* instance, DAVA::NMaterial* _newParent)
-    : CommandWithoutExecute(CMDID_MATERIAL_SWITCH_PARENT, "Switch Material Parent")
+    : RECommand(CMDID_MATERIAL_SWITCH_PARENT, "Switch Material Parent")
 {
     DVASSERT(instance);
     DVASSERT(_newParent);

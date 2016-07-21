@@ -1,11 +1,11 @@
 #ifndef __PARTICLE_LAYER_REMOVE_COMMAND_H__
 #define __PARTICLE_LAYER_REMOVE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 
-class ParticleLayerRemoveCommand : public CommandWithoutExecute
+class ParticleLayerRemoveCommand : public RECommand
 {
 public:
     ParticleLayerRemoveCommand(DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);

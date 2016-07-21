@@ -1,7 +1,7 @@
 #ifndef __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 #define __RESOURCEEDITOR_MATERIALREMOVETEXTURE_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Base/FastName.h"
 
 namespace DAVA
@@ -11,7 +11,7 @@ class Texture;
 class NMaterial;
 }
 
-class MaterialRemoveTexture : public CommandWithoutExecute
+class MaterialRemoveTexture : public RECommand
 {
 public:
     MaterialRemoveTexture(const DAVA::FastName& textureSlot_, DAVA::NMaterial* material_);

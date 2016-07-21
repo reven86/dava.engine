@@ -3,7 +3,7 @@
 #include "Scene3D/Entity.h"
 
 EntityRemoveCommand::EntityRemoveCommand(DAVA::Entity* _entity)
-    : CommandWithoutExecute(CMDID_ENTITY_REMOVE, "Remove entity")
+    : RECommand(CMDID_ENTITY_REMOVE, "Remove entity")
     , entity(_entity)
     , before(NULL)
     , parent(NULL)

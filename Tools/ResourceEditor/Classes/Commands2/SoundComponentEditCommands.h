@@ -2,9 +2,9 @@
 #define __SOUND_COMPONENT_COMMANDS_H__
 
 #include "DAVAEngine.h"
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
-class AddSoundEventCommand : public CommandWithoutExecute
+class AddSoundEventCommand : public RECommand
 {
 public:
     AddSoundEventCommand(DAVA::Entity* entity, DAVA::SoundEvent* sEvent);
@@ -20,7 +20,7 @@ private:
     DAVA::SoundEvent* savedEvent;
 };
 
-class RemoveSoundEventCommand : public CommandWithoutExecute
+class RemoveSoundEventCommand : public RECommand
 {
 public:
     RemoveSoundEventCommand(DAVA::Entity* entity, DAVA::SoundEvent* sEvent);
@@ -36,7 +36,7 @@ private:
     DAVA::SoundEvent* savedEvent;
 };
 
-class SetSoundEventFlagsCommand : public CommandWithoutExecute
+class SetSoundEventFlagsCommand : public RECommand
 {
 public:
     SetSoundEventFlagsCommand(DAVA::Entity* entity, DAVA::uint32 eventIndex, DAVA::uint32 flags);

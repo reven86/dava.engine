@@ -1,13 +1,13 @@
 #ifndef __QUICKED_REMOVE_CONTROL_COMMAND_H__
 #define __QUICKED_REMOVE_CONTROL_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 
-class RemoveControlCommand : public CommandWithoutExecute
+class RemoveControlCommand : public DAVA::Command
 {
 public:
     RemoveControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _from, int _index);

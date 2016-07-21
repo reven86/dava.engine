@@ -5,7 +5,7 @@
 #include "FileSystem/FilePath.h"
 #include "Math/AABBox3.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 namespace DAVA
 {
@@ -15,7 +15,7 @@ class Landscape;
 
 class LandscapeProxy;
 
-class LandscapeSetHeightMapCommand : public CommandWithoutExecute
+class LandscapeSetHeightMapCommand : public RECommand
 {
 public:
     LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity,

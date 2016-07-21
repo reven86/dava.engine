@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Command/ICommand.h"
-#include "Command/CommandIDs.h"
 
 namespace DAVA
 {
@@ -17,7 +16,7 @@ protected:
     \param[in] id derived class ID, like CMDID_BATCH.
     \param[in] text command text description to be displayed in widgets / network packets / log texts.
     */
-    Command(CommandID_t id, const String& description = "");
+    Command(const String& description = "");
 
 public:
     /**
@@ -26,12 +25,6 @@ public:
     */
     template <typename CMD, typename... Arg>
     static std::unique_ptr<CMD> Create(Arg&&... arg);
-
-    /**
-    \brief Returns command's ID. 
-    \returns the specific identificator of a class, which derived from Command; 
-    */
-    CommandID_t GetID() const;
 
     /**
     \brief Returns command's text description.
@@ -46,30 +39,10 @@ public:
     */
     virtual bool IsModifying() const;
 
-    /**
-    \brief Returns true if command have Undo realization.
-    Some commands can only change frameworks state without making undo after that.
-    \returns returns true if command can undo.
-    */
-    virtual bool CanUndo() const;
-
-    /**
-    \brief check that the class command ID is equal to given command ID.
-    \returns returns true if command ID is equal to given command ID. Otherwise return false.
-    */
-    virtual bool MatchCommandID(DAVA::CommandID_t commandID) const;
-
-    /**
-    \brief check that the command is equal to the any one of given command IDs.
-    \returns returns true if command command ID is equal to the any one of given command IDs. Otherwise return false.
-    */
-    bool MatchCommandIDs(const DAVA::Vector<DAVA::CommandID_t>& commandIDVector) const;
-
     //re implement pure virtual function Undo for commands which can not make Undo itself
     void Undo() override;
 
 private:
-    const CommandID_t id;
     const String description;
 };
 
@@ -79,10 +52,6 @@ std::unique_ptr<CMD> Command::Create(Arg&&... arg)
     return std::unique_ptr<CMD>(new CMD(std::forward<Arg>(arg)...));
 }
 
-inline CommandID_t Command::GetID() const
-{
-    return id;
-}
 
 inline const String& Command::GetDescription() const
 {
@@ -94,17 +63,7 @@ inline bool Command::IsModifying() const
     return true;
 }
 
-inline bool Command::CanUndo() const
-{
-    return true;
-}
-
 inline void Command::Undo()
 {
-}
-
-inline bool Command::MatchCommandID(DAVA::CommandID_t commandID) const
-{
-    return (id == commandID);
 }
 }

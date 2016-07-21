@@ -2,9 +2,9 @@
 #define __IMAGE_REGION_COPY_COMMAND_H__
 
 #include "Render/Image/Image.h"
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
-class ImageRegionCopyCommand : public CommandWithoutExecute
+class ImageRegionCopyCommand : public RECommand
 {
 public:
     ImageRegionCopyCommand(DAVA::Image* dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect& srcRect, DAVA::FilePath savePath = DAVA::FilePath(), DAVA::Image* orig = NULL);

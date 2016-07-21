@@ -1,9 +1,9 @@
 #pragma once
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class CopyLastLODToLod0Command : public CommandWithoutExecute
+class CopyLastLODToLod0Command : public RECommand
 {
 public:
     //TODO: remove after lod editing implementation

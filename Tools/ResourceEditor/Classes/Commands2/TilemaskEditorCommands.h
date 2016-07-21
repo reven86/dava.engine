@@ -1,7 +1,7 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/CommandAction.h"
 
 #include "Base/FastName.h"
@@ -18,7 +18,7 @@ class Image;
 class Texture;
 }
 
-class ModifyTilemaskCommand : public CommandWithoutExecute
+class ModifyTilemaskCommand : public RECommand
 {
 public:
     ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const DAVA::Rect& updatedRect);
@@ -36,7 +36,7 @@ protected:
     void ApplyImageToTexture(DAVA::Image* image, DAVA::Texture* dstTex);
 };
 
-class SetTileColorCommand : public CommandWithoutExecute
+class SetTileColorCommand : public RECommand
 {
 public:
     SetTileColorCommand(LandscapeProxy* landscapeProxy, const DAVA::FastName& level, const DAVA::Color& color);

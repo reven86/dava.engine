@@ -3,7 +3,7 @@
 
 #include "Base/BaseTypes.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Math/Rect.h"
 #include "Commands2/Base/CommandAction.h"
 
@@ -17,7 +17,7 @@ class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ModifyHeightmapCommand : public CommandWithoutExecute
+class ModifyHeightmapCommand : public RECommand
 {
 public:
     ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);

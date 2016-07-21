@@ -3,7 +3,6 @@
 #include "version.h"
 #include "Main/mainwindow.h"
 #include "ResourceEditorLauncher.h"
-#include "NgtTools/Commands/WGTCommand.h"
 #include "Settings/SettingsManager.h"
 #include "TextureCompression/PVRConverter.h"
 #include "TextureCache.h"
@@ -28,10 +27,6 @@
 #else
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
-
-#include <core_command_system/i_command_manager.hpp>
-#include <core_command_system/i_history_panel.h>
-#include <core_generic_plugin/interfaces/i_application.hpp>
 
 #include <QCryptographicHash>
 
@@ -76,8 +71,7 @@ void FixOSXFonts()
 #include <core_ui_framework/i_ui_framework.hpp>
 
 REApplication::REApplication(int argc, char** argv)
-    : BaseApplication(argc, argv)
-    , wgtCommand(new WGTCommand())
+    : QApplication(argc, argv)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -116,7 +110,6 @@ int REApplication::Run()
     int argc = GetCommandLine().argc();
     char** argv = GetCommandLine().argv();
 
-    LoadPlugins();
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     if (cmdLineManager->IsEnabled())
@@ -139,62 +132,21 @@ int REApplication::Run()
     return 0;
 }
 
-void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const
-{
-    names.push_back(L"plg_variant");
-    names.push_back(L"plg_reflection");
-    names.push_back(L"plg_command_system");
-    names.push_back(L"plg_serialization");
-    names.push_back(L"plg_file_system");
-    names.push_back(L"plg_editor_interaction");
-    names.push_back(L"plg_qt_app");
-    names.push_back(L"plg_qt_common");
-    if (cmdLineManager->IsEnabled() == false)
-    {
-        names.push_back(L"plg_history_ui");
-    }
-}
-
 void REApplication::OnPostLoadPlugins()
 {
     qApp->setOrganizationName("DAVA");
     qApp->setApplicationName("Resource Editor");
-
-    commandManager = NGTLayer::queryInterface<wgt::ICommandManager>();
-    commandManager->SetHistorySerializationEnabled(false);
-    commandManager->registerCommand(wgtCommand.get());
-
-    wgt::IUIFramework* uiFramework = NGTLayer::queryInterface<wgt::IUIFramework>();
-    DVASSERT(uiFramework != nullptr);
-
-    wgt::IDefinitionManager* defManager = NGTLayer::queryInterface<wgt::IDefinitionManager>();
-    DVASSERT(defManager);
-
-    componentProvider.reset(new NGTLayer::ComponentProvider(*defManager));
-    uiFramework->registerComponentProvider(*componentProvider);
 
     const char* settingsPath = "ResourceEditorSettings.archive";
     DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
     Themes::InitFromQApplication();
-
-    BaseApplication::OnPostLoadPlugins();
-}
-
-void REApplication::OnPreUnloadPlugins()
-{
-    commandManager->deregisterCommand(wgtCommand->getId());
 }
 
 bool REApplication::OnRequestCloseApp()
 {
     return mainWindow->CanBeClosed();
-}
-
-void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
-{
-    lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
 }
 
 void REApplication::RunWindow()
@@ -228,22 +180,16 @@ void REApplication::RunWindow()
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
-    if (historyPanel != nullptr)
-    {
-        historyPanel->setClearButtonVisible(false);
-        historyPanel->setMakeMacroButtonVisible(false);
-    }
-
     // create and init UI
     ResourceEditorLauncher launcher;
-    mainWindow = new QtMainWindow(GetComponentContext());
+    mainWindow = new QtMainWindow();
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
-    StartApplication(mainWindow);
+    mainWindow->show();
+    exec();
 
     DAVA::SafeRelease(mainWindow);
     ControlsFactory::ReleaseFonts();
@@ -261,16 +207,14 @@ void REApplication::RunConsole()
     DAVA::Logger::Instance()->EnableConsoleMode();
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
-    wgt::IApplication* application = NGTLayer::queryInterface<wgt::IApplication>();
-
     DavaGLWidget glWidget;
     glWidget.MakeInvisible();
 
     // Delayed initialization throught event loop
     glWidget.show();
 #ifdef Q_OS_WIN
-    QObject::connect(&glWidget, &DavaGLWidget::Initialized, [application]() { application->quitApplication(); });
-    application->startApplication();
+    QObject::connect(&glWidget, &DavaGLWidget::Initialized, this, &QApplication::quit);
+    exec();
 #endif
     glWidget.hide();
 

@@ -32,7 +32,7 @@ public:
     /**
     \brief Moves command to the batch and calls Execute to the moved command.
     */
-    void AddAndExec(Pointer&& command);
+    void AddAndRedo(Pointer&& command);
 
     /**
     \brief Returns whether the batch is empty (i.e. whether its size is 0)
@@ -46,17 +46,9 @@ public:
     */
     uint32 Size() const;
 
-    /**
-    \brief check that the one of commands ID is equal to given command ID.
-    \returns returns true if any one commands ID is equal to given command ID. Otherwise return false.
-    */
-    bool MatchCommandID(DAVA::CommandID_t commandID) const override;
-
 protected:
     using CommandsContainer = Vector<Pointer>;
     CommandsContainer commandList;
-
-    UnorderedSet<CommandID_t> commandIDs;
 };
 
 inline bool CommandBatch::IsEmpty() const

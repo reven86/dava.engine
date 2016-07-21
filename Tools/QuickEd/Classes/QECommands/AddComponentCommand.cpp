@@ -1,6 +1,5 @@
 #include "AddComponentCommand.h"
 
-#include "Document/CommandsBase/QECommandIDs.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
@@ -9,7 +8,7 @@
 using namespace DAVA;
 
 AddComponentCommand::AddComponentCommand(PackageNode* _root, ControlNode* _node, ComponentPropertiesSection* _section)
-    : CommandWithoutExecute(CMDID_ADD_COMPONENT, "Add component")
+    : DAVA::Command("Add component")
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , section(SafeRetain(_section))

@@ -1,7 +1,7 @@
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/CommandAction.h"
 
 #include "DAVAEngine.h"
@@ -10,7 +10,7 @@
 class CustomColorsProxy;
 class SceneEditor2;
 
-class ModifyCustomColorsCommand : public CommandWithoutExecute
+class ModifyCustomColorsCommand : public RECommand
 {
 public:
     ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy,

@@ -1,6 +1,6 @@
 #include "QtPropertyDataInspDynamic.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 #include <QDebug>
 

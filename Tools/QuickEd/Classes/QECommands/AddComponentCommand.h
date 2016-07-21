@@ -1,13 +1,13 @@
 #ifndef __QUICKED_ADD_COMPONENT_COMMAND_H__
 #define __QUICKED_ADD_COMPONENT_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AddComponentCommand : public CommandWithoutExecute
+class AddComponentCommand : public DAVA::Command
 {
 public:
     AddComponentCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* section);

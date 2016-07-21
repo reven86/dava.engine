@@ -1,11 +1,11 @@
 #ifndef __REBUILD_TANGENT_SPACE_COMMAND_H__
 #define __REBUILD_TANGENT_SPACE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 
-class RebuildTangentSpaceCommand : public CommandWithoutExecute
+class RebuildTangentSpaceCommand : public RECommand
 {
 public:
     RebuildTangentSpaceCommand(DAVA::RenderBatch* renderBatch, bool computeBinormal);

@@ -4,9 +4,9 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Particles/ParticleEmitter.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
-class ParticleEmitterMoveCommand : public CommandWithoutExecute
+class ParticleEmitterMoveCommand : public RECommand
 {
 public:
     ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent* oldEffect, DAVA::ParticleEmitterInstance* emitter, DAVA::ParticleEffectComponent* newEffect, int newIndex);

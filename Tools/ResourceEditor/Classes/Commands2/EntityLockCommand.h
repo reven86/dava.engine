@@ -1,14 +1,14 @@
 #ifndef __ENTITY_LOCK_COMMAND_H__
 #define __ENTITY_LOCK_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 namespace DAVA
 {
 class Entity;
 }
 
-class EntityLockCommand : public CommandWithoutExecute
+class EntityLockCommand : public RECommand
 {
 public:
     EntityLockCommand(DAVA::Entity* entity, bool lock);

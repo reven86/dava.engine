@@ -6,7 +6,7 @@
 
 ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy_,
                                                      const DAVA::Rect& updatedRect_, bool shouldClear)
-    : CommandWithoutExecute(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
+    : RECommand(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
     , shouldClearTexture(shouldClear)
 {
     const DAVA::Vector2 topLeft(floorf(updatedRect_.x), floorf(updatedRect_.y));

@@ -2,9 +2,9 @@
 #define __TRANSFORM_COMMAND_H__
 
 #include "Qt/Scene/Selectable.h"
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
-class TransformCommand : public CommandWithoutExecute
+class TransformCommand : public RECommand
 {
 public:
     TransformCommand(Selectable object, const DAVA::Matrix4& origTransform, const DAVA::Matrix4& newTransform);

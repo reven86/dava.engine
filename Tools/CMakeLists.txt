@@ -17,17 +17,7 @@ macro ( add_tool TARGET_NAME )
         add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/${TARGET_NAME}" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} )
     endif() 
 
-    get_property( USE_NGT GLOBAL PROPERTY USE_NGT_${TARGET_NAME} )
     get_property( DEPLOY_DIR_PRJ GLOBAL PROPERTY DEPLOY_DIR_${TARGET_NAME} )
-
-    if( USE_NGT AND DEPLOY )
-        ADD_CUSTOM_COMMAND ( TARGET NGT_DEPLOY_Megasolution POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/app/Megasolution ${DEPLOY_DIR_PRJ}            
-        )
-
-        add_dependencies( NGT_DEPLOY_Megasolution ${TARGET_NAME}  )
-
-    endif()
 
 endmacro ()
 
@@ -42,7 +32,6 @@ macro ( init_project )
 	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 	include ( CMake-common )
-	include ( NGTMacro )
 
 	if (DEPLOY)
 	    set (DEPLOY_ROOT ${DEPLOY_DIR})
@@ -53,12 +42,9 @@ macro ( init_project )
 
 	    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
 	   
-	    add_custom_target ( NGT_DEPLOY_Megasolution ALL )
 
 	endif()
 
-	configure_ngt( PROJECT_NAME ${TOOL_OUTPUT_DIR} )
-	find_package ( NgtTools REQUIRED )
 
 	set          ( DAVA_DISABLE_AUTOTESTS true )
 	find_package ( DavaFramework REQUIRED COMPONENTS ALL )

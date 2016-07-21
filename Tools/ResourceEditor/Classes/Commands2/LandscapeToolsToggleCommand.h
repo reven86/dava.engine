@@ -2,12 +2,12 @@
 #define __LANDSCAPETOOLSTOGGLECOMMAND_H__
 
 #include "Functional/Function.h"
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 #include "Scene/System/LandscapeEditorDrawSystem.h"
 
 class SceneEditor2;
 
-class LandscapeToolsToggleCommand : public CommandWithoutExecute
+class LandscapeToolsToggleCommand : public RECommand
 {
 public:
     LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,

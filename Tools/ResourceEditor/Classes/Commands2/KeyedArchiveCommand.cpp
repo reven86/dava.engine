@@ -4,7 +4,7 @@
 #include "FileSystem/KeyedArchive.h"
 
 KeyedArchiveAddValueCommand::KeyedArchiveAddValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val)
-    : CommandWithoutExecute(CMDID_KEYEDARCHIVE_ADD_KEY, "Add key to archive")
+    : RECommand(CMDID_KEYEDARCHIVE_ADD_KEY, "Add key to archive")
     , archive(_archive)
     , key(_key)
     , val(_val)
@@ -32,7 +32,7 @@ void KeyedArchiveAddValueCommand::Redo()
 }
 
 KeyeadArchiveRemValueCommand::KeyeadArchiveRemValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key)
-    : CommandWithoutExecute(CMDID_KEYEDARCHIVE_REM_KEY, "Rem key from archive")
+    : RECommand(CMDID_KEYEDARCHIVE_REM_KEY, "Rem key from archive")
     , archive(_archive)
     , key(_key)
 {
@@ -68,7 +68,7 @@ void KeyeadArchiveRemValueCommand::Redo()
 }
 
 KeyeadArchiveSetValueCommand::KeyeadArchiveSetValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val)
-    : CommandWithoutExecute(CMDID_KEYEDARCHIVE_SET_KEY, "Set archive value")
+    : RECommand(CMDID_KEYEDARCHIVE_SET_KEY, "Set archive value")
     , archive(_archive)
     , key(_key)
     , newVal(_val)

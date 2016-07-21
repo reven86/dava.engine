@@ -1,12 +1,12 @@
 #ifndef __QUICKED_INSERT_IMPORTED_PACKAGE_COMMAND_H__
 #define __QUICKED_INSERT_IMPORTED_PACKAGE_COMMAND_H__
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Command/Command.h"
 
 class PackageNode;
 class PackageControlsNode;
 
-class InsertImportedPackageCommand : public CommandWithoutExecute
+class InsertImportedPackageCommand : public DAVA::Command
 {
 public:
     InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex);

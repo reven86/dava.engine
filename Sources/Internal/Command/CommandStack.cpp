@@ -23,17 +23,16 @@ void CommandStack::Exec(Command::Pointer&& command)
         //when the macro started command without undo will cause undefined state of application
         DVASSERT_MSG(command->CanUndo(),
                      Format("Command %s, which can not make undo passed to CommandStack within macro %s",
-                            command->GetText().c_str(),
-                            batchesStack.top()->GetText().c_str())
+                            command->GetDescription().c_str(),
+                            batchesStack.top()->GetDescription().c_str())
                      .c_str()
                      );
-        if (command->CanUndo())
-        {
-            batchesStack.top()->AddAndExec(std::move(command));
-            return;
-        }
+        batchesStack.top()->AddAndRedo(std::move(command));
     }
-    commands.push_back(std::move(command));
+    else
+    {
+        commands.push_back(std::move(command));
+    }
 }
 
 void CommandStack::BeginBatch(const String& name, uint32 commandsCount)

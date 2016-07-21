@@ -22,7 +22,7 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Lod/LodSystem.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 using namespace DAVA;
 
@@ -606,7 +606,7 @@ void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
             const uint32 count = batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const CommandWithoutExecute* cmd = batch->GetCommand(i);
+                const RECommand* cmd = batch->GetCommand(i);
                 if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
                 {
                     break;

@@ -80,7 +80,7 @@ protected:
     DAVA::ParticleLayer* selectedLayer = nullptr;
 };
 
-class CommandRemoveParticleEmitter : public CommandWithoutExecute
+class CommandRemoveParticleEmitter : public RECommand
 {
 public:
     CommandRemoveParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);

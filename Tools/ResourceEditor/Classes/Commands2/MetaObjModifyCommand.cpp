@@ -2,7 +2,7 @@
 #include "Commands2/RECommandIDs.h"
 
 MetaObjModifyCommand::MetaObjModifyCommand(const DAVA::MetaInfo* _info, void* _object, const DAVA::VariantType& _newValue)
-    : CommandWithoutExecute(CMDID_META_OBJ_MODIFY, "Modify value")
+    : RECommand(CMDID_META_OBJ_MODIFY, "Modify value")
     , info(_info)
     , object(_object)
     , newValue(_newValue)

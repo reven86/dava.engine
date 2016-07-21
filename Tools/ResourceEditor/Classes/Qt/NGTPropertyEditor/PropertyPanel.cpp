@@ -1,3 +1,4 @@
+#if 0
 #include "PropertyPanel.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
@@ -170,3 +171,4 @@ void PropertyPanel::EndBatch()
 void PropertyPanel::onLoaded(wgt::IView* view)
 {
 }
+#endif 0

@@ -2,7 +2,7 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyDataValidator.h"
 
-#include "QtTools/Commands/CommandWithoutExecute.h"
+#include "Commands2/Base/RECommand.h"
 
 QtPropertyData::ChildKey::ChildKey(const QtPropertyData* child_)
     : child(child_)

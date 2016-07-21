@@ -5,14 +5,9 @@
 namespace DAVA
 {
 CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
-    : Command(CMDID_BATCH, description)
+    : Command(description)
 {
     commandList.reserve(commandsCount);
-}
-
-void CommandBatch::Execute()
-{
-    //Execute aready called in method "add and exec"
 }
 
 void CommandBatch::Redo()
@@ -31,18 +26,12 @@ void CommandBatch::Undo()
     }
 }
 
-void CommandBatch::AddAndExec(Pointer&& command)
+void CommandBatch::AddAndRedo(Pointer&& command)
 {
     DVASSERT(command);
 
     Command* actualCommand = command.get();
     commandList.emplace_back(std::move(command));
-    commandIDs.insert(actualCommand->GetID());
-    actualCommand->Execute();
-}
-
-bool CommandBatch::MatchCommandID(DAVA::CommandID_t commandId) const
-{
-    return commandIDs.count(commandId) > 0;
+    actualCommand->Redo();
 }
 }

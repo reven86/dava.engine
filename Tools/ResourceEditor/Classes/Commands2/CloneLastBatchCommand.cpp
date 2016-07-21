@@ -2,7 +2,7 @@
 #include "Commands2/RECommandIDs.h"
 
 CloneLastBatchCommand::CloneLastBatchCommand(DAVA::RenderObject* ro)
-    : CommandWithoutExecute(CMDID_CLONE_LAST_BATCH, "Clone Last Batch")
+    : RECommand(CMDID_CLONE_LAST_BATCH, "Clone Last Batch")
 {
     DVASSERT(ro);
     renderObject = SafeRetain(ro);

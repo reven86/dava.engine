@@ -13,16 +13,16 @@ public:
     CommandStack();
     virtual ~CommandStack();
 
-    virtual void Exec(Command::Pointer&& command);
+    void Exec(Command::Pointer&& command);
 
-    virtual void BeginBatch(const String& name, uint32 commandsCount = 0);
-    virtual void EndBatch();
+    void BeginBatch(const String& name, uint32 commandsCount = 0);
+    void EndBatch();
 
-    virtual bool IsClean() const;
-    virtual void SetClean();
+    bool IsClean() const;
+    void SetClean();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo();
+    void Redo();
 
     bool CanUndo() const;
     bool CanRedo() const;
