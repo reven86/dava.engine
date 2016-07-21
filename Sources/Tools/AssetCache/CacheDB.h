@@ -37,7 +37,7 @@ public:
 
     void Insert(const CacheItemKey& key, const CachedItemValue& value);
     void Remove(const CacheItemKey& key);
-    void InvalidateAccessToken(const CacheItemKey& key);
+    void UpdateAccessTimestamp(const CacheItemKey& key);
 
     const FilePath& GetPath() const;
     const uint64 GetStorageSize() const;
@@ -57,13 +57,11 @@ private:
     ServerCacheEntry* FindInFullCache(const CacheItemKey& key);
     const ServerCacheEntry* FindInFullCache(const CacheItemKey& key) const;
 
-    void IncreaseUsedSize(DAVA::uint64 size);
-
     void InsertInFastCache(const CacheItemKey& key, ServerCacheEntry* entry);
 
-    void InvalidateAccessToken(ServerCacheEntry* entry);
+    void UpdateAccessTimestamp(ServerCacheEntry* entry);
 
-    void ReduceFullCacheBySize(uint64 toSize);
+    void ReduceFullCacheToSize(uint64 toSize);
     void ReduceFastCacheByCount(uint32 countToRemove);
 
     void RemoveFromFastCache(const FastCacheMap::iterator& it);
@@ -75,10 +73,10 @@ private:
     FilePath cacheRootFolder; //path to folder with settings and cache of files
     FilePath cacheSettings; //path to settings
 
-    uint64 storageSize = 0; //maximum cache size
+    uint64 maxStorageSize = 0; //maximum cache size
     uint32 maxItemsInMemory = 0; //count of items in memory, to use for fast access
 
-    uint64 usedSize = 0; //used by CacheItemValues
+    uint64 occupiedSize = 0; //used by CacheItemValues
     uint64 nextItemID = 0; //item counter, used as last access time token
 
     uint64 autoSaveTimeout = 0;
@@ -97,12 +95,12 @@ inline const FilePath& CacheDB::GetPath() const
 
 inline const uint64 CacheDB::GetStorageSize() const
 {
-    return storageSize;
+    return maxStorageSize;
 }
 
 inline const uint64 CacheDB::GetUsedSize() const
 {
-    return usedSize;
+    return occupiedSize;
 }
 
 }; // end of namespace AssetCache
