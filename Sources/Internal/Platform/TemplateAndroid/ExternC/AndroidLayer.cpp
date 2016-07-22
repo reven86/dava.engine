@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef _ANDROID_LAYER_
 #define _ANDROID_LAYER_
 
@@ -490,3 +492,4 @@ void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject clas
 // END OF JNISurfaceView
 
 #endif //#ifndef _ANDROID_LAYER_
+#endif // !__DAVAENGINE_COREV2__

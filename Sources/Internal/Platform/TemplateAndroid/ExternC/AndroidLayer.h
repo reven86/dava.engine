@@ -1,6 +1,8 @@
 #ifndef __ANDROID_LAYER_H__
 #define __ANDROID_LAYER_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -20,4 +22,5 @@
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
+#endif // !__DAVAENGINE_COREV2__
 #endif //__ANDROID_LAYER_H__
