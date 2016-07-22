@@ -10,7 +10,8 @@ class CommandNotify : public DAVA::BaseObject
 public:
     virtual void Notify(const RECommand* command, bool redo) = 0;
     virtual void CleanChanged(bool clean);
-    virtual void UndoRedoStateChanged();
+    virtual void CanUndoChanged(bool canUndo);
+    virtual void CanRedoChanged(bool canRedo);
 };
 
 class CommandNotifyProvider
@@ -23,7 +24,8 @@ public:
 
     void EmitNotify(const RECommand* command, bool redo);
     void EmitCleanChanged(bool clean);
-    void EmitUndoRedoStateChanged();
+    void CanUndoChanged(bool canUndo);
+    void CanRedoChanged(bool canRedo);
 
 protected:
     CommandNotify* curNotify = nullptr;

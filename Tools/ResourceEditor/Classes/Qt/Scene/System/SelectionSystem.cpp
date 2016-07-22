@@ -502,7 +502,7 @@ void SceneSelectionSystem::Draw()
 void SceneSelectionSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     DVASSERT(command != nullptr);
-    static const DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };
+    static const DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };
     if (command->MatchCommandIDs(commandIds))
     {
         invalidSelectionBoxes = true;

@@ -108,9 +108,9 @@ int REApplication::Run()
     {
         RunConsole();
     }
-    else if (argc == 1
+    else if (arguments().size() == 1
 #if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
-             || (argc == 3 && argv[1] == DAVA::String("-NSDocumentRevisionsDebugMode") && argv[2] == DAVA::String("YES"))
+             || (arguments.size() == 3 && arguments().at(1) == DAVA::String("-NSDocumentRevisionsDebugMode") && arguments.at(2) == DAVA::String("YES"))
 #endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
              )
     {

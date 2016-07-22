@@ -338,12 +338,6 @@ void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
     }
 }
 
-void SceneEditor2::Exec(CommandAction::Pointer&& commandAction_)
-{
-    CommandAction::Pointer commandAction(commandAction_);
-    commandAction->Redo();
-}
-
 void SceneEditor2::RemoveCommands(DAVA::uint32 commandId)
 {
     commandStack->RemoveCommands(commandId);
@@ -481,7 +475,7 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const DAVA::Command* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const RECommand* command, bool redo)
 {
     if (nullptr != editor)
     {
@@ -498,9 +492,14 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
     }
 }
 
-void SceneEditor2::EditorCommandNotify::UndoRedoStateChanged()
+void SceneEditor2::EditorCommandNotify::CanUndoChanged(bool canUndo)
 {
-    SceneSignals::Instance()->EmitUndoRedoStateChanged(editor);
+    SceneSignals::Instance()->CanUndoStateChanged(canUndo);
+}
+
+void SceneEditor2::EditorCommandNotify::CanRedoChanged(bool canRedo)
+{
+    SceneSignals::Instance()->CanRedoStateChanged(canRedo);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const

@@ -4,7 +4,11 @@ void CommandNotify::CleanChanged(bool /*clean*/)
 {
 }
 
-void CommandNotify::UndoRedoStateChanged()
+void CommandNotify::CanUndoChanged(bool /*canUndo*/)
+{
+}
+
+void CommandNotify::CanRedoChanged(bool /*canRedo*/)
 {
 }
 
@@ -38,10 +42,18 @@ void CommandNotifyProvider::EmitCleanChanged(bool clean)
     }
 }
 
-void CommandNotifyProvider::EmitUndoRedoStateChanged()
+void CommandNotifyProvider::CanUndoChanged(bool canUndo)
 {
     if (nullptr != curNotify)
     {
-        curNotify->UndoRedoStateChanged();
+        curNotify->CanUndoChanged(canUndo);
+    }
+}
+
+void CommandNotifyProvider::CanRedoChanged(bool canRedo)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->CanRedoChanged(canRedo);
     }
 }

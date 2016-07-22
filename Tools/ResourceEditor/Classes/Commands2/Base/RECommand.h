@@ -15,6 +15,11 @@ private:
     const DAVA::uint32 id;
 };
 
+inline DAVA::uint32 RECommand::GetID() const
+{
+    return id;
+}
+
 inline bool RECommand::MatchCommandID(DAVA::uint32 commandID) const
 {
     return (id == commandID);

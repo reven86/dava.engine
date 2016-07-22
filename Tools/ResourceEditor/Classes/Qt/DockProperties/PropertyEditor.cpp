@@ -745,7 +745,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommand* comma
     {
         return;
     }
-    std::function<bool(const DAVA::Command*)> shouldResetPanel;
+    std::function<bool(const RECommand*)> shouldResetPanel;
     shouldResetPanel = [this, &shouldResetPanel](const RECommand* cmd) {
         const DAVA::uint32 cmdID = cmd->GetID();
         if (IsCommandBatch(cmd))

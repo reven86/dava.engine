@@ -54,7 +54,7 @@ public slots:
     void OnValueChanged();
     void OnEmitterYamlPathChanged(const QString& newPath);
     void OnEmitterPositionChanged();
-    void OnCommand(SceneEditor2* scene, const DAVA::Command* command, bool redo);
+    void OnCommand(SceneEditor2* scene, const RECommand* command, bool redo);
 
 protected:
     void UpdateProperties();

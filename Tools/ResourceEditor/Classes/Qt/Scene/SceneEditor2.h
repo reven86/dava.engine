@@ -41,6 +41,7 @@
 #include "Commands2/RECommandIDs.h"
 #include "Commands2/Base/CommandAction.h"
 
+class RECommand;
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
@@ -122,7 +123,6 @@ public:
 
     void ActivateCommandStack();
     void Exec(DAVA::Command::Pointer&& command);
-    void Exec(CommandAction::Pointer&& commandAction);
     void RemoveCommands(DAVA::uint32 commandId);
 
     void ClearAllCommands();
@@ -209,7 +209,8 @@ private:
         EditorCommandNotify(SceneEditor2* _editor);
         void Notify(const RECommand* command, bool redo) override;
         void CleanChanged(bool clean) override;
-        void UndoRedoStateChanged() override;
+        void CanUndoChanged(bool canUndo) override;
+        void CanRedoChanged(bool canRedo) override;
 
     private:
         SceneEditor2* editor = nullptr;

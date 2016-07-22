@@ -95,7 +95,7 @@ void LODComponentHolder::PropagateValues()
         {
             if (isChanged[i])
             {
-                scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
+                scene->Exec(DAVA::Command::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
             }
         }
     }

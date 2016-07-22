@@ -560,8 +560,8 @@ void QtMainWindow::SetupThemeActions()
 
 void QtMainWindow::SetupToolBars()
 {
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
-
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::CanUndoStateChanged, ui->actionUndo, &QAction::setEnabled);
+    connect(SceneSignals::Instance(), &SceneSignals::CanRedoStateChanged, ui->actionRedo, &QAction::setEnabled);
     QAction* actionMainToolBar = ui->mainToolBar->toggleViewAction();
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
@@ -991,8 +991,8 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
 
         SceneSelectionChanged(scene, &scene->selectionSystem->GetSelection(), nullptr);
     }
-
-    SceneUndoRedoStateChanged(scene);
+    ui->actionUndo->setEnabled(scene->CanUndo());
+    ui->actionRedo->setEnabled(scene->CanRedo());
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
@@ -1992,15 +1992,6 @@ void QtMainWindow::LoadModificationState(SceneEditor2* scene)
         ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
 
         UpdateModificationActionsState();
-    }
-}
-
-void QtMainWindow::SceneUndoRedoStateChanged(SceneEditor2* scene)
-{
-    if (nullptr != scene)
-    {
-        ui->actionUndo->setEnabled(scene->CanUndo());
-        ui->actionRedo->setEnabled(scene->CanRedo());
     }
 }
 

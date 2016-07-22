@@ -483,7 +483,7 @@ void TilemaskEditorSystem::CreateUndoPoint()
     {
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
-        scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), rect));
+        scene->Exec(DAVA::Command::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), rect));
     }
 }
 

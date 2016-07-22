@@ -40,7 +40,7 @@ void RECommandBatch::RemoveCommands(DAVA::uint32 commandId)
         DAVA::Command* commandPtr = command.get();
         if (IsCommandBatch(commandPtr))
         {
-            RECommandBatch* batch = static_cast<RECommandBatch*>(commandPtr);
+            RECommandBatch* batch = static_cast<RECommandBatch*>(static_cast<DAVA::CommandBatch*>(commandPtr));
             batch->RemoveCommands(commandId);
         }
     }
@@ -54,7 +54,7 @@ bool RECommandBatch::MatchCommandID(DAVA::uint32 commandId) const
         const DAVA::Command* commandPtr = commandList.at(index).get();
         if (IsCommandBatch(commandPtr))
         {
-            const RECommandBatch* reCommandBatch = static_cast<const RECommandBatch*>(commandPtr);
+            const RECommandBatch* reCommandBatch = static_cast<const RECommandBatch*>(static_cast<const DAVA::CommandBatch*>(commandPtr));
             if (reCommandBatch->MatchCommandID(commandId))
             {
                 return true;

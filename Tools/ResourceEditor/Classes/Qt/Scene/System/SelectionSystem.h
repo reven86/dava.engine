@@ -14,6 +14,7 @@
 #include "Render/UniqueStateSet.h"
 #include "Render/RenderHelper.h"
 
+class RECommand;
 class SceneCollisionSystem;
 class HoodSystem;
 class EntityModificationSystem;
@@ -39,6 +40,8 @@ class SceneSelectionSystem : public DAVA::SceneSystem
 public:
     SceneSelectionSystem(SceneEditor2* editor);
     ~SceneSelectionSystem();
+
+    void ProcessCommand(const RECommand* command, bool redo);
 
     void AddObjectToSelection(Selectable::Object* entity);
     void AddGroupToSelection(const SelectableGroup& entities);

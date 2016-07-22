@@ -5,9 +5,9 @@
 RECommandStack::RECommandStack()
     : DAVA::CommandStack()
 {
-    canRedoChanged.Connect(DAVA::MakeFunction(this, &RECommandStack::EmitUndoRedoStateChanged));
-    canUndoChanged.Connect(DAVA::MakeFunction(this, &RECommandStack::EmitUndoRedoStateChanged));
-    cleanChanged.Connect(DAVA::MakeFunction(this, &RECommandStack::EmitCleanChanged));
+    canRedoChanged.Connect(this, &RECommandStack::CanRedoChanged);
+    canUndoChanged.Connect(this, &RECommandStack::CanUndoChanged);
+    cleanChanged.Connect(this, &RECommandStack::EmitCleanChanged);
 }
 
 void RECommandStack::Clear()
@@ -24,7 +24,7 @@ void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
         DAVA::Command* commandPtr = commands.at(index).get();
         if (DAVA::IsCommandBatch(commandPtr))
         {
-            RECommandBatch* batch = static_cast<RECommandBatch*>(static_cast<RECommandBatch*>(commandPtr));
+            RECommandBatch* batch = static_cast<RECommandBatch*>(static_cast<DAVA::CommandBatch*>(commandPtr));
             batch->RemoveCommands(commandId);
             if (batch->IsEmpty())
             {
@@ -44,7 +44,8 @@ void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
 
 void RECommandStack::Activate()
 {
-    EmitUndoRedoStateChanged();
+    canUndoChanged.Emit(CanUndo());
+    canRedoChanged.Emit(CanRedo());
 }
 
 bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
@@ -68,12 +69,12 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
 void RECommandStack::RemoveCommand(DAVA::uint32 index)
 {
     DVASSERT(index < commands.size());
-    if (cleanIndex > index)
+    if (cleanIndex > static_cast<DAVA::int32>(index))
     {
         cleanIndex--;
     }
     commands.erase(commands.begin() + index);
-    if (currentIndex > index)
+    if (currentIndex > static_cast<DAVA::int32>(index))
     {
         SetCurrentIndex(currentIndex - 1);
     }

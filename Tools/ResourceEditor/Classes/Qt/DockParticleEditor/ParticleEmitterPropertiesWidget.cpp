@@ -197,11 +197,12 @@ bool HasInstance(const DAVA::Entity* entity, DAVA::ParticleEmitterInstance* inst
 }
 }
 
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     if (blockSignals || (GetActiveScene() != scene))
         return;
 
-    auto tryRemoveSelectedEmitter = [this, scene](const Command2* inCommand, bool redo)
+    auto tryRemoveSelectedEmitter = [this, scene](const RECommand* inCommand, bool redo)
     {
         if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
@@ -231,7 +232,7 @@ bool HasInstance(const DAVA::Entity* entity, DAVA::ParticleEmitterInstance* inst
         }
     };
 
-    if (command->GetID() == DAVA::CMDID_BATCH)
+    if (IsCommandBatch(command))
     {
         const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
         for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)

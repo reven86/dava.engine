@@ -407,7 +407,7 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 
     return waypoint;
 }
 
-void WayEditSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void WayEditSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {

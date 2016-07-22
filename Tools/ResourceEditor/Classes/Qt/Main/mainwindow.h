@@ -218,7 +218,6 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
-    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
