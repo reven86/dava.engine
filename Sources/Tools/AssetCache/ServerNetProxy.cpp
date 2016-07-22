@@ -69,10 +69,6 @@ void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packet
             }
             }
         }
-        else
-        {
-            DVASSERT(false && "Invalid packet received");
-        }
     }
     else
     {

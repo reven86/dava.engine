@@ -2,7 +2,6 @@
 #include "Render/Image/Image.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
-#include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/StaticOcclusion.h"

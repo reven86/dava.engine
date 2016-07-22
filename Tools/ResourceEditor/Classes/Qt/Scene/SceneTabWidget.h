@@ -75,8 +75,8 @@ public slots:
 protected:
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
 
-    bool CloseTabInternal(int index, bool force);
-    bool CloseAllTabsInternal(bool force);
+    bool CloseTabInternal(int index, bool silent);
+    bool CloseAllTabsInternal(bool silent);
 
     MainTabBar* tabBar;
     DavaGLWidget* davaWidget;

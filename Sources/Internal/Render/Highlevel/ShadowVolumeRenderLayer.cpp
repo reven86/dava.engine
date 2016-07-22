@@ -60,12 +60,13 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
 
 void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList)
 {
-    if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
+    if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW) ||
+        !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW))
     {
         return;
     }
 
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW) && renderBatchArray.GetRenderBatchCount())
+    if (renderBatchArray.GetRenderBatchCount())
     {
         RenderLayer::Draw(camera, renderBatchArray, packetList);
 

@@ -519,11 +519,19 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         ImageSystem::Load(multipleMipPathname, *images, params);
 
         ImageSystem::EnsurePowerOf2Images(*images);
-        if (images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
+        if (images->size() == 1 && texDescriptor->GetGenerateMipMaps())
         {
-            Image* img = *images->begin();
-            *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
-            SafeRelease(img);
+            ImageFormat imFormat = texDescriptor->GetImageFormatForGPU(gpu);
+            if (TextureDescriptor::IsSupportedCompressedFormat(imFormat) == false) //only tga, png, webp, jpeg
+            {
+                Image* img = *images->begin();
+                *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
+                SafeRelease(img);
+            }
+            else
+            {
+                Logger::Error("[Texture::LoadImages] Can't create mipmaps for GPU (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
+            }
         }
     }
 
