@@ -212,6 +212,8 @@ static const char* _ShaderHeader_Metal =
 */
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
+"#define  frac(a) fract(a)\n"
+
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
 
