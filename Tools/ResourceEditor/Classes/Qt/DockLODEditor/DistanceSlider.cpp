@@ -32,7 +32,12 @@ DAVA::int32 RoundFloat32(DAVA::float32 value)
 
 DAVA::int32 GetAvailableWidth(QSplitter* splitter, DAVA::uint32 visibleFramesCount)
 {
-    DAVA::int32 availableSplitterWidth = splitter->geometry().width() - splitter->handleWidth() * (visibleFramesCount - 1);
+    DAVA::int32 availableSplitterWidth = splitter->geometry().width();
+    if (visibleFramesCount > 0)
+    {
+        availableSplitterWidth -= splitter->handleWidth() * (visibleFramesCount - 1);
+    }
+
     return availableSplitterWidth;
 }
 }
@@ -179,9 +184,14 @@ void DistanceSlider::BuildUI()
         handlePos += handleWidth;
     }
 
+    setToolTip("");
     if (!fitModeEnabled)
     {
         sizes.push_back(availableSplitterWidth - lastLayerWidth);
+    }
+    else if (visibleFramesCount == 0)
+    {
+        setToolTip("all distances are infinity");
     }
 
     QSignalBlocker guard(splitter);
