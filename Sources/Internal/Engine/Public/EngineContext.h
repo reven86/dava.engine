@@ -25,7 +25,6 @@ class VirtualCoordinatesSystem;
 class SoundSystem;
 class AnimationManager;
 class FontManager;
-class FrameOcclusionQueryManager;
 class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
@@ -63,7 +62,6 @@ public:
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;
-    FrameOcclusionQueryManager* frameOcclusionQueryManager = nullptr;
     RenderSystem2D* renderSystem2D = nullptr;
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;

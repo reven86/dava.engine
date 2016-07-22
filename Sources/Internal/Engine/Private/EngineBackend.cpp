@@ -37,7 +37,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -291,12 +290,10 @@ void EngineBackend::OnDraw()
 {
     context->renderSystem2D->BeginFrame();
 
-    context->frameOcclusionQueryManager->ResetFrameStats();
     for (Window* w : windows)
     {
         w->Draw();
     }
-    context->frameOcclusionQueryManager->ProccesRenderedFrame();
 
     engine->draw.Emit();
     context->renderSystem2D->EndFrame();
@@ -499,7 +496,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->fontManager = new FontManager();
         context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->frameOcclusionQueryManager = new FrameOcclusionQueryManager();
         context->virtualCoordSystem = new VirtualCoordinatesSystem();
         context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
@@ -565,7 +561,6 @@ void EngineBackend::DestroySubsystems()
         context->uiControlSystem->Release();
         context->fontManager->Release();
         context->animationManager->Release();
-        context->frameOcclusionQueryManager->Release();
         context->virtualCoordSystem->Release();
         context->renderSystem2D->Release();
         context->inputSystem->Release();
