@@ -116,19 +116,6 @@ FilePath CreateCompressedTexturePathname(const FilePath& pathname, eGPUFamily gp
     String postfix = GetPostfix(gpuFamily, imageFormat);
     return FilePath::CreateWithNewExtension(pathname, postfix);
 }
-
-ImageFormat GetImageFormatForGPU(const TextureDescriptor& descriptor, const eGPUFamily gpuFamily)
-{
-    if (GPU_INVALID == gpuFamily)
-        return descriptor.dataSettings.sourceFileFormat;
-
-    if (descriptor.IsCompressedFile())
-    {
-        return descriptor.imageFormat;
-    }
-
-    return static_cast<ImageFormat>(descriptor.compression[gpuFamily].imageFormat);
-}
 }
 
 //================   TextureDrawSettings  ===================
@@ -285,7 +272,7 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     if (crcIsEqual)
     {
         //this code need until using of convertation params in crc
-        const ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, forGPU);
+        const ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
         const FilePath filePath = TextureDescriptorLocal::CreateCompressedTexturePathname(pathname, forGPU, imageFormat);
         ImageInfo imageInfo = ImageSystem::GetImageInfo(filePath);
 
@@ -1023,7 +1010,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     if (compression[forGPU].format == FORMAT_INVALID)
         return 0;
 
-    ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, forGPU);
+    ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
     FilePath filePath = TextureDescriptorLocal::CreateCompressedTexturePathname(pathname, forGPU, imageFormat);
     if (imageFormat == IMAGE_FORMAT_PVR)
     {
@@ -1063,8 +1050,8 @@ FilePath TextureDescriptor::CreateMultiMipPathnameForGPU(const eGPUFamily gpuFam
 {
     if (GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
-        ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
-        if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+        ImageFormat imageFormat = GetImageFormatForGPU(gpuFamily);
+        if (imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
             return FilePath();
 
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
@@ -1078,7 +1065,7 @@ bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamil
 {
     if ((dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE) && GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
-        ImageFormat imageFormat = TextureDescriptorLocal::GetImageFormatForGPU(*this, gpuFamily);
+        ImageFormat imageFormat = GetImageFormatForGPU(gpuFamily);
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
         pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
 
@@ -1100,11 +1087,24 @@ void TextureDescriptor::CreateLoadPathnamesForGPU(const eGPUFamily gpuFamily, Ve
 
 PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
 {
-    if (forGPU == GPU_INVALID)
-        return FORMAT_INVALID;
+    if (forGPU == eGPUFamily::GPU_INVALID)
+        return PixelFormat::FORMAT_INVALID;
 
     DVASSERT(0 <= forGPU && forGPU < GPU_FAMILY_COUNT);
     return static_cast<PixelFormat>(compression[forGPU].format);
+}
+
+ImageFormat TextureDescriptor::GetImageFormatForGPU(eGPUFamily forGPU) const
+{
+    if (eGPUFamily::GPU_INVALID == forGPU)
+        return dataSettings.sourceFileFormat;
+
+    if (IsCompressedFile())
+    {
+        return imageFormat;
+    }
+
+    return static_cast<ImageFormat>(compression[forGPU].imageFormat);
 }
 
 void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps)
