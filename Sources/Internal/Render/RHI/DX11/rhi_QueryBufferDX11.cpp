@@ -209,7 +209,7 @@ void SetQueryIndex(Handle handle, uint32 objectIndex, ID3D11DeviceContext* conte
                 desc.Query = D3D11_QUERY_OCCLUSION;
                 desc.MiscFlags = 0;
 
-                _D3D11_Device->CreateQuery(&desc, &iq);
+                CHECK_HR(_D3D11_Device->CreateQuery(&desc, &iq));
             }
 
             if (iq)
