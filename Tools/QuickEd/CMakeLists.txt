@@ -67,7 +67,7 @@ set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
 define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
- 
+
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
