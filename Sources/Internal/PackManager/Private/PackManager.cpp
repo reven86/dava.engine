@@ -15,16 +15,20 @@ PackManager::IRequest::~IRequest() = default;
 
 PackManager::ISync::~ISync() = default;
 
-void PackManager::Initialize(const String& dbFileName_,
-                             const FilePath& readOnlyPacksDir_,
-                             const FilePath& downloadPacksDir_,
-                             const String& architecture_,
-                             const Hints& hints_)
+void PackManager::InitCommonPacks(const String& dbFileName_,
+                                  const FilePath& readOnlyPacksDir_,
+                                  const FilePath& downloadPacksDir_,
+                                  const Hints& hints_)
 {
-    impl->Initialize(dbFileName_, readOnlyPacksDir_, downloadPacksDir_, architecture_, hints_, this);
+    impl->InitCommonPacks(dbFileName_, readOnlyPacksDir_, downloadPacksDir_, hints_, this);
 }
 
-bool PackManager::IsInitialized() const
+void PackManager::InitGpuPacks(const String& architecture_)
+{
+    impl->InitGpuPacks(architecture_);
+}
+
+bool PackManager::IsCommonPacksInitialized() const
 {
     return impl->IsInitialized();
 }

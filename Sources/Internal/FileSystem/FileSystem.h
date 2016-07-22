@@ -297,7 +297,7 @@ private:
         FilePath archiveFilePath;
     };
 
-    UnorderedMap<String, ResourceArchiveItem> resourceArchiveList;
+    UnorderedMap<String, ResourceArchiveItem> resArchiveMap;
     Map<String, void*> lockedFileHandles;
 
     friend class File;
