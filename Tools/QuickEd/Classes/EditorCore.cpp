@@ -26,6 +26,8 @@ EditorCore::EditorCore(QObject* parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
+    connect(qApp, &QApplication::applicationStateChanged, this, &EditorCore::OnApplicationStateChanged);
+
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
@@ -81,6 +83,11 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
 }
 
 EditorCore::~EditorCore()
@@ -310,6 +317,23 @@ void EditorCore::OnNewProject()
     else if (result.type == Result::RESULT_ERROR)
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
+    }
+}
+
+void EditorCore::OnApplicationStateChanged(Qt::ApplicationState state)
+{
+    DAVA::Core* core = DAVA::Core::Instance();
+    if (core == nullptr)
+    {
+        return;
+    }
+    if (state == Qt::ApplicationActive)
+    {
+        core->FocusReceived();
+    }
+    else
+    {
+        core->FocusLost();
     }
 }
 

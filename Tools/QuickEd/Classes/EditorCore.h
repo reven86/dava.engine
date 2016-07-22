@@ -34,7 +34,6 @@ public:
     bool CloseProject();
 
 private slots:
-
     void OnReloadSpritesStarted();
     void OnReloadSpritesFinished();
 
@@ -51,6 +50,7 @@ private slots:
 
     void OnExit();
     void OnNewProject();
+    void OnApplicationStateChanged(Qt::ApplicationState state);
 
 private:
     void OpenProject(const QString& path);
