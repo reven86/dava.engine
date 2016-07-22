@@ -2,7 +2,6 @@
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Logger/Logger.h"
-#include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
@@ -23,8 +22,6 @@
 
 namespace DAVA
 {
-const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
-
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -328,8 +325,6 @@ void UIControlSystem::Draw()
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
-
     drawCounter = 0;
 
     const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
@@ -359,9 +354,6 @@ void UIControlSystem::Draw()
     {
         frameSkip--;
     }
-    //Logger::Info("UIControlSystem::draws: %d", drawCounter);
-
-    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
 

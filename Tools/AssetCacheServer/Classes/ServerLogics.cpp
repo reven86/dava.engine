@@ -41,6 +41,12 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
         value.SetDescription(description);
 
         bool isValid = value.IsValid();
+        if (isValid && value.GetSize() > dataBase->GetStorageSize())
+        {
+            isValid = false;
+            Logger::Warning("[%s] Inserted size %u is bigger than max storage size %u", __FUNCTION__, value.GetSize(), dataBase->GetStorageSize());
+        }
+
         server->AddedToCache(channel, key, isValid);
 
         if (isValid)
@@ -90,7 +96,7 @@ void ServerLogics::OnWarmingUp(DAVA::Net::IChannel* channel, const DAVA::AssetCa
 {
     if (nullptr != dataBase)
     {
-        dataBase->InvalidateAccessToken(key);
+        dataBase->UpdateAccessTimestamp(key);
     }
 }
 

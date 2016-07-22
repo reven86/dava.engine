@@ -305,7 +305,6 @@ public:
     Handle cur_pipelinestate;
     uint32 cur_stride;
     Handle cur_query_buf;
-    uint32 cur_query_i;
     D3D11_VIEWPORT def_viewport;
     RasterizerParamDX11 rs_param;
     ID3D11RasterizerState* cur_rs;
@@ -595,6 +594,9 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
+    if (cb->isLastInPass && cb->cur_query_buf != InvalidHandle)
+        QueryBufferDX11::QueryComplete(cb->cur_query_buf, cb->context);
+
     CHECK_HR(cb->context->FinishCommandList(TRUE, &(cb->commandList)));
     cb->sync = syncObject;
     cb->isComplete = true;
@@ -810,7 +812,8 @@ dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    cb->cur_query_i = objectIndex;
+    if (cb->cur_query_buf != InvalidHandle)
+        QueryBufferDX11::SetQueryIndex(cb->cur_query_buf, objectIndex, cb->context);
 #else
     CommandDX11_SetQueryIndex* cmd = cb->allocCmd<CommandDX11_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
@@ -927,13 +930,7 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
     cb->_ApplyRasterizerState();
     cb->_ApplyConstBuffers();
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->Draw(vertexCount, baseVertex);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -961,13 +958,7 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
     cb->_ApplyRasterizerState();
     cb->_ApplyConstBuffers();
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->DrawIndexed(indexCount, startIndex, firstVertex);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -998,13 +989,7 @@ dx11_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uin
     cb->_ApplyRasterizerState();
     cb->_ApplyConstBuffers();
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->DrawInstanced(vertexCount, instCount, baseVertex, 0);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -1033,13 +1018,7 @@ dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType ty
     cb->_ApplyRasterizerState();
     cb->_ApplyConstBuffers();
 
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::BeginQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
-
     ctx->DrawIndexedInstanced(indexCount, instCount, startIndex, firstVertex, baseInstance);
-
-    if (cb->cur_query_i != DAVA::InvalidIndex)
-        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
 #else
@@ -1123,6 +1102,8 @@ dx11_SyncObject_IsSignaled(Handle obj)
 static void
 _ExecuteQueuedCommandsDX11()
 {
+    StatSet::ResetAll();
+
     Trace("rhi-dx11.exec-queued-cmd\n");
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
@@ -1631,7 +1612,6 @@ void CommandBufferDX11_t::Reset()
     cur_pipelinestate = InvalidHandle;
     cur_stride = 0;
     cur_query_buf = InvalidHandle;
-    cur_query_i = DAVA::InvalidIndex;
     cur_rs = nullptr;
 
     rs_param.cullMode = CULL_NONE;
@@ -1827,7 +1807,8 @@ void CommandBufferDX11_t::Execute()
 
         case DX11__SET_QUERY_INDEX:
         {
-            cur_query_i = ((CommandDX11_SetQueryIndex*)cmd)->objectIndex;
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferDX11::SetQueryIndex(cur_query_buf, ((CommandDX11_SetQueryIndex*)cmd)->objectIndex, context);
         }
         break;
 
@@ -2171,6 +2152,8 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     }
 
     context->IASetPrimitiveTopology(cur_topo);
+
+    DVASSERT(!isFirstInPass || cur_query_buf == InvalidHandle || !QueryBufferDX11::QueryIsCompleted(cur_query_buf));
 }
 
 //------------------------------------------------------------------------------

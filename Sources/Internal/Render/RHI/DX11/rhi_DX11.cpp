@@ -109,6 +109,7 @@ _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 static void
 dx11_Uninitialize()
 {
+    QueryBufferDX11::ReleaseQueryPool();
     UninitializeRenderThreadDX11();
 }
 
