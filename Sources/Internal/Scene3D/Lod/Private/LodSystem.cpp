@@ -176,19 +176,22 @@ void LodSystem::AddEntity(Entity* entity)
     ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
     Vector3 position = transform->GetWorldTransform().GetTranslationVector();
 
+    lod->currentLod = LodComponent::INVALID_LOD_LAYER;
+
     SlowStruct slow;
     slow.entity = entity;
     slow.lod = lod;
     slow.effect = effect;
+    slow.recursiveUpdate = lod->recursiveUpdate;
     UpdateDistances(lod, &slow);
     slowVector.push_back(slow);
 
     FastStruct fast;
     fast.farSquare0 = slow.farSquares[0];
     fast.position = position;
-    fast.currentLod = lod->currentLod;
-    fast.nearSquare = lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.nearSquares[lod->currentLod];
-    fast.farSquare = lod->currentLod == LodComponent::INVALID_LOD_LAYER ? -1.f : slow.farSquares[lod->currentLod];
+    fast.currentLod = LodComponent::INVALID_LOD_LAYER;
+    fast.nearSquare = -1.f;
+    fast.farSquare = -1.f;
     fast.effectStopped = effect ? effect->IsStopped() : false;
     fast.isEffect = effect != nullptr;
 
@@ -205,6 +208,7 @@ void LodSystem::RemoveEntity(Entity* entity)
 
     //delete from slow
     SlowStruct& slowLast = slowVector.back();
+    slowVector[index].lod->currentLod = LodComponent::INVALID_LOD_LAYER;
     slowVector[index] = slowLast;
     slowVector.pop_back();
 
