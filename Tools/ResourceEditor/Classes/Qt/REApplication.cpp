@@ -30,7 +30,6 @@
 #endif //__DAVAENGINE_BEAST__
 
 #include <core_command_system/i_command_manager.hpp>
-#include <core_command_system/i_history_panel.h>
 #include <core_generic_plugin/interfaces/i_application.hpp>
 
 #include <QCryptographicHash>
@@ -149,10 +148,6 @@ void REApplication::GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) con
     names.push_back(L"plg_editor_interaction");
     names.push_back(L"plg_qt_app");
     names.push_back(L"plg_qt_common");
-    if (cmdLineManager->IsEnabled() == false)
-    {
-        names.push_back(L"plg_history_ui");
-    }
 }
 
 void REApplication::OnPostLoadPlugins()
@@ -195,6 +190,10 @@ bool REApplication::OnRequestCloseApp()
 void REApplication::ConfigureLineCommand(NGTLayer::NGTCmdLineParser& lineParser)
 {
     lineParser.addParam("preferenceFolder", DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory().GetAbsolutePathname());
+    if (cmdLineManager->IsEnabled())
+    {
+        lineParser.addFlag("hideLogo");
+    }
 }
 
 void REApplication::RunWindow()
@@ -227,13 +226,6 @@ void REApplication::RunWindow()
     QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
-
-    wgt::IHistoryPanel* historyPanel = NGTLayer::queryInterface<wgt::IHistoryPanel>();
-    if (historyPanel != nullptr)
-    {
-        historyPanel->setClearButtonVisible(false);
-        historyPanel->setMakeMacroButtonVisible(false);
-    }
 
     // create and init UI
     ResourceEditorLauncher launcher;

@@ -37,8 +37,11 @@ namespace QueryBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void BeginQuery(Handle buf, uint32 objectIndex);
-void EndQuery(Handle buf, uint32 objectIndex);
+void SetQueryIndex(Handle buf, uint32 objectIndex);
+void QueryComplete(Handle buf);
+bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryPool();
 }
 
 namespace PerfQuerySetDX9
