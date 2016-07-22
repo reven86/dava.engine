@@ -69,7 +69,9 @@ void TankUtils::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointInde
         child->RemoveComponent(Component::RENDER_COMPONENT);
     }
 
-    LodSystem::MergeChildLods(skinnedTank);
+    LodComponent* toLod = static_cast<LodComponent*>(skinnedTank->GetOrCreateComponent(Component::LOD_COMPONENT));
+    toLod->EnableRecursiveUpdate();
+
     sourceTank->AddNode(skinnedTank);
 }
 

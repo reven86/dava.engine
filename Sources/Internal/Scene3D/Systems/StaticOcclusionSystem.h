@@ -55,6 +55,9 @@ private:
     Vector<StaticOcclusionDataComponent*> staticOcclusionComponents;
     Vector<RenderObject*> indexedRenderObjects;
     bool isInPvs = false;
+
+    uint32 occludedObjectsCount = 0;
+    uint32 visibleObjestsCount = 0;
 };
 
 class StaticOcclusionDebugDrawSystem : public SceneSystem

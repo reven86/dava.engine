@@ -11,7 +11,7 @@ public:
     ~CollisionRenderObject() override;
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) override;
-    ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) override;
+    ClassifyPlanesResult ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes) override;
 
 protected:
     btTriangleMesh* btTriangles = nullptr;

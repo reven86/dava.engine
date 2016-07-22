@@ -1,9 +1,9 @@
-#ifndef __SYSTEM_DELEGATES_H__
-#define __SYSTEM_DELEGATES_H__
+#pragma once
 
 namespace DAVA
 {
 class Entity;
+class AABBox3;
 }
 
 class SelectableGroup;
@@ -25,8 +25,15 @@ public:
 class SceneSelectionSystemDelegate
 {
 public:
-    virtual bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) = 0;
-    virtual bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) = 0;
+    virtual bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
+    {
+        return true;
+    }
+    virtual bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
+    {
+        return true;
+    }
+    virtual void OnSelectionBoxChanged(const DAVA::AABBox3& newBox)
+    {
+    }
 };
-
-#endif //__SYSTEM_DELEGATES_H__

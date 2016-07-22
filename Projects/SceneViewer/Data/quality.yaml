@@ -32,7 +32,7 @@ materials:
  -
   group: "Water"
   quality: ["ULTRA_HIGH", "HIGH", "LOW"]
-  default: "ULTRA_HIGH"
+  default: "LOW"
 
  -
   group: "Static object"
@@ -47,7 +47,7 @@ materials:
  -
   group: "Particle"
   quality: ["HIGH", "LOW"]
-  default: "HIGH"
+  default: "LOW"
 
  -
   group: "Tank"
