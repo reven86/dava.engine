@@ -795,8 +795,8 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         if (rhi::DeviceCaps().isAnisotropicFilteringSupported)
         {
             DVASSERT(sampler->anisotropyLevel >= 1);
-            uint32 targetLevel = std::min(sampler->anisotropyLevel, rhi::DeviceCaps().maxAnisotropy);
-            GL_CALL(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, targetLevel));
+            DVASSERT(sampler->anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, sampler->anisotropyLevel));
         }
 
         self->samplerState = *sampler;

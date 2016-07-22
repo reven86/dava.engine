@@ -114,8 +114,9 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for (unsigned i = 0; i != desc.fragmentSamplerCount; ++i)
     {
-        uint32 anisotropyLevel = std::min(rhi::DeviceCaps().maxAnisotropy, desc.fragmentSampler[i].anisotropyLevel);
+        uint32 anisotropyLevel = desc.fragmentSampler[i].anisotropyLevel;
         DVASSERT(anisotropyLevel >= 1);
+        DVASSERT(anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
 
         state->fragmentSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrU));
         state->fragmentSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.fragmentSampler[i].addrV));
@@ -126,18 +127,20 @@ dx9_SamplerState_Create(const SamplerState::Descriptor& desc)
         state->fragmentSampler[i].anisotropyLevel = anisotropyLevel;
     }
 
-    const uint32 vertexSamplerAnisotropyLevel = 1;
-
     state->vertexSamplerCount = desc.vertexSamplerCount;
     for (unsigned i = 0; i != desc.vertexSamplerCount; ++i)
     {
+        uint32 anisotropyLevel = desc.vertexSampler[i].anisotropyLevel;
+        DVASSERT(anisotropyLevel >= 1);
+        DVASSERT(anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
+
         state->vertexSampler[i].addrU = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrU));
         state->vertexSampler[i].addrV = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrV));
         state->vertexSampler[i].addrW = _AddrModeDX9(TextureAddrMode(desc.vertexSampler[i].addrW));
-        state->vertexSampler[i].minFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].minFilter), vertexSamplerAnisotropyLevel);
-        state->vertexSampler[i].magFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].magFilter), vertexSamplerAnisotropyLevel);
-        state->vertexSampler[i].mipFilter = _TextureMipFilterDX9(TextureMipFilter(desc.vertexSampler[i].mipFilter), vertexSamplerAnisotropyLevel);
-        state->vertexSampler[i].anisotropyLevel = vertexSamplerAnisotropyLevel;
+        state->vertexSampler[i].minFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].minFilter), anisotropyLevel);
+        state->vertexSampler[i].magFilter = _TextureFilterDX9(TextureFilter(desc.vertexSampler[i].magFilter), anisotropyLevel);
+        state->vertexSampler[i].mipFilter = _TextureMipFilterDX9(TextureMipFilter(desc.vertexSampler[i].mipFilter), anisotropyLevel);
+        state->vertexSampler[i].anisotropyLevel = anisotropyLevel;
     }
 
     return handle;
