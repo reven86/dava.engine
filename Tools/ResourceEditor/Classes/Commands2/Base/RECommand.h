@@ -20,7 +20,4 @@ inline bool RECommand::MatchCommandID(DAVA::uint32 commandID) const
     return (id == commandID);
 }
 
-bool IsRECommand(const DAVA::Command* command)
-{
-    return dynamic_cast<const RECommand*>(command) != nullptr;
-}
+bool IsRECommand(const DAVA::Command* command);

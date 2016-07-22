@@ -39,6 +39,7 @@
 
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"
+#include "Commands2/Base/CommandAction.h"
 
 class SceneCameraSystem;
 class SceneCollisionSystem;
@@ -121,6 +122,7 @@ public:
 
     void ActivateCommandStack();
     void Exec(DAVA::Command::Pointer&& command);
+    void Exec(CommandAction::Pointer&& commandAction);
     void RemoveCommands(DAVA::uint32 commandId);
 
     void ClearAllCommands();

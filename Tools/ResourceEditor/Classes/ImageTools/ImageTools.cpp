@@ -51,11 +51,11 @@ DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, c
         {
             const auto formatSizeBits = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
 
-            DAVA::uint32 m = Min(baseMipMaps, info.mipmapsCount - 1);
+            DAVA::uint32 m = DAVA::Min(baseMipMaps, info.mipmapsCount - 1);
             for (; m < info.mipmapsCount; ++m)
             {
-                DAVA::uint32 w = Max(info.width >> m, 1u);
-                DAVA::uint32 h = Max(info.height >> m, 1u);
+                DAVA::uint32 w = DAVA::Max(info.width >> m, 1u);
+                DAVA::uint32 h = DAVA::Max(info.height >> m, 1u);
                 size += DAVA::Image::GetSizeInBytes(w, h, info.format);
             }
         }

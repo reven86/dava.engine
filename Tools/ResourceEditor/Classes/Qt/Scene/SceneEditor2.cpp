@@ -337,6 +337,12 @@ void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
     }
 }
 
+void SceneEditor2::Exec(CommandAction::Pointer&& commandAction_)
+{
+    CommandAction::Pointer commandAction(commandAction_);
+    commandAction->Redo();
+}
+
 void SceneEditor2::RemoveCommands(DAVA::uint32 commandId)
 {
     commandStack->RemoveCommands(commandId);
@@ -426,7 +432,7 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const DAVA::Command* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const RECommand* command, bool redo)
 {
     if (command == nullptr)
     {

@@ -9,6 +9,8 @@ SetPropertyValueCommand::SetPropertyValueCommand(const ObjectHandle& object_, co
     , object(object_)
     , property(property_)
     , newValue(newValue_)
+    , oldValue(property->Value(object.GetObjectPointer()))
+
 {
     DVASSERT(object.IsValid() == true);
     DVASSERT(object.GetIntrospection() != nullptr);
@@ -20,12 +22,6 @@ SetPropertyValueCommand::SetPropertyValueCommand(const ObjectHandle& object_, co
         newValue = VariantType::Convert(newValue, propertyType);
         DVASSERT(newValue.Meta() == propertyType);
     }
-}
-
-void SetPropertyValueCommand::Execute()
-{
-    oldValue = property->Value(object.GetObjectPointer());
-    Redo();
 }
 
 void SetPropertyValueCommand::Redo()

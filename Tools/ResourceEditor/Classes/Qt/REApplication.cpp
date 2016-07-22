@@ -102,9 +102,6 @@ int REApplication::Run()
     SettingsManager::UpdateGPUSettings();
     SceneValidator sceneValidator;
 
-    int argc = GetCommandLine().argc();
-    char** argv = GetCommandLine().argv();
-
     DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
 
     if (cmdLineManager->IsEnabled())

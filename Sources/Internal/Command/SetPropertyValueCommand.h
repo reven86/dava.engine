@@ -13,7 +13,6 @@ class SetPropertyValueCommand : public Command
 public:
     SetPropertyValueCommand(const ObjectHandle& object, const InspMember* property, VariantType newValue);
 
-    void Execute() override;
     void Redo() override;
     void Undo() override;
 

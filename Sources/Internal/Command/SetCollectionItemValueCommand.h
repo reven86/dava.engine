@@ -15,7 +15,6 @@ public:
     SetCollectionItemValueCommand(const ObjectHandle& object, const InspColl* collection,
                                   const VariantType& key, const VariantType& newValue);
 
-    void Execute() override;
     void Redo() override;
     void Undo() override;
 

@@ -254,7 +254,7 @@ private:
     void EnableProjectActions(bool enable);
     void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
-    void UpdateWayEditor(const DAVA::Command* command, bool redo);
+    void UpdateWayEditor(const RECommand* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);

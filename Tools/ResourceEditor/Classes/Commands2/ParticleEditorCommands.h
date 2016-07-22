@@ -2,6 +2,7 @@
 #define __PARTICLE_EDITOR_COMMANDS_H__
 
 #include <DAVAEngine.h>
+#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/CommandAction.h"
 
 class CommandAddParticleEmitter : public CommandAction

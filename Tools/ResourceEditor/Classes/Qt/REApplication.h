@@ -3,17 +3,7 @@
 #include "CommandLine/CommandLineManager.h"
 #include <QApplication>
 
-class WGTCommand;
-
-namespace NGTLayer
-{
-class NGTCmdLineParser;
-}
-
-namespace wgt
-{
-class ICommandManager;
-}
+class QtMainWindow;
 
 class REApplication : public QApplication
 {

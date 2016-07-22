@@ -11,3 +11,8 @@ bool RECommand::MatchCommandIDs(const DAVA::Vector<DAVA::uint32>& commandIDVecto
     auto functor = [this](const DAVA::uint32& id) { return MatchCommandID(id); };
     return std::find_if(commandIDVector.begin(), commandIDVector.end(), functor) != commandIDVector.end();
 }
+
+bool IsRECommand(const DAVA::Command* command)
+{
+    return dynamic_cast<const RECommand*>(command) != nullptr;
+}

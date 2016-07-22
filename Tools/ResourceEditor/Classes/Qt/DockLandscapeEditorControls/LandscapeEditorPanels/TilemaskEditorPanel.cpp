@@ -567,7 +567,7 @@ void TilemaskEditorPanel::OnTileColorChanged(DAVA::int32 tileNumber, DAVA::Color
     sceneEditor->tilemaskEditorSystem->SetTileColor(tileNumber, color);
 }
 
-void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
 {
     SceneEditor2* sceneEditor = GetActiveScene();
     if (scene != sceneEditor || !GetEditorEnabled())

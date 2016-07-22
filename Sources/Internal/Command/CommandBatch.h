@@ -15,11 +15,6 @@ public:
     CommandBatch(const String& description = "", uint32 commandsCount = 0);
 
     /**
-    \brief Executes all commands in batch.
-    */
-    void Execute() override;
-
-    /**
     \brief Calls Redo to the all commands in batch.
     */
     void Redo() override;
@@ -61,8 +56,5 @@ inline uint32 CommandBatch::Size() const
     return static_cast<uint32>(commandList.size());
 }
 
-bool IsCommandBatch(const DAVA::Command* command)
-{
-    return dynamic_cast<DAVA::CommandBatch*>(command) != nullptr;
-}
+bool IsCommandBatch(const DAVA::Command* command);
 }

@@ -562,7 +562,7 @@ void EditorLODSystem::DispatchSignals()
     invalidateUIFlag = FLAG_NONE;
 }
 
-void EditorLODSystem::ProcessCommand(const DAVA::Command* command, bool redo)
+void EditorLODSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     if (generateCommands)
     {

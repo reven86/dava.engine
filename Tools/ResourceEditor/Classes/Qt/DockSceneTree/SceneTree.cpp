@@ -583,7 +583,7 @@ private:
                              {
                                  SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
                                  DAVA::ParticleLayer* layer = layerItem->GetLayer();
-                                 return RemoveInfo(DAVA::Command::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
+                                 return RemoveInfo(CommandAction::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
                              });
     }
 
@@ -621,7 +621,7 @@ private:
                              {
                                  SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
                                  DAVA::ParticleForce* force = forceItem->GetForce();
-                                 return RemoveInfo(DAVA::Command::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
+                                 return RemoveInfo(CommandAction::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
                              });
     }
 };
@@ -711,12 +711,12 @@ protected:
 
     virtual DAVA::Command::Pointer CreateLoadCommand(const DAVA::String& path)
     {
-        return DAVA::Command::Create<CommandLoadParticleEmitterFromYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
+        return CommandAction::Create<CommandLoadParticleEmitterFromYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
     }
 
     virtual DAVA::Command::Pointer CreateSaveCommand(const DAVA::FilePath& path)
     {
-        return DAVA::Command::Create<CommandSaveParticleEmitterToYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
+        return CommandAction::Create<CommandSaveParticleEmitterToYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
     }
 
 private:
@@ -748,13 +748,13 @@ protected:
     DAVA::Command::Pointer CreateLoadCommand(const DAVA::String& path) override
     {
         emitterItem->parent->innerEmitterPath = path;
-        return DAVA::Command::Create<CommandLoadInnerParticleEmitterFromYaml>(emitterItem->GetEmitterInstance(), path);
+        return CommandAction::Create<CommandLoadInnerParticleEmitterFromYaml>(emitterItem->GetEmitterInstance(), path);
     }
 
     DAVA::Command::Pointer CreateSaveCommand(const DAVA::FilePath& path) override
     {
         emitterItem->parent->innerEmitterPath = path;
-        return DAVA::Command::Create<CommandSaveInnerParticleEmitterToYaml>(emitterItem->GetEmitterInstance(), path);
+        return CommandAction::Create<CommandSaveInnerParticleEmitterToYaml>(emitterItem->GetEmitterInstance(), path);
     }
 
 private:

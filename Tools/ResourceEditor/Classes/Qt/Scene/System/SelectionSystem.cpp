@@ -499,7 +499,7 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
+void SceneSelectionSystem::ProcessCommand(const RECommand* command, bool redo)
 {
     DVASSERT(command != nullptr);
     static const DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };

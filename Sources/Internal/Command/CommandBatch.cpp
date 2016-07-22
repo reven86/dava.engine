@@ -34,4 +34,9 @@ void CommandBatch::AddAndRedo(Pointer&& command)
     commandList.emplace_back(std::move(command));
     actualCommand->Redo();
 }
+
+bool IsCommandBatch(const DAVA::Command* command)
+{
+    return dynamic_cast<const DAVA::CommandBatch*>(command) != nullptr;
+}
 }
