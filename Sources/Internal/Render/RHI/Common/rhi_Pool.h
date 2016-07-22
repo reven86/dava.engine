@@ -115,17 +115,17 @@ private:
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
         enum : uint32
         {
-            MaxBacktraceSize = 32,
-            FramesToSkip = 3
+            MAX_BACKTRACE_SIZE = 32,
+            FRAMES_TO_SKIP = 3
         };
 
-        void* backtrace[MaxBacktraceSize];
+        void* backtrace[MAX_BACKTRACE_SIZE];
         uint32 backtraceFrameCount = 0;
 
         void CaptureBacktrace()
         {
             memset(backtrace, sizeof(backtrace), 0);
-            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MaxBacktraceSize));
+            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MAX_BACKTRACE_SIZE));
         }
 #endif
     };
@@ -336,7 +336,7 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
         {
             DAVA::Logger::Error("----------------------------");
             Entry* entry = i.GetEntry();
-            for (uint32 frame = Entry::FramesToSkip; frame < entry->backtraceFrameCount; ++frame)
+            for (uint32 frame = Entry::FRAMES_TO_SKIP; frame < entry->backtraceFrameCount; ++frame)
             {
                 DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(entry->backtrace[frame]);
                 DAVA::Logger::Error(symbol.c_str());
