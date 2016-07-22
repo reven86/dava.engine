@@ -567,6 +567,8 @@ void QtMainWindow::SetupThemeActions()
 
 void QtMainWindow::SetupToolBars()
 {
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
+
     QAction* actionMainToolBar = ui->mainToolBar->toggleViewAction();
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
@@ -657,12 +659,12 @@ void QtMainWindow::SetupToolBars()
 
 void QtMainWindow::SetupStatusBar()
 {
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), ui->statusBar, SLOT(SceneActivated(SceneEditor2*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), ui->statusBar, SLOT(StructureChanged(SceneEditor2*, DAVA::Entity*)));
-    QObject::connect(SceneSignals::Instance(), &SceneSignals::UndoRedoStateChanged, this, &QtMainWindow::SceneUndoRedoStateChanged);
-    QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, ui->statusBar, &StatusBar::SceneActivated);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, ui->statusBar, &StatusBar::SceneDeactivated);
+
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, ui->statusBar, &StatusBar::SceneSelectionChanged);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, ui->statusBar, &StatusBar::StructureChanged);
+    QObject::connect(this, &QtMainWindow::GlobalInvalidateTimeout, ui->statusBar, &StatusBar::UpdateByTimer);
 
     auto CreateStatusBarButton = [](QAction* action, QStatusBar* statusBar)
     {
@@ -897,6 +899,10 @@ void QtMainWindow::SetupActions()
 
     connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
+    connect(ui->actionGenerate_Assert, &QAction::triggered, []()
+            {
+                DVASSERT_MSG(false, "Debug assert call");
+            });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
     ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -2607,6 +2613,13 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if (sceneWasChanged)
     {
         scene->MarkAsChanged();
+
+        bool needSaveScene = SettingsManager::GetValue(Settings::Scene_SaveStaticOcclusion).AsBool();
+        if (needSaveScene)
+        {
+            SaveScene(scene);
+        }
+
         ui->propertyEditor->ResetProperties();
     }
 

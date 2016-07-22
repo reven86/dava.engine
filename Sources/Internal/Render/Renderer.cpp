@@ -175,8 +175,6 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
 
 void BeginFrame()
 {
-    StatSet::ResetAll();
-
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();
 }
@@ -229,5 +227,8 @@ void RenderStats::Reset()
     packets2d = 0U;
 
     visibleRenderObjects = 0U;
+    occludedRenderObjects = 0U;
+
+    queryResults.clear();
 }
 }

@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITOR__SETTINGS_H__
-#define __RESOURCEEDITOR__SETTINGS_H__
+#pragma once
 
 #include "Base/FastName.h"
 
@@ -23,6 +22,12 @@ public:
     static const DAVA::FastName General_MaterialEditor_LodColor1;
     static const DAVA::FastName General_MaterialEditor_LodColor2;
     static const DAVA::FastName General_MaterialEditor_LodColor3;
+
+    static const DAVA::FastName General_LODEditor_LodColor0;
+    static const DAVA::FastName General_LODEditor_LodColor1;
+    static const DAVA::FastName General_LODEditor_LodColor2;
+    static const DAVA::FastName General_LODEditor_LodColor3;
+    static const DAVA::FastName General_LODEditor_InactiveColor;
 
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;
@@ -59,9 +64,9 @@ public:
     static const DAVA::FastName Scene_DebugBoxWaypointScale;
     static const DAVA::FastName Scene_DragAndDropWithShift;
     static const DAVA::FastName Scene_AutoselectNewEntities;
-    static const DAVA::FastName Scene_RefreshLodForNonSolid;
     static const DAVA::FastName Scene_RememberForceParameters;
     static const DAVA::FastName Scene_SaveEmitters;
+    static const DAVA::FastName Scene_SaveStaticOcclusion;
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw;
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor;
@@ -85,7 +90,9 @@ public:
     static const DAVA::FastName Internal_MaterialsLightViewMode;
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas;
     static const DAVA::FastName Internal_LicenceAccepted;
-    static const DAVA::FastName Internal_LODEditorMode;
+    static const DAVA::FastName Internal_LODEditor_Mode;
+    static const DAVA::FastName Internal_LODEditor_Recursive;
+
     static const DAVA::FastName Internal_ImageSplitterPath;
     static const DAVA::FastName Internal_ImageSplitterPathSpecular;
 
@@ -93,7 +100,3 @@ public:
     static const DAVA::FastName Internal_LogWidget;
 
 }; //End of Settings
-
-
-
-#endif //__RESOURCEEDITOR__SETTINGS_H__

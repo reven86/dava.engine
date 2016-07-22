@@ -5,6 +5,7 @@
 #include "Scene/SceneHelper.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/RenderCallbacks.h"
+#include "Scene3D/Lod/LodSystem.h"
 
 using namespace DAVA;
 
@@ -27,7 +28,6 @@ CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::Request
     result->fromLodLayer = fromLodLayer;
     result->textureSize = textureSize;
     result->texturePath = texturePath;
-    result->savedDistances = lodComponent->lodLayersArray;
 
     result->newLodIndex = GetLodLayersCount(lodComponent);
     DVASSERT(result->newLodIndex > 0);
@@ -287,7 +287,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     tempScene->SetCurrentCamera(camera);
     camera->SetupDynamicParameters(false);
 
-    GetLodComponent(clonedEnity)->SetForceLodLayer(fromLodLayer);
+    tempScene->lodSystem->SetForceLodLayer(GetLodComponent(clonedEnity), fromLodLayer);
     clonedEnity->SetVisible(true);
 
     tempScene->Update(1.0f / 60.0f);

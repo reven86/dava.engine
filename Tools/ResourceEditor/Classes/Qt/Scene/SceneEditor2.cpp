@@ -71,6 +71,7 @@ SceneEditor2::SceneEditor2()
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
     AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    landscapeEditorDrawSystem->EnableSystem();
 
     heightmapEditorSystem = new HeightmapEditorSystem(this);
     AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
@@ -129,9 +130,9 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    selectionSystem->AddSelectionDelegate(modifSystem);
-    selectionSystem->AddSelectionDelegate(hoodSystem);
-    selectionSystem->AddSelectionDelegate(wayEditSystem);
+    selectionSystem->AddDelegate(modifSystem);
+    selectionSystem->AddDelegate(hoodSystem);
+    selectionSystem->AddDelegate(wayEditSystem);
 
     DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
@@ -382,10 +383,9 @@ void SceneEditor2::Update(float timeElapsed)
 {
     ++framesCount;
 
-    renderStats = DAVA::Renderer::GetRenderStats();
-    DAVA::Renderer::GetRenderStats().Reset();
-
     Scene::Update(timeElapsed);
+
+    renderStats = DAVA::Renderer::GetRenderStats();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)
@@ -666,9 +666,8 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveSelectionDelegate(modifSystem);
-        selectionSystem->RemoveSelectionDelegate(hoodSystem);
-        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+        RemoveSystem(selectionSystem);
+        SafeDelete(selectionSystem);
     }
 
     if (editorLightSystem)
@@ -686,6 +685,7 @@ void SceneEditor2::RemoveSystems()
 
     if (landscapeEditorDrawSystem)
     {
+        landscapeEditorDrawSystem->DisableSystem();
         RemoveSystem(landscapeEditorDrawSystem);
         SafeDelete(landscapeEditorDrawSystem);
     }
@@ -741,6 +741,8 @@ void SceneEditor2::Deactivate()
 void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
+
+    collisionSystem->EnableSystem();
 
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem(true);
