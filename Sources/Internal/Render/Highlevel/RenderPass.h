@@ -54,6 +54,14 @@ protected:
     rhi::HPacketList packetList;
     rhi::HRenderPass renderPass;
 
+#ifdef __DAVAENGINE_RENDERSTATS__
+
+    void ProcessVisibilityQuery();
+
+    Deque<rhi::HQueryBuffer> queryBuffers;
+
+#endif
+
 public:
     INTROSPECTION(RenderPass,
                   COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)

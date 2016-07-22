@@ -1,5 +1,4 @@
-#ifndef __LOD_EDITOR_H__
-#define __LOD_EDITOR_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -14,14 +13,12 @@ namespace Ui
 class LODEditor;
 }
 
-class QLabel;
-class QDoubleSpinBox;
-class QLineEdit;
 class SceneEditor2;
 class SelectableGroup;
 class Command2;
-class QPushButton;
 class QFrame;
+class QPushButton;
+class LODDistanceWidget;
 
 class LazyUpdater;
 class LODEditor : public QWidget, private EditorLODSystemUIDelegate, EditorStatisticsSystemUIDelegate
@@ -34,11 +31,6 @@ public:
 
 private slots:
 
-    //Panels buttons
-    void LODEditorSettingsButtonClicked();
-    void ViewLODButtonClicked();
-    void EditLODButtonClicked();
-
     //force signals
     void ForceDistanceStateChanged(bool checked);
     void ForceDistanceChanged(int distance);
@@ -48,42 +40,37 @@ private slots:
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
 
     //distance signals
-    void LODDistanceChangedBySpinbox(double value);
+    void LODDistanceChangedByDistanceWidget();
     void LODDistanceIsChangingBySlider();
     void LODDistanceChangedBySlider();
 
-    //mode signal
+    //mode signals
     void SceneOrSelectionModeSelected(bool allSceneModeActivated);
+    void RecursiveModeSelected(bool recursive);
 
     //action
     void CopyLastLODToLOD0Clicked();
     void CreatePlaneLODClicked();
-    void DeleteFirstLOD();
-    void DeleteLastLOD();
+    void DeleteLOD();
 
 private:
     void SetupSceneSignals();
     void SetupInternalUI();
 
     void SetupForceUI();
-    void CreateForceLayerValues(DAVA::uint32 layersCount);
 
-    void SetupPanelsButtonUI();
-    void InvertFrameVisibility(QFrame* frame, QPushButton* frameButton);
     void UpdatePanelsUI(SceneEditor2* forScene);
     void UpdatePanelsForCurrentScene();
 
     void SetupDistancesUI();
-    void InitDistanceSpinBox(QLabel* name, QDoubleSpinBox* spinbox, int index);
-    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, DAVA::int32 count);
+    void UpdateDistanceSpinboxesUI(const DAVA::Vector<DAVA::float32>& distances, const DAVA::Vector<bool>& multiple, DAVA::int32 count);
 
     void SetupActionsUI();
 
     //EditorLODSystemV2UIDelegate
-    void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode) override;
+    void UpdateModeUI(EditorLODSystem* forSystem, const eEditorMode mode, bool recursive) override;
     void UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& forceValues) override;
     void UpdateDistanceUI(EditorLODSystem* forSystem, const LODComponentHolder* lodData) override;
     void UpdateActionUI(EditorLODSystem* forSystem) override;
@@ -99,19 +86,7 @@ private:
 private:
     std::unique_ptr<Ui::LODEditor> ui;
 
-    bool frameViewVisible = true;
-    bool frameEditVisible = true;
-
-    struct DistanceWidget
-    {
-        QLabel* name = nullptr;
-        QDoubleSpinBox* distance = nullptr;
-        void SetVisible(bool visible);
-    };
-
-    DAVA::Vector<DistanceWidget> distanceWidgets;
+    DAVA::Vector<LODDistanceWidget*> distanceWidgets;
 
     LazyUpdater* panelsUpdater = nullptr;
 };
-
-#endif //#ifndef __LOD_EDITOR_H__

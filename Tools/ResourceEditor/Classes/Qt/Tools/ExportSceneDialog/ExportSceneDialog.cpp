@@ -103,6 +103,10 @@ void ExportSceneDialog::SetupUI()
         useHDtextures->setMinimumSize(UI_WIDTH, UI_HEIGHT);
         optionsLayout->addWidget(useHDtextures);
 
+        forceCompressTextures = new QCheckBox("Force Compress Textures", this);
+        forceCompressTextures->setMinimumSize(UI_WIDTH, UI_HEIGHT);
+        optionsLayout->addWidget(forceCompressTextures);
+
         optionsLayout->addStretch();
         dialogLayout->addLayout(optionsLayout, 1, 1);
     }
@@ -141,6 +145,7 @@ void ExportSceneDialog::InitializeValues()
     qualitySelector->setCurrentIndex(quality.AsInt32());
     optimizeOnExport->setCheckState(Qt::Checked);
     useHDtextures->setCheckState(Qt::Unchecked);
+    forceCompressTextures->setCheckState(Qt::Unchecked);
 
     SetExportEnabled();
 }
@@ -195,4 +200,9 @@ bool ExportSceneDialog::GetOptimizeOnExport() const
 bool ExportSceneDialog::GetUseHDTextures() const
 {
     return useHDtextures->checkState() == Qt::Checked;
+}
+
+bool ExportSceneDialog::GetForceCompressTextures() const
+{
+    return forceCompressTextures->checkState() == Qt::Checked;
 }

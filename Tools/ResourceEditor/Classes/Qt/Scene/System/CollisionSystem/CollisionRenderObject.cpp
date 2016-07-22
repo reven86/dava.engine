@@ -153,27 +153,25 @@ inline void CROLocal_Sort(float values[3])
 
 struct ClassifyTrianglesToMultiplePlanesCallback : public btInternalTriangleIndexCallback
 {
-    DAVA::Plane* planes = nullptr;
-    size_t numPlanes = 0;
+    const DAVA::Vector<DAVA::Plane>& planes;
     int numTriangles = 0;
     int trianglesBehind = 0;
 
-    ClassifyTrianglesToMultiplePlanesCallback(DAVA::Plane* pl, size_t np, int nt)
+    ClassifyTrianglesToMultiplePlanesCallback(const DAVA::Vector<DAVA::Plane>& pl, int nt)
         : planes(pl)
-        , numPlanes(np)
         , numTriangles(nt)
     {
     }
 
     void internalProcessTriangleIndex(btVector3* triangle, int partId, int triangleIndex) override
     {
-        for (size_t i = 0; i < numPlanes; ++i)
+        for (const DAVA::Plane& plane : planes)
         {
             float distances[3] =
             {
-              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle)),
-              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 1)),
-              planes[i].DistanceToPoint(CROLocal_btVectorToDava(triangle + 2))
+              plane.DistanceToPoint(CROLocal_btVectorToDava(triangle)),
+              plane.DistanceToPoint(CROLocal_btVectorToDava(triangle + 1)),
+              plane.DistanceToPoint(CROLocal_btVectorToDava(triangle + 2))
             };
             CROLocal_Sort(distances);
             if (CROLocal_FloatsIsNegative(distances[0], distances[2]))
@@ -197,21 +195,21 @@ CollisionBaseObject::ClassifyPlaneResult CollisionRenderObject::ClassifyToPlane(
     return cb.result;
 }
 
-CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlanes(DAVA::Plane* planes, size_t numPlanes)
+CollisionBaseObject::ClassifyPlanesResult CollisionRenderObject::ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     if (btShape == nullptr)
         return CollisionBaseObject::ClassifyPlanesResult::Outside;
 
-    for (size_t i = 0; i < numPlanes; ++i)
+    for (const DAVA::Plane& plane : planes)
     {
-        if (ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(planes[i])) == ClassifyPlaneResult::Behind)
+        if (ClassifyBoundingBoxToPlane(object.GetBoundingBox(), TransformPlaneToLocalSpace(plane)) == ClassifyPlaneResult::Behind)
         {
             return CollisionBaseObject::ClassifyPlanesResult::Outside;
         }
     }
 
     btBvhTriangleMeshShape* shape = static_cast<btBvhTriangleMeshShape*>(btShape);
-    ClassifyTrianglesToMultiplePlanesCallback cb(planes, numPlanes, btTriangles->getNumTriangles());
+    ClassifyTrianglesToMultiplePlanesCallback cb(planes, btTriangles->getNumTriangles());
     btTriangles->InternalProcessAllTriangles(&cb, shape->getLocalAabbMin(), shape->getLocalAabbMax());
     return (cb.trianglesBehind == btTriangles->getNumTriangles()) ? CollisionBaseObject::ClassifyPlanesResult::Outside :
                                                                     CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects;

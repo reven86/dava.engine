@@ -161,6 +161,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_HALF_FLOAT_OES 0
 #endif
 
+#if !defined GL_QUERY_RESULT_AVAILABLE_EXT
+#define GL_QUERY_RESULT_AVAILABLE_EXT 0
+#endif
+
+#if !defined GL_QUERY_RESULT_EXT
+#define GL_QUERY_RESULT_EXT 0
+#endif
+
 #if !defined(GL_HALF_FLOAT)
 #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
 #endif
@@ -175,6 +183,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#endif
+
+#if !defined(GL_QUERY_RESULT_AVAILABLE)
+#define GL_QUERY_RESULT_AVAILABLE GL_QUERY_RESULT_AVAILABLE_EXT
+#endif
+
+#if !defined(GL_QUERY_RESULT)
+#define GL_QUERY_RESULT GL_QUERY_RESULT_EXT
 #endif
 
 #if !defined(GL_RED)
