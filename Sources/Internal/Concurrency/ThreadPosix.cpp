@@ -141,7 +141,11 @@ Thread::Id Thread::GetCurrentId()
 
 uint64 Thread::GetCurrentIdAsInteger()
 {
+#if defined(__DAVAENGINE_APPLE__)
     return reinterpret_cast<uint64>(GetCurrentId());
+#else
+    return static_cast<uint64>(GetCurrentId());
+#endif
 }
 
 #if defined(__DAVAENGINE_APPLE__)
