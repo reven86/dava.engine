@@ -8,6 +8,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Core/Core.h"
 #include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
