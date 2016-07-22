@@ -94,12 +94,18 @@ private:
 
 void AcqureContext()
 {
-    OGLContextBinder::Instance()->AcquireContext();
+    if (OGLContextBinder::Instance())
+    {
+        OGLContextBinder::Instance()->AcquireContext();
+    }
 }
 
 void ReleaseContext()
 {
-    OGLContextBinder::Instance()->ReleaseContext();
+    if (OGLContextBinder::Instance())
+    {
+        OGLContextBinder::Instance()->ReleaseContext();
+    }
 }
 }
 

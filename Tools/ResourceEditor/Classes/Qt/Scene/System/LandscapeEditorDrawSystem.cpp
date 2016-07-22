@@ -448,6 +448,11 @@ void LandscapeEditorDrawSystem::ClampToHeightmap(DAVA::Rect& rect)
 
 void LandscapeEditorDrawSystem::AddEntity(DAVA::Entity* entity)
 {
+    if (systemEnabled == false)
+    {
+        return;
+    }
+
     DAVA::Landscape* landscape = GetLandscape(entity);
     if (landscape != NULL)
     {
@@ -459,7 +464,7 @@ void LandscapeEditorDrawSystem::AddEntity(DAVA::Entity* entity)
 
 void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (entity == landscapeNode)
+    if (entity == landscapeNode && systemEnabled)
     {
         SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
 
@@ -475,10 +480,10 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 
         DeinitLandscape();
 
-        DAVA::Entity* entity = FindLandscapeEntity(sceneEditor);
-        if (entity != NULL)
+        DAVA::Entity* landEntity = FindLandscapeEntity(sceneEditor);
+        if (landEntity != nullptr && landEntity != entity)
         {
-            InitLandscape(entity, GetLandscape(entity));
+            InitLandscape(landEntity, GetLandscape(landEntity));
         }
     }
 }
@@ -701,4 +706,14 @@ bool LandscapeEditorDrawSystem::InitTilemaskImageCopy()
 {
     DVASSERT(landscapeProxy != nullptr);
     return landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
+}
+
+void LandscapeEditorDrawSystem::EnableSystem()
+{
+    systemEnabled = true;
+}
+
+void LandscapeEditorDrawSystem::DisableSystem()
+{
+    systemEnabled = false;
 }

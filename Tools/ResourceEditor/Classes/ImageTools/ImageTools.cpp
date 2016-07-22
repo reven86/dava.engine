@@ -141,10 +141,10 @@ bool MergeImages(const DAVA::FilePath& folder)
 
 Channels CreateSplittedImages(DAVA::Image* originalImage)
 {
-    DAVA::ScopedPtr<DAVA::Image> r(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
-    DAVA::ScopedPtr<DAVA::Image> g(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
-    DAVA::ScopedPtr<DAVA::Image> b(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
-    DAVA::ScopedPtr<DAVA::Image> a(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> r(DAVA::Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> g(DAVA::Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> b(DAVA::Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> a(DAVA::Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
 
     DAVA::int32 size = originalImage->width * originalImage->height;
     DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
@@ -228,13 +228,13 @@ QImage FromDavaImage(const DAVA::Image* image)
         }
         else
         {
-            DAVA::Logger::Error("[%s]: Error converting from %s", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+            DAVA::Logger::Error("[%s]: Error converting from %s", __FUNCTION__, GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(image->format));
             return QImage();
         }
     }
     else
     {
-        DAVA::Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+        DAVA::Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(image->format));
         return QImage();
     }
 }

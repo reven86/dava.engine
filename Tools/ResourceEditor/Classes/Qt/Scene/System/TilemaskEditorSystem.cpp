@@ -478,9 +478,13 @@ void TilemaskEditorSystem::Draw()
 
 void TilemaskEditorSystem::CreateUndoPoint()
 {
-    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-    DVASSERT(scene);
-    scene->Exec(DAVA::Command::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    DAVA::Rect rect = GetUpdatedRect();
+    if (rect.dx > 0 && rect.dy > 0)
+    {
+        SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+        DVASSERT(scene);
+        scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), rect));
+    }
 }
 
 DAVA::int32 TilemaskEditorSystem::GetBrushSize()
