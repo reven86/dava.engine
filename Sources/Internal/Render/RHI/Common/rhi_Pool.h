@@ -113,29 +113,19 @@ private:
         uint32 pad : 7;
 
 #if (RHI_RESOURCE_INCLUDE_BACKTRACE)
-        DAVA::Vector<void*> backtrace;
+        enum : uint32
+        {
+            MaxBacktraceSize = 32,
+            FramesToSkip = 3
+        };
+
+        void* backtrace[MaxBacktraceSize];
+        uint32 backtraceFrameCount = 0;
 
         void CaptureBacktrace()
         {
-            static const uint32 maxFramesToCapture = 64;
-            backtrace.resize(maxFramesToCapture);
-            size_t capturedFrames = DAVA::Debug::GetStackFrames(backtrace.data(), maxFramesToCapture);
-            backtrace.resize(capturedFrames);
-
-            // erase redundant frames
-            if (backtrace.size() > 3)
-            {
-                backtrace.erase(backtrace.begin(), backtrace.begin() + 3);
-            }
-            if (backtrace.size() > 8)
-            {
-                backtrace.erase(backtrace.end() - 8, backtrace.end());
-            }
-        }
-
-        void CleanBacktrace()
-        {
-            backtrace.clear();
+            memset(backtrace, sizeof(backtrace), 0);
+            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MaxBacktraceSize));
         }
 #endif
     };
@@ -234,10 +224,6 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     DVASSERT(e->allocated);
 
     ObjectSync.Lock();
-
-#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
-    e->CleanBacktrace();
-#endif
 
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
@@ -350,9 +336,10 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
         if (i->NeedRestore())
         {
             DAVA::Logger::Error("----------------------------");
-            for (void* frame : i.GetEntry()->backtrace)
+            Entry* entry = i.GetEntry();
+            for (uint32 frame = Entry::FramesToSkip; frame < entry->backtraceFrameCount; ++frame)
             {
-                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(frame);
+                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(entry->backtrace[frame]);
                 DAVA::Logger::Error(symbol.c_str());
             }
             ++unrestored;
