@@ -2,10 +2,14 @@
 
 #include <sqlite3.h>
 
-#include <FileSystem/File.h>
-#include <FileSystem/FileSystem.h>
-#include <Concurrency/Thread.h>
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
+#include "Concurrency/Thread.h"
+#include "FileSystem/DynamicMemoryFile.h"
+
 #include <ctime>
+
+static bool loadDBinRAM = false;
 
 /*
 ** When using this VFS, the sqlite3_file* handles that SQLite uses are
@@ -168,7 +172,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     };
 
     WrapFile* p = reinterpret_cast<WrapFile*>(pFile); /* Populate this structure */
-    int oflags = 0; /* eFileAttributes */
+    DAVA::uint32 oflags = 0; /* eFileAttributes */
 
     if (zName == nullptr)
     {
@@ -202,10 +206,34 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     }
 
     memset(p, 0, sizeof(WrapFile));
+
+    // little optimization for sqlite not working with journal file and WriteAheadLog file
+    // TODO is any better solution? Disable with some defines?
+    if (strstr(zName, ".db-journal") != nullptr ||
+        strstr(zName, ".db-wal") != nullptr)
+    {
+        p->file = nullptr;
+        return SQLITE_CANTOPEN;
+    }
+
     p->file = DAVA::File::Create(zName, oflags);
     if (p->file == nullptr)
     {
         return SQLITE_CANTOPEN;
+    }
+
+    if (loadDBinRAM)
+    {
+        DAVA::Vector<DAVA::uint8> data(static_cast<DAVA::uint32>(p->file->GetSize()));
+        DAVA::uint32 size = p->file->Read(data.data(), static_cast<DAVA::uint32>(data.size()));
+        if (size != data.size())
+        {
+            throw std::runtime_error("can't read DB in memory");
+        }
+        p->file->Release();
+
+        DAVA::DynamicMemoryFile* dynFile = DAVA::DynamicMemoryFile::Create(std::move(data), oflags, zName);
+        p->file = dynFile;
     }
 
     if (pOutFlags)
@@ -241,6 +269,13 @@ static int Delete(sqlite3_vfs* pVfs, const char* zPath, int dirSync)
 */
 static int Access(sqlite3_vfs* /*pVfs*/, const char* zPath, int flags, int* pResOut)
 {
+    if (strstr(zPath, ".db-journal") != nullptr ||
+        strstr(zPath, ".db-wal") != nullptr)
+    {
+        *pResOut = 0;
+        return SQLITE_OK;
+    }
+
     if (!DAVA::FileSystem::Instance()->IsFile(zPath))
     {
         *pResOut = 0;
@@ -385,8 +420,9 @@ static sqlite3_vfs* sqlite3DavaVFS()
 
 namespace DAVA
 {
-void RegisterDavaVFSForSqlite3()
+void RegisterDavaVFSForSqlite3(bool dbInMemory)
 {
+    loadDBinRAM = dbInMemory;
     DAVA::int32 result = sqlite3_vfs_register(sqlite3DavaVFS(), 1);
     DVASSERT(result == SQLITE_OK);
 }

@@ -8,6 +8,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -34,7 +35,7 @@ File::~File()
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    File* result = CreateFromSystemPath(filePath, attributes);
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
@@ -49,11 +50,28 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
         // from DB with all files, then check if such pack mounted and from
         // mountedPackIndex find by name archive with file or skip to next step
-
+        PackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
-        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
+
+        if (pm.IsInitialized())
         {
-            if (item.archive->LoadFile(relative, contentAndSize))
+            const String& packName = pm.FindPackName(relative);
+            if (!packName.empty())
+            {
+                auto it = fileSystem->resourceArchiveList.find(packName);
+                if (it != end(fileSystem->resourceArchiveList))
+                {
+                    if (it->second.archive->LoadFile(relative, contentAndSize))
+                    {
+                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                    }
+                }
+            }
+        }
+
+        for (auto& pair : fileSystem->resourceArchiveList)
+        {
+            if (pair.second.archive->LoadFile(relative, contentAndSize))
             {
                 return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }

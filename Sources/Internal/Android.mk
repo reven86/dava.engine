@@ -381,6 +381,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
@@ -395,7 +397,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Render/Image/DDS/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/Image/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \

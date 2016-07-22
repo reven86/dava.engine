@@ -9,37 +9,27 @@
 
 #include "Main/QtUtils.h"
 
-using namespace DAVA;
-
-void Channels::ReleaseImages()
-{
-    DAVA::SafeRelease(red);
-    DAVA::SafeRelease(green);
-    DAVA::SafeRelease(blue);
-    DAVA::SafeRelease(alpha);
-}
-
 namespace ImageTools
 {
-void SaveImage(Image* image, const FilePath& pathname)
+void SaveImage(DAVA::Image* image, const DAVA::FilePath& pathname)
 {
-    ImageSystem::Save(pathname, image, image->format);
+    DAVA::ImageSystem::Save(pathname, image, image->format);
 }
 
-Image* LoadImage(const FilePath& pathname)
+DAVA::Image* LoadImage(const DAVA::FilePath& pathname)
 {
-    return CreateTopLevelImage(pathname);
+    return DAVA::ImageSystem::LoadSingleMip(pathname);
 }
 
-uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
+DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps)
 {
-    uint32 size = 0;
+    DAVA::uint32 size = 0;
 
-    Vector<FilePath> files;
+    DAVA::Vector<DAVA::FilePath> files;
 
-    if (descriptor->IsCubeMap() && forGPU == GPU_ORIGIN)
+    if (descriptor->IsCubeMap() && forGPU == DAVA::GPU_ORIGIN)
     {
-        Vector<FilePath> faceNames;
+        DAVA::Vector<DAVA::FilePath> faceNames;
         descriptor->GetFacePathnames(faceNames);
 
         files.reserve(faceNames.size());
@@ -51,30 +41,27 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
     }
     else
     {
-        FilePath imagePathname = descriptor->CreatePathnameForGPU(forGPU);
-        files.push_back(imagePathname);
+        descriptor->CreateLoadPathnamesForGPU(forGPU, files);
     }
 
-    for (size_t i = 0; i < files.size(); ++i)
+    for (const DAVA::FilePath& imagePathname : files)
     {
-        const FilePath& imagePathname = files[i];
-        ImageInfo info = ImageSystem::GetImageInfo(imagePathname);
-        if (!info.isEmpty())
+        DAVA::ImageInfo info = DAVA::ImageSystem::GetImageInfo(imagePathname);
+        if (!info.IsEmpty())
         {
-            const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
+            const auto formatSizeBits = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
 
-            auto m = Min(baseMipMaps, info.mipmapsCount - 1);
+            DAVA::uint32 m = Min(baseMipMaps, info.mipmapsCount - 1);
             for (; m < info.mipmapsCount; ++m)
             {
-                const auto w = (info.width >> m);
-                const auto h = (info.height >> m);
-
-                size += (w * h * formatSizeBits / 8);
+                DAVA::uint32 w = Max(info.width >> m, 1u);
+                DAVA::uint32 h = Max(info.height >> m, 1u);
+                size += DAVA::Image::GetSizeInBytes(w, h, info.format);
             }
         }
         else
         {
-            Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+            DAVA::Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
         }
     }
 
@@ -83,90 +70,87 @@ uint32 GetTexturePhysicalSize(const TextureDescriptor* descriptor, const eGPUFam
 
 void ConvertImage(const DAVA::TextureDescriptor* descriptor, const DAVA::eGPUFamily forGPU, DAVA::TextureConverter::eConvertQuality quality)
 {
-    if (!descriptor || descriptor->compression[forGPU].format == FORMAT_INVALID)
+    if (!descriptor || descriptor->compression[forGPU].format == DAVA::FORMAT_INVALID)
     {
         return;
     }
 
-    TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
+    DAVA::TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
-bool SplitImage(const FilePath& pathname)
+bool SplitImage(const DAVA::FilePath& pathname)
 {
-    Image* loadedImage = CreateTopLevelImage(pathname);
+    DAVA::ScopedPtr<DAVA::Image> loadedImage(DAVA::ImageSystem::LoadSingleMip(pathname));
     if (!loadedImage)
     {
-        Logger::Error("Can't load image %s", pathname.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("Can't load image %s", pathname.GetAbsolutePathname().c_str());
         return false;
     }
 
-    if (loadedImage->GetPixelFormat() != FORMAT_RGBA8888)
+    if (loadedImage->GetPixelFormat() != DAVA::FORMAT_RGBA8888)
     {
-        Logger::Error("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()));
+        DAVA::Logger::Error("Incorrect image format %s. Must be RGBA8888", DAVA::PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()));
         return false;
     }
 
     Channels channels = CreateSplittedImages(loadedImage);
 
-    FilePath folder(pathname.GetDirectory());
+    DAVA::FilePath folder(pathname.GetDirectory());
 
     SaveImage(channels.red, folder + "r.png");
     SaveImage(channels.green, folder + "g.png");
     SaveImage(channels.blue, folder + "b.png");
     SaveImage(channels.alpha, folder + "a.png");
 
-    channels.ReleaseImages();
-    SafeRelease(loadedImage);
     return true;
 }
 
-bool MergeImages(const FilePath& folder)
+bool MergeImages(const DAVA::FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
 
-    Channels channels(LoadImage(folder + "r.png"), LoadImage(folder + "g.png"), LoadImage(folder + "b.png"), LoadImage(folder + "a.png"));
+    DAVA::ScopedPtr<DAVA::Image> r(LoadImage(folder + "r.png"));
+    DAVA::ScopedPtr<DAVA::Image> g(LoadImage(folder + "g.png"));
+    DAVA::ScopedPtr<DAVA::Image> b(LoadImage(folder + "b.png"));
+    DAVA::ScopedPtr<DAVA::Image> a(LoadImage(folder + "a.png"));
+    Channels channels(r, g, b, a);
 
     if (channels.IsEmpty())
     {
-        Logger::Error("Can't load one or more channel images from folder %s", folder.GetAbsolutePathname().c_str());
-        channels.ReleaseImages();
+        DAVA::Logger::Error("Can't load one or more channel images from folder %s", folder.GetAbsolutePathname().c_str());
         return false;
     }
 
-    if (!channels.HasFormat(FORMAT_A8))
+    if (!channels.HasFormat(DAVA::FORMAT_A8))
     {
-        Logger::Error("Can't merge images. Source format must be Grayscale 8bit");
-        channels.ReleaseImages();
+        DAVA::Logger::Error("Can't merge images. Source format must be Grayscale 8bit");
         return false;
     }
 
     if (!channels.ChannelesResolutionEqual())
     {
-        Logger::Error("Can't merge images. Source images must have same size");
-        channels.ReleaseImages();
+        DAVA::Logger::Error("Can't merge images. Source images must have same size");
         return false;
     }
 
-    Image* mergedImage = CreateMergedImage(channels);
+    DAVA::ScopedPtr<DAVA::Image> mergedImage(CreateMergedImage(channels));
 
-    ImageSystem::Save(folder + "merged.png", mergedImage);
-    channels.ReleaseImages();
-    SafeRelease(mergedImage);
+    DAVA::ImageSystem::Save(folder + "merged.png", mergedImage);
     return true;
 }
 
 Channels CreateSplittedImages(DAVA::Image* originalImage)
 {
-    DAVA::Image* r = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
-    DAVA::Image* g = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
-    DAVA::Image* b = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
-    DAVA::Image* a = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
+    DAVA::ScopedPtr<DAVA::Image> r(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> g(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> b(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
+    DAVA::ScopedPtr<DAVA::Image> a(Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
 
-    int32 size = originalImage->width * originalImage->height;
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-    for (int32 i = 0; i < size; ++i)
+    DAVA::int32 size = originalImage->width * originalImage->height;
+    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    for (DAVA::int32 i = 0; i < size; ++i)
     {
-        int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSize;
         r->data[i] = originalImage->data[offset];
         g->data[i] = originalImage->data[offset + 1];
         b->data[i] = originalImage->data[offset + 2];
@@ -177,16 +161,16 @@ Channels CreateSplittedImages(DAVA::Image* originalImage)
 
 DAVA::Image* CreateMergedImage(const Channels& channels)
 {
-    if (!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
+    if (!channels.ChannelesResolutionEqual() || !channels.HasFormat(DAVA::FORMAT_A8))
     {
         return nullptr;
     }
-    Image* mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
-    int32 size = mergedImage->width * mergedImage->height;
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-    for (int32 i = 0; i < size; ++i)
+    DAVA::Image* mergedImage = DAVA::Image::Create(channels.red->width, channels.red->height, DAVA::FORMAT_RGBA8888);
+    DAVA::int32 size = mergedImage->width * mergedImage->height;
+    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    for (DAVA::int32 i = 0; i < size; ++i)
     {
-        int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSize;
         mergedImage->data[offset] = channels.red->data[i];
         mergedImage->data[offset + 1] = channels.green->data[i];
         mergedImage->data[offset + 2] = channels.blue->data[i];
@@ -197,14 +181,14 @@ DAVA::Image* CreateMergedImage(const Channels& channels)
 
 void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
 {
-    if (image->format != FORMAT_RGBA8888)
+    if (image->format != DAVA::FORMAT_RGBA8888)
     {
         return;
     }
-    int32 size = image->width * image->height;
-    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-    int32 offset = channel;
-    for (int32 i = 0; i < size; ++i, offset += pixelSize)
+    DAVA::int32 size = image->width * image->height;
+    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    DAVA::int32 offset = channel;
+    for (DAVA::int32 i = 0; i < size; ++i, offset += pixelSize)
     {
         image->data[offset] = value;
     }
@@ -224,33 +208,33 @@ QImage FromDavaImage(const DAVA::FilePath& pathname)
     return QImage();
 }
 
-QImage FromDavaImage(const Image* image)
+QImage FromDavaImage(const DAVA::Image* image)
 {
     DVASSERT(image != nullptr);
 
-    if (image->format == FORMAT_RGBA8888)
+    if (image->format == DAVA::FORMAT_RGBA8888)
     {
         QImage qtImage(image->width, image->height, QImage::Format_RGBA8888);
         Memcpy(qtImage.bits(), image->data, image->dataSize);
         return qtImage;
     }
-    else if (ImageConvert::CanConvertFromTo(image->format, FORMAT_RGBA8888))
+    else if (DAVA::ImageConvert::CanConvertFromTo(image->format, DAVA::FORMAT_RGBA8888))
     {
-        ScopedPtr<Image> newImage(Image::Create(image->width, image->height, FORMAT_RGBA8888));
-        bool converted = ImageConvert::ConvertImage(image, newImage);
+        DAVA::ScopedPtr<DAVA::Image> newImage(DAVA::Image::Create(image->width, image->height, DAVA::FORMAT_RGBA8888));
+        bool converted = DAVA::ImageConvert::ConvertImage(image, newImage);
         if (converted)
         {
             return FromDavaImage(newImage);
         }
         else
         {
-            Logger::Error("[%s]: Error converting from %s", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+            DAVA::Logger::Error("[%s]: Error converting from %s", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
             return QImage();
         }
     }
     else
     {
-        Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+        DAVA::Logger::Error("[%s]: Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
         return QImage();
     }
 }

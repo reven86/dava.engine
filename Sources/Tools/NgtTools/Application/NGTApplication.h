@@ -25,10 +25,11 @@ public:
 
 protected:
     virtual void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const = 0;
-    virtual void OnPostLoadPugins();
+    virtual void OnPostLoadPlugins();
     virtual void OnPreUnloadPlugins();
     virtual bool OnRequestCloseApp();
     virtual void ConfigureLineCommand(NGTCmdLineParser& lineParser);
+    const NGTCmdLineParser& GetCommandLine() const;
 
 private:
     DAVA::WideString GetPluginsFolder() const;

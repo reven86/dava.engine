@@ -21,8 +21,6 @@ LandscapeProxy::LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node)
 
     baseLandscape = DAVA::SafeRetain(landscape);
 
-    sourceTilemaskPath = GetPathForSourceTexture();
-
     landscapeEditorMaterial = new DAVA::NMaterial();
     landscapeEditorMaterial->SetMaterialName(DAVA::FastName("Landscape.Tool.Material"));
     landscapeEditorMaterial->SetFXName(DAVA::FastName("~res:/Materials/Landscape.Tool.material"));
@@ -32,7 +30,7 @@ LandscapeProxy::LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node)
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
     landscape->PrepareMaterial(landscapeEditorMaterial);
 
-    DAVA::ScopedPtr<DAVA::Texture> texture(DAVA::Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex"));
+    DAVA::ScopedPtr<DAVA::Texture> texture(CreateSingleMipTexture("~res:/LandscapeEditor/Tools/cursor/cursor.png"));
     texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
     texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
     landscapeEditorMaterial->AddTexture(LANDSCAPE_TEXTURE_CURSOR, texture);
@@ -190,30 +188,12 @@ void LandscapeProxy::DecreaseTilemaskChanges()
     --tilemaskWasChanged;
 }
 
-void LandscapeProxy::InitTilemaskImageCopy()
+bool LandscapeProxy::InitTilemaskImageCopy(const FilePath& sourceTilemaskPath)
 {
     SafeRelease(tilemaskImageCopy);
 
-    DAVA::Vector<DAVA::Image*> imgs;
-    DAVA::ImageSystem::Load(sourceTilemaskPath, imgs);
-
-    DVASSERT(imgs.size() == 1);
-    tilemaskImageCopy = imgs[0];
-}
-
-DAVA::FilePath LandscapeProxy::GetPathForSourceTexture() const
-{
-    DAVA::NMaterial* material = baseLandscape->GetMaterial();
-    if (nullptr != material)
-    {
-        DAVA::Texture* tiletexture = material->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
-        if (nullptr != tiletexture)
-        {
-            return tiletexture->GetDescriptor()->GetSourceTexturePathname();
-        }
-    }
-
-    return DAVA::FilePath();
+    tilemaskImageCopy = ImageSystem::LoadSingleMip(sourceTilemaskPath);
+    return (tilemaskImageCopy != nullptr);
 }
 
 DAVA::Image* LandscapeProxy::GetTilemaskImageCopy()
@@ -249,13 +229,4 @@ void LandscapeProxy::SwapTilemaskDrawTextures()
     DAVA::Texture* temp = tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE];
     tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION];
     tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = temp;
-}
-
-void LandscapeProxy::UpdateTileMaskPathname()
-{
-    if (sourceTilemaskPath.IsEmpty())
-    {
-        sourceTilemaskPath = GetPathForSourceTexture();
-        DVASSERT(sourceTilemaskPath.IsEmpty() == false);
-    }
 }

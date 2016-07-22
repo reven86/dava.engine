@@ -350,6 +350,12 @@ void AutotestingSystemLua::OnTestFinished()
     AutotestingSystem::Instance()->OnTestsFinished();
 }
 
+void AutotestingSystemLua::OnTestSkipped()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::OnTestSkipped");
+    AutotestingSystem::Instance()->OnTestSkipped();
+}
+
 size_t AutotestingSystemLua::GetUsedMemory() const
 {
     return lua_gc(luaState, LUA_GCCOUNT, 0) * 1024 + lua_gc(luaState, LUA_GCCOUNTB, 0);
@@ -553,6 +559,12 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
         break;
     }
     }
+}
+
+void AutotestingSystemLua::ClickSystemBack()
+{
+    Logger::FrameworkDebug("AutotestingSystemLua::ClickSystemBack");
+    AutotestingSystem::Instance()->ClickSystemBack();
 }
 
 String AutotestingSystemLua::GetText(UIControl* control)

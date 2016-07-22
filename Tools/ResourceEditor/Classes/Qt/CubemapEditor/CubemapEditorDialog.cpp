@@ -382,7 +382,7 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
             ClickableQLabel* faceLabel = GetLabelForFace(i);
             if (faceLabel->GetRotation() != 0)
             {
-                ScopedPtr<Image> image(CreateTopLevelImage(targetFacePathes[i]));
+                ScopedPtr<Image> image(DAVA::ImageSystem::LoadSingleMip(targetFacePathes[i]));
                 image->RotateDeg(faceLabel->GetRotation());
                 ImageSystem::Save(targetFacePathes[i], image);
                 faceLabel->SetRotation(0);

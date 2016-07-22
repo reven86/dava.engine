@@ -117,13 +117,16 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::ProcessFileList, VariantType(String("")), "Pathname to file with filenames for exporting");
     options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 
-    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin, dx11");
+    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PowerVR_iOS, PowerVR_Android, tegra, mali, adreno, origin, dx11. Can be multiple: -gpu mali,adreno,origin", true);
     options.AddOption(OptionName::Quality, VariantType(static_cast<uint32>(TextureConverter::ECQ_DEFAULT)), "Quality of pvr/etc compression. Default is 4 - the best quality. Available values [0-4]");
 
     options.AddOption(OptionName::SaveNormals, VariantType(false), "Disable removing of normals from vertexes");
     options.AddOption(OptionName::deprecated_Export, VariantType(false), "Option says that we are doing export. Need remove after unification of command line options");
 
-    options.AddOption(OptionName::UseAssetCache, VariantType(false), "Enables using AssetCache for scene");
+    options.AddOption(OptionName::HDTextures, VariantType(useHDTextures), "Use 0-mip level as texture.hd.ext");
+    options.AddOption(OptionName::Force, VariantType(forceCompressTextures), "Force re-compress textures");
+
+    options.AddOption(OptionName::UseAssetCache, VariantType(useAssetCache), "Enables using AssetCache for scene");
     options.AddOption(OptionName::AssetCacheIP, VariantType(AssetCache::GetLocalHost()), "ip of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCachePort, VariantType(static_cast<uint32>(AssetCache::ASSET_SERVER_PORT)), "port of adress of Asset Cache Server");
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
@@ -147,14 +150,21 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
         commandObject = SceneExporter::OBJECT_SCENE;
     }
 
-    String gpuName = options.GetOption(OptionName::GPU).AsString();
-    requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
+    uint32 count = options.GetOptionValuesCount(OptionName::GPU);
+    for (uint32 i = 0; i < count; ++i)
+    {
+        String gpuName = options.GetOption(OptionName::GPU, i).AsString();
+        requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+    }
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
     quality = Clamp(static_cast<TextureConverter::eConvertQuality>(qualityValue), TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
 
     const bool saveNormals = options.GetOption(OptionName::SaveNormals).AsBool();
     optimizeOnExport = !saveNormals;
+
+    useHDTextures = options.GetOption(OptionName::HDTextures).AsBool();
+    forceCompressTextures = options.GetOption(OptionName::Force).AsBool();
 
     useAssetCache = options.GetOption(OptionName::UseAssetCache).AsBool();
     if (useAssetCache)
@@ -200,7 +210,7 @@ bool SceneExporterTool::InitializeInternal()
         return false;
     }
 
-    if (requestedGPU == GPU_INVALID)
+    if (requestedGPUs.empty())
     {
         Logger::Error("[SceneExporterTool] Unsupported gpu parameter was selected");
         return false;
@@ -213,10 +223,17 @@ void SceneExporterTool::ProcessInternal()
 {
     AssetCacheClient cacheClient(true);
 
+    SceneExporter::Params exportingParams;
+    exportingParams.dataFolder = outFolder;
+    exportingParams.dataSourceFolder = inFolder;
+    exportingParams.exportForGPUs = requestedGPUs;
+    exportingParams.quality = quality;
+    exportingParams.optimizeOnExport = optimizeOnExport;
+    exportingParams.useHDTextures = useHDTextures;
+    exportingParams.forceCompressTextures = forceCompressTextures;
+
     SceneExporter exporter;
-    exporter.SetFolders(outFolder, inFolder);
-    exporter.SetCompressionParams(requestedGPU, quality);
-    exporter.EnableOptimizations(optimizeOnExport);
+    exporter.SetExportingParams(exportingParams);
 
     if (useAssetCache)
     {

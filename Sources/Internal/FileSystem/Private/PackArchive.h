@@ -9,7 +9,7 @@ namespace DAVA
 class PackArchive final : public ResourceArchiveImpl
 {
 public:
-    explicit PackArchive(const FilePath& archiveName);
+    PackArchive(RefPtr<File>& file_, const FilePath& archiveName);
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
     const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const override;
@@ -27,6 +27,7 @@ public:
                               Vector<ResourceArchive::FileInfo>& filesInfo);
 
 private:
+    const FilePath archiveName;
     mutable RefPtr<File> file;
     PackFormat::PackFile packFile;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;

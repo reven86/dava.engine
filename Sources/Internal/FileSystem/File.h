@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILE_H__
-#define __DAVAENGINE_FILE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -7,7 +6,7 @@
 
 
 #if defined(__DAVAENGINE_ANDROID__)
-	#include "zip/zip.h"
+#include "zip/zip.h"
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA
@@ -59,22 +58,6 @@ public:
 	 */
     static File* Create(const FilePath& filePath, uint32 attributes);
 
-    /**
-        \brief funciton to create a file instance with give attributes
-        this function must be used for opening existing files also
-        \param[in] filePath absolute system path to file
-        \param[in] attributes combinations of eFileAttributes
-        \returns file instance
-	 */
-    static File* CreateFromSystemPath(const FilePath& filePath, uint32 attributes);
-
-    /**
-        \brief funciton to create a file instance with give attributes directly without framework path management.
-        \param[in] filePath absolute system path to file
-        \param[in] attributes combinations of eFileAttributes
-        \returns file instance
-     */
-    static File* PureCreate(const FilePath& filePath, uint32 attributes);
     /**
 		\brief Get this file name
 		\returns name of this file
@@ -200,6 +183,22 @@ protected:
     FilePath filename;
 
 private:
+    /**
+    \brief funciton to create a file instance with give attributes
+    this function must be used for opening existing files also
+    \param[in] filePath absolute system path to file
+    \param[in] attributes combinations of eFileAttributes
+    \returns file instance
+    */
+    static File* CreateFromSystemPath(const FilePath& filePath, uint32 attributes);
+
+    /**
+    \brief funciton to create a file instance with give attributes directly without framework path management.
+    \param[in] filePath absolute system path to file
+    \param[in] attributes combinations of eFileAttributes
+    \returns file instance
+    */
+    static File* PureCreate(const FilePath& filePath, uint32 attributes);
     // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
     bool GetNextChar(uint8* nextChar);
 
@@ -219,7 +218,3 @@ uint32 File::Write(const T* value)
     return static_cast<uint32>(Write(value, sizeof(T)));
 }
 };
-
-
-
-#endif

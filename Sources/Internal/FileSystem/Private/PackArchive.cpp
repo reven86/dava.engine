@@ -4,6 +4,8 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 
+#include <mutex>
+
 namespace DAVA
 {
 void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
@@ -70,6 +72,7 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
 
                       info.relativeFilePath = fileNameLoc;
                       info.originalSize = fileEntry.originalSize;
+                      info.originalCrc32 = fileEntry.originalCrc32;
                       info.compressedSize = fileEntry.compressedSize;
                       info.compressedCrc32 = fileEntry.compressedCrc32;
                       info.compressionType = fileEntry.type;
@@ -81,13 +84,29 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                   });
 }
 
-PackArchive::PackArchive(const FilePath& archiveName)
+static File* file = nullptr;
+static std::string relativeFileName;
+static std::mutex gFileMutex;
+
+PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
+    : archiveName(archiveName_)
+    , file(file_)
 {
     using namespace PackFormat;
 
-    String fileName = archiveName.GetAbsolutePathname();
+    //std::lock_guard<std::mutex> lock(gFileMutex);
 
-    file.Set(File::Create(fileName, File::OPEN | File::READ));
+    //if (file != nullptr)
+    //{
+    //    file->Release();
+    //    file = nullptr;
+    //    relativeFileName = "";
+    //}
+
+    //file = (File::Create(archiveName, File::OPEN | File::READ));
+    String fileName = archiveName.GetAbsolutePathname();
+    relativeFileName = fileName;
+
     if (!file)
     {
         throw std::runtime_error("can't Open file: " + fileName);
@@ -186,13 +205,33 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     if (!HasFile(relativeFilePath))
     {
-        Logger::Error("can't load file: %s course: not found\n",
-                      relativeFilePath.c_str());
         return false;
     }
 
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
+
+    //std::lock_guard<std::mutex> lock(gFileMutex);
+
+    //if (file != nullptr)
+    //{
+    //    if (relativeFileName != archiveName.GetAbsolutePathname())
+    //    {
+    //        file->Release();
+    //        file = File::Create(archiveName, File::OPEN | File::READ);
+    //        relativeFileName = archiveName.GetAbsolutePathname();
+    //    }
+    //}
+    //else
+    //{
+    //    file = (File::Create(archiveName, File::OPEN | File::READ));
+    //    relativeFileName = archiveName.GetAbsolutePathname();
+    //}
+
+    if (!file)
+    {
+        throw std::runtime_error("can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
+    }
 
     bool isOk = file->Seek(fileEntry.startPosition, File::SEEK_FROM_START);
     if (!isOk)

@@ -8,6 +8,7 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
+set                   ( NO_CEF true)
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
@@ -70,8 +71,7 @@ file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
-define_source_folders         ( SRC_ROOT "Classes" ERASE_FOLDERS "_build"    )
-generate_source_groups_project( SRC_ROOT "Classes" FOLDERS Generated UiList )
+define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
  
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
@@ -87,4 +87,4 @@ list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
 
 setup_main_executable()
 
-execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+convert_graphics()

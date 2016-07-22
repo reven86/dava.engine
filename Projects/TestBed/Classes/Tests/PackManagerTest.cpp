@@ -1,6 +1,8 @@
 #include "Tests/PackManagerTest.h"
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
+#include <FileSystem/DynamicMemoryFile.h>
+#include <typeinfo>
 
 using namespace DAVA;
 
@@ -21,12 +23,9 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 void PackManagerTest::UpdateDescription()
 {
     String message = DAVA::Format("type name of pack you want to download\n"
-                                  "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n"
-                                  "Url to gpu packs: \"%s\"\n"
-                                  "When you press \"start loading\" full reinitializetion begins",
+                                  "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n",
                                   folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
-                                  urlToServerSuperpack.c_str(),
-                                  urlPacksGpu.c_str());
+                                  urlToServerSuperpack.c_str());
     description->SetText(UTF8Utils::EncodeToWideString(message));
 }
 
@@ -41,16 +40,16 @@ void PackManagerTest::LoadResources()
         gpuArchitecture = "adreno";
         break;
     case GPU_DX11:
-        gpuArchitecture = "dx11";
+        gpuArchitecture = "origin";
         break;
     case GPU_MALI:
         gpuArchitecture = "mali";
         break;
     case GPU_POWERVR_IOS:
-        gpuArchitecture = "pvr_ios";
+        gpuArchitecture = "PowerVR_iOS";
         break;
     case GPU_POWERVR_ANDROID:
-        gpuArchitecture = "pvr_android";
+        gpuArchitecture = "PowerVR_Android";
         break;
     case GPU_TEGRA:
         gpuArchitecture = "tegra";
@@ -59,18 +58,12 @@ void PackManagerTest::LoadResources()
         throw std::runtime_error("unknown gpu famili");
     }
 
-    auto startPos = urlPacksGpu.find("{gpu}");
-    if (startPos != String::npos)
-    {
-        urlPacksGpu.replace(startPos, 5, gpuArchitecture);
-    }
-
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
     font->SetSize(14);
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"vpack");
+    packInput->SetText(L"maps_pack_italy");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -80,15 +73,35 @@ void PackManagerTest::LoadResources()
     packInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(packInput);
 
-    startLoadingButton = new UIButton(Rect(420, 10, 100, 20));
-    startLoadingButton->SetDebugDraw(true);
-    startLoadingButton->SetStateFont(0xFF, font);
-    startLoadingButton->SetStateFontColor(0xFF, Color::White);
-    startLoadingButton->SetStateText(0xFF, L"start loading");
-    startLoadingButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
-    AddControl(startLoadingButton);
+    packNextInput = new UITextField(Rect(5, 40, 400, 20));
+    packNextInput->SetFont(font);
+    packNextInput->SetText(L"other_maps_pack");
+    packNextInput->SetFontSize(14);
+    packNextInput->SetDebugDraw(true);
+    packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    packNextInput->SetInputEnabled(true);
+    packNextInput->GetOrCreateComponent<UIFocusComponent>();
+    packNextInput->SetDelegate(this);
+    packNextInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(packNextInput);
 
-    startServerButton = new UIButton(Rect(420, 40, 100, 20));
+    loadPack = new UIButton(Rect(420, 10, 100, 20));
+    loadPack->SetDebugDraw(true);
+    loadPack->SetStateFont(0xFF, font);
+    loadPack->SetStateFontColor(0xFF, Color::White);
+    loadPack->SetStateText(0xFF, L"start loading");
+    loadPack->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
+    AddControl(loadPack);
+
+    loadNext = new UIButton(Rect(420, 40, 100, 20));
+    loadNext->SetDebugDraw(true);
+    loadNext->SetStateFont(0xFF, font);
+    loadNext->SetStateFontColor(0xFF, Color::White);
+    loadNext->SetStateText(0xFF, L"next loading");
+    loadNext->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartNextPackClicked));
+    AddControl(loadNext);
+
+    startServerButton = new UIButton(Rect(420, 70, 100, 20));
     startServerButton->SetDebugDraw(true);
     startServerButton->SetStateFont(0xFF, font);
     startServerButton->SetStateFontColor(0xFF, Color::White);
@@ -96,7 +109,7 @@ void PackManagerTest::LoadResources()
     startServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
     AddControl(startServerButton);
 
-    stopServerButton = new UIButton(Rect(420, 70, 100, 20));
+    stopServerButton = new UIButton(Rect(420, 100, 100, 20));
     stopServerButton->SetDebugDraw(true);
     stopServerButton->SetStateFont(0xFF, font);
     stopServerButton->SetStateFontColor(0xFF, Color::White);
@@ -123,7 +136,7 @@ void PackManagerTest::LoadResources()
     greenControl->SetDebugDraw(true);
     AddControl(greenControl);
 
-    description = new UIStaticText(Rect(5, 40, 400, 200));
+    description = new UIStaticText(Rect(5, 70, 400, 200));
     description->SetFont(font);
     description->SetTextColor(Color::White);
     description->SetMultiline(true);
@@ -168,15 +181,44 @@ void PackManagerTest::LoadResources()
     startInit->SetDebugDraw(true);
     startInit->SetStateFont(0xFF, font);
     startInit->SetStateFontColor(0xFF, Color::White);
-    startInit->SetStateText(0xFF, L"start init");
-    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitializeClicked));
+    startInit->SetStateText(0xFF, L"PM init");
+    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitClicked));
     AddControl(startInit);
+
+    startSync = new UIButton(Rect(420, 440, 100, 20));
+    startSync->SetDebugDraw(true);
+    startSync->SetStateFont(0xFF, font);
+    startSync->SetStateFontColor(0xFF, Color::White);
+    startSync->SetStateText(0xFF, L"PM sync");
+    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartSyncClicked));
+    AddControl(startSync);
+
+    clearDocs = new UIButton(Rect(420, 470, 100, 20));
+    clearDocs->SetDebugDraw(true);
+    clearDocs->SetStateFont(0xFF, font);
+    clearDocs->SetStateFontColor(0xFF, Color::White);
+    clearDocs->SetStateText(0xFF, L"rm dvpk's");
+    clearDocs->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnClearDocsClicked));
+    AddControl(clearDocs);
+
+    lsDvpks = new UIButton(Rect(420, 500, 100, 20));
+    lsDvpks->SetDebugDraw(true);
+    lsDvpks->SetStateFont(0xFF, font);
+    lsDvpks->SetStateFontColor(0xFF, Color::White);
+    lsDvpks->SetStateText(0xFF, L"ls dvpk's");
+    lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListPacksClicked));
+    AddControl(lsDvpks);
 }
 
 void PackManagerTest::UnloadResources()
 {
+    SafeRelease(loadNext);
+    SafeRelease(packNextInput);
+    SafeRelease(lsDvpks);
+    SafeRelease(startSync);
+    SafeRelease(clearDocs);
     SafeRelease(packInput);
-    SafeRelease(startLoadingButton);
+    SafeRelease(loadPack);
     SafeRelease(startServerButton);
     SafeRelease(stopServerButton);
     SafeRelease(packNameLoading);
@@ -201,6 +243,11 @@ void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
     }
+    else if (pack.state == PackManager::Pack::Status::Downloading)
+    {
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("downloading: %s %d", pack.name.c_str(), pack.downloadError,
+                                                                            static_cast<int>(100 * pack.downloadProgress))));
+    }
 }
 
 void PackManagerTest::OnPackDownloadChange(const DAVA::PackManager::Pack& pack)
@@ -220,7 +267,7 @@ void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnInitChange(PackManager::IInit& init)
+void PackManagerTest::OnInitChange(PackManager::ISync& init)
 {
     StringStream ss;
 
@@ -237,20 +284,81 @@ void PackManagerTest::OnInitChange(PackManager::IInit& init)
         }
     }
 
-    DAVA::Logger::Info("%s", ss.str().c_str());
+    Logger::Info("%s", ss.str().c_str());
+
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
 }
 
-void PackManagerTest::OnStartInitializeClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     PackManager& pm = Core::Instance()->GetPackManager();
 
-    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+    if (pm.IsRequestingEnabled())
+    {
+        return;
+    }
+
+    packNameLoading->SetText(L"done: start init");
+
+    pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    pm.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, gpuArchitecture);
+    pm.Initialize(dbFile, readOnlyDirWithPacks, gpuArchitecture);
+
+    pm.EnableRequesting();
+
+    packNameLoading->SetText(L"done: finish init");
+}
+
+void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    packNameLoading->SetText(L"done: start sync");
+    PackManager& pm = Core::Instance()->GetPackManager();
+    pm.SyncWithServer(urlToServerSuperpack, folderWithDownloadedPacks);
+}
+
+void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+    const Vector<PackManager::Pack>& packs = pm.GetPacks();
+
+    std::for_each(begin(packs), end(packs), [&pm](const PackManager::Pack& pack)
+                  {
+                      if (pack.state == PackManager::Pack::Status::Mounted && pack.isReadOnly == false)
+                      {
+                          pm.DeletePack(pack.name);
+                      }
+                  });
+
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
+    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+
+    packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
+}
+
+void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+
+    std::stringstream ss;
+
+    for (auto& pack : pm.GetPacks())
+    {
+        if (pack.state == PackManager::Pack::Status::Mounted)
+        {
+            ss << pack.name << ", ";
+        }
+    }
+
+    String s = ss.str();
+    if (!s.empty())
+    {
+        s = s.substr(0, s.size() - 2);
+    }
+    packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -258,39 +366,42 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    PackManager& packManager = Core::Instance()->GetPackManager();
+    PackManager& pm = Core::Instance()->GetPackManager();
 
-    const Vector<PackManager::Pack>& packs = packManager.GetPacks();
+    if (pm.GetISync().GetState() < PackManager::InitState::MountingReadOnlyPacks)
+    {
+        return;
+    }
 
-    std::for_each(begin(packs), end(packs), [&packManager](const PackManager::Pack& pack)
-                  {
-                      if (pack.state == PackManager::Pack::Status::Mounted)
-                      {
-                          packManager.DeletePack(pack.name);
-                      }
-                  });
+    pm.packStateChanged.DisconnectAll();
 
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+    pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    pm.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
 
-    String dbFile = sqliteDbFile;
-    dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
-
-    // clear and renew all packs state
-    packManager.Initialize(dbFile, folderWithDownloadedPacks, readOnlyDirWithPacks, urlToServerSuperpack, urlPacksGpu);
-    packManager.EnableRequesting();
-
-    packManager.packStateChanged.DisconnectAll();
-
-    packManager.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
-    packManager.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
-
-    String packName = UTF8Utils::EncodeToUTF8(packInput->GetText());
+    WideString packName = packInput->GetText();
 
     try
     {
-        packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + packName));
-        packManager.RequestPack(packName);
+        packNameLoading->SetText(L"loading: " + packName);
+        pm.RequestPack(UTF8Utils::EncodeToUTF8(packName));
+    }
+    catch (std::exception& ex)
+    {
+        packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
+    }
+}
+
+void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    PackManager& pm = Core::Instance()->GetPackManager();
+    WideString packName = packNextInput->GetText();
+
+    try
+    {
+        packNameLoading->SetText(L"loading: " + packName);
+        String pName = UTF8Utils::EncodeToUTF8(packName);
+        pm.RequestPack(pName);
+        pm.ChangeDownloadOrder(pName, 0.f);
     }
     catch (std::exception& ex)
     {
@@ -319,13 +430,14 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
 
     FilePath path(fileName);
 
-    File* f = File::Create(path, File::OPEN | File::READ);
-    if (f == nullptr)
+    ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
+    // if we read file from pack - it will be DynamicMemoryFile
+    if (f && typeid(*f) == typeid(DynamicMemoryFile))
     {
-        packNameLoading->SetText(L"can't load file");
+        packNameLoading->SetText(L"file loaded successfully");
     }
     else
     {
-        packNameLoading->SetText(L"file loaded successfully");
+        packNameLoading->SetText(L"can't load file");
     }
 }

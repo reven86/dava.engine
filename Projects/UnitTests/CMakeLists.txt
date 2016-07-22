@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
+set( COVERAGE true )
 project ( UnitTests )
 
 set( DAVA_DISABLE_AUTOTESTS true )
@@ -9,12 +10,20 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+# Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
+add_definitions(-DLOCALIZATION_DEBUG)
+
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 
+set ( DAVA_COMPONENTS "Sound" )
+if ( WIN32 AND NOT WINDOWS_UAP )
+    list ( APPEND DAVA_COMPONENTS "CEFWebview" )
+endif ()
+
 find_package( Steam REQUIRED )
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 if ( WIN32 OR MACOS )
 	find_package(DavaTools REQUIRED )
 endif()
@@ -34,8 +43,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source_folders         ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
-generate_source_groups_project( SRC_ROOT "Classes" )
+define_source                  ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
@@ -51,6 +59,8 @@ set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
+set( UNIFIED_IGNORE_LIST_IOS    "iOSSpecific" )
+
 
 #uncomment this 2 strings to link libjpeg as additional project.
 #set( LIBRARIES jpeg )
@@ -61,6 +71,8 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+
+convert_graphics()
 
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled

@@ -2,7 +2,6 @@
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Logger/Logger.h"
-#include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
@@ -23,8 +22,6 @@
 
 namespace DAVA
 {
-const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
-
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -49,12 +46,17 @@ UIControlSystem::UIControlSystem()
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
         //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4;
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4.f;
+        if (DeviceInfo::GetScreenInfo().scale != 0.f)
+        {
+            // to look the same on all devices
+            defaultDoubleClickRadiusSquared = defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale;
+        }
         defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
     }
     else
     {
-        defaultDoubleClickRadiusSquared = 4; // default, if touch didn't detect, 4 - default pixels in windows desktop
+        defaultDoubleClickRadiusSquared = 4.f; // default, if touch didn't detect, 4 - default pixels in windows desktop
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
@@ -323,8 +325,6 @@ void UIControlSystem::Draw()
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
-
     drawCounter = 0;
 
     const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
@@ -354,9 +354,6 @@ void UIControlSystem::Draw()
     {
         frameSkip--;
     }
-    //Logger::Info("UIControlSystem::draws: %d", drawCounter);
-
-    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
 
@@ -617,7 +614,7 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         if (newEvent->touchId == lastClickData.touchId)
         {
             lastClickData.lastClickEnded = true;
-            if (CheckTimeAndPosition(newEvent))
+            if (lastClickData.tapCount != 1 && CheckTimeAndPosition(newEvent))
             {
                 tapCount = lastClickData.tapCount;
             }
@@ -696,10 +693,18 @@ void UIControlSystem::SetDefaultTapCountSettings()
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
 }
 
-void UIControlSystem::SetTapCountSettings(float32 time, int32 radius)
+void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
 {
-    DVASSERT((time > 0.f) && (radius > 0));
+    DVASSERT((time > 0.f) && (inch > 0.f));
     doubleClickTime = time;
-    doubleClickRadiusSquared = radius * radius;
+    // calculate pixels from inch
+    float32 dpi = static_cast<float32>(DPIHelper::GetScreenDPI());
+    if (DeviceInfo::GetScreenInfo().scale != 0.f)
+    {
+        // to look the same on all devices
+        dpi /= DeviceInfo::GetScreenInfo().scale;
+    }
+    doubleClickRadiusSquared = inch * dpi;
+    doubleClickRadiusSquared *= doubleClickRadiusSquared;
 }
 };

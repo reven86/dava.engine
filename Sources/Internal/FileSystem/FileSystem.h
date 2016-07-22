@@ -161,8 +161,6 @@ public:
 	 */
     virtual bool IsFileLocked(const FilePath& filePath) const;
 
-    File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
-
     /**
 		\brief Copies an existing file to a new file.
 		\param[in] existingFile The name of an existing file.
@@ -226,6 +224,13 @@ public:
     virtual void Unmount(const FilePath& arhiveName);
 
     /**
+    \brief Function to check if ResourceArchive is mounted
+
+    \param[in] archiveName filename of archive we want to attach
+    */
+    virtual bool IsMounted(const FilePath& archiveName) const;
+
+    /**
 	 \brief Invokes the command processor to execute a command
 	 \param[in] command contains the system command to be executed
 	 \returns platform-dependent
@@ -266,6 +271,8 @@ public:
     */
     bool RecursiveCopy(const FilePath& src, const FilePath& dst);
 
+    File* CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes);
+
 private:
     bool HasLineEnding(File* f);
 
@@ -277,6 +284,7 @@ private:
     struct ResourceArchiveItem
     {
         ResourceArchiveItem() = default;
+        ResourceArchiveItem(const ResourceArchiveItem&) = delete;
         ResourceArchiveItem(ResourceArchiveItem&& other)
             : archive(std::move(other.archive))
             , attachPath(std::move(other.attachPath))
@@ -289,7 +297,7 @@ private:
         FilePath archiveFilePath;
     };
 
-    List<ResourceArchiveItem> resourceArchiveList;
+    UnorderedMap<String, ResourceArchiveItem> resourceArchiveList;
     Map<String, void*> lockedFileHandles;
 
     friend class File;
@@ -298,9 +306,9 @@ public:
     void Init();
 
 private:
-    bool IsAPKPath(const String& path) const;
-    Set<String> fileSet;
-    Set<String> dirSet;
+//bool IsAPKPath(const String& path) const;
+//Set<String> fileSet;
+//Set<String> dirSet;
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };

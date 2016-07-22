@@ -18,6 +18,7 @@ class SceneTree : public QTreeView
 
 public:
     explicit SceneTree(QWidget* parent = 0);
+    ~SceneTree();
 
 protected:
     void dropEvent(QDropEvent* event) override;
@@ -27,6 +28,7 @@ protected:
 private slots:
     void ShowContextMenu(const QPoint& pos);
     void SetFilter(const QString& filter);
+    void RemoveSelection();
 
     void CollapseSwitch();
     void CollapseAll();
@@ -51,10 +53,12 @@ private slots:
 private:
     void GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col);
 
+    void EmitParticleSignals();
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
     void UpdateTree();
+    void UpdateModel();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 

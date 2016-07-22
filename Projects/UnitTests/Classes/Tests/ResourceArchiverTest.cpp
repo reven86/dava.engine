@@ -21,6 +21,7 @@ DAVA_TESTCLASS (ResourceArchiverTest)
         ResourceArchiver::Params params;
         params.sourcesList = { "~doc:/TestData/ResourceArchiverTest/SampleSource/" };
         params.archivePath = "~doc:/TestData/ResourceArchiverTest/result.archive";
+        params.baseDirPath = FileSystem::Instance()->GetCurrentWorkingDirectory();
         SCOPE_EXIT
         {
             FileSystem::Instance()->DeleteFile(params.archivePath);
@@ -70,6 +71,7 @@ DAVA_TESTCLASS (ResourceArchiverTest)
         ResourceArchiver::Params params;
         params.sourcesList = { "~doc:/TestData/ResourceArchiverTest/SampleSource/" };
         params.archivePath = "~doc:/TestData/ResourceArchiverTest/result.archive";
+        params.baseDirPath = FileSystem::Instance()->GetCurrentWorkingDirectory();
         SCOPE_EXIT
         {
             FileSystem::Instance()->DeleteFile(params.archivePath);

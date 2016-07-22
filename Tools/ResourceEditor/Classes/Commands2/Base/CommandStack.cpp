@@ -276,7 +276,7 @@ void CommandStack::Exec(Command2::Pointer&& command)
         }
         else
         {
-            commandManager->queueCommand(wgt::getClassIdentifier<NGTCommand>(), wgt::ObjectHandle(std::move(command)));
+            commandManager->queueCommand(wgt::TypeId::getType<NGTCommand>().getName(), wgt::ObjectHandle(std::move(command)));
         }
     }
 }
@@ -314,7 +314,7 @@ void CommandStack::EndBatch()
             // As Command2 hierarchy don't have NGT reflection, we have to cast manually
             // to be sure that ObjectHandle will get correct <typename T>
             Command2* batchCommand = curBatchCommand.release();
-            commandManager->queueCommand(wgt::getClassIdentifier<NGTCommand>(), wgt::ObjectHandle(Command2::Pointer(batchCommand)));
+            commandManager->queueCommand(wgt::TypeId::getType<NGTCommand>().getName(), wgt::ObjectHandle(Command2::Pointer(batchCommand)));
         }
         else
         {

@@ -3,22 +3,30 @@
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/ResourceArchive.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
 struct PackPriorityComparator;
 
-class PackManagerImpl : public PackManager::IInit
+static const String devmode_file_exist_on_filesystem{ "dummy_not_existing_pack_for_dev_mod" };
+
+class PackManagerImpl : public PackManager::ISync
 {
 public:
     PackManagerImpl() = default;
 
     void Initialize(const String& dbFile_,
-                    const FilePath& localPacksDir_,
                     const FilePath& readOnlyPacksDir_,
-                    const String& packUrlCommon,
-                    const String& packUrlGpu,
+                    const FilePath& downloadPacksDir_,
+                    const String& architecture_,
+                    const PackManager::Hints& hints_,
                     PackManager* packManager_);
+
+    bool IsInitialized() const;
+
+    void SyncWithServer(const String& urlToServerSuperpack);
 
     // start PackManager::IInitialization ///////////////////////////////
     PackManager::InitState GetState() const override;
@@ -48,19 +56,31 @@ public:
 
     PackManager::Pack& GetPack(const String& packName);
 
-    void MountPacks(const FilePath&);
+    void MountPacks(const Set<FilePath>& basePacks);
 
     void DeletePack(const String& packName);
+
+    uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
     const Vector<PackManager::Pack>& GetAllState() const;
 
     const FilePath& GetLocalPacksDir() const;
 
-    const String& GetRemotePacksURL(bool isGpu) const;
+    const String& GetSuperPackUrl() const;
 
     PackManager& GetPM()
     {
         return *packManager;
+    }
+
+    const PackFormat::PackFile::FooterBlock& GetInitFooter() const
+    {
+        return initFooterOnServer;
+    }
+
+    const PackManager::Hints& GetHints() const
+    {
+        return hints;
     }
 
 private:
@@ -68,12 +88,13 @@ private:
 
     void FirstTimeInit();
     void InitStarting();
-    void MountLocalPacks();
+    void InitializePacks();
+    void MountBasePacks();
     void AskFooter();
     void GetFooter();
     void AskFileTable();
     void GetFileTable();
-    void CalcLocalDBWitnRemoteCrc32();
+    void CompareLocalDBWitnRemoteHash();
     void AskDB();
     void GetDB();
     void UnpackingDB();
@@ -92,11 +113,15 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
+    FilePath dbZipInDoc;
+    FilePath dbZipInData;
+    FilePath dbInDoc;
+
     String initLocalDBFileName;
     String initErrorMsg;
     PackManager::InitState initState = PackManager::InitState::FirstInit;
     PackManager::InitError initError = PackManager::InitError::AllGood;
-    PackFormat::PackFile::FooterBlock footerOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
@@ -104,6 +129,8 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
+
+    PackManager::Hints hints;
 };
 
 struct PackPriorityComparator
@@ -124,7 +151,10 @@ inline void PackManagerImpl::EnableProcessing()
     if (!isProcessingEnabled)
     {
         isProcessingEnabled = true;
-        requestManager->Start();
+        if (requestManager)
+        {
+            requestManager->Start();
+        }
     }
 }
 
@@ -133,13 +163,17 @@ inline void PackManagerImpl::DisableProcessing()
     if (isProcessingEnabled)
     {
         isProcessingEnabled = false;
-        requestManager->Stop();
+        if (requestManager)
+        {
+            requestManager->Stop();
+        }
     }
 }
 
 inline const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
-    return db->FindPack(relativePathInPack);
+    const String& result = db->FindPack(relativePathInPack);
+    return result;
 }
 
 inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
@@ -168,12 +202,8 @@ inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
     return localPacksDir;
 }
 
-inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
+inline const String& PackManagerImpl::GetSuperPackUrl() const
 {
-    if (isGpu)
-    {
-        return architecture;
-    }
     return superPackUrl;
 }
 

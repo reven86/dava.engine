@@ -219,8 +219,9 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
         {
             matchedSize += files[str];
         }
-
-        functor.OnProgress((matchedSize * 100.0f) / totalSize);
+        float progress = (matchedSize * 100.0f) / totalSize;
+        int progressInt = static_cast<int>(std::round(progress));
+        functor.OnProgress(progressInt);
     };
     QStringList arguments;
     //this is needed for correct work with pathes contains whitespace

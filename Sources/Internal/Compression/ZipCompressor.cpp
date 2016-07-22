@@ -68,7 +68,7 @@ class ZipPrivateData
 {
 public:
     mz_zip_archive archive;
-    ScopedPtr<File> file{ nullptr };
+    RefPtr<File> file{ nullptr };
 };
 
 static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size_t n)
@@ -96,13 +96,13 @@ static size_t file_read_func(void* pOpaque, mz_uint64 file_ofs, void* pBuf, size
     return static_cast<size_t>(result);
 }
 
-ZipFile::ZipFile(const FilePath& fileName)
+ZipFile::ZipFile(RefPtr<File>& file_, const FilePath& fileName)
 {
     zipData.reset(new ZipPrivateData());
 
     Memset(&zipData->archive, 0, sizeof(zipData->archive));
 
-    zipData->file.reset(File::Create(fileName, File::OPEN | File::READ));
+    zipData->file = file_;
 
     if (!zipData->file)
     {
@@ -111,7 +111,7 @@ ZipFile::ZipFile(const FilePath& fileName)
 
     uint64 fileSize = zipData->file->GetSize();
 
-    zipData->archive.m_pIO_opaque = zipData->file.get();
+    zipData->archive.m_pIO_opaque = zipData->file.Get();
     zipData->archive.m_pRead = &file_read_func;
     zipData->archive.m_archive_size = fileSize;
 

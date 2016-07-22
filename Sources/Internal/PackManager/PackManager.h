@@ -15,8 +15,9 @@ public:
         FirstInit,
         Starting, // if not exist local DB in ~doc copy it from local resources (on first start)
 
-        MountingLocalPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
+        MountingReadOnlyPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
         // now you can load files from local packs
+        ReadOnlyPacksReady,
 
         LoadingRequestAskFooter, // if no connection goto LoadingPacksDataFromDB try using only local packs
         LoadingRequestGetFooter,
@@ -59,13 +60,11 @@ public:
         Vector<String> dependency; // names of dependency packs or empty
 
         String name; // unique pack name
-        String remoteUrl; // url used for download archive or empty
         String otherErrorMsg;
 
         float32 downloadProgress = 0.f; // 0.0f to 1.0f
         float32 priority = 0.f; // 0.0f to 1.0f
 
-        uint32 hashFromMeta = 0; // example: tanks.pak -> tanks.pak.hash
         uint32 hashFromDB = 0;
 
         uint64 downloadedSize = 0;
@@ -75,13 +74,14 @@ public:
         DownloadError downloadError = DLE_NO_ERROR;
         Status state = Status::NotRequested;
 
-        bool isGPU = false;
+        bool isGPU = false; // depends on architecture
+        bool isReadOnly = false; // find in build readonly dir assets
     };
 
-    class IInit
+    class ISync
     {
     public:
-        virtual ~IInit();
+        virtual ~ISync();
 
         virtual InitState GetState() const = 0;
         virtual InitError GetError() const = 0;
@@ -108,7 +108,7 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<IInit&> initStateChanged;
+    Signal<ISync&> asyncConnectStateChanged;
     // signal user about every pack state change
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
@@ -118,24 +118,31 @@ public:
     PackManager();
     ~PackManager();
 
-    // 0. connect to remote server and download DB with info about all packs and files
-    // 1. unpack DB to local write dir
-    // 2. open local database and read all packs info
-    // 3. list all packs on filesystem
-    // 4. mount all packs which found on filesystem and in database
-    // throw exception if can't initialize with deteils
-    void Initialize(const String& dbFileName,
-                    const FilePath& downloadPacksDir,
-                    const FilePath& readOnlyPacksDir, // can be empty
-                    const String& urlToServerSuperpack,
-                    const String& architecture);
+    struct Hints
+    {
+        bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
+        bool copyBasePacksToDocs = true; // on Android true improve perfomance (need play with it with different pack size and compression and loading order)
+        // on PC, Mac, iOS - better false
+    };
 
-    IInit& GetInitialization();
+    // throw exception if can't initialize
+    void Initialize(const String& dbFileName,
+                    const FilePath& readOnlyPacksDir,
+                    const FilePath& downloadPacksDir,
+                    const String& architecture,
+                    const Hints& hints);
+
+    bool IsInitialized() const;
+
+    // complex async connect to server
+    void SyncWithServer(const String& urlToServerSuperpack);
+
+    ISync& GetISync();
 
     bool IsRequestingEnabled() const;
     // enable user request processing
     void EnableRequesting();
-    // disalbe user request processing
+    // disable user request processing
     void DisableRequesting();
 
     // internal method called per frame in framework (can thow exception)
@@ -150,7 +157,8 @@ public:
     // thow exception if can't find pack
     const Pack& RequestPack(const String& packName);
 
-    void ChangePackPriority(const String& packName, float newPriority);
+    // order - [0..1] - 0 - first, 1 - last
+    void ChangeDownloadOrder(const String& packName, float order);
 
     // all packs state, valid till next call Update()
     const Vector<Pack>& GetPacks() const;
@@ -158,7 +166,7 @@ public:
     void DeletePack(const String& packName);
 
     const FilePath& GetLocalPacksDirectory() const;
-    const String& GetRemotePacksUrl(bool isGPU) const;
+    const String& GetSuperPackUrl() const;
 
 private:
     std::unique_ptr<PackManagerImpl> impl;

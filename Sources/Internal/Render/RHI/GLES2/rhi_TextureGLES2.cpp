@@ -147,89 +147,83 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     }
     else
     {
-        GLCommand cmd1 = { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(uid) } };
-
-        ExecGL(&cmd1, 1, force_immediate);
-
-        if (cmd1.status == GL_NO_ERROR)
+        GLenum target = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+        uint32 cmd2_cnt = 2;
+        GLCommand cmd2[4 + countof(desc.initialData)] =
         {
-            GLenum target = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-            uint32 cmd2_cnt = 2;
-            GLCommand cmd2[4 + countof(desc.initialData)] =
-            {
-              { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
-            };
+          { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(uid) } },
+          { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
+        };
 
-            if (desc.autoGenMipmaps && !desc.isRenderTarget)
+        if (desc.autoGenMipmaps && !desc.isRenderTarget)
+        {
+            cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+            ++cmd2_cnt;
+        }
+
+        // process initial-data, if any
+        {
+            uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
+            GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+            GLint int_fmt;
+            GLint fmt;
+            GLenum type;
+            bool compressed;
+
+            GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
+
+            DVASSERT(desc.levelCount <= countof(desc.initialData));
+            for (unsigned s = 0; s != array_sz; ++s)
             {
-                cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+                cmd2[cmd2_cnt].func = GLCommand::BIND_TEXTURE;
+                cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+                cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
                 ++cmd2_cnt;
-            }
 
-            // process initial-data, if any
-            {
-                uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
-                GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
-                GLint int_fmt;
-                GLint fmt;
-                GLenum type;
-                bool compressed;
+                target = (desc.type == TEXTURE_TYPE_CUBE) ? face[s] : GL_TEXTURE_2D;
 
-                GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
-
-                DVASSERT(desc.levelCount <= countof(desc.initialData));
-                for (unsigned s = 0; s != array_sz; ++s)
+                for (unsigned m = 0; m != desc.levelCount; ++m)
                 {
-                    cmd2[cmd2_cnt].func = GLCommand::BIND_TEXTURE;
-                    cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-                    cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
-                    ++cmd2_cnt;
+                    GLCommand* cmd = cmd2 + cmd2_cnt;
+                    void* data = desc.initialData[s * desc.levelCount + m];
 
-                    target = (desc.type == TEXTURE_TYPE_CUBE) ? face[s] : GL_TEXTURE_2D;
-
-                    for (unsigned m = 0; m != desc.levelCount; ++m)
+                    if (data)
                     {
-                        GLCommand* cmd = cmd2 + cmd2_cnt;
-                        void* data = desc.initialData[s * desc.levelCount + m];
+                        Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
+                        uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
 
-                        if (data)
-                        {
-                            Size2i sz = TextureExtents(Size2i(desc.width, desc.height), m);
-                            uint32 data_sz = TextureSize(desc.format, sz.dx, sz.dy);
+                        cmd->func = GLCommand::TEX_IMAGE2D;
+                        cmd->arg[0] = target;
+                        cmd->arg[1] = m;
+                        cmd->arg[2] = uint64(int_fmt);
+                        cmd->arg[3] = uint64(sz.dx);
+                        cmd->arg[4] = uint64(sz.dy);
+                        cmd->arg[5] = 0;
+                        cmd->arg[6] = uint64(fmt);
+                        cmd->arg[7] = type;
+                        cmd->arg[8] = uint64(data_sz);
+                        cmd->arg[9] = reinterpret_cast<uint64>(data);
+                        cmd->arg[10] = compressed;
 
-                            cmd->func = GLCommand::TEX_IMAGE2D;
-                            cmd->arg[0] = target;
-                            cmd->arg[1] = m;
-                            cmd->arg[2] = uint64(int_fmt);
-                            cmd->arg[3] = uint64(sz.dx);
-                            cmd->arg[4] = uint64(sz.dy);
-                            cmd->arg[5] = 0;
-                            cmd->arg[6] = uint64(fmt);
-                            cmd->arg[7] = type;
-                            cmd->arg[8] = uint64(data_sz);
-                            cmd->arg[9] = reinterpret_cast<uint64>(data);
-                            cmd->arg[10] = compressed;
+                        if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
+                            _FlipRGBA4_ABGR4(data, data, data_sz);
+                        else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                            _RGBA5551toABGR1555(data, data, data_sz);
 
-                            if (desc.format == TEXTURE_FORMAT_R4G4B4A4)
-                                _FlipRGBA4_ABGR4(data, data, data_sz);
-                            else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
-                                _RGBA5551toABGR1555(data, data, data_sz);
-
-                            ++cmd2_cnt;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        ++cmd2_cnt;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
-
-                cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
-                ++cmd2_cnt;
             }
 
-            ExecGL(cmd2, cmd2_cnt, force_immediate);
+            cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
+            ++cmd2_cnt;
         }
+
+        ExecGL(cmd2, cmd2_cnt, force_immediate);
     }
 
     if (uid[0])

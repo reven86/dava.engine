@@ -177,6 +177,10 @@ function StopTest()
     autotestingSystem:OnTestFinished()
 end
 
+function SkipTest()
+    autotestingSystem:OnTestSkipped()
+    Yield()
+end
 
 -- DB communication
 function SaveKeyedArchiveToDevice(name, archive)
@@ -568,6 +572,19 @@ function WaitControlBecomeVisible(name, time)
     return result
 end
 
+function WaitControlBecomeNotVisible(name, time)
+    local waitTime = time or TIMEOUT
+    local control = GetControl(name)
+    Log("WaitControlBecomeNotVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
+    local not_visible_control_lua = function() return not (control and
+            control:GetVisibilityFlag() and control:IsVisible()) end
+    local result = WaitUntil(waitTime, not_visible_control_lua, name)
+    if not result then
+        Log("Control is still visible: " .. name, "DEBUG")
+    end
+    return result
+end
+
 function WaitUntilControlBecomeEnabled(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitUntilControlBecomeEnabled name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
@@ -832,6 +849,11 @@ function ShiftClickControl(name, x, y, touchId)
     end
     Log("Control " .. name .. " is not visible.")
     return false
+end
+
+--Android purposes
+function ClickSystemBack()
+    autotestingSystem:ClickSystemBack()
 end
 
 -- Move touch actions
