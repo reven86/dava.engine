@@ -243,9 +243,9 @@ bool SceneTabWidget::CloseTab(int index)
     return CloseTabInternal(index, false);
 }
 
-bool SceneTabWidget::CloseTabInternal(int index, bool force)
+bool SceneTabWidget::CloseTabInternal(int index, bool silent)
 {
-    if (force == false)
+    if (silent == false)
     {
         Request request;
         emit CloseTabRequest(index, &request);
@@ -259,7 +259,10 @@ bool SceneTabWidget::CloseTabInternal(int index, bool force)
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
-        SceneSignals::Instance()->EmitDeactivated(scene);
+        if (silent == false)
+        {
+            SceneSignals::Instance()->EmitDeactivated(scene);
+        }
     }
 
     SafeRelease(scene);
@@ -579,12 +582,12 @@ bool SceneTabWidget::CloseAllTabs()
     return CloseAllTabsInternal(false);
 }
 
-bool SceneTabWidget::CloseAllTabsInternal(bool force)
+bool SceneTabWidget::CloseAllTabsInternal(bool silent)
 {
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTabInternal(GetCurrentTab(), force))
+        if (!CloseTabInternal(GetCurrentTab(), silent))
         {
             return false;
         }
