@@ -1180,7 +1180,7 @@ void QtMainWindow::OpenProject(const DAVA::FilePath& projectPath)
 {
     if (!projectPath.IsEmpty() &&
         ProjectManager::Instance()->GetProjectPath() != projectPath &&
-        ui->sceneTabWidget->CloseAllTabs())
+        ui->sceneTabWidget->CloseAllTabs(false))
     {
         ProjectManager::Instance()->OpenProject(projectPath);
         recentProjects.Add(projectPath.GetAbsolutePathname());
@@ -1189,7 +1189,7 @@ void QtMainWindow::OpenProject(const DAVA::FilePath& projectPath)
 
 void QtMainWindow::OnProjectClose()
 {
-    if (ui->sceneTabWidget->CloseAllTabs())
+    if (ui->sceneTabWidget->CloseAllTabs(false))
     {
         ProjectManager::Instance()->CloseProject();
     }
@@ -2759,13 +2759,8 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
 
 bool QtMainWindow::CanBeClosed()
 {
-    bool canBeClosed = false;
-
-    if (IsAnySceneChanged() == false)
-    {
-        canBeClosed = true;
-    }
-    else
+    bool canBeClosed = true;
+    if (IsAnySceneChanged())
     {
         int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
                                            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);

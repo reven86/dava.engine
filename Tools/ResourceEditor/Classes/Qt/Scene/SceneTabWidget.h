@@ -38,7 +38,7 @@ public:
     int OpenTab();
     int OpenTab(const DAVA::FilePath& scenePath);
     bool CloseTab(int index);
-    bool CloseAllTabs(bool silent = false);
+    bool CloseAllTabs(bool silent);
 
     int GetCurrentTab() const;
     void SetCurrentTab(int index);
