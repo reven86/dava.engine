@@ -66,6 +66,7 @@ public:
     static const DAVA::FastName Scene_RememberForceParameters;
     static const DAVA::FastName Scene_SaveEmitters;
     static const DAVA::FastName Scene_SaveStaticOcclusion;
+    static const DAVA::FastName Scene_DefaultCustomColorIndex;
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw;
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor;
