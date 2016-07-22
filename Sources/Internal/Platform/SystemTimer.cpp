@@ -268,6 +268,13 @@ void SystemTimer::SetFrameDelta(float32 _delta)
     delta = _delta;
 }
 
+uint64 SystemTimer::GetSystemTime()
+{
+    auto sysTime = std::chrono::system_clock::now();
+    time_t sysTimeT = std::chrono::system_clock::to_time_t(sysTime);
+    return static_cast<uint32>(sysTimeT);
+}
+
 //float SystemTimer::FrameDelta()
 //{
 //}
