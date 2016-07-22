@@ -180,8 +180,8 @@ void UIControlSystem::Reset()
 void UIControlSystem::ProcessScreenLogic()
 {
     /*
-	 if next screen or we need to removecurrent screen
-	 */
+     if next screen or we need to removecurrent screen
+     */
     if (screenLockCount == 0 && (nextScreen.Valid() || removeCurrentScreen))
     {
         RefPtr<UIScreen> nextScreenProcessed;
@@ -276,8 +276,8 @@ void UIControlSystem::ProcessScreenLogic()
     }
 
     /*
-	 if we have popups to remove, we removes them here
-	 */
+     if we have popups to remove, we removes them here
+     */
     for (Set<UIPopup*>::iterator it = popupsToRemove.begin(); it != popupsToRemove.end(); it++)
     {
         UIPopup* p = *it;
@@ -326,18 +326,6 @@ void UIControlSystem::Draw()
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 
     drawCounter = 0;
-
-    const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-
-    if (descr.clearTarget)
-    {
-        rhi::Viewport viewport;
-        viewport.x = viewport.y = 0U;
-        viewport.width = descr.width == 0 ? static_cast<uint32>(Renderer::GetFramebufferWidth()) : descr.width;
-        viewport.height = descr.height == 0 ? static_cast<uint32>(Renderer::GetFramebufferHeight()) : descr.height;
-        const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
-        RenderHelper::CreateClearPass(descr.colorAttachment, descr.depthAttachment, descr.priority + PRIORITY_CLEAR, descr.clearColor, viewport);
-    }
 
     if (currentScreenTransition)
     {
