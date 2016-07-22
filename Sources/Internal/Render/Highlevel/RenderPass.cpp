@@ -198,19 +198,25 @@ void RenderPass::ProcessVisibilityQuery()
 }
 #endif
 
-void RenderPass::BeginRenderPass()
+bool RenderPass::BeginRenderPass()
 {
+    bool success = false;
 #if __DAVAENGINE_RENDERSTATS__
     ProcessVisibilityQuery();
-
     rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
     passConfig.queryBuffer = qBuffer;
     queryBuffers.push_back(qBuffer);
 #endif
 
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
-    rhi::BeginRenderPass(renderPass);
-    rhi::BeginPacketList(packetList);
+    if (renderPass != rhi::InvalidHandle)
+    {
+        rhi::BeginRenderPass(renderPass);
+        rhi::BeginPacketList(packetList);
+        success = true;
+    }
+
+    return success;
 }
 
 void RenderPass::EndRenderPass()
