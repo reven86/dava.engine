@@ -579,10 +579,10 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
 
 bool SceneTabWidget::CloseAllTabs(bool silent)
 {
-    bool araTabBarSignalsBlocked = false;
+    bool areTabBarSignalsBlocked = false;
     if (silent)
     {
-        araTabBarSignalsBlocked = tabBar->blockSignals(true);
+        areTabBarSignalsBlocked = tabBar->blockSignals(true);
     }
 
     bool closed = true;
@@ -599,7 +599,7 @@ bool SceneTabWidget::CloseAllTabs(bool silent)
 
     if (silent)
     {
-        tabBar->blockSignals(araTabBarSignalsBlocked);
+        tabBar->blockSignals(areTabBarSignalsBlocked);
     }
 
     return closed;
