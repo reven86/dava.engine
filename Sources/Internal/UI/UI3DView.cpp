@@ -1,7 +1,6 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "Render/RenderHelper.h"
-#include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -110,15 +109,8 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     }
 
-    bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
-
     scene->SetMainPassViewport(viewportRc);
     scene->Draw();
-
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     if (drawToFrameBuffer)
     {

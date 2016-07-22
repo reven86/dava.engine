@@ -20,7 +20,7 @@
 
 ImageArea::ImageArea(QWidget* parent /*= 0*/)
     : QLabel(parent)
-    , image(NULL)
+    , image(nullptr)
     , acceptableSize(0, 0)
     , imagePath(SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString())
     , requestedFormat(DAVA::FORMAT_A8)
@@ -30,11 +30,6 @@ ImageArea::ImageArea(QWidget* parent /*= 0*/)
     setAutoFillBackground(true);
     ConnectSignals();
     ClearArea();
-}
-
-ImageArea::~ImageArea()
-{
-    DAVA::SafeRelease(image);
 }
 
 void ImageArea::dragEnterEvent(QDragEnterEvent* event)
@@ -96,7 +91,7 @@ void ImageArea::mousePressEvent(QMouseEvent* ev)
 
     QLabel::mousePressEvent(ev);
 }
-void ImageArea::SetImage(DAVA::Image* selectedImage)
+void ImageArea::SetImage(const DAVA::ScopedPtr<DAVA::Image>& selectedImage)
 {
     DAVA::Vector2 selectedImageSize(selectedImage->GetWidth(), selectedImage->GetHeight());
     if (acceptableSize.IsZero())
@@ -105,8 +100,7 @@ void ImageArea::SetImage(DAVA::Image* selectedImage)
     }
     if (selectedImageSize == acceptableSize)
     {
-        DAVA::SafeRelease(image);
-        image = SafeRetain(selectedImage);
+        image = selectedImage;
         emit changed();
     }
     else
@@ -117,18 +111,19 @@ void ImageArea::SetImage(DAVA::Image* selectedImage)
 
 void ImageArea::SetImage(const DAVA::FilePath& filePath)
 {
-    DAVA::ImageInfo imageInfo = DAVA::ImageSystem::GetImageInfo(filePath);
-    if (imageInfo.IsEmpty())
+    DAVA::ScopedPtr<DAVA::Image> image(DAVA::ImageSystem::LoadSingleMip(filePath));
+    if (!image)
     {
         QMessageBox::warning(this, "File error", "Can't load image.", QMessageBox::Ok);
         return;
     }
 
-    if ((DAVA::FORMAT_INVALID == requestedFormat) || (imageInfo.format == requestedFormat))
+    if ((DAVA::FORMAT_INVALID == requestedFormat) || (image->format == requestedFormat))
     {
         const DAVA::FilePath path = filePath;
         SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
         imagePath = filePath;
+        SetImage(image);
     }
     else
     {
@@ -138,7 +133,7 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
 
 void ImageArea::ClearArea()
 {
-    DAVA::SafeRelease(image);
+    image.reset();
     setBackgroundRole(QPalette::Dark);
     setPixmap(QPixmap());
     acceptableSize.SetZero();
@@ -147,15 +142,14 @@ void ImageArea::ClearArea()
 
 void ImageArea::UpdatePreviewPicture()
 {
-    if (NULL == image)
+    if (image)
     {
-        return;
+        DAVA::Image* scaledImage = DAVA::Image::CopyImageRegion(image, image->GetWidth(), image->GetHeight());
+        scaledImage->ResizeImage(this->width(), this->height());
+        QPixmap scaledPixmap = QPixmap::fromImage(ImageTools::FromDavaImage(scaledImage));
+        DAVA::SafeRelease(scaledImage);
+        setPixmap(scaledPixmap);
     }
-    DAVA::Image* scaledImage = DAVA::Image::CopyImageRegion(image, image->GetWidth(), image->GetHeight());
-    scaledImage->ResizeImage(this->width(), this->height());
-    QPixmap scaledPixmap = QPixmap::fromImage(ImageTools::FromDavaImage(scaledImage));
-    DAVA::SafeRelease(scaledImage);
-    setPixmap(scaledPixmap);
 }
 
 void ImageArea::SetAcceptableSize(const DAVA::Vector2& newSize)

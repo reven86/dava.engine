@@ -1329,7 +1329,10 @@ void Landscape::Save(KeyedArchive* archive, SerializationContext* serializationC
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
     }
 
-    heightmap->Save(heightmapPath);
+    if (heightmap != nullptr)
+    {
+        heightmap->Save(heightmapPath);
+    }
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
 }

@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITORQT__LANDSCAPEPROXY__
-#define __RESOURCEEDITORQT__LANDSCAPEPROXY__
+#pragma once
 
 #include "DAVAEngine.h"
 
@@ -67,17 +66,12 @@ public:
     void IncreaseTilemaskChanges();
     void DecreaseTilemaskChanges();
 
-    void InitTilemaskImageCopy();
+    bool InitTilemaskImageCopy(const DAVA::FilePath& sourceTilemaskPath);
     DAVA::Image* GetTilemaskImageCopy();
 
     void InitTilemaskDrawTextures();
     DAVA::Texture* GetTilemaskDrawTexture(DAVA::int32 number);
     void SwapTilemaskDrawTextures();
-
-    void UpdateTileMaskPathname();
-
-protected:
-    DAVA::FilePath GetPathForSourceTexture() const;
 
 protected:
     enum eToolTextureType
@@ -95,8 +89,6 @@ protected:
 
     DAVA::int32 tilemaskWasChanged = 0;
 
-    DAVA::FilePath sourceTilemaskPath;
-
     DAVA::Landscape* baseLandscape = nullptr;
     DAVA::NMaterial* landscapeEditorMaterial = nullptr;
     DAVA::Vector4 cursorCoordSize;
@@ -107,5 +99,3 @@ protected:
 
     DAVA::Texture* cursorTexture = nullptr;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__LANDSCAPEPROXY__) */

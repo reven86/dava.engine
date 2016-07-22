@@ -37,7 +37,6 @@ public slots:
     void OnInstallAll();
     void OnRemoveAll();
 
-    void OnCellClicked(const QPoint& pos);
     void OnCellDoubleClicked(QModelIndex index);
 
     void OnlinkClicked(QUrl url);
@@ -58,8 +57,8 @@ private:
     void GetTableApplicationIDs(int rowNumber, QString& appID, QString& installedVersionID, QString& avalibleVersionID);
 
     QWidget* CreateAppNameTableItem(const QString& stringID, int rowNum);
-    QWidget* CreateAppInstalledTableItem(const QString& stringID);
-    QWidget* CreateAppAvalibleTableItem(Application* app);
+    QWidget* CreateAppInstalledTableItem(const QString& stringID, int rowNum);
+    QWidget* CreateAppAvalibleTableItem(Application* app, int rowNum);
 
     Ui::MainWindow* ui = nullptr;
     ApplicationManager* appManager = nullptr;
