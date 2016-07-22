@@ -38,6 +38,7 @@ public:
     static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+    static const int32 CUSTOM_COLOR_TEXTURE_SIZE = 2048;
 
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;

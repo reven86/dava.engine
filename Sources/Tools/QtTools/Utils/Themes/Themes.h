@@ -24,6 +24,7 @@ QColor GetChangedPropertyColor();
 QColor GetPrototypeColor();
 QColor GetStyleSheetNodeColor();
 QColor GetRulerWidgetBackgroungColor();
+QColor GetHighligtedItemTextColor();
 };
 
 #endif // __QT_TOOLS_THEMES_H__

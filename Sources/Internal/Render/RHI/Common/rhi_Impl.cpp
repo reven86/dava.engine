@@ -297,9 +297,14 @@ void Delete(Handle buf)
     (*_Impl.impl_QueryBuffer_Delete)(buf);
 }
 
+bool BufferIsReady(Handle buf)
+{
+    return (*_Impl.impl_QueryBuffer_IsReady)(buf);
+}
+
 bool IsReady(Handle buf, uint32 objectIndex)
 {
-    return (*_Impl.impl_QueryBuffer_IsReady)(buf, objectIndex);
+    return (*_Impl.impl_QueryBuffer_ObjectIsReady)(buf, objectIndex);
 }
 
 int Value(Handle buf, uint32 objectIndex)

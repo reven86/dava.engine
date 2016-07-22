@@ -245,6 +245,13 @@ void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate)
 
 //------------------------------------------------------------------------------
 
+bool QueryBufferIsReady(HQueryBuffer buf)
+{
+    return QueryBuffer::BufferIsReady(buf);
+}
+
+//------------------------------------------------------------------------------
+
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::IsReady(buf, objectIndex);

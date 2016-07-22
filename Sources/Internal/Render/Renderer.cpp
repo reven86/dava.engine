@@ -8,6 +8,7 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RenderCallbacks.h"
+#include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Platform/DeviceInfo.h"
 
@@ -27,6 +28,23 @@ RuntimeTextures runtimeTextures;
 RenderStats stats;
 
 rhi::ResetParam resetParams;
+
+ScreenShotCallbackDelegate* screenshotCallback = nullptr;
+
+static void
+rhiScreenShotCallback(uint32 width, uint32 height, const void* rgba)
+{
+    if (screenshotCallback)
+    {
+        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, static_cast<const uint8*>(rgba));
+
+        if (img)
+        {
+            (*screenshotCallback)(img);
+            img->Release();
+        }
+    }
+}
 }
 
 static Mutex renderCmdExecSync;
@@ -149,10 +167,14 @@ int32 GetFramebufferHeight()
     return static_cast<int32>(resetParams.height);
 }
 
+void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
+{
+    screenshotCallback = _screenShotCallback;
+    rhi::TakeScreenshot(&rhiScreenShotCallback);
+}
+
 void BeginFrame()
 {
-    StatSet::ResetAll();
-
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();
 }
@@ -205,5 +227,8 @@ void RenderStats::Reset()
     packets2d = 0U;
 
     visibleRenderObjects = 0U;
+    occludedRenderObjects = 0U;
+
+    queryResults.clear();
 }
 }

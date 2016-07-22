@@ -73,6 +73,7 @@ public:
     const String& GetScreenShotName();
     void MakeScreenShot();
     bool GetIsScreenShotSaving() const;
+    void ClickSystemBack();
 
     // DB Master-Helper relations
 
