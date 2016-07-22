@@ -594,8 +594,8 @@ elseif ( WIN32 )
             endif ()
             
             add_custom_target ( ${DLL_FIX_TARGET_NAME} ALL
-                    COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_uwp_dll_deploy_fix.py
-                                       ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
+                    COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py uwpDeployDll
+                                       --pathVcxProj ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
             )
 
             add_dependencies( ${PROJECT_NAME} ${DLL_FIX_TARGET_NAME} )
@@ -609,6 +609,22 @@ list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
+
+if( WIN32 AND NOT WINDOWS_UAP )
+    set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
+
+
+    add_custom_target( VS_MODIFIED_${PROJECT_NAME}  ALL
+         COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY}  )
+
+    set_property( TARGET VS_MODIFIED_${PROJECT_NAME} PROPERTY FOLDER "CMAKE" )
+    add_dependencies( ${PROJECT_NAME}  VS_MODIFIED_${PROJECT_NAME}  )
+
+    if( DAVA_FOUND )
+        add_dependencies(  ${DAVA_LIBRARY} VS_MODIFIED_${PROJECT_NAME} )
+    endif()
+ 
+endif() 
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
@@ -657,6 +673,35 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
     foreach( ITEM   ${NGT_LIBS} ${NGT_PLUGINS}  )
         add_dependencies( ${PROJECT_NAME} ${ITEM} )
     endforeach()
+
+endif()
+
+##
+
+if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+    if( MAC_DISABLE_BUNDLE )
+        set( APP_ATRIBUTE )
+    else()
+        set( APP_ATRIBUTE .app )
+
+    endif()
+
+    if( DEPLOY )
+        set( EXECUT_FILE ${DEPLOY_DIR}/${PROJECT_NAME}${APP_ATRIBUTE})
+    else()
+        set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
+    endif()
+
+    add_custom_target ( COVERAGE_${PROJECT_NAME}  
+            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_html_report.py
+                    --pathExecut    ${EXECUT_FILE}
+                    --pathBuild     ${CMAKE_BINARY_DIR}
+                    --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
+                    --buildConfig   $(CONFIGURATION)
+
+            COMMAND open -a Safari  ${CMAKE_BINARY_DIR}/Coverage/index.html
+        )
+    add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
 endif()
 

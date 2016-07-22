@@ -168,6 +168,7 @@ public:
     void CreateLoadPathnamesForGPU(const eGPUFamily forGPU, Vector<FilePath>& pathes) const;
 
     PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
+    ImageFormat GetImageFormatForGPU(eGPUFamily forGPU) const;
 
     bool Reload();
 

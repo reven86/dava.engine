@@ -100,13 +100,22 @@ void BaseTest::UpdateUI()
     framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", GetTestFrameNumber())));
 }
 
-size_t BaseTest::GetAllocatedMemory()
+uint32 BaseTest::GetAllocatedMemory()
 {
+    uint32 memory = 0;
+    
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return MemoryManager::Instance()->GetTrackedMemoryUsage();
-#else
-    return 0;
+    memory = MemoryManager::Instance()->GetTrackedMemoryUsage();
+#elif defined(__DAVAENGINE_APPLE__)
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
+    if (KERN_SUCCESS == task_info(mach_task_self(), MACH_TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &size))
+    {
+        memory = static_cast<uint32>(info.resident_size);
+    }
 #endif
+
+    return memory;
 }
 void BaseTest::OnStart()
 {
@@ -180,7 +189,7 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
 
 void BaseTest::SystemUpdate(float32 timeElapsed)
 {
-    size_t allocatedMem = GetAllocatedMemory();
+    uint32 allocatedMem = GetAllocatedMemory();
     if (allocatedMem > maxAllocatedMemory)
     {
         maxAllocatedMemory = allocatedMem;

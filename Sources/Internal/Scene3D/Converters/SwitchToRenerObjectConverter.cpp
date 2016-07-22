@@ -1,7 +1,10 @@
 #include "SwitchToRenerObjectConverter.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Entity.h"
-#include "DAVAEngine.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Render/Highlevel/Mesh.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
 
 namespace DAVA
 {
