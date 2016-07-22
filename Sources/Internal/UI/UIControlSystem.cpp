@@ -60,6 +60,8 @@ UIControlSystem::UIControlSystem()
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+
+    ui3DViewCount = 0;
 }
 
 UIControlSystem::~UIControlSystem()
@@ -314,6 +316,10 @@ void UIControlSystem::Update()
 
         popupContainer->SystemUpdate(timeElapsed);
     }
+
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
@@ -670,9 +676,7 @@ void UIControlSystem::SetClearColor(const DAVA::Color& clearColor)
 
 void UIControlSystem::SetUseClearPass(bool useClearPass)
 {
-    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearTarget = useClearPass;
-    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
+    needClearMainPass = useClearPass;
 }
 
 void UIControlSystem::SetDefaultTapCountSettings()

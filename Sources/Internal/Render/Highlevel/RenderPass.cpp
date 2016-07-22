@@ -102,9 +102,11 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 
-    BeginRenderPass();
-    DrawLayers(mainCamera);
-    EndRenderPass();
+    if (BeginRenderPass())
+    {
+        DrawLayers(mainCamera);
+        EndRenderPass();
+    }
 }
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
@@ -329,18 +331,20 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 
     passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
     passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
-    BeginRenderPass();
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
-    DrawLayers(mainCamera);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+    if (BeginRenderPass())
+    {
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+        DrawLayers(mainCamera);
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
-    if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
-        PrepareReflectionRefractionTextures(renderSystem);
+        if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
+            PrepareReflectionRefractionTextures(renderSystem);
 
-    DrawDebug(drawCamera, renderSystem);
+        DrawDebug(drawCamera, renderSystem);
 
-    EndRenderPass();
+        EndRenderPass();
+    }
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
@@ -427,9 +431,11 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     else
         passName = PASS_FORWARD;
 
-    BeginRenderPass();
-    DrawLayers(currMainCamera);
-    EndRenderPass();
+    if (BeginRenderPass())
+    {
+        DrawLayers(currMainCamera);
+        EndRenderPass();
+    }
 }
 
 WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName& name)
@@ -483,8 +489,10 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     else
         passName = PASS_FORWARD;
 
-    BeginRenderPass();
-    DrawLayers(currMainCamera);
-    EndRenderPass();
+    if (BeginRenderPass())
+    {
+        DrawLayers(currMainCamera);
+        EndRenderPass();
+    }
 }
 };
