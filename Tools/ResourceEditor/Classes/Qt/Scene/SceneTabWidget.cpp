@@ -108,7 +108,7 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
-    CloseAllTabsInternal(true);
+    DVASSERT(GetTabCount() == 0);
 
     ReleaseDAVAUI();
 }
@@ -577,23 +577,32 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
     return -1;
 }
 
-bool SceneTabWidget::CloseAllTabs()
+bool SceneTabWidget::CloseAllTabs(bool silent)
 {
-    return CloseAllTabsInternal(false);
-}
+    bool araTabBarSignalsBlocked = false;
+    if (silent)
+    {
+        araTabBarSignalsBlocked = tabBar->blockSignals(true);
+    }
 
-bool SceneTabWidget::CloseAllTabsInternal(bool silent)
-{
+    bool closed = true;
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
         if (!CloseTabInternal(GetCurrentTab(), silent))
         {
-            return false;
+            closed = false;
+            break;
         }
         count--;
     }
-    return true;
+
+    if (silent)
+    {
+        tabBar->blockSignals(araTabBarSignalsBlocked);
+    }
+
+    return closed;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)

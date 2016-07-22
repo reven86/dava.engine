@@ -2759,13 +2759,26 @@ void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLa
 
 bool QtMainWindow::CanBeClosed()
 {
+    bool canBeClosed = false;
+
     if (IsAnySceneChanged() == false)
-        return true;
+    {
+        canBeClosed = true;
+    }
+    else
+    {
+        int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
+                                           QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
-    int answer = QMessageBox::question(this, "Scene was changed", "Do you want to quit anyway?",
-                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        canBeClosed = (answer == QMessageBox::Yes);
+    }
 
-    return (answer == QMessageBox::Yes);
+    if (canBeClosed)
+    {
+        ui->sceneTabWidget->CloseAllTabs(true);
+    }
+
+    return canBeClosed;
 }
 
 bool QtMainWindow::IsAnySceneChanged()
