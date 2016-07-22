@@ -707,4 +707,14 @@ void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
     doubleClickRadiusSquared = inch * dpi;
     doubleClickRadiusSquared *= doubleClickRadiusSquared;
 }
+
+void UIControlSystem::UI3DViewAdded()
+{
+    ui3DViewCount++;
+}
+void UIControlSystem::UI3DViewRemoved()
+{
+    DVASSERT(ui3DViewCount);
+    ui3DViewCount--;
+}
 };
