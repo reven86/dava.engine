@@ -224,7 +224,6 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
     DVASSERT(e->allocated);
 
     ObjectSync.Lock();
-
     e->nextObjectIndex = HeadIndex;
     HeadIndex = index;
     e->allocated = false;
