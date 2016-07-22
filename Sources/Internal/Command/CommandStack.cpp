@@ -3,13 +3,7 @@
 
 namespace DAVA
 {
-CommandStack::CommandStack()
-{
-}
-
-CommandStack::~CommandStack()
-{
-}
+CommandStack::~CommandStack() = default;
 
 void CommandStack::Exec(Command::Pointer&& command)
 {
@@ -25,6 +19,7 @@ void CommandStack::Exec(Command::Pointer&& command)
     else
     {
         commands.push_back(std::move(command));
+        SetCurrentIndex(currentIndex + 1);
     }
 }
 
@@ -56,7 +51,9 @@ void CommandStack::EndBatch()
         DAVA::CommandBatch* rootBatchPtr = static_cast<DAVA::CommandBatch*>(rootBatch.get());
         if (!rootBatchPtr->IsEmpty())
         {
-            commands.push_back(std::move(rootBatch));
+            //we need to release rootBatch before we will do something
+            DAVA::Command::Pointer rootBatchCopy(std::move(rootBatch));
+            Exec(std::move(rootBatchCopy));
         }
     }
     if (!batchesStack.empty())
@@ -98,23 +95,32 @@ void CommandStack::Redo()
 
 bool CommandStack::CanUndo() const
 {
-    return currentIndex > 0;
+    return currentIndex > EMPTY_INDEX;
 }
 
 bool CommandStack::CanRedo() const
 {
-    return currentIndex < (commands.size() - 1);
+    return currentIndex < (static_cast<int32>(commands.size()) - 1);
 }
 
 void CommandStack::UpdateCleanState()
 {
+    if (cleanIndex == currentIndex)
+    {
+        SetClean(true);
+        return;
+    }
     int begin = std::min(cleanIndex, currentIndex);
     int end = std::max(cleanIndex, currentIndex);
-    DVASSERT(end >= begin);
+    DVASSERT(end > begin);
     bool containsModifiedCommands = false;
+    //if clean index is less than current index - we need to look to the next command
+    //otherwise we look to the current command
+    bool modificator = cleanIndex < currentIndex;
     for (int index = begin; index != end && !containsModifiedCommands; ++index)
     {
-        const Command::Pointer& command = commands.at(index);
+        //we need to look only next commands after
+        const Command::Pointer& command = commands.at(index + modificator);
         containsModifiedCommands |= command->IsModifying();
     }
     SetClean(!containsModifiedCommands);

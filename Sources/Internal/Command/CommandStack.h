@@ -10,7 +10,6 @@ class CommandBatch;
 class CommandStack
 {
 public:
-    CommandStack();
     virtual ~CommandStack();
 
     void Exec(Command::Pointer&& command);
