@@ -1,113 +1,28 @@
 #include "FrameLoop.h"
 #include "rhi_Pool.h"
 #include "CommonImpl.h"
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
 
 namespace rhi
 {
 namespace FrameLoop
 {
 static uint32 currFrameNumber = 0;
-static DAVA::Vector<FrameBase> frames;
+static DAVA::Vector<CommonImpl::Frame> frames;
 static DAVA::Spinlock frameSync;
 static bool frameStarted = false;
-
-static void ExecuteFrameCommands()
-{
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-
-    std::vector<RenderPassBase*> pass;
-    std::vector<Handle> pass_h;
-    currFrameNumber++;
-
-    //sort and test
-    frameSync.Lock();
-    DVASSERT(frames.size()); //if no frames ready should not call frame loop
-
-    //sort passes
-    for (std::vector<Handle>::iterator p = frames.begin()->pass.begin(), p_end = frames.begin()->pass.end(); p != p_end; ++p)
-    {
-        RenderPassBase* pp = DispatchPlatform::GetRenderPass(*p);
-        bool do_add = true;
-
-        for (unsigned i = 0; i != pass.size(); ++i)
-        {
-            if (pp->priority > pass[i]->priority)
-            {
-                pass.insert(pass.begin() + i, 1, pp);
-                do_add = false;
-                break;
-            }
-        }
-
-        if (do_add)
-            pass.push_back(pp);
-    }
-
-    pass_h = frames.begin()->pass;
-
-    if (frames.begin()->sync != InvalidHandle)
-    {
-        SyncObjectBase* sync = DispatchPlatform::GetSyncObject(frames.begin()->sync);
-
-        sync->frame = currFrameNumber;
-        sync->is_signaled = false;
-        sync->is_used = true;
-    }
-    frameSync.Unlock();
-
-    //execute CB in passes
-    for (std::vector<RenderPassBase *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
-    {
-        RenderPassBase* pp = *p;
-
-        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
-        {
-            Handle cb_h = pp->cmdBuf[b];
-
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
-            DispatchPlatform::ExecuteCommandBuffer(pp->cmdBuf[b]); // it should also set sync object for command buffer
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
-
-            //platform or not
-            DispatchPlatform::FreeCommandBuffer(cb_h);
-        }
-    }
-
-    frameSync.Lock();
-    {
-        frames.erase(frames.begin());
-
-        for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-            DispatchPlatform::FreeRenderPass(*p);
-    }
-    frameSync.Unlock();
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-}
+static bool renderContextReady = false;
+static bool resetPending = false;
 
 void RejectFrames()
 {
     frameSync.Lock();
-    for (std::vector<FrameBase>::iterator f = frames.begin(); f != frames.end();)
+    for (std::vector<CommonImpl::Frame>::iterator f = frames.begin(); f != frames.end();)
     {
         if (f->readyToExecute)
         {
-            if (f->sync != InvalidHandle)
-            {
-                SyncObjectBase* s = DispatchPlatform::GetSyncObject(f->sync);
-                s->is_signaled = true;
-                s->is_used = true;
-            }
-            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
-            {
-                RenderPassBase* pp = DispatchPlatform::GetRenderPass(*p);
-
-                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
-                {
-                    DispatchPlatform::RejectCommandBuffer(*c);
-                }
-                DispatchPlatform::FreeRenderPass(*p);
-            }
+            DispatchPlatform::RejectFrame(std::move(*f));
             f = frames.erase(f);
         }
         else
@@ -115,7 +30,6 @@ void RejectFrames()
             ++f;
         }
     }
-
     frameSync.Unlock();
 }
 
@@ -123,16 +37,26 @@ void ProcessFrame()
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 
-    if (!CommonDetail::renderContextReady) //no render context - just reject frames and do nothing;
+    if (!renderContextReady) //no render context - just reject frames and do nothing;
     {
         RejectFrames();
         return;
     }
 
     bool presentResult = false;
-    if (!CommonDetail::resetPending)
+    if (!resetPending)
     {
-        ExecuteFrameCommands();
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
+        currFrameNumber++;
+
+        frameSync.Lock();
+        CommonImpl::Frame currFrame = std::move(frames.front());
+        frames.erase(frames.begin());
+        frameSync.Unlock();
+
+        currFrame.frameNumber = currFrameNumber;
+        DispatchPlatform::ExecuteFrame(std::move(currFrame));
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
         presentResult = DispatchPlatform::PresntBuffer();
@@ -145,43 +69,31 @@ void ProcessFrame()
         DispatchPlatform::ResetBlock();
     }
 
-    DispatchPlatform::UpdateSyncObjects(currFrameNumber);
-
     TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 }
 
 bool FinishFrame(Handle sync)
 {
     size_t frame_cnt = 0;
+
     frameSync.Lock();
+    frame_cnt = frames.size();
+    if (frame_cnt)
     {
-        frame_cnt = frames.size();
-        if (frame_cnt)
-        {
-            frames.back().readyToExecute = true;
-            frames.back().sync = sync;
-            frameStarted = false;
-        }
+        frames.back().readyToExecute = true;
+        frames.back().sync = sync;
     }
-    FrameLoop::frameSync.Unlock();
+    frameSync.Unlock();
 
-    if (!frame_cnt)
-    {
-        if (sync != InvalidHandle) //frame is empty - still need to sync if required
-        {
-            SyncObjectBase* syncObject = DispatchPlatform::GetSyncObject(sync);
-            syncObject->is_signaled = true;
-        }
-        return false;
-    }
+    frameStarted = false;
 
-    return true;
+    return frame_cnt != 0;
 }
 
 bool FrameReady()
 {
     frameSync.Lock();
-    bool res = (FrameLoop::frames.size() && FrameLoop::frames.begin()->readyToExecute);
+    bool res = (frames.size() && frames.begin()->readyToExecute);
     frameSync.Unlock();
     return res;
 }
@@ -189,9 +101,20 @@ bool FrameReady()
 uint32 FramesCount()
 {
     FrameLoop::frameSync.Lock();
-    uint32 frame_cnt = static_cast<uint32>(FrameLoop::frames.size());
+    uint32 frame_cnt = static_cast<uint32>(frames.size());
     FrameLoop::frameSync.Unlock();
     return frame_cnt;
+}
+void AddPass(Handle pass, uint32 priority)
+{
+    frameSync.Lock();
+    if (!frameStarted)
+    {
+        frames.push_back(CommonImpl::Frame());
+        frameStarted = true;
+        DispatchPlatform::InvalidateFrameCache();
+    }
+    frames.back().pass.push_back(pass);
 }
 }
 }

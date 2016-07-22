@@ -86,28 +86,28 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
         DispatchPlatform::CheckSurface();
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-        bool do_wait = true;
-        while (do_wait)
+        bool frameReady = false;
+        while (!frameReady)
         {
-            if (renderThreadExitPending)
+            //exit or suspend should leave frame loop
+            if (renderThreadExitPending || renderThreadSuspended.Get())
                 break;
 
             DispatchPlatform::ProcessImmediateCommands();
-            do_wait = !(FrameLoop::FrameReady() || renderThreadSuspended.Get());
+            frameReady = FrameLoop::FrameReady();
 
-            if (do_wait)
+            if (!frameReady)
             {
                 framePreparedEvent.Wait();
             }
         }
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
-        if (!renderThreadExitPending)
+        if (frameReady)
         {
             FrameLoop::ProcessFrame();
+            frameDoneEvent.Signal();
         }
-
-        frameDoneEvent.Signal();
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
     }
@@ -115,7 +115,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
     Logger::Info("[RHI] render-thread finished");
 }
 
-void InitializeRenderThread(uint32 frameCount)
+void InitializeRenderLoop(uint32 frameCount)
 {
     renderThreadFrameCount = frameCount;
     DVASSERT(DispatchPlatform::InitContext);
@@ -136,9 +136,10 @@ void InitializeRenderThread(uint32 frameCount)
 
 void SuspendRender()
 {
+    DVASSERT(!renderThreadSuspended);
+    renderThreadSuspended.Set(true);
     if (renderThreadFrameCount)
     {
-        renderThreadSuspended.Set(true);
         while (!renderThreadSuspendSyncReached)
         {
             framePreparedEvent.Signal(); //avoid stall
@@ -155,15 +156,16 @@ void SuspendRender()
 
 void ResumeRender()
 {
+    DVASSERT(renderThreadSuspended);
     Logger::Error("Render Resumed");
+    renderThreadSuspended.Set(false);
     if (renderThreadFrameCount)
     {
-        renderThreadSuspended.Set(false);
         renderThreadSuspendSync.Post();
     }
 }
 
-void UninitializeRenderThread()
+void UninitializeRenderLoop()
 {
     if (renderThreadFrameCount) //?ASSERT
     {

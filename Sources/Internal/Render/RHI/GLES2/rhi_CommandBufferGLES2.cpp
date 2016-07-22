@@ -390,16 +390,6 @@ static void ProcessImmediateCmd()
     }
     _GLES2_PendingImmediateCmdSync.Unlock();
 }
-static void UpdateSyncObjects(uint32 frame_n)
-{
-    _GLES2_SyncObjectsSync.Lock();
-    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
-    {
-        if (s->is_used && (frame_n - s->frame >= 2))
-            s->is_signaled = true;
-    }
-    _GLES2_SyncObjectsSync.Unlock();
-}
 
 static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
@@ -2093,7 +2083,13 @@ _GLES2_ExecuteQueuedCommands()
 
     // update sync-objects
 
-    UpdateSyncObjects(frame_n);
+    _GLES2_SyncObjectsSync.Lock();
+    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
+    {
+        if (s->is_used && (frame_n - s->frame >= 2))
+            s->is_signaled = true;
+    }
+    _GLES2_SyncObjectsSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -2772,7 +2768,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Present = &gles2_Present;
 
     DispatchPlatform::ProcessImmediateCommands = &ProcessImmediateCmd;
-    DispatchPlatform::UpdateSyncObjects = &UpdateSyncObjects;
 }
 }
 

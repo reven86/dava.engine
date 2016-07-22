@@ -3,55 +3,32 @@
 
 namespace rhi
 {
-struct RenderPassBase
+namespace CommonImpl
 {
-    DAVA::Vector<Handle> cmdBuf;
-    int32 priority;
-    uint32 perfQueryIndex0;
-    uint32 perfQueryIndex1;
-};
-
-struct SyncObjectBase
+struct Frame
 {
-    uint32 frame;
-    uint32 is_signaled : 1;
-    uint32 is_used : 1;
-};
-
-struct FrameBase
-{
-    Handle sync;
+    Handle sync = InvalidHandle;
     std::vector<Handle> pass;
-    bool readyToExecute;
+    bool readyToExecute = false;
+    uint32 frameNumber;
 };
-
-namespace CommonDetail
-{
-static bool renderContextReady = false;
-static bool resetPending = false;
 }
 
 namespace DispatchPlatform
 {
-void (*InitContext)() = nullptr;
-void (*AcquireContext)() = nullptr;
-void (*ReleaseContext)() = nullptr;
-void (*CheckSurface)() = nullptr;
-void (*Suspend)() = nullptr;
+static void (*InitContext)() = nullptr;
+static void (*AcquireContext)() = nullptr;
+static void (*ReleaseContext)() = nullptr;
+static void (*CheckSurface)() = nullptr;
+static void (*Suspend)() = nullptr;
 
-void (*ProcessImmediateCommands)() = nullptr;
-void (*UpdateSyncObjects)(uint32 frame_n) = nullptr; //platform as metal uses api callbacks and dx/gl on desktop can use queries in future
+static void (*ProcessImmediateCommands)() = nullptr;
 
-void (*ExecuteCommandBuffer)(Handle cb) = nullptr; //should also handle command buffer sync here
-void (*FreeCommandBuffer)(Handle cb) = nullptr;
-void (*RejectCommandBuffer)(Handle cb) = nullptr; //should also handle command buffer sync here
+static void (*InvalidateFrameCache)() = nullptr;
+static void (*ExecuteFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
+static void (*RejectFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
 
-bool (*PresntBuffer)() = nullptr;
-void (*ResetBlock)() = nullptr;
-
-//TODO - think may be we really can store them without platform dispatch
-RenderPassBase* (*GetRenderPass)(Handle passHandle) = nullptr;
-void (*FreeRenderPass)(Handle cb) = nullptr;
-SyncObjectBase* (*GetSyncObject)(Handle syncHandle) = nullptr;
+static bool (*PresntBuffer)() = nullptr;
+static void (*ResetBlock)() = nullptr;
 }
 }

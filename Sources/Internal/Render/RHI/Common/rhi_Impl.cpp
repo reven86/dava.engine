@@ -1,4 +1,5 @@
 #include "rhi_Impl.h"
+#include "CommonImpl.h"
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
@@ -518,10 +519,11 @@ void Delete(Handle state)
 
 namespace RenderPass
 {
-Handle
-Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+Handle Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    return (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
+    Handle res = (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
+    FrameLoop::AddPass(res, passDesc.priority);
+    return res;
 }
 
 void Begin(Handle pass)
