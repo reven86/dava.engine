@@ -16,7 +16,8 @@ DAVA_TESTCLASS (ArchiveTest)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 
         {
-            PackArchive archive("~res:/TestData/ArchiveTest/archive.dvpk");
+            RefPtr<File> fileDvpk(File::Create("~res:/TestData/ArchiveTest/archive.dvpk", File::OPEN | File::READ));
+            PackArchive archive(fileDvpk, "~res:/TestData/ArchiveTest/archive.dvpk");
 
             {
                 const char* filename = "Utf8Test/utf16le.txt";
@@ -51,7 +52,8 @@ DAVA_TESTCLASS (ArchiveTest)
     {
         try
         {
-            ZipArchive archive("~res:/TestData/ArchiveTest/archive.zip");
+            RefPtr<File> fileZip(File::Create("~res:/TestData/ArchiveTest/archive.zip", File::OPEN | File::READ));
+            ZipArchive archive(fileZip, "~res:/TestData/ArchiveTest/archive.zip");
             {
                 const char* filename = "Utf8Test/utf16le.txt";
 

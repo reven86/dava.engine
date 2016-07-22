@@ -44,7 +44,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
-    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
 

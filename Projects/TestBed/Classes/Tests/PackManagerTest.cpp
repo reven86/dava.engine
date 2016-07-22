@@ -306,7 +306,12 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    pm.Initialize(dbFile, readOnlyDirWithPacks, gpuArchitecture);
+    pm.InitCommonPacks(dbFile,
+                       readOnlyDirWithPacks,
+                       folderWithDownloadedPacks,
+                       PackManager::Hints());
+
+    pm.InitGpuPacks(gpuArchitecture);
 
     pm.EnableRequesting();
 
@@ -317,7 +322,7 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 {
     packNameLoading->SetText(L"done: start sync");
     PackManager& pm = Core::Instance()->GetPackManager();
-    pm.SyncWithServer(urlToServerSuperpack, folderWithDownloadedPacks);
+    pm.SyncWithServer(urlToServerSuperpack);
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
