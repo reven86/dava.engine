@@ -38,7 +38,7 @@ public:
     int OpenTab();
     int OpenTab(const DAVA::FilePath& scenePath);
     bool CloseTab(int index);
-    bool CloseAllTabs();
+    bool CloseAllTabs(bool silent);
 
     int GetCurrentTab() const;
     void SetCurrentTab(int index);
@@ -76,7 +76,6 @@ protected:
     void OpenTabInternal(const DAVA::FilePath scenePathname, int tabIndex);
 
     bool CloseTabInternal(int index, bool silent);
-    bool CloseAllTabsInternal(bool silent);
 
     MainTabBar* tabBar;
     DavaGLWidget* davaWidget;
