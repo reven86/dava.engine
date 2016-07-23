@@ -14,14 +14,19 @@ SoundSystem::~SoundSystem()
 {
 }
 
+SoundStream* SoundSystem::CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount)
+{
+    return nullptr;
+}
+
 SoundEvent* SoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
-    return 0;
+    return nullptr;
 }
 
 SoundEvent* SoundSystem::CreateSoundEventFromFile(const FilePath& fileName, const FastName& groupName, uint32 createFlags, int32 priority)
 {
-    return 0;
+    return nullptr;
 }
 
 void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchive)
@@ -30,12 +35,12 @@ void SoundSystem::SerializeEvent(const SoundEvent* sEvent, KeyedArchive* toArchi
 
 SoundEvent* SoundSystem::DeserializeEvent(KeyedArchive* archive)
 {
-    return 0;
+    return nullptr;
 }
 
 SoundEvent* SoundSystem::CloneEvent(const SoundEvent* sEvent)
 {
-    return 0;
+    return nullptr;
 }
 
 void SoundSystem::Update(float32 timeElapsed)
