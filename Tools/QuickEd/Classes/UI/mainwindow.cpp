@@ -465,6 +465,18 @@ void MainWindow::SetPixelized(bool pixelized)
     actionPixelized->setChecked(pixelized);
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if (CanClose())
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
 String MainWindow::GetState() const
 {
     QByteArray state = saveState().toBase64();

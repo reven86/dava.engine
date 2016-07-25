@@ -88,7 +88,7 @@ void CommandStack::Redo()
     DVASSERT(CanRedo());
     if (CanRedo())
     {
-        commands.at(currentIndex)->Redo();
+        commands.at(currentIndex + 1)->Redo();
         SetCurrentIndex(currentIndex + 1);
     }
 }
@@ -114,13 +114,10 @@ void CommandStack::UpdateCleanState()
     int end = std::max(cleanIndex, currentIndex);
     DVASSERT(end > begin);
     bool containsModifiedCommands = false;
-    //if clean index is less than current index - we need to look to the next command
-    //otherwise we look to the current command
-    bool modificator = cleanIndex < currentIndex;
     for (int index = begin; index != end && !containsModifiedCommands; ++index)
     {
         //we need to look only next commands after
-        const Command::Pointer& command = commands.at(index + modificator);
+        const Command::Pointer& command = commands.at(index + 1);
         containsModifiedCommands |= command->IsModifying();
     }
     SetClean(!containsModifiedCommands);
