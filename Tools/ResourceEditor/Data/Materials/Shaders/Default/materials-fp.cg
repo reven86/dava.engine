@@ -186,7 +186,7 @@ FPROG_BEGIN
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
             #if FLOWMAP
                 float3 flowData = FP_IN(varFlowData);
-                min10float2 flowDir = min10float2(FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy) * 2.0 - 1.0;
+                float2 flowDir = float2(FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy) * 2.0 - 1.0;
                 min10float4 flowSample1 = min10float4(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x));
                 min10float4 flowSample2 = min10float4(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y));
                 min10float4 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);
@@ -200,16 +200,16 @@ FPROG_BEGIN
         #else
             #if FLOWMAP
                 float3 flowData = FP_IN(varFlowData);
-                min10float2 flowDir = min10float2(FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy) * 2.0 - 1.0;
-                min10float3 flowSample1 = min10float3(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x).rgb);
+                float2 flowDir = min10float2(FP_TEXTURE2D( flowmap, FP_IN(varTexCoord0) ).xy) * 2.0 - 1.0;
+                min10float3 flowSample1 = min10float3( FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.x).rgb);
                 min10float3 flowSample2 = min10float3(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) + flowDir*flowData.y).rgb);
                 min10float3 textureColor0 = lerp(flowSample1, flowSample2, flowData.z);             
-			#else				
+                #else
                 #if TEST_OCCLUSION
                     min10float4 preColor = min10float3(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ) );
                     min10float3 textureColor0 = min10float3(preColor.rgb*preColor.a);
                 #else
-                    min10float3 textureColor0 = min10float3(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb);
+                min10float3 textureColor0 = min10float3(FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb);
                 #endif
                 
             #endif
