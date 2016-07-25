@@ -14,9 +14,16 @@ public:
     TextBlockRender(TextBlock*);
     virtual ~TextBlockRender();
 
-    virtual void Prepare();
     virtual void PreDraw(){};
     virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
+
+    virtual void Prepare() = 0;
+    virtual TextBlockRender* Clone() = 0;
+
+    void SetTextBlock(TextBlock* textBlock_)
+    {
+        textBlock = textBlock_;
+    }
 
     Sprite* GetSprite() const
     {
@@ -32,8 +39,8 @@ protected:
                                            int32 lineSize) = 0;
 
 protected:
-    TextBlock* textBlock;
-    Sprite* sprite;
+    TextBlock* textBlock = nullptr;
+    Sprite* sprite = nullptr;
 };
 
 }; //end of namespace

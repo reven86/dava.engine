@@ -8,7 +8,6 @@ namespace DAVA
 {
 TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
     : TextBlockRender(textBlock)
-    , buf(nullptr)
     , ftFont(static_cast<FTFont*>(textBlock->font))
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
@@ -20,10 +19,21 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
     textOffsetBR.y = 0;
 #endif
 }
+
 TextBlockSoftwareRender::~TextBlockSoftwareRender()
 {
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    SafeRelease(currentTexture);
 }
+
+TextBlockRender* TextBlockSoftwareRender::Clone()
+{
+    TextBlockSoftwareRender* result = new TextBlockSoftwareRender(textBlock);
+    result->sprite = SafeRetain(sprite);
+    result->currentTexture = SafeRetain(currentTexture);
+    return result;
+}
+
 void TextBlockSoftwareRender::Prepare()
 {
     TextBlockRender::Prepare();
@@ -62,23 +72,20 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    ScopedPtr<Texture> tex(Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str()));
-    sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
+    SafeRelease(currentTexture);
+    currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
+    sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
 }
 
 void TextBlockSoftwareRender::Restore()
 {
-    if (sprite == nullptr)
-        return;
-
-    Texture* tex = sprite->GetTexture();
-    if ((tex != nullptr) && rhi::NeedRestoreTexture(tex->handle))
+    if ((currentTexture != nullptr) && rhi::NeedRestoreTexture(currentTexture->handle))
     {
-        Vector<int8> buffer(tex->width * tex->height, 0);
-        tex->TexImage(0, tex->width, tex->height, buffer.data(), static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
+        Vector<int8> buffer(currentTexture->width * currentTexture->height, 0);
+        currentTexture->TexImage(0, currentTexture->width, currentTexture->height, buffer.data(),
+                                 static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
+        textBlock->NeedPrepare();
     }
-
-    textBlock->NeedPrepare();
 }
 
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

@@ -204,6 +204,7 @@ ParticleLayer* ParticleLayer::Clone()
     SafeRelease(dstLayer->innerEmitter);
     if (innerEmitter)
         dstLayer->innerEmitter = static_cast<ParticleEmitter*>(innerEmitter->Clone());
+    dstLayer->innerEmitterPath = innerEmitterPath;
 
     dstLayer->layerName = layerName;
 
@@ -664,14 +665,22 @@ void ParticleLayer::LoadFromYaml(const FilePath& configPath, const YamlNode* nod
         SafeRelease(innerEmitter);
         innerEmitter = new ParticleEmitter();
         // Since Inner Emitter path is stored as Relative, convert it to absolute when loading.
-        innerEmitterPath = FilePath(configPath.GetDirectory(), innerEmitterPathNode->AsString());
-        if (innerEmitterPath == configPath) // prevent recursion
+        String relativePath = innerEmitterPathNode->AsString();
+        if (relativePath.empty())
         {
-            Logger::Error("Atempt to load inner emitter from super emitter's config will cause recursion");
+            Logger::Error("Failed to load inner emitter from empty config path");
         }
         else
         {
-            innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+            innerEmitterPath = configPath.GetDirectory() + relativePath;
+            if (innerEmitterPath == configPath) // prevent recursion
+            {
+                Logger::Error("Atempt to load inner emitter from super emitter's config will cause recursion");
+            }
+            else
+            {
+                innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+            }
         }
     }
     if (format == 0) //update old stuff
