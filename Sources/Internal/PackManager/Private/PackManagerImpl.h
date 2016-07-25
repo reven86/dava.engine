@@ -17,13 +17,12 @@ class PackManagerImpl : public PackManager::ISync
 public:
     PackManagerImpl() = default;
 
-    void InitCommonPacks(const String& dbFile_,
-                         const FilePath& readOnlyPacksDir_,
+    void InitCommonPacks(const FilePath& readOnlyPacksDir_,
                          const FilePath& downloadPacksDir_,
                          const PackManager::Hints& hints_,
                          PackManager* packManager_);
 
-    void InitGpuPacks(const String& architecture_);
+    void InitGpuPacks(const String& architecture_, const String& dbFileName);
 
     bool IsInitialized() const;
 
@@ -130,6 +129,8 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
+
+    List<FilePath> mountedCommonPacks;
 
     PackManager::Hints hints;
 };

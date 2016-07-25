@@ -92,11 +92,10 @@ DAVA_TESTCLASS (PackManagerTest)
 
         try
         {
-            packManager.InitCommonPacks(dbFileName,
-                                        readOnlyPacksDir,
+            packManager.InitCommonPacks(readOnlyPacksDir,
                                         downloadedPacksDir,
                                         PackManager::Hints());
-            packManager.InitGpuPacks(architecture);
+            packManager.InitGpuPacks(architecture, dbFileName);
 
             packManager.SyncWithServer(superPackUrl);
 
