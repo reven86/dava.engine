@@ -512,7 +512,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
             }
 
             params.baseMipmap = Max(static_cast<int32>(baseMipMap) - static_cast<int32>(singleMipFilesCount), 0);
-            params.firstMipmapIndex += singleMipFilesCount;
+            params.firstMipmapIndex += static_cast<uint32>(images->size());
         }
 
         FilePath multipleMipPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
