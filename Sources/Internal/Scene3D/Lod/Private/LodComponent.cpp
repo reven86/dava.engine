@@ -15,6 +15,7 @@ Component* LodComponent::Clone(Entity* toEntity)
     newLod->SetEntity(toEntity);
 
     newLod->distances = distances;
+    newLod->recursiveUpdate = recursiveUpdate;
 
     return newLod;
 }
