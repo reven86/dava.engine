@@ -92,11 +92,13 @@ DAVA_TESTCLASS (PackManagerTest)
 
         try
         {
-            packManager.Initialize(dbFileName,
-                                   readOnlyPacksDir,
-                                   architecture);
+            packManager.InitCommonPacks(dbFileName,
+                                        readOnlyPacksDir,
+                                        downloadedPacksDir,
+                                        PackManager::Hints());
+            packManager.InitGpuPacks(architecture);
 
-            packManager.SyncWithServer(superPackUrl, downloadedPacksDir);
+            packManager.SyncWithServer(superPackUrl);
 
             Logger::Info("create game client");
 

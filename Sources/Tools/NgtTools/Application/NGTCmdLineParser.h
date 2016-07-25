@@ -4,6 +4,7 @@
 #include <core_dependency_system/i_interface.hpp>
 
 #include <map>
+#include <set>
 
 namespace NGTLayer
 {
@@ -14,6 +15,7 @@ public:
     NGTCmdLineParser(int argc_, char** argv_);
 
     void addParam(std::string&& key, std::string&& value);
+    void addFlag(std::string&& flag);
 
     int argc() const override;
     char** argv() const override;
@@ -28,5 +30,6 @@ private:
     char** m_argv;
 
     std::map<std::string, std::string> additionalParams;
+    std::set<std::string> additionalFlags;
 };
 } // namespace NGTLayer

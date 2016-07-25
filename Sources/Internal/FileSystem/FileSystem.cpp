@@ -42,7 +42,7 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    resourceArchiveList.clear();
+    resArchiveMap.clear();
 
     // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
@@ -433,7 +433,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 
         if (!relative.empty())
         {
-            for (auto& pair : resourceArchiveList)
+            for (auto& pair : resArchiveMap)
             {
                 if (pair.second.archive->HasFile(relative))
                 {
@@ -817,18 +817,18 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
         item.archive.reset(new ResourceArchive(archiveName));
         item.archiveFilePath = archiveName;
 
-        resourceArchiveList.emplace(archiveName.GetFilename(), std::move(item));
+        resArchiveMap.emplace(archiveName.GetFilename(), std::move(item));
     }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
-    resourceArchiveList.erase(arhiveName.GetFilename());
+    resArchiveMap.erase(arhiveName.GetFilename());
 }
 
 bool FileSystem::IsMounted(const FilePath& archiveName) const
 {
-    return resourceArchiveList.find(archiveName.GetFilename()) != end(resourceArchiveList);
+    return resArchiveMap.find(archiveName.GetFilename()) != end(resArchiveMap);
 }
 
 int32 FileSystem::Spawn(const String& command)

@@ -15,9 +15,11 @@ public:
         FirstInit,
         Starting, // if not exist local DB in ~doc copy it from local resources (on first start)
 
-        MountingReadOnlyPacks, // mount all local readonly packs (mount all founded in pointed directory) ПРОБЛЕМЫ!!! переиспользование памяти по файлово тут все должно быть
-        // now you can load files from local packs
-        ReadOnlyPacksReady,
+        MountingReadOnlyPacks, // mount all local readonly packs (mount all founded in pointed directory)
+        // now you can load files from base common packs
+        CommonReadOnlyPacksReady,
+        // now you can load files from base gpu packs
+        GpuReadOnlyPacksReady,
 
         LoadingRequestAskFooter, // if no connection goto LoadingPacksDataFromDB try using only local packs
         LoadingRequestGetFooter,
@@ -125,17 +127,19 @@ public:
         // on PC, Mac, iOS - better false
     };
 
-    // throw exception if can't initialize
-    void Initialize(const String& dbFileName,
-                    const FilePath& readOnlyPacksDir,
-                    const FilePath& downloadPacksDir,
-                    const String& architecture,
-                    const Hints& hints);
+    // you can call it first line in FrameworkDidLaunched (throw exception on error)
+    void InitCommonPacks(const String& dbFileName,
+                         const FilePath& readOnlyPacksDir,
+                         const FilePath& downloadPacksDir,
+                         const Hints& hints);
 
-    bool IsInitialized() const;
+    // you can call after InitCommonPacks in GameCore::OnAppStarted (throw exception on error)
+    void InitGpuPacks(const String& architecture);
 
     // complex async connect to server
     void SyncWithServer(const String& urlToServerSuperpack);
+
+    bool IsCommonPacksInitialized() const;
 
     ISync& GetISync();
 

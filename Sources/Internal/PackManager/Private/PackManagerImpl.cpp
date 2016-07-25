@@ -25,25 +25,22 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
-void PackManagerImpl::Initialize(const String& dbFile_,
-                                 const FilePath& readOnlyPacksDir_,
-                                 const FilePath& downloadPacksDir_,
-                                 const String& architecture_,
-                                 const PackManager::Hints& hints_,
-                                 PackManager* packManager_)
+void PackManagerImpl::InitCommonPacks(const String& dbFile_,
+                                      const FilePath& readOnlyPacksDir_,
+                                      const FilePath& downloadPacksDir_,
+                                      const PackManager::Hints& hints_,
+                                      PackManager* packManager_)
 {
     readOnlyPacksDir = readOnlyPacksDir_;
     localPacksDir = downloadPacksDir_;
 
-    architecture = architecture_;
-
-    if (architecture.empty())
-    {
-        throw std::runtime_error("empty gpu architecture");
-    }
+    architecture.clear();
 
     packManager = packManager_;
-    DVASSERT(packManager != nullptr);
+    if (nullptr == packManager)
+    {
+        throw std::runtime_error("PackManager is nullptr");
+    }
 
     hints = hints_;
 
@@ -60,22 +57,21 @@ void PackManagerImpl::Initialize(const String& dbFile_,
     // now init all pack in local read only dir
     FirstTimeInit();
     InitStarting();
-    MountBasePacks();
+    MountCommonBasePacks();
 }
 
 bool PackManagerImpl::IsInitialized() const
 {
-    return initState >= PackManager::InitState::ReadOnlyPacksReady;
+    return initState >= PackManager::InitState::CommonReadOnlyPacksReady;
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
 {
     superPackUrl = urlToServerSuperpack;
 
-    if (initState != PackManager::InitState::ReadOnlyPacksReady
-        && initState != PackManager::InitState::Ready)
+    if (initState != PackManager::InitState::GpuReadOnlyPacksReady)
     {
-        throw std::runtime_error("first call Initialize");
+        throw std::runtime_error("first call InitCommonPacks then call InitGpuPacks only then SyncWithServer");
     }
 
     initState = PackManager::InitState::LoadingRequestAskFooter;
@@ -104,7 +100,8 @@ bool PackManagerImpl::CanRetry() const
     case PackManager::InitState::FirstInit:
     case PackManager::InitState::Starting:
     case PackManager::InitState::MountingReadOnlyPacks:
-    case PackManager::InitState::ReadOnlyPacksReady:
+    case PackManager::InitState::CommonReadOnlyPacksReady:
+    case PackManager::InitState::GpuReadOnlyPacksReady:
         return false;
     case PackManager::InitState::LoadingRequestAskFooter:
     case PackManager::InitState::LoadingRequestGetFooter:
@@ -306,7 +303,37 @@ void PackManagerImpl::InitializePacks()
     }
 }
 
-void PackManagerImpl::MountBasePacks()
+static void ListPacksInDirAndCopyIfNeed(const FilePath& localPacksDir, const FilePath& dir, bool needCopyToDocs, Set<FilePath>& resultSet)
+{
+    ScopedPtr<FileList> common(new FileList(dir));
+    for (uint32 i = 0u; i < common->GetCount(); ++i)
+    {
+        FilePath path = common->GetPathname(i);
+        if (path.GetExtension() == RequestManager::packPostfix)
+        {
+            if (needCopyToDocs)
+            {
+                FilePath docPath(localPacksDir + "/" + path.GetFilename());
+                if (!FileSystem::Instance()->Exists(docPath))
+                {
+                    bool result = FileSystem::Instance()->CopyFile(path, docPath);
+                    if (!result)
+                    {
+                        Logger::Error("can't copy pack from assets to pack dir");
+                        throw std::runtime_error("can't copy pack from assets to pack dir");
+                    }
+                }
+                resultSet.insert(docPath);
+            }
+            else
+            {
+                resultSet.insert(path);
+            }
+        }
+    }
+};
+
+void PackManagerImpl::MountCommonBasePacks()
 {
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
@@ -316,44 +343,16 @@ void PackManagerImpl::MountBasePacks()
 
     Set<FilePath> basePacks;
 
-    auto listPacksInDir = [&](const FilePath& dir, bool needCopyToDocs, Set<FilePath>& resultSet)
-    {
-        ScopedPtr<FileList> common(new FileList(dir));
-        for (uint32 i = 0u; i < common->GetCount(); ++i)
-        {
-            FilePath path = common->GetPathname(i);
-            if (path.GetExtension() == RequestManager::packPostfix)
-            {
-                if (needCopyToDocs)
-                {
-                    FilePath docPath(localPacksDir + "/" + path.GetFilename());
-                    if (!FileSystem::Instance()->Exists(docPath))
-                    {
-                        bool result = FileSystem::Instance()->CopyFile(path, docPath);
-                        if (!result)
-                        {
-                            Logger::Error("can't copy pack from assets to pack dir");
-                            throw std::runtime_error("can't copy pack from assets to pack dir");
-                        }
-                    }
-                    resultSet.insert(docPath);
-                }
-                else
-                {
-                    resultSet.insert(path);
-                }
-            }
-        }
-    };
-
     if (!FileSystem::Instance()->Exists(readOnlyPacksDir))
     {
         throw std::runtime_error("can't open dir: " + readOnlyPacksDir.GetStringValue());
     }
-    else
+
+    ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
+
+    if (!architecture.empty())
     {
-        listPacksInDir(readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
-        listPacksInDir(readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
+        ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
     }
 
     MountPacks(basePacks);
@@ -367,7 +366,45 @@ void PackManagerImpl::MountBasePacks()
              });
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
-    initState = PackManager::InitState::ReadOnlyPacksReady;
+    initState = PackManager::InitState::CommonReadOnlyPacksReady;
+}
+
+void PackManagerImpl::InitGpuPacks(const String& architecture_)
+{
+    if (PackManager::InitState::CommonReadOnlyPacksReady != initState)
+    {
+        throw std::runtime_error("first call InitCommonPacks and then InitGpuPacks");
+    }
+
+    architecture = architecture_;
+
+    if (architecture.empty())
+    {
+        throw std::runtime_error("architecture is empty");
+    }
+
+    Set<FilePath> basePacks;
+
+    const FilePath& readOnlyGpuPacksDir = readOnlyPacksDir + architecture + "/";
+
+    if (!FileSystem::Instance()->Exists(readOnlyGpuPacksDir))
+    {
+        throw std::runtime_error("can't open dir: " + readOnlyGpuPacksDir.GetStringValue());
+    }
+
+    ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyGpuPacksDir, hints.copyBasePacksToDocs, basePacks);
+
+    MountPacks(basePacks);
+
+    for_each(begin(packs), end(packs), [](PackManager::Pack& p)
+             {
+                 if (p.state == PackManager::Pack::Status::Mounted)
+                 {
+                     p.isReadOnly = true;
+                 }
+             });
+
+    initState = PackManager::InitState::GpuReadOnlyPacksReady;
 }
 
 void PackManagerImpl::AskFooter()
@@ -704,7 +741,7 @@ void PackManagerImpl::LoadPacksDataFromDB()
             }
         }
 
-        MountBasePacks();
+        MountCommonBasePacks();
 
         initState = PackManager::InitState::MountingDownloadedPacks;
     }

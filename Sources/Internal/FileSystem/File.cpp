@@ -8,6 +8,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Core/Core.h"
 #include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
@@ -43,23 +44,23 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
-    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
 
-        // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
+        // now with PackManager we can improve perfomance by lookup pack name
         // from DB with all files, then check if such pack mounted and from
         // mountedPackIndex find by name archive with file or skip to next step
         PackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
 
-        if (pm.IsInitialized())
+        if (pm.IsCommonPacksInitialized())
         {
             const String& packName = pm.FindPackName(relative);
             if (!packName.empty())
             {
-                auto it = fileSystem->resourceArchiveList.find(packName);
-                if (it != end(fileSystem->resourceArchiveList))
+                auto it = fileSystem->resArchiveMap.find(packName);
+                if (it != end(fileSystem->resArchiveMap))
                 {
                     if (it->second.archive->LoadFile(relative, contentAndSize))
                     {
@@ -69,7 +70,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
             }
         }
 
-        for (auto& pair : fileSystem->resourceArchiveList)
+        for (auto& pair : fileSystem->resArchiveMap)
         {
             if (pair.second.archive->LoadFile(relative, contentAndSize))
             {
