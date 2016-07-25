@@ -505,6 +505,7 @@ void QtMainWindow::closeEvent(QCloseEvent* event)
 {
     if (CanBeClosed())
     {
+        ui->sceneTabWidget->CloseAllTabs(true);
         event->accept();
     }
     else
@@ -2772,11 +2773,6 @@ bool QtMainWindow::CanBeClosed()
                                            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
         canBeClosed = (answer == QMessageBox::Yes);
-    }
-
-    if (canBeClosed)
-    {
-        ui->sceneTabWidget->CloseAllTabs(true);
     }
 
     return canBeClosed;
