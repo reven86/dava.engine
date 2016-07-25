@@ -18,6 +18,10 @@ void CommandStack::Exec(Command::Pointer&& command)
     }
     else
     {
+        if (currentIndex != commands.size() - 1)
+        {
+            commands.erase(commands.begin() + currentIndex + 1, commands.end());
+        }
         commands.push_back(std::move(command));
         SetCurrentIndex(currentIndex + 1);
     }

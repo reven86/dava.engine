@@ -16,7 +16,6 @@ public:
 protected:
     void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const;
     void OnPostLoadPlugins();
-    bool OnRequestCloseApp();
 
 private:
     void RunWindow();

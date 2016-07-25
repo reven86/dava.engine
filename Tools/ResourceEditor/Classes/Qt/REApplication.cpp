@@ -10,6 +10,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/RunGuard/RunGuard.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Utils/Utils.h"
 #include "QtTools/Utils/AssertGuard.h"
 
 #include "Preferences/PreferencesStorage.h"
@@ -136,11 +137,6 @@ void REApplication::OnPostLoadPlugins()
     Themes::InitFromQApplication();
 }
 
-bool REApplication::OnRequestCloseApp()
-{
-    return mainWindow->CanBeClosed();
-}
-
 void REApplication::RunWindow()
 {
 #ifdef Q_OS_MAC
@@ -158,7 +154,7 @@ void REApplication::RunWindow()
         return;
 
     Q_INIT_RESOURCE(QtToolsResources);
-
+    ConnectApplicationFocus();
     TextureCache textureCache;
 
     DAVA::LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");

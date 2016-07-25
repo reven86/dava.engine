@@ -48,7 +48,6 @@ private slots:
 
     void OnExit();
     void OnNewProject();
-    void OnApplicationStateChanged(Qt::ApplicationState state);
 
 private:
     void OpenProject(const QString& path);
