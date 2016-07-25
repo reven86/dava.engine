@@ -56,7 +56,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 
         if (pm.IsGpuPacksInitialized())
         {
-            const String& packName = pm.FindPackName(relative);
+            const String& packName = pm.FindPackName(filename);
             if (!packName.empty())
             {
                 auto it = fileSystem->resArchiveMap.find(packName);

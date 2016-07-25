@@ -817,18 +817,18 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
         item.archive.reset(new ResourceArchive(archiveName));
         item.archiveFilePath = archiveName;
 
-        resArchiveMap.emplace(archiveName.GetFilename(), std::move(item));
+        resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
     }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
-    resArchiveMap.erase(arhiveName.GetFilename());
+    resArchiveMap.erase(arhiveName.GetBasename());
 }
 
 bool FileSystem::IsMounted(const FilePath& archiveName) const
 {
-    return resArchiveMap.find(archiveName.GetFilename()) != end(resArchiveMap);
+    return resArchiveMap.find(archiveName.GetBasename()) != end(resArchiveMap);
 }
 
 int32 FileSystem::Spawn(const String& command)
