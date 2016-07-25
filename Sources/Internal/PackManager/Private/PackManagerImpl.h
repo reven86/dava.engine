@@ -24,7 +24,7 @@ public:
 
     void InitGpuPacks(const String& architecture_, const String& dbFileName);
 
-    bool IsInitialized() const;
+    bool IsGpuPacksInitialized() const;
 
     void SyncWithServer(const String& urlToServerSuperpack);
 

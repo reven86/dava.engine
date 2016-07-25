@@ -53,9 +53,9 @@ void PackManagerImpl::InitCommonPacks(const FilePath& readOnlyPacksDir_,
     MountCommonBasePacks();
 }
 
-bool PackManagerImpl::IsInitialized() const
+bool PackManagerImpl::IsGpuPacksInitialized() const
 {
-    return initState >= PackManager::InitState::CommonReadOnlyPacksReady;
+    return initState >= PackManager::InitState::GpuReadOnlyPacksReady;
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)

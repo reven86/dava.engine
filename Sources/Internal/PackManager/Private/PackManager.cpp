@@ -27,9 +27,9 @@ void PackManager::InitGpuPacks(const String& architecture_, const String& dbFile
     impl->InitGpuPacks(architecture_, dbFileName_);
 }
 
-bool PackManager::IsCommonPacksInitialized() const
+bool PackManager::IsGpuPacksInitialized() const
 {
-    return impl->IsInitialized();
+    return impl->IsGpuPacksInitialized();
 }
 
 void PackManager::SyncWithServer(const String& urlToServerSuperpack)

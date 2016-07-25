@@ -138,7 +138,7 @@ public:
     // complex async connect to server
     void SyncWithServer(const String& urlToServerSuperpack);
 
-    bool IsCommonPacksInitialized() const;
+    bool IsGpuPacksInitialized() const;
 
     ISync& GetISync();
 
