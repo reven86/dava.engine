@@ -149,7 +149,7 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
 
             if (desc.isRenderTarget || is_depthbuf)
             {
-                DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(tex9), 0, uint64_t(&surf9) } };
+                DX9Command cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(&tex9), 0, uint64_t(&surf9) } };
                 ExecDX9(&cmd3, 1, force_immediate);
             }
 
@@ -252,15 +252,30 @@ void TextureDX9_t::Destroy(bool force_immediate)
 
     DX9Command cmd[] =
     {
-      { tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&tex9) } },
-      { cubetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&cubetex9) } },
-      { basetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&basetex9) } },
-      { surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&surf9) } },
       { rt_surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_surf9) } },
-      { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_tex9) } }
+      { rt_tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&rt_tex9) } },
+      { surf9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&surf9) } },
+      { cubetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&cubetex9) } },
+      { tex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&tex9) } },
+      { basetex9 ? DX9Command::RELEASE : DX9Command::NOP, { uint64_t(&basetex9) } },
     };
-    ExecDX9(cmd, countof(cmd), force_immediate);
 
+    bool cancelRecreate = true;
+    for (size_t i = 0; i < countof(cmd); ++i)
+    {
+        if (cmd[i].func != DX9Command::NOP)
+        {
+            cancelRecreate = false;
+            break;
+        }
+    }
+
+    if (cancelRecreate)
+    {
+        SetRecreatePending(false);
+    }
+
+    ExecDX9(cmd, countof(cmd), force_immediate);
     surf9 = nullptr;
     tex9 = nullptr;
     cubetex9 = nullptr;
@@ -270,12 +285,14 @@ void TextureDX9_t::Destroy(bool force_immediate)
     width = 0;
     height = 0;
 
-    if (!RecreatePending() && mappedData)
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
         mappedData = nullptr;
     }
+
+    MarkRestored();
 }
 
 //------------------------------------------------------------------------------
@@ -283,8 +300,6 @@ void TextureDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_Texture_Create(const Texture::Descriptor& desc)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     Handle handle = TextureDX9Pool::Alloc();
     TextureDX9_t* tex = TextureDX9Pool::Get(handle);
 
@@ -304,7 +319,6 @@ dx9_Texture_Delete(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
     self->SetRecreatePending(false);
-    self->MarkRestored();
     self->Destroy();
     TextureDX9Pool::Free(tex);
 }
@@ -340,7 +354,7 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
     }
     else
     {
-        bool shouldReadData = !self->isRenderTarget;
+        bool dataAvailable = !self->isRenderTarget;
 
         if (self->isRenderTarget)
         {
@@ -355,20 +369,20 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
                 if (SUCCEEDED(cmd1.retval))
                 {
-                    DX9Command cmd2 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(self->rt_tex9), 0, uint64_t(&self->rt_surf9) } };
+                    DX9Command cmd2 = { DX9Command::GET_TEXTURE_SURFACE_LEVEL, { uint64_t(&self->rt_tex9), 0, uint64_t(&self->rt_surf9) } };
                     ExecDX9(&cmd2, 1, false);
                 }
             }
 
             if (self->rt_tex9 && self->rt_surf9)
             {
-                DX9Command cmd3 = { DX9Command::GET_RENDERTARGET_DATA, { uint64_t(self->surf9), uint64_t(self->rt_surf9) } };
+                DX9Command cmd3 = { DX9Command::GET_RENDERTARGET_DATA, { uint64_t(&self->surf9), uint64_t(&self->rt_surf9) } };
                 ExecDX9(&cmd3, 1, false);
-                shouldReadData = cmd3.retval == D3D_OK;
+                dataAvailable = (cmd3.retval == D3D_OK);
             }
         }
 
-        if (shouldReadData)
+        if (dataAvailable)
         {
             IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
             DX9Command cmd = { DX9Command::READ_TEXTURE_LEVEL, { uint64_t(&tex), level, data_sz, format, uint64(self->mappedData) } };
@@ -407,7 +421,6 @@ dx9_Texture_Unmap(Handle tex)
     }
     else
     {
-        IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
         DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&tex), self->mappedLevel, uint64(self->mappedData), data_sz, self->format } };
         ExecDX9(&cmd, 1, false);
         hr = cmd.retval;
@@ -525,13 +538,7 @@ void SetAsDepthStencil(Handle tex)
 
 void ReleaseAll()
 {
-    TextureDX9Pool::Lock();
-    for (TextureDX9Pool::Iterator t = TextureDX9Pool::Begin(), t_end = TextureDX9Pool::End(); t != t_end; ++t)
-    {
-        t->SetRecreatePending(true);
-        t->Destroy(true);
-    }
-    TextureDX9Pool::Unlock();
+    TextureDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()
@@ -540,8 +547,12 @@ void ReCreateAll()
     TextureDX9Pool::ReCreateAll();
 }
 
-unsigned
-NeedRestoreCount()
+void LogUnrestoredBacktraces()
+{
+    TextureDX9Pool::LogUnrestoredBacktraces();
+}
+
+unsigned NeedRestoreCount()
 {
     return TextureDX9Pool::PendingRestoreCount();
 }
