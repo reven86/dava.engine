@@ -306,12 +306,11 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    pm.InitCommonPacks(dbFile,
-                       readOnlyDirWithPacks,
+    pm.InitCommonPacks(readOnlyDirWithPacks,
                        folderWithDownloadedPacks,
                        PackManager::Hints());
 
-    pm.InitGpuPacks(gpuArchitecture);
+    pm.InitGpuPacks(gpuArchitecture, dbFile);
 
     pm.EnableRequesting();
 
