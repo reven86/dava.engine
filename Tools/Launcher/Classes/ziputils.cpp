@@ -220,7 +220,7 @@ bool ZipUtils::UnpackZipArchive(const QString& archivePath, const QString& outDi
             matchedSize += files[str];
         }
         float progress = (matchedSize * 100.0f) / totalSize;
-        int progressInt = static_cast<int>(std::round(progress));
+        int progressInt = static_cast<int>(qRound(progress));
         functor.OnProgress(progressInt);
     };
     QStringList arguments;
