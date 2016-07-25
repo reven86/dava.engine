@@ -150,6 +150,7 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
         hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
+        CHECK_HR(hr)
 
         if (FAILED(hr))
         {
@@ -174,6 +175,7 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
         hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
+        CHECK_HR(hr)
 
         if (FAILED(hr))
         {
