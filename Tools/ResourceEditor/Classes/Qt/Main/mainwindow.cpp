@@ -501,6 +501,18 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
+void QtMainWindow::closeEvent(QCloseEvent* event)
+{
+    if (CanBeClosed())
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
 void QtMainWindow::SetupTitle()
 {
     DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
