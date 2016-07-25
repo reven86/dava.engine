@@ -6,6 +6,8 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
@@ -715,14 +717,22 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath();
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetInternalStoragePathname();
+#endif
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath();
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetExternalStoragePathname();
+#endif
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

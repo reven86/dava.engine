@@ -12,10 +12,12 @@
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation
-#error "PlatformWindow is not implemented"
+#error "WindowBackend is not implemented"
 #endif
 #endif
 

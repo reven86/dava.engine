@@ -4,6 +4,7 @@
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
+#include "Utils/UTF8Utils.h"
 
 jstringArray::jstringArray(const jobjectArray& arr)
 {
