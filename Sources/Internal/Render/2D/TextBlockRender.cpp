@@ -3,10 +3,9 @@
 
 namespace DAVA
 {
-TextBlockRender::TextBlockRender(TextBlock* textBlock)
+TextBlockRender::TextBlockRender(TextBlock* textBlock_)
+    : textBlock(textBlock_)
 {
-    this->textBlock = textBlock;
-    sprite = NULL;
 }
 
 TextBlockRender::~TextBlockRender()

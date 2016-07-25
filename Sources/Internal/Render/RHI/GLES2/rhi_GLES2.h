@@ -33,8 +33,11 @@ namespace QueryBufferGLES2
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void BeginQuery(Handle buf, uint32 objectIndex);
-void EndQuery(Handle buf, uint32 objectIndex);
+void SetQueryIndex(Handle buf, uint32 objectIndex);
+void QueryComplete(Handle buf);
+bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryObjectsPool();
 }
 namespace PerfQuerySetGLES2
 {
@@ -158,7 +161,12 @@ GLCommand
         GET_ACTIVE_UNIFORM,
         GET_UNIFORM_LOCATION,
 
-        SET_UNIFORM_1I
+        SET_UNIFORM_1I,
+
+        GET_QUERYOBJECT_UIV,
+        DELETE_QUERIES,
+
+        GET_QUERY_RESULT_NO_WAIT
     };
 
     Func func;

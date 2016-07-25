@@ -72,6 +72,7 @@ SceneEditor2::SceneEditor2()
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
     AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    landscapeEditorDrawSystem->EnableSystem();
 
     heightmapEditorSystem = new HeightmapEditorSystem(this);
     AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
@@ -245,8 +246,12 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
-    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
-    selectionSystem->EnableSystem(false);
+    bool isSelectionEnabled = false;
+    if (selectionSystem != nullptr)
+    {
+        isSelectionEnabled = selectionSystem->IsSystemEnabled();
+        selectionSystem->EnableSystem(false);
+    }
 
     for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
@@ -255,7 +260,11 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
-    selectionSystem->EnableSystem(isSelectionEnabled);
+
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->EnableSystem(isSelectionEnabled);
+    }
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
@@ -382,10 +391,9 @@ void SceneEditor2::Update(float timeElapsed)
 {
     ++framesCount;
 
-    renderStats = DAVA::Renderer::GetRenderStats();
-    DAVA::Renderer::GetRenderStats().Reset();
-
     Scene::Update(timeElapsed);
+
+    renderStats = DAVA::Renderer::GetRenderStats();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)
@@ -666,9 +674,8 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveDelegate(modifSystem);
-        selectionSystem->RemoveDelegate(hoodSystem);
-        selectionSystem->RemoveDelegate(wayEditSystem);
+        RemoveSystem(selectionSystem);
+        SafeDelete(selectionSystem);
     }
 
     if (editorLightSystem)
@@ -686,6 +693,7 @@ void SceneEditor2::RemoveSystems()
 
     if (landscapeEditorDrawSystem)
     {
+        landscapeEditorDrawSystem->DisableSystem();
         RemoveSystem(landscapeEditorDrawSystem);
         SafeDelete(landscapeEditorDrawSystem);
     }

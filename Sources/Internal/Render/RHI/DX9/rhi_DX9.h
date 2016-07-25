@@ -18,6 +18,7 @@ void Init(uint32 maxCount);
 void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -28,6 +29,7 @@ void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle vb);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -35,8 +37,11 @@ namespace QueryBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void BeginQuery(Handle buf, uint32 objectIndex);
-void EndQuery(Handle buf, uint32 objectIndex);
+void SetQueryIndex(Handle buf, uint32 objectIndex);
+void QueryComplete(Handle buf);
+bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryPool();
 }
 
 namespace PerfQuerySetDX9
@@ -71,6 +76,7 @@ void SetAsRenderTarget(Handle tex);
 void SetAsDepthStencil(Handle tex);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -94,7 +100,6 @@ void SetupDispatch(Dispatch* dispatch);
 namespace CommandBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
-void BlockNonRenderThreads();
 }
 
 

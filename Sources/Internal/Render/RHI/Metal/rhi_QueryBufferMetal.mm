@@ -87,7 +87,23 @@ metal_QueryBuffer_Delete(Handle handle)
 }
 
 static bool
-metal_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+metal_QueryBuffer_IsReady(Handle handle)
+{
+    return true;
+    /*
+    bool                ready = false;
+    QueryBufferMetal_t* buf   = QueryBufferMetalPool::Get( handle );
+
+    if( buf  &&  objectIndex < buf->maxObjectCount )
+    {
+    }
+
+    return ready;
+*/
+}
+
+static bool
+metal_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     return true;
     /*
@@ -133,6 +149,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &metal_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &metal_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &metal_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &metal_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &metal_QueryBuffer_Value;
 }
 }

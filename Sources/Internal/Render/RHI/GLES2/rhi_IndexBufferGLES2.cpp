@@ -140,6 +140,7 @@ void IndexBufferGLES2_t::Destroy(bool force_immediate)
 
     size = 0;
     uid = 0;
+    MarkRestored();
 }
 
 //==============================================================================
@@ -165,8 +166,6 @@ static void
 gles2_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
-
-    self->MarkRestored();
     self->Destroy();
     IndexBufferGLES2Pool::Free(ib);
 }

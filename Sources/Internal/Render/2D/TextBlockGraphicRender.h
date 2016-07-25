@@ -20,6 +20,8 @@ public:
     TextBlockGraphicRender(TextBlock*);
     ~TextBlockGraphicRender();
 
+    TextBlockRender* Clone() override;
+
     void Prepare() override;
     void Draw(const Color& textColor, const Vector2* offset) override;
 
@@ -37,16 +39,13 @@ private:
     Font::StringMetrics InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);
 
 private:
-    GraphicFont* graphicFont;
-
     static uint16* indexBuffer;
     Vector<GraphicFont::GraphicFontVertex> vertexBuffer;
-
-    uint32 charDrawed;
+    GraphicFont* graphicFont = nullptr;
     Rect renderRect;
-
-    NMaterial* dfMaterial;
-    float32 cachedSpread;
+    NMaterial* dfMaterial = nullptr;
+    uint32 charDrawed = 0;
+    float32 cachedSpread = 0.0f;
 };
 
 }; //end of namespace
