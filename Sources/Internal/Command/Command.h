@@ -52,7 +52,6 @@ std::unique_ptr<CMD> Command::Create(Arg&&... arg)
     return std::unique_ptr<CMD>(new CMD(std::forward<Arg>(arg)...));
 }
 
-
 inline const String& Command::GetDescription() const
 {
     return description;

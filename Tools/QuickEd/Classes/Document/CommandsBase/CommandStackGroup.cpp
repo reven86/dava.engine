@@ -27,7 +27,6 @@ void CommandStackGroup::SetActiveStack(DAVA::CommandStack* commandStack)
         activeStack->cleanChanged.Disconnect(this);
         activeStack->canRedoChanged.Disconnect(this);
         activeStack->canUndoChanged.Disconnect(this);
-
     }
     activeStack = commandStack;
     if (commandStack != nullptr)
