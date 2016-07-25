@@ -44,7 +44,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
         if (isValid && value.GetSize() > dataBase->GetStorageSize())
         {
             isValid = false;
-            Logger::Warning("[%s] Inserted size %u is bigger than max storage size %u", __FUNCTION__, value.GetSize(), dataBase->GetStorageSize());
+            DAVA::Logger::Warning("[%s] Inserted size %u is bigger than max storage size %u", __FUNCTION__, value.GetSize(), dataBase->GetStorageSize());
         }
 
         server->AddedToCache(channel, key, isValid);
