@@ -37,9 +37,9 @@ void SettingsManager::Init()
     CreateValue(Settings::General_ReloadParticlesOnPojectOpening, DAVA::VariantType(true));
     CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
     CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(true));
-    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT))
-                                                      ,
+    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT)),
                 DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
+    CreateValue(Settings::General_ShowErrorDialog, DAVA::VariantType(true));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_SwitchColor1, DAVA::VariantType(DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f)));
@@ -89,6 +89,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SaveEmitters, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SaveStaticOcclusion, DAVA::VariantType(true));
+    CreateValue(Settings::Scene_DefaultCustomColorIndex, DAVA::VariantType(0u));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));

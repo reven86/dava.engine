@@ -347,6 +347,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
         width = 0;
         height = 0;
     }
+    MarkRestored();
 }
 
 //------------------------------------------------------------------------------
@@ -355,8 +356,6 @@ static void
 gles2_Texture_Delete(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-
-    self->MarkRestored();
     self->Destroy();
     TextureGLES2Pool::Free(tex);
 }

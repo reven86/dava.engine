@@ -108,7 +108,7 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
-    CloseAllTabsInternal(true);
+    DVASSERT(GetTabCount() == 0);
 
     ReleaseDAVAUI();
 }
@@ -243,9 +243,9 @@ bool SceneTabWidget::CloseTab(int index)
     return CloseTabInternal(index, false);
 }
 
-bool SceneTabWidget::CloseTabInternal(int index, bool force)
+bool SceneTabWidget::CloseTabInternal(int index, bool silent)
 {
-    if (force == false)
+    if (silent == false)
     {
         Request request;
         emit CloseTabRequest(index, &request);
@@ -259,7 +259,10 @@ bool SceneTabWidget::CloseTabInternal(int index, bool force)
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
-        SceneSignals::Instance()->EmitDeactivated(scene);
+        if (silent == false)
+        {
+            SceneSignals::Instance()->EmitDeactivated(scene);
+        }
     }
 
     SafeRelease(scene);
@@ -574,23 +577,32 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
     return -1;
 }
 
-bool SceneTabWidget::CloseAllTabs()
+bool SceneTabWidget::CloseAllTabs(bool silent)
 {
-    return CloseAllTabsInternal(false);
-}
+    bool areTabBarSignalsBlocked = false;
+    if (silent)
+    {
+        areTabBarSignalsBlocked = tabBar->blockSignals(true);
+    }
 
-bool SceneTabWidget::CloseAllTabsInternal(bool force)
-{
+    bool closed = true;
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTabInternal(GetCurrentTab(), force))
+        if (!CloseTabInternal(GetCurrentTab(), silent))
         {
-            return false;
+            closed = false;
+            break;
         }
         count--;
     }
-    return true;
+
+    if (silent)
+    {
+        tabBar->blockSignals(areTabBarSignalsBlocked);
+    }
+
+    return closed;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)

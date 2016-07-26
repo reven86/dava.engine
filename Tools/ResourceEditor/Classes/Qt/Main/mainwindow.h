@@ -59,6 +59,7 @@ public:
     void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
     void WaitSetMessage(const QString& messsage);
     void WaitSetValue(int value);
+    bool IsWaitDialogOnScreen() const;
     void WaitStop();
 
     void BeastWaitSetMessage(const QString& messsage);
@@ -67,6 +68,8 @@ public:
     void EnableGlobalTimeout(bool enable);
 
     bool CanBeClosed();
+
+    bool ParticlesArePacking() const;
 
     // qt actions slots
 public slots:

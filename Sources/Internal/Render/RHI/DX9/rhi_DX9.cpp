@@ -144,9 +144,15 @@ dx9_Reset(const ResetParam& param)
 static bool
 dx9_NeedRestoreResources()
 {
-    bool needRestore = (TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount());
+    uint32 pendingTextures = TextureDX9::NeedRestoreCount();
+    uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
+    uint32 pendingIndexBuffers = IndexBufferDX9::NeedRestoreCount();
+
+    bool needRestore = (pendingTextures || pendingVertexBuffers || pendingIndexBuffers);
     if (needRestore)
-        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
+    {
+        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", pendingTextures, pendingVertexBuffers, pendingIndexBuffers);
+    }
     return needRestore;
 }
 
