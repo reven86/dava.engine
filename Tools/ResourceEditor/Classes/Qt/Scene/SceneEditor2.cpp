@@ -246,8 +246,12 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
-    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
-    selectionSystem->EnableSystem(false);
+    bool isSelectionEnabled = false;
+    if (selectionSystem != nullptr)
+    {
+        isSelectionEnabled = selectionSystem->IsSystemEnabled();
+        selectionSystem->EnableSystem(false);
+    }
 
     for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
@@ -256,7 +260,11 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
-    selectionSystem->EnableSystem(isSelectionEnabled);
+
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->EnableSystem(isSelectionEnabled);
+    }
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene()

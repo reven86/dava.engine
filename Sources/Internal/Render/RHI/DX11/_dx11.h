@@ -26,6 +26,16 @@
 
 const char* D3D11ErrorText(HRESULT hr);
 
+#if 1
+#define CHECK_HR(hr) \
+    if (FAILED(hr)) \
+    { \
+        Logger::Error("D3D11Error at %s: %d\n%s", __FILE__, __LINE__, D3D11ErrorText(hr)); \
+    } 
+#else
+#define CHECK_HR(hr) hr
+#endif
+
 namespace rhi
 {
 struct InitParam;
