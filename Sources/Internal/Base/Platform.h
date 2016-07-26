@@ -136,6 +136,11 @@
 #define __DAVAENGINE_ANDROID__
 #undef __DAVASOUND_AL__
 
+//Using C++11 concurrency as default
+#if !defined(USE_CPP11_CONCURRENCY)
+#define USE_CPP11_CONCURRENCY
+#endif
+
 #endif
 
 #endif // __DAVAENGINE_PLATFORM__
