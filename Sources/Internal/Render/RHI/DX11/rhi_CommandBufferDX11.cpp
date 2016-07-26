@@ -1270,7 +1270,6 @@ _ExecuteQueuedCommandsDX11()
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
-    _D3D11_Device->CreateTexture2D(&desc, NULL, &_D3D11_SwapChainBufferCopy);
 }
 
 //------------------------------------------------------------------------------
