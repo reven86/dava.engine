@@ -54,9 +54,9 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         PackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
 
-        if (pm.IsCommonPacksInitialized())
+        if (pm.IsGpuPacksInitialized())
         {
-            const String& packName = pm.FindPackName(relative);
+            const String& packName = pm.FindPackName(filename);
             if (!packName.empty())
             {
                 auto it = fileSystem->resArchiveMap.find(packName);

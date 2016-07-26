@@ -128,18 +128,17 @@ public:
     };
 
     // you can call it first line in FrameworkDidLaunched (throw exception on error)
-    void InitCommonPacks(const String& dbFileName,
-                         const FilePath& readOnlyPacksDir,
+    void InitCommonPacks(const FilePath& readOnlyPacksDir,
                          const FilePath& downloadPacksDir,
                          const Hints& hints);
 
     // you can call after InitCommonPacks in GameCore::OnAppStarted (throw exception on error)
-    void InitGpuPacks(const String& architecture);
+    void InitGpuPacks(const String& architecture, const String& dbFileName);
 
     // complex async connect to server
     void SyncWithServer(const String& urlToServerSuperpack);
 
-    bool IsCommonPacksInitialized() const;
+    bool IsGpuPacksInitialized() const;
 
     ISync& GetISync();
 

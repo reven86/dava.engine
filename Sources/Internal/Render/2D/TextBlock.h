@@ -107,6 +107,7 @@ public:
     void Draw(const Color& textColor, const Vector2* offset = NULL);
 
     TextBlock* Clone();
+    void CopyDataFrom(TextBlock* block);
 
     const Vector<int32>& GetStringSizes();
         

@@ -15,22 +15,21 @@ PackManager::IRequest::~IRequest() = default;
 
 PackManager::ISync::~ISync() = default;
 
-void PackManager::InitCommonPacks(const String& dbFileName_,
-                                  const FilePath& readOnlyPacksDir_,
+void PackManager::InitCommonPacks(const FilePath& readOnlyPacksDir_,
                                   const FilePath& downloadPacksDir_,
                                   const Hints& hints_)
 {
-    impl->InitCommonPacks(dbFileName_, readOnlyPacksDir_, downloadPacksDir_, hints_, this);
+    impl->InitCommonPacks(readOnlyPacksDir_, downloadPacksDir_, hints_, this);
 }
 
-void PackManager::InitGpuPacks(const String& architecture_)
+void PackManager::InitGpuPacks(const String& architecture_, const String& dbFileName_)
 {
-    impl->InitGpuPacks(architecture_);
+    impl->InitGpuPacks(architecture_, dbFileName_);
 }
 
-bool PackManager::IsCommonPacksInitialized() const
+bool PackManager::IsGpuPacksInitialized() const
 {
-    return impl->IsInitialized();
+    return impl->IsGpuPacksInitialized();
 }
 
 void PackManager::SyncWithServer(const String& urlToServerSuperpack)

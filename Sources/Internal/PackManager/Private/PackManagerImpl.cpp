@@ -6,7 +6,8 @@
 #include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
-#include <Platform/SystemTimer.h>
+
+#include <algorithm>
 
 namespace DAVA
 {
@@ -25,8 +26,7 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
-void PackManagerImpl::InitCommonPacks(const String& dbFile_,
-                                      const FilePath& readOnlyPacksDir_,
+void PackManagerImpl::InitCommonPacks(const FilePath& readOnlyPacksDir_,
                                       const FilePath& downloadPacksDir_,
                                       const PackManager::Hints& hints_,
                                       PackManager* packManager_)
@@ -35,6 +35,7 @@ void PackManagerImpl::InitCommonPacks(const String& dbFile_,
     localPacksDir = downloadPacksDir_;
 
     architecture.clear();
+    mountedCommonPacks.clear();
 
     packManager = packManager_;
     if (nullptr == packManager)
@@ -44,14 +45,6 @@ void PackManagerImpl::InitCommonPacks(const String& dbFile_,
 
     hints = hints_;
 
-    initLocalDBFileName = dbFile_;
-
-    dbZipInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbZipInData = FilePath(readOnlyPacksDir_ + initLocalDBFileName);
-
-    dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbInDoc.ReplaceExtension("");
-
     initState = PackManager::InitState::Starting;
 
     // now init all pack in local read only dir
@@ -60,9 +53,9 @@ void PackManagerImpl::InitCommonPacks(const String& dbFile_,
     MountCommonBasePacks();
 }
 
-bool PackManagerImpl::IsInitialized() const
+bool PackManagerImpl::IsGpuPacksInitialized() const
 {
-    return initState >= PackManager::InitState::CommonReadOnlyPacksReady;
+    return initState >= PackManager::InitState::GpuReadOnlyPacksReady;
 }
 
 void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
@@ -249,45 +242,6 @@ void PackManagerImpl::InitStarting()
     Logger::FrameworkDebug("pack manager init_starting");
 
     DVASSERT(initState != PackManager::InitState::FirstInit);
-
-    // copy localPackDB from Data to ~doc:/ if not exist
-    FileSystem* fs = FileSystem::Instance();
-
-    if (!fs->IsFile(dbInDoc) || !fs->IsFile(dbZipInDoc))
-    {
-        fs->DeleteFile(dbInDoc);
-        fs->DeleteFile(dbZipInDoc);
-        // 0. copy db file from assets (or Data) to doc
-        if (!fs->CopyFile(dbZipInData, dbZipInDoc, true))
-        {
-            throw std::runtime_error("can't copy local zipped DB from Data to Doc: " + dbZipInDoc.GetStringValue());
-        }
-        // 1. extract db file from zip
-        RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
-        ZipArchive zip(fDb, dbZipInDoc);
-        // only one file in archive
-        const String& fileName = zip.GetFilesInfo().at(0).relativeFilePath;
-        Vector<uint8> fileData;
-        if (!zip.LoadFile(fileName, fileData))
-        {
-            throw std::runtime_error("can't unzip: " + fileName + " from: " + dbZipInData.GetStringValue());
-        }
-        // 2. write to ~doc:/file unpacked file
-        ScopedPtr<File> f(File::Create(dbInDoc, File::WRITE | File::CREATE));
-        if (!f)
-        {
-            throw std::runtime_error("can't create file: " + dbInDoc.GetStringValue());
-        }
-        uint32 written = f->Write(fileData.data(), static_cast<uint32>(fileData.size()));
-        if (written != fileData.size())
-        {
-            throw std::runtime_error("can't write file: " + dbInDoc.GetStringValue());
-        }
-        if (!fs->IsFile(dbInDoc))
-        {
-            throw std::runtime_error("no local DB file");
-        }
-    }
     initState = PackManager::InitState::MountingReadOnlyPacks;
 }
 
@@ -335,12 +289,6 @@ static void ListPacksInDirAndCopyIfNeed(const FilePath& localPacksDir, const Fil
 
 void PackManagerImpl::MountCommonBasePacks()
 {
-    // now build all packs from localDB, later after request to server
-    // we can delete localDB and replace with new from server if needed
-    db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
-
-    InitializePacks();
-
     Set<FilePath> basePacks;
 
     if (!FileSystem::Instance()->Exists(readOnlyPacksDir))
@@ -364,12 +312,11 @@ void PackManagerImpl::MountCommonBasePacks()
                      p.isReadOnly = true;
                  }
              });
-    // now user can do requests for local packs
-    requestManager.reset(new RequestManager(*this));
+
     initState = PackManager::InitState::CommonReadOnlyPacksReady;
 }
 
-void PackManagerImpl::InitGpuPacks(const String& architecture_)
+void PackManagerImpl::InitGpuPacks(const String& architecture_, const String& dbFile_)
 {
     if (PackManager::InitState::CommonReadOnlyPacksReady != initState)
     {
@@ -382,6 +329,59 @@ void PackManagerImpl::InitGpuPacks(const String& architecture_)
     {
         throw std::runtime_error("architecture is empty");
     }
+
+    initLocalDBFileName = dbFile_;
+
+    dbZipInDoc = FilePath("~doc:/" + initLocalDBFileName);
+    dbZipInData = FilePath(readOnlyPacksDir + initLocalDBFileName);
+
+    dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
+    dbInDoc.ReplaceExtension("");
+
+    // copy localPackDB from Data to ~doc:/ if not exist
+    FileSystem* fs = FileSystem::Instance();
+
+    if (!fs->IsFile(dbInDoc) || !fs->IsFile(dbZipInDoc))
+    {
+        fs->DeleteFile(dbInDoc);
+        fs->DeleteFile(dbZipInDoc);
+        // 0. copy db file from assets (or Data) to doc
+        if (!fs->CopyFile(dbZipInData, dbZipInDoc, true))
+        {
+            throw std::runtime_error("can't copy local zipped DB from Data to Doc: " + dbZipInDoc.GetStringValue());
+        }
+        // 1. extract db file from zip
+        RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
+        ZipArchive zip(fDb, dbZipInDoc);
+        // only one file in archive
+        const String& fileName = zip.GetFilesInfo().at(0).relativeFilePath;
+        Vector<uint8> fileData;
+        if (!zip.LoadFile(fileName, fileData))
+        {
+            throw std::runtime_error("can't unzip: " + fileName + " from: " + dbZipInData.GetStringValue());
+        }
+        // 2. write to ~doc:/file unpacked file
+        ScopedPtr<File> f(File::Create(dbInDoc, File::WRITE | File::CREATE));
+        if (!f)
+        {
+            throw std::runtime_error("can't create file: " + dbInDoc.GetStringValue());
+        }
+        uint32 written = f->Write(fileData.data(), static_cast<uint32>(fileData.size()));
+        if (written != fileData.size())
+        {
+            throw std::runtime_error("can't write file: " + dbInDoc.GetStringValue());
+        }
+        if (!fs->IsFile(dbInDoc))
+        {
+            throw std::runtime_error("no local DB file");
+        }
+    }
+
+    // now build all packs from localDB, later after request to server
+    // we can delete localDB and replace with new from server if needed
+    db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
+
+    InitializePacks();
 
     Set<FilePath> basePacks;
 
@@ -403,6 +403,9 @@ void PackManagerImpl::InitGpuPacks(const String& architecture_)
                      p.isReadOnly = true;
                  }
              });
+
+    // now user can do requests for local packs
+    requestManager.reset(new RequestManager(*this));
 
     initState = PackManager::InitState::GpuReadOnlyPacksReady;
 }
@@ -823,27 +826,63 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 {
     FileSystem* fs = FileSystem::Instance();
 
-    for (const FilePath& filePath : basePacks)
+    if (packsIndex.empty())
     {
-        String fileName = filePath.GetBasename();
-        auto it = packsIndex.find(fileName);
-        if (it == end(packsIndex))
+        for_each(begin(basePacks), end(basePacks), [&](const FilePath& filePath)
+                 {
+                     String fileName = filePath.GetBasename();
+
+                     try
+                     {
+                         fs->Mount(filePath, "Data/");
+                         mountedCommonPacks.emplace_back(filePath);
+                     }
+                     catch (std::exception& ex)
+                     {
+                         Logger::Error("%s", ex.what());
+                     }
+                 });
+    }
+    else
+    {
+        for_each(begin(basePacks), end(basePacks), [&](const FilePath& filePath)
+                 {
+                     String fileName = filePath.GetBasename();
+                     auto it = packsIndex.find(fileName);
+                     if (it == end(packsIndex))
+                     {
+                         throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
+                     }
+
+                     PackManager::Pack& pack = packs.at(it->second);
+
+                     try
+                     {
+                         fs->Mount(filePath, "Data/");
+                         pack.state = PackManager::Pack::Status::Mounted;
+                     }
+                     catch (std::exception& ex)
+                     {
+                         Logger::Error("%s", ex.what());
+                     }
+                 });
+
+        // mark mounted before common packs as mounted
+        for (auto& filePath : mountedCommonPacks)
         {
-            throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
+            auto& pack = GetPack(filePath.GetBasename());
+            if (fs->IsMounted(filePath))
+            {
+                pack.state = PackManager::Pack::Status::Mounted;
+            }
+            else
+            {
+                throw std::runtime_error("not mounted base pack: " + filePath.GetStringValue());
+            }
         }
 
-        PackManager::Pack& pack = packs.at(it->second);
-
-        try
-        {
-            fs->Mount(filePath, "Data/");
-            pack.state = PackManager::Pack::Status::Mounted;
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("%s", ex.what());
-        }
-    } // end for fileIndex
+        mountedCommonPacks.clear();
+    }
 }
 
 void PackManagerImpl::DeletePack(const String& packName)

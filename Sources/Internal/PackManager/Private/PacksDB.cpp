@@ -92,7 +92,16 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
 
     result.clear(); // empty string if nothing found
 
-    String relativePath = relativeFilePath.GetRelativePathname("~res:/");
+    String relativePath;
+    if (relativeFilePath.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    {
+        relativePath = relativeFilePath.GetRelativePathname();
+    }
+    else if (relativeFilePath.GetType() == FilePath::PATH_IN_RESOURCES)
+    {
+        relativePath = relativeFilePath.GetRelativePathname("~res:/");
+    }
+
     data->GetDB() << "SELECT pack FROM files WHERE path = ?"
                   << relativePath
     >> [&](std::string packName)
