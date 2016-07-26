@@ -248,7 +248,7 @@ void DavaGLWidget::OnPaint()
     if (!nativeHandle.isValid())
     {
         DAVA::Logger::Error("GL context is not valid!");
-        exit(1);
+        throw std::runtime_error("GL context is not valid!");
     }
     else
     {
