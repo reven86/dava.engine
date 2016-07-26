@@ -5,7 +5,7 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (DateTimeTest)
 {
-    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+    DEDUCE_COVERED_FILES_FROM_TESTCLASS()
 
     DAVA_TEST (TestFunction)
     {

@@ -161,9 +161,9 @@
 //  DAVA_TESTCLASS(UsefulTest)
 //  {
 //      BEGIN_CLASSES_COVERED_BY_TESTS()
-//          DECLARE_COVERED_CLASS(FileSystem)
-//          DECLARE_COVERED_CLASS(JobManager)
-//      END_CLASSES_COVERED_BY_TESTS()
+//          DECLARE_COVERED_FILES(FileSystem)
+//          DECLARE_COVERED_FILES(JobManager)
+//      END_FILES_COVERED_BY_TESTS()
 //
 //      DAVA_TEST(test1) {}
 //  };
@@ -173,10 +173,10 @@
 // or to automatically deduce covered class from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
 //  {
-//      DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+//      DEDUCE_COVERED_FILES_FROM_TESTCLASS()
 //  };
 //
-// DEDUCE_COVERED_CLASS_FROM_TESTCLASS discards Test postfix of any and considers that
+// DEDUCE_COVERED_FILES_FROM_TESTCLASS discards Test postfix of any and considers that
 // DateTimeTest covers class DateTime.
 //
 // This is test author's responsibility to specify valid and corresponding classes
@@ -186,20 +186,20 @@
 //
 
 #define BEGIN_CLASSES_COVERED_BY_TESTS() \
-    DAVA::Vector<DAVA::String> ClassesCoveredByTests() const override { \
+    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
         DAVA::Vector<DAVA::String> result;
 
-#define DECLARE_COVERED_CLASS(classname) \
-        result.emplace_back(PrettifyTypeName(DAVA::String(typeid(classname).name())));
+#define DECLARE_COVERED_FILES(classname) \
+        result.emplace_back(classname);
 
-#define END_CLASSES_COVERED_BY_TESTS() \
+#define END_FILES_COVERED_BY_TESTS() \
         return result; \
     }
 
-#define DEDUCE_COVERED_CLASS_FROM_TESTCLASS() \
-    DAVA::Vector<DAVA::String> ClassesCoveredByTests() const override { \
+#define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
+    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
         DAVA::Vector<DAVA::String> result; \
-        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
+        result.emplace_back(RemoveTestPostfix( PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
         return result; \
     }
 

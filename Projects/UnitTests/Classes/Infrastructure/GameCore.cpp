@@ -11,6 +11,8 @@
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #endif
 
+const DAVA::String CoveredFileName = "UnitTests.cover";
+
 using namespace DAVA;
 
 namespace
@@ -78,6 +80,16 @@ void GameCore::OnAppStarted()
         Logger::Error("%s", "There are no test classes");
         Core::Instance()->Quit();
     }
+    else
+    {
+#if defined(__DAVAENGINE_MACOS__)
+        RefPtr<File> covergeFile(File::Create( CoveredFileName, File::CREATE | File::WRITE ) );
+        TEST_VERIFY(covergeFile);
+        covergeFile->Flush();
+#endif // __DAVAENGINE_MACOS__
+        
+    }
+
 }
 
 void GameCore::OnAppFinished()
@@ -90,6 +102,7 @@ void GameCore::OnAppFinished()
 #if defined(__DAVAENGINE_WIN_UAP__)
     UnInitNetwork();
 #endif
+    
 }
 
 void GameCore::OnSuspend()
@@ -170,6 +183,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
         // Output test coverage for sample
         Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
         Logger::Info("Test coverage");
+
         for (const auto& x : map)
         {
             Logger::Info("  %s:", x.first.c_str());
@@ -179,7 +193,31 @@ void GameCore::ProcessTests(float32 timeElapsed)
                 Logger::Info("        %s", s.c_str());
             }
         }
+        
+#if defined(__DAVAENGINE_MACOS__)
+        RefPtr<File> covergeFile(File::Create(CoveredFileName, File::APPEND | File::WRITE));
+        TEST_VERIFY(covergeFile);
+        
+        for (const auto& x : map)
+        {
+            DAVA::String line_head = x.first + " :";
+            covergeFile->Write( line_head.c_str(), line_head.size() );
+            
+            const Vector<String>& v = x.second;
+            for (const auto& s : v)
+            {
+                DAVA::String line = ' ' + s;
+                covergeFile->Write( line.c_str(), line.size() );
+            }
+            
+            covergeFile->Write( "\n", 1 );
+            
+        }
+#endif // __DAVAENGINE_MACOS__
+        
+        
         FinishTests();
+        
     }
 }
 

@@ -5,7 +5,7 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (FileSystemTest)
 {
-    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+    DEDUCE_COVERED_FILES_FROM_TESTCLASS()
 
     FileSystemTest()
     {
