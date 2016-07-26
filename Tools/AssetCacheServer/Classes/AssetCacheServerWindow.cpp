@@ -194,7 +194,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup)
         xml.writeEndElement();
         xml.writeEndDocument();
 
-        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        ScopedPtr<File> file(File::Create(plist, File::CREATE | File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
     }

@@ -84,7 +84,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
         PackManager& packManager = Core::Instance()->GetPackManager();
 
-        FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
+        FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 
         dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
 
@@ -175,7 +175,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
                     uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
 
-                    TEST_VERIFY(crc32 == 0xc8101bca); // crc32 for monkey.sc2
+                    TEST_VERIFY(crc32 == 0x4a2039c8); // crc32 for monkey.sc2
                 }
             }
             else

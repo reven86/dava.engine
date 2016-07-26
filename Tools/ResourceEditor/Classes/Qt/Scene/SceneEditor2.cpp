@@ -10,7 +10,6 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/DavaGLWidget/DavaRenderer.h"
 
@@ -166,8 +165,8 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         isLoaded = true;
     }
 
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
+    SceneValidator::ExtractEmptyRenderObjects(this);
+    SceneValidator::Instance()->ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -290,6 +289,7 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 
         return (sceneExported && objectExported);
     }
+
     return false;
 }
 
