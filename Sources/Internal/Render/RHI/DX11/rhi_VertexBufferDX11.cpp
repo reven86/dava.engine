@@ -97,6 +97,7 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         }
 
         HRESULT hr = _D3D11_Device->CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf);
+        CHECK_HR(hr)
 
         if (SUCCEEDED(hr))
         {
@@ -166,6 +167,7 @@ dx11_VertexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned 
             DX11Command cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
 
             ExecDX11(&cmd1, 1);
+            CHECK_HR(cmd1.retval)
 
             if (rc.pData)
             {
@@ -195,7 +197,7 @@ dx11_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
     if (self->usage == USAGE_DYNAMICDRAW)
     {
         D3D11_MAPPED_SUBRESOURCE rc = { 0 };
-        HRESULT hr;
+        HRESULT hr = S_OK;
 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
@@ -214,6 +216,8 @@ dx11_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
         self->isMapped = true;
         ptr = ((uint8*)self->mappedData) + offset;
         #endif
+
+        CHECK_HR(hr)
     }
     else
     {
@@ -223,6 +227,7 @@ dx11_VertexBuffer_Map(Handle vb, unsigned offset, unsigned size)
         DVASSERT(self->usage != USAGE_STATICDRAW);
         DVASSERT(!self->isMapped);
         ExecDX11(&cmd, 1);
+        CHECK_HR(cmd.retval)
 
         if (rc.pData)
         {
@@ -296,6 +301,8 @@ void SetToRHI(Handle vbh, unsigned stream_i, unsigned offset, unsigned stride, I
         HRESULT hr;
 
         hr = context->Map(self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc);
+        CHECK_HR(hr)
+
         if (SUCCEEDED(hr) && rc.pData)
         {
             memcpy(rc.pData, self->mappedData, self->size);
