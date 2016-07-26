@@ -22,7 +22,7 @@ end
 function UtilConvertToPlatformPath(platform, p)
     -- convert only unix pathes into win pathes
     if platform ~= "win32" then
-        return
+        return p
     end
     
     if type(p) == "string" then

@@ -12,9 +12,12 @@ function TupPack.New(params)
         
     -- create default TupPack table
     self.name = params.name
-    self.isgpu = params.gpu or false
-    self.exclusive = params.exclusive or false
+    self.is_gpu = params.is_gpu or false
+    self.is_base = params.is_base or false
+    self.is_lowercase = params.is_lowercase or false
     self.depends = params.depends or { }
+    self.compression = params.compression or "lz4hc"
+    self.exclusive = params.exclusive or false
     self.files = { }
     
     -- parse pack rules
@@ -34,7 +37,7 @@ function TupPack.IsOkPackParams(params)
         error "Pack name should be a specified as string"
     end
     
-    if params.gpu ~= nil and type(params.gpu) ~= "boolean" then
+    if params.is_gpu ~= nil and type(params.is_gpu) ~= "boolean" then
         error "Pack gpu mark should be specified as boolean true or false"
     end
     
@@ -56,7 +59,7 @@ function TupPack.SetRules(self, rules)
                     print("pack = " .. self.name .. ", rule #" .. k)
                     error "Pack rule # table should be defined as { 'dir pattern', 'file pattern' }"
                 end
-            elseif type(v) ~= "function" then
+            elseif type(v) ~= "function" and type(v) ~= "string" then
                 print("pack = " .. self.name .. ", rule #" .. k)
                 error "Pack rule can be either string, table or function"
             end
@@ -81,7 +84,17 @@ end
 
 function TupPack.Match(self, dir, file, gpuName, gpuVar, gpuPattern)
     local ret = false
-    local full_path = dir .. "/" .. file
+    local full_path = file
+
+    if dir ~= "." then
+        full_path = dir .. "/" .. file
+    else
+        dir = ""
+    end
+
+    if self.is_lowercase then
+        full_path = full_path:lower()
+    end
 
     -- check for correct input arguments: gpuName    
     if gpuName == nil or type(gpuName) ~= "string" then
@@ -89,9 +102,13 @@ function TupPack.Match(self, dir, file, gpuName, gpuVar, gpuPattern)
     end
     
     -- check for correct input arguments: gpuVar and gpuPattern    
-    if self.isgpu then
-        if gpuVar == nil or gpuPattern == nil then
-            error "No gpuVar or gpuPattern specified"
+    if self.is_gpu then
+        if gpuVar == nil then
+            error "No gpuVar specified"
+        end
+
+        if gpuPattern == nil then
+            error "No gpuPattern specified"
         end
         
         -- escape all % symbols in pattern 
@@ -110,9 +127,13 @@ function TupPack.Match(self, dir, file, gpuName, gpuVar, gpuPattern)
         -- we should just compare it to match
         elseif type(rule) == "string" then
         
-            if self.isgpu then
+            if self.is_gpu then
                 rule = rule:gsub(gpuVar, gpuPattern)
             end
+
+            if self.is_lowercase then
+                rule = rule:lower()
+            end            
 
             if full_path:match(rule) then
                 ret = true
@@ -127,14 +148,22 @@ function TupPack.Match(self, dir, file, gpuName, gpuVar, gpuPattern)
             local dir_rule = rule[1]
             local file_rule = rule[2]
             
-            if self.isgpu then
+            if self.is_gpu then
                 dir_rule = dir_rule:gsub(gpuVar, gpuPattern)
                 file_rule = file_rule:gsub(gpuVar, gpuPattern)
             end
 
-            if dir:match(dir_rule) and file:match(file_rule) then
+            if self.is_lowercase then
+                dir_rule = dir_rule:lower()
+                file_rule = file_rule:lower()
+            end
+
+            if nil ~= dir:match(dir_rule) and nil ~= file:match(file_rule) then
                 ret = true
+                --print("!" .. full_path .. " is mathing [" .. dir_rule .. ", " .. file_rule .. "]")
                 break
+            else
+                --print(full_path .. " is not mathing [" .. dir_rule .. ", " .. file_rule .. "]")
             end
 
         -- when pack rule is a function
