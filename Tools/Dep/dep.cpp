@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstdint>
 #include <sstream>
+#include <list>
 #include <algorithm>
 #include "tinydir.h"
 
