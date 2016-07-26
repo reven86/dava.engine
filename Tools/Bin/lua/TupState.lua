@@ -81,7 +81,7 @@ function TupState.New(userConf)
     self.cmd.fwResourceArchive = fwPath .. "../x64/ResourceArchiver"
     
     if self.platform == "win32" then
-        self.cmd.cat = "type 2> nul"
+        self.cmd.cat = "type"
         self.cmd.fwzip = fwPath .. "../7z.exe"
         self.cmd.fwsql = self.cmd.fwsql .. ".exe"
         self.cmd.fwdep = self.cmd.fwdep .. ".exe" 

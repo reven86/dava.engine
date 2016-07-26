@@ -607,7 +607,7 @@ void PackManagerImpl::AskDB()
     const PackFormat::FileTableEntry& fileData = *(it->second);
 
     uint64 downloadOffset = fileData.startPosition;
-    uint64 downloadSize = fileData.compressedSize;
+    uint64 downloadSize = fileData.compressedSize > 0 ? fileData.compressedSize : fileData.originalSize;
 
     buffer.resize(static_cast<uint32>(downloadSize));
 

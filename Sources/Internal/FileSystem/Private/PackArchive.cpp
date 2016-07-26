@@ -211,23 +211,6 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
     output.resize(fileEntry.originalSize);
 
-    //std::lock_guard<std::mutex> lock(gFileMutex);
-
-    //if (file != nullptr)
-    //{
-    //    if (relativeFileName != archiveName.GetAbsolutePathname())
-    //    {
-    //        file->Release();
-    //        file = File::Create(archiveName, File::OPEN | File::READ);
-    //        relativeFileName = archiveName.GetAbsolutePathname();
-    //    }
-    //}
-    //else
-    //{
-    //    file = (File::Create(archiveName, File::OPEN | File::READ));
-    //    relativeFileName = archiveName.GetAbsolutePathname();
-    //}
-
     if (!file)
     {
         throw std::runtime_error("can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
@@ -290,6 +273,13 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     }
     break;
     } // end switch
+
+    // check crc32 for file content
+    if (fileEntry.originalCrc32 != 0 && fileEntry.originalCrc32 != CRC32::ForBuffer(output.data(), output.size()))
+    {
+        throw std::runtime_error("original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue());
+    }
+
     return true;
 }
 
