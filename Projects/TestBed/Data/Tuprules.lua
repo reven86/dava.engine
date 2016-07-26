@@ -1,40 +1,47 @@
---package.path = package.path .. ";../../../../dava.framework/Build/?.lua"
 require("TupState")
 
 tupState = TupState.New({
-    outputDir = "../.output",
-    outputDbName = "",
-    intermediateDir = "../.tmp"
+    outputDir = "../.Assets",
+    superpackDir = "../.AssetsSuperpack",
+    intermediateDir = "../.tmp",
+    superpack = true
 })
 
 tupState:AddPacks {
     {
-        name = "vpack",
-        depends = { "pack1", "pack2" }
+        name = "allpacks",
+        depends = { "pack1", "pack2", "packgpu" }
     },
     {
-        exclusive = true,
         name = "pack1",
+        is_base = true,
+        exclusive = true,
+        compression = "none",
         rules = {
-            { "",  "%.aaa" }
+            { "^$",  ".*" }
         },
     },
     {
+        name = "testlower",
         exclusive = true,
+        is_base = true,
+        --is_lowercase = true,
+        rules = {
+            "UI/Test/scrollscreen.yaml"
+        }
+    },
+    {
+        name = "packgpu",
+        is_gpu = true,
+        exclusive = true,
+        rules = {
+            { "", ".*{gpu}.*"}
+        }
+    },
+    {
         name = "pack2",
         rules = {
-            { "", "%.sc2" }
+            { "", ".*" }
         },
-    },
-    { 
-         name = "gpupack",
-         gpu = true,
-         rules = {
-            { "", "%.{gpu}" },
-            { "", "%.sc3" }
-         }
-    },
+    }
 }
-
--- UtilDumpTable(tupState)
-

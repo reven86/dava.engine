@@ -9,6 +9,8 @@
 #include <vector>
 #include <cstdint>
 #include <sstream>
+#include <algorithm>
+#include "tinydir.h"
 
 #ifdef _MSC_VER
 #include <filesystem>
@@ -165,6 +167,153 @@ void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
     }
 }
 
+// Wildcard matching algorithms
+// http://xoomer.virgilio.it/acantato/dev/wildcard/wildmatch.html
+// Non recursive final version
+bool szWildMatch8(const char* pat, const char* str)
+{
+    const char* s;
+    const char* p;
+    bool star = false;
+
+loopStart:
+    for (s = str, p = pat; *s; ++s, ++p)
+    {
+        switch (*p)
+        {
+        case '?':
+            if (*s == '.')
+                goto starCheck;
+            break;
+        case '*':
+            star = true;
+            str = s, pat = p;
+            if (!*++pat)
+                return true;
+            goto loopStart;
+        default:
+            if (*s != *p)
+                goto starCheck;
+            break;
+        }
+    }
+    if (*p == '*')
+        ++p;
+    return (!*p);
+
+starCheck:
+    if (!star)
+        return false;
+    str++;
+    goto loopStart;
+}
+
+void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
+{
+    if (argc <= 2)
+    {
+        throw std::runtime_error("nothing to echo");
+    }
+
+    std::ofstream output;
+    std::set<std::string> patterns;
+
+    // collect all files and options
+    for (int i = 2; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-o" && (i + 1) < argc)
+        {
+            ++i;
+            std::string output_name = argv[i];
+            output.open(output_name);
+            if (!output)
+            {
+                std::string err = std::strerror(errno);
+                throw std::runtime_error("can't open output file: " + output_name + " cause: " + err);
+            }
+        }
+        else
+        {
+            patterns.insert(arg);
+        }
+    }
+
+    if (output.is_open())
+    {
+        std::cout.rdbuf(output.rdbuf());
+    }
+    else
+    {
+        // write to console
+    }
+
+    std::list<std::string> files;
+
+    for (auto& pat : patterns)
+    {
+        if (pat.find('?') || pat.find('*'))
+        {
+            std::string directory = "./";
+            std::string mask = pat;
+
+            size_t d = pat.find_last_of("\\/");
+            if (d != std::string::npos)
+            {
+                directory = mask.substr(0, d);
+                mask = mask.substr(d + 1);
+            }
+
+            tinydir_dir tiny_dir;
+            tinydir_open(&tiny_dir, directory.c_str());
+
+            while (tiny_dir.has_next)
+            {
+                tinydir_file tiny_file;
+                tinydir_readfile(&tiny_dir, &tiny_file);
+
+                if (!tiny_file.is_dir)
+                {
+                    if (szWildMatch8(mask.c_str(), tiny_file.name))
+                    {
+                        files.push_back(tiny_file.path);
+                    }
+                }
+
+                tinydir_next(&tiny_dir);
+            }
+        }
+        else
+        {
+            files.push_back(pat);
+        }
+    }
+
+    for (auto& path : files)
+    {
+        std::ifstream file;
+
+        file.open(path, std::ios::ate);
+        if (file)
+        {
+            if (file.tellg() > 0)
+            {
+                file.seekg(0, std::ios::beg);
+                std::cout << file.rdbuf();
+            }
+
+            file.close();
+        }
+    }
+
+    if (output.is_open())
+    {
+        output.flush();
+        std::cout.rdbuf(coutbuf);
+        output.close();
+    }
+}
+
 uint32_t calculate_crc32(const std::vector<char>& buff, std::streamsize sz)
 {
     uint32_t crc32 = 0xffffffff;
@@ -174,6 +323,29 @@ uint32_t calculate_crc32(const std::vector<char>& buff, std::streamsize sz)
     }
     crc32 ^= 0xffffffff;
     return crc32;
+}
+
+std::string calculate_crc32(std::ifstream& file)
+{
+    using namespace std;
+
+    streamsize file_size = file.tellg();
+    vector<char> buff(static_cast<size_t>(file_size));
+
+    file.seekg(0, ios::beg);
+    file.read(buff.data(), buff.size());
+    streamsize sz = file.gcount();
+    if (sz != file_size)
+    {
+        throw runtime_error("can't read file in memory");
+    }
+
+    uint32_t crc32 = calculate_crc32(buff, sz);
+
+    std::stringstream ss;
+    ss << uppercase << hex << crc32;
+
+    return ss.str();
 }
 
 void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
@@ -213,19 +385,7 @@ void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
     file.open(path, ios::binary | ios::ate);
     if (file)
     {
-        streamsize file_size = file.tellg();
-        vector<char> buff(static_cast<size_t>(file_size));
-
-        file.seekg(0, ios::beg);
-        file.read(buff.data(), buff.size());
-        streamsize sz = file.gcount();
-        if (sz != file_size)
-        {
-            throw runtime_error("can't read file in memory: " + path);
-        }
-        uint32_t crc32 = calculate_crc32(buff, sz);
-
-        cout << uppercase << hex << crc32 << '\n';
+        cout << calculate_crc32(file) << '\n';
     }
     else
     {
@@ -242,14 +402,14 @@ void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
 void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
 {
     using namespace std;
-    if (argc <= 2)
+    if (argc <= 3)
     {
         throw std::runtime_error("no params");
     }
 
     vector<string> packs;
     string listpath;
-    string hashpath;
+    string packpath;
     bool is_gpu = false;
     ofstream output;
 
@@ -260,11 +420,6 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         {
             ++i;
             listpath = argv[i];
-        }
-        else if (arg == "-h" && (i + 1) < argc)
-        {
-            ++i;
-            hashpath = argv[i];
         }
         else if (arg == "-o" && (i + 1) < argc)
         {
@@ -279,7 +434,14 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         }
         else
         {
-            packs.push_back(arg);
+            if (packpath.empty())
+            {
+                packpath = arg;
+            }
+            else
+            {
+                packs.push_back(arg);
+            }
         }
     }
 
@@ -295,32 +457,20 @@ void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
         cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL, dependency TEXT NOT NULL);" << '\n';
         cout << "CREATE TABLE IF NOT EXISTS files (path TEXT PRIMARY KEY, pack TEXT NOT NULL, hash TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
 
-        if (hashpath.empty())
-        {
-            hashpath = pack + ".hash";
-        }
-
         if (listpath.empty())
         {
             listpath = pack + ".list";
         }
 
-        string hash;
-        ifstream hashfile(hashpath);
-        if (hashfile)
-        {
-            getline(hashfile, hash);
-            hashfile.close();
-        }
+        ifstream packfile(packpath, ios::ate | ios::binary);
 
-        string packfile = hashpath;
-        packfile.replace(packfile.find(".hash"), 5, ".dvpk");
-
-        streamsize size = ifstream(packfile, ios::ate | ios::binary).tellg();
+        streamsize size = packfile.tellg();
         if (size == -1)
         {
-            throw runtime_error("can't open file: " + packfile);
+            throw runtime_error("can't open file: " + packpath);
         }
+
+        string hash = calculate_crc32(packfile);
 
         stringstream dependency;
         for (size_t i = 1; i < packs.size(); ++i)
@@ -375,12 +525,14 @@ void print_help()
               << "        -rp <prefix>           - remove prefix from printed name" << '\n'
               << "        -o <output>            - print into output file" << '\n'
               << '\n'
+              << "    merge [<file_wildcard>...] - Try to open files that are matched wildcard and if success prints it content" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
               << "    hash <file> - Calculate CRC32 for file" << '\n'
               << "        -o <output>            - print into output file" << '\n'
               << '\n'
-              << "    sql [options] <packname> [dependencies...]" << '\n'
+              << "    sql [options] <packpath> <packname> [dependencies...]" << '\n'
               << "        -l <file>           - read file for pack content" << '\n'
-              << "        -h <file>           - read file for pack hash" << '\n'
               << "        -o <output>         - print into output file" << '\n'
               << "        -g {true|false}     - is gpu pack(default false)" << '\n';
 }
@@ -404,6 +556,10 @@ int main(int argc, const char* argv[])
             else if (cmd == "echo")
             {
                 echo_command(argc, argv, coutbuf);
+            }
+            else if (cmd == "merge")
+            {
+                merge_command(argc, argv, coutbuf);
             }
             else if (cmd == "hash")
             {
