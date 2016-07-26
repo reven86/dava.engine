@@ -644,7 +644,7 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
 
     [ce setFragmentTexture:self->uid atIndex:unitIndex];
 
-//_CheckAllTextures();
+    //_CheckAllTextures();
     /*
 #if RHI_METAL__USE_PURGABLE_STATE
     if (self->need_restoring)
@@ -697,9 +697,9 @@ void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> 
 void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
-DVASSERT(!self->is_cubemap);
+    DVASSERT(!self->is_cubemap);
 
-DVASSERT(self->uid);
+    DVASSERT(self->uid);
     desc.colorAttachments[0].texture = self->uid;
 }
 

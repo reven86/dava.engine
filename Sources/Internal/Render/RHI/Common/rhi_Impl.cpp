@@ -22,7 +22,6 @@ using DAVA::Logger;
 
     #include "MemoryManager/MemoryProfiler.h"
 
-
 namespace rhi
 {
 uint32 stat_DIP = DAVA::InvalidIndex;
