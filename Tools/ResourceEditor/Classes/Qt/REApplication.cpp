@@ -8,6 +8,8 @@
 #include "TextureCompression/PVRConverter.h"
 #include "TextureCache.h"
 
+#include "Tools/LoggerOutput/ErrorDialogOutput.h"
+
 #include "NgtTools/Common/GlobalContext.h"
 #include "NgtTools/Application/NGTCmdLineParser.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
@@ -226,6 +228,8 @@ void REApplication::RunWindow()
     QTimer::singleShot(0, [] { DAVA::QtLayer::MakeAppForeground(); });
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
+
+    DAVA::Logger::AddCustomOutput(new ErrorDialogOutput());
 
     // create and init UI
     ResourceEditorLauncher launcher;
