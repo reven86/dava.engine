@@ -421,6 +421,7 @@ dx9_Texture_Unmap(Handle tex)
     }
     else
     {
+        IDirect3DTexture9* tex = (self->isRenderTarget) ? self->rt_tex9 : self->tex9;
         DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&tex), self->mappedLevel, uint64(self->mappedData), data_sz, self->format } };
         ExecDX9(&cmd, 1, false);
         hr = cmd.retval;
