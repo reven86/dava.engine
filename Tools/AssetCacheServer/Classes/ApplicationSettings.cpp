@@ -5,29 +5,29 @@
 
 using namespace DAVA;
 
-ServerData::ServerData(String _ip, uint16 _port, bool _enabled)
+RemoteServerParams::RemoteServerParams(String _ip, uint16 _port, bool _enabled)
     : ip(_ip)
     , port(_port)
     , enabled(_enabled)
 {
 }
 
-bool ServerData::IsEmpty() const
+bool RemoteServerParams::IsEmpty() const
 {
     return ip.empty();
 }
 
-bool ServerData::operator==(const ServerData& right) const
+bool RemoteServerParams::operator==(const RemoteServerParams& right) const
 {
     return (ip == right.ip) && (port == right.port);
 }
 
-bool ServerData::EquivalentTo(const DAVA::Net::Endpoint& right) const
+bool RemoteServerParams::EquivalentTo(const DAVA::Net::Endpoint& right) const
 {
     return (ip == right.Address().ToString()) && (port == right.Port());
 }
 
-bool ServerData::operator<(const ServerData& right) const
+bool RemoteServerParams::operator<(const RemoteServerParams& right) const
 {
     if (ip == right.ip)
     {
@@ -88,6 +88,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetUInt32("NumberOfFiles", filesCount);
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
     archive->SetUInt32("Port", listenPort);
+    archive->SetUInt32("HttpPort", listenHttpPort);
     archive->SetBool("AutoStart", autoStart);
     archive->SetBool("SystemStartup", launchOnSystemStartup);
     archive->SetBool("Restart", restartOnCrash);
@@ -116,6 +117,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     filesCount = archive->GetUInt32("NumberOfFiles", DEFAULT_FILES_COUNT);
     autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
     listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
+    listenHttpPort = archive->GetUInt32("HttpPort", DEFAULT_HTTP_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
     launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
     restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);
@@ -123,7 +125,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     auto count = archive->GetUInt32("ServersSize");
     for (uint32 i = 0; i < count; ++i)
     {
-        ServerData sd;
+        RemoteServerParams sd;
         sd.ip = archive->GetString(Format("Server_%d_ip", i));
         sd.port = archive->GetUInt32(Format("Server_%d_port", i));
         sd.enabled = archive->GetBool(Format("Server_%d_enabled", i), false);
@@ -182,6 +184,16 @@ void ApplicationSettings::SetPort(const uint16 val)
     listenPort = val;
 }
 
+const uint16 ApplicationSettings::GetHttpPort() const
+{
+    return listenHttpPort;
+}
+
+void ApplicationSettings::SetHttpPort(const DAVA::uint16 port)
+{
+    listenHttpPort = port;
+}
+
 const bool ApplicationSettings::IsAutoStart() const
 {
     return autoStart;
@@ -212,7 +224,7 @@ void ApplicationSettings::SetRestartOnCrash(bool val)
     restartOnCrash = val;
 }
 
-const List<ServerData>& ApplicationSettings::GetServers() const
+const List<RemoteServerParams>& ApplicationSettings::GetServers() const
 {
     return remoteServers;
 }
@@ -222,17 +234,17 @@ void ApplicationSettings::ResetServers()
     remoteServers.clear();
 }
 
-void ApplicationSettings::AddServer(const ServerData& server)
+void ApplicationSettings::AddServer(const RemoteServerParams& server)
 {
     remoteServers.push_back(server);
 }
 
-void ApplicationSettings::RemoveServer(const ServerData& server)
+void ApplicationSettings::RemoveServer(const RemoteServerParams& server)
 {
     remoteServers.remove(server);
 }
 
-ServerData ApplicationSettings::GetCurrentServer() const
+RemoteServerParams ApplicationSettings::GetCurrentServer() const
 {
     for (auto& server : remoteServers)
     {
@@ -242,5 +254,5 @@ ServerData ApplicationSettings::GetCurrentServer() const
         }
     }
 
-    return ServerData();
+    return RemoteServerParams();
 }

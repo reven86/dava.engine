@@ -5,15 +5,17 @@
 #include <QTimer>
 
 ServerCore::ServerCore()
-    : dataBase(*this)
+    : httpServer(DAVA::Net::NetCore::Instance()->Loop())
+    , dataBase(*this)
     , state(State::STOPPED)
     , remoteState(RemoteState::STOPPED)
 {
     QObject::connect(&settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
 
-    serverProxy.SetDelegate(&serverLogics);
+    serverProxy.SetListener(&serverLogics);
     clientProxy.AddListener(&serverLogics);
     clientProxy.AddListener(this);
+    httpServer.SetListener(this);
 
     DAVA::String serverName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
     serverLogics.Init(&serverProxy, serverName, &clientProxy, &dataBase);
@@ -73,6 +75,7 @@ void ServerCore::StartListening()
     DVASSERT(state == State::STOPPED);
 
     serverProxy.Listen(settings.GetPort());
+    httpServer.Start(settings.GetHttpPort());
     state = State::STARTED;
 }
 
@@ -80,6 +83,7 @@ void ServerCore::StopListening()
 {
     state = State::STOPPED;
     serverProxy.Disconnect();
+    httpServer.Stop();
 }
 
 bool ServerCore::ConnectRemote()
@@ -204,7 +208,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
 
     if (state == State::STARTED)
     { // disconnect network if settings changed
-        if (serverProxy.GetListenPort() != settings.GetPort())
+        if (serverProxy.GetListenPort() != settings.GetPort() || httpServer.GetListenPort() != settings.GetHttpPort())
         {
             needServerRestart = true;
             StopListening();
@@ -261,4 +265,17 @@ void ServerCore::GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& over
 void ServerCore::OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall)
 {
     emit StorageSizeChanged(occupied, overall);
+}
+
+void ServerCore::OnStatusRequested(void* channelId)
+{
+    AssetServerStatus status;
+    status.started = true;
+    status.assetServerPath = appPath;
+    httpServer.SendStatus(channelId, status);
+}
+
+void ServerCore::SetApplicationPath(DAVA::String& path)
+{
+    appPath = path;
 }

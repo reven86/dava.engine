@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>613</width>
-    <height>418</height>
+    <height>608</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -63,7 +63,7 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
+      <item row="11" column="0">
        <widget class="QLabel" name="restartLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -88,7 +88,7 @@
         </property>
        </widget>
       </item>
-      <item row="13" column="0">
+      <item row="14" column="0">
        <widget class="QLabel" name="advancedLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -339,7 +339,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="10" column="1">
        <widget class="QCheckBox" name="autoStartCheckBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -361,7 +361,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QLabel" name="autoStartLabel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -534,7 +534,7 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
+      <item row="13" column="0">
        <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -588,7 +588,7 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="2" colspan="2">
+      <item row="10" column="2" colspan="2">
        <widget class="QLabel" name="autoStartLabel2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -643,7 +643,7 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="2" colspan="2">
+      <item row="11" column="2" colspan="2">
        <widget class="QLabel" name="restartLabel2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -694,14 +694,14 @@ QProgressBar::chunk {
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <widget class="QCheckBox" name="restartCheckBox">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="11" column="2" colspan="2">
+      <item row="12" column="2" colspan="2">
        <widget class="QLabel" name="restartLabel3">
         <property name="text">
          <string>'launch on system startup' should be checked</string>
@@ -736,6 +736,78 @@ QProgressBar::chunk {
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="httpPortLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>HTTP port:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QSpinBox" name="httpPortSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="maximum">
+         <number>65535</number>
+        </property>
+        <property name="value">
+         <number>80</number>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2" colspan="2">
+       <widget class="QLabel" name="httpPortLabel2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>HTTP port to connect to this server</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -796,8 +868,8 @@ QProgressBar::chunk {
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>498</width>
-           <height>197</height>
+           <width>591</width>
+           <height>69</height>
           </rect>
          </property>
         </widget>

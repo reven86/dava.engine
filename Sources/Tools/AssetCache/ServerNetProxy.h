@@ -35,7 +35,7 @@ public:
     ServerNetProxy() = default;
     ~ServerNetProxy();
 
-    void SetDelegate(ServerNetProxyListener* delegate);
+    void SetListener(ServerNetProxyListener* delegate);
 
     void Listen(uint16 port);
 
@@ -72,7 +72,7 @@ inline uint16 ServerNetProxy::GetListenPort() const
     return listenPort;
 }
 
-inline void ServerNetProxy::SetDelegate(ServerNetProxyListener* _delegate)
+inline void ServerNetProxy::SetListener(ServerNetProxyListener* _delegate)
 {
     delegate = _delegate;
 }

@@ -19,7 +19,7 @@ RemoteServerWidget::RemoteServerWidget(QWidget* parent)
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
-RemoteServerWidget::RemoteServerWidget(const ServerData& newServer, QWidget* parent)
+RemoteServerWidget::RemoteServerWidget(const RemoteServerParams& newServer, QWidget* parent)
     : RemoteServerWidget(parent)
 {
     ui->enabledCheckBox->setChecked(newServer.enabled);
@@ -33,9 +33,9 @@ RemoteServerWidget::~RemoteServerWidget()
     delete ui;
 }
 
-ServerData RemoteServerWidget::GetServerData() const
+RemoteServerParams RemoteServerWidget::GetServerData() const
 {
-    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
+    return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
 }
 
 bool RemoteServerWidget::IsCorrectData()

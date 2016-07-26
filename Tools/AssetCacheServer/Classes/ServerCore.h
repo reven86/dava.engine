@@ -2,6 +2,8 @@
 
 #include "AssetCache/ServerNetProxy.h"
 #include "AssetCache/ClientNetProxy.h"
+
+#include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
 
@@ -12,7 +14,8 @@ class QTimer;
 
 class ServerCore : public QObject,
                    public DAVA::AssetCache::ClientNetProxyListener,
-                   public CacheDBOwner
+                   public CacheDBOwner,
+                   public AssetCacheHttpServerListener
 {
     Q_OBJECT
 
@@ -46,6 +49,8 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
+    void SetApplicationPath(DAVA::String& path);
+
     void ClearStorage();
     void GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& overall) const;
 
@@ -56,6 +61,9 @@ public:
 
     // CacheDBOwner
     void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall);
+
+    // AssetCacheHttpServerListener
+    void OnStatusRequested(void* channelId) override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
@@ -79,6 +87,7 @@ private:
     void ReconnectRemoteLater();
 
 private:
+    AssetCacheHttpServer httpServer;
     DAVA::AssetCache::ServerNetProxy serverProxy;
     DAVA::AssetCache::ClientNetProxy clientProxy;
     CacheDB dataBase;
@@ -89,7 +98,9 @@ private:
     std::atomic<State> state;
     std::atomic<RemoteState> remoteState;
 
-    ServerData remoteServerData;
+    DAVA::String appPath;
+
+    RemoteServerParams remoteServerData;
 
     QTimer* updateTimer;
     QTimer* connectTimer;
