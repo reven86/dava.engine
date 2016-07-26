@@ -511,6 +511,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
                 if (loadingCode == eErrorCode::SUCCESS)
                 {
                     ++params.firstMipmapIndex;
+                    DVASSERT(params.firstMipmapIndex == static_cast<uint32>(images->size()));
                 }
             }
 
