@@ -418,10 +418,10 @@
      <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
    </property>
    <property name="text">
-    <string>Force save all documents</string>
+    <string>Force Save All</string>
    </property>
    <property name="toolTip">
-    <string>Force save all documents</string>
+    <string>Force save all opened documents</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
