@@ -673,7 +673,7 @@ if( ANDROID )
     endif ()
 
     # link libraries
-    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive )
+    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
     set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
 
     foreach( LIB_1 ${TARGET_LIBRARIES} )
@@ -692,7 +692,7 @@ if( ANDROID )
         string ( REPLACE "${LIB_UNWIND_NAME}" "" CMAKE_CXX_STANDARD_LIBRARIES ${CMAKE_CXX_STANDARD_LIBRARIES} )
         target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_UNWIND_NAME} )
     endif ()
-
+    
 endif() 
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
