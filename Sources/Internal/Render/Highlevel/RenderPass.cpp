@@ -417,14 +417,14 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);
 
-    ClearLayersArrays();
-    PrepareLayersArrays(visibilityArray, currMainCamera);
-
     //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
     if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
         passName = PASS_REFLECTION_REFRACTION;
     else
         passName = PASS_FORWARD;
+
+    ClearLayersArrays();
+    PrepareLayersArrays(visibilityArray, currMainCamera);
 
     if (BeginRenderPass())
     {
@@ -475,14 +475,14 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFRACTION);
 
-    ClearLayersArrays();
-    PrepareLayersArrays(visibilityArray, currMainCamera);
-
     //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
     if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
         passName = PASS_REFLECTION_REFRACTION;
     else
         passName = PASS_FORWARD;
+
+    ClearLayersArrays();
+    PrepareLayersArrays(visibilityArray, currMainCamera);
 
     if (BeginRenderPass())
     {
