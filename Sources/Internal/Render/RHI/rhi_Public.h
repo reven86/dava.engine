@@ -313,6 +313,7 @@ void SetFramePerfQuerySet(HPerfQuerySet hset);
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
+bool NeedInvertProjection(const RenderPassConfig& passDesc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // rendering
