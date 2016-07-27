@@ -50,6 +50,16 @@ TextBlockGraphicRender::~TextBlockGraphicRender()
     SafeRelease(dfMaterial);
 }
 
+TextBlockRender* TextBlockGraphicRender::Clone()
+{
+    TextBlockGraphicRender* result = new TextBlockGraphicRender(textBlock);
+    result->cachedSpread = cachedSpread;
+    result->charDrawed = charDrawed;
+    result->vertexBuffer = vertexBuffer;
+    result->renderRect = renderRect;
+    return result;
+}
+
 void TextBlockGraphicRender::Prepare()
 {
     size_t charCount = 0;

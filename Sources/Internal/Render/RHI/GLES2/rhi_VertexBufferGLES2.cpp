@@ -117,6 +117,7 @@ void VertexBufferGLES2_t::Destroy(bool force_immediate)
 
     size = 0;
     uid = 0;
+    MarkRestored();
 }
 
 //==============================================================================
@@ -141,7 +142,6 @@ gles2_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 void gles2_VertexBuffer_Delete(Handle vb)
 {
     VertexBufferGLES2_t* self = VertexBufferGLES2Pool::Get(vb);
-    self->MarkRestored();
     self->Destroy();
     VertexBufferGLES2Pool::Free(vb);
 }

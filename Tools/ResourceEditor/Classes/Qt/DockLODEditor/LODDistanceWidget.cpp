@@ -72,10 +72,13 @@ void LODDistanceWidget::CreateUI()
     spinBox->setFocusPolicy(Qt::WheelFocus);
     spinBox->setKeyboardTracking(false);
     spinBox->setToolTip("Switching of LODs distance");
+    spinBox->setMinimumSize(QSize(80, 24));
+
     layout->addWidget(spinBox);
 
     multipleText = new QLineEdit(this);
     multipleText->setPlaceholderText(LODDistanceWidgetDetail::multiplePlaceHolder);
+    multipleText->setMinimumSize(QSize(80, 24));
     layout->addWidget(multipleText);
 
     resetButton = new QPushButton(this);

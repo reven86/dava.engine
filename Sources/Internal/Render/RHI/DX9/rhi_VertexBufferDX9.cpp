@@ -103,7 +103,11 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 
 void VertexBufferDX9_t::Destroy(bool force_immediate)
 {
-    if (buffer)
+    if (buffer == nullptr)
+    {
+        SetRecreatePending(false);
+    }
+    else
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
         ExecDX9(cmd, countof(cmd), force_immediate);
@@ -111,13 +115,15 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
         buffer = nullptr;
     }
 
-    if (!RecreatePending() && mappedData)
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;
     }
+
+    MarkRestored();
 }
 
 //==============================================================================
@@ -127,8 +133,6 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     Handle handle = VertexBufferDX9Pool::Alloc();
     VertexBufferDX9_t* vb = VertexBufferDX9Pool::Get(handle);
 
@@ -148,7 +152,6 @@ dx9_VertexBuffer_Delete(Handle vb)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->SetRecreatePending(false);
-    self->MarkRestored();
     self->Destroy();
     VertexBufferDX9Pool::Free(vb);
 }
@@ -289,13 +292,7 @@ void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride)
 
 void ReleaseAll()
 {
-    VertexBufferDX9Pool::Unlock();
-    for (VertexBufferDX9Pool::Iterator b = VertexBufferDX9Pool::Begin(), b_end = VertexBufferDX9Pool::End(); b != b_end; ++b)
-    {
-        b->SetRecreatePending(true);
-        b->Destroy(true);
-    }
-    VertexBufferDX9Pool::Unlock();
+    VertexBufferDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()
@@ -303,8 +300,12 @@ void ReCreateAll()
     VertexBufferDX9Pool::ReCreateAll();
 }
 
-unsigned
-NeedRestoreCount()
+void LogUnrestoredBacktraces()
+{
+    VertexBufferDX9Pool::LogUnrestoredBacktraces();
+}
+
+unsigned NeedRestoreCount()
 {
     return VertexBufferDX9Pool::PendingRestoreCount();
 }

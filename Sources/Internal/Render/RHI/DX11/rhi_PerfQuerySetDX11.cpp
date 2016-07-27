@@ -77,8 +77,12 @@ dx11_PerfQuerySet_Create(uint32 maxTimestampCount)
 
         desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
         desc.MiscFlags = 0;
+        HRESULT hr = S_OK;
 
-        if (SUCCEEDED(_D3D11_Device->CreateQuery(&desc, &(set->freq))))
+        hr = _D3D11_Device->CreateQuery(&desc, &(set->freq));
+        CHECK_HR(hr)
+
+        if (SUCCEEDED(hr))
         {
             desc.Query = D3D11_QUERY_TIMESTAMP;
             desc.MiscFlags = 0;
@@ -89,7 +93,10 @@ dx11_PerfQuerySet_Create(uint32 maxTimestampCount)
                 t->isUsed = false;
                 t->isReady = false;
 
-                if (SUCCEEDED(_D3D11_Device->CreateQuery(&desc, &(t->query))))
+                hr = _D3D11_Device->CreateQuery(&desc, &(t->query));
+                CHECK_HR(hr)
+
+                if (SUCCEEDED(hr))
                 {
                 }
                 else
