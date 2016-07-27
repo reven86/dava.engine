@@ -287,6 +287,8 @@ public:
     //    virtual void VisitStatement(HLSLStatement * node);
     virtual void VisitDeclaration(M4::HLSLDeclaration* node)
     {
+        M4::HLSLDeclaration* decl = (M4::HLSLDeclaration*)node;
+
         M4::Log_Error("%sdecl  \"%s\"\n", _IndentString(indent), node->name);
         HLSLTreeVisitor::VisitDeclaration(node);
     }
@@ -375,6 +377,34 @@ GameCore::_test_parser()
 
     visitor.VisitRoot(tree.GetRoot());
 
+    // find properties
+    {
+        M4::Log_Error("properties :\n");
+        M4::HLSLStatement* statement = tree.GetRoot()->statement;
+        M4::HLSLStatement* pstatement = NULL;
+
+        while (statement)
+        {
+            if (statement->nodeType == M4::HLSLNodeType_Declaration)
+            {
+                M4::HLSLDeclaration* decl = (M4::HLSLDeclaration*)statement;
+
+                if (decl->type.flags & M4::HLSLTypeFlag_Property)
+                {
+                    M4::Log_Error("  property \"%s\"  {", decl->name);
+                    for (M4::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
+                    {
+                        M4::Log_Error(" \"%s\"%s", a->attrText, (a->nextAttribute) ? "," : "");
+                    }
+                    M4::Log_Error(" }\n");
+                }
+            }
+
+            pstatement = statement;
+            statement = statement->nextStatement;
+        }
+    }
+
     M4::Array<M4::HLSLFunctionCall*> fcall(&M4_Allocator);
     const char* func_name = "p_offset";
 
@@ -385,46 +415,33 @@ GameCore::_test_parser()
     }
 
     class
-    FindBlockOrExpression
+    FindStatementExpression
     : public M4::HLSLTreeVisitor
     {
     public:
-        FindBlockOrExpression(M4::HLSLFunctionCall* fc)
+        FindStatementExpression(M4::HLSLFunctionCall* fc)
             : _fcall(fc)
-            ,
-            _cur_decl(NULL)
-            ,
-            _expr(&M4_Allocator)
-            ,
-            _cur_expr(NULL)
-            ,
-            _cur_statement(NULL)
-            ,
-            _cur_statement_parent(NULL)
-            ,
-            decl(NULL)
-            ,
-            expr(NULL)
-            ,
-            statement(NULL)
-            ,
-            statement_parent(NULL)
+            , _expr(&M4_Allocator)
+            , _cur_expr(NULL)
+            , _cur_statement(NULL)
+            , _cur_statement_parent(NULL)
+            , expr(NULL)
+            , statement(NULL)
         {
         }
 
-        M4::HLSLDeclaration* decl;
         M4::HLSLExpression* expr;
         M4::HLSLStatement* statement;
-        M4::HLSLStatement* statement_parent;
 
-        virtual void VisitDeclaration(M4::HLSLDeclaration* node)
-        {
-            _cur_decl = node;
-            HLSLTreeVisitor::VisitDeclaration(node);
-        }
         virtual void VisitStatements(M4::HLSLStatement* statement)
         {
+            _cur_statement = statement;
             HLSLTreeVisitor::VisitStatements(statement);
+        }
+        virtual void VisitExpressionStatement(M4::HLSLExpressionStatement* node)
+        {
+            _cur_statement = node;
+            M4::HLSLTreeVisitor::VisitExpressionStatement(node);
         }
         virtual void VisitBlockStatement(M4::HLSLBlockStatement* node)
         {
@@ -434,8 +451,6 @@ GameCore::_test_parser()
         }
         virtual void VisitExpression(M4::HLSLExpression* node)
         {
-            //            if( node->nodeType != M4::HLSLNodeType_FunctionCall )
-            //                _cur_expr = node;
             _expr.PushBack(node);
             M4::HLSLTreeVisitor::VisitExpression(node);
             if (_expr.GetSize())
@@ -445,13 +460,9 @@ GameCore::_test_parser()
         {
             if (node == _fcall)
             {
-                DVASSERT(!decl);
-                decl = _cur_decl;
-                //                expr = _cur_expr;
                 if (_expr.GetSize() > 1)
                     expr = _expr[_expr.GetSize() - 2];
                 statement = _cur_statement;
-                statement_parent = _cur_statement_parent;
             }
             HLSLTreeVisitor::VisitFunctionCall(node);
         }
@@ -460,7 +471,6 @@ GameCore::_test_parser()
         M4::Array<M4::HLSLExpression*> _expr;
 
         M4::HLSLFunctionCall* _fcall;
-        M4::HLSLDeclaration* _cur_decl;
         M4::HLSLExpression* _cur_expr;
         M4::HLSLStatement* _cur_statement;
         M4::HLSLStatement* _cur_statement_parent;
@@ -468,124 +478,211 @@ GameCore::_test_parser()
 
     for (unsigned f = 0; f != fcall.GetSize(); ++f)
     {
-        FindBlockOrExpression v(fcall[f]);
+        FindStatementExpression find_statement_expression(fcall[f]);
 
-        v.VisitRoot(tree.GetRoot());
+        find_statement_expression.VisitRoot(tree.GetRoot());
 
-        if (v.statement_parent && v.statement)
+        if (find_statement_expression.statement)
         {
-            switch (v.statement_parent->nodeType)
+            class
+            FindParentPrev
+            : public M4::HLSLTreeVisitor
             {
-            case M4::HLSLNodeType_BlockStatement:
-            {
-                M4::HLSLBlockStatement* block = ((M4::HLSLBlockStatement*)(v.statement_parent));
+            public:
+                M4::HLSLStatement* target;
 
-                M4::HLSLStatement* s = block->statement;
-                M4::HLSLDeclaration* decl = tree.AddNode<M4::HLSLDeclaration>(s->fileName, s->line);
-                M4::HLSLBlockStatement* fb = tree.AddNode<M4::HLSLBlockStatement>(s->fileName, s->line);
+                M4::HLSLStatement* parent;
+                M4::HLSLStatement* prev;
 
-                decl->type.baseType = M4::HLSLBaseType_Float3;
-                decl->name = "__temp";
-
-                switch (v.expr->nodeType)
+                FindParentPrev()
+                    : target(nullptr)
+                    , parent(nullptr)
+                    , prev(nullptr)
                 {
-                case M4::HLSLNodeType_BinaryExpression:
+                }
+
+                virtual void VisitFunction(M4::HLSLFunction* func)
                 {
-                    M4::HLSLBinaryExpression* bin = (M4::HLSLBinaryExpression*)(v.expr);
-                    M4::HLSLExpression** ce = NULL;
+                    M4::HLSLTreeVisitor::VisitFunction(func);
+                }
+                virtual void VisitStatements(M4::HLSLStatement* statement)
+                {
+                    for (M4::HLSLStatement* s = statement; s; s = s->nextStatement)
+                {
+                    if (s->nextStatement == target)
+                    {
+                        prev = s;
+                        break;
+                    }
+                }
 
-                    if (bin->expression1 == fcall[f])
-                        ce = &(bin->expression1);
-                    else if (bin->expression2 == fcall[f])
-                        ce = &(bin->expression2);
+                switch (statement->nodeType)
+                {
+                case M4::HLSLNodeType_BlockStatement:
+                {
+                    M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)statement;
 
-                    DVASSERT(ce);
-
-                    M4::HLSLIdentifierExpression* val = tree.AddNode<M4::HLSLIdentifierExpression>(s->fileName, s->line);
-
-                    val->name = "__temp";
-                    (*ce) = val;
+                    if (block->statement == target)
+                    {
+                        parent = statement;
+                    }
+                    else
+                    {
+                        for (M4::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
+                        {
+                            if (bs->nextStatement == target)
+                            {
+                                parent = block;
+                                prev = bs;
+                                break;
+                            }
+                        }
+                    }
                 }
                 break;
                 }
 
-                M4::HLSLStatement* func_parent = NULL;
-                M4::HLSLFunction* func = tree.FindFunction(func_name, &func_parent);
-                M4::HLSLStatement* func_ret_parent = NULL;
-                M4::HLSLExpression* func_ret = NULL;
-                DVASSERT(func);
-                DVASSERT(func_parent);
-
-                M4::HLSLStatement* sp = NULL;
-                for (M4::HLSLStatement* s = func->statement; s; s = s->nextStatement)
-                {
-                    if (s->nodeType == M4::HLSLNodeType_ReturnStatement)
-                    {
-                        func_ret = ((M4::HLSLReturnStatement*)(s))->expression;
-                        func_ret_parent = sp;
-                        break;
-                    }
-                    sp = s;
+                M4::HLSLTreeVisitor::VisitStatements(statement);
                 }
-                DVASSERT(func_ret);
-                DVASSERT(func_ret_parent);
-
-                M4::Array<M4::HLSLDeclaration*> arg(&M4_Allocator);
-
+                virtual void VisitBlockStatement(M4::HLSLBlockStatement* node)
                 {
-                    int a = 0;
-                    for (M4::HLSLExpression *e = fcall[f]->argument; e; e = e->nextExpression, ++a)
-                    {
-                        M4::HLSLDeclaration* arg_decl = tree.AddNode<M4::HLSLDeclaration>(s->fileName, s->line);
+                    M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)node;
 
-                        int aa = 0;
-                        for (M4::HLSLArgument *fa = func->argument; fa; fa = fa->nextArgument, ++aa)
+                    if (block->statement == target)
+                    {
+                        parent = block;
+                }
+                else
+                {
+                    for (M4::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
+                    {
+                        if (bs->nextStatement == target)
                         {
-                            if (aa == a)
-                            {
-                                arg_decl->name = fa->name;
-                                arg_decl->type = fa->type;
-                                break;
-                            }
+                            parent = block;
+                            prev = bs;
+                            break;
                         }
-
-                        arg_decl->assignment = e;
-                        arg.PushBack(arg_decl);
                     }
                 }
-
-                M4::HLSLBinaryExpression* ret_ass = tree.AddNode<M4::HLSLBinaryExpression>(s->fileName, s->line);
-                M4::HLSLIdentifierExpression* ret_var = tree.AddNode<M4::HLSLIdentifierExpression>(s->fileName, s->line);
-                M4::HLSLExpressionStatement* ret_statement = tree.AddNode<M4::HLSLExpressionStatement>(s->fileName, s->line);
-                ;
-
-                ret_statement->expression = ret_ass;
-                ret_var->name = "__temp";
-                ret_ass->binaryOp = M4::HLSLBinaryOp_Assign;
-                ret_ass->expression1 = ret_var;
-                ret_ass->expression2 = func_ret;
-
-                func_ret_parent->nextStatement = ret_statement;
-                func_parent->nextStatement = func->nextStatement; // remove func definition
-
-                block->statement = decl;
-                decl->nextStatement = fb;
-                DVASSERT(arg.GetSize());
-                fb->statement = arg[0];
-                for (int i = 1; i < arg.GetSize(); ++i)
-                {
-                    arg[i - 1]->nextStatement = arg[i];
                 }
-                arg[arg.GetSize() - 1]->nextStatement = func->statement;
-                fb->nextStatement = s;
+            };
+
+            FindParentPrev find_parent_prev;
+            find_parent_prev.target = find_statement_expression.statement;
+            find_parent_prev.VisitRoot(tree.GetRoot());
+
+            M4::HLSLStatement* statement = find_statement_expression.statement;
+            M4::HLSLDeclaration* rv_decl = tree.AddNode<M4::HLSLDeclaration>(statement->fileName, statement->line);
+            M4::HLSLBlockStatement* func_block = tree.AddNode<M4::HLSLBlockStatement>(statement->fileName, statement->line);
+
+            rv_decl->type.baseType = M4::HLSLBaseType_Float3;
+            rv_decl->name = "__temp";
+
+            switch (find_statement_expression.expr->nodeType)
+            {
+            case M4::HLSLNodeType_BinaryExpression:
+            {
+                M4::HLSLBinaryExpression* bin = (M4::HLSLBinaryExpression*)(find_statement_expression.expr);
+                M4::HLSLExpression** ce = NULL;
+
+                if (bin->expression1 == fcall[f])
+                    ce = &(bin->expression1);
+                else if (bin->expression2 == fcall[f])
+                    ce = &(bin->expression2);
+
+                DVASSERT(ce);
+
+                M4::HLSLIdentifierExpression* val = tree.AddNode<M4::HLSLIdentifierExpression>(statement->fileName, statement->line);
+
+                val->name = "__retval";
+                (*ce) = val;
             }
             break;
             }
-        }
 
-        if (v.decl)
-        {
-            Log_Error("decl = %p\n", v.decl);
+            M4::HLSLStatement* func_parent = NULL;
+            M4::HLSLFunction* func = tree.FindFunction(func_name, &func_parent);
+            M4::HLSLStatement* func_ret_parent = NULL;
+            M4::HLSLExpression* func_ret = NULL;
+            DVASSERT(func);
+            DVASSERT(func_parent);
+
+            M4::HLSLStatement* sp = NULL;
+            for (M4::HLSLStatement* fs = func->statement; fs; fs = fs->nextStatement)
+            {
+                if (fs->nodeType == M4::HLSLNodeType_ReturnStatement)
+                {
+                    func_ret = ((M4::HLSLReturnStatement*)(fs))->expression;
+                    func_ret_parent = sp;
+                    break;
+                }
+                sp = fs;
+            }
+            DVASSERT(func_ret);
+            DVASSERT(func_ret_parent);
+
+            M4::Array<M4::HLSLDeclaration*> arg(&M4_Allocator);
+
+            {
+                int a = 0;
+                for (M4::HLSLExpression *e = fcall[f]->argument; e; e = e->nextExpression, ++a)
+                {
+                    M4::HLSLDeclaration* arg_decl = tree.AddNode<M4::HLSLDeclaration>(statement->fileName, statement->line);
+
+                    int aa = 0;
+                    for (M4::HLSLArgument *fa = func->argument; fa; fa = fa->nextArgument, ++aa)
+                    {
+                        if (aa == a)
+                        {
+                            arg_decl->name = fa->name;
+                            arg_decl->type = fa->type;
+                            break;
+                        }
+                    }
+
+                    arg_decl->assignment = e;
+                    arg.PushBack(arg_decl);
+                }
+            }
+
+            M4::HLSLBinaryExpression* ret_ass = tree.AddNode<M4::HLSLBinaryExpression>(statement->fileName, statement->line);
+            M4::HLSLIdentifierExpression* ret_var = tree.AddNode<M4::HLSLIdentifierExpression>(statement->fileName, statement->line);
+            M4::HLSLExpressionStatement* ret_statement = tree.AddNode<M4::HLSLExpressionStatement>(statement->fileName, statement->line);
+            ;
+
+            ret_statement->expression = ret_ass;
+            ret_var->name = "__retval";
+            ret_ass->binaryOp = M4::HLSLBinaryOp_Assign;
+            ret_ass->expression1 = ret_var;
+            ret_ass->expression2 = func_ret;
+
+            func_ret_parent->nextStatement = ret_statement;
+            func_parent->nextStatement = func->nextStatement; // remove func definition
+
+            if (find_parent_prev.parent && !find_parent_prev.prev)
+            {
+                DVASSERT(find_parent_prev.parent->nodeType == M4::HLSLNodeType_BlockStatement);
+                M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)(find_parent_prev.parent);
+                M4::HLSLStatement* next = block->statement;
+
+                block->statement = rv_decl;
+                rv_decl->nextStatement = func_block;
+                func_block->nextStatement = next;
+            }
+            else
+            {
+                find_parent_prev.prev->nextStatement = rv_decl;
+                rv_decl->nextStatement = func_block;
+                func_block->nextStatement = statement;
+            }
+
+            DVASSERT(arg.GetSize());
+            func_block->statement = arg[0];
+            for (int i = 1; i < arg.GetSize(); ++i)
+            {
+                arg[i - 1]->nextStatement = arg[i];
+            }
+            arg[arg.GetSize() - 1]->nextStatement = func->statement;
         }
     }
 

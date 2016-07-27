@@ -39,11 +39,11 @@ vp_main( VP_Input vp_in )
     vp_out.uv = wpos.zw;
     vp_out.pos = mul( wpos, ViewProjection );
     
-    {
+//    {
         float3 pp = vp_out.pos.xyz + p_offset( wpos.xyz );
         
         vp_out.pos.xyz = pp;
-    }
+//    }
     
     return vp_out;
 }
