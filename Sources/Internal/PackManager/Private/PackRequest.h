@@ -64,7 +64,7 @@ public:
 
 private:
     void ClearSuperpackData();
-    void CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency);
+    void CollectDownlodbleDependency(const String& packName, Vector<PackManager::Pack*>& dependency);
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
 
     void AskFooter();
@@ -78,7 +78,7 @@ private:
 
     PackManagerImpl* packManagerImpl = nullptr;
     PackManager::Pack* rootPack = nullptr;
-    Set<PackManager::Pack*> dependencySet;
+    Vector<PackManager::Pack*> dependencyList;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
     uint64 totalAllPacksSize = 0;
 

@@ -16,11 +16,11 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
     DVASSERT(rootPack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
-    CollectDownlodbleDependency(rootPack->name, dependencySet);
+    CollectDownlodbleDependency(rootPack->name, dependencyList);
 
-    dependencies.reserve(dependencySet.size() + 1);
+    dependencies.reserve(dependencyList.size() + 1);
 
-    for (PackManager::Pack* depPack : dependencySet)
+    for (PackManager::Pack* depPack : dependencyList)
     {
         SubRequest subRequest;
 
@@ -45,7 +45,7 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
                   });
 }
 
-void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackManager::Pack*>& dependency)
+void PackRequest::CollectDownlodbleDependency(const String& packName, Vector<PackManager::Pack*>& dependency)
 {
     const PackManager::Pack& packState = packManagerImpl->GetPack(packName);
     for (const String& dependName : packState.dependency)
@@ -53,7 +53,11 @@ void PackRequest::CollectDownlodbleDependency(const String& packName, Set<PackMa
         PackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
         if (dependPack.state != PackManager::Pack::Status::Mounted)
         {
-            dependency.insert(&dependPack);
+            if (find(begin(dependency), end(dependency), &dependPack) == end(dependency))
+            {
+                dependency.push_back(&dependPack);
+            }
+
             CollectDownlodbleDependency(dependName, dependency);
         }
     }
@@ -461,7 +465,7 @@ uint64 PackRequest::GetFullSizeWithDependencies() const
 uint64 PackRequest::GetDownloadedSize() const
 {
     uint64 result = 0;
-    std::for_each(begin(dependencySet), end(dependencySet), [&](PackManager::Pack* p)
+    std::for_each(begin(dependencyList), end(dependencyList), [&](PackManager::Pack* p)
                   {
                       result += p->downloadedSize;
                   });
