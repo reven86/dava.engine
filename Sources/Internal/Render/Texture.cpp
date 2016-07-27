@@ -518,12 +518,14 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
             for (uint32 index = baseMipMap; index < singleMipFilesCount; ++index)
             {
                 params.baseMipmap = 0;
-                params.firstMipmapIndex = static_cast<uint32>(images->size());
-                ImageSystem::Load(singleMipFiles[index], *images, params);
+                eErrorCode loadingCode = ImageSystem::Load(singleMipFiles[index], *images, params);
+                if (loadingCode == eErrorCode::SUCCESS)
+                {
+                    ++params.firstMipmapIndex;
+                }
             }
 
             params.baseMipmap = Max(static_cast<int32>(baseMipMap) - static_cast<int32>(singleMipFilesCount), 0);
-            params.firstMipmapIndex += singleMipFilesCount;
         }
 
         FilePath multipleMipPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
