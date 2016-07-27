@@ -96,15 +96,15 @@ void ModificationWidget::ReloadValues()
         return;
     }
 
-    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
-    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode);
+    const SelectableGroup& modificationGroup = curScene->modifSystem->GetTransformableSelection();
+    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !modificationGroup.IsEmpty();
     if (canModify)
     {
         xAxisModify->showButtons(true);
         yAxisModify->showButtons(true);
         zAxisModify->showButtons(true);
 
-        if (selection.GetSize() > 1)
+        if (modificationGroup.GetSize() > 1)
         {
             groupMode = true;
 
@@ -136,7 +136,7 @@ void ModificationWidget::ReloadValues()
             }
             else
             {
-                const auto& firstObject = selection.GetFirst();
+                const auto& firstObject = modificationGroup.GetFirst();
                 DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
                 DAVA::float32 x = 0;
                 DAVA::float32 y = 0;
@@ -207,7 +207,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         return;
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
-    SelectableGroup selection = curScene->selectionSystem->GetSelection();
+    SelectableGroup selection = curScene->modifSystem->GetTransformableSelection();
     selection.RemoveObjectsWithDependantTransform();
 
     switch (modifMode)
@@ -264,7 +264,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if (curScene == nullptr)
         return;
 
-    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = curScene->modifSystem->GetTransformableSelection();
     if (selection.IsEmpty())
         return;
 

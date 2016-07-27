@@ -43,6 +43,8 @@ ST_Axis EntityModificationSystem::GetModifAxis() const
 void EntityModificationSystem::SetTransformType(Selectable::TransformType mode)
 {
     transformType = mode;
+    UpdateTransformableSelection();
+
     hoodSystem->SetTransformType(mode);
 }
 
@@ -116,6 +118,14 @@ bool EntityModificationSystem::InCloneDoneState() const
 
 void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 {
+    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
+    const SelectableGroup& selection = selectionSystem->GetSelection();
+
+    if (selection != currentSelection)
+    {
+        currentSelection = selection;
+        UpdateTransformableSelection();
+    }
 }
 
 void EntityModificationSystem::Input(DAVA::UIEvent* event)
@@ -136,7 +146,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
     if (!inModifState)
     {
         // can we start modification???
-        if (ModifCanStartByMouse(selectedEntities))
+        if (ModifCanStartByMouse(transformableSelection))
         {
             SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
 
@@ -154,7 +164,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
                     }
 
                     // set entities to be modified
-                    BeginModification(selectedEntities);
+                    BeginModification(transformableSelection);
 
                     // init some values, needed for modifications
                     modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
@@ -1143,4 +1153,25 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
     }
 
     sceneEditor->EndBatch();
+}
+
+void EntityModificationSystem::UpdateTransformableSelection()
+{
+    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+
+    transformableSelection.Clear();
+    for (const Selectable& item : currentSelection.GetContent())
+    {
+        if (item.SupportsTransformType(transformType))
+        {
+            transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
+        }
+    }
+
+    transformableSelection.RebuildIntegralBoundingBox();
+}
+
+const SelectableGroup& EntityModificationSystem::GetTransformableSelection() const
+{
+    return transformableSelection;
 }
