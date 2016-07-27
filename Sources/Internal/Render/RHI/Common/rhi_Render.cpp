@@ -774,6 +774,15 @@ void EndRenderPass(HRenderPass pass)
     RenderPass::End(pass);
 }
 
+bool NeedInvertProjection(const RenderPassConfig& passDesc)
+{
+    bool isRT = (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
+    (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
+    (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
+
+    return (isRT && !rhi::DeviceCaps().isUpperLeftRTOrigin);
+}
+
 //------------------------------------------------------------------------------
 
 void BeginPacketList(HPacketList packetList)
