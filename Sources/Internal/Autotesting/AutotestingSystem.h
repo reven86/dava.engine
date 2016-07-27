@@ -156,7 +156,7 @@ public:
     UIEvent mouseMove;
 
     String screenShotName;
-    Texture* screenShotTexture;
+    Texture* screenShotTexture = nullptr;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const
