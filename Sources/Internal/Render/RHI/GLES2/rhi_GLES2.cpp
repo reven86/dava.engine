@@ -45,8 +45,6 @@ bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
-rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
-DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
 DAVA::uint8 volatile pre_call_registers[64];
 
@@ -386,17 +384,6 @@ gles2_InvalidateCache()
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_TakeScreenshot(ScreenShotCallback callback)
-{
-    _GLES2_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_GLES2_PendingScreenshotCallback);
-    _GLES2_PendingScreenshotCallback = callback;
-    _GLES2_ScreenshotCallbackSync.Unlock();
-}
-
-//------------------------------------------------------------------------------
-
 static bool
 gles2_NeedRestoreResources()
 {
@@ -545,7 +532,6 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-        DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -697,7 +683,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -794,7 +779,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -891,7 +875,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
