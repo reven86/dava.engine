@@ -259,7 +259,7 @@ RenderPassMetal_t
     id<MTLParallelRenderCommandEncoder> encoder;
     std::vector<Handle> cmdBuf;
     int priority;
-    uint32 do_present:1;
+    uint32 do_present : 1;
     uint32 finished : 1;
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
@@ -1214,20 +1214,20 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 
         rc.x = rect.x;
         rc.y = rect.y;
-        rc.width = (rect.x+rect.width > max_x) ? (max_x-rc.x) : rect.width;
-        rc.height = (rect.y+rect.height > max_y) ? (max_y-rc.y) : rect.height;
+        rc.width = (rect.x + rect.width > max_x) ? (max_x - rc.x) : rect.width;
+        rc.height = (rect.y + rect.height > max_y) ? (max_y - rc.y) : rect.height;
 
-        if( rc.width == 0 )
+        if (rc.width == 0)
         {
             rc.width = 1;
-            if( rc.x > 0 )
+            if (rc.x > 0)
                 --rc.x;
         }
 
-        if( rc.height == 0 )
+        if (rc.height == 0)
         {
             rc.height = 1;
-            if( rc.y > 0 )
+            if (rc.y > 0)
                 --rc.y;
         }
     }
@@ -1235,7 +1235,7 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     {
         rc.x = 0;
         rc.y = 0;
-        if( cb->rt )
+        if (cb->rt)
         {
             rc.width = cb->rt.width;
             rc.height = cb->rt.height;
@@ -1587,7 +1587,7 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     MTLIndexType i_type = IndexBufferMetal::GetType(cb->cur_ib);
     unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
 
-    cb->_ApplyVertexData( firstVertex );
+    cb->_ApplyVertexData(firstVertex);
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off];
 
     StatSet::IncStat(stat_DIP, 1);
@@ -1712,7 +1712,7 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
     MTLIndexType i_type = IndexBufferMetal::GetType(cb->cur_ib);
     unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
 
-    cb->_ApplyVertexData( firstVertex );
+    cb->_ApplyVertexData(firstVertex);
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off instanceCount:instCount];
 
     StatSet::IncStat(stat_DIP, 1);
@@ -1929,14 +1929,13 @@ metal_Present(Handle syncObject)
             pass.push_back(rp);
     }
 
-
     id<MTLCommandBuffer> pbuf;
 
     for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassMetal_t* pass = *p;
-        
-        if( pass->do_present )
+
+        if (pass->do_present)
             pbuf = pass->buf;
     }
     if (pass.size())
@@ -1992,7 +1991,7 @@ metal_Present(Handle syncObject)
         {
             Handle cbh = rp->cmdBuf[b];
             CommandBufferMetal_t* cb = CommandBufferPool::Get(cbh);
-            
+
             cb->buf = nil;
             [cb->encoder release];
             cb->encoder = nil;

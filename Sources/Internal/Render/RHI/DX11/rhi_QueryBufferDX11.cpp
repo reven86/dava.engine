@@ -99,6 +99,7 @@ dx11_Check_Query_Results(QueryBufferDX11_t* buf)
         uint32 resultIndex = buf->pendingQueries[q].second;
 
         HRESULT hr = _D3D11_ImmediateContext->GetData(iq, &val, sizeof(uint64), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+        CHECK_HR(hr);
 
         if (hr == S_OK)
         {
@@ -208,7 +209,7 @@ void SetQueryIndex(Handle handle, uint32 objectIndex, ID3D11DeviceContext* conte
                 desc.Query = D3D11_QUERY_OCCLUSION;
                 desc.MiscFlags = 0;
 
-                _D3D11_Device->CreateQuery(&desc, &iq);
+                CHECK_HR(_D3D11_Device->CreateQuery(&desc, &iq));
             }
 
             if (iq)

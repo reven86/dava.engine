@@ -81,12 +81,7 @@ void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vecto
     DVASSERT(drawCamera);
     DVASSERT(mainCamera);
 
-    bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle) ||
-    (passConfig.colorBuffer[1].texture != rhi::InvalidHandle) ||
-    (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle && passConfig.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
-
-    bool needInvertCamera = isRT && (!rhi::DeviceCaps().isUpperLeftRTOrigin);
-
+    bool needInvertCamera = rhi::NeedInvertProjection(passConfig);
     passConfig.invertCulling = needInvertCamera ? 1 : 0;
 
     drawCamera->SetupDynamicParameters(needInvertCamera, externalClipPlane);

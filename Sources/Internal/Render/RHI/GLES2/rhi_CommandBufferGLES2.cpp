@@ -1928,7 +1928,7 @@ _GLES2_ExecuteQueuedCommands()
     bool do_exit = false;
 
     _GLES2_FrameSync.Lock();
-    if (_GLES2_Frame.size())
+    if (_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute)
     {
         for (std::vector<Handle>::iterator p = _GLES2_Frame.begin()->pass.begin(), p_end = _GLES2_Frame.begin()->pass.end(); p != p_end; ++p)
         {

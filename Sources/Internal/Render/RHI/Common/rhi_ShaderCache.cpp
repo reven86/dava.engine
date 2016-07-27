@@ -432,7 +432,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 "#define vec1                   float\n"
-#if 0//defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if 0 //defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 "#define half                   mediump float\n"
 "#define half1                  mediump float\n"
 "#define half2                  mediump vec2\n"
@@ -1118,7 +1118,6 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
                 src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i \n", i);
             }
         }
-
 
         s = srcText;
         while ((decl = strstr(s, "DECL_VPROG_BUFFER")))

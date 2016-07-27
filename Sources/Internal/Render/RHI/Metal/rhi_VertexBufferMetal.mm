@@ -48,9 +48,12 @@ metal_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
     {
         id<MTLBuffer> uid = (desc.initialData)
         ?
-        [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
+        [_Metal_Device newBufferWithBytes:desc.initialData
+                                   length:desc.size
+                                  options:MTLResourceOptionCPUCacheModeDefault]
         :
-        [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+        [_Metal_Device newBufferWithLength:desc.size
+                                   options:MTLResourceOptionCPUCacheModeDefault];
 
         if (uid)
         {

@@ -170,7 +170,7 @@ void SetToRHI(Handle hstate, id<MTLRenderCommandEncoder> ce)
 
     for (unsigned s = 0; s != state->fp_count; ++s)
         [ce setFragmentSamplerState:state->fp_uid[s] atIndex:s];
-    
+
     for (unsigned s = 0; s != state->vp_count; ++s)
         [ce setVertexSamplerState:state->vp_uid[s] atIndex:s];
 }

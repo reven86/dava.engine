@@ -584,7 +584,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str());
         Logger::Error("  %s", (vp_err != nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>");
         //Logger::Info( vp_src.UTF8String );
-        DumpShaderText( (const char*)(&vprog_bin[0]), vprog_bin.size() );
+        DumpShaderText((const char*)(&vprog_bin[0]), vprog_bin.size());
     }
 
     #if MTL_SHOW_SHADER_WARNINGS
@@ -615,7 +615,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str());
         Logger::Error("  %s", (fp_err != nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>");
-        DumpShaderText( (const char*)(&fprog_bin[0]), fprog_bin.size() );
+        DumpShaderText((const char*)(&fprog_bin[0]), fprog_bin.size());
     }
     
     #if MTL_SHOW_SHADER_WARNINGS

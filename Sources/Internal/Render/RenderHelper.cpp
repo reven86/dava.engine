@@ -734,10 +734,10 @@ void RenderHelper::CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture dept
 
     if (clearPass != rhi::InvalidHandle)
     {
-    rhi::BeginRenderPass(clearPass);
-    rhi::BeginPacketList(emptyPacketList);
-    rhi::EndPacketList(emptyPacketList);
-    rhi::EndRenderPass(clearPass);
+        rhi::BeginRenderPass(clearPass);
+        rhi::BeginPacketList(emptyPacketList);
+        rhi::EndPacketList(emptyPacketList);
+        rhi::EndRenderPass(clearPass);
     }
 }
 };
