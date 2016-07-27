@@ -3,6 +3,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Image/ImageSystem.h"
 
 #include <memory>
 
