@@ -716,26 +716,30 @@ void SceneSelectionSystem::SetLocked(bool lock)
 
 void SceneSelectionSystem::UpdateHoodPos() const
 {
-    const SelectableGroup& filteredSelection = modificationSystem->GetTransformableSelection();
-
-    hoodSystem->LockModif(false);
-    if (filteredSelection.IsEmpty())
+    if (currentSelection.IsEmpty())
     {
+        hoodSystem->LockModif(false);
         hoodSystem->SetVisible(false);
     }
     else
     {
-        DAVA::Vector3 hoodCenter;
-        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        const SelectableGroup& filteredSelection = modificationSystem->GetTransformableSelection();
+        hoodSystem->LockModif(filteredSelection.IsEmpty());
+
+        if (filteredSelection.IsEmpty() == false)
         {
-            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
+            DAVA::Vector3 hoodCenter;
+            if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+            {
+                hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
+            }
+            else
+            {
+                hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
+            }
+            hoodSystem->SetPosition(hoodCenter);
+            hoodSystem->SetVisible(true);
         }
-        else
-        {
-            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
-        }
-        hoodSystem->SetPosition(hoodCenter);
-        hoodSystem->SetVisible(true);
     }
 
     SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
