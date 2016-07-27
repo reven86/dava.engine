@@ -22,8 +22,6 @@ ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
-ScreenShotCallback _D3D11_PendingScreenshotCallback = nullptr;
-DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 InitParam _DX11_InitParam;
 }
