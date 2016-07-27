@@ -491,28 +491,7 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
     DWORD stats = GetFileAttributesW(path.c_str());
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
-#else //defined (__DAVAENGINE_WIN32__)
-#if defined(__DAVAENGINE_ANDROID__)
-
-    //String path = pathToCheck.GetAbsolutePathname();
-    //if (path.length() && path.at(path.length() - 1) == '/')
-    //{
-    //    path.erase(path.begin() + path.length() - 1);
-    //}
-
-    FileList* fl = new FileList(pathToCheck);
-    if (fl->GetCount() > 0)
-    {
-        fl->Release();
-        return true;
-    }
-
-//if (IsAPKPath(path))
-//{
-//    return (dirSet.find(path) != dirSet.end());
-//}
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#else
 
     FileAPI::Stat s;
     FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
@@ -520,8 +499,18 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     {
         return (0 != (s.st_mode & S_IFDIR));
     }
-#endif //#if defined (__DAVAENGINE_WIN32__)
 
+#if defined(__DAVAENGINE_ANDROID__)
+    // on android we need test directory in assets inside APK
+    FileList* fl = new FileList(pathToCheck);
+    if (fl->GetCount() > 0)
+    {
+        fl->Release();
+        return true;
+    }
+
+#endif // __DAVAENGINE_ANDROID__
+#endif // __DAVAENGINE_WIN32__
     return false;
 }
 
