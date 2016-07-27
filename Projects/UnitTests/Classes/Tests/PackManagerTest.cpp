@@ -92,11 +92,15 @@ DAVA_TESTCLASS (PackManagerTest)
 
         try
         {
+            Logger::Info("init common packs");
             packManager.InitCommonPacks(readOnlyPacksDir,
                                         downloadedPacksDir,
                                         PackManager::Hints());
+
+            Logger::Info("init gpu packs");
             packManager.InitGpuPacks(architecture, dbFileName);
 
+            Logger::Info("sync with server");
             packManager.SyncWithServer(superPackUrl);
 
             Logger::Info("create game client");
