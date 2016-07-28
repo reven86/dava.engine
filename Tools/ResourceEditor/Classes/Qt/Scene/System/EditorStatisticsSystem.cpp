@@ -89,8 +89,10 @@ void EnumerateRenderObjectsRecursive(Entity* entity, Vector<RenderObject*>& rend
             RenderObject* ro = rc->GetRenderObject();
             if (ro != nullptr)
             {
-                DVASSERT(std::find(renderObjects.begin(), renderObjects.end(), ro) == renderObjects.end());
-                renderObjects.push_back(ro);
+                if (std::find(renderObjects.begin(), renderObjects.end(), ro) == renderObjects.end())
+                {
+                    renderObjects.push_back(ro);
+                }
             }
         }
     }
