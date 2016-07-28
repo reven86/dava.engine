@@ -814,6 +814,18 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
     throw std::runtime_error("can't process request initialization not finished");
 }
 
+const PackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
+{
+    try
+    {
+        return &requestManager->Find(packName);
+    }
+    catch (std::exception&)
+    {
+        return nullptr;
+    }
+}
+
 void PackManagerImpl::ChangePackPriority(const String& packName, float newPriority) const
 {
     if (requestManager->IsInQueue(packName))

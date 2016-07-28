@@ -160,6 +160,11 @@ public:
     // thow exception if can't find pack
     const Pack& RequestPack(const String& packName);
 
+    // return request contains pack or nullptr
+    // requestedPackName - previous requested pack currently in downloading
+    // or present in wait queue
+    const IRequest* FindRequest(const String& requestedPackName) const;
+
     // order - [0..1] - 0 - first, 1 - last
     void ChangeDownloadOrder(const String& packName, float order);
 

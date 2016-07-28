@@ -78,6 +78,11 @@ const PackManager::Pack& PackManager::RequestPack(const String& packID)
     return impl->RequestPack(packID);
 }
 
+const PackManager::IRequest* PackManager::FindRequest(const String& packName) const
+{
+    return impl->FindRequest(packName);
+}
+
 void PackManager::ChangeDownloadOrder(const String& packName, float newPriority)
 {
     impl->ChangePackPriority(packName, newPriority);

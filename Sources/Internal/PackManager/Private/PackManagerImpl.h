@@ -50,6 +50,8 @@ public:
 
     const PackManager::Pack& RequestPack(const String& packName);
 
+    const PackManager::IRequest* FindRequest(const String& pack) const;
+
     void ChangePackPriority(const String& packName, float newPriority) const;
 
     uint32 GetPackIndex(const String& packName);
