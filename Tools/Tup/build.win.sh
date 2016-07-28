@@ -8,11 +8,9 @@ if [ ! -d $LOCALREPO/.git ]
 then
     git clone $REPOSRC $LOCALREPO
     cd $LOCALREPO
+    git checkout v0.7.4
     git apply ../patch-1_add_davainit.patch
     git apply ../patch-2_build_for_win.patch
-else
-    cd $LOCALREPO
-    git pull $REPOSRC
 fi
 
 # check if mingw-w64 is installer
