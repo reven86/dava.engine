@@ -68,7 +68,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
 
     context->logger = new Logger;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_ANDROID__)
     CreatePrimaryWindowBackend();
 #endif
 }
@@ -111,11 +111,12 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     platformCore->Init();
     if (!consoleMode)
     {
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_ANDROID__)
         CreatePrimaryWindowBackend();
 #endif
     }
 
+    Thread::InitMainThread();
     // For now only next subsystems/modules are created on demand:
     //  - LocalizationSystem
     //  - JobManager
@@ -136,7 +137,6 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
         context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 
-    Thread::InitMainThread();
     RegisterDAVAClasses();
 }
 
@@ -328,6 +328,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
+    case MainDispatcherEvent::APP_IMMEDIATE_TERMINATE:
+        HandleAppImmediateTerminate(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -373,6 +376,21 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     {
         w->Close();
     }
+}
+
+void EngineBackend::HandleAppImmediateTerminate(const MainDispatcherEvent& e)
+{
+    MainDispatcherEvent dummyEvent;
+    dummyEvent.type = MainDispatcherEvent::WINDOW_DESTROYED;
+    for (Window* w : windows)
+    {
+        dummyEvent.window = w;
+        w->HandleWindowDestroyed(dummyEvent);
+        engine->windowDestroyed.Emit(*w);
+        delete w;
+    }
+    windows.clear();
+    platformCore->Quit();
 }
 
 void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
@@ -490,18 +508,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->versionInfo = new VersionInfo();
     context->fileSystem = new FileSystem();
 
-    if (!consoleMode)
-    {
-        context->animationManager = new AnimationManager();
-        context->fontManager = new FontManager();
-        context->uiControlSystem = new UIControlSystem();
-        context->inputSystem = new InputSystem();
-        context->virtualCoordSystem = new VirtualCoordinatesSystem();
-        context->renderSystem2D = new RenderSystem2D();
-        context->uiScreenManager = new UIScreenManager();
-        context->localNotificationController = new LocalNotificationController();
-    }
-
     // Naive implementation of on demand module creation
     for (const String& m : modules)
     {
@@ -541,6 +547,18 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
                 context->soundSystem = new SoundSystem(engine);
             }
         }
+    }
+
+    if (!consoleMode)
+    {
+        context->animationManager = new AnimationManager();
+        context->fontManager = new FontManager();
+        context->uiControlSystem = new UIControlSystem();
+        context->inputSystem = new InputSystem();
+        context->virtualCoordSystem = new VirtualCoordinatesSystem();
+        context->renderSystem2D = new RenderSystem2D();
+        context->uiScreenManager = new UIScreenManager();
+        context->localNotificationController = new LocalNotificationController();
     }
 }
 

@@ -4,13 +4,17 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Private/Android/AndroidBridge.h"
+
+extern DAVA::Private::AndroidBridge* androidBridge;
+
 namespace DAVA
 {
 namespace JNI
 {
 JavaVM* GetJVM()
 {
-    return nullptr;
+    return androidBridge->javaVM;
 }
 
 } // namespace JNI

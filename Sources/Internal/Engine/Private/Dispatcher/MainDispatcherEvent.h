@@ -41,6 +41,7 @@ struct MainDispatcherEvent final
         APP_RESUMED,
 
         APP_TERMINATE,
+        APP_IMMEDIATE_TERMINATE,
     };
 
     struct WindowStateEvent

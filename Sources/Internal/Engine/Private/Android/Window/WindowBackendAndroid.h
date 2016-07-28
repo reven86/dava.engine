@@ -11,6 +11,9 @@
 
 #include "Functional/Function.h"
 
+#include <jni.h>
+#include <android/native_window_jni.h>
+
 namespace DAVA
 {
 namespace Private
@@ -41,18 +44,29 @@ private:
 
     void EventHandler(const UIDispatcherEvent& e);
 
+    void OnResume();
+    void OnPause();
+    void SurfaceChanged(JNIEnv* env, jobject surface, int width, int height);
+    void SurfaceDestroyed();
+
 private:
+    ANativeWindow* androidWindow = nullptr;
     EngineBackend* engine = nullptr;
     MainDispatcher* dispatcher = nullptr;
     Window* window = nullptr;
 
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
+
+    bool firstTimeSurfaceChanged = true;
+
+    // Friends
+    friend struct AndroidBridge;
 };
 
 inline void* WindowBackend::GetHandle() const
 {
-    return nullptr;
+    return androidWindow;
 }
 
 inline WindowNativeService* WindowBackend::GetNativeService() const

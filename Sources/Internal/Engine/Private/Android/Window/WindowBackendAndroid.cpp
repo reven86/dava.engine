@@ -86,6 +86,54 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     }
 }
 
+void WindowBackend::OnResume()
+{
+    Logger::Info("******** WindowBackend::OnResume: thread=%llX", Thread::GetCurrentIdAsInteger());
+
+    window->PostVisibilityChanged(true);
+    window->PostFocusChanged(true);
+}
+
+void WindowBackend::OnPause()
+{
+    Logger::Info("******** WindowBackend::OnPause: thread=%llX", Thread::GetCurrentIdAsInteger());
+
+    window->PostFocusChanged(false);
+    window->PostVisibilityChanged(false);
+}
+
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int width, int height)
+{
+    Logger::Info("******** WindowBackend::SurfaceChanged: thread=%llX, w=%d, h=%d", Thread::GetCurrentIdAsInteger(), width, height);
+
+    if (androidWindow != nullptr)
+    {
+        ANativeWindow_release(androidWindow);
+    }
+    androidWindow = ANativeWindow_fromSurface(env, surface);
+
+    if (firstTimeSurfaceChanged)
+    {
+        window->PostWindowCreated(this, static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+        firstTimeSurfaceChanged = false;
+    }
+    else
+    {
+        window->PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+    }
+}
+
+void WindowBackend::SurfaceDestroyed()
+{
+    Logger::Info("******** WindowBackend::SurfaceDestroyed: thread=%llX", Thread::GetCurrentIdAsInteger());
+
+    if (androidWindow != nullptr)
+    {
+        ANativeWindow_release(androidWindow);
+        androidWindow = nullptr;
+    }
+}
+
 } // namespace Private
 } // namespace DAVA
 

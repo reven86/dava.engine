@@ -28,11 +28,25 @@ public:
     void Quit();
 
 private:
-    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
+    void GameThread();
+
+    WindowBackend* OnCreate();
+    void OnStart();
+    void OnResume();
+    void OnPause();
+    void OnStop();
+    void OnDestroy();
 
 private:
     EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
+    AndroidBridge* bridge = nullptr;
     std::unique_ptr<NativeService> nativeService;
+
+    bool quitGameThread = false;
+
+    // Friends
+    friend struct AndroidBridge;
 };
 
 inline NativeService* PlatformCore::GetNativeService() const

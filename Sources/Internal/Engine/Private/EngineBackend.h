@@ -80,6 +80,7 @@ private:
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
+    void HandleAppImmediateTerminate(const MainDispatcherEvent& e);
 
     Window* CreatePrimaryWindowBackend();
 
