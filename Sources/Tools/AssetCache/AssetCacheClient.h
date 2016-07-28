@@ -96,6 +96,7 @@ private:
     uint64 timeoutms = 60u * 1000u;
 
     Mutex requestLocker;
+    Mutex connectEstablishLocker;
     Request request;
 
     std::atomic<bool> isActive;

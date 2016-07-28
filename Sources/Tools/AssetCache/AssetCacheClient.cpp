@@ -30,7 +30,6 @@ AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
 
 AssetCacheClient::~AssetCacheClient()
 {
-    Logger::FrameworkDebug(__FUNCTION__);
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);
@@ -39,7 +38,6 @@ AssetCacheClient::~AssetCacheClient()
 
 AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
-    Logger::FrameworkDebug(__FUNCTION__);
     timeoutms = connectionParams.timeoutms;
 
     isActive = true;
@@ -56,7 +54,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
     }
 
     {
-        LockGuard<Mutex> guard(requestLocker);
+        LockGuard<Mutex> guard(connectEstablishLocker);
 
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         while (client.ChannelIsOpened() == false)
@@ -83,8 +81,8 @@ void AssetCacheClient::Disconnect()
 {
     isActive = false;
 
-    {
-        LockGuard<Mutex> guard(requestLocker);
+    { // wait for connection establishing loop is finished
+        LockGuard<Mutex> guard(connectEstablishLocker);
     }
 
     client.Disconnect();
