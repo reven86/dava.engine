@@ -10,19 +10,10 @@ namespace DAVA
 class KeyboardShortcut final
 {
 public:
-    enum Modifier
-    {
-        MODIFIER_SHIFT = 0x01,
-        MODIFIER_CTRL = 0x02,
-        MODIFIER_ALT = 0x04,
-        MODIFIER_CMD = 0x08,
-
-        LAST_MODIFIER = 0x08
-    };
 
     KeyboardShortcut();
     KeyboardShortcut(const KeyboardShortcut& shortcut);
-    KeyboardShortcut(Key key, int32 modifiers = 0);
+    KeyboardShortcut(Key key, uint32 modifiers = 0);
     KeyboardShortcut(const String& str);
 
     ~KeyboardShortcut();
@@ -32,15 +23,13 @@ public:
     bool operator!=(const KeyboardShortcut& other) const;
 
     Key GetKey() const;
-    int32 GetModifiers() const;
+    uint32 GetModifiers() const;
 
     String ToString() const;
 
-    static int32 ConvertKeyToModifier(Key key);
-
 private:
     Key key = Key::UNKNOWN;
-    int32 modifiers = 0;
+    uint32 modifiers = 0;
 };
 }
 

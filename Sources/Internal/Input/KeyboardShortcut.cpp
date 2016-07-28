@@ -17,7 +17,7 @@ KeyboardShortcut::KeyboardShortcut(const KeyboardShortcut& shortcut)
 {
 }
 
-KeyboardShortcut::KeyboardShortcut(Key key_, int32 modifiers_)
+KeyboardShortcut::KeyboardShortcut(Key key_, uint32 modifiers_)
     : key(key_)
     , modifiers(modifiers_)
 {
@@ -33,7 +33,7 @@ KeyboardShortcut::KeyboardShortcut(const String& str)
     {
         String t = StringUtils::Trim(token);
         int modifier = 0;
-        if (GlobalEnumMap<Modifier>::Instance()->ToValue(token.c_str(), modifier))
+        if (GlobalEnumMap<UIEvent::Modifier>::Instance()->ToValue(token.c_str(), modifier))
         {
             modifiers |= modifier;
         }
@@ -73,7 +73,7 @@ Key KeyboardShortcut::GetKey() const
     return key;
 }
 
-int32 KeyboardShortcut::GetModifiers() const
+uint32 KeyboardShortcut::GetModifiers() const
 {
     return modifiers;
 }
@@ -83,11 +83,11 @@ String KeyboardShortcut::ToString() const
     StringStream stream;
 
     int test = 0x01;
-    while (test <= LAST_MODIFIER)
+    while (test <= UIEvent::Modifier::LAST)
     {
         if (test & modifiers)
         {
-            stream << GlobalEnumMap<Modifier>::Instance()->ToString(test) << "+";
+            stream << GlobalEnumMap<UIEvent::Modifier>::Instance()->ToString(test) << "+";
         }
         test <<= 1;
     }
@@ -97,28 +97,4 @@ String KeyboardShortcut::ToString() const
     return stream.str();
 }
 
-int32 KeyboardShortcut::ConvertKeyToModifier(Key key)
-{
-    switch (key)
-    {
-    case Key::LSHIFT:
-    case Key::RSHIFT:
-        return MODIFIER_SHIFT;
-
-    case Key::RALT:
-    case Key::LALT:
-        return MODIFIER_ALT;
-
-    case Key::RCTRL:
-    case Key::LCTRL:
-        return MODIFIER_CTRL;
-
-    case Key::RCMD:
-    case Key::LCMD:
-        return MODIFIER_CMD;
-
-    default:
-        return 0;
-    }
-}
 }

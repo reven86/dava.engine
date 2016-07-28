@@ -477,6 +477,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
+    uint32 modifiers = GetKeyboardModifier();
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     mousePointer = pointerPoint;
@@ -486,16 +487,16 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^, PointerRo
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
         for (auto& change : mouseButtonChanges)
         {
-            auto fn = [this, x, y, change, type]() {
-                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            auto fn = [this, x, y, change, type, modifiers]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type), modifiers);
             };
             core->RunOnMainThread(fn);
         }
     }
     else
     {
-        auto fn = [this, x, y, pointerOrButtonIndex, type]() {
-            DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+        auto fn = [this, x, y, pointerOrButtonIndex, type, modifiers]() {
+            DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type), modifiers);
         };
         core->RunOnMainThread(fn);
     }
@@ -506,6 +507,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
+    uint32 modifiers = GetKeyboardModifier();
     int32 pointerOrButtonIndex = pointerPoint->PointerId;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     mousePointer = pointerPoint;
@@ -515,16 +517,16 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
         UpdateMouseButtonsState(pointerPoint->Properties, mouseButtonChanges);
         for (auto& change : mouseButtonChanges)
         {
-            auto fn = [this, x, y, change, type]() {
-                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            auto fn = [this, x, y, change, type, modifiers]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type), modifiers);
             };
             core->RunOnMainThread(fn);
         }
     }
     else
     {
-        auto fn = [this, x, y, pointerOrButtonIndex, type]() {
-            DAVATouchEvent(UIEvent::Phase::ENDED, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+        auto fn = [this, x, y, pointerOrButtonIndex, type, modifiers]() {
+            DAVATouchEvent(UIEvent::Phase::ENDED, x, y, pointerOrButtonIndex, ToDavaDeviceId(type), modifiers);
         };
 
         core->RunOnMainThread(fn);
@@ -542,6 +544,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
+    uint32 modifiers = GetKeyboardModifier();
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
@@ -549,8 +552,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 
         for (auto& change : mouseButtonChanges)
         {
-            auto fn = [this, x, y, change, type]() {
-                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type));
+            auto fn = [this, x, y, change, type, modifiers]() {
+                DAVATouchEvent(change.beginOrEnd, x, y, static_cast<int32>(change.button), ToDavaDeviceId(type), modifiers);
             };
             core->RunOnMainThread(fn);
         }
@@ -560,8 +563,8 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             if (mouseButtonsState.none())
             {
                 phase = UIEvent::Phase::MOVE;
-                core->RunOnMainThread([this, phase, x, y, type]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type));
+                core->RunOnMainThread([this, phase, x, y, type, modifiers]() {
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type), modifiers);
                 });
             }
             else
@@ -572,10 +575,42 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     }
     else
     {
-        core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type]() {
-            DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+        core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type, modifiers]() {
+            DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type), modifiers);
         });
     }
+}
+
+uint32 WinUAPXamlApp::GetKeyboardModifier()
+{
+    uint32 currentFlag = 0;
+    CoreWindow ^ coreWind = Windows::UI::Core::CoreWindow::GetForCurrentThread();
+    CoreVirtualKeyStates keyState;
+    // only for capslock, using Locked state
+    keyState = coreWind->GetKeyState(VirtualKey::CapitalLock);
+    if (keyState == CoreVirtualKeyStates::Locked)
+    {
+        currentFlag |= UIEvent::Modifier::CAPS_LOCK_DOWN;
+    }
+    // for other cases using down state
+    keyState = coreWind->GetKeyState(VirtualKey::Shift) & CoreVirtualKeyStates::Down;
+    if (keyState == CoreVirtualKeyStates::Down)
+    {
+        currentFlag |= UIEvent::Modifier::SHIFT_DOWN;
+    }
+
+    keyState = coreWind->GetKeyState(VirtualKey::Control) & CoreVirtualKeyStates::Down;
+    if (keyState == CoreVirtualKeyStates::Down)
+    {
+        currentFlag |= UIEvent::Modifier::CONTROL_DOWN;
+    }
+
+    keyState = coreWind->GetKeyState(VirtualKey::Menu) & CoreVirtualKeyStates::Down;
+    if (keyState == CoreVirtualKeyStates::Down)
+    {
+        currentFlag |= UIEvent::Modifier::ALT_DOWN;
+    }
+    return currentFlag;
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -584,8 +619,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     Vector2 physPoint(pointerPoint->Position.X, pointerPoint->Position.Y);
+    uint32 modifiers = GetKeyboardModifier();
 
-    core->RunOnMainThread([this, wheelDelta, physPoint, type]() {
+    core->RunOnMainThread([this, wheelDelta, physPoint, type, modifiers]() {
         UIEvent ev;
         auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
         KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
@@ -597,6 +633,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
         {
             ev.wheelDelta = { 0, delta };
         }
+        ev.modifiers = modifiers;
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
@@ -645,13 +682,14 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
     default:
         return;
     }
-
-    core->RunOnMainThread([this, key, phase]() {
+    uint32 modifiers = GetKeyboardModifier();
+    core->RunOnMainThread([this, key, phase, modifiers]() {
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
         UIEvent uiEvent;
         uiEvent.device = UIEvent::Device::KEYBOARD;
         uiEvent.phase = phase;
+        uiEvent.modifiers = modifiers;
         uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
         uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         UIControlSystem::Instance()->OnInput(&uiEvent);
@@ -674,13 +712,15 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
 {
     uint32 unicodeChar = args->KeyCode;
     bool isRepeat = args->KeyStatus.WasKeyDown;
-    core->RunOnMainThread([this, unicodeChar, isRepeat]() {
+    uint32 modifiers = GetKeyboardModifier();
+
+    core->RunOnMainThread([this, unicodeChar, isRepeat, modifiers]() {
         UIEvent ev;
         DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
         ev.keyChar = unicodeChar;
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
-
+        ev.modifiers = modifiers;
         if (isRepeat)
         {
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
@@ -695,11 +735,12 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
 
 void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device device)
 {
-    auto SendDragOnButtonChange = [this, x, y, device](UIEvent::MouseButton button) {
+    uint32 modifiers = GetKeyboardModifier();
+    auto SendDragOnButtonChange = [this, x, y, device, modifiers](UIEvent::MouseButton button) {
         if (GetMouseButtonState(button))
         {
-            core->RunOnMainThread([this, x, y, button, device]() {
-                DAVATouchEvent(UIEvent::Phase::DRAG, x, y, static_cast<int32>(button), device);
+            core->RunOnMainThread([this, x, y, button, device, modifiers]() {
+                DAVATouchEvent(UIEvent::Phase::DRAG, x, y, static_cast<int32>(button), device, modifiers);
             });
         }
     };
@@ -713,6 +754,7 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
 
 void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, MouseEventArgs ^ args)
 {
+    uint32 modifiers = GetKeyboardModifier();
     UIEvent::Phase phase = UIEvent::Phase::MOVE;
     if (mousePointer != nullptr)
     {
@@ -723,8 +765,8 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
 
         for (auto& change : mouseButtonChanges)
         {
-            auto fn = [this, window_x, window_y, change]() {
-                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE);
+            auto fn = [this, window_x, window_y, change, modifiers]() {
+                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE, modifiers);
             };
             core->RunOnMainThread(fn);
         }
@@ -740,8 +782,8 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
             {
                 phase = UIEvent::Phase::MOVE;
 
-                core->RunOnMainThread([this, phase, dx, dy]() {
-                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE);
+                core->RunOnMainThread([this, phase, dx, dy, modifiers]() {
+                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE, modifiers);
                 });
             }
             else
@@ -752,7 +794,7 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
     }
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device, uint32 modifiers)
 {
     UIEvent newTouch;
     newTouch.touchId = id;
@@ -762,6 +804,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.point.y = y;
     newTouch.phase = phase;
     newTouch.device = device;
+    newTouch.modifiers = modifiers;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
@@ -985,12 +1028,14 @@ void WinUAPXamlApp::AllowDisplaySleep(bool sleep)
 
 void WinUAPXamlApp::SendBackKeyEvents()
 {
-    core->RunOnMainThread([this]() {
+    uint32 modifiers = GetKeyboardModifier();
+    core->RunOnMainThread([this, modifiers]() {
         UIEvent ev;
         ev.keyChar = 0;
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.key = Key::BACK;
         ev.device = UIEvent::Device::KEYBOARD;
+        ev.modifiers = modifiers;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
