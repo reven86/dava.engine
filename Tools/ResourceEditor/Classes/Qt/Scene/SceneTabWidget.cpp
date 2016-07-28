@@ -259,6 +259,7 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
+        dava3DView->OnInvisible();
         if (silent == false)
         {
             SceneSignals::Instance()->EmitDeactivated(scene);
@@ -298,6 +299,7 @@ void SceneTabWidget::SetCurrentTab(int index)
         if (NULL != curScene)
         {
             dava3DView->SetScene(curScene);
+            dava3DView->OnVisible();
             curScene->SetViewportRect(dava3DView->GetRect());
 
             curScene->Activate();

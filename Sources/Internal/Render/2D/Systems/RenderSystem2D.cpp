@@ -143,6 +143,7 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
     renderPass2DConfig.colorBuffer[0].loadAction = mainTargetDescriptor.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    memcpy(renderPass2DConfig.colorBuffer[0].clearColor, mainTargetDescriptor.clearColor.color, sizeof(Color));
     renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment ? mainTargetDescriptor.depthAttachment : rhi::DefaultDepthBuffer;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
