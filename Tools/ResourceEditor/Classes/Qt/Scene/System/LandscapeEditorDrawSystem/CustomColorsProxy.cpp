@@ -4,6 +4,9 @@
 #include "Render/Texture.h"
 #include "Render/Material/NMaterial.h"
 
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
 using namespace DAVA;
 
 CustomColorsProxy::CustomColorsProxy(int32 _size)
