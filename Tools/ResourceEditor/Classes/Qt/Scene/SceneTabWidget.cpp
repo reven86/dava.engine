@@ -260,10 +260,7 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
         curScene = NULL;
         dava3DView->SetScene(NULL);
         dava3DView->OnInvisible();
-        if (silent == false)
-        {
-            SceneSignals::Instance()->EmitDeactivated(scene);
-        }
+        SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
     SafeRelease(scene);
