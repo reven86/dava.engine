@@ -30,6 +30,7 @@ AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
 
 AssetCacheClient::~AssetCacheClient()
 {
+    Logger::FrameworkDebug(__FUNCTION__);
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);
@@ -38,6 +39,7 @@ AssetCacheClient::~AssetCacheClient()
 
 AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
+    Logger::FrameworkDebug(__FUNCTION__);
     timeoutms = connectionParams.timeoutms;
 
     isActive = true;
@@ -53,15 +55,24 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         return AssetCache::Error::ADDRESS_RESOLVER_FAILED;
     }
 
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    while (client.ChannelIsOpened() == false)
     {
-        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+        LockGuard<Mutex> guard(requestLocker);
+
+        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        while (client.ChannelIsOpened() == false)
         {
-            Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
-            isActive = false;
-            return AssetCache::Error::OPERATION_TIMEOUT;
+            if (!isActive)
+            {
+                return AssetCache::Error::CANNOT_CONNECT;
+            }
+
+            uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+            if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+            {
+                Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+                isActive = false;
+                return AssetCache::Error::OPERATION_TIMEOUT;
+            }
         }
     }
 
@@ -71,6 +82,11 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
 void AssetCacheClient::Disconnect()
 {
     isActive = false;
+
+    {
+        LockGuard<Mutex> guard(requestLocker);
+    }
+
     client.Disconnect();
 
     while (isJobStarted)
