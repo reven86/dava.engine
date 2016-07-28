@@ -253,7 +253,7 @@ void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
 
     for (auto& pat : patterns)
     {
-        if (pat.find('?') || pat.find('*'))
+        if ((pat.find('?') != std::string::npos) || (pat.find('*') != std::string::npos))
         {
             std::string directory = "./";
             std::string mask = pat;
