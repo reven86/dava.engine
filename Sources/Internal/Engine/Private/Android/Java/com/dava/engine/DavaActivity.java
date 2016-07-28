@@ -1,6 +1,7 @@
 package com.dava.engine;
 
 import android.app.Activity;
+import android.app.Application;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -14,7 +15,7 @@ public final class DavaActivity extends Activity
 
     public static DavaActivity activitySingleton;
     
-    protected static Thread davaMainThread;
+    private static Thread davaMainThread;
     
     protected boolean isPaused;
     protected boolean hasFocus;
@@ -28,6 +29,11 @@ public final class DavaActivity extends Activity
         System.loadLibrary("TestBed");
     }
     
+    public static native void nativeInitEngine(String externalFilesDir,
+                                               String internalFilesDir,
+                                               String appPath,
+                                               String packageName,
+                                               String cmdline);
     public static native long nativeOnCreate();
     public static native void nativeOnStart();
     public static native void nativeOnResume();
@@ -36,7 +42,7 @@ public final class DavaActivity extends Activity
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
     
-    DavaActivity()
+    public DavaActivity()
     {
         super();
     }
@@ -48,12 +54,23 @@ public final class DavaActivity extends Activity
         
         activitySingleton = this;
         
+        Application app = getApplication();
+        String externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
+        String internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
+        String sourceDir = app.getApplicationInfo().publicSourceDir;
+        String packageName = app.getApplicationInfo().packageName;
         String cmdline = GetCommandLine();
-        Log.i(LOG_TAG, "****************** commandline: " + cmdline);
+        nativeInitEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
-        long primaryWindowBackendPointer = nativeOnCreate();
-        //long primaryWindowBackendPointer = 0;
-        primarySurface = new DavaSurface(getApplication(), primaryWindowBackendPointer, true);
+        if (CALL_NATIVE)
+        {
+            long primaryWindowBackendPointer = nativeOnCreate();
+            primarySurface = new DavaSurface(getApplication(), primaryWindowBackendPointer, true);
+        }
+        else
+        {
+            primarySurface = new DavaSurface(getApplication(), 0, true);
+        }
         
         layout = new RelativeLayout(this);
         layout.addView(primarySurface);
