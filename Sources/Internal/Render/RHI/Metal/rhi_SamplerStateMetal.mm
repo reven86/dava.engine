@@ -98,7 +98,7 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
     {
         DVASSERT(desc.fragmentSampler[s].anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
-        
+
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrW));
@@ -117,7 +117,7 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
     {
         DVASSERT(desc.vertexSampler[s].anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
-        
+
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrW));
