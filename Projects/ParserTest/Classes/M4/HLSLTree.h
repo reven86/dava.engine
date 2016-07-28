@@ -304,6 +304,7 @@ struct HLSLStructField : public HLSLNode
         semantic = NULL;
         sv_semantic = NULL;
         nextField = NULL;
+        attribute = NULL;
         hidden = false;
     }
     const char* name;
@@ -311,6 +312,7 @@ struct HLSLStructField : public HLSLNode
     const char* semantic;
     const char* sv_semantic;
     HLSLStructField* nextField; // Next field in the structure.
+    HLSLAttribute* attribute;
     bool hidden;
 };
 

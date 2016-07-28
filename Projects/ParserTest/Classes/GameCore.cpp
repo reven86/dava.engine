@@ -282,7 +282,21 @@ public:
     //    virtual void VisitType(HLSLType & type);
 
     //-    virtual void VisitRoot(HLSLRoot * node);
-    //    virtual void VisitTopLevelStatement(HLSLStatement * node);
+    virtual void VisitTopLevelStatement(M4::HLSLStatement* node)
+    {
+        M4::HLSLStatement* s = (M4::HLSLStatement*)node;
+
+        if (s->nodeType == M4::HLSLNodeType_Buffer)
+        {
+            M4::HLSLBuffer* buf = (M4::HLSLBuffer*)s;
+            M4::HLSLDeclaration* decl = buf->field;
+
+            M4::Log_Error("buf  \"%s\"\n", buf->name);
+            M4::Log_Error("  decl  \"%s\"\n", decl->name);
+        }
+
+        HLSLTreeVisitor::VisitTopLevelStatement(node);
+    }
     //    virtual void VisitStatements(HLSLStatement * statement);
     //    virtual void VisitStatement(HLSLStatement * node);
     virtual void VisitDeclaration(M4::HLSLDeclaration* node)
@@ -290,6 +304,34 @@ public:
         M4::HLSLDeclaration* decl = (M4::HLSLDeclaration*)node;
 
         M4::Log_Error("%sdecl  \"%s\"\n", _IndentString(indent), node->name);
+        if (decl->assignment)
+        {
+            if (decl->assignment->nodeType == M4::HLSLNodeType_ArrayAccess)
+            {
+                M4::HLSLArrayAccess* aa = (M4::HLSLArrayAccess*)decl->assignment;
+
+                if (aa->array->nodeType == M4::HLSLNodeType_IdentifierExpression)
+                {
+                    M4::HLSLIdentifierExpression* ie = (M4::HLSLIdentifierExpression*)(aa->array);
+
+                    M4::Log_Error("    aa  \"%s\"\n", ie->name);
+                }
+
+                M4::Log_Error("    aa  \"%s\"\n", aa->fileName);
+            }
+            if (decl->assignment->nodeType == M4::HLSLNodeType_MemberAccess)
+            {
+                M4::HLSLMemberAccess* ma = (M4::HLSLMemberAccess*)decl->assignment;
+
+                M4::Log_Error("    ma  \"%s\"\n", ma->field);
+            }
+            if (decl->assignment->nodeType == M4::HLSLNodeType_ConstructorExpression)
+            {
+                M4::HLSLConstructorExpression* ctor = (M4::HLSLConstructorExpression*)decl->assignment;
+
+                M4::Log_Error("    ma  \"%s\"\n", ctor->fileName);
+            }
+        }
         HLSLTreeVisitor::VisitDeclaration(node);
     }
     virtual void VisitStruct(M4::HLSLStruct* node)
@@ -349,7 +391,10 @@ public:
     //    virtual void VisitArrayAccess(HLSLArrayAccess * node);
     //    virtual void VisitFunctionCall(HLSLFunctionCall * node);
     //    virtual void VisitStateAssignment(HLSLStateAssignment * node);
-    //    virtual void VisitSamplerState(HLSLSamplerState * node);
+    virtual void VisitSamplerState(M4::HLSLSamplerState* node)
+    {
+        M4::HLSLTreeVisitor::VisitSamplerState(node);
+    }
     //    virtual void VisitPass(HLSLPass * node);
     //    virtual void VisitTechnique(HLSLTechnique * node);
 
@@ -357,11 +402,504 @@ public:
     //    virtual void VisitParameters(HLSLRoot * root);
 };
 
+static void
+_ProcessProperties(M4::HLSLTree* ast)
+{
+    struct
+    buf_t
+    {
+        //        ShaderProp::Scope   scope;
+        rhi::ShaderProp::Storage storage;
+        FastName tag;
+        uint32 regCount;
+        std::vector<int> avlRegIndex;
+    };
+
+    struct
+    prop_t
+    {
+        M4::HLSLDeclaration* decl;
+        M4::HLSLStatement* prev_statement;
+    };
+
+    std::vector<rhi::ShaderProp> property;
+    std::vector<prop_t> prop_decl;
+    std::vector<buf_t> buf;
+    std::vector<rhi::ShaderSampler> sampler;
+    rhi::VertexLayout layout;
+
+    // find properties/samplers
+    {
+        M4::Log_Error("properties :\n");
+        M4::HLSLStatement* statement = ast->GetRoot()->statement;
+        M4::HLSLStatement* pstatement = NULL;
+
+        while (statement)
+        {
+            if (statement->nodeType == M4::HLSLNodeType_Declaration)
+            {
+                M4::HLSLDeclaration* decl = (M4::HLSLDeclaration*)statement;
+
+                if (decl->type.flags & M4::HLSLTypeFlag_Property)
+                {
+                    property.resize(property.size() + 1);
+                    rhi::ShaderProp& prop = property.back();
+
+                    prop.uid = DAVA::FastName(decl->name);
+                    prop.precision = rhi::ShaderProp::PRECISION_NORMAL;
+                    prop.arraySize = 1;
+                    prop.isBigArray = false;
+
+                    switch (decl->type.baseType)
+                    {
+                    case M4::HLSLBaseType_Float:
+                        prop.type = rhi::ShaderProp::TYPE_FLOAT1;
+                        break;
+                    case M4::HLSLBaseType_Float2:
+                        prop.type = rhi::ShaderProp::TYPE_FLOAT2;
+                        break;
+                    case M4::HLSLBaseType_Float3:
+                        prop.type = rhi::ShaderProp::TYPE_FLOAT3;
+                        break;
+                    case M4::HLSLBaseType_Float4:
+                        prop.type = rhi::ShaderProp::TYPE_FLOAT4;
+                        break;
+                    case M4::HLSLBaseType_Float4x4:
+                        prop.type = rhi::ShaderProp::TYPE_FLOAT4X4;
+                        break;
+                    }
+
+                    for (M4::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
+                    {
+                        if (!stricmp(a->attrText, "static"))
+                            prop.storage = rhi::ShaderProp::STORAGE_STATIC;
+                        else if (!stricmp(a->attrText, "dynamic"))
+                            prop.storage = rhi::ShaderProp::STORAGE_DYNAMIC;
+                        else
+                            prop.tag = FastName(a->attrText);
+                    }
+
+                    // TODO: handle assignment/default-value
+
+                    buf_t* cbuf = nullptr;
+
+                    for (std::vector<buf_t>::iterator b = buf.begin(), b_end = buf.end(); b != b_end; ++b)
+                    {
+                        if (b->storage == prop.storage && b->tag == prop.tag)
+                        {
+                            cbuf = &(buf[b - buf.begin()]);
+                            break;
+                        }
+                    }
+
+                    if (!cbuf)
+                    {
+                        buf.resize(buf.size() + 1);
+
+                        cbuf = &(buf.back());
+
+                        cbuf->storage = prop.storage;
+                        cbuf->tag = prop.tag;
+                        cbuf->regCount = 0;
+                    }
+
+                    prop.bufferindex = static_cast<uint32>(cbuf - &(buf[0]));
+
+                    if (prop.type == rhi::ShaderProp::TYPE_FLOAT1 || prop.type == rhi::ShaderProp::TYPE_FLOAT2 || prop.type == rhi::ShaderProp::TYPE_FLOAT3)
+                    {
+                        bool do_add = true;
+                        uint32 sz = 0;
+
+                        switch (prop.type)
+                        {
+                        case rhi::ShaderProp::TYPE_FLOAT1:
+                            sz = 1;
+                            break;
+                        case rhi::ShaderProp::TYPE_FLOAT2:
+                            sz = 2;
+                            break;
+                        case rhi::ShaderProp::TYPE_FLOAT3:
+                            sz = 3;
+                            break;
+                        default:
+                            break;
+                        }
+
+                        for (unsigned r = 0; r != cbuf->avlRegIndex.size(); ++r)
+                        {
+                            if (cbuf->avlRegIndex[r] + sz <= 4)
+                            {
+                                prop.bufferReg = r;
+                                prop.bufferRegCount = cbuf->avlRegIndex[r];
+
+                                cbuf->avlRegIndex[r] += sz;
+
+                                do_add = false;
+                                break;
+                            }
+                        }
+
+                        if (do_add)
+                        {
+                            prop.bufferReg = cbuf->regCount;
+                            prop.bufferRegCount = 0;
+
+                            ++cbuf->regCount;
+
+                            cbuf->avlRegIndex.push_back(sz);
+                        }
+                    }
+                    else if (prop.type == rhi::ShaderProp::TYPE_FLOAT4 || prop.type == rhi::ShaderProp::TYPE_FLOAT4X4)
+                    {
+                        prop.bufferReg = cbuf->regCount;
+                        prop.bufferRegCount = prop.arraySize * ((prop.type == rhi::ShaderProp::TYPE_FLOAT4) ? 1 : 4);
+
+                        cbuf->regCount += prop.bufferRegCount;
+
+                        for (int i = 0; i != prop.bufferRegCount; ++i)
+                            cbuf->avlRegIndex.push_back(4);
+                    }
+
+                    prop_t pp;
+
+                    pp.decl = decl;
+                    pp.prev_statement = pstatement;
+
+                    prop_decl.push_back(pp);
+
+                    M4::Log_Error("  property \"%s\"  {", decl->name);
+                    for (M4::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
+                    {
+                        M4::Log_Error(" \"%s\"%s", a->attrText, (a->nextAttribute) ? "," : "");
+                    }
+                    M4::Log_Error(" }\n");
+                }
+
+                if (decl->type.baseType == M4::HLSLBaseType_Sampler2D
+                    || decl->type.baseType == M4::HLSLBaseType_SamplerCube
+                    )
+                {
+                    sampler.resize(sampler.size() + 1);
+                    rhi::ShaderSampler& s = sampler.back();
+
+                    switch (decl->type.baseType)
+                    {
+                    case M4::HLSLBaseType_Sampler2D:
+                        s.type = rhi::TEXTURE_TYPE_2D;
+                        break;
+                    case M4::HLSLBaseType_SamplerCube:
+                        s.type = rhi::TEXTURE_TYPE_CUBE;
+                        break;
+                    }
+                    s.uid = FastName(decl->name);
+                }
+            }
+
+            pstatement = statement;
+            statement = statement->nextStatement;
+        }
+    }
+
+    // get vertex-layout
+    {
+        M4::HLSLStruct* input = ast->FindGlobalStruct("VP_Input");
+
+        if (input)
+        {
+            struct
+            {
+                rhi::VertexSemantics usage;
+                const char* semantic;
+            }
+            semantic[] =
+            {
+              { rhi::VS_POSITION, "SV_POSITION" },
+              { rhi::VS_NORMAL, "SV_NORMAL" },
+              { rhi::VS_COLOR, "SV_COLOR" },
+              { rhi::VS_TEXCOORD, "SV_TEXCOORD" },
+              { rhi::VS_TANGENT, "SV_TANGENT" },
+              { rhi::VS_BINORMAL, "SV_BINORMAL" },
+              { rhi::VS_BLENDWEIGHT, "SV_BLENDWEIGHT" },
+              { rhi::VS_BLENDINDEX, "SV_BLENDINDICES" }
+            };
+
+            layout.Clear();
+
+            rhi::VertexDataFrequency cur_freq = rhi::VDF_PER_VERTEX;
+
+            for (M4::HLSLStructField* field = input->field; field; field = field->nextField)
+            {
+                rhi::VertexSemantics usage;
+                unsigned usage_i = 0;
+                rhi::VertexDataType data_type = rhi::VDT_FLOAT;
+                unsigned data_count = 0;
+                rhi::VertexDataFrequency freq = rhi::VDF_PER_VERTEX;
+
+                switch (field->type.baseType)
+                {
+                case M4::HLSLBaseType_Float4:
+                    data_type = rhi::VDT_FLOAT;
+                    data_count = 4;
+                    break;
+                case M4::HLSLBaseType_Float3:
+                    data_type = rhi::VDT_FLOAT;
+                    data_count = 3;
+                    break;
+                case M4::HLSLBaseType_Float2:
+                    data_type = rhi::VDT_FLOAT;
+                    data_count = 2;
+                    break;
+                case M4::HLSLBaseType_Float:
+                    data_type = rhi::VDT_FLOAT;
+                    data_count = 1;
+                    break;
+                case M4::HLSLBaseType_Uint4:
+                    data_type = rhi::VDT_UINT8;
+                    data_count = 4;
+                    break;
+                }
+
+                for (unsigned i = 0; i != countof(semantic); ++i)
+                {
+                    const char* t = strstr(field->semantic, semantic[i].semantic);
+
+                    if (t)
+                    {
+                        const char* tu = field->semantic + strlen(semantic[i].semantic);
+
+                        usage = semantic[i].usage;
+                        usage_i = atoi(tu);
+                        break;
+                    }
+                }
+
+                if (field->attribute)
+                {
+                    if (stricmp(field->attribute->attrText, "vertex") == 0)
+                        freq = rhi::VDF_PER_VERTEX;
+                    else if (stricmp(field->attribute->attrText, "instance") == 0)
+                        freq = rhi::VDF_PER_INSTANCE;
+                }
+
+                if (freq != cur_freq)
+                    layout.AddStream(freq);
+                cur_freq = freq;
+
+                layout.AddElement(usage, usage_i, data_type, data_count);
+            }
+
+            Logger::Info("vertex-layout:");
+            layout.Dump();
+        }
+    }
+
+#if 1
+    if (prop_decl.size())
+    {
+        for (unsigned i = 0; i != buf.size(); ++i)
+        {
+            M4::HLSLBuffer* cbuf = ast->AddNode<M4::HLSLBuffer>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+            M4::HLSLDeclaration* decl = ast->AddNode<M4::HLSLDeclaration>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+            M4::HLSLLiteralExpression* sz = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+            ;
+            char buf_name[128];
+            char buf_type_name[128];
+            char buf_reg_name[128];
+
+            Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%0", i);
+            Snprintf(buf_type_name, sizeof(buf_name), "VP_Buffer%0_t", i);
+            Snprintf(buf_reg_name, sizeof(buf_name), "b%u", i);
+
+            decl->name = ast->AddString(buf_name);
+            decl->type.baseType = M4::HLSLBaseType_Float4;
+            decl->type.array = true;
+            decl->type.arraySize = sz;
+
+            sz->type = M4::HLSLBaseType_Int;
+            sz->iValue = buf[i].regCount;
+
+            cbuf->field = decl;
+            cbuf->name = ast->AddString(buf_type_name);
+            cbuf->registerName = ast->AddString(buf_reg_name);
+
+            prop_decl[0].prev_statement->nextStatement = cbuf;
+            cbuf->nextStatement = prop_decl[0].decl;
+        }
+
+        DVASSERT(property.size() == prop_decl.size());
+        for (unsigned i = 0; i != property.size(); ++i)
+        {
+            switch (property[i].type)
+            {
+            case rhi::ShaderProp::TYPE_FLOAT4:
+            {
+                M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                char buf_name[128];
+
+                Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%0", property[i].bufferindex);
+                arr->name = ast->AddString(buf_name);
+                arr->global = true;
+
+                idx->type = M4::HLSLBaseType_Int;
+                idx->iValue = property[i].bufferReg;
+
+                arr_access->array = arr;
+                arr_access->index = idx;
+
+                prop_decl[i].decl->assignment = arr_access;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+            }
+            break;
+
+            case rhi::ShaderProp::TYPE_FLOAT3:
+            case rhi::ShaderProp::TYPE_FLOAT2:
+            case rhi::ShaderProp::TYPE_FLOAT1:
+            {
+                M4::HLSLMemberAccess* member_access = ast->AddNode<M4::HLSLMemberAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                char xyzw[] = { 'x', 'y', 'z', 'w', '\0' };
+                unsigned elem_cnt = 0;
+                M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                char buf_name[128];
+
+                switch (property[i].type)
+                {
+                case rhi::ShaderProp::TYPE_FLOAT1:
+                    elem_cnt = 1;
+                    break;
+                case rhi::ShaderProp::TYPE_FLOAT2:
+                    elem_cnt = 2;
+                    break;
+                case rhi::ShaderProp::TYPE_FLOAT3:
+                    elem_cnt = 3;
+                    break;
+                }
+
+                member_access->object = arr_access;
+                xyzw[property[i].bufferRegCount + elem_cnt] = 0;
+                member_access->field = ast->AddString(xyzw + property[i].bufferRegCount);
+
+                Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%0", property[i].bufferindex);
+                arr->name = ast->AddString(buf_name);
+                arr->global = true;
+
+                idx->type = M4::HLSLBaseType_Int;
+                idx->iValue = property[i].bufferReg;
+
+                arr_access->array = arr;
+                arr_access->index = idx;
+
+                prop_decl[i].decl->assignment = member_access;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+            }
+            break;
+
+            case rhi::ShaderProp::TYPE_FLOAT4X4:
+            {
+                M4::HLSLConstructorExpression* ctor = ast->AddNode<M4::HLSLConstructorExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLArrayAccess* arr_access[4];
+
+                ctor->type.baseType = M4::HLSLBaseType_Float4x4;
+
+                for (unsigned k = 0; k != 4; ++k)
+                {
+                    arr_access[k] = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+
+                    M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                    M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                    char buf_name[128];
+
+                    Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%0", property[i].bufferindex);
+                    arr->name = ast->AddString(buf_name);
+
+                    idx->type = M4::HLSLBaseType_Int;
+                    idx->iValue = property[i].bufferReg + k;
+
+                    arr_access[k]->array = arr;
+                    arr_access[k]->index = idx;
+                }
+
+                ctor->argument = arr_access[0];
+                for (unsigned k = 0; k != 4 - 1; ++k)
+                    arr_access[k]->nextExpression = arr_access[k + 1];
+
+                prop_decl[i].decl->assignment = ctor;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+            }
+            break;
+            }
+        }
+    }
+#endif
+
+#if 1
+    Logger::Info("properties (%u) :", property.size());
+    for (std::vector<rhi::ShaderProp>::const_iterator p = property.begin(), p_end = property.end(); p != p_end; ++p)
+    {
+        if (p->type == rhi::ShaderProp::TYPE_FLOAT4 || p->type == rhi::ShaderProp::TYPE_FLOAT4X4)
+        {
+            if (p->arraySize == 1)
+            {
+                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", p->uid.c_str(), p->bufferindex, p->bufferReg, p->bufferRegCount);
+            }
+            else
+            {
+                char name[128];
+
+                Snprintf(name, sizeof(name) - 1, "%s[%u]", p->uid.c_str(), p->arraySize);
+                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", name, p->bufferindex, p->bufferReg, p->bufferRegCount);
+            }
+        }
+        else
+        {
+            const char* xyzw = "xyzw";
+
+            switch (p->type)
+            {
+            case rhi::ShaderProp::TYPE_FLOAT1:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT2:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1]);
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT3:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c%c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1], xyzw[p->bufferRegCount + 2]);
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+
+    Logger::Info("\n--- ShaderSource");
+    Logger::Info("buffers (%u) :", buf.size());
+    for (unsigned i = 0; i != buf.size(); ++i)
+    {
+        Logger::Info("  buf#%u  reg.count = %u", i, buf[i].regCount);
+    }
+
+    Logger::Info("samplers (%u) :", sampler.size());
+    for (unsigned s = 0; s != sampler.size(); ++s)
+    {
+        Logger::Info("  sampler#%u  \"%s\"", s, sampler[s].uid.c_str());
+    }
+    Logger::Info("\n\n");
+#endif
+};
+
 void
 GameCore::_test_parser()
 {
     // Read input file.
-    const char* filename = "test.fx";
+    //    const char* filename = "test.fx";
+    const char* filename = "vp-test.fx";
+    //    const char* filename = "fp-test.fx";
     size_t length;
     const char* buffer = readFile(filename, &length);
 
@@ -373,37 +911,11 @@ GameCore::_test_parser()
         M4::Log_Error("Parse error.\n");
     }
 
+    _ProcessProperties(&tree);
+
     MyVisitor visitor;
 
     visitor.VisitRoot(tree.GetRoot());
-
-    // find properties
-    {
-        M4::Log_Error("properties :\n");
-        M4::HLSLStatement* statement = tree.GetRoot()->statement;
-        M4::HLSLStatement* pstatement = NULL;
-
-        while (statement)
-        {
-            if (statement->nodeType == M4::HLSLNodeType_Declaration)
-            {
-                M4::HLSLDeclaration* decl = (M4::HLSLDeclaration*)statement;
-
-                if (decl->type.flags & M4::HLSLTypeFlag_Property)
-                {
-                    M4::Log_Error("  property \"%s\"  {", decl->name);
-                    for (M4::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
-                    {
-                        M4::Log_Error(" \"%s\"%s", a->attrText, (a->nextAttribute) ? "," : "");
-                    }
-                    M4::Log_Error(" }\n");
-                }
-            }
-
-            pstatement = statement;
-            statement = statement->nextStatement;
-        }
-    }
 
     M4::Array<M4::HLSLFunctionCall*> fcall(&M4_Allocator);
     const char* func_name = "p_offset";
@@ -688,7 +1200,7 @@ GameCore::_test_parser()
 
     M4::HLSLGenerator hlsl_gen(&M4_Allocator);
 
-    if (hlsl_gen.Generate(&tree, M4::HLSLGenerator::Target_VertexShader, "vp_main", true))
+    if (hlsl_gen.Generate(&tree, M4::HLSLGenerator::Target_VertexShader, "main", false))
     {
         puts(hlsl_gen.GetResult());
         ::OutputDebugStringA("\n\n---- HLSL\n");

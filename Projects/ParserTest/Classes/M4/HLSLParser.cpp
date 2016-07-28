@@ -1318,6 +1318,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
         }
         else
         {
+            /*
             if (typeFlags & HLSLTypeFlag_Property)
             {
                 // Uniform declaration.
@@ -1336,6 +1337,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 statement = declaration;
             }
             else
+*/
             {
                 // Uniform declaration.
                 HLSLDeclaration* declaration = m_tree->AddNode<HLSLDeclaration>(fileName, line);
@@ -1696,11 +1698,15 @@ bool HLSLParser::ParseDeclarationAssignment(HLSLDeclaration* declaration)
 
 bool HLSLParser::ParseFieldDeclaration(HLSLStructField*& field)
 {
+    HLSLAttribute* attributes = NULL;
+    ParseAttributeBlock(attributes);
+
     field = m_tree->AddNode<HLSLStructField>(GetFileName(), GetLineNumber());
     if (!ExpectDeclaration(false, field->type, field->name))
     {
         return false;
     }
+    field->attribute = attributes;
     // Handle optional semantics.
     if (Accept(':'))
     {

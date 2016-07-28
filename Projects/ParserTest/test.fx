@@ -14,6 +14,11 @@ VP_Output
 
 
 [global][dynamic] property float Bla;
+[a][dynamic] property float Bla_A;
+[a][dynamic] property float Bla_AA;
+[a][dynamic] property float3 Bla_AA/* = float3(1.0,2.0,3.0)*/;
+
+cbuffer VP_Buffer0_t : register(b0) { float4 VP_Buffer0[2]; }; 
 
 uniform float4x4 World;
 uniform float4x4 ViewProjection;
