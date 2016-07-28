@@ -97,9 +97,11 @@ ResetParam
     }
 };
 
-struct
-RenderDeviceCaps
+struct RenderDeviceCaps
 {
+    uint32 maxAnisotropy = 1;
+    char deviceDescription[128]{};
+    
     bool is32BitIndicesSupported = false;
     bool isVertexTextureUnitsSupported = false;
     bool isFramebufferFetchSupported = false;
@@ -107,11 +109,11 @@ RenderDeviceCaps
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
     bool isInstancingSupported = false;
-    bool isAnisotropicFilteringSupported = false;
-
-    uint32 maxAnisotropy = 1;
-
-    char deviceDescription[128];
+    
+    bool isAnisotropicFilteringSupported() const
+    {
+        return maxAnisotropy > 1;
+    }
 };
 
 bool ApiIsSupported(Api api);

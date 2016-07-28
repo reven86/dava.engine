@@ -213,8 +213,7 @@ gles_check_GL_extensions()
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
 
-        _GLES2_DeviceCaps.isAnisotropicFilteringSupported = strstr(ext, "EXT_texture_filter_anisotropic") != nullptr;
-        if (_GLES2_DeviceCaps.isAnisotropicFilteringSupported)
+        if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
         {
             float32 value = 0.0f;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);

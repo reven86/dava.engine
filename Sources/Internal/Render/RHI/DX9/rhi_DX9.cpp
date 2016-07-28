@@ -183,8 +183,10 @@ void _InitDX9()
 
         if (SUCCEEDED(hr))
         {
-            _DeviceCapsDX9.isAnisotropicFilteringSupported = (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) != 0;
-            _DeviceCapsDX9.maxAnisotropy = caps.MaxAnisotropy;
+            if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+            {
+                _DeviceCapsDX9.maxAnisotropy = caps.MaxAnisotropy;
+            }
 
             if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
             {
