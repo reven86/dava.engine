@@ -1,4 +1,4 @@
-require("TupState")
+tup.initdava("../../../Tools/Bin/lua/Tupdava.lua")
 
 tupState = TupState.New({
     outputDir = "../.Assets",
@@ -6,6 +6,8 @@ tupState = TupState.New({
     intermediateDir = "../.tmp",
     superpack = true
 })
+
+tup.include("Tuprules.inc.lua")
 
 tupState:AddPacks {
     {
@@ -15,25 +17,15 @@ tupState:AddPacks {
     {
         name = "pack1",
         is_base = true,
-        exclusive = true,
         compression = "none",
         rules = {
             { "^$",  ".*" }
         },
     },
-    {
-        name = "testlower",
-        exclusive = true,
-        is_base = true,
-        --is_lowercase = true,
-        rules = {
-            "UI/Test/scrollscreen.yaml"
-        }
-    },
+    lowercase_rule,
     {
         name = "packgpu",
         is_gpu = true,
-        exclusive = true,
         rules = {
             { "", ".*{gpu}.*"}
         }

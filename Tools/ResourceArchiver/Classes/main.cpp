@@ -30,7 +30,7 @@ void CreateDAVA()
 
     new DAVA::Logger();
     DAVA::Logger::Instance()->EnableConsoleMode();
-    DAVA::Logger::Instance()->SetLogLevel(Logger::LEVEL_WARNING);
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
     new DAVA::JobManager();
     new DAVA::FileSystem();
