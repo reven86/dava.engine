@@ -4,14 +4,11 @@ REPOSRC=https://github.com/gittup/tup.git
 LOCALREPO=tup_macos
 
 # checkout or update from github repo
-if [ ! -d $LOCALREPO/.git ]
-then
+if [ ! -d $LOCALREPO/.git ]; then
     git clone $REPOSRC $LOCALREPO
     cd $LOCALREPO
+    git checkout v0.7.4
     git apply ../patch-1_add_davainit.patch
-else
-    cd $LOCALREPO
-    git pull $REPOSRC
 fi
 
 # build tup
