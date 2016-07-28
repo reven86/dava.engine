@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+static Set<String> androidAssetsFiles;
+
 FileSystem::FileSystem()
 {
 }
@@ -420,8 +422,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
-    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
-        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES) // ~res:/
     {
         const String& str = pathToCheck.GetStringValue();
         auto start = str.find("~res:/");
@@ -430,6 +431,8 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         {
             relative = str.substr(6);
         }
+
+        // TODO if packManager initialized we can use index to find pack with filePath
 
         if (!relative.empty())
         {
@@ -443,22 +446,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         }
     }
 
-#if defined(__DAVAENGINE_ANDROID__)
-    const String& path = pathToCheck.GetAbsolutePathname();
-    {
-        File* f = File::Create(path, File::OPEN | File::READ);
-        if (nullptr != f)
-        {
-            f->Release();
-            return true;
-        }
-    }
-//if (IsAPKPath(path))
-//{
-//    return fileSet.find(path) != end(fileSet);
-//}
-#endif
-
+    // ~res:/ or c:/... or ~doc:/
     FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
     FileAPI::Stat fileStat;
     int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
@@ -481,6 +469,15 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
         }
     }
+
+#if defined(__DAVAENGINE_ANDROID__)
+    // ~res:/ or Data/... or tips.yaml
+    const String& path = pathToCheck.GetAbsolutePathname();
+    if (androidAssetsFiles.find(path) != end(androidAssetsFiles))
+    {
+        return true;
+    }
+#endif
 
     return false;
 }
@@ -857,45 +854,10 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath& folder)
 {
 #if defined(__DAVAENGINE_ANDROID__)
     // for android we create .nomedia file to say to the OS that this directory have no media content and exclude it from index
-    File* nomedia = FileSystem::Instance()->CreateFileForFrameworkPath(folder + ".nomedia", File::WRITE | File::CREATE);
+    File* nomedia = File::Create(folder + ".nomedia", File::WRITE | File::CREATE);
     SafeRelease(nomedia);
 #endif
 }
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-//bool FileSystem::IsAPKPath(const String& path) const
-//{
-//    if (!path.empty() && path.c_str()[0] == '/')
-//        return false;
-//    return true;
-//}
-
-void FileSystem::Init()
-{
-    //YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
-
-    //if (parser)
-    //    {
-    //        const YamlNode* node = parser->GetRootNode();
-    //        const YamlNode* dirList = node->Get("dirList");
-    //        if (dirList)
-    //        {
-    //            const Vector<YamlNode*> vec = dirList->AsVector();
-    //            for (uint32 i = 0; i < vec.size(); ++i)
-    //                dirSet.insert(vec[i]->AsString());
-    //        }
-    //        const YamlNode* fileList = node->Get("fileList");
-    //        if (fileList)
-    //        {
-    //            const Vector<YamlNode*> vec = fileList->AsVector();
-    //            for (uint32 i = 0; i < vec.size(); ++i)
-    //                fileSet.insert(vec[i]->AsString());
-    //        }
-    //    }
-    //    SafeRelease(parser);
-}
-#endif
 
 bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
 {

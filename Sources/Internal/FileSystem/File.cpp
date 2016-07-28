@@ -82,50 +82,6 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     return PureCreate(filename, attributes);
 }
 
-#ifdef __DAVAENGINE_ANDROID__
-
-static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
-{
-    int index = zip_name_locate(package, path.c_str(), 0);
-    if (-1 == index)
-    {
-        return nullptr;
-    }
-
-    struct zip_stat stat;
-
-    int32 error = zip_stat_index(package, index, 0, &stat);
-    if (-1 == error)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't get file info: %s", path.c_str());
-        return nullptr;
-    }
-
-    zip_file* file = zip_fopen_index(package, index, 0);
-    if (nullptr == file)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
-        return nullptr;
-    }
-    SCOPE_EXIT
-    {
-        zip_fclose(file);
-    };
-
-    DVASSERT(stat.size >= 0);
-
-    Vector<uint8> data(stat.size, 0);
-
-    if (zip_fread(file, &data[0], stat.size) != stat.size)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
-
-        return nullptr;
-    }
-
-    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
-}
-
 static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 {
     static Mutex mutex;
@@ -135,18 +91,14 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     AssetsManager* assetsManager = AssetsManager::Instance();
     DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
-    zip* package = assetsManager->GetApplicationPackage();
-    if (nullptr == package)
+    Vector<uint8> data;
+    if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))
     {
-        DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
         return nullptr;
     }
-    // TODO in future remove ugly HACK with prefix path
-    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
-    return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
-}
 
-#endif // __DAVAENGINE_ANDROID__
+    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
+}
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {

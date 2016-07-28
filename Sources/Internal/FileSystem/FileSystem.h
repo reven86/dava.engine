@@ -301,16 +301,6 @@ private:
     Map<String, void*> lockedFileHandles;
 
     friend class File;
-#if defined(__DAVAENGINE_ANDROID__)
-public:
-    void Init();
-
-private:
-//bool IsAPKPath(const String& path) const;
-//Set<String> fileSet;
-//Set<String> dirSet;
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
 };
 };
 

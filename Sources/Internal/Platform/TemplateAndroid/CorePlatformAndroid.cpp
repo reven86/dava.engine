@@ -157,7 +157,6 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
-        FileSystem::Instance()->Init();
 
         Core::Instance()->SystemAppStarted();
 

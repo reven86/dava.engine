@@ -20,5 +20,4 @@ private:
     Vector<ResourceArchive::FileInfo> fileInfos;
     Vector<String> fileNames;
 };
-
 } // end namespace DAVA

@@ -1,37 +1,40 @@
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "Utils/Utils.h"
-#include "zip/zip.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
+#include "FileSystem/FilePath.h"
+#include "FileSystem/File.h"
+#include "FileSystem/Private/ZipArchive.h"
+#include "Base/RefPtr.h"
 
 namespace DAVA
 {
-AssetsManager::AssetsManager()
-    : packageName("")
-    , applicationPackage(NULL)
-{
-}
+AssetsManager::AssetsManager() = default;
 
-AssetsManager::~AssetsManager()
+AssetsManager::~AssetsManager() = default;
+
+void AssetsManager::Init(const String& apkFileName)
 {
-    if (applicationPackage)
+    if (apk)
     {
-        zip_close(applicationPackage);
-        applicationPackage = NULL;
+        throw std::runtime_error("[AssetsManager::Init] should be initialized only once.");
     }
-}
 
-void AssetsManager::Init(const String& packageName)
-{
-    DVASSERT_MSG(applicationPackage == NULL, "[AssetsManager::Init] Package should be initialized only once.");
-
-    applicationPackage = zip_open(packageName.c_str(), 0, NULL);
-    if (applicationPackage == NULL)
+    FilePath apkPath(apkFileName);
+    RefPtr<File> file(File::Create(apkPath, File::OPEN | File::READ));
+    if (!file)
     {
-        DVASSERT_MSG(false, "[CorePlatformAndroid::InitApplicationPackage] Could not initialize application package.");
-        applicationPackage = NULL;
+        throw std::runtime_error("[AssetsManager::Init] can't open: " + apkFileName);
     }
-}
+
+    apk.reset(new ZipArchive(file, apkPath));
 }
 
-#endif // #if defined(__DAVAENGINE_ANDROID__)
+bool AssetsManager::HasFile(const String& relativeFilePath) const
+{
+    return apk->HasFile("assets/" + relativeFilePath);
+}
+
+bool AssetsManager::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
+{
+    return apk->LoadFile("assets/" + relativeFilePath, output);
+}
+
+} // DAVA namespace
