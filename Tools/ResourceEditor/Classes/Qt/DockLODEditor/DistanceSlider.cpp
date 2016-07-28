@@ -30,9 +30,14 @@ DAVA::int32 RoundFloat32(DAVA::float32 value)
     return static_cast<DAVA::int32>(DAVA::Round(value));
 }
 
-DAVA::int32 GetAvailableWidth(QSplitter* splitter, DAVA::uint32 notInfDistancesCount)
+DAVA::int32 GetAvailableWidth(QSplitter* splitter, DAVA::uint32 visibleFramesCount)
 {
-    DAVA::int32 availableSplitterWidth = splitter->geometry().width() - splitter->handleWidth() * notInfDistancesCount;
+    DAVA::int32 availableSplitterWidth = splitter->geometry().width();
+    if (visibleFramesCount > 0)
+    {
+        availableSplitterWidth -= splitter->handleWidth() * (visibleFramesCount - 1);
+    }
+
     return availableSplitterWidth;
 }
 }
@@ -110,6 +115,8 @@ const DAVA::Vector<DAVA::float32>& DistanceSlider::GetDistances() const
 
 void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_, const DAVA::Vector<bool>& multiple_)
 {
+    fitModeEnabled = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
+
     ApplyDistances(distances_);
     ApplyMultiple(multiple_);
 
@@ -154,8 +161,8 @@ void DistanceSlider::ApplyMultiple(const DAVA::Vector<bool>& multiple_)
 
 void DistanceSlider::BuildUI()
 {
-    const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, notInfDistancesCount);
-
+    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
+    const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, visibleFramesCount);
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = availableSplitterWidth / scaleSize;
 
@@ -177,7 +184,15 @@ void DistanceSlider::BuildUI()
         handlePos += handleWidth;
     }
 
-    sizes.push_back(availableSplitterWidth - lastLayerWidth);
+    setToolTip("");
+    if (!fitModeEnabled)
+    {
+        sizes.push_back(availableSplitterWidth - lastLayerWidth);
+    }
+    else if (visibleFramesCount == 0)
+    {
+        setToolTip("all distances are infinity");
+    }
 
     QSignalBlocker guard(splitter);
     splitter->setSizes(sizes);
@@ -197,6 +212,7 @@ void DistanceSlider::ColorizeUI()
 
     const QColor inactiveColor = ColorToQColor(settingsManager->GetValue(Settings::General_LODEditor_InactiveColor).AsColor());
 
+    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
     DAVA::uint32 coloredCount = DAVA::Min(layersCount, notInfDistancesCount);
     for (DAVA::uint32 i = 0; i < DistanceSliderDetail::MAX_FRAMES_COUNT; ++i)
     {
@@ -217,7 +233,7 @@ void DistanceSlider::ColorizeUI()
             pallete.setColor(QPalette::Background, inactiveColor);
         }
         frames[i]->setPalette(pallete);
-        frames[i]->setVisible(i <= notInfDistancesCount);
+        frames[i]->setVisible(i < visibleFramesCount);
     }
 }
 
@@ -225,7 +241,8 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 {
     DVASSERT(index > 0);
 
-    const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, notInfDistancesCount);
+    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
+    const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, visibleFramesCount);
 
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = scaleSize / availableSplitterWidth;
@@ -262,6 +279,11 @@ DAVA::float32 DistanceSlider::GetScaleSize() const
 {
     DAVA::float32 minVisualValue = DAVA::LodComponent::MIN_LOD_DISTANCE;
     DAVA::float32 maxVisualValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
+
+    if (fitModeEnabled && notInfDistancesCount > 0)
+    {
+        maxVisualValue = realDistances[notInfDistancesCount - 1];
+    }
 
     return maxVisualValue - minVisualValue;
 }

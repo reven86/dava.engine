@@ -422,6 +422,17 @@ Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
     texture->SetParamsFromImages(images);
     texture->FlushDataToRenderer(images);
 
+    if (!texture->singleTextureSet.IsValid())
+    {
+        Logger::Error
+        (
+        "[Texture::CreateFromImage] Cannot create rhi.texture from image. Descriptor: %s, GPU: %s",
+        descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu)
+        );
+        SafeRelease(texture);
+        return nullptr;
+    }
+
     return texture;
 }
 
@@ -507,12 +518,14 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
             for (uint32 index = baseMipMap; index < singleMipFilesCount; ++index)
             {
                 params.baseMipmap = 0;
-                params.firstMipmapIndex = static_cast<uint32>(images->size());
-                ImageSystem::Load(singleMipFiles[index], *images, params);
+                eErrorCode loadingCode = ImageSystem::Load(singleMipFiles[index], *images, params);
+                if (loadingCode == eErrorCode::SUCCESS)
+                {
+                    ++params.firstMipmapIndex;
+                }
             }
 
             params.baseMipmap = Max(static_cast<int32>(baseMipMap) - static_cast<int32>(singleMipFilesCount), 0);
-            params.firstMipmapIndex += singleMipFilesCount;
         }
 
         FilePath multipleMipPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
@@ -636,13 +649,18 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     }
 
     handle = rhi::CreateTexture(descriptor);
-    DVASSERT(handle != rhi::InvalidHandle);
-
-    rhi::TextureSetDescriptor textureSetDesc;
-    textureSetDesc.fragmentTexture[0] = handle;
-    textureSetDesc.fragmentTextureCount = 1;
-    singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
-
+    if (handle != rhi::InvalidHandle)
+    {
+        rhi::TextureSetDescriptor textureSetDesc;
+        textureSetDesc.fragmentTexture[0] = handle;
+        textureSetDesc.fragmentTextureCount = 1;
+        singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+    }
+    else
+    {
+        singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
+    }
+    
 #else
 
     handle = rhi::CreateTexture(descriptor);

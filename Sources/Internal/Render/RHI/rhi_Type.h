@@ -23,8 +23,6 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
 
-typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
-
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,

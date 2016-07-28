@@ -39,6 +39,9 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
+    void OnVisible() override;
+    void OnInvisible() override;
+
     void SetDrawToFrameBuffer(bool enable);
     bool GetDrawToFrameBuffer() const;
     void SetFrameBufferScaleFactor(float32 scale);

@@ -898,14 +898,19 @@ gles2_SyncObject_IsSignaled(Handle obj)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
 
-    if (!SyncObjectPoolGLES2::IsAlive(obj))
-        return true;
-
     bool signaled = false;
-    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
-    if (sync)
-        signaled = sync->is_signaled;
+    if (SyncObjectPoolGLES2::IsAlive(obj))
+    {
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
+
+        if (sync)
+            signaled = sync->is_signaled;
+    }
+    else
+    {
+        signaled = true;
+    }
 
     return signaled;
 }
@@ -1127,6 +1132,7 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glEnable(GL_DEPTH_TEST));
             GL_CALL(glDepthFunc(GL_LEQUAL));
             GL_CALL(glDepthMask(GL_TRUE));
+            GL_CALL(glDisable(GL_SCISSOR_TEST));
 
             if (isFirstInPass)
             {
@@ -2002,40 +2008,6 @@ _GLES2_ExecuteQueuedCommands()
 
     if (_GLES2_Context)
     {
-        // take screenshot, if needed
-
-        _GLES2_ScreenshotCallbackSync.Lock();
-        if (_GLES2_PendingScreenshotCallback)
-        {
-            const uint32 stride = 4 * _GLES2_DefaultFrameBuffer_Width;
-            uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
-
-            GLCommand cmd[] =
-            {
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
-              { GLCommand::PIXEL_STORE_I, { GL_PACK_ALIGNMENT, 1 } },
-              { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, uint64(rgba) } },
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
-            };
-
-            _ExecGL(cmd, countof(cmd));
-            for (int y = 0; y < _GLES2_DefaultFrameBuffer_Height / 2; ++y)
-            {
-                uint8* line1 = rgba + y * stride;
-                uint8* line2 = rgba + (_GLES2_DefaultFrameBuffer_Height - y - 1) * stride;
-                uint8 tmp[5 * 1024 * 4];
-
-                DVASSERT(stride <= sizeof(tmp));
-                memcpy(tmp, line1, stride);
-                memcpy(line1, line2, stride);
-                memcpy(line2, tmp, stride);
-            }
-            (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
-            delete[] rgba;
-            _GLES2_PendingScreenshotCallback = nullptr;
-        }
-        _GLES2_ScreenshotCallbackSync.Unlock();
-
         // do swap-buffers
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
@@ -2771,6 +2743,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             if (!executed)
             {
                 _GLES2_FramePreparedEvent.Signal();
+                DAVA::Thread::Yield();
             }
         }
 

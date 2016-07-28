@@ -114,6 +114,7 @@ RenderDeviceCaps
     char deviceDescription[128];
 };
 
+bool ApiIsSupported(Api api);
 void Initialize(Api api, const InitParam& param);
 void Uninitialize();
 void Reset(const ResetParam& param);
@@ -129,8 +130,6 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
-
-void TakeScreenshot(ScreenShotCallback callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -315,6 +314,7 @@ void SetFramePerfQuerySet(HPerfQuerySet hset);
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
+bool NeedInvertProjection(const RenderPassConfig& passDesc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // rendering
