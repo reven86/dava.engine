@@ -1157,7 +1157,8 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
 void EntityModificationSystem::UpdateTransformableSelection()
 {
-    SceneSelectionSystem* selectionSystem = ((SceneEditor2*)GetScene())->selectionSystem;
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    SceneSelectionSystem* selectionSystem = sc->selectionSystem;
 
     transformableSelection.Clear();
     for (const Selectable& item : currentSelection.GetContent())

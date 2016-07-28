@@ -723,10 +723,11 @@ void SceneSelectionSystem::UpdateHoodPos() const
     }
     else
     {
-        const SelectableGroup& filteredSelection = modificationSystem->GetTransformableSelection();
-        hoodSystem->LockModif(filteredSelection.IsEmpty());
+        const SelectableGroup& transformableSelection = modificationSystem->GetTransformableSelection();
+        bool transformableSelectionEmpty = transformableSelection.IsEmpty();
+        hoodSystem->LockModif(transformableSelectionEmpty);
 
-        if (filteredSelection.IsEmpty() == false)
+        if (!transformableSelectionEmpty)
         {
             DAVA::Vector3 hoodCenter;
             if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
