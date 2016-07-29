@@ -344,6 +344,8 @@ function TupState.New(userConf)
        
     --debugger()
 
+    local dbginfo = debug.getinfo(1, 'S')
+    --local fwPath = self:FindFWLuaPath(dbginfo.source:sub(2), self.projectDir)
     local fwPath = self:FindFWLuaPath(davapath, self.projectDir)
     self.frameworkPath = fwPath
            

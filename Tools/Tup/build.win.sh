@@ -8,9 +8,11 @@ if [ ! -d $LOCALREPO/.git ]
 then
     git clone $REPOSRC $LOCALREPO
     cd $LOCALREPO
-    git checkout v0.7.4
-    git apply ../patch-1_add_davainit.patch
+    #git checkout v0.7.4
+    git apply ../patch-1_add_davainclude.patch
     git apply ../patch-2_build_for_win.patch
+else
+    cd $LOCALREPO
 fi
 
 # check if mingw-w64 is installer
@@ -35,7 +37,6 @@ if [ $HASMINGW -ne 0 ]; then
         brew install-mingw-w64
     else
         echo "no"
-        exit 1
     fi
 fi
 

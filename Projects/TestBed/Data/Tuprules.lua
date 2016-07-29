@@ -1,4 +1,4 @@
-tup.initdava("../../../Tools/Bin/lua/Tupdava.lua")
+tup.davainclude("../../../Tools/Bin/lua/Tupdava.lua")
 
 tupState = TupState.New({
     outputDir = "../.Assets",
@@ -7,7 +7,7 @@ tupState = TupState.New({
     superpack = true
 })
 
-tup.include("Tuprules.inc.lua")
+tup.davainclude("Tuprules.inc.lua")
 
 tupState:AddPacks {
     {
