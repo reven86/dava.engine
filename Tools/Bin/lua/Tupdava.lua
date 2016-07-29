@@ -544,12 +544,22 @@ function TupState.BuildPacks(self)
             local sqlGroup = self:GetSqlGroup(gpu)
             local sqlGroupPath = self.sqlDir .. "/<" .. sqlGroup .. ">"
 
+            -- generate emply lists for each pack
+            -- this will allow cat/type command not fail
+            -- if no lists were generated for pack
+            local emptyPackCmd = self.cmd.fwdep .. " echo -o %o"
+            local emptyPackCmdText = "^ Get empty list for " .. pack.name .. gpu .. "^ "
+            local emptyPackOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.delimiter .. "_empty" .. self.conf.packlistExt 
+            
+            tup.rule(emptyPackCmdText .. emptyPackCmd, { emptyPackOutput })
+ 
             -- merge lists
-            local mergePackCmd = self.cmd.fwdep .. " merge %<" .. packGroup .. "> -o %o"
+            local mergePackMask = self.packlistDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.delimiter .. "*" .. self.conf.packlistExt 
+            local mergePackCmd = self.cmd.fwdep .. " merge " .. mergePackMask .. " -o %o"
             local mergePackCmdText = "^ Gen merged list for " .. packGroup .. "^ "
             local mergePackOutput = self.mergeDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.mergedlistExt
             
-            tup.rule({  packGroupPath }, mergePackCmdText .. mergePackCmd, { mergePackOutput })
+            tup.rule({ mergePackMask, packGroupPath, emptyPackOutput }, mergePackCmdText .. mergePackCmd, { mergePackOutput })
 
             -- archivate
             local archiveCmd = self.cmd.fwResourceArchive .. " pack -compression " .. pack.compression .. " -listfile %f %o"
@@ -579,13 +589,15 @@ function TupState.BuildPacks(self)
         local sqlCommonGroupPath = self.sqlDir .. "/<" .. sqlCommonGroup .. ">"
     
         -- merge final sql
-        local mergeSqlCmd = self.cmd.fwdep .. " merge %<" .. sqlGroup .. "> %<" .. sqlCommonGroup .. "> -o %o"
+        local mergeSqlMaskCommon = self.sqlDir .. "/" .. self.conf.commonGpu .. "/*.sql"
+        local mergeSqlMaskGpu = self.sqlDir .. "/" .. gpu .. "/*.sql"  
+        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o"
         local mergeSqlCmdText = "^ Gen merged sql " .. gpu .. "^ "
         local mergeSqlOutput = self.mergeDir .. "/" .. gpu .. "/final.sql" 
 
         mergeSqlCmd = UtilConvertToPlatformPath(self.platform, mergeSqlCmd)
             
-        tup.rule({ sqlGroupPath , sqlCommonGroupPath },
+        tup.rule({ mergeSqlMaskGpu, mergeSqlMaskCommon, sqlGroupPath , sqlCommonGroupPath },
             mergeSqlCmdText .. mergeSqlCmd, mergeSqlOutput)
             
         -- generate packs database
@@ -626,7 +638,7 @@ function TupState.BuildPacks(self)
 
         -- merge superpack lists
         local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-        local mergedSuperCmd = self.cmd.cat .. " " .. mergedSuperMask .. " > %o"
+        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o"
         local mergedSuperCmdText = "^ Gen merged superlist^ "
         local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 
