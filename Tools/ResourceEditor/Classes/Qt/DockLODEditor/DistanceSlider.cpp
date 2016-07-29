@@ -161,7 +161,7 @@ void DistanceSlider::ApplyMultiple(const DAVA::Vector<bool>& multiple_)
 
 void DistanceSlider::BuildUI()
 {
-    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
+    const DAVA::uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
     const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, visibleFramesCount);
     const DAVA::float32 scaleSize = GetScaleSize();
     const DAVA::float32 widthCoef = availableSplitterWidth / scaleSize;
@@ -212,7 +212,7 @@ void DistanceSlider::ColorizeUI()
 
     const QColor inactiveColor = ColorToQColor(settingsManager->GetValue(Settings::General_LODEditor_InactiveColor).AsColor());
 
-    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
+    const DAVA::uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
     DAVA::uint32 coloredCount = DAVA::Min(layersCount, notInfDistancesCount);
     for (DAVA::uint32 i = 0; i < DistanceSliderDetail::MAX_FRAMES_COUNT; ++i)
     {
@@ -241,7 +241,7 @@ void DistanceSlider::SplitterMoved(int pos, int index)
 {
     DVASSERT(index > 0);
 
-    const uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
+    const DAVA::uint32 visibleFramesCount = (fitModeEnabled) ? notInfDistancesCount : notInfDistancesCount + 1;
     const DAVA::int32 availableSplitterWidth = DistanceSliderDetail::GetAvailableWidth(splitter, visibleFramesCount);
 
     const DAVA::float32 scaleSize = GetScaleSize();
