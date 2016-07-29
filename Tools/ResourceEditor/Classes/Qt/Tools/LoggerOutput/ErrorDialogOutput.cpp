@@ -108,7 +108,7 @@ void ErrorDialogOutput::ShowErrorDialog()
         errors.clear();
     }
 
-    QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
+    QMessageBox::critical(QtMainWindow::Instance(), title.c_str(), errorMessage.c_str());
 }
 
 void ErrorDialogOutput::OnError()
