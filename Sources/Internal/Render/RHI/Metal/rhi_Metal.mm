@@ -140,8 +140,12 @@ rhi_MetalIsSupported()
 {
     if (!_Metal_Device)
     {
-        _Metal_Device = MTLCreateSystemDefaultDevice();
-        [_Metal_Device retain];
+        NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
+        if ([currSysVer compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+        {
+            _Metal_Device = MTLCreateSystemDefaultDevice();
+            [_Metal_Device retain];
+        }
     }
 
     return (_Metal_Device) ? true : false;
