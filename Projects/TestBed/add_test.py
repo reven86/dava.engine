@@ -13,9 +13,9 @@ def updateGameCore(className):
     with open(gc_write, 'w') as outfile:
         with open(gc_read, 'r') as infile:
             for line in infile:
-                if line.startswith("//$UNITTEST_INCLUDE"):
+                if "//$UNITTEST_INCLUDE" in line:
                     outfile.write('#include "Tests/'+className+'.h"\n')
-                if line.startswith("//$UNITTEST_CTOR"):
+                if "//$UNITTEST_CTOR" in line:
                     outfile.write('    new '+className+'();\n')
                 outfile.write(line)
 
