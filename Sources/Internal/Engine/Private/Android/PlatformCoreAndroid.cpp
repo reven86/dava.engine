@@ -89,29 +89,29 @@ WindowBackend* PlatformCore::OnCreate()
 void PlatformCore::OnStart()
 {
     Logger::Info("******** PlatformCore::OnStart: thread=%llX", Thread::GetCurrentIdAsInteger());
+}
+
+void PlatformCore::OnResume()
+{
+    Logger::Info("******** PlatformCore::OnResume: thread=%llX", Thread::GetCurrentIdAsInteger());
 
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::APP_RESUMED;
     dispatcher->PostEvent(e);
 }
 
-void PlatformCore::OnResume()
-{
-    Logger::Info("******** PlatformCore::OnResume: thread=%llX", Thread::GetCurrentIdAsInteger());
-}
-
 void PlatformCore::OnPause()
 {
     Logger::Info("******** PlatformCore::OnPause: thread=%llX", Thread::GetCurrentIdAsInteger());
+
+    MainDispatcherEvent e;
+    e.type = MainDispatcherEvent::APP_SUSPENDED;
+    dispatcher->SendEvent(e); // Blocking call !!!
 }
 
 void PlatformCore::OnStop()
 {
     Logger::Info("******** PlatformCore::OnStop: thread=%llX", Thread::GetCurrentIdAsInteger());
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_SUSPENDED;
-    dispatcher->SendEvent(e); // Blocking call !!!
 }
 
 void PlatformCore::OnDestroy()
@@ -121,7 +121,7 @@ void PlatformCore::OnDestroy()
     MainDispatcherEvent e;
     e.window = nullptr;
     e.type = MainDispatcherEvent::APP_IMMEDIATE_TERMINATE;
-    dispatcher->SendEvent(e); // Blocking call !!!
+    dispatcher->PostEvent(e);
 }
 
 } // namespace Private

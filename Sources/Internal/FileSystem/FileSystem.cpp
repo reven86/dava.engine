@@ -34,7 +34,11 @@
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Private/Android/AndroidBridge.h"
+#else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#endif
 #include <unistd.h>
 #endif //PLATFORMS
 
@@ -718,7 +722,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 const FilePath FileSystem::GetUserDocumentsPath()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return FilePath();
+    return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetInternalStoragePathname();
@@ -728,7 +732,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return FilePath();
+    return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetExternalStoragePathname();

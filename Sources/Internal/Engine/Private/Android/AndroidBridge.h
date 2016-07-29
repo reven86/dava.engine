@@ -18,12 +18,32 @@ struct AndroidBridge final
 {
     AndroidBridge(JavaVM* jvm);
 
+    static JavaVM* GetJavaVM();
+    static JNIEnv* GetEnv();
+    static bool AttachCurrentThreadToJavaVM();
+    static bool DetachCurrentThreadFromJavaVM();
+
+    static const String& GetExternalDocumentsDir();
+    static const String& GetInternalDocumentsDir();
+    static const String& GetApplicatiionPath();
+    static const String& GetPackageName();
+
+    static String JavaStringToString(jstring string, JNIEnv* jniEnv = nullptr);
+    static WideString JavaStringToWideString(jstring string, JNIEnv* jniEnv = nullptr);
+    static jstring WideStringToJavaString(const WideString& string, JNIEnv* jniEnv = nullptr);
+
+    void OnInitEngine(String externalFilesDir,
+                      String internalFilesDir,
+                      String sourceDir,
+                      String apkName,
+                      String cmdline);
     WindowBackend* OnCreateActivity();
     void OnStartActivity();
     void OnResumeActivity();
     void OnPauseActivity();
     void OnStopActivity();
     void OnDestroyActivity();
+    void OnTermEngine();
 
     void GameThread();
 
@@ -35,6 +55,11 @@ struct AndroidBridge final
     JavaVM* javaVM = nullptr;
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;
+
+    String externalDocumentsDir;
+    String internalDocumentsDir;
+    String appPath;
+    String packageName;
 };
 
 } // namespace Private

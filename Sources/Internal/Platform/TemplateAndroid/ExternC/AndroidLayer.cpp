@@ -6,15 +6,13 @@
 
 #include "Engine/Private/Android/AndroidBridge.h"
 
-extern DAVA::Private::AndroidBridge* androidBridge;
-
 namespace DAVA
 {
 namespace JNI
 {
 JavaVM* GetJVM()
 {
-    return androidBridge->javaVM;
+    return Private::AndroidBridge::GetJavaVM();
 }
 
 } // namespace JNI
