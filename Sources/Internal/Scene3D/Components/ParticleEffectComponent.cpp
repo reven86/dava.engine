@@ -460,7 +460,7 @@ void ParticleEffectComponent::InsertEmitterInstanceAt(ParticleEmitterInstance* e
 {
     auto it = emitterInstances.begin();
     std::advance(it, DAVA::Min(position, GetEmittersCount()));
-    emitterInstances.emplace(it, emitter);
+    emitterInstances.emplace(it, SafeRetain(emitter));
 }
 
 void ParticleEffectComponent::RemoveEmitterInstance(ParticleEmitterInstance* emitter)
