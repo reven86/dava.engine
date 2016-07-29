@@ -20,8 +20,8 @@ cd ..
 # prepare tup executable
 mkdir -p bin
 cp ./$LOCALREPO/tup bin
-cp /usr/local/lib/libosxfuse_i64.2.dylib bin/libosxfuse.dylib
 
 # override libosxfuse tup dependency from system to local
-install_name_tool -change /usr/local/lib/libosxfuse_i64.2.dylib libosxfuse.dylib bin/tup
-chmod a-x bin/libosxfuse.dylib
+#cp /usr/local/lib/libosxfuse_i64.2.dylib bin/libosxfuse.dylib
+#install_name_tool -change /usr/local/lib/libosxfuse_i64.2.dylib libosxfuse.dylib bin/tup
+#chmod a-x bin/libosxfuse.dylib
