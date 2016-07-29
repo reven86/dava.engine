@@ -121,7 +121,7 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
 
     Core::CreateSingletons();
 
-    AssetsManager::Instance()->Init(assets);
+    AssetsManagerAndroid::Instance()->Init(assets);
 
     Logger::SetTag(logTag);
 }

@@ -31,6 +31,7 @@
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include <unistd.h>
 #endif //PLATFORMS
 
@@ -470,14 +471,16 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         }
     }
 
-#if defined(__DAVAENGINE_ANDROID__)
     // ~res:/ or Data/... or tips.yaml
-    const String& path = pathToCheck.GetAbsolutePathname();
-    if (androidAssetsFiles.find(path) != end(androidAssetsFiles))
+    auto assets = AssetsManagerAndroid::Instance();
+    if (assets->IsInitialized())
     {
-        return true;
+        const String& path = pathToCheck.GetAbsolutePathname();
+        if (assets->HasFile(path))
+        {
+            return true;
+        }
     }
-#endif
 
     return false;
 }
@@ -499,13 +502,29 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 
 #if defined(__DAVAENGINE_ANDROID__)
     // on android we need test directory in assets inside APK
-    FileList* fl = new FileList(pathToCheck);
-    if (fl->GetCount() > 0)
+    if (FilePath::PATH_IN_RESOURCES == pathToCheck.GetType())
     {
-        fl->Release();
-        return true;
-    }
+        FilePath dirPath(pathToCheck);
+        if (dirPath.IsDirectoryPathname())
+        {
+            dirPath.MakeDirectoryPathname();
+        }
 
+        String strDir = dirPath.GetStringValue();
+        if (strDir.find("~res:/") == 0 && strDir.size() > 6)
+        {
+            strDir = strDir.substr(6);
+        }
+
+        auto assets = AssetsManagerAndroid::Instance();
+        if (assets->IsInitialized())
+        {
+            if (assets->HasDirectory(strDir))
+            {
+                return true;
+            }
+        }
+    }
 #endif // __DAVAENGINE_ANDROID__
 #endif // __DAVAENGINE_WIN32__
     return false;

@@ -1,4 +1,6 @@
 #include "FileSystem/File.h"
+
+#include "../Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -7,7 +9,6 @@
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Core/Core.h"
 #include "PackManager/PackManager.h"
 
@@ -88,7 +89,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 
     LockGuard<Mutex> guard(mutex);
 
-    AssetsManager* assetsManager = AssetsManager::Instance();
+    AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
     DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     Vector<uint8> data;

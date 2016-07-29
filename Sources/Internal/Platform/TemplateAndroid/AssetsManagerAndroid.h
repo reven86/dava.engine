@@ -7,14 +7,19 @@ namespace DAVA
 {
 class ZipArchive;
 
-class AssetsManager : public Singleton<AssetsManager>
+class AssetsManagerAndroid : public Singleton<AssetsManagerAndroid>
 {
 public:
-    AssetsManager();
-    virtual ~AssetsManager();
+    AssetsManagerAndroid();
+    virtual ~AssetsManagerAndroid();
 
     void Init(const String& packageName);
+    inline bool IsInitialized() const
+    {
+        return !!apk;
+    }
 
+    bool HasDirectory(const String& relativeDirName) const;
     bool HasFile(const String& relativeFilePath) const;
     bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const;
 

@@ -1,4 +1,4 @@
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "AssetsManagerAndroid.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Private/ZipArchive.h"
@@ -6,11 +6,13 @@
 
 namespace DAVA
 {
-AssetsManager::AssetsManager() = default;
+AssetsManagerAndroid::AssetsManagerAndroid() = default;
 
-AssetsManager::~AssetsManager() = default;
+AssetsManagerAndroid::~AssetsManagerAndroid() = default;
 
-void AssetsManager::Init(const String& apkFileName)
+static const String assetsDirectory = "assets/Data/";
+
+void AssetsManagerAndroid::Init(const String& apkFileName)
 {
     if (apk)
     {
@@ -27,14 +29,28 @@ void AssetsManager::Init(const String& apkFileName)
     apk.reset(new ZipArchive(file, apkPath));
 }
 
-bool AssetsManager::HasFile(const String& relativeFilePath) const
+bool AssetsManagerAndroid::HasDirectory(const String& relativeDirName) const
 {
-    return apk->HasFile("assets/" + relativeFilePath);
+    String nameInApk = assetsDirectory + relativeDirName;
+    const Vector<ResourceArchive::FileInfo>& files = apk->GetFilesInfo();
+    for (const ResourceArchive::FileInfo& info : files)
+    {
+        if (info.relativeFilePath.find(nameInApk) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
-bool AssetsManager::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
+bool AssetsManagerAndroid::HasFile(const String& relativeFilePath) const
 {
-    return apk->LoadFile("assets/" + relativeFilePath, output);
+    return apk->HasFile(assetsDirectory + relativeFilePath);
+}
+
+bool AssetsManagerAndroid::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
+{
+    return apk->LoadFile(assetsDirectory + relativeFilePath, output);
 }
 
 } // DAVA namespace

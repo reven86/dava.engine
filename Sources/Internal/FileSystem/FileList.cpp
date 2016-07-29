@@ -14,6 +14,8 @@
 #include <direct.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include <dirent.h>
+#include <sys/stat.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -118,27 +120,72 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
         free(namelist);
     }
 #elif defined(__DAVAENGINE_ANDROID__)
-    JniFileList jniFileList;
-    Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
-    FileEntry entry;
-    for (int32 i = 0; i < entrys.size(); ++i)
+
+    const String& dirPath = path.GetAbsolutePathname();
+
+    DIR* dir = opendir(dirPath.c_str());
+    if (nullptr != dir)
     {
-        const JniFileList::JniFileListEntry& jniEntry = entrys[i];
-
-        entry.path = path + jniEntry.name;
-        entry.name = jniEntry.name;
-        entry.size = jniEntry.size;
-        entry.isDirectory = jniEntry.isDirectory;
-        entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
-
-        if (entry.isDirectory)
+        // print all the files and directories within directory
+        FileEntry entry;
+        for (struct dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
         {
-            entry.path.MakeDirectoryPathname();
+            String fileName = dirPath + ent->d_name;
+            entry.path = fileName;
+            entry.name = ent->d_name;
+
+            if (ent->d_type != DT_DIR && ent->d_type != DT_REG)
+            {
+                Logger::Error("unsupported d_type in directory: %s", dirPath.c_str());
+                continue;
+            }
+
+            entry.isDirectory = (DT_DIR == ent->d_type);
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            entry.size = 0;
+
+            if (!entry.isDirectory)
+            {
+                struct stat st;
+                if (stat(fileName.c_str(), &st) == 0)
+                {
+                    entry.size = st.st_size;
+                }
+            }
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
         }
-
-        if (!entry.isHidden || includeHidden)
+        closedir(dir);
+    }
+    else
+    {
+        // TODO could not open directory try in APK assets
+        // auto AssetsManagerAndroid* assets = AssetsManagerAndroid::Instance();
+        JniFileList jniFileList;
+        Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
+        FileEntry entry;
+        for (int32 i = 0; i < entrys.size(); ++i)
         {
-            fileList.push_back(entry);
+            const JniFileList::JniFileListEntry& jniEntry = entrys[i];
+
+            entry.path = path + jniEntry.name;
+            entry.name = jniEntry.name;
+            entry.size = jniEntry.size;
+            entry.isDirectory = jniEntry.isDirectory;
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+            if (entry.isDirectory)
+            {
+                entry.path.MakeDirectoryPathname();
+            }
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
         }
     }
 #endif //PLATFORMS

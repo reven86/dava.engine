@@ -239,9 +239,7 @@ void Core::CreateSingletons()
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    new AssetsManager();
-#endif
+    new AssetsManagerAndroid();
 
 #if defined __DAVAENGINE_IPHONE__
 // not used
@@ -342,9 +340,7 @@ void Core::ReleaseSingletons()
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    AssetsManager::Instance()->Release();
-#endif
+    AssetsManagerAndroid::Instance()->Release();
 
     SystemTimer::Instance()->Release();
 }
