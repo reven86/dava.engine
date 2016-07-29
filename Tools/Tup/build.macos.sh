@@ -7,8 +7,10 @@ LOCALREPO=tup_macos
 if [ ! -d $LOCALREPO/.git ]; then
     git clone $REPOSRC $LOCALREPO
     cd $LOCALREPO
-    git checkout v0.7.4
-    git apply ../patch-1_add_davainit.patch
+    #git checkout v0.7.4
+    git apply ../patch-1_add_davainclude.patch
+else
+    cd $LOCALREPO
 fi
 
 # build tup

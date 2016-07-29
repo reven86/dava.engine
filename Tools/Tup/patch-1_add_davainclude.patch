@@ -1,25 +1,24 @@
 diff --git a/src/tup/luaparser.c b/src/tup/luaparser.c
-index 8d8de83..d03fef8 100644
+index 6b64468..b0a37a5 100644
 --- a/src/tup/luaparser.c
 +++ b/src/tup/luaparser.c
-@@ -156,6 +156,66 @@ static int tuplua_function_include(lua_State *ls)
+@@ -156,6 +156,69 @@ static int tuplua_function_include(lua_State *ls)
  	return 0;
  }
  
-+static int tuplua_function_initdava(lua_State *ls)
++static int tuplua_function_davainclude(lua_State *ls)
 +{
 +	struct tupfile *tf = lua_touserdata(ls, lua_upvalueindex(1));
 +	char *file = NULL;
-+	int old_dfd = tf->cur_dfd;
 +	int rc = -1;
 +
 +	file = tuplua_strdup(ls, -1);
 +	lua_pop(ls, 1);
 +	assert(lua_gettop(ls) == 0);
++
 +	if(file == NULL)
 +		return luaL_error(ls, "Must be passed a filename as an argument.");
 +
-+	tf->ls = ls;
 +
 +	int fd = openat(tf->cur_dfd, file, O_RDONLY);
 +	if(fd < 0) {
@@ -32,18 +31,23 @@ index 8d8de83..d03fef8 100644
 +		goto dv_outclose;
 +	}
 +
-+	lua_pushstring(ls, file);
-+	lua_setglobal(ls, "davapath");
++	struct tuplua_reader_data lrd;
++	lrd.read = 0;
++	lrd.b = &b;
 +
-+	if(parse_lua_tupfile(tf, &b, file) < 0) {
-+		if (tf->luaerror == TUPLUA_NOERROR) {
-+			luaL_where(ls, 1);
-+			lua_pushfstring(ls, "Failed to include file '%s'.", file);
-+			lua_concat(ls, 2);
-+			tf->luaerror = TUPLUA_PENDINGERROR;
-+			lua_error(ls);
-+			goto dv_outfree;
-+		}
++	if(lua_load(ls, &tuplua_reader, &lrd, file, 0) != LUA_OK) {
++		fprintf(tf->f, "tup error %s\n", tuplua_tostring(ls, -1));
++		goto dv_outfree;
++	}
++
++	if(lua_pcall(ls, 0, 0, 1) != LUA_OK) {
++		fprintf(tf->f, "tup error %s\n", tuplua_tostring(ls, -1));
++		goto dv_outfree;
++	}
++
++	if(NULL != strstr(file, "Tupdava.lua")) {
++		lua_pushstring(ls, file);
++		lua_setglobal(ls, "davapath");
 +	}
 +
 +	rc = 0;
@@ -56,7 +60,6 @@ index 8d8de83..d03fef8 100644
 +
 +dv_out:
 +	free(file);
-+	tf->cur_dfd = old_dfd;
 +
 +	if(rc < 0) {
 +		fprintf(tf->f, "tup error: Failed to parse included file '%s'\n", file);
@@ -69,11 +72,11 @@ index 8d8de83..d03fef8 100644
  static int tuplua_table_to_path_list(lua_State *ls, const char *table, struct tupfile *tf, struct path_list_head *plist, int allow_nodes)
  {
  	lua_getfield(ls, 1, table);
-@@ -741,6 +801,7 @@ int parse_lua_tupfile(struct tupfile *tf, struct buf *b, const char *name)
+@@ -741,6 +804,7 @@ int parse_lua_tupfile(struct tupfile *tf, struct buf *b, const char *name)
  		/* Register tup interaction functions in the "tup" table in Lua */
  		lua_newtable(ls);
  		tuplua_register_function(ls, "include", tuplua_function_include, tf);
-+		tuplua_register_function(ls, "initdava", tuplua_function_initdava, tf);
++		tuplua_register_function(ls, "davainclude", tuplua_function_davainclude, tf);
  		tuplua_register_function(ls, "definerule", tuplua_function_definerule, tf);
  		tuplua_register_function(ls, "append_table", tuplua_function_append_table, tf);
  		tuplua_register_function(ls, "getcwd", tuplua_function_getcwd, tf);
