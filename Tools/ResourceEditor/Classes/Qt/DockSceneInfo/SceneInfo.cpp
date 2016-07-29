@@ -786,47 +786,47 @@ void SceneInfo::RefreshVegetationInfoSection()
         {
             static const char* INSTANCE_PER_LOD_HEADER[] =
             {
-                "Instance count in LOD #0",
-                "Instance count in LOD #1",
-                "Instance count in LOD #2"
+              "Instance count in LOD #0",
+              "Instance count in LOD #1",
+              "Instance count in LOD #2"
             };
 
             static const char* INSTANCE_PER_LAYER_HEADER[] =
             {
-                "Instance count in layer #0",
-                "Instance count in layer #1",
-                "Instance count in layer #2",
-                "Instance count in layer #3"
+              "Instance count in layer #0",
+              "Instance count in layer #1",
+              "Instance count in layer #2",
+              "Instance count in layer #3"
             };
 
             static const char* POLY_PER_LOD_HEADER[] =
             {
-                "Poly count in LOD #0",
-                "Poly count in LOD #1",
-                "Poly count in LOD #2"
+              "Poly count in LOD #0",
+              "Poly count in LOD #1",
+              "Poly count in LOD #2"
             };
 
             static const char* POLY_PER_LAYER_HEADER[] =
             {
-                "Poly count in layer #0",
-                "Poly count in layer #1",
-                "Poly count in layer #2",
-                "Poly count in layer #3"
+              "Poly count in layer #0",
+              "Poly count in layer #1",
+              "Poly count in layer #2",
+              "Poly count in layer #3"
             };
 
             static const char* QUADTREELEAF_PER_LOD_HEADER[] =
             {
-                "Quadtree leaf count in LOD #0",
-                "Quadtree leaf count in LOD #1",
-                "Quadtree leaf count in LOD #2"
+              "Quadtree leaf count in LOD #0",
+              "Quadtree leaf count in LOD #1",
+              "Quadtree leaf count in LOD #2"
             };
 
             static const char* POLY_PER_LOD_PER_LAYER_HEADER[] =
             {
-                "Poly count in LODs in layer #0",
-                "Poly count in LODs in layer #1",
-                "Poly count in LODs in layer #2",
-                "Poly count in LODs in layer #3"
+              "Poly count in LODs in layer #0",
+              "Poly count in LODs in layer #1",
+              "Poly count in LODs in layer #2",
+              "Poly count in LODs in layer #3"
             };
 
             uint32 totalInstanceCount = 0;
@@ -900,7 +900,6 @@ void SceneInfo::RefreshVegetationInfoSection()
                 dummy = "error";
             }
 
-
             SetChild("Poly count", dummy, header);
             SetChild("Instance count", dummy, header);
 
@@ -935,7 +934,6 @@ void SceneInfo::RefreshVegetationInfoSection()
 
             SetChild("RenderBatch count", dummy, header);
         }
-
     }
 }
 

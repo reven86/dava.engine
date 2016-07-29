@@ -24,4 +24,3 @@ public:
 private:
     DAVA::Vector<DAVA::VegetationRenderObject*> vegetationObjects;
 };
-

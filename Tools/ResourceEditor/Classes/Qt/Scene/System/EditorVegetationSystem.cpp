@@ -10,7 +10,6 @@
 
 #include "Scene/SceneEditor2.h"
 
-
 EditorVegetationSystem::EditorVegetationSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
@@ -22,7 +21,7 @@ void EditorVegetationSystem::AddEntity(DAVA::Entity* entity)
 {
     DVASSERT(DAVA::HasComponent(entity, DAVA::Component::RENDER_COMPONENT));
 
-    DAVA::VegetationRenderObject *vro = DAVA::GetVegetation(entity);
+    DAVA::VegetationRenderObject* vro = DAVA::GetVegetation(entity);
     if (vro != nullptr)
     {
         DVASSERT(std::find(vegetationObjects.begin(), vegetationObjects.end(), vro) == vegetationObjects.end());
@@ -34,7 +33,7 @@ void EditorVegetationSystem::RemoveEntity(DAVA::Entity* entity)
 {
     DVASSERT(DAVA::HasComponent(entity, DAVA::Component::RENDER_COMPONENT));
 
-    DAVA::VegetationRenderObject *vro = DAVA::GetVegetation(entity);
+    DAVA::VegetationRenderObject* vro = DAVA::GetVegetation(entity);
     if (vro != nullptr)
     {
         DVASSERT(std::find(vegetationObjects.begin(), vegetationObjects.end(), vro) != vegetationObjects.end());
@@ -44,7 +43,7 @@ void EditorVegetationSystem::RemoveEntity(DAVA::Entity* entity)
 
 void EditorVegetationSystem::GetActiveVegetation(DAVA::Vector<DAVA::VegetationRenderObject*>& activeVegetationObjects)
 {
-    for (DAVA::VegetationRenderObject *ro : vegetationObjects)
+    for (DAVA::VegetationRenderObject* ro : vegetationObjects)
     {
         if (ro->GetFlags() & DAVA::RenderObject::VISIBLE_QUALITY)
         {
@@ -52,4 +51,3 @@ void EditorVegetationSystem::GetActiveVegetation(DAVA::Vector<DAVA::VegetationRe
         }
     }
 }
-
