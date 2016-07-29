@@ -15,8 +15,6 @@ EditorVegetationSystem::EditorVegetationSystem(DAVA::Scene* scene)
 {
 }
 
-EditorVegetationSystem::~EditorVegetationSystem() = default;
-
 void EditorVegetationSystem::AddEntity(DAVA::Entity* entity)
 {
     DVASSERT(DAVA::HasComponent(entity, DAVA::Component::RENDER_COMPONENT));

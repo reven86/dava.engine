@@ -14,7 +14,6 @@ class EditorVegetationSystem : public DAVA::SceneSystem
 {
 public:
     EditorVegetationSystem(DAVA::Scene* scene);
-    ~EditorVegetationSystem() override;
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
