@@ -6,6 +6,8 @@
 
     #include "_metal.h"
 
+#import <UIKit/UIKit.h>
+
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
 id<MTLDevice> _Metal_Device = nil;
