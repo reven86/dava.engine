@@ -1071,6 +1071,12 @@ void SceneTree::TreeItemDoubleClicked(const QModelIndex& index)
 
 void SceneTree::ShowContextMenu(const QPoint& pos)
 {
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (curScene == nullptr || curScene->selectionSystem->GetSelection().IsEmpty())
+    {
+        return;
+    }
+
     QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
     if (!index.isValid())
     {

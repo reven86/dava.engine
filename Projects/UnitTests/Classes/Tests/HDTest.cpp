@@ -1,6 +1,7 @@
 #include "UnitTests/UnitTests.h"
 #include "Base/BaseTypes.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/Texture.h"
 #include "Render/TextureDescriptor.h"
 
