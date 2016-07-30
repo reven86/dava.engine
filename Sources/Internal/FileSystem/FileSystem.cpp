@@ -258,6 +258,11 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
     DVASSERT(path.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(path.IsDirectoryPathname());
 
+    if (!IsDirectory(path))
+    {
+        return false;
+    }
+
     FileList* fileList = new FileList(path);
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {

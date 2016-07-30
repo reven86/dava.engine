@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "FileSystem/ResourceArchive.h"
 
 namespace DAVA
 {
@@ -22,6 +23,7 @@ public:
     bool HasDirectory(const String& relativeDirName) const;
     bool HasFile(const String& relativeFilePath) const;
     bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const;
+    bool ListDirectory(const String& relativeDirName, Vector<ResourceArchive::FileInfo>&) const;
 
 private:
     String packageName;

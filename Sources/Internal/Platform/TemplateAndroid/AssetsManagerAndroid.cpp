@@ -53,4 +53,44 @@ bool AssetsManagerAndroid::LoadFile(const String& relativeFilePath, Vector<uint8
     return apk->LoadFile(assetsDirectory + relativeFilePath, output);
 }
 
+bool AssetsManagerAndroid::ListDirectory(const String& relativeDirName, Vector<ResourceArchive::FileInfo>& names) const
+{
+    names.clear();
+
+    Set<String> addedfilesAndDirs;
+    const Vector<ResourceArchive::FileInfo>& files = apk->GetFilesInfo();
+    for (const ResourceArchive::FileInfo& info : files)
+    {
+        String assetPath = assetsDirectory + relativeDirName;
+        if (info.relativeFilePath.find(assetPath) == 0)
+        {
+            size_t nextDirSlash = info.relativeFilePath.find('/', assetPath.size());
+            if (String::npos == nextDirSlash)
+            {
+                // add file
+                addedfilesAndDirs.insert(info.relativeFilePath.substr(assetsDirectory.size()));
+                names.push_back(info);
+            }
+            else
+            {
+                // add directory (without sub directories)
+                String dir = info.relativeFilePath.substr(assetsDirectory.size(), nextDirSlash - assetsDirectory.size() + 1);
+                if (addedfilesAndDirs.find(dir) == end(addedfilesAndDirs))
+                {
+                    ResourceArchive::FileInfo fi = info;
+                    fi.relativeFilePath = dir;
+                    fi.compressedCrc32 = 0;
+                    fi.compressedSize = 0;
+                    fi.originalCrc32 = 0;
+                    fi.originalSize = 0;
+                    names.push_back(fi);
+                    addedfilesAndDirs.insert(dir);
+                }
+            }
+        }
+    }
+
+    return !names.empty();
+}
+
 } // DAVA namespace

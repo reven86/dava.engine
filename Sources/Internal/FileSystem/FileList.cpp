@@ -14,6 +14,7 @@
 #include <direct.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #endif //PLATFORMS
@@ -163,30 +164,59 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     else
     {
         // TODO could not open directory try in APK assets
-        // auto AssetsManagerAndroid* assets = AssetsManagerAndroid::Instance();
-        JniFileList jniFileList;
-        Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
-        FileEntry entry;
-        for (int32 i = 0; i < entrys.size(); ++i)
+        AssetsManagerAndroid* assets = AssetsManagerAndroid::Instance();
+        Vector<ResourceArchive::FileInfo> files;
+        if (assets->ListDirectory(dirPath, files))
         {
-            const JniFileList::JniFileListEntry& jniEntry = entrys[i];
-
-            entry.path = path + jniEntry.name;
-            entry.name = jniEntry.name;
-            entry.size = jniEntry.size;
-            entry.isDirectory = jniEntry.isDirectory;
-            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
-
-            if (entry.isDirectory)
+            FileEntry entry;
+            for (ResourceArchive::FileInfo& info : files)
             {
-                entry.path.MakeDirectoryPathname();
-            }
+                entry.path = info.relativeFilePath;
 
-            if (!entry.isHidden || includeHidden)
-            {
-                fileList.push_back(entry);
+                entry.size = info.originalSize;
+                entry.isDirectory = (info.relativeFilePath.back() == '/');
+                entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+                if (entry.isDirectory)
+                {
+                    entry.name = entry.path.GetLastDirectoryName();
+                }
+                else
+                {
+                    entry.name = entry.path.GetFilename();
+                }
+
+                if (!entry.isHidden || includeHidden)
+                {
+                    fileList.push_back(entry);
+                }
             }
         }
+
+        // deprecated method:
+        //        JniFileList jniFileList;
+        //        Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
+        //        FileEntry entry;
+        //        for (int32 i = 0; i < entrys.size(); ++i)
+        //        {
+        //            const JniFileList::JniFileListEntry& jniEntry = entrys[i];
+        //
+        //            entry.path = path + jniEntry.name;
+        //            entry.name = jniEntry.name;
+        //            entry.size = jniEntry.size;
+        //            entry.isDirectory = jniEntry.isDirectory;
+        //            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+        //
+        //            if (entry.isDirectory)
+        //            {
+        //                entry.path.MakeDirectoryPathname();
+        //            }
+        //
+        //            if (!entry.isHidden || includeHidden)
+        //            {
+        //                fileList.push_back(entry);
+        //            }
+        //        }
     }
 #endif //PLATFORMS
 
