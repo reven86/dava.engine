@@ -393,7 +393,7 @@ void DAVAFloat32SpinBox::textEditingFinished()
             double origValue = originalString.toDouble(&convertedOrig);
 
             // current double value is different from the original
-            if (convertedNew && convertedOrig && newValue != origValue)
+            if (convertedNew && (convertedOrig || originalString.isEmpty()) && newValue != origValue)
             {
                 setValue(static_cast<DAVA::float32>(newValue));
 
