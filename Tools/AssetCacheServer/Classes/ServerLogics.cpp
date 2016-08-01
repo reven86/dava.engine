@@ -1,4 +1,5 @@
 #include "ServerLogics.h"
+#include "ServerCacheEntry.h"
 
 #include "Concurrency/LockGuard.h"
 
@@ -22,19 +23,19 @@ ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey& _key,
 {
 }
 
-void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* server_, const DAVA::String& serverName_, DAVA::AssetCache::ClientNetProxy* client_, DAVA::AssetCache::CacheDB* dataBase_)
+void ServerLogics::Init(DAVA::AssetCache::ServerNetProxy* server_, const DAVA::String& serverName_, DAVA::AssetCache::ClientNetProxy* client_, CacheDB* dataBase_)
 {
-    server = server_;
+    serverProxy = server_;
     serverName = serverName_;
 
-    client = client_;
+    clientProxy = client_;
 
     dataBase = dataBase_;
 }
 
 void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
 {
-    if ((nullptr != server) && (nullptr != channel))
+    if ((nullptr != serverProxy) && (nullptr != channel))
     {
         DAVA::AssetCache::CachedItemValue::Description description = value.GetDescription();
         description.addingChain += "/" + serverName;
@@ -47,7 +48,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
             DAVA::Logger::Warning("[%s] Inserted size %u is bigger than max storage size %u", __FUNCTION__, value.GetSize(), dataBase->GetStorageSize());
         }
 
-        server->AddedToCache(channel, key, isValid);
+        serverProxy->SendAddedToCache(channel, key, isValid);
 
         if (isValid)
         {
@@ -65,7 +66,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel* channel, const DAVA::AssetC
 
 void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key)
 {
-    if ((nullptr != server) && (nullptr != dataBase) && (nullptr != channel))
+    if ((nullptr != serverProxy) && (nullptr != dataBase) && (nullptr != channel))
     {
         auto entry = dataBase->Get(key);
         if (nullptr != entry)
@@ -75,21 +76,36 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel* channel, const DAVA
             description.receivingChain += "/" + serverName;
             value.SetDescription(description);
 
-            server->Send(channel, key, value);
+            serverProxy->SendData(channel, key, value);
 
             { //add task for lazy sending of files;
                 serverTasks.emplace_back(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST);
             }
         }
-        else if (client->RequestFromCache(key))
+        else if (clientProxy->RequestData(key))
         { // Not found in db. Ask from remote cache.
             waitedRequests.emplace_back(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST);
         }
         else
         { // Not found in db. Remote server isn't connected.
-            server->Send(channel, key, DAVA::AssetCache::CachedItemValue());
+            serverProxy->SendData(channel, key, DAVA::AssetCache::CachedItemValue());
         }
     }
+}
+
+void ServerLogics::OnRemoveFromCache(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key)
+{
+    if ((nullptr != serverProxy) && (nullptr != dataBase) && (nullptr != channel))
+    {
+        bool removed = dataBase->Remove(key);
+        serverProxy->SendRemovedFromCache(channel, key, removed);
+    }
+}
+
+void ServerLogics::OnClearCache(DAVA::Net::IChannel* channel)
+{
+    dataBase->ClearStorage();
+    serverProxy->SendCleared(channel, true);
 }
 
 void ServerLogics::OnWarmingUp(DAVA::Net::IChannel* channel, const DAVA::AssetCache::CacheItemKey& key)
@@ -98,6 +114,11 @@ void ServerLogics::OnWarmingUp(DAVA::Net::IChannel* channel, const DAVA::AssetCa
     {
         dataBase->UpdateAccessTimestamp(key);
     }
+}
+
+void ServerLogics::OnStatusRequested(DAVA::Net::IChannel* channel)
+{
+    serverProxy->SendStatus(channel);
 }
 
 void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::char8*)
@@ -123,7 +144,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
         dataBase->Insert(key, value);
     }
 
-    if ((nullptr != server) && waitedRequests.size())
+    if ((nullptr != serverProxy) && waitedRequests.size())
     {
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
                                  {
@@ -139,7 +160,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
                 DAVA::AssetCache::CachedItemValue::Description descr = sendValue.GetDescription();
                 descr.receivingChain += "/" + serverName;
                 sendValue.SetDescription(descr);
-                server->Send(description.clientChannel, key, sendValue);
+                serverProxy->SendData(description.clientChannel, key, sendValue);
             }
             waitedRequests.erase(iter);
         }
@@ -152,18 +173,18 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
 
 void ServerLogics::ProcessServerTasks()
 {
-    if (!serverTasks.empty() && client && client->ChannelIsOpened())
+    if (!serverTasks.empty() && clientProxy && clientProxy->ChannelIsOpened())
     {
         for (const auto& task : serverTasks)
         {
             switch (task.request)
             {
             case DAVA::AssetCache::PACKET_ADD_REQUEST:
-                client->AddToCache(task.key, task.value);
+                clientProxy->RequestAddData(task.key, task.value);
                 break;
 
             case DAVA::AssetCache::PACKET_WARMING_UP_REQUEST:
-                client->WarmingUp(task.key);
+                clientProxy->RequestWarmingUp(task.key);
                 break;
 
             default:
