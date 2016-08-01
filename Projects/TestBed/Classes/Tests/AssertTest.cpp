@@ -2,9 +2,7 @@
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
 
-using namespace DAVA;
-
-const static float32 DEFAULT_TIMEOUT = 3.f;
+const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
 AssertTest::AssertTest()
     : BaseScreen("AssertTest")
@@ -17,7 +15,7 @@ void AssertTest::LoadResources()
 
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/AssertTestScreen.yaml", &pkgBuilder);
-    auto dialog = pkgBuilder.GetPackage()->GetControl(0);
+    DAVA::UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
     dialog->SetSize(DAVA::Vector2(500, 500));
     AddControl(dialog);
 
@@ -35,7 +33,7 @@ void AssertTest::LoadResources()
         });
     }
 
-    countdownText = static_cast<UIStaticText*>(dialog->FindByName("Countdown"));
+    countdownText = static_cast<DAVA::UIStaticText*>(dialog->FindByName("Countdown"));
 }
 
 void AssertTest::UnloadResources()
