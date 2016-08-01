@@ -14,8 +14,8 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/StaticOcclusion.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
-#include "Scene3D/Systems/LodSystem.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/Lod/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Debug/Stats.h"
@@ -250,9 +250,8 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
     for (uint32 k = 0; k < size; ++k)
     {
         LodComponent* lodComponent = static_cast<LodComponent*>(lodEntities[k]->GetComponent(Component::LOD_COMPONENT));
-        lodComponent->SetForceLodLayer(forceLodIndex);
+        GetScene()->lodSystem->SetForceLodLayer(lodComponent, forceLodIndex);
     }
-    GetScene()->lodSystem->SetForceUpdateAll();
     GetScene()->lodSystem->Process(0.0f);
 }
 

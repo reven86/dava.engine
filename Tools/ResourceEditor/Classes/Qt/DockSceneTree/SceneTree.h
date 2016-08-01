@@ -18,6 +18,7 @@ class SceneTree : public QTreeView
 
 public:
     explicit SceneTree(QWidget* parent = 0);
+    ~SceneTree();
 
 protected:
     void dropEvent(QDropEvent* event) override;
@@ -57,6 +58,7 @@ private:
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
     void UpdateTree();
+    void UpdateModel();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 

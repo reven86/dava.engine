@@ -5,35 +5,25 @@
 
 #include <QApplication>
 #include <QAbstractEventDispatcher>
-#include <QAbstractNativeEventFilter>
-#include <QMessageBox>
+#include <QWidget>
 
-class ToolsAssetGuard::EventFilter final : public QObject, public QAbstractNativeEventFilter
+class ToolsAssetGuard::EventFilter final : public QObject
 {
 public:
-#if defined(Q_OS_WIN)
-    EventFilter(WId winId_)
-        : winId(winId_)
-#elif defined(Q_OS_OSX)
     EventFilter()
-#endif
     {
-#if defined(Q_OS_OSX)
+        QWidgetList lst = qApp->allWidgets();
+        for (int i = 0; i < lst.size(); ++i)
+        {
+            QWidget* widget = lst[i];
+            widget->installEventFilter(this);
+        }
+
+        QAbstractEventDispatcher* dispatcher = qApp->eventDispatcher();
         qApp->installEventFilter(this);
-#endif
-        dispatcher = qApp->eventDispatcher();
         if (dispatcher != nullptr)
         {
             dispatcher->installEventFilter(this);
-            dispatcher->installNativeEventFilter(this);
-        }
-    }
-
-    ~EventFilter()
-    {
-        if (dispatcher != nullptr)
-        {
-            dispatcher->removeNativeEventFilter(this);
         }
     }
 
@@ -57,30 +47,6 @@ public:
 
         return false;
     }
-
-    bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override
-    {
-#if defined(Q_OS_WIN)
-        MSG* msg = reinterpret_cast<MSG*>(message);
-        if (msg->hwnd != reinterpret_cast<HWND>(winId))
-        {
-            switch (msg->message)
-            {
-            case WM_PAINT:
-            case WM_TIMER:
-                return true;
-            }
-        }
-#endif
-
-        return false;
-    }
-
-private:
-#if defined(Q_OS_WIN)
-    WId winId;
-#endif
-    QAbstractEventDispatcher* dispatcher;
 };
 
 void ToolsAssetGuard::Init()
@@ -95,24 +61,11 @@ bool ToolsAssetGuard::InnerShow(DAVA::DVAssertMessage::eModalType modalType, con
 {
     DAVA::LockGuard<DAVA::Mutex> mutexGuard(mutex);
 
-    bool result = false;
-    
-#if defined(Q_OS_OSX)
-    EventFilter eventGuard;
-    result = DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
-#elif defined(Q_OS_WIN)
+    std::unique_ptr<EventFilter> filter;
     if (DAVA::Thread::IsMainThread())
     {
-        QMessageBox msgBox(QMessageBox::Critical, "Assert", QString(message), QMessageBox::Ok | QMessageBox::Cancel);
-        EventFilter eventGuard(msgBox.winId());
-
-        result = msgBox.exec() == QMessageBox::Cancel;
+        filter.reset(new EventFilter());
     }
-    else
-    {
-        result = DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
-    }
-#endif
 
-    return result;
+    return DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
 }

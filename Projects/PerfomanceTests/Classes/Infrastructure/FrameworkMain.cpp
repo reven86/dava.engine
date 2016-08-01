@@ -31,6 +31,7 @@ void FrameworkDidLaunched()
 
     appOptions->SetInt32("width", IOS_WIDTH);
     appOptions->SetInt32("height", IOS_HEIGHT);
+    appOptions->SetInt32("renderer", rhi::ApiIsSupported(rhi::RHI_METAL) ? rhi::RHI_METAL : rhi::RHI_GLES2);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(IOS_WIDTH, IOS_HEIGHT);
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
@@ -52,12 +53,13 @@ void FrameworkDidLaunched()
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-#endif 
 
 #if defined(__DAVAENGINE_WIN_UAP__)
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
 #else
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
 #endif
 
     GameCore* core = new GameCore();

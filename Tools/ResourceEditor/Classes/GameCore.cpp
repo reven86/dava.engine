@@ -18,7 +18,6 @@ void GameCore::OnAppStarted()
 {
     Renderer::SetDesiredFPS(60);
 
-    Renderer::GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
     DynamicBufferAllocator::SetPageSize(16 * 1024 * 1024); // 16 mb
 
     UIControlSystem::Instance()->SetClearColor(Color(.3f, .3f, .3f, 1.f));

@@ -2,8 +2,8 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
-#include "Scene3D/Systems/LodSystem.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/Lod/LodSystem.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
@@ -460,7 +460,7 @@ void ParticleEffectComponent::InsertEmitterInstanceAt(ParticleEmitterInstance* e
 {
     auto it = emitterInstances.begin();
     std::advance(it, DAVA::Min(position, GetEmittersCount()));
-    emitterInstances.emplace(it, emitter);
+    emitterInstances.emplace(it, SafeRetain(emitter));
 }
 
 void ParticleEffectComponent::RemoveEmitterInstance(ParticleEmitterInstance* emitter)
