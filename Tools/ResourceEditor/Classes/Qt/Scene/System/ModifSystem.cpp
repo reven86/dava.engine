@@ -1103,18 +1103,18 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
 
 void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
-    DAVA::float32 scaleValue = 1.0f;
+    DAVA::float32 axisScaleValue = 1.0f;
 
     switch (axis)
     {
     case ST_AXIS_X:
-        scaleValue = values.x;
+        axisScaleValue = values.x;
         break;
     case ST_AXIS_Y:
-        scaleValue = values.y;
+        axisScaleValue = values.y;
         break;
     case ST_AXIS_Z:
-        scaleValue = values.z;
+        axisScaleValue = values.z;
         break;
     default:
         DVASSERT_MSG(0, "Scaling must be uniform, unable to scale via several axis");
@@ -1126,6 +1126,8 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
     for (const Selectable& item : selection.GetContent())
     {
+        float32 scaleValue = axisScaleValue;
+
         DAVA::Matrix4 origMatrix = item.GetLocalTransform();
 
         DAVA::Vector3 pos, scale, rotate;

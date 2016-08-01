@@ -299,25 +299,16 @@ void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const Sele
 
 DAVAFloat32SpinBox::DAVAFloat32SpinBox(QWidget* parent /* = 0 */)
     : QAbstractSpinBox(parent)
-    , originalValue(0)
-    , precision(3)
-    , hasButtons(true)
-    , cleared(true)
 {
-    QLineEdit* le = lineEdit();
-
     QRegExp rx("^-?\\d+([\\.,]\\d+){0,1}$");
     QValidator* vd = new QRegExpValidator(rx, this);
 
+    QLineEdit* le = lineEdit();
     le->setValidator(vd);
 
     connect(this, SIGNAL(editingFinished()), this, SLOT(textEditingFinished()));
 
     installEventFilter(this);
-}
-
-DAVAFloat32SpinBox::~DAVAFloat32SpinBox()
-{
 }
 
 DAVA::float32 DAVAFloat32SpinBox::value() const
@@ -332,27 +323,19 @@ void DAVAFloat32SpinBox::showButtons(bool show)
 
 void DAVAFloat32SpinBox::clear()
 {
+    setValue(0);
     QAbstractSpinBox::clear();
-    cleared = true;
 }
 
 void DAVAFloat32SpinBox::setValue(DAVA::float32 val)
 {
-    QLineEdit* le = lineEdit();
-
-    if (originalValue != val || cleared)
+    if (originalValue != val)
     {
-        cleared = false;
-
+        originalValue = val;
         originalString = QString::number((double)val, 'f', precision);
-        le->setText(originalString);
-
-        if (originalValue != val)
-        {
-            originalValue = val;
-            emit valueChanged();
-        }
     }
+
+    lineEdit()->setText(originalString);
 }
 
 bool DAVAFloat32SpinBox::eventFilter(QObject* object, QEvent* event)
@@ -375,6 +358,7 @@ void DAVAFloat32SpinBox::stepBy(int steps)
     emit valueEdited();
 }
 
+const DAVA::float32 DAVAFloat32SpinBox::eps = 0.001f;
 void DAVAFloat32SpinBox::textEditingFinished()
 {
     // was modified
@@ -383,22 +367,14 @@ void DAVAFloat32SpinBox::textEditingFinished()
         QString newString = lineEdit()->text();
         newString.replace(QChar(','), QChar('.'));
 
-        // current text is different from the originalText
-        if (newString != originalString)
+        bool convertedNew = false;
+        DAVA::float32 newValue = static_cast<DAVA::float32>(newString.toDouble(&convertedNew));
+
+        // current double value is different from the original
+        if (convertedNew && fabs(newValue - originalValue) > eps)
         {
-            bool convertedNew = false;
-            bool convertedOrig = false;
-
-            double newValue = newString.toDouble(&convertedNew);
-            double origValue = originalString.toDouble(&convertedOrig);
-
-            // current double value is different from the original
-            if (convertedNew && (convertedOrig || originalString.isEmpty()) && newValue != origValue)
-            {
-                setValue(static_cast<DAVA::float32>(newValue));
-
-                emit valueEdited();
-            }
+            setValue(newValue);
+            emit valueEdited();
         }
     }
 }
