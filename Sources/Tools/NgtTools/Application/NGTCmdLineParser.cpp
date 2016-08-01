@@ -2,6 +2,7 @@
 
 #include <locale>
 #include <codecvt>
+#include <algorithm>
 
 namespace NGTLayer
 {
@@ -23,6 +24,12 @@ char** NGTCmdLineParser::argv() const
 
 bool NGTCmdLineParser::getFlag(const char* arg) const
 {
+    auto iter = additionalFlags.find(std::string(arg));
+    if (iter != additionalFlags.end())
+    {
+        return true;
+    }
+
     size_t argLen = ::strlen(arg);
     for (int i = 0; i < m_argc; ++i)
     {
@@ -38,6 +45,16 @@ bool NGTCmdLineParser::getFlag(const char* arg) const
 const char* NGTCmdLineParser::getParam(const char* arg) const
 {
     size_t argLen = ::strlen(arg);
+    auto iter = std::find_if(additionalParams.begin(), additionalParams.end(), [arg, argLen](const std::pair<std::string, std::string>& p)
+                             {
+                                 return ::strncmp(p.first.c_str(), arg, argLen) == 0;
+                             });
+
+    if (iter != additionalParams.end())
+    {
+        return iter->second.c_str();
+    }
+
     for (int i = 0; i < m_argc - 1; ++i)
     {
         if (::strlen(m_argv[i]) == argLen &&
@@ -69,4 +86,15 @@ std::wstring NGTCmdLineParser::getParamStrW(const char* arg) const
     }
     return L"";
 }
+
+void NGTCmdLineParser::addParam(std::string&& key, std::string&& value)
+{
+    additionalParams.emplace(std::move(key), std::move(value));
+}
+
+void NGTCmdLineParser::addFlag(std::string&& flag)
+{
+    additionalFlags.insert(std::move(flag));
+}
+
 } // namespace NGTLayer

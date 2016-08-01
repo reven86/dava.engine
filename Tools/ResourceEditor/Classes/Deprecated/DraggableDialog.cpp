@@ -29,6 +29,7 @@ void DraggableDialog::Input(DAVA::UIEvent* currentInput)
     {
         relativePosition += (currentInput->point - basePoint);
         basePoint = currentInput->point;
+        UIControl* parent = GetParent();
         if (parent)
         {
             if (relativePosition.x > parent->size.x - 10)

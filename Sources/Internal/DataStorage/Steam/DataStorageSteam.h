@@ -2,18 +2,13 @@
 #define DATA_STORAGE_STEAM_H
 
 #if defined(__DAVAENGINE_STEAM__)
-
 #include "DataStorage/DataStorage.h"
-
 #include "Utils/Utils.h"
-
 #include "Platform/Steam.h"
 
+class ISteamRemoteStorage;
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_STEAM__)
-
 class DynamicMemoryFile;
 class DataStorageSteam : public IDataStorage
 {
@@ -34,14 +29,11 @@ private:
     ScopedPtr<KeyedArchive> ReadArchFromStorage() const;
     void WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch) const;
 
-    Steam::Storage* remoteStorage = nullptr;
+    ISteamRemoteStorage* remoteStorage = nullptr;
     ScopedPtr<KeyedArchive> values;
     bool isValuesChanged = false;
 };
-
-#endif //__DAVAENGINE_STEAM__
 }
 
-#endif
-
+#endif //__DAVAENGINE_STEAM__
 #endif

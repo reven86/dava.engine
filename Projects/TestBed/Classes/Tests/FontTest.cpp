@@ -1,5 +1,7 @@
 #include "Tests/FontTest.h"
 
+#include "UI/Focus/UIFocusComponent.h"
+
 using namespace DAVA;
 
 class InputDelegate : public UITextFieldDelegate
@@ -69,6 +71,7 @@ void FontTest::LoadResources()
     AddControl(label);
 
     inputText = new UITextField(Rect(10, 280, 400, 200));
+    inputText->GetOrCreateComponent<UIFocusComponent>();
     inputText->SetFont(uiFont);
     inputText->SetTextColor(Color::White);
     inputText->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);

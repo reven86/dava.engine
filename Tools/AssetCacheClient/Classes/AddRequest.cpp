@@ -13,13 +13,14 @@ using namespace DAVA;
 AddRequest::AddRequest()
     : CacheRequest("add")
 {
+    options.AddOption("-k", VariantType(String("")), "Key (hash string) of requested data");
     options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
 DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
 {
     AssetCache::CacheItemKey key;
-    AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
+    key.FromString(options.GetOption("-k").AsString());
 
     AssetCache::CachedItemValue value;
 
@@ -61,6 +62,13 @@ DAVA::AssetCache::Error AddRequest::SendRequest(AssetCacheClient& cacheClient)
 
 DAVA::AssetCache::Error AddRequest::CheckOptionsInternal() const
 {
+    const String hash = options.GetOption("-k").AsString();
+    if (hash.length() != AssetCache::HASH_SIZE * 2)
+    {
+        Logger::Error("[CacheRequest::%s] Wrong hash argument (%s)", __FUNCTION__, hash.c_str());
+        return AssetCache::Error::WRONG_COMMAND_LINE;
+    }
+
     const String filepath = options.GetOption("-f").AsString();
     if (filepath.empty())
     {

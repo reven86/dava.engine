@@ -317,6 +317,10 @@ public:
         [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
 
         objcDelegate = [[MultilineDelegate alloc] init];
+        if (nullptr != davaText_)
+        {
+            objcDelegate->maxLength = davaText_->GetMaxLength();
+        }
         objcDelegate->text = wrapper;
 
         [nsTextView setDelegate:objcDelegate];
@@ -396,7 +400,31 @@ public:
         NSString* text = [[[NSString alloc] initWithBytes:reinterpret_cast<const char*>(string.data())
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
+        DAVA::WideString oldString = davaText->GetText();
         [nsTextView setString:text];
+        if (nullptr != davaText && string != oldString)
+        {
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldString, UITextFieldDelegate::eReason::CODE);
+        }
+
+        // HACK if user click cleartext button and current
+        // native control not in focus - remove focus from dava control too
+        // to show hint to user
+        if (string.empty() &&
+            [[NSApp keyWindow] firstResponder] != nsTextView &&
+            !insideTextShouldReturn &&
+            davaText == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            davaText->ReleaseFocus();
+        }
+        // notify after text changed
+        UITextFieldDelegate* delegate = davaText->GetDelegate();
+        if (nullptr != delegate)
+        {
+            WideString oldText;
+            GetText(oldText);
+            delegate->TextFieldOnTextChanged(davaText, string, oldText);
+        }
     }
 
     void UpdateRect(const Rect& rectSrc) override
@@ -581,6 +609,10 @@ public:
         [nsTextField setWantsLayer:YES]; // need to be visible over opengl view
         formatter = [[CustomTextFieldFormatter alloc] init];
         formatter->text = wrapper;
+        if (nullptr != davaText_)
+        {
+            formatter->maxLength = davaText_->GetMaxLength();
+        }
         [nsTextField setFormatter:formatter];
         objcDelegate = [[CustomDelegate alloc] init];
         objcDelegate->text = wrapper;
@@ -710,6 +742,12 @@ public:
                                                    length:string.size() * sizeof(wchar_t)
                                                  encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease];
         [nsTextField setStringValue:text];
+
+        // notify after text changed
+        if (nullptr != davaText && nullptr != davaText->GetDelegate())
+        {
+            davaText->GetDelegate()->TextFieldOnTextChanged(davaText, string, oldText, UITextFieldDelegate::eReason::CODE);
+        }
 
         // HACK if user click cleartext button and current
         // native control not in focus - remove focus from dava control too
@@ -887,6 +925,11 @@ public:
         updateViewState = true;
 
         [nsTextField setHidden:!value];
+        if (!value)
+        {
+            // force UpdateRect call when dava control is hiding. should be done to ensure that nativeControl will also become hidden (moved away from visible screen)
+            UpdateRect(davaText->GetRect());
+        }
     }
 
     void ShowField() override
@@ -1273,9 +1316,14 @@ bool TextFieldPlatformImpl::IsRenderToTexture() const
 
 - (void)controlTextDidChange:(NSNotification*)notification
 {
-    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
+    if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText && nullptr != text->ctrl->davaText->GetDelegate())
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+        const DAVA::WideString& newText = text->ctrl->davaText->GetText();
+        if (newText != lastString)
+        {
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, DAVA::UITextFieldDelegate::eReason::USER);
+            lastString = text->ctrl->davaText->GetText();
+        }
     }
 }
 
@@ -1389,11 +1437,9 @@ doCommandBySelector:(SEL)commandSelector
             errorDescription:(NSString**)error
 {
     DAVA::UITextField* cppTextField = nullptr;
-    DAVA::int32 maxLength = -1;
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
         cppTextField = text->ctrl->davaText;
-        maxLength = cppTextField->GetMaxLength();
     }
 
     BOOL applyChanges = YES;
@@ -1416,9 +1462,9 @@ doCommandBySelector:(SEL)commandSelector
         applyChanges = !DAVA::NSStringModified(correctRange, inOrigString, maxLength, &replString);
     }
 
-    BOOL clientApply = NO;
     if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
+        BOOL clientApply = YES;
         if (correctRange.length > 0 || [replString length] > 0)
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(replString);
@@ -1426,8 +1472,9 @@ doCommandBySelector:(SEL)commandSelector
         }
         if (!clientApply)
         {
-            partialStringPtr = &inOrigString;
-            proposedSelRangePtr = &origSelRange;
+            *partialStringPtr = [[NSString alloc] initWithString:inOrigString];
+            *proposedSelRangePtr = NSMakeRange(origSelRange.location, origSelRange.length);
+
             return NO;
         }
     }
@@ -1436,8 +1483,14 @@ doCommandBySelector:(SEL)commandSelector
     {
         NSString* newString = [inOrigString stringByReplacingCharactersInRange:correctRange withString:replString];
         DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
-        (*text).ctrl->SetText(newDAVAString);
-        (*text).ctrl->SetCursorPos(correctRange.location + [replString length]);
+        *partialStringPtr = newString;
+        *proposedSelRangePtr = NSMakeRange(correctRange.location + [replString length], 0);
+        if (nullptr != cppTextField && ![inOrigString isEqualToString:newString])
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
+            DAVA::WideString oldString = DAVA::WideStringFromNSString(inOrigString);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eReason::CODE);
+        }
     }
     return applyChanges;
 }
@@ -1486,18 +1539,21 @@ doCommandBySelector:(SEL)commandSelector
 {
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
-        text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, text->ctrl->davaText->GetText(), lastString);
+        const DAVA::WideString& newText = text->ctrl->davaText->GetText();
+        if (newText != lastString)
+        {
+            text->ctrl->davaText->GetDelegate()->TextFieldOnTextChanged(text->ctrl->davaText, newText, lastString, DAVA::UITextFieldDelegate::eReason::USER);
+            lastString = text->ctrl->davaText->GetText();
+        }
     }
 }
 
 - (BOOL)textView:(NSTextView*)aTextView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString*)replacementString
 {
     DAVA::UITextField* cppTextField = nullptr;
-    DAVA::int32 maxLength = -1;
     if (nullptr != text && nullptr != text->ctrl && nullptr != text->ctrl->davaText)
     {
         cppTextField = text->ctrl->davaText;
-        maxLength = cppTextField->GetMaxLength();
     }
 
     BOOL applyChanges = YES;
@@ -1510,7 +1566,6 @@ doCommandBySelector:(SEL)commandSelector
 
     NSString* origString = [aTextView string];
     NSString* replStr = replacementString;
-    BOOL clientApply = NO;
 
     cppTextField->StartEdit();
     if ([replStr length] > 0)
@@ -1520,6 +1575,7 @@ doCommandBySelector:(SEL)commandSelector
 
     if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
     {
+        BOOL clientApply = YES;
         if (affectedCharRange.length > 0 || [replStr length] > 0)
         {
             DAVA::WideString clientString = DAVA::WideStringFromNSString(replStr);
@@ -1534,8 +1590,18 @@ doCommandBySelector:(SEL)commandSelector
     {
         NSString* newString = [origString stringByReplacingCharactersInRange:affectedCharRange withString:replStr];
         DAVA::WideString newDAVAString = DAVA::WideStringFromNSString(newString);
-        (*text).ctrl->SetText(newDAVAString);
-        (*text).ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
+        if (nullptr != cppTextField && nullptr != cppTextField->GetDelegate())
+        {
+            text->ctrl->SetText(newDAVAString);
+            text->ctrl->SetCursorPos(affectedCharRange.location + [replStr length]);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, cppTextField->GetText(), newDAVAString);
+        }
+        if (nullptr != cppTextField && ![origString isEqualToString:newString])
+        {
+            DAVA::WideString clientString = DAVA::WideStringFromNSString(newString);
+            DAVA::WideString oldString = DAVA::WideStringFromNSString(origString);
+            cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, clientString, oldString, DAVA::UITextFieldDelegate::eReason::CODE);
+        }
     }
     return applyChanges;
 }
@@ -1668,6 +1734,55 @@ doCommandBySelector:(SEL)commandSelector
 @end
 
 @implementation CustomTextView
+
+- (bool)DAVATextFieldEditing
+{
+    MultilineDelegate* delegate = static_cast<MultilineDelegate*>([self delegate]);
+    if (nullptr == delegate || nullptr == delegate->text || nullptr == delegate->text->ctrl || nullptr == delegate->text->ctrl->davaText)
+    {
+        return true;
+    }
+    return (delegate->text->ctrl->davaText == DAVA::UIControlSystem::Instance()->GetFocusedControl()) && delegate->text->ctrl->davaText->IsEditing();
+}
+
+- (void)mouseUp:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super mouseUp:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView mouseUp:theEvent];
+    }
+}
+
+- (void)mouseDown:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super mouseDown:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView mouseDown:theEvent];
+    }
+}
+
+- (void)rightMouseDown:(NSEvent*)theEvent
+{
+    if ([self DAVATextFieldEditing])
+    {
+        [super rightMouseDown:theEvent];
+    }
+    else
+    {
+        NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
+        [openGLView rightMouseDown:theEvent];
+    }
+}
 
 @end
 

@@ -36,6 +36,10 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+if (UVR_DEV)
+    add_definitions (-DNEW_PROPERTY_PANEL )
+endif()
+
 # Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
 # into DavaFramework project
 find_package( NgtTools REQUIRED )
@@ -124,14 +128,10 @@ elseif( MACOS )
 
 endif()
 
-if (NOT PUBLIC_BUILD)
-  set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-  set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
-endif()
 set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
-define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources "DataQt"
+                GROUP_SOURCE Generated )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
@@ -141,20 +141,17 @@ set( LIBRARIES            ${BEAST_LIB} NgtTools)
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 
-if ( WIN32 AND X64_MODE )
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
-else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
-endif ()
-
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
-DEPLOY_SCRIPT ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
-                           COPY_WIN32  ${BEAST_DLL}
+setup_main_executable()
+
+convert_graphics()
+
+DEPLOY_SCRIPT (            COPY_WIN32  ${BEAST_DLL}
                            COPY_WIN64  ${BEAST_DLL}
                            COPY_DIR    ${DEPLOY_DIR})
-
-setup_main_executable()
 
 if (DEPLOY)
     if (NOT WIN32)

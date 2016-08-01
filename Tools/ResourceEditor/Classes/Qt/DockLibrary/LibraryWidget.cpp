@@ -1,6 +1,9 @@
 #include "LibraryWidget.h"
 #include "LibraryFileSystemModel.h"
 
+#include "Render/Image/ImageFormatInterface.h"
+
+
 #include "Main/mainwindow.h"
 #include "Main/QtUtils.h"
 #include "Project/ProjectManager.h"
@@ -9,6 +12,7 @@
 
 #include "Commands2/DAEConvertAction.h"
 
+#include "QtTools/Utils/Utils.h"
 
 #include <QToolBar>
 #include <QLineEdit>
@@ -127,7 +131,7 @@ void LibraryWidget::SetupFileTypes()
     for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
     {
         DAVA::ImageFormatInterface* formatHelper = DAVA::ImageSystem::GetImageFormatInterface(formatType);
-        fileTypeValues.push_back(FileType(formatHelper->GetFormatName().c_str(), GetExtensions(formatType)));
+        fileTypeValues.push_back(FileType(QString::fromStdString(formatHelper->GetName()), GetExtensions(formatType)));
     }
 }
 

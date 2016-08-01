@@ -20,7 +20,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
     editor->DisableToolsInstantly(disableFlags);
     if (editor->IsToolsEnabled(disableFlags))
     {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+        DAVA::Logger::Error(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS.c_str());
         return false;
     }
 
@@ -31,7 +31,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
     }
     else
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+        DAVA::Logger::Error(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError).c_str());
         return false;
     }
 
@@ -53,7 +53,7 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
         }
         else
         {
-            ShowErrorDialog(error);
+            DAVA::Logger::Error(error.c_str());
             return false;
         }
     }
@@ -66,8 +66,9 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
  * Common
  */
 LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor,
+                                                         const DAVA::String& commandDescr, bool isEnabling,
                                                          DAVA::uint32 _allowedTools, DAVA::String _disablingError)
-    : Command2(identifier)
+    : Command2(identifier, commandDescr + ((isEnabling == true) ? "Enabled" : "Disabled"))
     , sceneEditor(_sceneEditor)
     , disablingError(_disablingError)
     , allowedTools(_allowedTools)
@@ -126,8 +127,9 @@ void LandscapeToolsToggleCommand::OnDisabled()
 /*
  * Ruler
  */
-EnableRulerToolCommand::EnableRulerToolCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_RULER_TOOL_ENABLE, forSceneEditor, 0, ResourceEditor::RULER_TOOL_DISABLE_ERROR)
+EnableRulerToolCommand::EnableRulerToolCommand(SceneEditor2* forSceneEditor, bool isEnabling)
+    : LandscapeToolsToggleCommand(CMDID_RULER_TOOL_ENABLE, forSceneEditor, "Ruler Tool ", isEnabling,
+                                  0, ResourceEditor::RULER_TOOL_DISABLE_ERROR)
 {
     isEnabledFunction = DAVA::MakeFunction(sceneEditor->rulerToolSystem, &RulerToolSystem::IsLandscapeEditingEnabled);
     enableFunction = DAVA::MakeFunction(sceneEditor->rulerToolSystem, &RulerToolSystem::EnableLandscapeEditing);
@@ -137,8 +139,9 @@ EnableRulerToolCommand::EnableRulerToolCommand(SceneEditor2* forSceneEditor)
 /*
  * Tilemask
  */
-EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_TILEMASK_EDITOR_ENABLE, forSceneEditor, 0, ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR)
+EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling)
+    : LandscapeToolsToggleCommand(CMDID_TILEMASK_EDITOR_ENABLE, forSceneEditor, "Tilemask Editor ", isEnabling,
+                                  0, ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR)
 {
     isEnabledFunction = DAVA::MakeFunction(sceneEditor->tilemaskEditorSystem, &TilemaskEditorSystem::IsLandscapeEditingEnabled);
     enableFunction = DAVA::MakeFunction(sceneEditor->tilemaskEditorSystem, &TilemaskEditorSystem::EnableLandscapeEditing);
@@ -148,8 +151,8 @@ EnableTilemaskEditorCommand::EnableTilemaskEditorCommand(SceneEditor2* forSceneE
 /*
  * Heightmap editor
  */
-EnableHeightmapEditorCommand::EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_HEIGHTMAP_EDITOR_ENABLE, forSceneEditor,
+EnableHeightmapEditorCommand::EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling)
+    : LandscapeToolsToggleCommand(CMDID_HEIGHTMAP_EDITOR_ENABLE, forSceneEditor, "Heightmap Editor ", isEnabling,
                                   SceneEditor2::LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN,
                                   ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR)
 {
@@ -166,8 +169,8 @@ void EnableHeightmapEditorCommand::OnDisabled()
 /*
  * Custom colors
  */
-EnableCustomColorsCommand::EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool _saveChanges)
-    : LandscapeToolsToggleCommand(CMDID_CUSTOM_COLORS_ENABLE, forSceneEditor, 0, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR)
+EnableCustomColorsCommand::EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool _saveChanges, bool isEnabling)
+    : LandscapeToolsToggleCommand(CMDID_CUSTOM_COLORS_ENABLE, forSceneEditor, "Custom Colors Editor ", isEnabling, 0, ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR)
 {
     isEnabledFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::IsLandscapeEditingEnabled);
     enableFunction = DAVA::MakeFunction(sceneEditor->customColorsSystem, &CustomColorsSystem::EnableLandscapeEditing);
@@ -179,7 +182,7 @@ void EnableCustomColorsCommand::OnEnabled()
     auto drawSystem = sceneEditor->landscapeEditorDrawSystem;
     if (drawSystem->GetCustomColorsProxy()->IsTextureLoaded() == false)
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
+        DAVA::Logger::Error(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT).c_str());
         drawSystem->GetCustomColorsProxy()->ResetLoadedState();
     }
 }
@@ -187,8 +190,8 @@ void EnableCustomColorsCommand::OnEnabled()
 /*
  * Not passable - special case
  */
-EnableNotPassableCommand::EnableNotPassableCommand(SceneEditor2* forSceneEditor)
-    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor,
+EnableNotPassableCommand::EnableNotPassableCommand(SceneEditor2* forSceneEditor, bool isEnabling)
+    : LandscapeToolsToggleCommand(CMDID_NOT_PASSABLE_TERRAIN_ENABLE, forSceneEditor, "Not Passable Editor ", isEnabling,
                                   SceneEditor2::LANDSCAPE_TOOL_HEIGHTMAP_EDITOR,
                                   ResourceEditor::NOT_PASSABLE_TERRAIN_DISABLE_ERROR)
 {

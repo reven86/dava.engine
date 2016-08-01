@@ -351,6 +351,7 @@ void SceneCameraSystem::Draw()
                 {
                     DAVA::AABBox3 worldBox;
                     DAVA::AABBox3 collBox = collSystem->GetBoundingBox(entity);
+                    DVASSERT(!collBox.IsEmpty());
 
                     DAVA::Matrix4 transform;
                     transform.Identity();
@@ -394,6 +395,7 @@ void SceneCameraSystem::CreateDebugCameras()
 
         DAVA::ScopedPtr<DAVA::Entity> topCameraEntity(new DAVA::Entity());
         topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->SetNotRemovable(true);
         topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
@@ -478,18 +480,21 @@ void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
 
 void SceneCameraSystem::UpdateDistanceToCamera()
 {
-    SceneEditor2* sc = (SceneEditor2*)GetScene();
+    distanceToCamera = 0.f;
 
-    DAVA::Vector3 center = sc->selectionSystem->GetSelection().GetIntegralBoundingBox().GetCenter();
-
-    const DAVA::Camera* cam = GetScene()->GetCurrentCamera();
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    const DAVA::Camera* cam = sc->GetCurrentCamera();
     if (cam)
     {
-        distanceToCamera = (cam->GetPosition() - center).Length();
-    }
-    else
-    {
-        distanceToCamera = 0.f;
+        const SelectableGroup& selection = sc->selectionSystem->GetSelection();
+        if (!selection.IsEmpty())
+        {
+            DAVA::AABBox3 bbox = sc->selectionSystem->GetTransformedBoundingBox(selection);
+            if (!bbox.IsEmpty())
+            {
+                distanceToCamera = ((cam->GetPosition() - bbox.GetCenter()).Length()) * cam->GetZoomFactor();
+            }
+        }
     }
 }
 
@@ -591,7 +596,11 @@ void SceneCameraSystem::MoveToSelection()
     const SelectableGroup& selection = sceneEditor->selectionSystem->GetSelection();
     if (!selection.IsEmpty())
     {
-        LookAt(sceneEditor->selectionSystem->GetTransformedBoundingBox(selection));
+        DAVA::AABBox3 bbox = sceneEditor->selectionSystem->GetTransformedBoundingBox(selection);
+        if (!bbox.IsEmpty())
+        {
+            LookAt(bbox);
+        }
     }
 }
 

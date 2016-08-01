@@ -1,4 +1,5 @@
 #include "filemanager.h"
+#include "errormessenger.h"
 #include <QDesktopServices>
 #include <QCoreApplication>
 #include <QDir>
@@ -104,6 +105,11 @@ bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
 
 bool DeleteDirectory(const QString& path)
 {
+    if (path == "/" || path == "." || path == "..")
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, "trying to remove wrong path! Aborted");
+        return false;
+    }
     QDir dir(path);
     return dir.removeRecursively();
 }
@@ -250,18 +256,15 @@ void MakeDirectory(const QString& path)
 QString GetApplicationDirectory(const QString& branchID, const QString& appID)
 {
     QString path = GetBranchDirectory(branchID) + appID + "/";
-    if (!QDir(path).exists())
-        QDir().mkpath(path);
-
     return path;
 }
 
 QString GetBranchDirectory(const QString& branchID)
 {
-    QString path = GetBaseAppsDirectory() + branchID + "/";
-    if (!QDir(path).exists())
-        QDir().mkpath(path);
-
+    QString dirName = branchID;
+    dirName.remove("/");
+    dirName.remove("\\");
+    QString path = GetBaseAppsDirectory() + dirName + "/";
     return path;
 }
 }

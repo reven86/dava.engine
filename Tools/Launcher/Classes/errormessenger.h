@@ -14,6 +14,7 @@ enum ErrorID
     ERROR_UNPACK,
     ERROR_IS_RUNNING,
     ERROR_UPDATE,
+    ERROR_PATH,
     ERROR_COUNT
 };
 void ShowErrorMessage(ErrorID id, const QString& addInfo);

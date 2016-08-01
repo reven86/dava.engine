@@ -6,6 +6,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/Entity.h"

@@ -63,6 +63,7 @@ const FastName DYNAMIC_PARAM_NAMES[DynamicBindings::DYNAMIC_PARAMETERS_COUNT] =
   FastName("heightmapTextureSize"),
 
   FastName("shadowColor"),
+  FastName("waterClearColor"),
 
   FastName("projectionFlip")
 };

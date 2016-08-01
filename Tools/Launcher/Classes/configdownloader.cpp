@@ -6,59 +6,75 @@
 #include "applicationmanager.h"
 #include <QProcess>
 
-ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QNetworkAccessManager* accessManager, QWidget* parent)
-    :
-    QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
-    ,
-    ui(new Ui::ConfigDownloader)
-    ,
-    downloader(0)
-    ,
-    appManager(manager)
+ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
+    : QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint)
+    , ui(new Ui::ConfigDownloader)
+    , appManager(manager)
+    , networkManager(new QNetworkAccessManager(this))
 {
+    setModal(true);
     ui->setupUi(this);
-
-    downloader = new FileDownloader(accessManager);
-    connect(ui->cancelButton, SIGNAL(clicked()), downloader, SLOT(Cancel()));
-
-    connect(downloader, SIGNAL(Finished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)),
-            this, SLOT(DownloadFinished(QByteArray, QList<QPair<QByteArray, QByteArray>>, int, QString)));
+    connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
+    connect(ui->cancelButton, &QPushButton::clicked, this, &ConfigDownloader::OnCancelClicked);
 }
 
 ConfigDownloader::~ConfigDownloader()
 {
     SafeDelete(ui);
-    SafeDelete(downloader);
 }
 
 int ConfigDownloader::exec()
 {
-    downloader->Download(QUrl(appManager->localConfig->GetRemoteConfigURL()));
-
+    aborted = false;
+    appManager->GetRemoteConfig()->Clear();
+    QStringList urls = QStringList() << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher" //version, url, news
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list" //stirngs
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString // favorites
+                                     << "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString //all builds
+    ;
+    for (const QString& str : urls)
+    {
+        requests << networkManager->get(QNetworkRequest(QUrl(str)));
+    }
     return QDialog::exec();
 }
 
-void ConfigDownloader::DownloadFinished(QByteArray downloadedData, QList<QPair<QByteArray, QByteArray>> rawHeaderList, int errorCode, QString errorDescr)
+void ConfigDownloader::DownloadFinished(QNetworkReply* reply)
 {
-    if (errorCode)
+    requests.removeOne(reply);
+    reply->deleteLater();
+    if (aborted)
     {
-        if (errorCode != QNetworkReply::OperationCanceledError)
-        {
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, errorCode, errorDescr);
-        }
+        return;
+    }
+    QNetworkReply::NetworkError error = reply->error();
+
+    if (error != QNetworkReply::NoError)
+    {
+        aborted = true;
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, reply->errorString());
         reject();
+        return;
     }
     else
     {
-        const QByteArray contentTypeConst("Content-Type");
-        for (QList<QPair<QByteArray, QByteArray>>::ConstIterator it = rawHeaderList.begin(); it != rawHeaderList.end(); ++it)
-        {
-            if ((*it).first == contentTypeConst && (*it).second.left(9) != QByteArray("text/html"))
-            {
-                appManager->ParseRemoteConfigData(downloadedData);
-            }
-        }
+        appManager->ParseRemoteConfigData(reply->readAll());
+    }
 
+    if (requests.isEmpty())
+    {
+        appManager->GetRemoteConfig()->UpdateApplicationsNames();
+        appManager->localConfig.SaveToFile(appManager->localConfigFilePath);
         accept();
     }
+}
+
+void ConfigDownloader::OnCancelClicked()
+{
+    aborted = true;
+    for (QNetworkReply* networkReply : requests)
+    {
+        networkReply->abort();
+    }
+    reject();
 }

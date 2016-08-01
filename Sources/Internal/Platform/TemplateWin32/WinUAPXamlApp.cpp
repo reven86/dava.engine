@@ -328,10 +328,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             {
                 Core::Instance()->SetIsActive(true);
             }
-            else
-            {
-                Core::Instance()->FocusReceived();
-            }
+            Core::Instance()->FocusReceived();
 
             //We need to activate high-resolution timer
             //cause default system timer resolution is ~15ms and our frame-time calculation is very inaccurate
@@ -342,11 +339,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow ^ 
             {
                 Core::Instance()->SetIsActive(false);
             }
-            else
-            {
-                Core::Instance()->FocusLost();
-            }
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            Core::Instance()->FocusLost();
             EnableHighResolutionTimer(false);
             break;
         default:
@@ -362,25 +355,15 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow ^ 
     core->RunOnMainThread([this, visible]() {
         if (visible)
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoForeground();
-                Core::Instance()->FocusReceived();
-            }
-            Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
+            Core::Instance()->SetIsActive(true);
+            Core::Instance()->GoForeground();
+            Core::Instance()->FocusReceived();
         }
         else
         {
-            if (!isPhoneApiDetected)
-            {
-                Core::Instance()->GoBackground(false);
-                Core::Instance()->FocusLost();
-            }
-            else
-            {
-                Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
-            }
-            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            Core::Instance()->FocusLost();
+            Core::Instance()->GoBackground(false);
+            Core::Instance()->SetIsActive(false);
         }
     });
 }
@@ -637,7 +620,6 @@ void WinUAPXamlApp::OnBackRequested(Platform::Object ^ /*sender*/, BackRequested
 void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs)
 {
     uint32 key = static_cast<uint32>(keyEventArgs->VirtualKey);
-
     if (key == VK_SHIFT && keyEventArgs->KeyStatus.ScanCode == 0x36) // right shift scan code(on windows)
     {
         key |= 0x100;
@@ -840,7 +822,7 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     WebView ^ webview = dynamic_cast<WebView ^>(obj);
     // workaround for mobile device, otherwise we have exception, when insert some text into recreated TextBox
     obj = XamlReader::Load(ref new Platform::String(xamlTextBox));
-    TextBox ^ textBox = dynamic_cast<TextBox ^>(obj);
+    Windows::UI::Xaml::Controls::TextBox ^ textBox = dynamic_cast<Windows::UI::Xaml::Controls::TextBox ^>(obj);
 
     swapChainPanel = ref new Controls::SwapChainPanel();
     canvas = ref new Controls::Canvas();

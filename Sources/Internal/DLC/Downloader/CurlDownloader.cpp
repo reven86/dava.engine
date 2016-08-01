@@ -14,7 +14,8 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
     { DLE_UNKNOWN, 6 },
     { DLE_CANCELLED, 7 },
     { DLE_NO_RANGE_REQUEST, 8 },
-    { DLE_NO_ERROR, 9 },
+    { DLE_INVALID_RANGE, 9 },
+    { DLE_NO_ERROR, 10 },
 };
 
 CurlDownloader::CurlDownloader()
@@ -282,7 +283,7 @@ CURLMcode CurlDownloader::Perform()
         case 0: /* timeout */
         {
             // workaround which allows to finish broken download on MacOS and iOS
-            // operation don't interrupts at connection lose (if we turn off wi-fi at example)
+            // operation don't interrupt on connection loss (e.g. wi-fi is turned off)
             // so we check if curl timeout is reached and then starts inactivity timer
             // timer.Reset placed inside data receive handler.
             // so if we have some data comming, timer will not reach his maximu value
@@ -421,7 +422,7 @@ DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
     return retCode;
 }
 
-DownloadError CurlDownloader::Download(const String& url, const FilePath& savePath, uint8 partsCount, int32 timeout)
+DownloadError CurlDownloader::Download(const String& url, uint64 downloadOffset, uint64 downloadSize, const FilePath& savePath, uint8 partsCount, int32 timeout)
 {
     Logger::FrameworkDebug("[CurlDownloader::Download]");
 
@@ -437,8 +438,20 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
         return retCode;
     }
 
+    if (downloadSize == 0)
+    {
+        downloadSize = remoteFileSize;
+        downloadOffset = 0;
+    }
+
+    // Check download range against file size
+    if (downloadOffset + downloadSize > remoteFileSize)
+    {
+        return DLE_INVALID_RANGE;
+    }
+
     uint64 currentFileSize = 0;
-    // if file esists - don't reload already downloaded part, just report
+    // if file exists - don't reload already downloaded part, just report
     File* dstFile = File::Create(storePath, File::OPEN | File::READ);
     if (NULL != dstFile)
     {
@@ -455,15 +468,30 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
     }
     SafeRelease(dstFile);
 
+    // Something is wrong if already downloaded part size is greater then download size
+    if (currentFileSize > downloadSize)
+    {
+        return DLE_INVALID_RANGE;
+    }
+
+    // File already downloaded
+    if (currentFileSize == downloadSize)
+    {
+        return DLE_NO_ERROR;
+    }
+
     saveResult = DLE_NO_ERROR;
 
+    downloadSize -= currentFileSize;
+    downloadOffset += currentFileSize;
+
     // rest part of file to download
-    sizeToDownload = remoteFileSize - currentFileSize;
+    sizeToDownload = downloadSize;
 
     // reset download speed statistics
     ResetStatistics(sizeToDownload);
 
-    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(remoteFileSize / 100));
+    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(downloadSize / 100));
     // a part of file to parallel download
     // cast is needed because it is garanteed that download part is lesser than 4Gb
     uint32 fileChunkSize = Max<uint32>(minChunkSize, inMemoryBufferChunkSize);
@@ -472,8 +500,8 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
     // if file exists
     uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
 
-    // Range Request is a trying to download a part of file from some offset.
-    // file is dividen on fileChunksCount, so if they are more than 1 - then RangeRequest will be performed
+    // Range Request is a trying to download a part of file starting from some offset.
+    // File is divided into fileChunksCount chunks, so if chunk count is more than 1 - then RangeRequest will be performed
     // if we want to use more than 1 download part - then we need RangeRequest
     isRangeRequestSent = 1 < fileChunksCount || 1 < partsCount;
 
@@ -491,7 +519,7 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
         for (uint64 i = 0; i < fileChunksCount; ++i)
         {
             // download from seek pos
-            uint64 seek = currentFileSize + fileChunkSize * i;
+            uint64 seek = downloadOffset + fileChunkSize * i;
 
             // last download part considers the inaccuracy of division of file to parts
             if (i == fileChunksCount - 1)
@@ -558,6 +586,116 @@ DownloadError CurlDownloader::Download(const String& url, const FilePath& savePa
         retCode = saveResult;
     }
 
+    return retCode;
+}
+
+DownloadError CurlDownloader::DownloadIntoBuffer(const String& url,
+                                                 uint64 downloadOffset,
+                                                 uint64 downloadSize,
+                                                 void* buffer,
+                                                 uint32 bufSize,
+                                                 uint8 partsCount,
+                                                 int32 timeout,
+                                                 uint32* nread)
+{
+    DVASSERT(nread != nullptr);
+    DVASSERT(bufSize > 0 && buffer != nullptr);
+    DVASSERT(downloadSize <= bufSize);
+
+    Logger::FrameworkDebug("[CurlDownloader::Download into buffer]");
+
+    operationTimeout = timeout;
+    downloadUrl = url;
+    currentDownloadPartsCount = partsCount;
+    fileErrno = 0;
+    DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
+    if (DLE_NO_ERROR != retCode)
+    {
+        return retCode;
+    }
+
+    if (downloadSize == 0)
+    {
+        downloadSize = remoteFileSize;
+        downloadOffset = 0;
+    }
+
+    // Check download range against file size
+    if (downloadOffset + downloadSize > remoteFileSize)
+    {
+        return DLE_INVALID_RANGE;
+    }
+
+    downloadSize = std::min<uint64>(bufSize, downloadSize);
+
+    saveResult = DLE_NO_ERROR;
+
+    // rest part of file to download
+    sizeToDownload = downloadSize;
+
+    // reset download speed statistics
+    ResetStatistics(sizeToDownload);
+
+    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(downloadSize / 100));
+    // a part of file to parallel download
+    // cast is needed because it is garanteed that download part is lesser than 4Gb
+    uint32 fileChunkSize = Max<uint32>(minChunkSize, inMemoryBufferChunkSize);
+    // quantity of paralleled file parts
+    // if file size is 0 - we don't need more than 1 download thread.
+    // if file exists
+    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
+
+    // Range Request is a trying to download a part of file starting from some offset.
+    // File is divided into fileChunksCount chunks, so if chunk count is more than 1 - then RangeRequest will be performed
+    // if we want to use more than 1 download part - then we need RangeRequest
+    isRangeRequestSent = 1 < fileChunksCount || 1 < partsCount;
+
+    // part size could not be bigger than 4Gb
+    uint32 lastFileChunkSize = fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount * fileChunkSize);
+
+    uint32 chunksInList = 0;
+
+    void* writeTo = buffer;
+    uint32 nwritten = 0;
+
+    retCode = CreateDownload();
+    if (DLE_NO_ERROR == retCode)
+    {
+        for (uint64 i = 0; i < fileChunksCount; ++i)
+        {
+            // download from seek pos
+            uint64 seek = downloadOffset + fileChunkSize * i;
+
+            // last download part considers the inaccuracy of division of file to parts
+            if (i == fileChunksCount - 1)
+            {
+                fileChunkSize = lastFileChunkSize;
+            }
+
+            chunkInfo = new DataChunkInfo(fileChunkSize);
+
+            // download a part of file
+            retCode = DownloadRangeOfFile(seek, fileChunkSize);
+            if (DLE_NO_ERROR == retCode)
+            {
+                Memcpy(writeTo, chunkInfo->buffer, chunkInfo->bufferSize);
+                nwritten += chunkInfo->bufferSize;
+                writeTo = OffsetPointer<void*>(writeTo, chunkInfo->bufferSize);
+
+                notifyProgress(nwritten);
+            }
+            SafeRelease(chunkInfo);
+
+            if (DLE_NO_ERROR != retCode)
+            {
+                break;
+            }
+        }
+    }
+    *nread = nwritten;
+
+    CleanupDownload();
+    ResetStatistics(0);
     return retCode;
 }
 

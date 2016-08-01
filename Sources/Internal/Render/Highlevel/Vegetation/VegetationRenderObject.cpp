@@ -241,12 +241,9 @@ void VegetationRenderObject::Save(KeyedArchive* archive, SerializationContext* s
     archive->SetVector4("vro.layersAnimationSpring", GetLayersAnimationSpring());
     archive->SetVector4("vro.layersAnimationDrug", GetLayerAnimationDragCoefficient());
 
-    uint32 bitCount = static_cast<uint32>(densityMap.size());
-    archive->SetUInt32("vro.flippedDensityBitCount", bitCount);
-    for (uint32 i = 0; i < bitCount; ++i)
-    {
-        archive->SetBool(Format("vro.flippedDensityBit.%d", i), densityMap[i]);
-    }
+    uint32 densityMapSize = static_cast<uint32>(densityMap.size());
+    archive->SetUInt32("vro.densityMapSize", densityMapSize);
+    archive->SetByteArray("vro.flippedDensityMap", &densityMap[0], densityMapSize);
 
     const Vector3& savingLodRanges = GetLodRange();
     archive->SetVector3("vro.lodRanges", savingLodRanges);
@@ -336,32 +333,43 @@ void VegetationRenderObject::Load(KeyedArchive* archive, SerializationContext* s
         SetLayersAnimationAmplitude(archive->GetVector4("vro.layerAnimationAmplitude", GetLayersAnimationAmplitude()));
         SetLayersAnimationSpring(archive->GetVector4("vro.layersAnimationSpring", GetLayersAnimationSpring()));
 
-        Vector<bool> densityBits;
-        if (archive->IsKeyExists("vro.flippedDensityBitCount"))
+        if (serializationContext->GetVersion() < FIXED_VEGETATION_SCENE_VERSION)
         {
-            uint32 bitCount = archive->GetUInt32("vro.flippedDensityBitCount");
-            densityBits.resize(bitCount);
-            for (uint32 i = 0; i < bitCount; ++i)
+            //old trash with each bit in separate record
+            Vector<uint8> densityBits;
+            if (archive->IsKeyExists("vro.flippedDensityBitCount"))
             {
-                densityBits[i] = archive->GetBool(Format("vro.flippedDensityBit.%d", i));
+                uint32 bitCount = archive->GetUInt32("vro.flippedDensityBitCount");
+                densityBits.resize(bitCount);
+                for (uint32 i = 0; i < bitCount; ++i)
+                {
+                    densityBits[i] = archive->GetBool(Format("vro.flippedDensityBit.%d", i)) ? 1 : 0;
+                }
             }
+
+            if (densityBits.size() == 0)
+            {
+                densityBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE, 1);
+            }
+
+            SetDensityMap(densityBits);
         }
         else
         {
-            GenerateDensityMapFromTransparencyMask(lightmapTexturePath, densityBits);
-        }
-
-        if (densityBits.size() == 0)
-        {
-            densityBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
-            uint32 bitCount = static_cast<uint32>(densityBits.size());
-            for (size_t bitIndex = 0; bitIndex < bitCount; ++bitIndex)
+            uint32 densityMapSize = archive->GetUInt32("vro.densityMapSize", 0);
+            const uint8* byteArray = archive->GetByteArray("vro.flippedDensityMap");
+            if ((densityMapSize != 0) && (byteArray != nullptr))
             {
-                densityBits[bitIndex] = true;
+                DVASSERT(archive->GetByteArraySize("vro.flippedDensityMap") == densityMapSize);
+                densityMap.resize(densityMapSize);
+                Memcpy(&densityMap[0], byteArray, densityMapSize);
             }
+            else
+            {
+                densityMap.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE, 1);
+            }
+            UpdateVegetationSetup();
         }
-
-        SetDensityMap(densityBits);
 
         if (archive->IsKeyExists("vro.layersAnimationDrug"))
         {
@@ -509,7 +517,7 @@ void VegetationRenderObject::BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpa
     {
         node->data.width = width;
         node->data.height = height;
-        node->data.isVisible = !IsNodeEmpty(node, densityMap);
+        node->data.isVisible = !IsNodeEmpty(node);
 
         if (width == RESOLUTION_SCALE[RESOLUTION_SCALE.size() - 1])
         {
@@ -871,24 +879,27 @@ void VegetationRenderObject::CreateRenderData()
 
 void VegetationRenderObject::RestoreRenderData()
 {
-#if defined(__DAVAENGINE_IPHONE__)
-    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
-#endif
-    if (!renderData)
+    //#if defined(__DAVAENGINE_IPHONE__)
+    //    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+    //#endif
+
+    if (renderData == nullptr)
         return;
 
-    if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    if ((vertexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreVertexBuffer(vertexBuffer))
     {
         const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
         uint32 vertexBufferSize = static_cast<uint32>(vertexData.size() * sizeof(VegetationVertex));
         rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
     }
-    if (rhi::NeedRestoreIndexBuffer(indexBuffer))
+
+    if ((indexBuffer != rhi::InvalidHandle) && rhi::NeedRestoreIndexBuffer(indexBuffer))
     {
         const Vector<VegetationIndex>& indexData = renderData->GetIndices();
         uint32 indexBufferSize = static_cast<uint32>(indexData.size() * sizeof(VegetationIndex));
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
     }
+
     if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
     {
         uint32 hmSize = uint32(heightmap->Size());
@@ -1227,7 +1238,7 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
     }
 }
 
-void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath, Vector<bool>& densityMapBits)
+void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath)
 {
     std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(lightmapPath));
     if (!descriptor)
@@ -1238,7 +1249,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
 
     FilePath imagePath = descriptor->GetSourceTexturePathname();
 
-    ScopedPtr<Image> lightmapImage(LoadSingleImage(imagePath));
+    ScopedPtr<Image> lightmapImage(ImageSystem::LoadSingleMip(imagePath, 0));
     if (lightmapImage)
     {
         uint32 ratio = lightmapImage->width / DENSITY_MAP_SIZE;
@@ -1248,7 +1259,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
 
         if (ratio > 0 && lightmapImage->GetPixelFormat() == FORMAT_RGBA8888)
         {
-            densityMapBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
+            densityMap.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
             uint32 stride = sizeof(uint32);
             for (uint32 y = 0; y < DENSITY_MAP_SIZE; ++y)
             {
@@ -1260,7 +1271,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
                     float32 meanAlpha = GetMeanAlpha(x, flippedY, ratio, stride, lightmapImage);
 
                     uint32 bitIndex = x + y * DENSITY_MAP_SIZE;
-                    densityMapBits[bitIndex] = (meanAlpha > DENSITY_THRESHOLD);
+                    densityMap[bitIndex] = (meanAlpha > DENSITY_THRESHOLD) ? 1 : 0;
                 }
             }
         }
@@ -1296,26 +1307,6 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
     SafeRelease(outputImage);*/
 }
 
-Image* VegetationRenderObject::LoadSingleImage(const FilePath& path) const
-{
-    Vector<Image*> images;
-
-    ImageSystem::Load(path, images);
-
-    Image* image = nullptr;
-    if (images.size() > 0)
-    {
-        image = SafeRetain(images[0]);
-        size_t imageCount = images.size();
-        for (size_t i = 0; i < imageCount; ++i)
-        {
-            SafeRelease(images[i]);
-        }
-    }
-
-    return image;
-}
-
 float32 VegetationRenderObject::GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const
 {
     uint32 actualStartX = x * ratio;
@@ -1342,16 +1333,9 @@ float32 VegetationRenderObject::GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, u
     return (medianAlpha / fragmentCount);
 }
 
-void VegetationRenderObject::SetDensityMap(const Vector<bool>& densityBits)
+void VegetationRenderObject::SetDensityMap(const Vector<uint8>& densityBits)
 {
-    size_t densityBitCount = densityBits.size();
-    densityMap.resize(densityBitCount);
-
-    for (size_t i = 0; i < densityBitCount; ++i)
-    {
-        densityMap[i] = densityBits[i];
-    }
-
+    densityMap = densityBits;
     UpdateVegetationSetup();
 }
 

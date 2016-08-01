@@ -5,7 +5,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 15"
+#define LAUNCHER_VER "0.9 build 20"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
@@ -16,9 +16,8 @@
 #define CONFIG_BRANCHES_KEY "branches"
 
 #define CONFIG_LAUNCHER_VERSION_KEY "version"
-#define CONFIG_LAUNCHER_WEBPAGE_KEY "webpage"
+#define CONFIG_LAUNCHER_WEBPAGE_KEY "News"
 #define CONFIG_LAUNCHER_NEWSID_KEY "newsID"
-#define CONFIG_LAUNCHER_REMOTE_URL_KEY "remoteConfigUrl"
 #define CONFIG_LAUNCHER_FAVORITES_KEY "favorites"
 
 #define CONFIG_APPVERSION_RUNPATH_KEY "runpath"
@@ -46,6 +45,12 @@
 #define LOG_COLOR_COMPLETE QColor(0, 110, 0)
 #define LOG_COLOR_PROGRESS QColor(0, 0, 110)
 #define LOG_COLOR_FAIL QColor(240, 0, 0)
+
+#ifdef Q_OS_WIN
+#define platformString QString("windows")
+#elif defined Q_OS_MAC
+#define platformString QString("macos")
+#endif //platform
 
 /////////////////////
 

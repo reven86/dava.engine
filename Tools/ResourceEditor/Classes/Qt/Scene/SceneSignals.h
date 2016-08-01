@@ -15,6 +15,8 @@ class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
     Q_OBJECT
 
 signals:
+    void ThemeChanged();
+
     // scene
     void Opened(SceneEditor2* scene);
     void Loaded(SceneEditor2* scene);
@@ -25,6 +27,7 @@ signals:
     void Activated(SceneEditor2* scene);
     void Deactivated(SceneEditor2* scene);
 
+    void UndoRedoStateChanged(SceneEditor2* scene);
     void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
@@ -92,6 +95,11 @@ public:
     void EmitDeactivated(SceneEditor2* scene)
     {
         emit Deactivated(scene);
+    }
+
+    void EmitUndoRedoStateChanged(SceneEditor2* scene)
+    {
+        emit UndoRedoStateChanged(scene);
     }
 
     void EmitCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)

@@ -1,7 +1,6 @@
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
-#include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
@@ -13,6 +12,7 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
+#include "Platform/Steam.h"
 
 namespace DAVA
 {
@@ -34,7 +34,8 @@ void ApplicationCore::Update(float32 timeElapsed)
 {
     TIME_PROFILE("ApplicationCore::Update");
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Update(timeElapsed);
+    float32 realFrameDelta = SystemTimer::RealFrameDelta();
+    AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
     SoundSystem::Instance()->Update(timeElapsed);
@@ -47,6 +48,10 @@ void ApplicationCore::Update(float32 timeElapsed)
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
     UIControlSystem::Instance()->Update();
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
+    
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Update();
+#endif
 }
 
 void ApplicationCore::OnEnterFullscreen()
@@ -59,16 +64,15 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
+    Renderer::GetRenderStats().Reset();
+
     TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
-
-    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
 
     UIControlSystem::Instance()->Draw();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
-    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
     RenderSystem2D::Instance()->EndFrame();
 }
 

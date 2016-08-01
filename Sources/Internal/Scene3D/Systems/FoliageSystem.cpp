@@ -5,6 +5,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Debug/Stats.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -41,11 +42,11 @@ void FoliageSystem::AddEntity(Entity* entity)
         VegetationRenderObject* vegetationRO = GetVegetation(entity);
         if (vegetationRO != nullptr)
         {
-            if (!foliageEntities.empty())
+            /*if (!foliageEntities.empty())
             {
                 const int WARNING = 0; // trick to display "WARNING" in message, instead of "0" or "false"
                 DVASSERT_MSG(WARNING, "Do not try to add more than one vegetation entity to scene.");
-            }
+            }*/
             foliageEntities.push_back(SafeRetain(entity));
             SyncFoliageWithLandscape();
         }
@@ -70,6 +71,11 @@ void FoliageSystem::RemoveEntity(Entity* entity)
 void FoliageSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("FoliageSystem::Process");
+
+    if (GetScene()->GetRenderSystem()->GetMainCamera() == nullptr)
+    {
+        return;
+    }
 
     for (auto foliageEntity : foliageEntities)
     {
@@ -159,6 +165,8 @@ void FoliageSystem::SyncFoliageWithLandscape()
 
     for (auto foliageEntity : foliageEntities)
     {
+        if (!QualitySettingsSystem::Instance()->IsQualityVisible(foliageEntity))
+            continue;
         Landscape* landscapeRO = GetLandscape(landscapeEntity);
         VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
         vegetationRO->SetHeightmap(landscapeRO->GetHeightmap());

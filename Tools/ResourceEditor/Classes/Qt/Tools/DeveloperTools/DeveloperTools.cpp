@@ -5,7 +5,6 @@
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/SkinnedMesh.h"
 
-#include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
@@ -165,12 +164,6 @@ void DeveloperTools::OnImageSplitterNormals()
 {
     ImageSplitterDialogNormal dlg(QtMainWindow::Instance());
     dlg.exec();
-}
-
-void DeveloperTools::OnSpyWidget()
-{
-    auto spySearch = new SpySearch(this);
-    spySearch->show();
 }
 
 void DeveloperTools::OnReplaceTextureMipmap()

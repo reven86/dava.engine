@@ -3,8 +3,10 @@
 namespace DAVA
 {
 const FastName NMaterialName::DECAL_ALPHABLEND = FastName("~res:/Materials/Decal.Alphablend.material");
+const FastName NMaterialName::DECAL_ALPHABLEND_CULLFACE = FastName("~res:/Materials/Decal.Alphablend.Cullface.material");
 const FastName NMaterialName::PIXELLIT_SPECULARMAP_ALPHATEST = FastName("~res:/Materials/PixelLit.SpecularMap.Alphatest.material");
 const FastName NMaterialName::TEXTURED_ALPHABLEND = FastName("~res:/Materials/Textured.Alphablend.material");
+const FastName NMaterialName::TEXTURED_ALPHABLEND_CULLFACE = FastName("~res:/Materials/Textured.Alphablend.Cullface.material");
 const FastName NMaterialName::DECAL_ALPHATEST = FastName("~res:/Materials/Decal.Alphatest.material");
 const FastName NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE = FastName("~res:/Materials/PixelLit.SpecularMap.Opaque.material");
 const FastName NMaterialName::TEXTURED_ALPHATEST = FastName("~res:/Materials/Textured.Alphatest.material");
@@ -107,6 +109,7 @@ const FastName NMaterialParamName::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterialParamName::PARAM_SCREEN_OFFSET("screenOffset");
 const FastName NMaterialParamName::PARAM_ALPHATEST_THRESHOLD("alphatestThreshold");
 const FastName NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING("textureTiling");
+const FastName NMaterialParamName::WATER_CLEAR_COLOR("waterColor");
 const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 const FastName NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING("texture0Tiling");
 
@@ -142,6 +145,8 @@ const FastName NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_N
 
 const FastName NMaterialFlagName::FLAG_SKINNING = FastName("SKINNING");
 
+const FastName NMaterialFlagName::FLAG_FLOWMAP_SKY = FastName("FLOWMAP_SKY");
+
 const FastName NMaterialFlagName::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterialFlagName::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
 const FastName NMaterialFlagName::FLAG_SETUPLIGHTMAP = FastName("SETUP_LIGHTMAP");
@@ -163,6 +168,8 @@ const FastName NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR("LANDSCAPE_SPECULAR");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
+
+const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
 
 //quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");

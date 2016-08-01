@@ -113,6 +113,7 @@ _IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 static void
 dx9_Uninitialize()
 {
+    QueryBufferDX9::ReleaseQueryPool();
     UninitializeRenderThreadDX9();
 }
 
@@ -134,7 +135,7 @@ dx9_Reset(const ResetParam& param)
         _DX9_PresentParam.Windowed = !param.fullScreen;
         _DX9_PresentParam.PresentationInterval = interval;
 
-        _DX9_ResetPending = true;
+        ScheduleDeviceReset();
     }
 }
 
@@ -143,9 +144,15 @@ dx9_Reset(const ResetParam& param)
 static bool
 dx9_NeedRestoreResources()
 {
-    bool needRestore = (TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount());
+    uint32 pendingTextures = TextureDX9::NeedRestoreCount();
+    uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
+    uint32 pendingIndexBuffers = IndexBufferDX9::NeedRestoreCount();
+
+    bool needRestore = (pendingTextures || pendingVertexBuffers || pendingIndexBuffers);
     if (needRestore)
-        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
+    {
+        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", pendingTextures, pendingVertexBuffers, pendingIndexBuffers);
+    }
     return needRestore;
 }
 
@@ -247,7 +254,7 @@ void _InitDX9()
         _DX9_PresentParam.BackBufferWidth = backbuf_width;
         _DX9_PresentParam.BackBufferHeight = backbuf_height;
         _DX9_PresentParam.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        _DX9_PresentParam.BackBufferCount = 1;
+        _DX9_PresentParam.BackBufferCount = use_vsync ? 2 : 1;
         _DX9_PresentParam.EnableAutoDepthStencil = TRUE;
         _DX9_PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
         _DX9_PresentParam.PresentationInterval = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;

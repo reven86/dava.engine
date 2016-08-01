@@ -10,8 +10,7 @@ include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_TOOLS_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-define_source_folders          ( SRC_ROOT "." )
-generate_source_groups_project ( )
+define_source( )
 
-add_library                    ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} )
+add_library                    ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${PROJECT_HEADER_FILE_ONLY} )
 	

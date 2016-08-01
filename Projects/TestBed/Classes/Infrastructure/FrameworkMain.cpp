@@ -44,11 +44,19 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+#elif defined(__DAVAENGINE_WIN32__)
+    screenWidth = WIDTH;
+    screenHeight = HEIGHT;
+
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+
 #else
     screenWidth = WIDTH;
     screenHeight = HEIGHT;
 
-    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     
@@ -62,7 +70,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
 
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenWidth, screenHeight);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenWidth, screenHeight, "Gfx");
 
     GameCore* core = new GameCore();

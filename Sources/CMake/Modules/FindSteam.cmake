@@ -8,6 +8,7 @@ endif ()
  
 set (STEAM_SDK_FOUND true)
 
+set (STEAM_SDK "${DAVA_THIRD_PARTY_ROOT_PATH}/steam_sdk")
 set (STEAM_SDK_HEADERS ${STEAM_SDK}/public)
 
 if (WIN32)

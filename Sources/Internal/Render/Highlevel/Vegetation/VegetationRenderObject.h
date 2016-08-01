@@ -180,7 +180,7 @@ private:
 
     inline uint32 MapToResolution(float32 squareDistance);
 
-    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node, const Vector<bool>& map) const;
+    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node) const;
 
     void ClearRenderBatches();
 
@@ -188,11 +188,10 @@ private:
     VegetationGeometryDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
     void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationGeometryDataPtr& data);
 
-    void GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath, Vector<bool>& densityMapBits);
-    Image* LoadSingleImage(const FilePath& path) const;
+    void GenerateDensityMapFromTransparencyMask(const FilePath& lightmapPath);
     float32 GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const;
 
-    void SetDensityMap(const Vector<bool>& densityBits);
+    void SetDensityMap(const Vector<uint8>& densityBits);
 
     bool IsDataLoadNeeded();
 
@@ -251,7 +250,7 @@ private:
     Vector4 layersAnimationSpring;
     Vector4 layersAnimationDrag;
 
-    Vector<bool> densityMap;
+    Vector<uint8> densityMap;
 
     Vector<VegetationLayerParams> layerParams;
 
@@ -301,8 +300,7 @@ inline uint32 VegetationRenderObject::MapToResolution(float32 squareDistance)
     return resolutionId;
 }
 
-inline bool VegetationRenderObject::IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                                                const Vector<bool>& map) const
+inline bool VegetationRenderObject::IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node) const
 {
     bool nodeEmpty = true;
 
@@ -319,7 +317,7 @@ inline bool VegetationRenderObject::IsNodeEmpty(AbstractQuadTreeNode<VegetationS
             int32 mapY = y + halfHeight;
             uint32 cellDescriptionIndex = (mapY * fullWidth) + mapX;
 
-            if (map[cellDescriptionIndex])
+            if (densityMap[cellDescriptionIndex])
             {
                 nodeEmpty = false;
                 break;
@@ -335,7 +333,7 @@ inline void VegetationRenderObject::SetHeightmap(Heightmap* _heightmap)
     if (heightmap != _heightmap)
     {
         SafeRelease(heightmap);
-        heightmap = (_heightmap->Data()) ? SafeRetain(_heightmap) : NULL;
+        heightmap = (_heightmap != nullptr && _heightmap->Data()) ? SafeRetain(_heightmap) : nullptr;
 
         if (heightmap)
         {
@@ -385,7 +383,7 @@ inline const FilePath& VegetationRenderObject::GetLightmapPath() const
 inline void VegetationRenderObject::SetLightmapAndGenerateDensityMap(const FilePath& filePath)
 {
     SetLightmap(filePath);
-    GenerateDensityMapFromTransparencyMask(filePath, densityMap);
+    GenerateDensityMapFromTransparencyMask(filePath);
 
     UpdateVegetationSetup();
 }

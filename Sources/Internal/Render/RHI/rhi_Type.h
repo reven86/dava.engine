@@ -23,8 +23,6 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 static const uint32 DefaultDepthBuffer = static_cast<uint32>(-2);
 
-typedef void (*ScreenShotCallback)(uint32 width, uint32 height, const void* rgba);
-
 enum ResourceType
 {
     RESOURCE_VERTEX_BUFFER = 11,
@@ -654,6 +652,7 @@ struct Descriptor
     uint32 stencilEnabled : 1;
     uint32 stencilTwoSided : 1;
     uint32 pad : 25;
+    uint32 pad64 : 32;
 
     struct
     {
@@ -675,6 +674,7 @@ struct Descriptor
         , stencilEnabled(false)
         , stencilTwoSided(false)
         , pad(0)
+        , pad64(0)
     {
         stencilFront.readMask = 0xFF;
         stencilFront.writeMask = 0xFF;

@@ -20,8 +20,8 @@ static const char* keys[] =
   "LCTRL",
   "LALT",
 
-  "LWIN",
-  "RWIN",
+  "LCMD",
+  "RCMD",
   "APPS",
 
   "PAUSE",
@@ -165,6 +165,16 @@ const String& KeyboardDevice::GetKeyName(Key key)
     return keyNames[static_cast<unsigned>(key)];
 }
 
+const Key KeyboardDevice::GetKeyByName(const String& name)
+{
+    for (size_t i = 0; i < keyNames.size(); i++)
+    {
+        if (keyNames[i] == name)
+            return static_cast<Key>(i);
+    }
+    return Key::UNKNOWN;
+}
+
 void KeyboardDevice::OnKeyPressed(Key key)
 {
     unsigned index = static_cast<unsigned>(key);
@@ -186,15 +196,30 @@ Key KeyboardDevice::GetDavaKeyForSystemKey(uint32 systemKeyCode) const
 {
     if (systemKeyCode < MAX_KEYS)
     {
-        return keyTranslator[systemKeyCode];
+        Key key = keyTranslator[systemKeyCode];
+#if defined(ENABLE_CEF_WEBVIEW)
+        backCodeTranslator[static_cast<int32>(key)] = systemKeyCode;
+#endif
+        return key;
     }
     DVASSERT(false && "bad system key code");
     return Key::UNKNOWN;
 }
 
+#if defined(ENABLE_CEF_WEBVIEW)
+uint32 KeyboardDevice::GetSystemKeyForDavaKey(Key key) const
+{
+    DVASSERT(backCodeTranslator[static_cast<int32>(key)] != -1 && "Fail, before GetSystemKeyForDavaKey need add native code inside backCodeTranslator");
+    return backCodeTranslator[static_cast<int32>(key)];
+}
+#endif
+
 void KeyboardDevice::PrepareKeyTranslator()
 {
     std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), Key::UNKNOWN);
+#if defined(ENABLE_CEF_WEBVIEW)
+    std::uninitialized_fill(begin(backCodeTranslator), end(backCodeTranslator), -1);
+#endif
 
 #if defined(__DAVAENGINE_WINDOWS__)
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
@@ -224,9 +249,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[256 + VK_MENU] = Key::RALT;
     keyTranslator[256 + VK_SHIFT] = Key::RSHIFT;
     keyTranslator[256 + VK_APPS] = Key::APPS; // win api mark this key as extended
-
-    keyTranslator[256 + VK_LWIN] = Key::LWIN; // extended key
-    keyTranslator[256 + VK_RWIN] = Key::RWIN; // extended key
 
     keyTranslator[256 + VK_NUMLOCK] = Key::NUMLOCK;
     keyTranslator[VK_CAPITAL] = Key::CAPSLOCK;
@@ -309,7 +331,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[60] = Key::RSHIFT;
 
     keyTranslator[57] = Key::CAPSLOCK;
-    keyTranslator[55] = Key::LWIN; // LGUI in SDL
+    keyTranslator[55] = Key::LCMD; // LGUI in SDL
     keyTranslator[0x31] = Key::SPACE;
 
     // from SDL2 scancodes_darwin.h
@@ -530,8 +552,8 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[114] = Key::RCTRL;
     keyTranslator[115] = Key::CAPSLOCK;
     keyTranslator[116] = Key::SCROLLLOCK;
-    keyTranslator[117] = Key::LWIN;
-    keyTranslator[118] = Key::RWIN;
+    keyTranslator[117] = Key::LCMD;
+    keyTranslator[118] = Key::RCMD;
     //keyTranslator[119] = Key::FUNCTION;
     //keyTranslator[120] = Key::SYSRQ;
     keyTranslator[121] = Key::PAUSE;

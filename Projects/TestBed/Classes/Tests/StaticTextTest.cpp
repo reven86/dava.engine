@@ -71,8 +71,8 @@ void StaticTextTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
-    ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
+    ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
+    ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/DejaVuSans.ttf"));
     bigFont->SetSize(24.f);
 
     ScopedPtr<UIStaticText> label(new UIStaticText(Rect(20, 5, 400, 20)));
@@ -88,6 +88,8 @@ void StaticTextTest::LoadResources()
     previewText->SetText(L"");
     previewText->SetDebugDraw(true);
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    previewText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
+    previewText->SetForceBiDiSupportEnabled(true);
     AddControl(previewText);
 
     label = new UIStaticText(Rect(20, 235, 400, 20));
@@ -103,6 +105,7 @@ void StaticTextTest::LoadResources()
     inputText->SetText(L"");
     inputText->SetDebugDraw(true);
     inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    inputText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
     inputDelegate = new InputDelegate(this);
     inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
@@ -209,6 +212,7 @@ void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
 void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
 {
     previewText->SetTextAlign(align);
+    inputText->SetTextAlign(align);
     for (auto btn : alignButtons)
     {
         btn->SetDebugDrawColor(btn->GetTag() == align ? GREEN : RED);

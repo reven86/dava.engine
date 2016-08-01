@@ -937,7 +937,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
 void EmitterLayerWidget::UpdateLayerSprite()
 {
-    if (layer->sprite)
+    if (layer->sprite && !layer->spritePath.IsEmpty())
     {
         DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
         DAVA::Texture* dstTex = DAVA::Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, DAVA::FORMAT_RGBA8888);
@@ -962,7 +962,7 @@ void EmitterLayerWidget::UpdateLayerSprite()
     else
     {
         spriteLabel->setPixmap(QPixmap());
-        spritePathLabel->setText("<none>");
+        spritePathLabel->setText("");
     }
 }
 

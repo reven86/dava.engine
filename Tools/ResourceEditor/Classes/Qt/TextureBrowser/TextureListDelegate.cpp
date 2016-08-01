@@ -17,6 +17,8 @@
 #include "Project/ProjectManager.h"
 #include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Utils.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -120,13 +122,16 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
         // draw border
         QRect borderRect = option.rect;
         borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-        if (curModel->isHighlited(index))
-        {
-            // draw highlight
-            painter->setBrush(option.palette.toolTipBase());
-        }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);
+
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            painter->setBrush(option.palette.highlight());
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
         const QList<QImage>& images = TextureCache::Instance()->getThumbnail(curTextureDescriptor);
         if (images.size() > 0 &&
@@ -148,13 +153,22 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
         // draw formats info
         int infoLen = drawFormatInfo(painter, borderRect, curTexture, curTextureDescriptor);
 
+        if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
+        {
+            // draw highlight
+            painter->setPen(Themes::GetHighligtedItemTextColor());
+        }
+        else
+        {
+            painter->setPen(option.palette.text().color());
+        }
+
         // draw text info
         {
             QRectF textRect = option.rect;
             textRect.adjust(TEXTURE_PREVIEW_SIZE, option.decorationSize.height() / 2, -infoLen, 0);
 
             QFont origFont = painter->font();
-            painter->setPen(option.palette.text().color());
             painter->setFont(nameFont);
             painter->drawText(textRect, textureName);
 
@@ -163,18 +177,6 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
 
             QString infoText = CreateInfoString(index);
             painter->drawText(textRect, infoText);
-        }
-
-        // draw selected item
-        if (option.state & QStyle::State_Selected)
-        {
-            QBrush br = option.palette.highlight();
-            QColor cl = br.color();
-            cl.setAlpha(SELECTION_COLOR_ALPHA);
-            br.setColor(cl);
-            painter->setBrush(br);
-            painter->setPen(SELECTION_BORDER_COLOR);
-            painter->drawRect(borderRect);
         }
 
         painter->restore();
@@ -268,13 +270,16 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         // draw border
         QRect borderRect = option.rect;
         borderRect.adjust(BORDER_MARGIN, BORDER_MARGIN, -BORDER_MARGIN, -BORDER_MARGIN);
-        if (curModel->isHighlited(index))
-        {
-            // draw highlight
-            painter->setBrush(option.palette.toolTipBase());
-        }
         painter->setPen(BORDER_COLOR);
         painter->drawRect(borderRect);
+
+        // draw selected item
+        if (option.state & QStyle::State_Selected)
+        {
+            painter->setBrush(option.palette.highlight());
+            painter->setPen(SELECTION_BORDER_COLOR);
+            painter->drawRect(borderRect);
+        }
 
         // draw preview
         QRect previewRect = borderRect;
@@ -289,20 +294,18 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         // draw text
         QRectF textRect = option.rect;
         textRect.adjust(TEXTURE_PREVIEW_SIZE_SMALL, (option.rect.height() - option.fontMetrics.height()) / 2, -infoLen, 0);
-        painter->setPen(option.palette.text().color());
-        painter->drawText(textRect, curModel->data(index).toString());
 
-        // draw selected item
-        if (option.state & QStyle::State_Selected)
+        if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
         {
-            QBrush br = option.palette.highlight();
-            QColor cl = br.color();
-            cl.setAlpha(SELECTION_COLOR_ALPHA);
-            br.setColor(cl);
-            painter->setBrush(br);
-            painter->setPen(SELECTION_BORDER_COLOR);
-            painter->drawRect(borderRect);
+            // draw highlight
+            painter->setPen(Themes::GetHighligtedItemTextColor());
         }
+        else
+        {
+            painter->setPen(option.palette.text().color());
+        }
+
+        painter->drawText(textRect, curModel->data(index).toString());
 
         painter->restore();
     }
@@ -411,7 +414,8 @@ void TextureListDelegate::onOpenTexturePath()
     }
 
     const QString pathname = lastSelectedTextureDescriptor->pathname.GetAbsolutePathname().c_str();
-    ShowFileInExplorer(pathname);
+    QFileInfo fileInfo(pathname);
+    ShowFileInExplorer(fileInfo.absoluteFilePath());
 
     lastSelectedTextureDescriptor = nullptr;
 }

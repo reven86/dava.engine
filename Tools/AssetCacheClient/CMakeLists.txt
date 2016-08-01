@@ -10,9 +10,7 @@ find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )
 
-define_source_folders         ( SRC_ROOT "Classes" )
-generate_source_groups_project( SRC_ROOT "Classes" )
-
+define_source ( SOURCE "Classes" )
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 

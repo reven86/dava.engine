@@ -25,6 +25,7 @@
 #include "Commands2/MaterialGlobalCommand.h"
 #include "Commands2/MaterialRemoveTexture.h"
 #include "Commands2/MaterialConfigCommands.h"
+#include "Commands2/Base/CommandBatch.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 

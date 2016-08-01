@@ -59,12 +59,11 @@ if (WIN32)
 	endif ()
 
 	if( X64_MODE )
-		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
+            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
 	else ()
-		set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-        set( DAVA_THIRD_PARTY_LIBS      glew32.dll TextureConverter.dll )  
+            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
 	endif ()
+    
 else ()
 	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
@@ -99,7 +98,7 @@ set( DAVA_THIRD_PARTY_ROOT_PATH         "${DAVA_ROOT_DIR}/Libs" )
 set( DAVA_CONFIGURE_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
 set( DAVA_SCRIPTS_FILES_PATH            "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
 set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
-                                        "${DAVA_ENGINE_DIR}/../External" 
+                                        "${DAVA_ENGINE_DIR}/../External"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
@@ -108,7 +107,6 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include"
 
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
 set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" ) 
-set( DAVA_FOLDERS )
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )
@@ -131,17 +129,18 @@ if ( WINDOWS_UAP )
     #set extensions version
     set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
-
+    
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
 
 endif()
-                                   
+
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
 set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
 if( NOT DEPLOY_DIR )

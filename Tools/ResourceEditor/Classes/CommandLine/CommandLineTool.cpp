@@ -45,7 +45,7 @@ bool CommandLineTool::Initialize()
 
 void CommandLineTool::PrintUsage() const
 {
-    options.PrintUsage();
+    printf("%s\n", options.GetUsageString().c_str());
 }
 
 void CommandLineTool::Process()

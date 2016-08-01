@@ -6,6 +6,9 @@
 #include "Math/Vector.h"
 #include "FocusHelpers.h"
 
+#include "UI/Focus/UITabOrderComponent.h"
+#include "UI/Focus/UINavigationComponent.h"
+
 namespace DAVA
 {
 class UIControl;
@@ -24,20 +27,13 @@ public:
     UIControl* GetFocusedControl() const;
     void SetFocusedControl(UIControl* control);
 
-    void ControlBecomInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
-    bool MoveFocusLeft();
-    bool MoveFocusRight();
-    bool MoveFocusUp();
-    bool MoveFocusDown();
-
-    bool MoveFocusForward();
-    bool MoveFocusBackward();
+    bool MoveFocus(UINavigationComponent::Direction dir);
+    bool MoveFocus(UITabOrderComponent::Direction dir, bool repeat);
 
 private:
-    bool MoveFocus(FocusHelpers::Direction dir);
-    bool MoveFocus(FocusHelpers::TabDirection dir);
-
     void ClearFocusState(UIControl* control);
     UIControl* FindFirstControl(UIControl* control) const;
     bool IsControlBetterForFocusThanCandidate(UIControl* c1, UIControl* c2) const;

@@ -20,7 +20,7 @@ bool Downloader::SaveData(const void* ptr, const FilePath& storePath, uint64 siz
 #if defined(__DAVAENGINE_ANDROID__)
         uint32 posBeforeWrite = destFile->GetPos();
 #endif
-        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
+        written = destFile->Write(ptr, static_cast<uint32>(size)); // only 32 bit write is supported
 
 #if defined(__DAVAENGINE_ANDROID__)
         //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'

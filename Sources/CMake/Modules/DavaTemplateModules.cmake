@@ -3,7 +3,10 @@ set(  MAIN_MODULE_VALUES
 NAME_MODULE                            #
 MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
 #
-SOURCE_FOLDERS             
+EXTERNAL_MODULES
+EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
+#
+SRC_FOLDERS             
 ERASE_FOLDERS              
 ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}   
 #
@@ -42,7 +45,33 @@ DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
 #
 FIND_SYSTEM_LIBRARY                   
 FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+#
+DEPLOY_TO_BIN
+DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
+BINARY_WIN32_DIR_RELEASE
+BINARY_WIN32_DIR_DEBUG
+BINARY_WIN32_DIR_RELWITHDEB
+BINARY_WIN64_DIR_RELEASE
+BINARY_WIN64_DIR_DEBUG
+BINARY_WIN64_DIR_RELWITHDEB
 )
+#
+macro ( load_external_modules EXTERNAL_MODULES )
+    foreach( FOLDER_MODULE ${EXTERNAL_MODULES} )
+        file( GLOB FIND_CMAKELIST "${FOLDER_MODULE}/CMakeLists.txt" )
+        if( FIND_CMAKELIST )
+            get_filename_component ( FOLDER_NAME ${FOLDER_MODULE} NAME )
+            add_subdirectory ( ${FOLDER_MODULE}  ${FOLDER_NAME} )       
+        else()
+            file( GLOB LIST ${FOLDER_MODULE} )
+            foreach( ITEM ${LIST} )
+                if( IS_DIRECTORY ${ITEM} )
+                    load_external_modules( ${ITEM} )
+                endif()
+            endforeach()
+        endif()
+    endforeach()
+endmacro()
 #
 macro( setup_main_module )
 
@@ -131,38 +160,46 @@ macro( setup_main_module )
              list(REMOVE_ITEM ERASE_FILES ${ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT}} )
         endif()
 
-        if( SOURCE_FOLDERS )
+        set( ALL_SRC )
+        set( ALL_SRC_HEADER_FILE_ONLY )
+        set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ) 
+        
+        if( SRC_FOLDERS OR EXTERNAL_MODULES )
 
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set( ${VALUE}_DIR_NAME ${${VALUE}} )
-                set( ${VALUE}  )
+                set( ${VALUE})
             endforeach()
 
-            define_source_folders  ( SRC_ROOT            ${SOURCE_FOLDERS_DIR_NAME}
-                                     ERASE_FOLDERS       ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
-
+            if( EXTERNAL_MODULES_DIR_NAME )
+                load_external_modules( "${EXTERNAL_MODULES_DIR_NAME}" )
+            endif()
+            
+            if( SRC_FOLDERS_DIR_NAME )
+                define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
+                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                                         
+                set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+                list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
+                list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
+            endif()
+ 
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set(  ${VALUE} ${${VALUE}_DIR_NAME} )
             endforeach()
 
-            set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
-
         endif()
 
-        #"DEFINE SOURCE"
-        define_source_files (
-            GLOB_CPP_PATTERNS          ${CPP_FILES}         ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
-            GLOB_H_PATTERNS            ${HPP_FILES}         ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
-            GLOB_RECURSE_CPP_PATTERNS  ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
-            GLOB_RECURSE_H_PATTERNS    ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
-
-            GLOB_ERASE_FILES           ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
-        )
-
-        set( ALL_SRC ${CPP_FILES} ${PROJECT_SOURCE_FILES} ${H_FILES} )
+        define_source( SOURCE         ${CPP_FILES} ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
+                                      ${HPP_FILES} ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
+                       SOURCE_RECURSE ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+                                      ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
+                       IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
+                     )
+        list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
+        list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
         set_project_files_properties( "${ALL_SRC}" )
-
 
         #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
@@ -173,6 +210,18 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
+                DEPLOY_TO_BIN
+                DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
+                INCLUDES
+                INCLUDES_${DAVA_PLATFORM_CURENT}
+                INCLUDES_PRIVATE
+                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                
+                BINARY_WIN32_DIR_RELEASE
+                BINARY_WIN32_DIR_DEBUG
+                BINARY_WIN32_DIR_RELWITHDEB
+                BINARY_WIN64_DIR_RELEASE
+                BINARY_WIN64_DIR_DEBUG
+                BINARY_WIN64_DIR_RELWITHDEB
                 )
 
         load_property( PROPERTY_LIST 
@@ -182,6 +231,10 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
+                INCLUDES
+                INCLUDES_${DAVA_PLATFORM_CURENT}
+                INCLUDES_PRIVATE
+                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                  
                 )
 
 
@@ -196,28 +249,26 @@ macro( setup_main_module )
         #"INCLUDES_DIR"
         load_property( PROPERTY_LIST INCLUDES )
         if( INCLUDES )
-            include_directories( ${INCLUDES} )  
+            include_directories( "${INCLUDES}" )  
         endif()
         if( INCLUDES_${DAVA_PLATFORM_CURENT} )
-            include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )  
+            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
-            set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
-            set (${DIR_NAME}_H_FILES ${H_FILES}     PARENT_SCOPE)
+            set (${DIR_NAME}_PROJECT_SOURCE_FILES_CPP ${PROJECT_SOURCE_FILES_CPP} PARENT_SCOPE)
+            set (${DIR_NAME}_PROJECT_SOURCE_FILES_HPP ${PROJECT_SOURCE_FILES_HPP} PARENT_SCOPE)
         else()
             project( ${NAME_MODULE} )
-
-            generate_source_groups_project ()
-
+            
             generated_unity_sources( ALL_SRC  IGNORE_LIST ${UNITY_IGNORE_LIST}
                                               IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}} ) 
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
-                add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} )
+                add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
-                add_library( ${NAME_MODULE} SHARED  ${ALL_SRC}  )
+                add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
                 add_definitions( -DDAVA_MODULE_EXPORTS )                
@@ -226,9 +277,15 @@ macro( setup_main_module )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
                     set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
                     set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
+                    set( BINARY_WIN64_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
+                    set( BINARY_WIN64_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
+                    set( BINARY_WIN64_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
                     save_property( PROPERTY_LIST BINARY_WIN32_DIR_RELEASE 
                                                  BINARY_WIN32_DIR_DEBUG
-                                                 BINARY_WIN32_DIR_RELWITHDEB )
+                                                 BINARY_WIN32_DIR_RELWITHDEB
+                                                 BINARY_WIN64_DIR_RELEASE 
+                                                 BINARY_WIN64_DIR_DEBUG
+                                                 BINARY_WIN64_DIR_RELWITHDEB )
                 endif()
 
             endif()
@@ -277,7 +334,9 @@ macro( setup_main_module )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
-            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )            
+            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )     
+            reset_property( INCLUDES_PRIVATE )            
+            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )            
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )

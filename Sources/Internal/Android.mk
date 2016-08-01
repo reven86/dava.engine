@@ -94,6 +94,11 @@ LOCAL_MODULE := webp_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := sqlite3_android
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libsqlite3_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 DAVA_ROOT := $(LOCAL_PATH)
 
 # set path for includes
@@ -250,6 +255,7 @@ DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
 DV_LOCAL_STATIC_LIBRARIES += webp_android
 DV_LOCAL_STATIC_LIBRARIES += cpufeatures
+DV_LOCAL_STATIC_LIBRARIES += sqlite3_android
 
 DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
 
@@ -296,7 +302,6 @@ LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
-LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 # set source files 
 LOCAL_SRC_FILES := \
@@ -310,11 +315,13 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
@@ -349,7 +356,6 @@ LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
-LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 LOCAL_WHOLE_STATIC_LIBRARIES := libInternalPart1
 
@@ -375,6 +381,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
@@ -382,11 +390,14 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Render/Image/DDS/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/Image/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \

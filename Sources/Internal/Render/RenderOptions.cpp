@@ -6,6 +6,8 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 {
   FastName("Test Option"),
 
+  FastName("Preview Metal"),
+
   FastName("Draw Landscape"),
   FastName("Draw Water Refl/Refr"),
   FastName("Draw Opaque Layer"),
@@ -27,8 +29,6 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
 
   FastName("All Render Enabled"),
   FastName("Texture Loading"),
-
-  FastName("Occlusion Stats"),
 
   FastName("Static Occlusion"),
   FastName("Debug Draw Occlusion"),
@@ -57,7 +57,6 @@ RenderOptions::RenderOptions()
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[DEBUG_ENABLE_VISIBILITY_SYSTEM] = false;
-    options[LAYER_OCCLUSION_STATS] = false;
     options[REPLACE_ALBEDO_MIPMAPS] = false;
     options[REPLACE_LIGHTMAP_MIPMAPS] = false;
 #if defined(LOCALIZATION_DEBUG)
@@ -67,6 +66,8 @@ RenderOptions::RenderOptions()
 #endif
     options[DRAW_NONDEF_GLYPH] = false;
     options[HIGHLIGHT_HARD_CONTROLS] = false;
+
+    options[PREVIEW_METAL_ON_GL] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

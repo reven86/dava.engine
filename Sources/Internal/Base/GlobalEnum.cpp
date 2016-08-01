@@ -14,6 +14,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "Input/KeyboardShortcut.h"
 #include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
@@ -29,6 +30,7 @@ ENUM_DECLARE(eGPUFamily)
     ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
     ENUM_ADD_DESCR(GPU_DX11, "dx11");
     ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
+    ENUM_ADD_DESCR(GPU_FAMILY_COUNT, "all GPU");
 }
 
 ENUM_DECLARE(Logger::eLogLevel)
@@ -80,6 +82,17 @@ ENUM_DECLARE(PixelFormat)
     ENUM_ADD_DESCR(FORMAT_ETC2_RGB, "ETC2_RGB");
     ENUM_ADD_DESCR(FORMAT_ETC2_RGBA, "ETC2_RGBA");
     ENUM_ADD_DESCR(FORMAT_ETC2_RGB_A1, "ETC2_RGB_A1");
+}
+
+ENUM_DECLARE(ImageFormat)
+{
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_PNG, "PNG");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_DDS, "DDS");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_PVR, "PVR");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_JPEG, "JPEG");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_TGA, "TGA");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_WEBP, "WEBP");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_UNKNOWN, "Unknown");
 }
 
 ENUM_DECLARE(Light::eType)
@@ -311,7 +324,13 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
+    ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");
+    ENUM_ADD_DESCR(UIComponent::NAVIGATION_COMPONENT, "Navigation");
+    ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
+    ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
+    ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
@@ -340,10 +359,12 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
 };
 
-ENUM_DECLARE(UIFocusComponent::ePolicy)
+ENUM_DECLARE(KeyboardShortcut::Modifier)
 {
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE, "Focusable");
-    ENUM_ADD_DESCR(UIFocusComponent::FOCUSABLE_GROUP, "FocusableGroup");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_SHIFT, "SHIFT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CTRL, "CTRL");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_ALT, "ALT");
+    ENUM_ADD_DESCR(KeyboardShortcut::MODIFIER_CMD, "CMD");
 };
 
 ENUM_DECLARE(rhi::TextureAddrMode)

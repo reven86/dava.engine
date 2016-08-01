@@ -15,6 +15,7 @@
 #endif
 
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Input/UIInputSystem.h"
 
 #include <QString>
 
@@ -34,6 +35,15 @@ GameCore::GameCore()
     //Initialize internal resources of application
     ResourcesManageHelper::InitInternalResources();
     UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+
+    UIInputSystem* inputSystem = UIControlSystem::Instance()->GetInputSystem();
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), UIInputSystem::ACTION_FOCUS_RIGHT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::UP), UIInputSystem::ACTION_FOCUS_UP);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::DOWN), UIInputSystem::ACTION_FOCUS_DOWN);
+
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, KeyboardShortcut::MODIFIER_SHIFT), UIInputSystem::ACTION_FOCUS_PREV);
 }
 
 GameCore::~GameCore()

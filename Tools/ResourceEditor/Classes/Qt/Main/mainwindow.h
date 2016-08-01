@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "ui_mainwindow.h"
 
@@ -7,16 +6,18 @@
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/RecentMenuItems.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
 #include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
 
-#include "core_generic_plugin/interfaces/i_component_context.hpp"
-
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QPointer>
+
+namespace wgt
+{
+class IComponentContext;
+}
 
 class AddSwitchEntityDialog;
 class Request;
@@ -24,13 +25,12 @@ class QtLabelWithActions;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
-
+#if defined(NEW_PROPERTY_PANEL)
+class PropertyPanel;
+#endif
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow
-: public QMainWindow
-  ,
-  public DAVA::Singleton<QtMainWindow>
+class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
     Q_OBJECT
 
@@ -42,7 +42,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -59,12 +59,17 @@ public:
     void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
     void WaitSetMessage(const QString& messsage);
     void WaitSetValue(int value);
+    bool IsWaitDialogOnScreen() const;
     void WaitStop();
 
     void BeastWaitSetMessage(const QString& messsage);
     bool BeastWaitCanceled();
 
     void EnableGlobalTimeout(bool enable);
+
+    bool CanBeClosed();
+
+    bool ParticlesArePacking() const;
 
     // qt actions slots
 public slots:
@@ -78,7 +83,7 @@ public slots:
     void OnSceneSaveToFolderCompressed();
     void OnRecentFilesTriggered(QAction* recentAction);
     void OnRecentProjectsTriggered(QAction* recentAction);
-    void ExportMenuTriggered(QAction* exportAsAction);
+    void ExportTriggered();
     void OnImportSpeedTreeXML();
     void RemoveSelection();
 
@@ -189,9 +194,9 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    bool ShouldClose(QCloseEvent* e);
 
     void SetupMainMenu();
+    void SetupThemeActions();
     void SetupToolBars();
     void SetupStatusBar();
     void SetupDocks();
@@ -221,6 +226,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
+    void SceneUndoRedoStateChanged(SceneEditor2* scene);
     void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
@@ -237,7 +243,7 @@ private slots:
     void OnConsoleItemClicked(const QString& data);
 
 private:
-    Ui::MainWindow* ui;
+    std::unique_ptr<Ui::MainWindow> ui;
     QtWaitDialog* waitDialog;
     QtWaitDialog* beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
@@ -259,7 +265,6 @@ private:
     void UpdateWayEditor(const Command2* command, bool redo);
 
     void LoadViewState(SceneEditor2* scene);
-    void LoadUndoRedoState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
     void LoadEditorLightState(SceneEditor2* scene);
     void LoadGPUFormat();
@@ -285,8 +290,10 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    IComponentContext& ngtContext;
-    PropertyPanel propertyPanel;
+    wgt::IComponentContext& ngtContext;
+#if defined(NEW_PROPERTY_PANEL)
+    std::unique_ptr<PropertyPanel> propertyPanel;
+#endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
 
 private:
@@ -308,6 +315,3 @@ private:
 
     void CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const;
 };
-
-
-#endif // MAINWINDOW_H

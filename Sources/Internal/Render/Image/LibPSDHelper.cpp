@@ -1,5 +1,6 @@
 #include "Render/Image/LibPSDHelper.h"
 #include "Render/Image/Image.h"
+#include "Render/PixelFormatDescriptor.h"
 #include "FileSystem/File.h"
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
@@ -9,20 +10,11 @@
 namespace DAVA
 {
 LibPSDHelper::LibPSDHelper()
-    : ImageFormatInterface(
-      IMAGE_FORMAT_PSD,
-      "PSD",
-      { ".psd" },
-      { FORMAT_RGBA8888 })
+    : ImageFormatInterface(ImageFormat::IMAGE_FORMAT_PSD, "PSD", { ".psd" }, { FORMAT_RGBA8888 })
 {
 }
 
-bool LibPSDHelper::CanProcessFile(const ScopedPtr<File>& infile) const
-{
-    return GetImageInfo(infile).dataSize != 0;
-}
-
-eErrorCode LibPSDHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
+eErrorCode LibPSDHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams) const
 {
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     auto fileName = infile->GetFilename().GetAbsolutePathname();
@@ -60,6 +52,7 @@ eErrorCode LibPSDHelper::ReadFile(const ScopedPtr<File>& infile, Vector<Image*>&
         Vector<uint8> emptyData(psd->width * psd->height * PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::PixelFormat::FORMAT_RGBA8888) / 8, 0);
         Image* resultImage = Image::CreateFromData(psd->width, psd->height, DAVA::PixelFormat::FORMAT_RGBA8888, emptyData.data());
         resultImage->InsertImage(layerImage, layer.left, layer.top);
+        resultImage->mipmapLevel = loadingParams.firstMipmapIndex;
         imageSet.push_back(resultImage);
     }
 
@@ -82,7 +75,7 @@ eErrorCode LibPSDHelper::WriteFileAsCubeMap(const FilePath& fileName, const Vect
     return eErrorCode::ERROR_WRITE_FAIL;
 }
 
-DAVA::ImageInfo LibPSDHelper::GetImageInfo(const ScopedPtr<File>& infile) const
+DAVA::ImageInfo LibPSDHelper::GetImageInfo(File* infile) const
 {
     ImageInfo info;
 

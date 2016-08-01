@@ -536,6 +536,7 @@ void CanvasSystem::LayoutCanvas()
     Vector2 size(maxWidth, totalHeight);
     systemsManager->GetScalableControl()->SetSize(size);
     systemsManager->GetRootControl()->SetSize(size);
+    systemsManager->GetInputLayerControl()->SetSize(size);
     systemsManager->CanvasSizeChanged.Emit();
 }
 

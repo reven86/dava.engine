@@ -10,7 +10,7 @@ DAVA_TESTCLASS (FileSystemTest)
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
-        bool dataPrepared = RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
+        bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
     }
 
@@ -184,7 +184,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
 #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem* fs = FileSystem::Instance();
-        String externalDrive = "d:\\";
+        String externalDrive = "d:\\Temp";
         bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {
@@ -363,28 +363,6 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(!FileSystem::Instance()->CompareBinaryFiles(textFilePath, textFilePath2));
         FileSystem::Instance()->DeleteFile(textFilePath);
         FileSystem::Instance()->DeleteFile(textFilePath2);
-    }
-
-    bool RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
-    {
-        DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
-
-        FileSystem::eCreateDirectoryResult created = FileSystem::Instance()->CreateDirectory(dst, true);
-        DVASSERT(created != FileSystem::DIRECTORY_CANT_CREATE);
-
-        bool copied = FileSystem::Instance()->CopyDirectory(src, dst);
-        DVASSERT(copied);
-
-        bool retCode = true;
-        ScopedPtr<FileList> fileList(new FileList(src));
-        for (int32 i = 0; i < fileList->GetCount(); ++i)
-        {
-            if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
-            {
-                retCode &= RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
-            }
-        }
-        return retCode;
     }
 }
 ;

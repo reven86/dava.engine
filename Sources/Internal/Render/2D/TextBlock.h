@@ -14,28 +14,17 @@ namespace DAVA
 class TextBlockRender;
 class TextBlockSoftwareRender;
 class TextBlockGraphicRender;
+class TextBox;
 
 /**
     \ingroup render_2d
     \brief Class to render text on the screen. 
-    This class support to draw singleline / multiline text to sprites using font objects that available in SDK.
+    This class support to draw single line / multiline text to sprites using font objects that available in SDK.
     Normally you do not need it directly and you can use UIStaticText or TextGameObject. 
     */
 class TextBlock : public BaseObject
 {
 public:
-    struct Line
-    {
-        uint32 number = 0;
-        uint32 offset = 0;
-        uint32 length = 0;
-        float32 xadvance = 0.f;
-        float32 yadvance = 0.f;
-        float32 visibleadvance = 0.f;
-        float32 xoffset = 0.f;
-        float32 yoffset = 0.f;
-    };
-
     enum eFitType
     {
         FITTING_ENLARGE = 0x1,
@@ -91,8 +80,7 @@ public:
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
-    virtual const Vector<Line>& GetMultilineInfo();
-    virtual const Vector<float32>& GetCharactersSize();
+    virtual TextBox* GetTextBox();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
@@ -119,6 +107,7 @@ public:
     void Draw(const Color& textColor, const Vector2* offset = NULL);
 
     TextBlock* Clone();
+    void CopyDataFrom(TextBlock* block);
 
     const Vector<int32>& GetStringSizes();
         
@@ -138,6 +127,12 @@ public:
         return forceBiDiSupport;
     }
     void SetForceBiDiSupportEnabled(bool value);
+
+    bool IsMeasureEnabled() const
+    {
+        return needMeasureLines;
+    }
+    void SetMeasureEnable(bool measure);
 
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
@@ -183,13 +178,12 @@ private:
 #endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
+    int32 visualAlign;
 
     Font* font;
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
-    Vector<Line> multitlineInfo;
-    Vector<float32> charactersSizes;
     Vector<int32> stringSizes;
 
     bool isMultilineEnabled : 1;
@@ -201,6 +195,7 @@ private:
     bool isRtl : 1;
     bool needCalculateCacheParams : 1;
     bool forceBiDiSupport : 1;
+    bool needMeasureLines : 1;
 
     static bool isBiDiSupportEnabled; //!< true if BiDi transformation support enabled
     static Set<TextBlock*> registredTextBlocks;
@@ -210,7 +205,8 @@ private:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicRender;
 
-    TextBlockRender* textBlockRender;
+    TextBlockRender* textBlockRender = nullptr;
+    TextBox* textBox = nullptr;
 
     float angle;
     Vector2 pivot;

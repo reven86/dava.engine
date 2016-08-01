@@ -11,6 +11,8 @@
     
     #define GetGLErrorString gluErrorString
 
+    #include "win_gl.h"
+
 #elif defined(__DAVAENGINE_MACOS__)
 
     #include <Carbon/Carbon.h>
@@ -159,6 +161,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_HALF_FLOAT_OES 0
 #endif
 
+#if !defined GL_QUERY_RESULT_AVAILABLE_EXT
+#define GL_QUERY_RESULT_AVAILABLE_EXT 0
+#endif
+
+#if !defined GL_QUERY_RESULT_EXT
+#define GL_QUERY_RESULT_EXT 0
+#endif
+
 #if !defined(GL_HALF_FLOAT)
 #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
 #endif
@@ -173,6 +183,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#endif
+
+#if !defined(GL_QUERY_RESULT_AVAILABLE)
+#define GL_QUERY_RESULT_AVAILABLE GL_QUERY_RESULT_AVAILABLE_EXT
+#endif
+
+#if !defined(GL_QUERY_RESULT)
+#define GL_QUERY_RESULT GL_QUERY_RESULT_EXT
 #endif
 
 #if !defined(GL_RED)
@@ -287,8 +305,6 @@ extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
-extern rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback;
-extern DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
 #endif

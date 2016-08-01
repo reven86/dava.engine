@@ -394,6 +394,8 @@ void CreateWindowSizeDependentResources()
         DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
         0);
 
+        CHECK_HR(hr)
+
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
             // If the device was removed for any reason, a new device and swap chain will need to be created.
@@ -419,7 +421,7 @@ void CreateWindowSizeDependentResources()
         swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 2; // Use double-buffering to minimize latency.
+        swapChainDesc.BufferCount = 3; // Use triple-buffering to minimize latency.
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
         swapChainDesc.Flags = 0;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;

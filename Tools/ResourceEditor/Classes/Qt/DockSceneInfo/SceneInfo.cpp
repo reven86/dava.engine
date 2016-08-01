@@ -36,6 +36,7 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(signalDispatcher, &SceneSignals::StructureChanged, this, &SceneInfo::SceneStructureChanged);
     connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
     connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
+    connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -106,6 +107,8 @@ void SceneInfo::Initialize3DDrawSection()
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
     AddChild("Visible Render Object Count", header);
+    AddChild("Occluded Render Object Count", header);
+
     AddChild("DrawPrimitiveCalls", header);
     AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
@@ -126,6 +129,8 @@ void SceneInfo::Refresh3DDrawInfo()
     const RenderStats& renderStats = activeScene->GetRenderStats();
 
     SetChild("Visible Render Object Count", renderStats.visibleRenderObjects, header);
+    SetChild("Occluded Render Object Count", renderStats.occludedRenderObjects, header);
+
     SetChild("DrawPrimitiveCalls", renderStats.drawPrimitive, header);
     SetChild("DrawIndexedPrimitiveCalls", renderStats.drawIndexedPrimitive, header);
     SetChild("LineList", renderStats.primitiveLineListCount, header);
@@ -152,10 +157,8 @@ void SceneInfo::RefreshSpeedTreeInfoSelection()
     QtPropertyData* header = GetInfoHeader("SpeedTree Info");
 
     float32 speedTreeLeafSquare = 0.f, speedTreeLeafSquareDivX = 0.f, speedTreeLeafSquareDivY = 0.f;
-    int32 infoCount = speedTreeLeafInfo.size();
-    for (int32 i = 0; i < infoCount; i++)
+    for (const SpeedTreeInfo& info : speedTreeLeafInfo)
     {
-        SpeedTreeInfo& info = speedTreeLeafInfo[i];
         speedTreeLeafSquare += info.leafsSquare;
         speedTreeLeafSquareDivX += info.leafsSquareDivX;
         speedTreeLeafSquareDivY += info.leafsSquareDivY;
@@ -295,7 +298,7 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
         auto baseMipmap = tex->GetBaseMipMap();
 
         auto descriptor = tex->GetDescriptor();
-        eGPUFamily gpu = descriptor->IsCompressedFile() ? static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily) : requestedGPU;
+        eGPUFamily gpu = descriptor->IsCompressedFile() ? descriptor->gpu : requestedGPU;
         textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), gpu, baseMipmap);
     }
 
@@ -417,7 +420,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    ApplyStyle(headerData, HEADER_STYLE);
+    headerData->SetBackground(palette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -602,6 +605,11 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command,
     default:
         break;
     }
+}
+
+void SceneInfo::OnThemeChanged()
+{
+    InitializeInfo();
 }
 
 void SceneInfo::CollectSelectedRenderObjects(const SelectableGroup* selected)
@@ -885,44 +893,45 @@ void SceneInfo::RefreshVegetationInfoSection()
 
 void SceneInfo::InitializeLayersSection()
 {
-    CreateInfoHeader("Fragments Info");
+    QtPropertyData* header = CreateInfoHeader("Fragments Info");
+
+    for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
+    {
+        FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+        AddChild(layerName.c_str(), header);
+    }
 }
 
 void SceneInfo::RefreshLayersSection()
 {
     if (activeScene)
     {
-        float32 viewportSize = (float32)Renderer::GetFramebufferWidth() * Renderer::GetFramebufferHeight();
-
+        const RenderStats& renderStats = activeScene->GetRenderStats();
         QtPropertyData* header = GetInfoHeader("Fragments Info");
 
-        Vector<FastName> queriesNames;
-        FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
-        int32 namesCount = queriesNames.size();
-        for (int32 i = 0; i < namesCount; i++)
+        static const uint32 dava3DViewMargin = 3; //TODO: add 3d view margin to ResourceEditor settings
+        float32 viewportSize = (float32)(Renderer::GetFramebufferWidth() - dava3DViewMargin * 2) * (Renderer::GetFramebufferHeight() - dava3DViewMargin * 2);
+
+        for (int32 i = 0; i < RenderLayer::RENDER_LAYER_ID_COUNT; ++i)
         {
-            if (queriesNames[i] == FRAME_QUERY_UI_DRAW)
-                continue;
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            uint32 fragmentStats = renderStats.queryResults.count(layerName) ? renderStats.queryResults[layerName] : 0U;
 
-            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queriesNames[i]);
-            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
-
-            if (!HasChild(queriesNames[i].c_str(), header))
-                AddChild(queriesNames[i].c_str(), header);
-
-            SetChild(queriesNames[i].c_str(), str.c_str(), header);
+            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0) / viewportSize);
+            SetChild(layerName.c_str(), str.c_str(), header);
         }
     }
 }
 
 EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (scene != nullptr)
+    if (QtMainWindow::Instance() != nullptr)
     {
-        return scene->editorStatisticsSystem;
+        SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+        if (scene != nullptr)
+        {
+            return scene->editorStatisticsSystem;
+        }
     }
 
     return nullptr;

@@ -7,7 +7,6 @@
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
-#include "Commands2/Base/CommandStack.h"
 #include "Settings/SettingsManager.h"
 
 //TODO: move all includes to .cpp file
@@ -35,6 +34,8 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+#include "CommandLine/SceneExporter/SceneExporter.h"
+
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
@@ -42,6 +43,7 @@ class EditorLODSystem;
 class EditorStatisticsSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
+class CommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -98,7 +100,7 @@ public:
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
     DAVA::SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false) override;
     DAVA::SceneFileV2::eError SaveScene();
-    bool Export(const DAVA::eGPUFamily newGPU);
+    bool Export(const SceneExporter::Params& exportingParams);
 
     const DAVA::FilePath& GetScenePath();
     void SetScenePath(const DAVA::FilePath& newScenePath);
@@ -113,6 +115,7 @@ public:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount = 1);
     void EndBatch();
 
+    void ActivateCommandStack();
     void Exec(Command2::Pointer&& command);
     void RemoveCommands(DAVA::int32 commandId);
 
@@ -171,7 +174,7 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    CommandStack* commandStack = nullptr;
+    std::unique_ptr<CommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
@@ -200,6 +203,7 @@ private:
         EditorCommandNotify(SceneEditor2* _editor);
         void Notify(const Command2* command, bool redo) override;
         void CleanChanged(bool clean) override;
+        void UndoRedoStateChanged() override;
 
     private:
         SceneEditor2* editor = nullptr;

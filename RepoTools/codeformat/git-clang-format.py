@@ -306,6 +306,9 @@ def filter_by_extension(dictionary, allowed_extensions):
 def cd_to_toplevel():
   """Change to the top level of the git repository."""
   toplevel = run('git', 'rev-parse', '--show-toplevel')
+  mssystem = os.environ.get('MSYSTEM')
+  if mssystem == "MSYS" or mssystem == "MINGW" or mssystem == "MINGW64":
+    toplevel = run('cygpath', '-w', toplevel)
   os.chdir(toplevel)
 
 
