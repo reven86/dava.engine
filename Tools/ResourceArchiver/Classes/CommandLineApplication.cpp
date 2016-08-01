@@ -22,7 +22,7 @@ void CommandLineApplication::AddTool(std::unique_ptr<CommandLineTool> tool)
     tools.emplace_back(std::move(tool));
 }
 
-int CommandLineApplication::Process(uint32 argc, char* argv[])
+int CommandLineApplication::Process(DAVA::uint32 argc, char* argv[])
 {
     if (helpOption.Parse(argc, argv) == true)
     {

@@ -345,7 +345,6 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             DAVA::Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
-            auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.priority = DAVA::PRIORITY_SERVICE_2D;
             desc.colorAttachment = target->handle;

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
-#define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "AssetCache/CachedItemValue.h"
@@ -8,14 +7,13 @@
 namespace DAVA
 {
 class KeyedArchive;
+}
 
-namespace AssetCache
-{
 class ServerCacheEntry final
 {
 public:
     ServerCacheEntry();
-    explicit ServerCacheEntry(const CachedItemValue& value);
+    explicit ServerCacheEntry(const DAVA::AssetCache::CachedItemValue& value);
 
     ServerCacheEntry(const ServerCacheEntry& right) = delete;
     ServerCacheEntry(ServerCacheEntry&& right);
@@ -27,22 +25,22 @@ public:
 
     bool operator==(const ServerCacheEntry& right) const;
 
-    void Serialize(KeyedArchive* archieve) const;
-    void Deserialize(KeyedArchive* archieve);
+    void Serialize(DAVA::KeyedArchive* archieve) const;
+    void Deserialize(DAVA::KeyedArchive* archieve);
 
     void UpdateAccessTimestamp();
-    uint64 GetTimestamp() const;
+    DAVA::uint64 GetTimestamp() const;
 
-    const CachedItemValue& GetValue() const;
+    const DAVA::AssetCache::CachedItemValue& GetValue() const;
 
-    bool Fetch(const FilePath& folder);
+    bool Fetch(const DAVA::FilePath& folder);
     void Free();
 
 private:
-    CachedItemValue value;
+    DAVA::AssetCache::CachedItemValue value;
 
 private:
-    uint64 accessTimestamp = 0;
+    DAVA::uint64 accessTimestamp = 0;
 };
 
 inline void ServerCacheEntry::UpdateAccessTimestamp()
@@ -50,17 +48,12 @@ inline void ServerCacheEntry::UpdateAccessTimestamp()
     accessTimestamp = std::chrono::steady_clock::now().time_since_epoch().count();
 }
 
-inline uint64 ServerCacheEntry::GetTimestamp() const
+inline DAVA::uint64 ServerCacheEntry::GetTimestamp() const
 {
     return accessTimestamp;
 }
 
-inline const CachedItemValue& ServerCacheEntry::GetValue() const
+inline const DAVA::AssetCache::CachedItemValue& ServerCacheEntry::GetValue() const
 {
     return value;
 }
-
-} // end of namespace AssetCache
-} // end of namespace DAVA
-
-#endif // __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__

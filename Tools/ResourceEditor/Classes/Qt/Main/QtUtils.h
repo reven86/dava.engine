@@ -16,9 +16,6 @@ void ShowActionWithText(QToolBar* toolbar, QAction* action, bool showText);
 DAVA::WideString SizeInBytesToWideString(DAVA::float32 size);
 DAVA::String SizeInBytesToString(DAVA::float32 size);
 
-void ShowErrorDialog(const DAVA::Set<DAVA::String>& errors, const DAVA::String& title = "");
-void ShowErrorDialog(const DAVA::String& errorMessage, const DAVA::String& title = "Error");
-
 bool IsKeyModificatorPressed(DAVA::Key key);
 bool IsKeyModificatorsPressed();
 

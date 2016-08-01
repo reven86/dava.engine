@@ -1,19 +1,15 @@
-#include "AssetCache/ServerCacheEntry.h"
+#include "ServerCacheEntry.h"
 
 #include "FileSystem/KeyedArchive.h"
 
 #include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
 
-namespace DAVA
-{
-namespace AssetCache
-{
 ServerCacheEntry::ServerCacheEntry()
 {
 }
 
-ServerCacheEntry::ServerCacheEntry(const CachedItemValue& _value)
+ServerCacheEntry::ServerCacheEntry(const DAVA::AssetCache::CachedItemValue& _value)
     : value(_value)
 {
 }
@@ -40,29 +36,29 @@ bool ServerCacheEntry::operator==(const ServerCacheEntry& right) const
     return (accessTimestamp == right.accessTimestamp) && (value == right.value);
 }
 
-void ServerCacheEntry::Serialize(KeyedArchive* archieve) const
+void ServerCacheEntry::Serialize(DAVA::KeyedArchive* archieve) const
 {
     DVASSERT(nullptr != archieve);
 
     archieve->SetUInt64("accessID", accessTimestamp);
 
-    ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> valueArchieve(new DAVA::KeyedArchive());
     value.Serialize(valueArchieve, false);
     archieve->SetArchive("value", valueArchieve);
 }
 
-void ServerCacheEntry::Deserialize(KeyedArchive* archieve)
+void ServerCacheEntry::Deserialize(DAVA::KeyedArchive* archieve)
 {
     DVASSERT(nullptr != archieve);
 
     accessTimestamp = archieve->GetUInt64("accessID");
 
-    KeyedArchive* valueArchieve = archieve->GetArchive("value");
+    DAVA::KeyedArchive* valueArchieve = archieve->GetArchive("value");
     DVASSERT(valueArchieve);
     value.Deserialize(valueArchieve);
 }
 
-bool ServerCacheEntry::Fetch(const FilePath& folder)
+bool ServerCacheEntry::Fetch(const DAVA::FilePath& folder)
 {
     return value.Fetch(folder);
 }
@@ -71,6 +67,3 @@ void ServerCacheEntry::Free()
 {
     value.Free();
 }
-
-}; // end of namespace AssetCache
-}; // end of namespace DAVA

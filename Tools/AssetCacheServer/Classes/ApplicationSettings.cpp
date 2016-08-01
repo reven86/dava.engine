@@ -90,6 +90,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetUInt32("Port", listenPort);
     archive->SetBool("AutoStart", autoStart);
     archive->SetBool("SystemStartup", launchOnSystemStartup);
+    archive->SetBool("Restart", restartOnCrash);
 
     uint32 size = static_cast<uint32>(remoteServers.size());
     archive->SetUInt32("ServersSize", size);
@@ -117,6 +118,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
     launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
+    restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);
 
     auto count = archive->GetUInt32("ServersSize");
     for (uint32 i = 0; i < count; ++i)
@@ -198,6 +200,16 @@ const bool ApplicationSettings::IsLaunchOnSystemStartup() const
 void ApplicationSettings::SetLaunchOnSystemStartup(bool val)
 {
     launchOnSystemStartup = val;
+}
+
+const bool ApplicationSettings::IsRestartOnCrash() const
+{
+    return restartOnCrash;
+}
+
+void ApplicationSettings::SetRestartOnCrash(bool val)
+{
+    restartOnCrash = val;
 }
 
 const List<ServerData>& ApplicationSettings::GetServers() const

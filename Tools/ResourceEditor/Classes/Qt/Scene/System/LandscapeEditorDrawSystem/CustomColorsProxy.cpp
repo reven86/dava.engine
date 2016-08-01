@@ -4,6 +4,9 @@
 #include "Render/Texture.h"
 #include "Render/Material/NMaterial.h"
 
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
 using namespace DAVA;
 
 CustomColorsProxy::CustomColorsProxy(int32 _size)
@@ -113,14 +116,16 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     viewport.width = viewport.height = size;
 
     Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
-    if (!customColors.empty())
+    if (customColors.empty())
     {
-        Color color = customColors.front();
-        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, color, viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
     }
     else
     {
-        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
+        DAVA::uint32 defaultColorIndex = SettingsManager::GetValue(Settings::Scene_DefaultCustomColorIndex).AsUInt32();
+        defaultColorIndex = Min(defaultColorIndex, static_cast<DAVA::uint32>(customColors.size() - 1));
+        Color color = customColors[defaultColorIndex];
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_CLEAR, color, viewport);
     }
 }
 
