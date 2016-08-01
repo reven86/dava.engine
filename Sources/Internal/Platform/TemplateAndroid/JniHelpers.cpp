@@ -124,7 +124,9 @@ const JavaClass& JavaClass::RegisterClass(const String& className)
     }
     else
     {
-        return registredClasses.insert(className, JavaClass(className, false))->second;
+        auto result = registredClasses.insert(std::pair<const String, JavaClass>(className, JavaClass(className, false)));
+        DVASSERT_MSG(result.second, "Key already exists");
+        return result.first->second; // Return reference to added JavaClass
     }
 }
 
