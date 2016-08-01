@@ -83,6 +83,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     return PureCreate(filename, attributes);
 }
 
+#ifdef __DAVAENGINE_ANDROID__
 static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 {
     static Mutex mutex;
@@ -100,6 +101,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 
     return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
 }
+#endif // __DAVAENGINE_ANDROID__
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {

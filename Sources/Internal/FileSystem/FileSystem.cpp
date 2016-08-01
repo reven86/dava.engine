@@ -460,22 +460,21 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     {
         return (0 != (fileStat.st_mode & S_IFREG));
     }
-    else
+
+    switch (errno)
     {
-        switch (errno)
-        {
-        case ENOENT:
-            // file not found
-            break;
-        case EINVAL:
-            Logger::Error("Invalid parameter to stat.");
-            break;
-        default:
-            /* Should never be reached. */
-            Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
-        }
+    case ENOENT:
+        // file not found
+        break;
+    case EINVAL:
+        Logger::Error("Invalid parameter to stat.");
+        break;
+    default:
+        /* Should never be reached. */
+        Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
     }
 
+#ifdef __DAVAENGINE_ANDROID__
     // ~res:/ or Data/... or tips.yaml
     auto assets = AssetsManagerAndroid::Instance();
     if (assets->IsInitialized())
@@ -486,6 +485,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             return true;
         }
     }
+#endif
 
     return false;
 }

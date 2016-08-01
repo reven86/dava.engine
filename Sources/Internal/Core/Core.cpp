@@ -36,7 +36,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -58,6 +57,7 @@
 #include "Debug/Profiler.h"
 
 #include "Core.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -239,7 +239,9 @@ void Core::CreateSingletons()
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
 
+#ifdef __DAVAENGINE_ANDROID__
     new AssetsManagerAndroid();
+#endif
 
 #if defined __DAVAENGINE_IPHONE__
 // not used
@@ -340,7 +342,9 @@ void Core::ReleaseSingletons()
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
 
+#ifdef __DAVAENGINE_ANDROID__
     AssetsManagerAndroid::Instance()->Release();
+#endif
 
     SystemTimer::Instance()->Release();
 }
