@@ -120,7 +120,6 @@ void SceneTabWidget::InitDAVAUI()
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
-    davaUIScreen->AddControl(dava3DView);
 
     DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
     DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
@@ -259,10 +258,8 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
-        if (silent == false)
-        {
-            SceneSignals::Instance()->EmitDeactivated(scene);
-        }
+        davaUIScreen->RemoveControl(dava3DView);
+        SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
     SafeRelease(scene);
@@ -297,6 +294,8 @@ void SceneTabWidget::SetCurrentTab(int index)
 
         if (NULL != curScene)
         {
+            davaUIScreen->AddControl(dava3DView);
+
             dava3DView->SetScene(curScene);
             curScene->SetViewportRect(dava3DView->GetRect());
 
