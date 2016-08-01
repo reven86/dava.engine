@@ -131,9 +131,14 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
         FileEntry entry;
         for (struct dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
         {
-            String fileName = dirPath + ent->d_name;
-            entry.path = fileName;
-            entry.name = ent->d_name;
+            String fileOrDirName = ent->d_name;
+            if (fileOrDirName == "." || fileOrDirName == "..")
+            {
+                continue; // just skip. faster work less bugs
+            }
+            String fullPath = dirPath + fileOrDirName;
+            entry.path = fullPath;
+            entry.name = fileOrDirName;
 
             if (ent->d_type != DT_DIR && ent->d_type != DT_REG)
             {
@@ -148,10 +153,14 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             if (!entry.isDirectory)
             {
                 struct stat st;
-                if (stat(fileName.c_str(), &st) == 0)
+                if (stat(fullPath.c_str(), &st) == 0)
                 {
                     entry.size = st.st_size;
                 }
+            }
+            else
+            {
+                entry.path.MakeDirectoryPathname();
             }
 
             if (!entry.isHidden || includeHidden)
@@ -163,7 +172,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     }
     else
     {
-        // TODO could not open directory try in APK assets
+        // could not open directory try in APK assets
         AssetsManagerAndroid* assets = AssetsManagerAndroid::Instance();
         Vector<ResourceArchive::FileInfo> files;
         if (assets->ListDirectory(dirPath, files))
@@ -193,7 +202,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             }
         }
 
-        // deprecated method:
+        // deprecated OLD method:
         //        JniFileList jniFileList;
         //        Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
         //        FileEntry entry;

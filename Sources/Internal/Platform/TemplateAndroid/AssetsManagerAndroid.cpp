@@ -68,13 +68,16 @@ bool AssetsManagerAndroid::ListDirectory(const String& relativeDirName, Vector<R
             if (String::npos == nextDirSlash)
             {
                 // add file
-                addedfilesAndDirs.insert(info.relativeFilePath.substr(assetsDirectory.size()));
-                names.push_back(info);
+                String relativeFilePath = "~res:/" + info.relativeFilePath.substr(assetsDirectory.size());
+                addedfilesAndDirs.insert(relativeFilePath);
+                ResourceArchive::FileInfo fi = info;
+                fi.relativeFilePath = relativeFilePath;
+                names.push_back(fi);
             }
             else
             {
                 // add directory (without sub directories)
-                String dir = info.relativeFilePath.substr(assetsDirectory.size(), nextDirSlash - assetsDirectory.size() + 1);
+                String dir = "~res:/" + info.relativeFilePath.substr(assetsDirectory.size(), nextDirSlash - assetsDirectory.size() + 1);
                 if (addedfilesAndDirs.find(dir) == end(addedfilesAndDirs))
                 {
                     ResourceArchive::FileInfo fi = info;
