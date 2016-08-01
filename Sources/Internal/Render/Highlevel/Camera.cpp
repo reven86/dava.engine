@@ -453,7 +453,7 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4* externalCl
 
     if (currentFrustum)
     {
-        currentFrustum->Build(viewProjMatrix);
+        currentFrustum->Build(viewProjMatrix, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
     projectionFlip = invertProjection ? -1.0f : 1.0f;

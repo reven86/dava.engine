@@ -35,18 +35,48 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <property name="margin">
-       <number>6</number>
-      </property>
       <item>
-       <widget class="QCheckBox" name="checkboxLodEditorMode">
-        <property name="text">
-         <string>All Scene / Selection</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QRadioButton" name="radioButtonAllScene">
+          <property name="toolTip">
+           <string>Apply distances to all LodComponents from all scene</string>
+          </property>
+          <property name="text">
+           <string>All Scene</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButtonSelection">
+          <property name="toolTip">
+           <string>Apply distances to all LodComponents from Selection only</string>
+          </property>
+          <property name="text">
+           <string>Selection</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QCheckBox" name="checkboxRecursive">
+        <property name="toolTip">
+         <string>Apply distances to all LodComponents hierarchically</string>
+        </property>
         <property name="text">
          <string>Recursive</string>
         </property>

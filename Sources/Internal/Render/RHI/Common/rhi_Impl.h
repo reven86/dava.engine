@@ -22,7 +22,6 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
-    void (*impl_TakeScreenshot)(ScreenShotCallback);
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
 
@@ -127,6 +126,11 @@ void SetDispatchTable(const Dispatch& dispatch);
 Size2i TextureExtents(Size2i size, uint32 level);
 uint32 TextureStride(TextureFormat format, Size2i size, uint32 level);
 uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level = 0);
+
+//------------------------------------------------------------------------------
+#if defined(__DAVAENGINE_IPHONE__)
+bool rhi_MetalIsSupported(); 
+#endif
 
 } // namespace rhi
 

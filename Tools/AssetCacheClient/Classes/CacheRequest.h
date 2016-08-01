@@ -2,7 +2,7 @@
 #define __CACHE_REQUEST_H__
 
 #include "CommandLine/ProgramOptions.h"
-#include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {

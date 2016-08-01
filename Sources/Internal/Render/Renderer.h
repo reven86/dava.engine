@@ -12,7 +12,6 @@
 
 namespace DAVA
 {
-struct ScreenShotCallbackDelegate;
 struct RenderStats;
 
 namespace Renderer
@@ -41,7 +40,6 @@ void EndFrame();
 //misc
 int32 GetFramebufferWidth();
 int32 GetFramebufferHeight();
-void RequestGLScreenShot(ScreenShotCallbackDelegate* screenShotCallback);
 
 //options
 RenderOptions* GetOptions();
@@ -55,20 +53,6 @@ RuntimeTextures& GetRuntimeTextures();
 //render stats
 RenderStats& GetRenderStats();
 }
-
-class Image;
-struct ScreenShotCallbackDelegate
-{
-    virtual ~ScreenShotCallbackDelegate() = default;
-
-    void operator()(Image* image)
-    {
-        return OnScreenShot(image);
-    }
-
-protected:
-    virtual void OnScreenShot(Image* image) = 0;
-};
 
 struct RenderStats
 {

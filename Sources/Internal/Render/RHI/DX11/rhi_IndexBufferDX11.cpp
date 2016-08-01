@@ -169,6 +169,7 @@ dx11_IndexBuffer_Update(Handle vb, const void* data, unsigned offset, unsigned s
             DX11Command cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
 
             ExecDX11(&cmd1, 1);
+            CHECK_HR(cmd1.retval)
 
             if (rc.pData)
             {
@@ -198,7 +199,7 @@ dx11_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
     if (self->usage == USAGE_DYNAMICDRAW)
     {
         D3D11_MAPPED_SUBRESOURCE rc = { 0 };
-        HRESULT hr;
+        HRESULT hr = S_OK;
 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_SecondaryContextSync.Lock();
@@ -217,6 +218,8 @@ dx11_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
         self->isMapped = true;
         ptr = ((uint8*)self->mappedData) + offset;
         #endif
+
+        CHECK_HR(hr)
     }
     else
     {
@@ -224,6 +227,7 @@ dx11_IndexBuffer_Map(Handle ib, unsigned offset, unsigned size)
         DX11Command cmd = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
 
         ExecDX11(&cmd, 1);
+        CHECK_HR(cmd.retval)
 
         if (rc.pData)
         {

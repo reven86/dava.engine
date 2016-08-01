@@ -394,6 +394,8 @@ void CreateWindowSizeDependentResources()
         DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
         0);
 
+        CHECK_HR(hr)
+
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
             // If the device was removed for any reason, a new device and swap chain will need to be created.
