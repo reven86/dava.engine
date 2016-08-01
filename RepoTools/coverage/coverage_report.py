@@ -179,42 +179,55 @@ def generate_report_coverage( pathExecut, coverageTmpPath ):
             fileName          = os.path.basename( fileCover.file )
             fileName, fileExt = os.path.splitext( fileName )
 
-            params = [ pathLlvmCov, 'gcov',
-                '-f',  
-                '-b', 
-                '{0}.gcda'.format(fileName)
-                 ]
-            subProcess         = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subProcessContinue = True
+            fileGcda     = '{0}.gcda'.format(fileName)
+            fileGcdaList = [ ]
 
-            print params
+            if  os.path.isfile( fileGcda ) :
+                fileGcdaList = [ fileGcda ]
+            else:
+                for rootdir, dirs, files in os.walk( coverageTmpPath ):
+                    for file in files:   
+                        if file.endswith( ('.gcda')  ): 
+                            fileGcdaList += [os.path.join(rootdir, file)]
 
+            for fileGcda in fileGcdaList:
 
-            while subProcessContinue:
-                try:
-                    line = subProcess.stdout.readline()
-                    split_line = line.split( )
+                params = [ pathLlvmCov, 'gcov',
+                    '-f',  
+                    '-b', 
+                    fileGcda
+                     ]
 
-                    if line == '':
-                        subProcessContinue = False
-                        continue
+                subProcess         = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                subProcessContinue = True
 
-                    if len( split_line ) == 0:
-                        continue
+                while subProcessContinue:
+                    try:
+                        line = subProcess.stdout.readline()
+                        split_line = line.split( )
 
-                    if   ( state == eState.FIND_File 
-                           and split_line[0] == 'File' 
-                           and split_line[1].replace('\'','') == fileCover.file ):
-                        state = eState.FIND_Lines
+                        if line == '':
+                            subProcessContinue = False
+                            continue
 
-                    elif ( state == eState.FIND_Lines 
-                           and split_line[0] == 'Lines' ):
-                        fileCover.coverLine = re.findall("\d+\.\d+", split_line[1] )[0]
-                        state = eState.FIND_File
+                        if len( split_line ) == 0:
+                            continue
 
-                except IOError as err:
-                    sys.stdout.write(err.message)
-                    sys.stdout.flush()
+                        if   ( state == eState.FIND_File 
+                               and split_line[0] == 'File' 
+                               and split_line[1].replace('\'','') == fileCover.file ):
+                            state = eState.FIND_Lines
+
+                        elif ( state == eState.FIND_Lines 
+                               and split_line[0] == 'Lines' ):
+                            fileCover.coverLine = re.findall("\d+\.\d+", split_line[1] )[0]
+                            state = eState.FIND_File
+                            subProcessContinue = False
+                            subProcess.kill()
+
+                    except IOError as err:
+                        sys.stdout.write(err.message)
+                        sys.stdout.flush()
 
     for test in testsCoverage:
         print test
