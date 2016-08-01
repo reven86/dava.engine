@@ -6,6 +6,11 @@
 
 namespace DAVA
 {
+// TODO anable later ask max
+#if defined(_WIN64) && defined(DAVA_MEMORY_PROFILING_ENABLE)
+#undef DAVA_MEMORY_PROFILING_ENABLE
+#endif
+
 #ifdef DAVA_MEMORY_PROFILING_ENABLE
 static void* SqliteMalloc(int32 size)
 {
