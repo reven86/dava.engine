@@ -4,6 +4,8 @@
 
 extern void FrameworkMain(int argc, char* argv[]);
 
+uint32 ConvertNSModifiersToUIEvent(long modifiers);
+
 using namespace DAVA;
 
 @implementation OpenGLView
@@ -125,9 +127,12 @@ static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
 {
+    NSUInteger nsModifiers = curEvent.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
+
     event.timestamp = [curEvent timestamp];
     event.phase = phase;
-
+    event.modifiers = davaModifiers;
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
     {
         event.physPoint.x = [curEvent deltaX];
@@ -288,6 +293,9 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 {
     DAVA::UIEvent ev;
 
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
+    ev.modifiers = davaModifiers;
     ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = 0.f;
@@ -303,6 +311,9 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 {
     DAVA::UIEvent ev;
 
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
+    ev.modifiers = davaModifiers;
     ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = 0.f;
@@ -318,6 +329,9 @@ void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& e
 {
     DAVA::UIEvent ev;
 
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
+    ev.modifiers = davaModifiers;
     ev.device = DAVA::UIEvent::Device::TOUCH_PAD;
     ev.timestamp = [event timestamp];
     ev.gesture.dx = [event deltaX] * (-1.f);
@@ -381,6 +395,8 @@ static int32 oldModifersFlags = 0;
     uint32 keyCode = [event keyCode];
     DAVA::Key davaKey = keyboard.GetDavaKeyForSystemKey(keyCode);
     uint32 charsLength = [chars length];
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
 
     // first key_down event to send
     {
@@ -395,6 +411,7 @@ static int32 oldModifersFlags = 0;
         }
         ev.device = UIEvent::Device::KEYBOARD;
         ev.key = davaKey;
+        ev.modifiers = davaModifiers;
 
         UIControlSystem::Instance()->OnInput(&ev);
     }
@@ -414,6 +431,7 @@ static int32 oldModifersFlags = 0;
         }
         ev.device = UIEvent::Device::KEYBOARD;
         ev.keyChar = static_cast<char16>(ch);
+        ev.modifiers = davaModifiers;
 
         UIControlSystem::Instance()->OnInput(&ev);
     }
@@ -428,9 +446,12 @@ static int32 oldModifersFlags = 0;
 
     DAVA::UIEvent ev;
 
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
     ev.phase = DAVA::UIEvent::Phase::KEY_UP;
     ev.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     ev.device = UIEvent::Device::KEYBOARD;
+    ev.modifiers = davaModifiers;
 
     UIControlSystem::Instance()->OnInput(&ev);
 
@@ -446,6 +467,8 @@ static int32 oldModifersFlags = 0;
 
     InputSystem* input = InputSystem::Instance();
     KeyboardDevice& keyboard = input->GetKeyboard();
+    NSUInteger nsModifiers = event.modifierFlags;
+    uint32 davaModifiers = ConvertNSModifiersToUIEvent(nsModifiers);
 
     for (unsigned i = 0; i < 5; i++)
     {
@@ -453,7 +476,7 @@ static int32 oldModifersFlags = 0;
         {
             DAVA::UIEvent ev;
             ev.device = UIEvent::Device::KEYBOARD;
-
+            ev.modifiers = davaModifiers;
             ev.key = keyCodes[i];
             if (ev.key != Key::CAPSLOCK)
             {
@@ -508,6 +531,32 @@ static int32 oldModifersFlags = 0;
     }
 
     oldModifersFlags = newModifers;
+}
+
+uint32 ConvertNSModifiersToUIEvent(long nsModifiers)
+{
+    uint32 resModifiers = 0;
+    if ((nsModifiers & NSAlphaShiftKeyMask) == NSAlphaShiftKeyMask)
+    {
+        resModifiers |= UIEvent::Modifier::CAPS_LOCK_DOWN;
+    }
+    if ((nsModifiers & NSShiftKeyMask) == NSShiftKeyMask)
+    {
+        resModifiers |= UIEvent::Modifier::SHIFT_DOWN;
+    }
+    if ((nsModifiers & NSControlKeyMask) == NSControlKeyMask)
+    {
+        resModifiers |= UIEvent::Modifier::CONTROL_DOWN;
+    }
+    if ((nsModifiers & NSAlternateKeyMask) == NSAlternateKeyMask)
+    {
+        resModifiers |= UIEvent::Modifier::ALT_DOWN;
+    }
+    if ((nsModifiers & NSCommandKeyMask) == NSCommandKeyMask)
+    {
+        resModifiers |= UIEvent::Modifier::COMMAND_DOWN;
+    }
+    return resModifiers;
 }
 
 @end
