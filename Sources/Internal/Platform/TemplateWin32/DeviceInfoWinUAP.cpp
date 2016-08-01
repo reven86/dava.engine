@@ -1,4 +1,4 @@
-﻿#include "Base/Platform.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
