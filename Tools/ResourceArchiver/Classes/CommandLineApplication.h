@@ -15,7 +15,7 @@ public:
     void SetOkCode(int errorCode);
     void AddTool(std::unique_ptr<CommandLineTool> tool); // todo : probably use multiple inheritance instead of AddTool()
 
-    int Process(int argc, char* argv[]);
+    int Process(DAVA::uint32 argc, char* argv[]);
 
 private:
     void PrintUsage();

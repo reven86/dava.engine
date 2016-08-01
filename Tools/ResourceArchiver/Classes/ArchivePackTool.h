@@ -3,7 +3,6 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/ResourceArchive.h"
 #include "CommandLineTool.h"
-#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/AssetCacheClient.h"
 
 class ArchivePackTool : public CommandLineTool
@@ -23,10 +22,6 @@ private:
     int ProcessInternal() override;
 
     void CollectAllFilesInDirectory(const DAVA::String& pathDirName, DAVA::Vector<DAVA::String>& output);
-
-    void ConstructCacheKey(DAVA::AssetCache::CacheItemKey& key, const DAVA::Vector<DAVA::String>& files, const DAVA::String& compression) const;
-    bool RetrieveFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
-    bool AddToCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::FilePath& pathToPack, const DAVA::FilePath& pathToLog) const;
 
     DAVA::String compressionStr;
     DAVA::Compressor::Type compressionType;

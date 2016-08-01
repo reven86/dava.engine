@@ -10,7 +10,6 @@
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 
-#include "AssetCache/AssetCache.h"
 #include "AssetCache/AssetCacheClient.h"
 
 #include "ResourceArchiver/ResourceArchiver.h"
@@ -147,13 +146,13 @@ MD5::MD5Digest CalculateParamsMD5(Vector<String> params)
 void ConstructCacheKeys(AssetCache::CacheItemKey& keyForArchive, AssetCache::CacheItemKey& keyForLog, Vector<CollectedFile>& collectedFiles, const DAVA::String& compression)
 {
     MD5::MD5Digest sourcesMD5 = CalculateSourcesMD5(collectedFiles);
-    AssetCache::SetPrimaryKey(keyForArchive, sourcesMD5);
-    AssetCache::SetPrimaryKey(keyForLog, sourcesMD5);
+    keyForArchive.SetPrimaryKey(sourcesMD5);
+    keyForLog.SetPrimaryKey(sourcesMD5);
 
     MD5::MD5Digest paramsMD5Archive = CalculateParamsMD5({ compression, "key for archive file" });
     MD5::MD5Digest paramsMD5Log = CalculateParamsMD5({ compression, "this one is for log file" });
-    AssetCache::SetSecondaryKey(keyForArchive, paramsMD5Archive);
-    AssetCache::SetSecondaryKey(keyForArchive, paramsMD5Log);
+    keyForArchive.SetSecondaryKey(paramsMD5Archive);
+    keyForLog.SetSecondaryKey(paramsMD5Log);
 }
 
 bool RetrieveFileFromCache(AssetCacheClient* assetCacheClient, const AssetCache::CacheItemKey& key, const FilePath& outputFile)
