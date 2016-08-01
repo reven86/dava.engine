@@ -259,9 +259,13 @@ bool ControlNode::CanInsertControl(const ControlNode* node, DAVA::int32 pos) con
         return false;
     }
 
-    if (IsFoo(node))
+    const ControlNode* destNode = dynamic_cast<const ControlNode*>(this);
+    for (; destNode != nullptr; destNode = dynamic_cast<const ControlNode*>(destNode->GetParent()))
     {
-        return false;
+        if (destNode->IsInstancedFrom(node))
+        {
+            return false;
+        }
     }
 
     if (node->IsDependsOnPrototype(this))
@@ -370,30 +374,7 @@ bool ControlNode::IsParentOf(const ControlNode* node) const
 {
     for (const PackageBaseNode* parent = node->GetParent(); parent != nullptr; parent = parent->GetParent())
     {
-        if (parent == this) // || parentNode->IsDependsOnPrototype(node))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool ControlNode::IsFoo(const ControlNode* node) const
-{
-    //    const ControlNode *destNode = dynamic_cast<const ControlNode*>(this);
-    //    for (; destNode != nullptr; destNode = dynamic_cast<const ControlNode*>(destNode->GetParent()))
-    //    {
-    //        if (destNode->IsInstancedFrom(node))
-    //        {
-    //            return true;
-    //        }
-    //    }
-
-    const ControlNode* destNode = dynamic_cast<const ControlNode*>(node);
-    for (; destNode != nullptr; destNode = dynamic_cast<const ControlNode*>(destNode->GetParent()))
-    {
-        if (destNode->IsInstancedFrom(this))
+        if (parent == this)
         {
             return true;
         }

@@ -81,7 +81,6 @@ private:
     bool IsInstancedFrom(const ControlNode* prototype) const;
     bool IsDependsOnPrototype(const ControlNode* prototype) const;
     bool IsParentOf(const ControlNode* node) const;
-    bool IsFoo(const ControlNode* node) const;
     void AddControlToInstances(ControlNode* control);
     void RemoveControlFromInstances(ControlNode* control);
 
