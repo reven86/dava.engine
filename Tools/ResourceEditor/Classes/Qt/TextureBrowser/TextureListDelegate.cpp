@@ -18,6 +18,7 @@
 #include "Preset.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 #include "QtTools/Utils/Utils.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -155,7 +156,7 @@ void TextureListDelegate::drawPreviewBig(QPainter* painter, const QStyleOptionVi
         if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
         {
             // draw highlight
-            painter->setPen(option.palette.highlight().color());
+            painter->setPen(Themes::GetHighligtedItemTextColor());
         }
         else
         {
@@ -297,7 +298,7 @@ void TextureListDelegate::drawPreviewSmall(QPainter* painter, const QStyleOption
         if (curModel->isHighlited(index) && !option.state.testFlag(QStyle::State_Selected))
         {
             // draw highlight
-            painter->setPen(option.palette.highlight().color());
+            painter->setPen(Themes::GetHighligtedItemTextColor());
         }
         else
         {

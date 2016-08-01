@@ -81,12 +81,7 @@ void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vecto
     DVASSERT(drawCamera);
     DVASSERT(mainCamera);
 
-    bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle) ||
-    (passConfig.colorBuffer[1].texture != rhi::InvalidHandle) ||
-    (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle && passConfig.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
-
-    bool needInvertCamera = isRT && (!rhi::DeviceCaps().isUpperLeftRTOrigin);
-
+    bool needInvertCamera = rhi::NeedInvertProjection(passConfig);
     passConfig.invertCulling = needInvertCamera ? 1 : 0;
 
     drawCamera->SetupDynamicParameters(needInvertCamera, externalClipPlane);
@@ -102,9 +97,11 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 
-    BeginRenderPass();
-    DrawLayers(mainCamera);
-    EndRenderPass();
+    if (BeginRenderPass())
+    {
+        DrawLayers(mainCamera);
+        EndRenderPass();
+    }
 }
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
@@ -164,6 +161,7 @@ void RenderPass::DrawLayers(Camera* camera)
         RenderLayer* layer = renderLayers[k];
         RenderBatchArray& batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
+
         layer->Draw(camera, batchArray, packetList);
     }
 }
@@ -177,11 +175,45 @@ void RenderPass::DrawDebug(Camera* camera, RenderSystem* renderSystem)
     }
 }
 
-void RenderPass::BeginRenderPass()
+#if __DAVAENGINE_RENDERSTATS__
+void RenderPass::ProcessVisibilityQuery()
 {
+    DVASSERT(queryBuffers.size() < 128);
+
+    while (queryBuffers.size() && rhi::QueryBufferIsReady(queryBuffers.front()))
+    {
+        RenderStats& stats = Renderer::GetRenderStats();
+        for (uint32 i = 0; i < static_cast<uint32>(RenderLayer::RENDER_LAYER_ID_COUNT); ++i)
+        {
+            FastName layerName = RenderLayer::GetLayerNameByID(static_cast<RenderLayer::eRenderLayerID>(i));
+            stats.queryResults[layerName] += rhi::QueryValue(queryBuffers.front(), i);
+        }
+
+        rhi::DeleteQueryBuffer(queryBuffers.front());
+        queryBuffers.pop_front();
+    }
+}
+#endif
+
+bool RenderPass::BeginRenderPass()
+{
+    bool success = false;
+#if __DAVAENGINE_RENDERSTATS__
+    ProcessVisibilityQuery();
+    rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
+    passConfig.queryBuffer = qBuffer;
+    queryBuffers.push_back(qBuffer);
+#endif
+
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
-    rhi::BeginRenderPass(renderPass);
-    rhi::BeginPacketList(packetList);
+    if (renderPass != rhi::InvalidHandle)
+    {
+        rhi::BeginRenderPass(renderPass);
+        rhi::BeginPacketList(packetList);
+        success = true;
+    }
+
+    return success;
 }
 
 void RenderPass::EndRenderPass()
@@ -294,18 +326,20 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 
     passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
     passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
-    BeginRenderPass();
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
-    DrawLayers(mainCamera);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+    if (BeginRenderPass())
+    {
+        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+        DrawLayers(mainCamera);
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
-    if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
-        PrepareReflectionRefractionTextures(renderSystem);
+        if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
+            PrepareReflectionRefractionTextures(renderSystem);
 
-    DrawDebug(drawCamera, renderSystem);
+        DrawDebug(drawCamera, renderSystem);
 
-    EndRenderPass();
+        EndRenderPass();
+    }
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
@@ -383,18 +417,20 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);
 
-    ClearLayersArrays();
-    PrepareLayersArrays(visibilityArray, currMainCamera);
-
     //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
     if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
         passName = PASS_REFLECTION_REFRACTION;
     else
         passName = PASS_FORWARD;
 
-    BeginRenderPass();
-    DrawLayers(currMainCamera);
-    EndRenderPass();
+    ClearLayersArrays();
+    PrepareLayersArrays(visibilityArray, currMainCamera);
+
+    if (BeginRenderPass())
+    {
+        DrawLayers(currMainCamera);
+        EndRenderPass();
+    }
 }
 
 WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName& name)
@@ -439,17 +475,19 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFRACTION);
 
-    ClearLayersArrays();
-    PrepareLayersArrays(visibilityArray, currMainCamera);
-
     //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
     if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
         passName = PASS_REFLECTION_REFRACTION;
     else
         passName = PASS_FORWARD;
 
-    BeginRenderPass();
-    DrawLayers(currMainCamera);
-    EndRenderPass();
+    ClearLayersArrays();
+    PrepareLayersArrays(visibilityArray, currMainCamera);
+
+    if (BeginRenderPass())
+    {
+        DrawLayers(currMainCamera);
+        EndRenderPass();
+    }
 }
 };

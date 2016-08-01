@@ -11,12 +11,8 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Render/GPUFamilyDescriptor.h"
-#include "AssetCache/AssetCache.h"
-#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
-
-#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {
@@ -344,15 +340,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
             AssetCache::CacheItemKey cacheKey;
             if (IsUsingCache())
             {
-                ScopedPtr<File> md5File(File::Create(processDir + "dir.md5", File::OPEN | File::READ));
-                DVASSERT(md5File);
-                auto read = md5File->Read(cacheKey.data(), MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                MD5::MD5Digest digest;
 
-                md5File = File::Create(processDir + "params.md5", File::OPEN | File::READ);
-                DVASSERT(md5File);
-                read = md5File->Read(cacheKey.data() + MD5::MD5Digest::DIGEST_SIZE, MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                ReadMD5FromFile(processDir + "dir.md5", digest);
+                cacheKey.SetPrimaryKey(digest);
+
+                ReadMD5FromFile(processDir + "params.md5", digest);
+                cacheKey.SetSecondaryKey(digest);
             }
 
             bool needRepack = (false == GetFilesFromCache(cacheKey, inputPath, outputPath));

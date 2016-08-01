@@ -12,39 +12,14 @@
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
+
 namespace DAVA
 {
-/*
-class RenderCallInstance
-{
-public:
-    VBO *
-    IBO *
-    NMaterialInstance *
-    NMaterial *
-    uint32 start;
-    uint32 count;
-    uint32 primitiveType;
-};
-*/
 class RenderLayer;
 class Camera;
 class RenderObject;
 class RenderBatch;
 class NMaterial;
-class NMaterialInstance;
-class OcclusionQuery;
-
-/*
-    Not finished. We'll return to it when we start batching functionality.
- */
-class IRenderBatchDataSource
-{
-public:
-    virtual void InitBatch(RenderBatch* renderBatch) = 0;
-    virtual void FillData(RenderBatch* renderBatch) = 0;
-    virtual void ReleaseBatch(RenderBatch* renderBatch) = 0;
-};
 
 class RenderBatch : public BaseObject
 {

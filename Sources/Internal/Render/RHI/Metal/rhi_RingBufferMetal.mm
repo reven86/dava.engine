@@ -36,6 +36,14 @@ RingBufferMetal::Alloc(unsigned cnt, unsigned* offset)
 
 //------------------------------------------------------------------------------
 
+void
+RingBufferMetal::Reset()
+{
+    buf.Reset();
+}
+
+//------------------------------------------------------------------------------
+
 id<MTLBuffer>
 RingBufferMetal::BufferUID() const
 {

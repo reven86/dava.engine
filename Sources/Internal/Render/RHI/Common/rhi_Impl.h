@@ -22,7 +22,6 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
-    void (*impl_TakeScreenshot)(ScreenShotCallback);
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
 
@@ -43,7 +42,8 @@ Dispatch
     Handle (*impl_QueryBuffer_Create)(unsigned maxObjectCount);
     void (*impl_QueryBuffer_Reset)(Handle buf);
     void (*impl_QueryBuffer_Delete)(Handle buf);
-    bool (*impl_QueryBuffer_IsReady)(Handle buf, uint32 objectIndex);
+    bool (*impl_QueryBuffer_IsReady)(Handle buf);
+    bool (*impl_QueryBuffer_ObjectIsReady)(Handle buf, uint32 objectIndex);
     int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
 
     Handle (*impl_PerfQuerySet_Create)(uint32 maxQueryCount);
@@ -126,6 +126,11 @@ void SetDispatchTable(const Dispatch& dispatch);
 Size2i TextureExtents(Size2i size, uint32 level);
 uint32 TextureStride(TextureFormat format, Size2i size, uint32 level);
 uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level = 0);
+
+//------------------------------------------------------------------------------
+#if defined(__DAVAENGINE_IPHONE__)
+bool rhi_MetalIsSupported(); 
+#endif
 
 } // namespace rhi
 

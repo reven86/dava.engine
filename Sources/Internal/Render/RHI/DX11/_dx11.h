@@ -26,6 +26,16 @@
 
 const char* D3D11ErrorText(HRESULT hr);
 
+#if 1
+#define CHECK_HR(hr) \
+    if (FAILED(hr)) \
+    { \
+        Logger::Error("D3D11Error at %s: %d\n%s", __FILE__, __LINE__, D3D11ErrorText(hr)); \
+    } 
+#else
+#define CHECK_HR(hr) hr
+#endif
+
 namespace rhi
 {
 struct InitParam;
@@ -48,9 +58,6 @@ extern ID3D11DeviceContext* _D3D11_SecondaryContext;
 extern DAVA::Mutex _D3D11_SecondaryContextSync;
 extern ID3D11Debug* _D3D11_Debug;
 extern ID3DUserDefinedAnnotation* _D3D11_UserAnnotation;
-
-extern ScreenShotCallback _D3D11_PendingScreenshotCallback;
-extern DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 extern InitParam _DX11_InitParam;
 
