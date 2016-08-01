@@ -110,7 +110,7 @@ jstring ToJNIString(const DAVA::WideString& string)
     return env->NewStringUTF(utf8.c_str());
 }
 
-HashMap<String, JavaClass> JavaClass::registredClasses;
+UnorderedMap<String, JavaClass> JavaClass::registredClasses;
 
 const JavaClass& JavaClass::RegisterClass(const String& className)
 {
