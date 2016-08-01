@@ -45,8 +45,6 @@ bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
-rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
-DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
 DAVA::uint8 volatile pre_call_registers[64];
 
@@ -350,6 +348,9 @@ _OGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsize
 
 void gles2_Uninitialize()
 {
+    //TODO: release GL resources
+    //now it's crash cause Qt context deleted before uninit renderer
+    //QueryBufferGLES2::ReleaseQueryObjectsPool();
     UninitializeRenderThreadGLES2();
 }
 
@@ -379,17 +380,6 @@ gles2_InvalidateCache()
     PipelineStateGLES2::InvalidateCache();
     DepthStencilStateGLES2::InvalidateCache();
     TextureGLES2::InvalidateCache();
-}
-
-//------------------------------------------------------------------------------
-
-static void
-gles2_TakeScreenshot(ScreenShotCallback callback)
-{
-    _GLES2_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_GLES2_PendingScreenshotCallback);
-    _GLES2_PendingScreenshotCallback = callback;
-    _GLES2_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -542,7 +532,6 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-        DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -694,7 +683,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -791,7 +779,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -888,7 +875,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 

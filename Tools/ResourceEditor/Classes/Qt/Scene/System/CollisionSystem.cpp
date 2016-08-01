@@ -518,13 +518,13 @@ void SceneCollisionSystem::DestroyFromObject(Selectable::Object* entity)
     }
 }
 
-const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(DAVA::Plane* planes, DAVA::uint32 numPlanes)
+const SelectableGroup& SceneCollisionSystem::ClipObjectsToPlanes(const DAVA::Vector<DAVA::Plane>& planes)
 {
     planeClippedObjects.Clear();
     for (const auto& object : objectToCollision)
     {
         if ((object.first != nullptr) && (object.second != nullptr) &&
-            (object.second->ClassifyToPlanes(planes, numPlanes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
+            (object.second->ClassifyToPlanes(planes) == CollisionBaseObject::ClassifyPlanesResult::ContainsOrIntersects))
         {
             planeClippedObjects.Add(object.first, DAVA::AABBox3());
         }

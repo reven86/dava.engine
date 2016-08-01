@@ -3,7 +3,7 @@
 #include "Particles/ParticleEmitter.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/LightComponent.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
@@ -195,6 +195,16 @@ SwitchComponent* GetSwitchComponent(const Entity* fromEntity)
     return nullptr;
 }
 
+ParticleEffectComponent* GetParticleEffectComponent(const Entity* fromEntity)
+{
+    if (fromEntity)
+    {
+        return static_cast<ParticleEffectComponent*>(fromEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    }
+
+    return nullptr;
+}
+
 SoundComponent* GetSoundComponent(const Entity* fromEntity)
 {
     if (fromEntity)
@@ -252,33 +262,6 @@ void RecursiveProcessMeshNode(Entity* curr, void* userData, void (*process)(Enti
     {
         for (int32 i = 0; i < curr->GetChildrenCount(); i++)
             RecursiveProcessMeshNode(curr->GetChild(i), userData, process);
-    }
-}
-
-void RecursiveProcessLodNode(Entity* curr, int32 lod, void* userData, void (*process)(Entity*, void*))
-{
-    LodComponent* lodComp = static_cast<LodComponent*>(curr->GetComponent(Component::LOD_COMPONENT));
-    if (lodComp)
-    {
-        Vector<LodComponent::LodData*> retLodLayers;
-        lodComp->GetLodData(retLodLayers);
-        for (Vector<LodComponent::LodData*>::iterator it = retLodLayers.begin(); it != retLodLayers.end(); ++it)
-        {
-            LodComponent::LodData* data = *it;
-            if (data->layer == lod)
-            {
-                for (Vector<Entity*>::iterator i = data->nodes.begin(); i != data->nodes.end(); ++i)
-                {
-                    process((*i), userData);
-                }
-                break;
-            }
-        }
-    }
-    else
-    {
-        for (int32 i = 0; i < curr->GetChildrenCount(); i++)
-            RecursiveProcessLodNode(curr->GetChild(i), lod, userData, process);
     }
 }
 

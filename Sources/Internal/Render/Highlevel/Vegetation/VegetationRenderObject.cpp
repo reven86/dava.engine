@@ -879,9 +879,9 @@ void VegetationRenderObject::CreateRenderData()
 
 void VegetationRenderObject::RestoreRenderData()
 {
-#if defined(__DAVAENGINE_IPHONE__)
-    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
-#endif
+    //#if defined(__DAVAENGINE_IPHONE__)
+    //    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+    //#endif
 
     if (renderData == nullptr)
         return;

@@ -2,7 +2,6 @@
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Logger/Logger.h"
-#include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
@@ -23,8 +22,6 @@
 
 namespace DAVA
 {
-const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
-
 UIControlSystem::UIControlSystem()
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -63,6 +60,8 @@ UIControlSystem::UIControlSystem()
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+
+    ui3DViewCount = 0;
 }
 
 UIControlSystem::~UIControlSystem()
@@ -183,8 +182,8 @@ void UIControlSystem::Reset()
 void UIControlSystem::ProcessScreenLogic()
 {
     /*
-	 if next screen or we need to removecurrent screen
-	 */
+     if next screen or we need to removecurrent screen
+     */
     if (screenLockCount == 0 && (nextScreen.Valid() || removeCurrentScreen))
     {
         RefPtr<UIScreen> nextScreenProcessed;
@@ -279,8 +278,8 @@ void UIControlSystem::ProcessScreenLogic()
     }
 
     /*
-	 if we have popups to remove, we removes them here
-	 */
+     if we have popups to remove, we removes them here
+     */
     for (Set<UIPopup*>::iterator it = popupsToRemove.begin(); it != popupsToRemove.end(); it++)
     {
         UIPopup* p = *it;
@@ -318,6 +317,10 @@ void UIControlSystem::Update()
         popupContainer->SystemUpdate(timeElapsed);
     }
 
+    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
+    newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
+    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
+
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
@@ -328,21 +331,7 @@ void UIControlSystem::Draw()
 
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
-
     drawCounter = 0;
-
-    const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-
-    if (descr.clearTarget)
-    {
-        rhi::Viewport viewport;
-        viewport.x = viewport.y = 0U;
-        viewport.width = descr.width == 0 ? static_cast<uint32>(Renderer::GetFramebufferWidth()) : descr.width;
-        viewport.height = descr.height == 0 ? static_cast<uint32>(Renderer::GetFramebufferHeight()) : descr.height;
-        const RenderSystem2D::RenderTargetPassDescriptor& descr = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
-        RenderHelper::CreateClearPass(descr.colorAttachment, descr.depthAttachment, descr.priority + PRIORITY_CLEAR, descr.clearColor, viewport);
-    }
 
     if (currentScreenTransition)
     {
@@ -359,9 +348,6 @@ void UIControlSystem::Draw()
     {
         frameSkip--;
     }
-    //Logger::Info("UIControlSystem::draws: %d", drawCounter);
-
-    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     GetScreenshoter()->OnFrame();
 
@@ -690,9 +676,7 @@ void UIControlSystem::SetClearColor(const DAVA::Color& clearColor)
 
 void UIControlSystem::SetUseClearPass(bool useClearPass)
 {
-    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearTarget = useClearPass;
-    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
+    needClearMainPass = useClearPass;
 }
 
 void UIControlSystem::SetDefaultTapCountSettings()
@@ -714,5 +698,15 @@ void UIControlSystem::SetTapCountSettings(float32 time, float32 inch)
     }
     doubleClickRadiusSquared = inch * dpi;
     doubleClickRadiusSquared *= doubleClickRadiusSquared;
+}
+
+void UIControlSystem::UI3DViewAdded()
+{
+    ui3DViewCount++;
+}
+void UIControlSystem::UI3DViewRemoved()
+{
+    DVASSERT(ui3DViewCount);
+    ui3DViewCount--;
 }
 };

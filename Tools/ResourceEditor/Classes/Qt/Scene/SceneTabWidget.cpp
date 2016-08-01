@@ -108,6 +108,8 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
+    DVASSERT(GetTabCount() == 0);
+
     ReleaseDAVAUI();
 }
 
@@ -118,7 +120,6 @@ void SceneTabWidget::InitDAVAUI()
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
-    davaUIScreen->AddControl(dava3DView);
 
     DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
     DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
@@ -126,6 +127,7 @@ void SceneTabWidget::InitDAVAUI()
 
 void SceneTabWidget::ReleaseDAVAUI()
 {
+    SafeRelease(dava3DView);
     SafeRelease(davaUIScreen);
 }
 
@@ -237,18 +239,26 @@ void SceneTabWidget::updateTabBarVisibility()
 
 bool SceneTabWidget::CloseTab(int index)
 {
-    Request request;
+    return CloseTabInternal(index, false);
+}
 
-    emit CloseTabRequest(index, &request);
+bool SceneTabWidget::CloseTabInternal(int index, bool silent)
+{
+    if (silent == false)
+    {
+        Request request;
+        emit CloseTabRequest(index, &request);
 
-    if (!request.IsAccepted())
-        return false;
+        if (!request.IsAccepted())
+            return false;
+    }
 
     SceneEditor2* scene = GetTabScene(index);
     if (index == tabBar->currentIndex())
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
+        davaUIScreen->RemoveControl(dava3DView);
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
@@ -284,6 +294,8 @@ void SceneTabWidget::SetCurrentTab(int index)
 
         if (NULL != curScene)
         {
+            davaUIScreen->AddControl(dava3DView);
+
             dava3DView->SetScene(curScene);
             curScene->SetViewportRect(dava3DView->GetRect());
 
@@ -564,18 +576,32 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
     return -1;
 }
 
-bool SceneTabWidget::CloseAllTabs()
+bool SceneTabWidget::CloseAllTabs(bool silent)
 {
+    bool areTabBarSignalsBlocked = false;
+    if (silent)
+    {
+        areTabBarSignalsBlocked = tabBar->blockSignals(true);
+    }
+
+    bool closed = true;
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTab(GetCurrentTab()))
+        if (!CloseTabInternal(GetCurrentTab(), silent))
         {
-            return false;
+            closed = false;
+            break;
         }
         count--;
     }
-    return true;
+
+    if (silent)
+    {
+        tabBar->blockSignals(areTabBarSignalsBlocked);
+    }
+
+    return closed;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
