@@ -690,7 +690,6 @@ bool QtModelPackageCommandExecutor::MoveControlImpl(ControlNode* node, ControlsC
 
         for (ControlNode* instance : instances)
             RemoveControlImpl(instance);
-
     }
     else
     {
