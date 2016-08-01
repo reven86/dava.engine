@@ -15,6 +15,7 @@ bool InnerShow(eModalType modalType, const char* message)
     const JNI::JavaClass* jni_assert_class = JNI::JavaClass::Get("com/dava/framework/JNIAssert");
     if (!jni_assert_class) // com/dava/framework/JNIAssert wasn't registered
     {
+        Logger::Error("com/dava/framework/JNIAssert wasn't registered");
         return false;
     }
 

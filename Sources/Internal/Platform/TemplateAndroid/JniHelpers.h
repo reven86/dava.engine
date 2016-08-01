@@ -651,7 +651,7 @@ private:
     jclass javaClass = nullptr;
     String name;
 
-    static HashMap<String, JavaClass> registredClasses;
+    static UnorderedMap<String, JavaClass> registredClasses;
 };
 
 inline JavaClass::operator jclass() const
