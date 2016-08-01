@@ -1,8 +1,6 @@
 #include "ActiveSceneHolder.h"
 #include "SceneSignals.h"
 
-#include "Debug\DVAssert.h"
-
 ActiveSceneHolder::ActiveSceneHolder()
 {
     SceneSignals* dispatcher = SceneSignals::Instance();

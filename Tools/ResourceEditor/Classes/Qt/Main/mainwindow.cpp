@@ -3370,7 +3370,7 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         OnReloadTextures();
         break;
     default:
-        DVASSERT_MSG(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)));
+        DVASSERT_MSG(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)).c_str());
         break;
     }
 }
