@@ -98,6 +98,7 @@ DAVA_TESTCLASS (PackManagerTest)
                                         PackManager::Hints());
 
             Logger::Info("init gpu packs");
+            FileSystem::Instance()->DeleteFile("~doc:/" + dbFileName);
             packManager.InitGpuPacks(architecture, dbFileName);
 
             Logger::Info("sync with server");
