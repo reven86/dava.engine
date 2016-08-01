@@ -35,7 +35,7 @@ public:
                      eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT);
     int Reconvert(DAVA::Scene* scene, eTextureConvertMode convertMode);
 
-    void WaitConvertedAll(QWidget* parent = nullptr);
+    void WaitConvertedAll(QWidget* parent);
     void CancelConvert();
 
 signals:

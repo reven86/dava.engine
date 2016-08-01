@@ -20,12 +20,9 @@ protected:
     struct SpeedTreeInfo
     {
         SpeedTreeInfo()
-            :
-            leafsSquare(0.f)
-            ,
-            leafsSquareDivX(0.f)
-            ,
-            leafsSquareDivY(0.f)
+            : leafsSquare(0.f)
+            , leafsSquareDivX(0.f)
+            , leafsSquareDivY(0.f)
         {
         }
 

@@ -1,11 +1,17 @@
-#ifndef __QT_PROPERTY_WIDGET_H__
-#define __QT_PROPERTY_WIDGET_H__
+#pragma once
 
 #include "PropertyEditorStateHelper.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/ActiveSceneHolder.h"
 
+namespace Ui
+{
+class MainWindow;
+}
+
+class GlobalOperations;
 class LazyUpdater;
 struct PropEditorUserData : public QtPropertyData::UserData
 {
@@ -44,6 +50,8 @@ public:
 
     PropertyEditor(QWidget* parent = 0, bool connectToSceneSignals = true);
     ~PropertyEditor();
+
+    void Init(Ui::MainWindow* mainWindowUi, std::shared_ptr<GlobalOperations> globalOperations);
 
     virtual void SetEntities(const SelectableGroup* selected);
 
@@ -135,6 +143,6 @@ private:
     DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
     eViewMode viewMode;
     bool favoritesEditMode;
+    ActiveSceneHolder sceneHolder;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
-
-#endif // __QT_PROPERTY_WIDGET_H__

@@ -3,7 +3,17 @@
 
 #include <QDockWidget>
 #include <QPointer>
-#include <QMenu>
+#include <memory>
+
+namespace Ui
+{
+class MainWindow;
+}
+
+class QMenu;
+class QToolBar;
+class PropertyEditor;
+class GlobalOperations;
 
 class DockProperties : public QDockWidget
 {
@@ -13,7 +23,7 @@ public:
     DockProperties(QWidget* parent = NULL);
     ~DockProperties();
 
-    void Init();
+    void Init(Ui::MainWindow* mainwindowUi, std::shared_ptr<GlobalOperations> globalOperations);
 
 protected slots:
     void ActionFavoritesEdit();
@@ -22,6 +32,8 @@ protected slots:
 
 private:
     QPointer<QMenu> addComponentMenu;
+    QPointer<QToolBar> toolbar;
+    QPointer<PropertyEditor> propertiesEditor;
 };
 
 #endif // __RESOURCEEDITORQT__DOCKPROPERTIES__

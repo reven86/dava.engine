@@ -9,6 +9,7 @@
 
 #include "Main/Guards.h"
 #include "Main/mainwindow.h"
+#include "Classes/Qt/GlobalOperations.h"
 #include "PlaneLODDialog/PlaneLODDialog.h"
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
@@ -50,6 +51,11 @@ LODEditor::LODEditor(QWidget* parent)
 }
 
 LODEditor::~LODEditor() = default;
+
+void LODEditor::Init(std::shared_ptr<GlobalOperations> globalOperations_)
+{
+    globalOperations = globalOperations_;
+}
 
 void LODEditor::SetupSceneSignals()
 {
@@ -332,9 +338,8 @@ void LODEditor::CreatePlaneLODClicked()
     PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
     if (dialog.exec() == QDialog::Accepted)
     {
-        QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...");
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
-        QtMainWindow::Instance()->WaitStop();
     }
 }
 
@@ -455,9 +460,7 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneHolder.GetScene();
     if (scene != nullptr)
     {
         return scene->editorLODSystem;
@@ -468,9 +471,8 @@ EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 
 EditorStatisticsSystem* LODEditor::GetCurrentEditorStatisticsSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneHolder.GetScene();
+    ;
     if (scene != nullptr)
     {
         return scene->editorStatisticsSystem;

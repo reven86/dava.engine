@@ -4,6 +4,7 @@
 
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
+#include "Scene/ActiveSceneHolder.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
 #include <QWidget>
@@ -13,6 +14,7 @@ namespace Ui
 class LODEditor;
 }
 
+class GlobalOperations;
 class SceneEditor2;
 class SelectableGroup;
 class Command2;
@@ -28,6 +30,8 @@ class LODEditor : public QWidget, private EditorLODSystemUIDelegate, EditorStati
 public:
     explicit LODEditor(QWidget* parent = nullptr);
     ~LODEditor() override;
+
+    void Init(std::shared_ptr<GlobalOperations> globalOperations);
 
 private slots:
 
@@ -90,4 +94,6 @@ private:
     DAVA::Vector<LODDistanceWidget*> distanceWidgets;
 
     LazyUpdater* panelsUpdater = nullptr;
+    std::shared_ptr<GlobalOperations> globalOperations;
+    ActiveSceneHolder sceneHolder;
 };

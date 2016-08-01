@@ -2,14 +2,15 @@
 #define __RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__
 
 #include "DAVAEngine.h"
-#include "Base/StaticSingleton.h"
+#include "Base/Singleton.h"
 
 #include <QShortcut>
+#include <QPointer>
 
-class LandscapeEditorShortcutManager : public DAVA::StaticSingleton<LandscapeEditorShortcutManager>
+class LandscapeEditorShortcutManager : public DAVA::Singleton<LandscapeEditorShortcutManager>
 {
 public:
-    LandscapeEditorShortcutManager();
+    LandscapeEditorShortcutManager(QWidget* shortcutsWidget);
     ~LandscapeEditorShortcutManager();
 
     QShortcut* GetShortcutByName(const DAVA::String& name);
@@ -33,6 +34,7 @@ private:
     DAVA::Map<DAVA::String, QShortcut*> shortcutsMap;
 
     void InitDefaultShortcuts();
+    QPointer<QWidget> shortcutsWidget;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORSHORTCUTMANAGER__) */

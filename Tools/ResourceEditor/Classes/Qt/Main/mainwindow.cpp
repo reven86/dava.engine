@@ -19,6 +19,7 @@
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
+#include "Classes/Qt/Settings/SettingsHelper.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
@@ -35,6 +36,9 @@
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
 #include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
+#include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
+#include "Classes/Qt/Tools/LoggerOutput/ErrorDialogOutput.h"
+#include "Classes/Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -94,7 +98,68 @@
 #include <QShortcut>
 #include <QList>
 
-#include "Tools/ExportSceneDialog/ExportSceneDialog.h"
+#define CHECK_GLOBAL_OPERATIONS(retValue) \
+    if (globalOperations == nullptr) \
+    {\
+        DAVA::Logger::Error("GlobalOperationsProxy call after MainWindow was destroyed"); \
+        return (retValue);\
+    }
+
+namespace MainWindowDetails
+{
+class GlobalOperationsProxy : public GlobalOperations
+{
+public:
+    GlobalOperationsProxy(GlobalOperations* globalOperations_)
+        : globalOperations(globalOperations_)
+    {
+    }
+
+    void Reset()
+    {
+        globalOperations = nullptr;
+    }
+
+    void CallAction(ID id, DAVA::Any&& args) override
+    {
+        CHECK_GLOBAL_OPERATIONS(void());
+        globalOperations->CallAction(id, std::move(args));
+    }
+
+    QWidget* GetGlobalParentWidget() const override
+    {
+        CHECK_GLOBAL_OPERATIONS(nullptr);
+        return globalOperations->GetGlobalParentWidget();
+    }
+
+    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100) override
+    {
+        CHECK_GLOBAL_OPERATIONS(void());
+        globalOperations->ShowWaitDialog(tittle, message, min, max);
+    }
+
+    bool IsWaitDialogVisible() const
+    {
+        CHECK_GLOBAL_OPERATIONS(false);
+        return globalOperations->IsWaitDialogVisible();
+    }
+
+    void HideWaitDialog() override
+    {
+        CHECK_GLOBAL_OPERATIONS(void());
+        globalOperations->HideWaitDialog();
+    }
+
+    void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor)
+    {
+        CHECK_GLOBAL_OPERATIONS(void());
+        globalOperations->ForEachScene(functor);
+    }
+
+private:
+    GlobalOperations* globalOperations;
+};
+}
 
 QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     : QMainWindow(parent)
@@ -112,12 +177,19 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
-    , spritesPacker(new SpritesPackerModule())
 {
+    globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
+    spritesPacker = std::make_unique<SpritesPackerModule>(globalOperations);
+
+    errorLoggerOutput = new ErrorDialogOutput(globalOperations, this);
+    DAVA::Logger::AddCustomOutput(errorLoggerOutput);
+
+    new LandscapeEditorShortcutManager(this);
     PathDescriptor::InitializePathDescriptors();
 
     new ProjectManager();
     ui->setupUi(this);
+    SetupWidget();
 
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
@@ -189,8 +261,10 @@ QtMainWindow::~QtMainWindow()
     propertyPanel.reset();
 #endif
 
-    const auto& logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
-    const auto dataToSave = logWidget->Serialize();
+    DAVA::Logger::RemoveCustomOutput(errorLoggerOutput);
+
+    LogWidget* logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
+    QByteArray dataToSave = logWidget->Serialize();
 
     DAVA::VariantType var(reinterpret_cast<const DAVA::uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
@@ -201,6 +275,9 @@ QtMainWindow::~QtMainWindow()
     MaterialEditor::Instance()->Release();
 
     ProjectManager::Instance()->Release();
+
+    std::static_pointer_cast<MainWindowDetails::GlobalOperationsProxy>(globalOperations)->Reset();
+    globalOperations.reset();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
@@ -304,6 +381,13 @@ QString GetSaveFolderForEmitters()
     return particlesPath;
 }
 
+void QtMainWindow::SetupWidget()
+{
+    ui->sceneTree->Init(globalOperations);
+    ui->scrollAreaWidgetContents->Init(globalOperations);
+    ui->sceneTabWidget->Init(globalOperations);
+}
+
 void QtMainWindow::CollectEmittersForSave(DAVA::ParticleEmitter* topLevelEmitter, DAVA::List<EmitterDescriptor>& emitters, const DAVA::String& entityName) const
 {
     DVASSERT(topLevelEmitter != nullptr);
@@ -379,11 +463,6 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
     }
 }
 
-DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
-{
-    return static_cast<DAVA::eGPUFamily>(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
-}
-
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
     // before reloading textures we should save tile-mask texture for all opened scenes
@@ -436,7 +515,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         }
 
         DAVA::Sprite::ReloadSprites(gpu);
-        QtMainWindow::Instance()->RestartParticleEffects();
+        RestartParticleEffects();
     }
     LoadGPUFormat();
 }
@@ -698,7 +777,7 @@ void QtMainWindow::SetupDocks()
     QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
     QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
 
-    ui->libraryWidget->SetupSignals();
+    ui->libraryWidget->SetupSignals(globalOperations);
     // Run Action Event dock
     {
         dockActionEvent = new QDockWidget("Run Action Event", this);
@@ -725,7 +804,7 @@ void QtMainWindow::SetupDocks()
         addDockWidget(Qt::RightDockWidgetArea, dockConsole);
     }
 
-    ui->dockProperties->Init();
+    ui->dockProperties->Init(GetUI(), globalOperations);
 }
 
 void QtMainWindow::SetupActions()
@@ -1396,7 +1475,7 @@ void QtMainWindow::ExportTriggered()
 void QtMainWindow::OnImportSpeedTreeXML()
 {
 #ifdef __DAVAENGINE_SPEEDTREE__
-    SpeedTreeImportDialog importDialog(this);
+    SpeedTreeImportDialog importDialog(globalOperations, this);
     importDialog.exec();
 #endif //__DAVAENGINE_SPEEDTREE__
 }
@@ -1504,7 +1583,7 @@ void QtMainWindow::OnEnableDisableShadows(bool enable)
 
 void QtMainWindow::OnReloadTextures()
 {
-    SetGPUFormat(GetGPUFormat());
+    SetGPUFormat(settings::GetGPUFormat());
 }
 
 void QtMainWindow::OnReloadTexturesTriggered(QAction* reloadAction)
@@ -1645,7 +1724,7 @@ void QtMainWindow::OnUnlockTransform()
 
 void QtMainWindow::OnCenterPivotPoint()
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = GetCurrentScene();
     if (nullptr != curScene)
     {
         curScene->modifSystem->MovePivotCenter(curScene->selectionSystem->GetSelection());
@@ -1654,16 +1733,21 @@ void QtMainWindow::OnCenterPivotPoint()
 
 void QtMainWindow::OnZeroPivotPoint()
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = GetCurrentScene();
     if (nullptr != curScene)
     {
         curScene->modifSystem->MovePivotZero(curScene->selectionSystem->GetSelection());
     }
 }
 
-void QtMainWindow::OnMaterialEditor()
+void QtMainWindow::OnMaterialEditor(DAVA::NMaterial* material)
 {
-    MaterialEditor::Instance()->show();
+    MaterialEditor* editor = MaterialEditor::Instance();
+    editor->show();
+    if (material != nullptr)
+    {
+        editor->SelectMaterial(material);
+    }
 }
 
 void QtMainWindow::OnTextureBrowser()
@@ -2006,7 +2090,7 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2* scene)
 
 void QtMainWindow::LoadGPUFormat()
 {
-    int curGPU = GetGPUFormat();
+    int curGPU = settings::GetGPUFormat();
 
     QList<QAction*> allActions = ui->menuTexturesForGPU->actions();
     for (int i = 0; i < allActions.size(); ++i)
@@ -2835,7 +2919,7 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
 
 void QtMainWindow::OnCustomQuality()
 {
-    QualitySwitcher::ShowDialog();
+    QualitySwitcher::ShowDialog(globalOperations);
 }
 
 void QtMainWindow::UpdateConflictingActionsState(bool enable)
@@ -2906,7 +2990,8 @@ void QtMainWindow::OnAddPathEntity()
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
-    if (GetGPUFormat() != DAVA::GPU_ORIGIN)
+    DAVA::eGPUFamily gpuFormat = settings::GetGPUFormat();
+    if (gpuFormat != DAVA::GPU_ORIGIN)
     {
         int answer = ShowQuestion("Inappropriate texture format",
                                   "Landscape editing is only allowed in original texture format.\nDo you want to reload textures in original format?",
@@ -2919,7 +3004,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
         OnReloadTexturesTriggered(ui->actionReloadPNG);
     }
 
-    return (GetGPUFormat() == DAVA::GPU_ORIGIN);
+    return gpuFormat == DAVA::GPU_ORIGIN;
 }
 
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
@@ -3012,7 +3097,7 @@ void QtMainWindow::OnReloadShaders()
 {
     DAVA::ShaderDescriptorCache::RelaoadShaders();
 
-    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+    SceneTabWidget* tabWidget = GetSceneWidget();
     for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
     {
         SceneEditor2* sceneEditor = tabWidget->GetTabScene(tab);
@@ -3260,4 +3345,63 @@ bool QtMainWindow::ParticlesArePacking() const
 {
     DVASSERT(spritesPacker);
     return spritesPacker->IsRunning();
+}
+
+void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
+{
+    switch (id)
+    {
+    case GlobalOperations::OpenScene:
+        OpenScene(args.Cast<DAVA::String>().c_str());
+        break;
+    case GlobalOperations::SetNameAsFilter:
+        GetUI()->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
+        break;
+    case GlobalOperations::HideScenePreview:
+        GetSceneWidget()->HideScenePreview();
+        break;
+    case GlobalOperations::ShowScenePreview:
+        GetSceneWidget()->ShowScenePreview(args.Cast<DAVA::String>().c_str());
+        break;
+    case GlobalOperations::ShowMaterial:
+        OnMaterialEditor(args.Cast<DAVA::NMaterial*>());
+        break;
+    case GlobalOperations::ReloadTexture:
+        OnReloadTextures();
+        break;
+    default:
+        DVASSERT_MSG(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)));
+        break;
+    }
+}
+
+QWidget* QtMainWindow::GetGlobalParentWidget() const
+{
+    return const_cast<QtMainWindow*>(this);
+}
+
+void QtMainWindow::ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min /*= 0*/, DAVA::uint32 max /*= 100*/)
+{
+    WaitStart(QString::fromStdString(tittle), QString::fromStdString(message), min, max);
+}
+
+bool QtMainWindow::IsWaitDialogVisible() const
+{
+    return IsWaitDialogOnScreen();
+}
+
+void QtMainWindow::HideWaitDialog()
+{
+    WaitStop();
+}
+
+void QtMainWindow::ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor)
+{
+    SceneTabWidget* tabWidget = GetSceneWidget();
+    for (int i = 0; i < tabWidget->GetTabCount(); ++i)
+    {
+        SceneEditor2* sceneEditor = tabWidget->GetTabScene(i);
+        DVASSERT(sceneEditor);
+        functor(sceneEditor);
+    }
 }

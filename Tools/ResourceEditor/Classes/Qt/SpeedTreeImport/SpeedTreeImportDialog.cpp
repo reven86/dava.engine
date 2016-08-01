@@ -9,12 +9,14 @@
 #include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "GlobalOperations.h"
 
 using namespace DAVA;
 
-SpeedTreeImportDialog::SpeedTreeImportDialog(QWidget* parent /*= 0*/)
+SpeedTreeImportDialog::SpeedTreeImportDialog(std::shared_ptr<GlobalOperations> globlaOperations_, QWidget* parent /*= 0*/)
     : QDialog(parent)
     , ui(new Ui::QtTreeImportDialog)
+    , globalOperations(globlaOperations_)
 {
     ui->setupUi(this);
 
@@ -63,14 +65,13 @@ void SpeedTreeImportDialog::OnOk()
     }
 
     //import all trees
-    QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait...");
-
-    for (size_t i = 0; i < xmlFiles.size(); ++i)
     {
-        SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);
+        WaitDialogGuard guard(globalOperations, "Importing tree", "Please wait...");
+        for (size_t i = 0; i < xmlFiles.size(); ++i)
+        {
+            SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);
+        }
     }
-
-    QtMainWindow::Instance()->WaitStop();
 
     //make info message
     QString message("SpeedTree models: \n");
@@ -85,7 +86,7 @@ void SpeedTreeImportDialog::OnOk()
     {
         for (size_t i = 0; i < outFiles.size(); ++i)
         {
-            QtMainWindow::Instance()->OpenScene(outFiles[i].GetAbsolutePathname().c_str());
+            globalOperations->CallAction(GlobalOperations::OpenScene, outFiles[i].GetAbsolutePathname());
         }
     }
 #endif
@@ -97,7 +98,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
     if (xmlFiles.size())
         dialogPath = QString(xmlFiles[0].GetDirectory().GetAbsolutePathname().c_str());
 
-    QStringList selectedFiles = FileDialog::getOpenFileNames(QtMainWindow::Instance(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
+    QStringList selectedFiles = FileDialog::getOpenFileNames(globalOperations->GetGlobalParentWidget(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
     if (!selectedFiles.size())
         return;
 
@@ -118,7 +119,7 @@ void SpeedTreeImportDialog::OnSc2Select()
     if (!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 
-    QString selectedPath = FileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select .sc2 file", dialogPath);
+    QString selectedPath = FileDialog::getExistingDirectory(globalOperations->GetGlobalParentWidget(), "Select .sc2 file", dialogPath);
     if (selectedPath.isEmpty())
         return;
 

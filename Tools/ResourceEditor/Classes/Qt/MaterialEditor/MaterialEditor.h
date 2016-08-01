@@ -124,6 +124,7 @@ private:
     class PropertiesBuilder;
 
     Ui::MaterialEditor* ui = nullptr;
+    SceneEditor2* activeScene = nullptr;
 
     QtPosSaver posSaver;
     QList<DAVA::NMaterial*> curMaterials;

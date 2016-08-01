@@ -1,6 +1,8 @@
 #ifndef __LIBRARY_WIDGET_H__
 #define __LIBRARY_WIDGET_H__
 
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
+
 #include "Render/RenderBase.h"
 
 #include <QWidget>
@@ -40,6 +42,7 @@ protected:
     }
 };
 
+class GlobalOperations;
 class LibraryWidget : public QWidget
 {
     Q_OBJECT
@@ -54,7 +57,7 @@ public:
     LibraryWidget(QWidget* parent = 0);
     ~LibraryWidget();
 
-    void SetupSignals();
+    void SetupSignals(std::shared_ptr<GlobalOperations> globalOperations);
 
 protected slots:
 
@@ -73,7 +76,6 @@ protected slots:
     void OnAddModel();
     void OnEditModel();
     void OnConvertDae();
-    void OnEditTextureDescriptor();
     void OnRevealAtFolder();
 
     void OnTreeDragStarted();
@@ -107,6 +109,8 @@ private:
 
     eViewMode viewMode;
     int curTypeIndex;
+    ActiveSceneHolder sceneHolder;
+    std::shared_ptr<GlobalOperations> globalOperations = nullptr;
 };
 
 #endif // __LIBRARY_WIDGET_H__
