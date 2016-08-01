@@ -41,9 +41,11 @@ void EditorVegetationSystem::RemoveEntity(DAVA::Entity* entity)
 
 void EditorVegetationSystem::GetActiveVegetation(DAVA::Vector<DAVA::VegetationRenderObject*>& activeVegetationObjects)
 {
+    static const DAVA::uint32 VISIBILITY_CRITERIA = DAVA::RenderObject::VISIBLE | DAVA::RenderObject::VISIBLE_QUALITY;
+
     for (DAVA::VegetationRenderObject* ro : vegetationObjects)
     {
-        if (ro->GetFlags() & DAVA::RenderObject::VISIBLE_QUALITY)
+        if ((ro->GetFlags() & VISIBILITY_CRITERIA) == VISIBILITY_CRITERIA)
         {
             activeVegetationObjects.push_back(ro);
         }

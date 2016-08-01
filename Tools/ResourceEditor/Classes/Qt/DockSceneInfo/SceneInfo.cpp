@@ -895,7 +895,7 @@ void SceneInfo::RefreshVegetationInfoSection()
         else
         {
             QString dummy;
-            if (activeObjectsSize != 0)
+            if (activeObjectsSize > 1)
             {
                 dummy = "error";
             }
