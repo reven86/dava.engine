@@ -43,7 +43,7 @@ void AssertTest::UnloadResources()
     countdownText.Set(nullptr);
 }
 
-void AssertTest::Update(float32 timeElapsed)
+void AssertTest::Update(DAVA::float32 timeElapsed)
 {
     if (timeOut > 0.f)
     {
