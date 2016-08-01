@@ -15,14 +15,25 @@ namespace AssetCache
 {
 class CachedItemValue;
 
+enum class IncorrectPacketType
+{
+    UNDEFINED_DATA,
+    UNSUPPORTED_VERSION,
+    UNEXPECTED_PACKET
+};
+
 class ClientNetProxyListener
 {
 public:
     virtual ~ClientNetProxyListener() = default;
 
-    virtual void OnAssetClientStateChanged(){};
+    virtual void OnClientProxyStateChanged(){};
     virtual void OnAddedToCache(const CacheItemKey& key, bool added){};
     virtual void OnReceivedFromCache(const CacheItemKey& key, const CachedItemValue& value){};
+    virtual void OnRemovedFromCache(const CacheItemKey& key, bool removed){};
+    virtual void OnCacheCleared(bool cleared){};
+    virtual void OnServerStatusReceived(){};
+    virtual void OnIncorrectPacketReceived(IncorrectPacketType){};
 };
 
 class ClientNetProxy : public DAVA::Net::IChannelListener
@@ -39,9 +50,13 @@ public:
 
     bool ChannelIsOpened() const;
 
-    bool AddToCache(const CacheItemKey& key, const CachedItemValue& value);
-    bool RequestFromCache(const CacheItemKey& key);
-    bool WarmingUp(const CacheItemKey& key);
+    // requests to sent on server
+    bool RequestServerStatus();
+    bool RequestAddData(const CacheItemKey& key, const CachedItemValue& value);
+    bool RequestData(const CacheItemKey& key);
+    bool RequestWarmingUp(const CacheItemKey& key);
+    bool RequestRemoveData(const CacheItemKey& key);
+    bool RequestClearCache();
 
     Connection* GetConnection() const;
 

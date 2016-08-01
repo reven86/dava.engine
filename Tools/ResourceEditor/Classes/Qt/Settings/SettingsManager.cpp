@@ -37,9 +37,9 @@ void SettingsManager::Init()
     CreateValue(Settings::General_ReloadParticlesOnPojectOpening, DAVA::VariantType(true));
     CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
     CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(true));
-    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT))
-                                                      ,
+    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT)),
                 DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
+    CreateValue(Settings::General_ShowErrorDialog, DAVA::VariantType(true));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_SwitchColor1, DAVA::VariantType(DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f)));
@@ -53,6 +53,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_LODEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.33f, 0.56f, 0.97f, 1.0f)));
     CreateValue(Settings::General_LODEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.62f, 0.75f, 0.98f, 1.0f)));
     CreateValue(Settings::General_LODEditor_InactiveColor, DAVA::VariantType(DAVA::Color(0.59f, 0.59f, 0.59f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_FitSliders, DAVA::VariantType(false));
 
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));

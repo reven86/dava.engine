@@ -14,6 +14,7 @@ public:
     static const DAVA::FastName General_PreviewEnabled;
     static const DAVA::FastName General_OpenByDBClick;
     static const DAVA::FastName General_CompressionQuality;
+    static const DAVA::FastName General_ShowErrorDialog;
 
     static const DAVA::FastName General_MaterialEditor_SwitchColor0;
     static const DAVA::FastName General_MaterialEditor_SwitchColor1;
@@ -27,6 +28,7 @@ public:
     static const DAVA::FastName General_LODEditor_LodColor2;
     static const DAVA::FastName General_LODEditor_LodColor3;
     static const DAVA::FastName General_LODEditor_InactiveColor;
+    static const DAVA::FastName General_LODEditor_FitSliders;
 
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;

@@ -112,6 +112,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
     DVASSERT(DAVA::Core::Instance()->GetOptions()->IsKeyExists("renderer"));
     rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
+
     if (rhiRenderer == rhi::RHI_GLES2)
     {
         renderView = [renderViewController createGLView];
