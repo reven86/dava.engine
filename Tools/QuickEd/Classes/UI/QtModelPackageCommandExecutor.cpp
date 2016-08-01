@@ -329,8 +329,6 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
     {
         if (node->CanMoveTo(dest, destIndex))
             nodesToMove.push_back(node);
-        //        if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
-        //            nodesToMove.push_back(node);
     }
     Vector<ControlNode*> movedNodes;
     movedNodes.reserve(nodesToMove.size());
