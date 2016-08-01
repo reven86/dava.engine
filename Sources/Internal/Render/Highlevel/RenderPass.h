@@ -44,7 +44,7 @@ protected:
     void DrawLayers(Camera* camera);
     void DrawDebug(Camera* camera, RenderSystem* renderSystem);
 
-    void BeginRenderPass();
+    bool BeginRenderPass();
     void EndRenderPass();
 
     Vector<RenderLayer*> renderLayers;
@@ -53,6 +53,14 @@ protected:
 
     rhi::HPacketList packetList;
     rhi::HRenderPass renderPass;
+
+#ifdef __DAVAENGINE_RENDERSTATS__
+
+    void ProcessVisibilityQuery();
+
+    Deque<rhi::HQueryBuffer> queryBuffers;
+
+#endif
 
 public:
     INTROSPECTION(RenderPass,

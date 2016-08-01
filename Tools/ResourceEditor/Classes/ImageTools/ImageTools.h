@@ -12,20 +12,16 @@
 
 struct Channels
 {
-    DAVA::Image* red;
-    DAVA::Image* green;
-    DAVA::Image* blue;
-    DAVA::Image* alpha;
+    DAVA::ScopedPtr<DAVA::Image> red;
+    DAVA::ScopedPtr<DAVA::Image> green;
+    DAVA::ScopedPtr<DAVA::Image> blue;
+    DAVA::ScopedPtr<DAVA::Image> alpha;
 
-    Channels(DAVA::Image* _red = NULL, DAVA::Image* _green = NULL, DAVA::Image* _blue = NULL, DAVA::Image* _alpha = NULL)
-        :
-        red(_red)
-        ,
-        green(_green)
-        ,
-        blue(_blue)
-        ,
-        alpha(_alpha)
+    Channels(const DAVA::ScopedPtr<DAVA::Image>& red_, const DAVA::ScopedPtr<DAVA::Image>& green_, const DAVA::ScopedPtr<DAVA::Image>& blue_, const DAVA::ScopedPtr<DAVA::Image>& alpha_)
+        : red(red_)
+        , green(green_)
+        , blue(blue_)
+        , alpha(alpha_)
     {
     }
 
@@ -47,8 +43,6 @@ struct Channels
         return (red->width == green->width && red->width == blue->width && red->width == alpha->width) &&
         (red->height == green->height && red->height == blue->height && red->height == alpha->height);
     }
-
-    void ReleaseImages();
 };
 
 namespace ImageTools

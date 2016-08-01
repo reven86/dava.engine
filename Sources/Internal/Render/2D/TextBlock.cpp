@@ -1012,23 +1012,41 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset /* = NULL*/)
 TextBlock* TextBlock::Clone()
 {
     TextBlock* block = new TextBlock();
-
-    block->SetScale(scale);
-    block->SetRectSize(rectSize);
-    block->SetMultiline(GetMultiline(), GetMultilineBySymbol());
-    block->SetAlign(align);
-    block->SetFittingOption(fittingType);
-    block->SetUseRtlAlign(useRtlAlign);
-    block->SetForceBiDiSupportEnabled(forceBiDiSupport);
-    block->SetMeasureEnable(needMeasureLines);
-
-    if (GetFont())
-    {
-        block->SetFont(GetFont());
-    }
-    block->SetText(GetText(), requestedSize);
-
+    block->CopyDataFrom(this);
     return block;
+}
+
+void TextBlock::CopyDataFrom(TextBlock* block)
+{
+    DVASSERT(block != nullptr);
+
+    SetScale(block->scale);
+    SetRectSize(block->rectSize);
+    SetMultiline(block->GetMultiline(), block->GetMultilineBySymbol());
+    SetAlign(block->align);
+    SetFittingOption(block->fittingType);
+    SetUseRtlAlign(block->useRtlAlign);
+    SetForceBiDiSupportEnabled(block->forceBiDiSupport);
+    SetMeasureEnable(block->needMeasureLines);
+
+    if (block->font != nullptr)
+    {
+        if (block->textBlockRender != nullptr)
+        {
+            SafeRelease(font);
+            SafeRelease(textBlockRender);
+
+            font = SafeRetain(block->font);
+            textBlockRender = block->textBlockRender->Clone();
+            textBlockRender->SetTextBlock(this);
+        }
+        else
+        {
+            SetFont(block->font);
+        }
+    }
+
+    SetText(block->GetText(), block->requestedSize);
 }
 
 DAVA::float32 TextBlock::GetFontSize()

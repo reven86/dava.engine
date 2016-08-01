@@ -3,7 +3,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
@@ -89,8 +89,10 @@ void EnumerateRenderObjectsRecursive(Entity* entity, Vector<RenderObject*>& rend
             RenderObject* ro = rc->GetRenderObject();
             if (ro != nullptr)
             {
-                DVASSERT(std::find(renderObjects.begin(), renderObjects.end(), ro) == renderObjects.end());
-                renderObjects.push_back(ro);
+                if (std::find(renderObjects.begin(), renderObjects.end(), ro) == renderObjects.end())
+                {
+                    renderObjects.push_back(ro);
+                }
             }
         }
     }
@@ -113,10 +115,9 @@ void EnumerateRenderObjects(const SelectableGroup& group, Vector<RenderObject*>&
 
     renderObjects.reserve(group.GetSize());
 
-    const bool ignoreChildren = SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool();
+    const bool recursive = SettingsManager::GetValue(Settings::Internal_LODEditor_Recursive).AsBool();
     for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
-        bool recursive = entity->GetSolid() || !ignoreChildren;
         EnumerateRenderObjectsRecursive(entity, renderObjects, recursive);
     }
 }

@@ -1089,10 +1089,6 @@
 		02E7CB601BD624A7002F026D /* MipmapReplacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */; };
 		02E7CB611BD624A7002F026D /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4081BD624A5002F026D /* MipmapReplacer.h */; };
 		02E7CB621BD624A7002F026D /* MipmapReplacer.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C4081BD624A5002F026D /* MipmapReplacer.h */; };
-		02E7CB631BD624A7002F026D /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */; };
-		02E7CB641BD624A7002F026D /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */; };
-		02E7CB651BD624A7002F026D /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40A1BD624A5002F026D /* OcclusionQuery.h */; };
-		02E7CB661BD624A7002F026D /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40A1BD624A5002F026D /* OcclusionQuery.h */; };
 		02E7CB671BD624A7002F026D /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */; };
 		02E7CB681BD624A7002F026D /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */; };
 		02E7CB691BD624A7002F026D /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */; };
@@ -2099,6 +2095,7 @@
 		8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C0105D11577993400E0B939 /* libmongodb_ios.a */; };
 		87464EF71C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87464EF61C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp */; };
 		87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */; };
+		87C0F1261C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */; };
 		9A011C77BA90F38DCDB7F4E6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */; };
 		A6B5D960185600050011D172 /* IntrospectionDynamic.h in Headers */ = {isa = PBXBuildFile; fileRef = A6B5D95E185600050011D172 /* IntrospectionDynamic.h */; };
@@ -2676,8 +2673,6 @@
 		02E7C4061BD624A5002F026D /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MipmapReplacer.cpp; sourceTree = "<group>"; };
 		02E7C4081BD624A5002F026D /* MipmapReplacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MipmapReplacer.h; sourceTree = "<group>"; };
-		02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
-		02E7C40A1BD624A5002F026D /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
 		02E7C40D1BD624A5002F026D /* PVRDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRDefines.h; sourceTree = "<group>"; };
@@ -3200,6 +3195,7 @@
 		7CF246E71C103C5F00A821DC /* UIScreenManagerDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScreenManagerDefault.h; sourceTree = "<group>"; };
 		87464EF61C2AAEF00001498A /* rhi_PerfQuerySetGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rhi_PerfQuerySetGLES2.cpp; sourceTree = "<group>"; };
 		87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = rhi_PerfQuerySetMetal.mm; sourceTree = "<group>"; };
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		A6B5D95D185600050011D172 /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IntrospectionDynamic.cpp; path = ../../Sources/Internal/Base/IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		A6B5D95E185600050011D172 /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IntrospectionDynamic.h; path = ../../Sources/Internal/Base/IntrospectionDynamic.h; sourceTree = "<group>"; };
@@ -3940,8 +3936,6 @@
 				02E7C3FA1BD624A5002F026D /* Material */,
 				02E7C4071BD624A5002F026D /* MipmapReplacer.cpp */,
 				02E7C4081BD624A5002F026D /* MipmapReplacer.h */,
-				02E7C4091BD624A5002F026D /* OcclusionQuery.cpp */,
-				02E7C40A1BD624A5002F026D /* OcclusionQuery.h */,
 				02E7C40B1BD624A5002F026D /* PixelFormatDescriptor.cpp */,
 				02E7C40C1BD624A5002F026D /* PixelFormatDescriptor.h */,
 				02E7C40D1BD624A5002F026D /* PVRDefines.h */,
@@ -4244,6 +4238,7 @@
 		02E7C4711BD624A6002F026D /* Metal */ = {
 			isa = PBXGroup;
 			children = (
+				87C0F1251C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm */,
 				02E7C4721BD624A6002F026D /* _metal.h */,
 				02E7C4731BD624A6002F026D /* rhi_CommandBufferMetal.mm */,
 				02E7C4741BD624A6002F026D /* rhi_DepthStencilStateMetal.mm */,
@@ -5078,7 +5073,6 @@
 				02E7C8341BD624A7002F026D /* MemoryProfiler.h in Headers */,
 				02E7CADE1BD624A7002F026D /* RenderObject.h in Headers */,
 				02E7C8181BD624A7002F026D /* Sphere.h in Headers */,
-				02E7CB661BD624A7002F026D /* OcclusionQuery.h in Headers */,
 				02E7CD501BD624A7002F026D /* BaseProcessSystem.h in Headers */,
 				02E7CD601BD624A7002F026D /* DebugRenderSystem.h in Headers */,
 				02E7CF761BD639E1002F026D /* Downloader.h in Headers */,
@@ -6284,7 +6278,6 @@
 				02E7C8AC1BD624A7002F026D /* MMBigDataTransferService.cpp in Sources */,
 				02E7CF3F1BD639A4002F026D /* Profiler.cpp in Sources */,
 				02E7C6241BD624A6002F026D /* AutotestingSystemLua.cpp in Sources */,
-				02E7CB641BD624A7002F026D /* OcclusionQuery.cpp in Sources */,
 				02E7C62A1BD624A6002F026D /* dlmalloc.c in Sources */,
 				02E7CAB21BD624A7002F026D /* CullingSystem.cpp in Sources */,
 				02E7CAC01BD624A7002F026D /* Landscape.cpp in Sources */,
@@ -6765,7 +6758,6 @@
 				6EC468251C58E58E0083C264 /* VisibilityCheckComponent.cpp in Sources */,
 				02E7CF3E1BD639A4002F026D /* Profiler.cpp in Sources */,
 				02E7C6231BD624A6002F026D /* AutotestingSystemLua.cpp in Sources */,
-				02E7CB631BD624A7002F026D /* OcclusionQuery.cpp in Sources */,
 				0367CFF51C4FDC8C004D42A0 /* Reachability.mm in Sources */,
 				02E7C6291BD624A6002F026D /* dlmalloc.c in Sources */,
 				02E7CAB11BD624A7002F026D /* CullingSystem.cpp in Sources */,
@@ -6816,6 +6808,7 @@
 				02E7C6AF1BD624A6002F026D /* Observable.cpp in Sources */,
 				02E7CAE51BD624A7002F026D /* RenderSystem.cpp in Sources */,
 				02E7CD9D1BD624A7002F026D /* UpdateSystem.cpp in Sources */,
+				87C0F1261C75F04B007C1093 /* rhi_PerfQuerySetMetal.mm in Sources */,
 				02E7CD5D1BD624A7002F026D /* DebugRenderSystem.cpp in Sources */,
 				02E7C73D1BD624A7002F026D /* Component.cpp in Sources */,
 				02E7C7591BD624A7002F026D /* FilePathObjective.mm in Sources */,

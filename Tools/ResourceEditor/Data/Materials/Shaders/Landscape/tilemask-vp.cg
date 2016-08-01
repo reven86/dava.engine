@@ -219,7 +219,7 @@ VPROG_BEGIN
 #if TILEMASK
     VP_OUT(texCoordTiled) = VP_OUT(texCoord) * textureTiling.xy;
 #endif
-	
+    
 #if VERTEX_FOG
 	
 	float3 view_position = mul( float4(vx_position.xyz,1.0), worldViewMatrix ).xyz;

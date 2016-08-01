@@ -16,4 +16,12 @@ Color ClampToUnityRange(Color color)
 
     return color;
 }
+
+Color MakeGrayScale(const Color& rgb)
+{
+    // http://www.tannerhelland.com/3643/grayscale-image-algorithm-vb6/
+
+    float32 channel = rgb.r * 0.3f + rgb.g * 0.59f + rgb.b * 0.11f;
+    return Color(channel, channel, channel, rgb.a);
+}
 }

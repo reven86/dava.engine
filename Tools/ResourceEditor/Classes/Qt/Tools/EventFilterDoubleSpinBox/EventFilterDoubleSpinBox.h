@@ -1,10 +1,10 @@
-#ifndef __EVENT_FILTER_DOUBLE_SPIN_BOX_H__
-#define __EVENT_FILTER_DOUBLE_SPIN_BOX_H__
+#pragma once
 
 #include <QObject>
 #include <QDoubleSpinBox>
 #include <QWidget>
 #include <QKeyEvent>
+#include <QPalette>
 
 class EventFilterDoubleSpinBox : public QDoubleSpinBox
 {
@@ -13,8 +13,13 @@ class EventFilterDoubleSpinBox : public QDoubleSpinBox
 public:
     explicit EventFilterDoubleSpinBox(QWidget* parent = 0);
 
-private:
-    void keyPressEvent(QKeyEvent* event);
-};
+    QValidator::State validate(QString& input, int& pos) const override;
+    double valueFromText(const QString& text) const override;
+    QString textFromValue(double val) const override;
 
-#endif /* defined(__EVENT_FILTER_DOUBLE_SPIN_BOX_H__) */
+    QPalette GetTextPalette() const;
+    void SetTextPalette(const QPalette& palette);
+
+private:
+    void keyPressEvent(QKeyEvent* event) override;
+};
