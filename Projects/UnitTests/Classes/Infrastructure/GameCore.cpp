@@ -82,7 +82,7 @@ void GameCore::OnAppStarted()
     }
     else
     {
-#if defined(__DAVAENGINE_MACOS__)
+#if defined( TEST_COVERAGE )
         RefPtr<File> covergeFile(File::Create( CoveredFileName, File::CREATE | File::WRITE ) );
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
@@ -194,26 +194,34 @@ void GameCore::ProcessTests(float32 timeElapsed)
             }
         }
         
-#if defined(__DAVAENGINE_MACOS__)
+#if defined( TEST_COVERAGE )
         RefPtr<File> covergeFile(File::Create(CoveredFileName, File::APPEND | File::WRITE));
         TEST_VERIFY(covergeFile);
         
+        auto toJson= [&covergeFile] (DAVA::String item)  { covergeFile->Write( item.c_str(), item.size() ); };
+
+        toJson( "{ \n    \"ProjectFolders\": \"" + DAVA::String( DAVA_FOLDERS ) + "\",\n" );
+        
+        toJson( "    \"Coverage\":  {\n" );
+        
         for (const auto& x : map)
         {
-            DAVA::String line_head = x.first + " :";
-            covergeFile->Write( line_head.c_str(), line_head.size() );
+            toJson( "         \"" + x.first + "\": \"" );
             
             const Vector<String>& v = x.second;
             for (const auto& s : v)
             {
-                DAVA::String line = ' ' + s;
-                covergeFile->Write( line.c_str(), line.size() );
+                toJson( s + ( &s != &*v.rbegin() ?  " " : "" ) );
             }
             
-            covergeFile->Write( "\n", 1 );
-            
+            toJson( x.first != map.rbegin()->first ? "\",\n" : "\"\n" );
         }
-#endif // __DAVAENGINE_MACOS__
+        
+        toJson( "     }\n" );
+        toJson( "}\n" );
+
+        
+#endif // TEST_COVERAGE
         
         
         FinishTests();

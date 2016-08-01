@@ -693,7 +693,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     endif()
 
     add_custom_target ( COVERAGE_${PROJECT_NAME}  
-            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_html_report.py
+            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_report.py
                     --pathExecut    ${EXECUT_FILE}
                     --pathBuild     ${CMAKE_BINARY_DIR}
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
@@ -702,6 +702,13 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
             COMMAND open -a Safari  ${CMAKE_BINARY_DIR}/Coverage/index.html
         )
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
+
+    string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )
+    string(REPLACE "\"" "" DAVA_FOLDERS "${DAVA_FOLDERS}" )
+
+    add_definitions( -DTEST_COVERAGE )
+    add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
+
 
 endif()
 
