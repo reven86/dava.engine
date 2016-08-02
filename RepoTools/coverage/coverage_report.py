@@ -9,7 +9,6 @@ import json
 import re
 
 CoverageMinimum    = 80.0
-CoverageTmpDirName = 'CoverageTmpData'
 
 
 class FileCover():
@@ -58,7 +57,7 @@ class CoverageReport():
         self.buildConfig            = arg.buildConfig
         self.notRunExecutable       = arg.notRunExecutable
 
-        self.coverageTmpPath        = os.path.join( arg.pathBuild, CoverageTmpDirName )
+        self.coverageTmpPath        = os.path.join( arg.pathBuild, 'CoverageTmpData' )
     
         self.pathExecutDir          = os.path.dirname ( self.pathExecut )
         self.executName             = os.path.basename( self.pathExecut )
@@ -239,11 +238,6 @@ class CoverageReport():
                         except IOError as err:
                             sys.stdout.write(err.message)
                             sys.stdout.flush()
-
-    # ##teamcity[testStarted name='TestReflectedCollections.SetTest']
-    # [info] start test 
-    # TestReflectedCollections.SetTest
-    # ##teamcity[testFinished name='TestReflectedCollections.SetTest']
 
         for test in testsCoverage:
             for fileCover in testsCoverage[ test ]:

@@ -705,7 +705,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
 
-            #COMMAND open ${CMAKE_BINARY_DIR}/Coverage/index.html
+            COMMAND open ${CMAKE_BINARY_DIR}/Coverage/index.html
         )
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
