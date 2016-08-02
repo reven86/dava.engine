@@ -9,7 +9,7 @@ const DAVA::uint32 PACKET_WAIT_TIMEOUT_MS = 5 * 1000;
 const DAVA::String CRLF = "\r\n";
 const DAVA::String DOUBLE_CRLF = "\r\n\r\n";
 
-HttpRequest::Method HttpMethodFromString(DAVA::String& s)
+HttpRequest::Method HttpMethodFromString(const DAVA::String& s)
 {
     static const DAVA::String strGet = "GET";
     if (s == strGet)
@@ -31,19 +31,22 @@ HttpServer::~HttpServer()
 
 void HttpServer::AddListener(HttpServerListener* listener)
 {
-    listeners.insert(listener);
+    auto insertRes = listeners.insert(listener);
+    DVASSERT_MSG(insertRes.second == true, "Listener was already inserted");
 }
 
 void HttpServer::RemoveListener(HttpServerListener* listener)
 {
-    listeners.erase(listener);
+    size_t erasedCount = listeners.erase(listener);
+    DVASSERT_MSG(erasedCount == 1, "Listener was already removed");
 }
 
 void HttpServer::Start(const DAVA::Net::Endpoint& endpoint)
 {
     DVASSERT(started == false);
+    DVASSERT(serverTransportHolder == nullptr);
     serverTransportHolder = new ServerTransportHolder(loop, endpoint, HttpServerDetail::PACKET_WAIT_TIMEOUT_MS);
-    serverTransportHolder->SetListener(this);
+    serverTransportHolder->SetOwner(this);
     serverTransportHolder->Start();
     started = true;
 }
@@ -58,7 +61,7 @@ void HttpServer::Stop()
 
         if (serverTransportHolder)
         {
-            serverTransportHolder->SetListener(nullptr);
+            serverTransportHolder->SetOwner(nullptr);
             serverTransportHolder->Stop();
             serverTransportHolder = nullptr;
         }
@@ -127,7 +130,7 @@ void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const
         }
         else
         {
-            DAVA::Logger::Warning("Data receiving is unexpected for clientID=%d", session.clientID);
+            DAVA::Logger::Error("Data receiving is unexpected for clientID=%d", session.clientID);
             RemoveClient(clt);
             return;
         }
@@ -152,7 +155,7 @@ void HttpServer::OnTransportSendComplete(DAVA::Net::IClientTransport* clt)
         }
         else
         {
-            DAVA::Logger::Warning("Unexpected send complete is received for current state %d", session.state);
+            DAVA::Logger::Error("Unexpected send complete is received for current state %d", session.state);
             RemoveClient(clt);
             return;
         }
@@ -218,7 +221,7 @@ void HttpServer::OnDataChunkAdded(ClientSession& session)
     }
     default:
     {
-        DAVA::Logger::Warning("Unexpected state: %d", session.state);
+        DAVA::Logger::Error("Unexpected state: %d", session.state);
         RemoveClient(session.clientID);
         return;
     }
@@ -253,7 +256,7 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
 
     if (lines.empty())
     {
-        DAVA::Logger::Warning("Can't detect any lines in request string '%s'", session.data.c_str());
+        DAVA::Logger::Error("Can't detect any lines in request string '%s'", session.data.c_str());
         session.state = ClientSession::Error;
         return;
     }
@@ -267,16 +270,16 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
     if (numOfTokens > 0)
     {
         session.request.method = HttpServerDetail::HttpMethodFromString(startingLineTokens[0]);
-    }
 
-    if (numOfTokens > 1)
-    {
-        session.request.uri = startingLineTokens[1];
-    }
+        if (numOfTokens > 1)
+        {
+            session.request.uri = startingLineTokens[1];
 
-    if (numOfTokens > 2)
-    {
-        session.request.version = startingLineTokens[2];
+            if (numOfTokens > 2)
+            {
+                session.request.version = startingLineTokens[2];
+            }
+        }
     }
 
     for (auto linesIt = lines.begin() + 1; linesIt != lines.end(); ++linesIt)
@@ -342,7 +345,7 @@ void HttpServer::SendResponse(ClientID clientId, HttpResponse& resp)
         }
         else
         {
-            DAVA::Logger::Warning("Unexpected send complete is received for current state %d", session.state);
+            DAVA::Logger::Error("Sending response is unexpected for current state %d", session.state);
             RemoveClient(clientId);
             return;
         }

@@ -59,7 +59,7 @@ public:
 private:
     struct ClientSession
     {
-        explicit ClientSession(ClientID clt);
+        explicit ClientSession(ClientID client);
         void Clear();
 
         enum
@@ -97,6 +97,7 @@ private:
     void RemoveAllClients();
 
     void OnDataChunkAdded(ClientSession& session);
+    void OnHeadersReceived(ClientSession& session);
     void OnRequestAssembled(ClientSession& session);
     void ParseHttpHeaders(ClientSession& session);
 

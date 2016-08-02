@@ -36,13 +36,13 @@ class ApplicationSettings : public QObject
 private:
     static const DAVA::String DEFAULT_FOLDER;
     static const DAVA::float64 DEFAULT_CACHE_SIZE_GB;
-    static const DAVA::uint32 DEFAULT_FILES_COUNT = 5;
-    static const DAVA::uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
-    static const DAVA::uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
-    static const DAVA::uint16 DEFAULT_HTTP_PORT = DAVA::AssetCache::ASSET_SERVER_HTTP_PORT;
-    static const bool DEFAULT_AUTO_START = true;
-    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
-    static const bool DEFAULT_RESTART_ON_CRASH = false;
+    static const DAVA::uint32 DEFAULT_FILES_COUNT;
+    static const DAVA::uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    static const DAVA::uint16 DEFAULT_PORT;
+    static const DAVA::uint16 DEFAULT_HTTP_PORT;
+    static const bool DEFAULT_AUTO_START;
+    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
+    static const bool DEFAULT_RESTART_ON_CRASH;
 
 public:
     void Save() const;

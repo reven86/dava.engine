@@ -11,38 +11,24 @@ class IOLoop;
 }
 }
 
-struct ServerTransportListener
-: public DAVA::Net::IServerListener
-  ,
-  public DAVA::Net::IClientListener
+struct ServerTransportListener :
+public DAVA::Net::IServerListener,
+public DAVA::Net::IClientListener
 {
-    //     // IServerListener
-    //     void OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* child) override {};
-    //     void OnTransportTerminated(DAVA::Net::IServerTransport* tr) override {};
-    //
-    //     // IClientListener
-    //     void OnTransportTerminated(DAVA::Net::IClientTransport* tr) override {};
-    //     void OnTransportConnected(DAVA::Net::IClientTransport* tr, const DAVA::Net::Endpoint& endp) override {};
-    //     void OnTransportDisconnected(DAVA::Net::IClientTransport* tr, DAVA::int32 error) override {};
-    //     void OnTransportDataReceived(DAVA::Net::IClientTransport* tr, const void* buffer, size_t length) override {};
-    //     void OnTransportSendComplete(DAVA::Net::IClientTransport* tr) override {};
-    //     void OnTransportReadTimeout(DAVA::Net::IClientTransport* tr) override {};
 };
 
-class ServerTransportHolder
-: public DAVA::Net::IServerListener
-  ,
-  public DAVA::Net::IClientListener
+class ServerTransportHolder : ServerTransportListener
 {
 public:
     ServerTransportHolder(DAVA::Net::IOLoop* aLoop, const DAVA::Net::Endpoint& aEndpoint, DAVA::uint32 readTimeout);
+    ~ServerTransportHolder() override;
 
     DAVA::int32 Start();
     void Stop();
     void Reset();
     void ReclaimClient(DAVA::Net::IClientTransport* client);
 
-    void SetListener(ServerTransportListener* listener);
+    void SetOwner(ServerTransportListener* owner);
 
 private:
     // IServerListener
@@ -60,12 +46,12 @@ private:
     void DeleteItself();
 
 private:
-    bool isStarted = false;
+    bool isWorking = false;
     DAVA::Net::TCPServerTransport serverTransport;
-    ServerTransportListener* listener = nullptr;
+    ServerTransportListener* owner = nullptr;
 };
 
-inline void ServerTransportHolder::SetListener(ServerTransportListener* listener_)
+inline void ServerTransportHolder::SetOwner(ServerTransportListener* owner_)
 {
-    listener = listener_;
+    owner = owner_;
 }

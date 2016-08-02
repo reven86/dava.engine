@@ -3,9 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 
-using namespace DAVA;
-
-RemoteServerParams::RemoteServerParams(String _ip, uint16 _port, bool _enabled)
+RemoteServerParams::RemoteServerParams(DAVA::String _ip, DAVA::uint16 _port, bool _enabled)
     : ip(_ip)
     , port(_port)
     , enabled(_enabled)
@@ -36,19 +34,26 @@ bool RemoteServerParams::operator<(const RemoteServerParams& right) const
     return ip < right.ip;
 }
 
-const String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
-const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
+const DAVA::String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
+const DAVA::float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
+const DAVA::uint32 ApplicationSettings::DEFAULT_FILES_COUNT = 5;
+const DAVA::uint32 ApplicationSettings::DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
+const DAVA::uint16 ApplicationSettings::DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+const DAVA::uint16 ApplicationSettings::DEFAULT_HTTP_PORT = DAVA::AssetCache::ASSET_SERVER_HTTP_PORT;
+const bool ApplicationSettings::DEFAULT_AUTO_START = true;
+const bool ApplicationSettings::DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
+const bool ApplicationSettings::DEFAULT_RESTART_ON_CRASH = false;
 
 void ApplicationSettings::Save() const
 {
-    static FilePath path("~doc:/AssetServer/ACS_settings.dat");
+    static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
 
-    FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
+    DAVA::FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
 
-    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
+    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::CREATE | DAVA::File::WRITE));
     if (!file)
     {
-        Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
+        DAVA::Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
 
@@ -61,13 +66,13 @@ void ApplicationSettings::Save() const
 
 void ApplicationSettings::Load()
 {
-    static FilePath path("~doc:/AssetServer/ACS_settings.dat");
+    static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
 
-    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::OPEN | DAVA::File::READ));
     if (file)
     {
         isFirstLaunch = false;
-        ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
+        DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
         archive->Load(file);
         Deserialize(archive);
     }
@@ -93,15 +98,15 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetBool("SystemStartup", launchOnSystemStartup);
     archive->SetBool("Restart", restartOnCrash);
 
-    uint32 size = static_cast<uint32>(remoteServers.size());
+    DAVA::uint32 size = static_cast<DAVA::uint32>(remoteServers.size());
     archive->SetUInt32("ServersSize", size);
 
-    uint32 index = 0;
+    DAVA::uint32 index = 0;
     for (auto& sd : remoteServers)
     {
-        archive->SetString(Format("Server_%d_ip", index), sd.ip);
-        archive->SetUInt32(Format("Server_%d_port", index), sd.port);
-        archive->SetBool(Format("Server_%d_enabled", index), sd.enabled);
+        archive->SetString(DAVA::Format("Server_%d_ip", index), sd.ip);
+        archive->SetUInt32(DAVA::Format("Server_%d_port", index), sd.port);
+        archive->SetBool(DAVA::Format("Server_%d_enabled", index), sd.enabled);
         ++index;
     }
 }
@@ -123,68 +128,68 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);
 
     auto count = archive->GetUInt32("ServersSize");
-    for (uint32 i = 0; i < count; ++i)
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
         RemoteServerParams sd;
-        sd.ip = archive->GetString(Format("Server_%d_ip", i));
-        sd.port = archive->GetUInt32(Format("Server_%d_port", i));
-        sd.enabled = archive->GetBool(Format("Server_%d_enabled", i), false);
+        sd.ip = archive->GetString(DAVA::Format("Server_%d_ip", i));
+        sd.port = archive->GetUInt32(DAVA::Format("Server_%d_port", i));
+        sd.enabled = archive->GetBool(DAVA::Format("Server_%d_enabled", i), false);
 
         remoteServers.push_back(sd);
     }
 }
 
-const FilePath& ApplicationSettings::GetFolder() const
+const DAVA::FilePath& ApplicationSettings::GetFolder() const
 {
     return folder;
 }
 
-void ApplicationSettings::SetFolder(const FilePath& _folder)
+void ApplicationSettings::SetFolder(const DAVA::FilePath& _folder)
 {
     folder = _folder;
 }
 
-const float64 ApplicationSettings::GetCacheSizeGb() const
+const DAVA::float64 ApplicationSettings::GetCacheSizeGb() const
 {
     return cacheSizeGb;
 }
 
-void ApplicationSettings::SetCacheSizeGb(const float64 size)
+void ApplicationSettings::SetCacheSizeGb(const DAVA::float64 size)
 {
     cacheSizeGb = size;
 }
 
-const uint32 ApplicationSettings::GetFilesCount() const
+const DAVA::uint32 ApplicationSettings::GetFilesCount() const
 {
     return filesCount;
 }
 
-void ApplicationSettings::SetFilesCount(const uint32 count)
+void ApplicationSettings::SetFilesCount(const DAVA::uint32 count)
 {
     filesCount = count;
 }
 
-const uint64 ApplicationSettings::GetAutoSaveTimeoutMin() const
+const DAVA::uint64 ApplicationSettings::GetAutoSaveTimeoutMin() const
 {
     return autoSaveTimeoutMin;
 }
 
-void ApplicationSettings::SetAutoSaveTimeoutMin(const uint64 timeout)
+void ApplicationSettings::SetAutoSaveTimeoutMin(const DAVA::uint64 timeout)
 {
     autoSaveTimeoutMin = timeout;
 }
 
-const uint16 ApplicationSettings::GetPort() const
+const DAVA::uint16 ApplicationSettings::GetPort() const
 {
     return listenPort;
 }
 
-void ApplicationSettings::SetPort(const uint16 val)
+void ApplicationSettings::SetPort(const DAVA::uint16 val)
 {
     listenPort = val;
 }
 
-const uint16 ApplicationSettings::GetHttpPort() const
+const DAVA::uint16 ApplicationSettings::GetHttpPort() const
 {
     return listenHttpPort;
 }
@@ -224,7 +229,7 @@ void ApplicationSettings::SetRestartOnCrash(bool val)
     restartOnCrash = val;
 }
 
-const List<RemoteServerParams>& ApplicationSettings::GetServers() const
+const DAVA::List<RemoteServerParams>& ApplicationSettings::GetServers() const
 {
     return remoteServers;
 }

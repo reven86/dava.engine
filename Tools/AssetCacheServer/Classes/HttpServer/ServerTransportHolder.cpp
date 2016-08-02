@@ -7,19 +7,25 @@ ServerTransportHolder::ServerTransportHolder(DAVA::Net::IOLoop* aLoop, const DAV
 {
 }
 
+ServerTransportHolder::~ServerTransportHolder()
+{
+    DVASSERT(isWorking == false);
+}
+
 DAVA::int32 ServerTransportHolder::Start()
 {
-    isStarted = true;
+    DVASSERT(isWorking == false);
+    isWorking = true;
     return serverTransport.Start(this);
 }
 
 void ServerTransportHolder::Stop()
 {
-    if (isStarted)
+    if (isWorking)
     {
         serverTransport.Stop();
     }
-    else if (listener == nullptr)
+    else if (owner == nullptr)
     {
         DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &ServerTransportHolder::DeleteItself));
     }
@@ -31,19 +37,19 @@ void ServerTransportHolder::Stop()
 
 void ServerTransportHolder::OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* client)
 {
-    if (listener)
-        listener->OnTransportSpawned(parent, client);
+    if (owner)
+        owner->OnTransportSpawned(parent, client);
 
     client->Start(this);
 }
 
 void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* serv)
 {
-    isStarted = false;
+    isWorking = false;
 
-    if (listener)
+    if (owner)
     {
-        IServerListener* serverListener = listener;
+        IServerListener* serverListener = owner;
         serverListener->OnTransportTerminated(serv);
     }
     else
@@ -54,15 +60,15 @@ void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* s
 
 void ServerTransportHolder::DeleteItself()
 {
-    DVASSERT(isStarted == false);
+    DVASSERT(isWorking == false);
     delete this;
 }
 
 void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IClientTransport* clt)
 {
-    if (listener)
+    if (owner)
     {
-        IClientListener* clientListener = listener;
+        IClientListener* clientListener = owner;
         clientListener->OnTransportTerminated(clt);
     }
 
@@ -71,30 +77,30 @@ void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IClientTransport* c
 
 void ServerTransportHolder::OnTransportConnected(DAVA::Net::IClientTransport* clt, const DAVA::Net::Endpoint& endp)
 {
-    if (listener)
-        listener->OnTransportConnected(clt, endp);
+    if (owner)
+        owner->OnTransportConnected(clt, endp);
 }
 
 void ServerTransportHolder::OnTransportDisconnected(DAVA::Net::IClientTransport* clt, DAVA::int32 error)
 {
-    if (listener)
-        listener->OnTransportDisconnected(clt, error);
+    if (owner)
+        owner->OnTransportDisconnected(clt, error);
 }
 
 void ServerTransportHolder::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const void* buffer, size_t length)
 {
-    if (listener)
-        listener->OnTransportDataReceived(clt, buffer, length);
+    if (owner)
+        owner->OnTransportDataReceived(clt, buffer, length);
 }
 
 void ServerTransportHolder::OnTransportSendComplete(DAVA::Net::IClientTransport* clt)
 {
-    if (listener)
-        listener->OnTransportSendComplete(clt);
+    if (owner)
+        owner->OnTransportSendComplete(clt);
 }
 
 void ServerTransportHolder::OnTransportReadTimeout(DAVA::Net::IClientTransport* clt)
 {
-    if (listener)
-        listener->OnTransportReadTimeout(clt);
+    if (owner)
+        owner->OnTransportReadTimeout(clt);
 }
