@@ -31,8 +31,6 @@
 #include "Reflection/ReflectionRegistrator.h"
 #include "Scripting/Script.h"
 
-using namespace DAVA;
-
 struct ReflClass
 {
     DAVA_DECLARE_TYPE_INITIALIZER;
@@ -96,7 +94,6 @@ function main(context)
     context:ref("floatVal"):set(3.14 * 2)
     context:ref("boolVal"):set(false)
     context:ref("stringVal"):set("New demo string")
-
     -- Test complex type DAVA::Color as userdata
     subClass:ref("colorVal"):set(context:ref("colorVal"):value())
 end

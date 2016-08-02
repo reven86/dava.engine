@@ -1,11 +1,5 @@
 #include "lua_bridge.h"
-
-extern "C"
-{
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-}
+#include "Logger/Logger.h"
 
 static DAVA::int32 lua_logger_debug(lua_State* state)
 {

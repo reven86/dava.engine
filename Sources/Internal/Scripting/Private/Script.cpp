@@ -1,4 +1,5 @@
 #include "Scripting/Script.h"
+#include "Debug/DVAssert.h"
 #include "lua_bridge.h"
 
 namespace DAVA
@@ -7,6 +8,8 @@ struct ScriptState
 {
     lua_State* lua = nullptr;
 };
+
+static const String mainFuctionName = "main";
 
 Script::Script()
 {
@@ -47,17 +50,17 @@ bool Script::LoadString(const String& script)
 bool Script::LoadFile(const FilePath& filepath)
 {
     int res = luaL_loadfile(state->lua, filepath.GetAbsolutePathname().c_str());
-    DVASSERT_MSG(res == 0, "Can't load file");
     if (res != 0)
     {
-        Logger::Error("LUA Error: %s", lua_tostring(state->lua, -1));
+        DVASSERT_MSG(false, "Can't load file");
+        Logger::Error("Lua script error: %s", lua_tostring(state->lua, -1));
         return false;
     }
     res = lua_pcall(state->lua, 0, LUA_MULTRET, 0);
-    DVASSERT_MSG(res == 0, "Can't execute script");
     if (res != 0)
     {
-        Logger::Error("LUA Error: %s", lua_tostring(state->lua, -1));
+        DVASSERT_MSG(false, "Can't execute script");
+        Logger::Error("Lua script error: %s", lua_tostring(state->lua, -1));
         return false;
     }
     return true;
@@ -65,16 +68,15 @@ bool Script::LoadFile(const FilePath& filepath)
 
 bool Script::Run(const DAVA::Reflection& context)
 {
-    lua_getglobal(state->lua, "main");
+    lua_getglobal(state->lua, mainFuctionName.c_str());
     pushReflection(state->lua, context);
-    int res = lua_pcall(state->lua, 1, 1, 0);
-
+    DAVA::int32 res = lua_pcall(state->lua, 1, 1, 0);
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't execute main()");
-        Logger::Error("LUA Error: %s", lua_tostring(state->lua, -1));
+        Logger::Error("Lua script error (%d): ", res, lua_tostring(state->lua, -1));
+        return false;
     }
-
-    return res == 0;
+    return true;
 }
 }

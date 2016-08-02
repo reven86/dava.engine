@@ -4,6 +4,13 @@
 #include "Base/Any.h"
 #include "Reflection/Reflection.h"
 
+extern "C"
+{
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
+
 struct lua_State* state;
 
 static DAVA::int32 Dava_register(lua_State* state);

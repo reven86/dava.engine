@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
+#include "Reflection/Reflection.h"
+
 namespace DAVA
 {
 struct ScriptState;
