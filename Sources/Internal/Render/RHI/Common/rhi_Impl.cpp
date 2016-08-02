@@ -121,8 +121,8 @@ void Initialize(Api api, const InitParam& param)
 
     uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
     if (api == RHI_METAL)
-        renderTreadFrameCount = 0; //no render thread for metal
-    RenderLoop::InitializeRenderThread(renderTreadFrameCount);
+        renderTreadFrameCount = 0; //no render thread for metal yet
+    RenderLoop::InitializeRenderLoop(renderTreadFrameCount);
 }
 
 void Reset(const ResetParam& param)
@@ -137,7 +137,7 @@ bool NeedRestoreResources()
 
 void Uninitialize()
 {
-    RenderLoop::UninitializeRenderThread();
+    RenderLoop::UninitializeRenderLoop();
     //(*_Impl.impl_Uninitialize)(); //now it just finishes render thread on backends - restore if some sort of platform shutdown will be required
 }
 

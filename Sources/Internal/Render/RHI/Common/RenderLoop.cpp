@@ -3,6 +3,9 @@
 #include "FrameLoop.h"
 #include "../rhi_Type.h"
 #include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/Concurrency.h"
+#include "Debug/Profiler.h"
+#include "Logger/Logger.h"
 /*#include "../Common/rhi_Private.h"
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/dbg_StatSet.h"*/
@@ -27,7 +30,7 @@ static DAVA::Atomic<bool> renderThreadExitPending(false);
 }
 
 using namespace Details;
-
+using DAVA::Logger;
 
 void Present(Handle syncHandle) // called from main thread
 {

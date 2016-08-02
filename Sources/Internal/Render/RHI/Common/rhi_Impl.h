@@ -8,8 +8,7 @@ namespace rhi
 struct ResetParam;
 struct RenderDeviceCaps;
 
-struct
-Dispatch
+struct Dispatch
 {
     //    void    (*impl_Initialize)();
     void (*impl_Reset)(const ResetParam&);
