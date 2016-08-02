@@ -179,8 +179,8 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
     
 #elif defined(__DAVAENGINE_MACOS__)
 
-    FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
-    FileSystem::Instance()->DeleteFile(plist);
+    DAVA::FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
+    DAVA::FileSystem::Instance()->DeleteFile(plist);
 
     if (toLaunchOnStartup)
     {
@@ -224,7 +224,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
-        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::PureCreate(plist, DAVA::File::CREATE | DAVA::File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
     }
