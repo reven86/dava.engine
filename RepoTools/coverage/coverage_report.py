@@ -8,7 +8,14 @@ import shutil
 import json
 import re
 
-CoverageTmpDirName = 'CoverageTmpData';
+CoverageMinimum    = 80.0
+CoverageTmpDirName = 'CoverageTmpData'
+
+
+class FileCover():
+    def __init__(self, fileName, coverLines):
+        self.file = fileName
+        self.coverLines = coverLines
 
 def enum(**enums):
     return type('Enum', (), enums)
@@ -39,201 +46,212 @@ def get_exe( pathExecut ):
         else:
             return pathExecut
 
-def run_executable( pathExecut ) :
-    print '-->',get_exe( pathExecut )
 
-    pathExecutDir = os.path.dirname ( pathExecut )
-    pathExecut    = get_exe( pathExecut )
+class CoverageReport():
 
-    os.chdir( pathExecutDir )
-    sub_process = subprocess.Popen([pathExecut], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def __init__(self, arg ):
 
-    subProcessContinue = True
+        self.arg                    = arg
+        self.pathBuild              = arg.pathBuild
+        self.pathExecut             = arg.pathExecut
+        self.pathReportOut          = arg.pathReportOut
+        self.buildConfig            = arg.buildConfig
+        self.notRunExecutable       = arg.notRunExecutable
 
-    while subProcessContinue:
-        try:
-            line = sub_process.stdout.readline()
-            sys.stdout.write(line)
-            sys.stdout.flush()
-            if line == '':
-                subProcessContinue = False
-                continue
-        except IOError as err:
-            sys.stdout.write(err.message)
-            sys.stdout.flush()
-
-
-def coppy_gcda_gcno_files( pathExecut, pathBuild, coverageTmpPath, buildConfig ):
-    executName            = os.path.basename( pathExecut )
-    executName, ExecutExt = os.path.splitext( executName )
-
-    if not os.path.isdir( coverageTmpPath ):
-        os.makedirs(coverageTmpPath) 
-
-    if buildConfig:
-        pathConfigSegment = os.path.join(  '{0}.build'.format(executName), buildConfig )   
-
-    #coppy '.gcda','.gcno' files
-    listCoverData = []
-    for rootdir, dirs, files in os.walk( pathBuild ):
-        if rootdir.find( coverageTmpPath ) == -1 :
-            if not buildConfig or rootdir.find( pathConfigSegment ) != -1:
-                for file in files:   
-                    if file.endswith( ('.gcda','.gcno')  ): 
-                        listCoverData += [os.path.join(rootdir, file)]
+        self.coverageTmpPath        = os.path.join( arg.pathBuild, CoverageTmpDirName )
     
-    for file in listCoverData:
-        baseName = os.path.basename( file )
-        pathOutFile = os.path.join(coverageTmpPath, baseName)
+        self.pathExecutDir          = os.path.dirname ( self.pathExecut )
+        self.executName             = os.path.basename( self.pathExecut )
+        self.executName, ExecutExt  = os.path.splitext( self.executName )
+        
+        self.pathCoverageDir        = os.path.dirname (os.path.realpath(__file__))
 
-        if os.path.exists(pathOutFile):
-            os.remove(pathOutFile)
+        self.coverFilePath          = os.path.join    ( self.pathExecutDir,   '{0}.cover'.format( self.executName ) )
+        self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
+        self.pathCallLlvmGcov       = os.path.join    ( self.pathCoverageDir, 'llvm-gcov.sh')
+        self.pathLcov               = os.path.join    ( self.pathCoverageDir, 'lcov')
+        self.pathCovInfo            = os.path.join    ( self.coverageTmpPath, 'cov.info')
+        self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
-        shutil.copy(file, coverageTmpPath )
 
-
-def generate_report_html( pathExecut, coverageTmpPath, pathReportOut ):
-
-    pathExecutDir         = os.path.dirname ( pathExecut )
-    executName            = os.path.basename( pathExecut )
-    executName, ExecutExt = os.path.splitext( executName )
-
-    if os.path.isdir( pathReportOut ):
-        shutil.rmtree( pathReportOut )
-    else:
-        os.makedirs(pathReportOut)      
-
-    #
-    pathCoverageDir  = os.path.dirname(os.path.realpath(__file__))
-    pathCallLlvmGcov = os.path.join(pathCoverageDir, 'llvm-gcov.sh')
-    pathCovInfo      = os.path.join(coverageTmpPath, 'cov.info')
-    pathLcov         = os.path.join(pathCoverageDir, 'lcov')
-    pathGenHtml      = os.path.join(pathCoverageDir, 'genhtml')
-
-    os.chdir( pathCoverageDir ) 
-
-    #
-    params = [ pathLcov,
-                '--directory', coverageTmpPath,  
-                '--base-directory', pathExecutDir,
-                '--gcov-tool', pathCallLlvmGcov,
-                '--capture',   
-                '-o', pathCovInfo
-                 ]
+        if self.notRunExecutable == 'false' :
+            self.run_executable()
     
-    subprocess.call(params)
+        self.coppy_gcda_gcno_files()
 
-    #
-    params = [ pathGenHtml,
-            pathCovInfo, 
-            '-o', pathReportOut
-             ]
 
-    subprocess.call(params)
+    def run_executable(self) :
+        pathExecutExt = get_exe( self.pathExecut )
 
-def generate_report_coverage( pathExecut, coverageTmpPath ):
+        os.chdir( self.pathExecutDir )
+        sub_process = subprocess.Popen([pathExecutExt], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    class FileCover():
-        def __init__(self, fileName, coverLine):
-            self.file = fileName
-            self.coverLine = coverLine
+        subProcessContinue = True
 
-    eState = enum( UNDEF      =0, 
-                   FIND_File  =1, 
-                   FIND_Lines =2, 
-                   FIND_Taken =3 )
+        while subProcessContinue:
+            try:
+                line = sub_process.stdout.readline()
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                if line == '':
+                    subProcessContinue = False
+                    continue
+            except IOError as err:
+                sys.stdout.write(err.message)
+                sys.stdout.flush()
 
-    pathExecutDir         = os.path.dirname ( pathExecut )
-    executName            = os.path.basename( pathExecut )
-    executName, ExecutExt = os.path.splitext( executName )
 
-    pathCoverageDir       = os.path.dirname(os.path.realpath(__file__))
-    pathLlvmCov           = os.path.join(pathCoverageDir, 'llvm-cov')
+    def coppy_gcda_gcno_files( self ):
 
-    coverFilePath         = os.path.join( pathExecutDir, '{0}.cover'.format( executName ) )
+        if not os.path.isdir( self.coverageTmpPath ):
+            os.makedirs(self.coverageTmpPath) 
 
-    if not os.path.isfile(coverFilePath) or not os.access(coverFilePath, os.R_OK):
-        print 'ERROR : file {0} is missing or is not readable'.format( coverFilePath )
-        return
+        if self.buildConfig:
+            pathConfigSegment = os.path.join(  '{0}.build'.format(self.executName), self.buildConfig )   
 
-    coverFile      = open(coverFilePath).read()
-    jsonData       = json.loads(coverFile)
-
-    projectFolders = jsonData[ 'ProjectFolders' ].split(' ')
-    testsCoverage  = {}
-
-    for test in jsonData[ 'Coverage' ]:
-        testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
-        for file in testedFiles:
-            for ext in [ 'cpp', 'c']:
-                find_list = find_file( '{0}.{1}'.format( file, ext ) , projectFolders )
-                if len( find_list ):
-                    fileCover = FileCover( find_list[0], None )
-                    testsCoverage.setdefault(test, []).append( fileCover )
-
-    os.chdir( coverageTmpPath );
-    for test in testsCoverage:
-        state = eState.FIND_File
-
-        for fileCover in testsCoverage[ test ]:
-            fileName          = os.path.basename( fileCover.file )
-            fileName, fileExt = os.path.splitext( fileName )
-
-            fileGcda     = '{0}.gcda'.format(fileName)
-            fileGcdaList = [ ]
-
-            if  os.path.isfile( fileGcda ) :
-                fileGcdaList = [ fileGcda ]
-            else:
-                for rootdir, dirs, files in os.walk( coverageTmpPath ):
+        #coppy '.gcda','.gcno' files
+        listCoverData = []
+        for rootdir, dirs, files in os.walk( self.pathBuild ):
+            if rootdir.find( self.coverageTmpPath ) == -1 :
+                if not self.buildConfig or rootdir.find( pathConfigSegment ) != -1:
                     for file in files:   
-                        if file.endswith( ('.gcda')  ): 
-                            fileGcdaList += [os.path.join(rootdir, file)]
+                        if file.endswith( ('.gcda','.gcno')  ): 
+                            listCoverData += [os.path.join(rootdir, file)]
+        
+        for file in listCoverData:
+            baseName = os.path.basename( file )
+            pathOutFile = os.path.join(self.coverageTmpPath, baseName)
 
-            for fileGcda in fileGcdaList:
+            if os.path.exists(pathOutFile):
+                os.remove(pathOutFile)
 
-                params = [ pathLlvmCov, 'gcov',
-                    '-f',  
-                    '-b', 
-                    fileGcda
-                     ]
+            shutil.copy(file, self.coverageTmpPath )
 
-                subProcess         = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                subProcessContinue = True
 
-                while subProcessContinue:
-                    try:
-                        line = subProcess.stdout.readline()
-                        split_line = line.split( )
+    def generate_report_html( self ):
 
-                        if line == '':
-                            subProcessContinue = False
-                            continue
+        if os.path.isdir( self.pathReportOut ):
+            shutil.rmtree( self.pathReportOut )
+        else:
+            os.makedirs(self.pathReportOut)      
 
-                        if len( split_line ) == 0:
-                            continue
+        os.chdir( self.pathCoverageDir ) 
 
-                        if   ( state == eState.FIND_File 
-                               and split_line[0] == 'File' 
-                               and split_line[1].replace('\'','') == fileCover.file ):
-                            state = eState.FIND_Lines
+        #
+        params = [ self.pathLcov,
+                    '--directory',      self.coverageTmpPath,  
+                    '--base-directory', self.pathExecutDir,
+                    '--gcov-tool',      self.pathCallLlvmGcov,
+                    '--capture',   
+                    '-o', self.pathCovInfo
+                 ]
+        
+        subprocess.call(params)
 
-                        elif ( state == eState.FIND_Lines 
-                               and split_line[0] == 'Lines' ):
-                            fileCover.coverLine = re.findall("\d+\.\d+", split_line[1] )[0]
-                            state = eState.FIND_File
-                            subProcessContinue = False
-                            subProcess.kill()
+        #
+        params = [ self.pathGenHtml,
+                   self.pathCovInfo, 
+                   '-o', self.pathReportOut
+                 ]
 
-                    except IOError as err:
-                        sys.stdout.write(err.message)
-                        sys.stdout.flush()
+        subprocess.call(params)
 
-    for test in testsCoverage:
-        print test
-        for fileCover in testsCoverage[ test ]:
-            print fileCover.file,' ',fileCover.coverLine
-        print ''
+    def generate_report_coverage( self ):
+
+        eState = enum( UNDEF      =0, 
+                       FIND_File  =1, 
+                       FIND_Lines =2, 
+                       FIND_Taken =3 )
+
+        if not os.path.isfile(self.coverFilePath) or not os.access(self.coverFilePath, os.R_OK):
+            print 'ERROR : file {0} is missing or is not readable'.format( self.coverFilePath )
+            return
+
+        coverFile      = open(self.coverFilePath).read()
+        jsonData       = json.loads(coverFile)
+
+        projectFolders = jsonData[ 'ProjectFolders' ].split(' ')
+        testsCoverage  = {}
+
+        for test in jsonData[ 'Coverage' ]:
+            testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
+            for file in testedFiles:
+                for ext in [ 'cpp', 'c']:
+                    find_list = find_file( '{0}.{1}'.format( file, ext ) , projectFolders )
+                    if len( find_list ):
+                        fileCover = FileCover( find_list[0], None )
+                        testsCoverage.setdefault(test, []).append( fileCover )
+
+        os.chdir( self.coverageTmpPath );
+        for test in testsCoverage:
+            state = eState.FIND_File
+
+            for fileCover in testsCoverage[ test ]:
+                fileName          = os.path.basename( fileCover.file )
+                fileName, fileExt = os.path.splitext( fileName )
+
+                fileGcda     = '{0}.gcda'.format(fileName)
+                fileGcdaList = [ ]
+
+                if  os.path.isfile( fileGcda ) :
+                    fileGcdaList = [ fileGcda ]
+                else:
+                    for rootdir, dirs, files in os.walk( self.coverageTmpPath ):
+                        for file in files:   
+                            if file.endswith( ('.gcda')  ): 
+                                fileGcdaList += [os.path.join(rootdir, file)]
+
+                for fileGcda in fileGcdaList:
+
+                    params = [ self.pathLlvmCov, 'gcov',
+                               '-f',  
+                               '-b', 
+                               fileGcda
+                             ]
+
+                    subProcess         = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    subProcessContinue = True
+
+                    while subProcessContinue:
+                        try:
+                            line = subProcess.stdout.readline()
+                            split_line = line.split( )
+
+                            if line == '':
+                                subProcessContinue = False
+                                continue
+
+                            if len( split_line ) == 0:
+                                continue
+
+                            if   ( state == eState.FIND_File 
+                                   and split_line[0] == 'File' 
+                                   and split_line[1].replace('\'','') == fileCover.file ):
+                                state = eState.FIND_Lines
+
+                            elif ( state == eState.FIND_Lines 
+                                   and split_line[0] == 'Lines' ):
+                                fileCover.coverLines = float(re.findall("\d+\.\d+", split_line[1] )[0])
+                                state = eState.FIND_File
+                                subProcessContinue = False
+                                subProcess.kill()
+
+                        except IOError as err:
+                            sys.stdout.write(err.message)
+                            sys.stdout.flush()
+
+    # ##teamcity[testStarted name='TestReflectedCollections.SetTest']
+    # [info] start test 
+    # TestReflectedCollections.SetTest
+    # ##teamcity[testFinished name='TestReflectedCollections.SetTest']
+
+        for test in testsCoverage:
+            for fileCover in testsCoverage[ test ]:
+                if CoverageMinimum > fileCover.coverLines:                
+                    basename = os.path.basename( fileCover.file )
+                    print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
+            print ''
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -245,15 +263,10 @@ def main():
 
     options = parser.parse_args()
 
-    if options.notRunExecutable == 'false' :
-        run_executable( options.pathExecut )
-    
-    coverageTmpPath = os.path.join( options.pathBuild, CoverageTmpDirName )
+    cov = CoverageReport( options  )
 
-    coppy_gcda_gcno_files( options.pathExecut, options.pathBuild, coverageTmpPath, options.buildConfig )
-
-    generate_report_html(  options.pathExecut, coverageTmpPath, options.pathReportOut )
-    generate_report_coverage( options.pathExecut, coverageTmpPath )
+    cov.generate_report_html()
+    cov.generate_report_coverage()
 
 
 if __name__ == '__main__':
