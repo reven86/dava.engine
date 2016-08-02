@@ -112,7 +112,6 @@ void HttpServer::OnTransportConnected(DAVA::Net::IClientTransport* clt, const DA
 
 void HttpServer::OnTransportDisconnected(DAVA::Net::IClientTransport* clt, DAVA::int32 error)
 {
-    RemoveClient(clt);
 }
 
 void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const void* buffer, size_t length)
