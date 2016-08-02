@@ -4,7 +4,6 @@
 
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
-#include "Scene/ActiveSceneHolder.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
 #include <QWidget>
@@ -94,6 +93,6 @@ private:
     DAVA::Vector<LODDistanceWidget*> distanceWidgets;
 
     LazyUpdater* panelsUpdater = nullptr;
+    SceneEditor2* activeScene = nullptr;
     std::shared_ptr<GlobalOperations> globalOperations;
-    ActiveSceneHolder sceneHolder;
 };

@@ -275,6 +275,7 @@ QtMainWindow::~QtMainWindow()
     MaterialEditor::Instance()->Release();
 
     ProjectManager::Instance()->Release();
+    LandscapeEditorShortcutManager::Instance()->Release();
 
     std::static_pointer_cast<MainWindowDetails::GlobalOperationsProxy>(globalOperations)->Reset();
     globalOperations.reset();

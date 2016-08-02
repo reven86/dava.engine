@@ -289,8 +289,9 @@ void LODEditor::DeleteLOD()
 void LODEditor::SceneActivated(SceneEditor2* scene)
 {
     DVASSERT(scene);
-    scene->editorLODSystem->AddDelegate(this);
-    scene->editorStatisticsSystem->AddDelegate(this);
+    activeScene = scene;
+    activeScene->editorLODSystem->AddDelegate(this);
+    activeScene->editorStatisticsSystem->AddDelegate(this);
 }
 
 void LODEditor::SceneDeactivated(SceneEditor2* scene)
@@ -303,6 +304,8 @@ void LODEditor::SceneDeactivated(SceneEditor2* scene)
     {
         UpdatePanelsUI(nullptr);
     }
+
+    activeScene = nullptr;
 }
 
 void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
@@ -460,10 +463,9 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 {
-    SceneEditor2* scene = sceneHolder.GetScene();
-    if (scene != nullptr)
+    if (activeScene != nullptr)
     {
-        return scene->editorLODSystem;
+        return activeScene->editorLODSystem;
     }
 
     return nullptr;
@@ -471,11 +473,9 @@ EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 
 EditorStatisticsSystem* LODEditor::GetCurrentEditorStatisticsSystem() const
 {
-    SceneEditor2* scene = sceneHolder.GetScene();
-    ;
-    if (scene != nullptr)
+    if (activeScene != nullptr)
     {
-        return scene->editorStatisticsSystem;
+        return activeScene->editorStatisticsSystem;
     }
 
     return nullptr;
