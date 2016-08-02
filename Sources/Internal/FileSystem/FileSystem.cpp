@@ -205,6 +205,14 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     if (result == EXDEV)
     {
         result = FileSystem::CopyFile(existingFile, newFile);
+        if (result)
+        {
+            result = FileSystem::DeleteFile(existingFile);
+            if (result)
+            {
+                result = 0;
+            }
+        }
     }
     bool error = (0 != result);
     if (error)
