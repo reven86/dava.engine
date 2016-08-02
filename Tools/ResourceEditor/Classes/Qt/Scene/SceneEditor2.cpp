@@ -26,6 +26,7 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 
 #include <QShortcut>
 
@@ -129,6 +130,9 @@ SceneEditor2::SceneEditor2()
 
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+
+    editorVegetationSystem = new EditorVegetationSystem(this);
+    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
 
     selectionSystem->AddDelegate(modifSystem);
     selectionSystem->AddDelegate(hoodSystem);

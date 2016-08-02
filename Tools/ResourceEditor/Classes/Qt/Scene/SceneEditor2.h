@@ -41,6 +41,7 @@ class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
 class EditorStatisticsSystem;
+class EditorVegetationSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 class CommandStack;
@@ -88,6 +89,7 @@ public:
     EditorLODSystem* editorLODSystem = nullptr;
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
+    EditorVegetationSystem* editorVegetationSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
     DAVA::RotationControllerSystem* rotationSystem = nullptr;

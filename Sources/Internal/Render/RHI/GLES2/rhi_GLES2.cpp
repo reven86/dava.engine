@@ -45,8 +45,6 @@ bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
-rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback = nullptr;
-DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 
 DAVA::uint8 volatile pre_call_registers[64];
 
@@ -214,6 +212,13 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
+
+        if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
+        {
+            float32 value = 0.0f;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
+            _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
+        }
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
@@ -386,17 +391,6 @@ gles2_InvalidateCache()
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_TakeScreenshot(ScreenShotCallback callback)
-{
-    _GLES2_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_GLES2_PendingScreenshotCallback);
-    _GLES2_PendingScreenshotCallback = callback;
-    _GLES2_ScreenshotCallbackSync.Unlock();
-}
-
-//------------------------------------------------------------------------------
-
 static bool
 gles2_NeedRestoreResources()
 {
@@ -545,7 +539,6 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-        DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -697,7 +690,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -794,7 +786,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -891,7 +882,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_TakeScreenshot = &gles2_TakeScreenshot;
 
     SetDispatchTable(DispatchGLES2);
 

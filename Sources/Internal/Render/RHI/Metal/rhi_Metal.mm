@@ -6,16 +6,19 @@
 
     #include "_metal.h"
 
+#import <UIKit/UIKit.h>
+
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
-MTLRenderPassDescriptor* _Metal_DefRenderPassDescriptor = nil;
 id<MTLTexture> _Metal_DefFrameBuf = nil;
 id<MTLTexture> _Metal_DefDepthBuf = nil;
 id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
+
+DAVA::Atomic<bool> _Metal_Suspended(false);
 
 namespace rhi
 {
@@ -48,12 +51,12 @@ metal_TextureFormatSupported(TextureFormat format)
 
     case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
-
+    /*
     case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
     case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC2_2BPP_RGB:
     case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
-
+*/
     case TEXTURE_FORMAT_ETC2_R8G8B8:
     case TEXTURE_FORMAT_ETC2_R8G8B8A1:
     case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
@@ -98,17 +101,57 @@ metal_DeviceCaps()
 static bool
 metal_NeedRestoreResources()
 {
-    return false;
+    static bool lastNeedRestore = false;
+    bool needRestore = TextureMetal::NeedRestoreCount();
+
+    if (needRestore)
+        DAVA::Logger::Debug("NeedRestore %d TEX", TextureMetal::NeedRestoreCount());
+
+    if (lastNeedRestore && !needRestore)
+        DAVA::Logger::Debug("all RHI-resources restored");
+
+    lastNeedRestore = needRestore;
+
+    return needRestore;
 }
+
+//------------------------------------------------------------------------------
 
 static void
 metal_Suspend()
 {
+    _Metal_Suspended.Set(true);
+    DAVA::Logger::Info("mtl.render-suspended");
 }
+
+//------------------------------------------------------------------------------
 
 static void
 metal_Resume()
 {
+    //    TextureMetal::MarkAllNeedRestore();
+    //TextureMetal::ReCreateAll();
+    _Metal_Suspended.Set(false);
+    DAVA::Logger::Info("mtl.render-resumed");
+}
+
+//------------------------------------------------------------------------------
+
+bool
+rhi_MetalIsSupported()
+{
+    if (!_Metal_Device)
+    {
+        NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
+        if ([currSysVer compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+        {
+            _Metal_Device = MTLCreateSystemDefaultDevice();
+            [_Metal_Device retain];
+        }
+    }
+
+    return (_Metal_Device) ? true : false;
+    //    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
 }
 
 //------------------------------------------------------------------------------
@@ -116,13 +159,19 @@ metal_Resume()
 void metal_Initialize(const InitParam& param)
 {
     _Metal_Layer = (CAMetalLayer*)param.window;
+    [_Metal_Layer retain];
 
-    _Metal_Layer.device = MTLCreateSystemDefaultDevice();
+    if (!_Metal_Device)
+    {
+        _Metal_Device = MTLCreateSystemDefaultDevice();
+        [_Metal_Device retain];
+    }
+
+    _Metal_Layer.device = _Metal_Device;
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _Metal_Layer.framebufferOnly = YES;
     _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
 
-    _Metal_Device = _Metal_Layer.device;
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer
@@ -134,25 +183,8 @@ void metal_Initialize(const InitParam& param)
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
-    _Metal_DefFrameBuf = [_Metal_Device newTextureWithDescriptor:colorDesc];
     _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
     _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
-
-    // create default render-pass desc
-
-    MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
-
-    desc.colorAttachments[0].texture = _Metal_DefFrameBuf;
-    desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor = MTLClearColorMake(0.3, 0.3, 0.6, 1);
-
-    desc.depthAttachment.texture = _Metal_DefDepthBuf;
-    desc.depthAttachment.loadAction = MTLLoadActionClear;
-    desc.depthAttachment.storeAction = MTLStoreActionStore;
-    desc.depthAttachment.clearDepth = 1.0f;
-
-    _Metal_DefRenderPassDescriptor = desc;
 
     // create default depth-state
 
@@ -183,6 +215,7 @@ void metal_Initialize(const InitParam& param)
     VertexBufferMetal::SetupDispatch(&DispatchMetal);
     IndexBufferMetal::SetupDispatch(&DispatchMetal);
     QueryBufferMetal::SetupDispatch(&DispatchMetal);
+    PerfQuerySetMetal::SetupDispatch(&DispatchMetal);
     TextureMetal::SetupDispatch(&DispatchMetal);
     PipelineStateMetal::SetupDispatch(&DispatchMetal);
     ConstBufferMetal::SetupDispatch(&DispatchMetal);
@@ -218,6 +251,8 @@ void metal_Initialize(const InitParam& param)
     _metal_DeviceCaps.isZeroBaseClipRange = true;
     _metal_DeviceCaps.isUpperLeftRTOrigin = true;
     _metal_DeviceCaps.isCenterPixelMapping = false;
+    _metal_DeviceCaps.isInstancingSupported = true;
+    _metal_DeviceCaps.maxAnisotropy = 16;
 }
 
 } // namespace rhi

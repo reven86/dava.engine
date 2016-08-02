@@ -21,8 +21,16 @@ enum ePacketID : uint8
     PACKET_GET_RESPONSE,
     PACKET_WARMING_UP_REQUEST,
     //    PACKET_WARMING_UP_RESPONSE, // We don't need send response right now. Left it in code for better reading
+    PACKET_STATUS_REQUEST,
+    PACKET_STATUS_RESPONSE,
+    PACKET_REMOVE_REQUEST,
+    PACKET_REMOVE_RESPONSE,
+    PACKET_CLEAR_REQUEST,
+    PACKET_CLEAR_RESPONSE,
     PACKET_COUNT
 };
+
+String PacketToString(ePacketID packet);
 
 enum class Error : int32
 {
@@ -36,9 +44,10 @@ enum class Error : int32
     NOT_FOUND_ON_SERVER,
     READ_FILES,
     ADDRESS_RESOLVER_FAILED,
-    CANNOT_SEND_REQUEST_ADD,
-    CANNOT_SEND_REQUEST_GET,
+    CANNOT_SEND_REQUEST,
     CORRUPTED_DATA,
+    UNSUPPORTED_VERSION,
+    UNEXPECTED_PACKET,
 
     ERRORS_COUNT,
 };
