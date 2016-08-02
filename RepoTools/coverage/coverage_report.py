@@ -10,7 +10,6 @@ import re
 
 CoverageMinimum    = 80.0
 
-
 class FileCover():
     def __init__(self, fileName, coverLines):
         self.file = fileName
@@ -245,6 +244,14 @@ class CoverageReport():
                     basename = os.path.basename( fileCover.file )
                     print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
             print ''
+
+
+        for test in testsCoverage:
+            for fileCover in testsCoverage[ test ]:
+                if CoverageMinimum > fileCover.coverLines:                
+                    basename = os.path.basename( fileCover.file )
+                    print '##teamcity[testFailed name=\'Cover_{0}\' message=\'Coverage ERROR\' details=\'bad cover test {1} in file {2}: {3}% must be at least: {4}%\']'.format(self.executName,test,basename,fileCover.coverLines,CoverageMinimum)
+
 
 
 def main():
