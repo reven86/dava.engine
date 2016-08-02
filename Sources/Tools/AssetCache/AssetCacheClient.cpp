@@ -53,15 +53,24 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         return AssetCache::Error::ADDRESS_RESOLVER_FAILED;
     }
 
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    while (client.ChannelIsOpened() == false)
     {
-        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+        LockGuard<Mutex> guard(connectEstablishLocker);
+
+        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        while (client.ChannelIsOpened() == false)
         {
-            Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
-            isActive = false;
-            return AssetCache::Error::OPERATION_TIMEOUT;
+            if (!isActive)
+            {
+                return AssetCache::Error::CANNOT_CONNECT;
+            }
+
+            uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+            if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
+            {
+                Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+                isActive = false;
+                return AssetCache::Error::OPERATION_TIMEOUT;
+            }
         }
     }
 
@@ -71,6 +80,11 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
 void AssetCacheClient::Disconnect()
 {
     isActive = false;
+
+    { // wait for connection establishing loop is finished
+        LockGuard<Mutex> guard(connectEstablishLocker);
+    }
+
     client.Disconnect();
 
     while (isJobStarted)

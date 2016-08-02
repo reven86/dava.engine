@@ -24,6 +24,7 @@ DAVA::WideString DateTime::AsWString(const wchar_t* format) const
     locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), 0);
     size_t size = wcsftime_l(buffer, 256, format, &timeinfo, loc);
     DVASSERT(size);
+    freelocale(loc);
     DAVA::WideString str(buffer);
 
     return str;

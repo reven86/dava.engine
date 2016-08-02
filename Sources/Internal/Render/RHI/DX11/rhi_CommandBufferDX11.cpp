@@ -454,6 +454,8 @@ _GetRasterizerState(RasterizerParamDX11 param)
         desc.AntialiasedLineEnable = FALSE;
 
         hr = _D3D11_Device->CreateRasterizerState(&desc, &state);
+        CHECK_HR(hr);
+
         if (SUCCEEDED(hr))
         {
             RasterizerStateDX11 s;
@@ -502,6 +504,7 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
         if (!cb->context)
         {
             HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
+            CHECK_HR(hr);
 
             if (SUCCEEDED(hr))
             {
@@ -594,7 +597,7 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     if (cb->isLastInPass && cb->cur_query_buf != InvalidHandle)
         QueryBufferDX11::QueryComplete(cb->cur_query_buf, cb->context);
 
-    cb->context->FinishCommandList(TRUE, &(cb->commandList));
+    CHECK_HR(cb->context->FinishCommandList(TRUE, &(cb->commandList)));
     cb->sync = syncObject;
     cb->isComplete = true;
 #else
@@ -1240,8 +1243,12 @@ _ExecuteQueuedCommandsDX11()
         // do present
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
-        _D3D11_SwapChain->Present(1, 0);
+        HRESULT hr = _D3D11_SwapChain->Present(1, 0);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
+
+        CHECK_HR(hr)
+        if (hr == DXGI_ERROR_DEVICE_REMOVED)
+            CHECK_HR(_D3D11_Device->GetDeviceRemovedReason())
 
         if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
             PerfQuerySetDX11::IssueFrameEndQuery(perfQuerySet, _D3D11_ImmediateContext);
@@ -1263,47 +1270,6 @@ _ExecuteQueuedCommandsDX11()
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
-
-    // take screenshot, if needed
-
-    _D3D11_ScreenshotCallbackSync.Lock();
-    if (_D3D11_PendingScreenshotCallback)
-    {
-        D3D11_TEXTURE2D_DESC desc = { 0 };
-
-        _D3D11_SwapChainBuffer->GetDesc(&desc);
-
-        if (!_D3D11_SwapChainBufferCopy)
-        {
-            desc.Usage = D3D11_USAGE_STAGING;
-            desc.BindFlags = 0;
-            desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-
-            _D3D11_Device->CreateTexture2D(&desc, NULL, &_D3D11_SwapChainBufferCopy);
-        }
-
-        if (_D3D11_SwapChainBufferCopy)
-        {
-            D3D11_MAPPED_SUBRESOURCE res = { 0 };
-
-            _D3D11_ImmediateContext->CopyResource(_D3D11_SwapChainBufferCopy, _D3D11_SwapChainBuffer);
-            _D3D11_ImmediateContext->Map(_D3D11_SwapChainBufferCopy, 0, D3D11_MAP_READ, 0, &res);
-            if (res.pData)
-            {
-                for (uint8 *p = (uint8 *)res.pData, *p_end = (uint8 *)res.pData + desc.Width * desc.Height * 4; p != p_end; p += 4)
-                {
-                    uint8 tmp = p[0];
-                    p[0] = p[2];
-                    p[2] = tmp;
-                }
-
-                (*_D3D11_PendingScreenshotCallback)(desc.Width, desc.Height, res.pData);
-                _D3D11_ImmediateContext->Unmap(_D3D11_SwapChainBufferCopy, 0);
-                _D3D11_PendingScreenshotCallback = nullptr;
-            }
-        }
-    }
-    _D3D11_ScreenshotCallbackSync.Unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -1311,14 +1277,6 @@ _ExecuteQueuedCommandsDX11()
 static void
 _ExecDX11(DX11Command* command, uint32 cmdCount)
 {
-#if 1
-    #define CHECK_HR(hr) \
-    if (FAILED(hr)) \
-        Logger::Error("%s", D3D11ErrorText(hr));
-#else
-    CHECK_HR(hr)
-#endif
-
     for (DX11Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
@@ -1349,8 +1307,6 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
             DVASSERT(!"unknown DX11-cmd");
         }
     }
-
-    #undef CHECK_HR
 }
 
 //------------------------------------------------------------------------------
@@ -1520,7 +1476,7 @@ dx11_Present(Handle sync)
             if (_DX11_Frame.size())
             {
                 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-                _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
+                CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
                 #endif
 
                 _DX11_Frame.back().readyToExecute = true;
@@ -1558,7 +1514,7 @@ dx11_Present(Handle sync)
         if (_DX11_Frame.size())
         {
             #if RHI_DX11__USE_DEFERRED_CONTEXTS
-            _D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList));
+            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &(_DX11_Frame.back().cmdList)));
             #endif
 
             _DX11_Frame.back().readyToExecute = true;
@@ -1570,7 +1526,7 @@ dx11_Present(Handle sync)
             #if RHI_DX11__USE_DEFERRED_CONTEXTS
             ID3D11CommandList* cl = nullptr;
 
-            _D3D11_SecondaryContext->FinishCommandList(TRUE, &cl);
+            CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(TRUE, &cl));
             _D3D11_ImmediateContext->ExecuteCommandList(cl, FALSE);
             cl->Release();
             #endif
@@ -2283,6 +2239,7 @@ void DiscardAll()
                     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
                     HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
+                    CHECK_HR(hr)
 
                     DVASSERT(cb->context);
                     cb->Reset();
@@ -2298,11 +2255,11 @@ void DiscardAll()
         ID3D11CommandList* cl = nullptr;
 
         _D3D11_SecondaryContext->ClearState();
-        _D3D11_SecondaryContext->FinishCommandList(FALSE, &cl);
+        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
         cl->Release();
         _D3D11_SecondaryContext->Release();
 
-        _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+        CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
     }
 #endif
     _DX11_ResetPending = false;

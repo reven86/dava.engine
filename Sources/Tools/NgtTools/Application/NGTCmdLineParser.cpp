@@ -24,6 +24,12 @@ char** NGTCmdLineParser::argv() const
 
 bool NGTCmdLineParser::getFlag(const char* arg) const
 {
+    auto iter = additionalFlags.find(std::string(arg));
+    if (iter != additionalFlags.end())
+    {
+        return true;
+    }
+
     size_t argLen = ::strlen(arg);
     for (int i = 0; i < m_argc; ++i)
     {
@@ -84,6 +90,11 @@ std::wstring NGTCmdLineParser::getParamStrW(const char* arg) const
 void NGTCmdLineParser::addParam(std::string&& key, std::string&& value)
 {
     additionalParams.emplace(std::move(key), std::move(value));
+}
+
+void NGTCmdLineParser::addFlag(std::string&& flag)
+{
+    additionalFlags.insert(std::move(flag));
 }
 
 } // namespace NGTLayer

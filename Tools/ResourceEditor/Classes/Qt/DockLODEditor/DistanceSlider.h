@@ -53,6 +53,8 @@ private:
 
     DAVA::uint32 layersCount = 0;
     DAVA::uint32 notInfDistancesCount = 0;
+
+    bool fitModeEnabled = false;
 };
 
 inline DAVA::uint32 DistanceSlider::GetLayersCount() const
