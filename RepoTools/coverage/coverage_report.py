@@ -128,6 +128,8 @@ class CoverageReport():
 
     def generate_report_html( self ):
 
+        print '##teamcity[testStarted name=\'Generate cover html\']'
+
         if os.path.isdir( self.pathReportOut ):
             shutil.rmtree( self.pathReportOut )
         else:
@@ -153,10 +155,13 @@ class CoverageReport():
                  ]
 
         subprocess.call(params)
+        
+        print '##teamcity[testFinished name=\'Generate cover html\']'
+
 
     def generate_report_coverage( self ):
 
-        print '##teamcity[testSuiteStarted name=\'Cover\']'
+        print '##teamcity[testStarted name=\'Coverage test\']'
 
         eState = enum( UNDEF      =0, 
                        FIND_File  =1, 
@@ -252,9 +257,9 @@ class CoverageReport():
             for fileCover in testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
-                    print '##teamcity[testFailed name=\'Cover\' message=\'Coverage test {0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum)
+                    print '##teamcity[testFailed name=\'Cover\' message=\'{0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum)
 
-        print '##teamcity[testSuiteFinished name=\'Cover\']'
+        print '##teamcity[testFinished name=\'Coverage test\']'
 
 
 def main():
