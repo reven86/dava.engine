@@ -267,12 +267,12 @@ void ServerCore::OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overal
     emit StorageSizeChanged(occupied, overall);
 }
 
-void ServerCore::OnStatusRequested(void* channelId)
+void ServerCore::OnStatusRequested(ClientID clientId)
 {
     AssetServerStatus status;
     status.started = true;
     status.assetServerPath = appPath;
-    httpServer.SendStatus(channelId, status);
+    httpServer.SendStatus(clientId, status);
 }
 
 void ServerCore::SetApplicationPath(DAVA::String& path)

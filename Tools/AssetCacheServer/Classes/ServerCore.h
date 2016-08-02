@@ -63,7 +63,7 @@ public:
     void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall);
 
     // AssetCacheHttpServerListener
-    void OnStatusRequested(void* channelId) override;
+    void OnStatusRequested(ClientID clientId) override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;

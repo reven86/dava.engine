@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Network/Services/HttpServer.h"
+#include "HttpServer/HttpServer.h"
 #include "Base/BaseTypes.h"
 
 struct AssetCacheHttpServerListener
 {
-    virtual void OnStatusRequested(void* channelId)
-    {
-    }
+    virtual void OnStatusRequested(ClientID clientId){};
 };
 
 struct AssetServerStatus
@@ -16,28 +14,27 @@ struct AssetServerStatus
     DAVA::String assetServerPath;
 };
 
-struct AssetCacheHttpServer : public DAVA::Net::HttpServer
+struct AssetCacheHttpServer : public HttpServerListener
 {
-    AssetCacheHttpServer(DAVA::Net::IOLoop* loop_)
-        : DAVA::Net::HttpServer(loop_)
-    {
-    }
+    AssetCacheHttpServer(DAVA::Net::IOLoop*);
 
     void Start(DAVA::uint16 port);
     void Stop();
 
     DAVA::uint16 GetListenPort() const;
 
-    void SendStatus(void* channelId, AssetServerStatus st);
+    void SendStatus(ClientID clientId, const AssetServerStatus& st);
 
     void SetListener(AssetCacheHttpServerListener*);
 
 private:
+    // HttpServerListener
     void OnHttpServerStopped() override;
-    void OnHttpRequestReceived(void* channelId, DAVA::Net::HttpRequest&) override;
+    void OnHttpRequestReceived(ClientID clientId, HttpRequest& rq) override;
 
-    void NotifyStatusRequested(void* channelId);
+    void NotifyStatusRequested(ClientID clientId);
 
+    HttpServer httpServer;
     AssetCacheHttpServerListener* listener = nullptr;
     DAVA::uint16 port = 0;
 };

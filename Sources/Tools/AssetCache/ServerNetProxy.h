@@ -64,7 +64,7 @@ public:
 private:
     uint16 listenPort = 0;
     std::unique_ptr<Connection> netServer;
-    ServerNetProxyListener* delegate = nullptr;
+    ServerNetProxyListener* listener = nullptr;
 };
 
 inline uint16 ServerNetProxy::GetListenPort() const
@@ -72,9 +72,9 @@ inline uint16 ServerNetProxy::GetListenPort() const
     return listenPort;
 }
 
-inline void ServerNetProxy::SetListener(ServerNetProxyListener* _delegate)
+inline void ServerNetProxy::SetListener(ServerNetProxyListener* listener_)
 {
-    delegate = _delegate;
+    listener = listener_;
 }
 
 }; // end of namespace AssetCache
