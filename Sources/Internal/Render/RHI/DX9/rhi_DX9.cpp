@@ -113,6 +113,7 @@ _IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 static void
 dx9_Uninitialize()
 {
+    QueryBufferDX9::ReleaseQueryPool();
     UninitializeRenderThreadDX9();
 }
 
@@ -143,9 +144,15 @@ dx9_Reset(const ResetParam& param)
 static bool
 dx9_NeedRestoreResources()
 {
-    bool needRestore = (TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount());
+    uint32 pendingTextures = TextureDX9::NeedRestoreCount();
+    uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
+    uint32 pendingIndexBuffers = IndexBufferDX9::NeedRestoreCount();
+
+    bool needRestore = (pendingTextures || pendingVertexBuffers || pendingIndexBuffers);
     if (needRestore)
-        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
+    {
+        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", pendingTextures, pendingVertexBuffers, pendingIndexBuffers);
+    }
     return needRestore;
 }
 
@@ -176,6 +183,11 @@ void _InitDX9()
 
         if (SUCCEEDED(hr))
         {
+            if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+            {
+                _DeviceCapsDX9.maxAnisotropy = caps.MaxAnisotropy;
+            }
+
             if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
             {
                 vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;

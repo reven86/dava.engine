@@ -8,10 +8,10 @@
 #include "RuntimeTextures.h"
 #include "RHI/rhi_Public.h"
 #include "RHI/rhi_Type.h"
+#include "Base/FastNameMap.h"
 
 namespace DAVA
 {
-struct ScreenShotCallbackDelegate;
 struct RenderStats;
 
 namespace Renderer
@@ -40,7 +40,6 @@ void EndFrame();
 //misc
 int32 GetFramebufferWidth();
 int32 GetFramebufferHeight();
-void RequestGLScreenShot(ScreenShotCallbackDelegate* screenShotCallback);
 
 //options
 RenderOptions* GetOptions();
@@ -54,20 +53,6 @@ RuntimeTextures& GetRuntimeTextures();
 //render stats
 RenderStats& GetRenderStats();
 }
-
-class Image;
-struct ScreenShotCallbackDelegate
-{
-    virtual ~ScreenShotCallbackDelegate() = default;
-
-    void operator()(Image* image)
-    {
-        return OnScreenShot(image);
-    }
-
-protected:
-    virtual void OnScreenShot(Image* image) = 0;
-};
 
 struct RenderStats
 {
@@ -96,6 +81,9 @@ struct RenderStats
     uint32 packets2d = 0U;
 
     uint32 visibleRenderObjects = 0U;
+    uint32 occludedRenderObjects = 0U;
+
+    FastNameMap<uint32> queryResults = FastNameMap<uint32>(16, 0U);
 };
 }
 

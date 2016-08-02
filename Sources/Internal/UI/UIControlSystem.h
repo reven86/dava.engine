@@ -45,8 +45,6 @@ public:
 		Also ControlSystem processed all user input events to the controls.
 	 */
 
-extern const FastName FRAME_QUERY_UI_DRAW;
-
 class UIControlSystem : public Singleton<UIControlSystem>
 {
 protected:
@@ -286,6 +284,9 @@ public:
     void SetDefaultTapCountSettings();
     void SetTapCountSettings(float32 time, float32 inch);
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+
 private:
     void ProcessScreenLogic();
 
@@ -333,6 +334,9 @@ private:
         bool lastClickEnded = false;
     };
     LastClickData lastClickData;
+
+    int32 ui3DViewCount = 0;
+    bool needClearMainPass = true;
 };
 };
 

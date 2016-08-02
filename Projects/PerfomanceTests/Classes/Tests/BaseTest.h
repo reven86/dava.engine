@@ -108,7 +108,7 @@ protected:
     virtual void CreateUI();
     virtual void UpdateUI();
 
-    size_t GetAllocatedMemory();
+    uint32 GetAllocatedMemory();
 
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
 
@@ -144,7 +144,7 @@ private:
     UIStaticText* elapsedTimeText;
     UIStaticText* framesRenderedText;
 
-    size_t maxAllocatedMemory;
+    uint32 maxAllocatedMemory;
 };
 
 inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
