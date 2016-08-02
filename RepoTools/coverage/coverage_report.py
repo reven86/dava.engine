@@ -156,6 +156,8 @@ class CoverageReport():
 
     def generate_report_coverage( self ):
 
+        print '##teamcity[testSuiteStarted name=\'Cover\']'
+
         eState = enum( UNDEF      =0, 
                        FIND_File  =1, 
                        FIND_Lines =2, 
@@ -250,8 +252,9 @@ class CoverageReport():
             for fileCover in testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
-                    print '##teamcity[testFailed name=\'Cover_{0}\' message=\'Coverage test {1}\' details=\'file {2}: {3}% must be at least: {4}%\']'.format(self.executName,test,basename,fileCover.coverLines,CoverageMinimum)
+                    print '##teamcity[testFailed name=\'Cover\' message=\'Coverage test {0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum)
 
+        print '##teamcity[testSuiteFinished name=\'Cover\']'
 
 
 def main():
