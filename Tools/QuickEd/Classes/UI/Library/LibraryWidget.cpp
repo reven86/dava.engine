@@ -18,3 +18,8 @@ void LibraryWidget::OnDocumentChanged(Document* document)
     libraryModel->SetPackageNode(nullptr != document ? document->GetPackage() : nullptr);
     treeView->expandToDepth(0);
 }
+
+void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages)
+{
+    libraryModel->SetLibraryPackages(libraryPackages);
+}

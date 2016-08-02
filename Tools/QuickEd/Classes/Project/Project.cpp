@@ -114,6 +114,15 @@ bool Project::OpenInternal(const QString& path)
             QString currentLocale = QString::fromStdString(localeNode->AsString());
             editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
         }
+        const YamlNode* libraryNode = projectRoot->Get("Library");
+        libraryPackages.clear();
+        if (libraryNode != nullptr)
+        {
+            for (int i = 0; i < libraryNode->GetCount(); i++)
+            {
+                libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
+            }
+        }
     }
 
     return true;
@@ -127,6 +136,11 @@ bool Project::CanOpenProject(const QString& projectPath) const
     }
     QFileInfo fileInfo(projectPath);
     return fileInfo.exists() && fileInfo.isFile();
+}
+
+const Vector<FilePath>& Project::GetLibraryPackages()
+{
+    return libraryPackages;
 }
 
 EditorFontSystem* Project::GetEditorFontSystem() const

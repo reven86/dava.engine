@@ -2,6 +2,7 @@
 #define __UI_EDITOR_LIBRARY_MODEL_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include <QStandardItemModel>
 
@@ -18,12 +19,15 @@ class LibraryModel : public QStandardItemModel, PackageListener
     enum
     {
         POINTER_DATA = Qt::UserRole + 1,
-        INNER_NAME_DATA
+        INNER_NAME_DATA,
+        PROTOTYPE
     };
 
 public:
     LibraryModel(QObject* parent = nullptr);
     ~LibraryModel() override;
+
+    void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
@@ -37,8 +41,8 @@ private:
     void BuildModel();
     void AddControl(ControlNode* node);
     void AddImportedControl(PackageNode* node);
-    void CreateControlsRootItem();
-    void CreateImportPackagesRootItem();
+    void CreateControlsRootItem(int row);
+    void CreateImportPackagesRootItem(int row);
 
     //Package Signals
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -47,7 +51,14 @@ private:
     void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
     void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
     PackageNode* package = nullptr;
-    QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
+
+    DAVA::Vector<PackageNode*> libraryPackages;
+    DAVA::Vector<QStandardItem*> libraryRootItems;
+
+    QStandardItem* defaultControlsRootItem = nullptr;
+    QStandardItem* controlsRootItem = nullptr;
+    QStandardItem* importedPackageRootItem = nullptr;
+
     DAVA::Vector<ControlNode*> defaultControls;
 };
 
