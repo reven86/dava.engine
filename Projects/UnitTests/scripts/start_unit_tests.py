@@ -172,8 +172,6 @@ while continue_process_stdout:
 
 
 if sys.platform == "darwin":
-
-    print '\nStart coverage analysis -->\n'
     pathScriptDir        = os.path.dirname(os.path.realpath(__file__))
     pathCoverageDir      = os.path.realpath( os.path.join(pathScriptDir, '../../../RepoTools/coverage') )
     pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_report.py' )   

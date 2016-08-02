@@ -250,7 +250,7 @@ class CoverageReport():
             for fileCover in testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
-                    print '##teamcity[testFailed name=\'Cover_{0}\' message=\'Coverage ERROR\' details=\'bad cover test {1} in file {2}: {3}% must be at least: {4}%\']'.format(self.executName,test,basename,fileCover.coverLines,CoverageMinimum)
+                    print '##teamcity[testFailed name=\'Cover_{0}\' message=\'Coverage test {1}\' details=\'file {2}: {3}% must be at least: {4}%\']'.format(self.executName,test,basename,fileCover.coverLines,CoverageMinimum)
 
 
 
@@ -264,10 +264,10 @@ def main():
 
     options = parser.parse_args()
 
-    cov = CoverageReport( options  )
+    cov = CoverageReport( options )
 
-    cov.generate_report_html()
     cov.generate_report_coverage()
+    cov.generate_report_html()
 
 
 if __name__ == '__main__':
