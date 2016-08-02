@@ -114,7 +114,7 @@ void HttpServer::OnTransportDisconnected(DAVA::Net::IClientTransport* clt, DAVA:
 
 void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const void* buffer, size_t length)
 {
-    auto& sessionEntry = clientSessions.find(clt);
+    const auto& sessionEntry = clientSessions.find(clt);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;
@@ -140,7 +140,7 @@ void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const
 
 void HttpServer::OnTransportSendComplete(DAVA::Net::IClientTransport* clt)
 {
-    auto& sessionEntry = clientSessions.find(clt);
+    const auto& sessionEntry = clientSessions.find(clt);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;
@@ -196,6 +196,7 @@ void HttpServer::OnDataChunkAdded(ClientSession& session)
             return;
         }
         case ClientSession::Error:
+        default:
         {
             RemoveClient(session.clientID);
             return;
@@ -278,7 +279,7 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
         session.request.version = startingLineTokens[2];
     }
 
-    for (auto& linesIt = lines.begin() + 1; linesIt != lines.end(); ++linesIt)
+    for (auto linesIt = lines.begin() + 1; linesIt != lines.end(); ++linesIt)
     {
         DAVA::String& headerLine = *linesIt;
 
@@ -286,7 +287,7 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
         DAVA::Split(headerLine, " ", tokens);
         if (tokens.size() >= 2 && DAVA::CompareCaseInsensitive(tokens[0], "Content-Length:") == 0)
         {
-            int scannedCount = sscanf(tokens[1].c_str(), "%d", session.contentLength);
+            int scannedCount = sscanf(tokens[1].c_str(), "%u", &session.contentLength);
             if (scannedCount == 1)
             {
                 session.state = ClientSession::WaitingForContentPart;
@@ -323,7 +324,7 @@ void HttpServer::NotifyRequestReceived(ClientID clientId, HttpRequest& rq)
 
 void HttpServer::SendResponse(ClientID clientId, HttpResponse& resp)
 {
-    auto& sessionEntry = clientSessions.find(clientId);
+    const auto& sessionEntry = clientSessions.find(clientId);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;

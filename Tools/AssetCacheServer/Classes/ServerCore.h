@@ -49,7 +49,7 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
-    void SetApplicationPath(DAVA::String& path);
+    void SetApplicationPath(const DAVA::String& path);
 
     void ClearStorage();
     void GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& overall) const;
@@ -60,7 +60,7 @@ public:
     void OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType) override;
 
     // CacheDBOwner
-    void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall);
+    void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) override;
 
     // AssetCacheHttpServerListener
     void OnStatusRequested(ClientID clientId) override;

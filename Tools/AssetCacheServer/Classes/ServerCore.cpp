@@ -275,7 +275,7 @@ void ServerCore::OnStatusRequested(ClientID clientId)
     httpServer.SendStatus(clientId, status);
 }
 
-void ServerCore::SetApplicationPath(DAVA::String& path)
+void ServerCore::SetApplicationPath(const DAVA::String& path)
 {
     appPath = path;
 }
