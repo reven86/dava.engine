@@ -1107,7 +1107,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 void QtMainWindow::UpdateModificationActionsState()
 {
     SceneEditor2* scene = GetCurrentScene();
-    bool isMultiple = (nullptr != scene) && (scene->selectionSystem->GetSelection().GetSize() > 1);
+    bool isMultiple = (nullptr != scene) && (scene->modifSystem->GetTransformableSelection().GetSize() > 1);
 
     // modificationWidget determines inside, if values could be modified and enables/disables itself
     modificationWidget->ReloadValues();
