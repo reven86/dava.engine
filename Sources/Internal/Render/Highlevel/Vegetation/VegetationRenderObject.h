@@ -52,7 +52,7 @@ struct VegetationMetrics
 
     uint32 renderBatchCount;
 
-    bool isValid;
+    bool isValid = false;
 };
 
 /**
