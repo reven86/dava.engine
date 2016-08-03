@@ -71,16 +71,18 @@ class CoverageReport():
         self.pathCovInfo            = os.path.join    ( self.coverageTmpPath, 'cov.info')
         self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
+        self.testsCoverage          = {}
 
         if self.notRunExecutable == 'false' :
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            self.execute( [ pathExecutExt ] )
+            self.__execute( [ pathExecutExt ] )
     
-        self.coppy_gcda_gcno_files()
+        self.__coppy_gcda_gcno_files()
+        self.__load_json_cover_data()
 
 
-    def execute(self, param) :
+    def __execute(self, param) :
 
         sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -98,8 +100,28 @@ class CoverageReport():
                 sys.stdout.write(err.message)
                 sys.stdout.flush()
 
+    def __load_json_cover_data( self ):
+        if not os.path.isfile(self.coverFilePath) or not os.access(self.coverFilePath, os.R_OK):
+            print 'ERROR : file {0} is missing or is not readable'.format( self.coverFilePath )
+            return
 
-    def coppy_gcda_gcno_files( self ):
+        coverFile          = open(self.coverFilePath).read()
+        jsonData           = json.loads(coverFile)
+        projectFolders     = jsonData[ 'ProjectFolders' ].split(' ')
+
+        self.testsCoverage = {}
+
+        for test in jsonData[ 'Coverage' ]:
+            testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
+            for file in testedFiles:
+                for ext in [ 'cpp', 'c']:
+                    find_list = find_file( '{0}.{1}'.format( file, ext ) , projectFolders )
+                    if len( find_list ):
+                        fileCover = FileCover( find_list[0], None )
+                        self.testsCoverage.setdefault(test, []).append( fileCover )
+    
+
+    def __coppy_gcda_gcno_files( self ):
 
         if not os.path.isdir( self.coverageTmpPath ):
             os.makedirs(self.coverageTmpPath) 
@@ -146,7 +168,7 @@ class CoverageReport():
                     '-o', self.pathCovInfo
                  ]
         
-        self.execute( params )
+        self.__execute( params )
 
         #
         params = [ self.pathGenHtml,
@@ -154,7 +176,7 @@ class CoverageReport():
                    '-o', self.pathReportOut
                  ]
 
-        self.execute( params) 
+        self.__execute( params) 
 
         print '##teamcity[testFinished name=\'Generate cover html\']'
 
@@ -168,30 +190,11 @@ class CoverageReport():
                        FIND_Lines =2, 
                        FIND_Taken =3 )
 
-        if not os.path.isfile(self.coverFilePath) or not os.access(self.coverFilePath, os.R_OK):
-            print 'ERROR : file {0} is missing or is not readable'.format( self.coverFilePath )
-            return
-
-        coverFile      = open(self.coverFilePath).read()
-        jsonData       = json.loads(coverFile)
-
-        projectFolders = jsonData[ 'ProjectFolders' ].split(' ')
-        testsCoverage  = {}
-
-        for test in jsonData[ 'Coverage' ]:
-            testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
-            for file in testedFiles:
-                for ext in [ 'cpp', 'c']:
-                    find_list = find_file( '{0}.{1}'.format( file, ext ) , projectFolders )
-                    if len( find_list ):
-                        fileCover = FileCover( find_list[0], None )
-                        testsCoverage.setdefault(test, []).append( fileCover )
-
         os.chdir( self.coverageTmpPath );
-        for test in testsCoverage:
+        for test in self.testsCoverage:
             state = eState.FIND_File
 
-            for fileCover in testsCoverage[ test ]:
+            for fileCover in self.testsCoverage[ test ]:
                 fileName          = os.path.basename( fileCover.file )
                 fileName, fileExt = os.path.splitext( fileName )
 
@@ -245,16 +248,16 @@ class CoverageReport():
                             sys.stdout.write(err.message)
                             sys.stdout.flush()
 
-        for test in testsCoverage:
-            for fileCover in testsCoverage[ test ]:
+        for test in self.testsCoverage:
+            for fileCover in self.testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
                     print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
             print ''
 
 
-        for test in testsCoverage:
-            for fileCover in testsCoverage[ test ]:
+        for test in self.testsCoverage:
+            for fileCover in self.testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
                     print '##teamcity[testFailed name=\'Cover\' message=\'{0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum)
