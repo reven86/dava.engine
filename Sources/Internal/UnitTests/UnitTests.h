@@ -199,7 +199,7 @@
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
     DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
         DAVA::Vector<DAVA::String> result; \
-        result.emplace_back(RemoveTestPostfix( PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
+        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
         return result; \
     }
 

@@ -82,14 +82,12 @@ void GameCore::OnAppStarted()
     }
     else
     {
-#if defined( TEST_COVERAGE )
-        RefPtr<File> covergeFile(File::Create( CoveredFileName, File::CREATE | File::WRITE ) );
+#if defined(TEST_COVERAGE)
+        RefPtr<File> covergeFile(File::Create(CoveredFileName, File::CREATE | File::WRITE));
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
-        
     }
-
 }
 
 void GameCore::OnAppFinished()
@@ -102,7 +100,6 @@ void GameCore::OnAppFinished()
 #if defined(__DAVAENGINE_WIN_UAP__)
     UnInitNetwork();
 #endif
-    
 }
 
 void GameCore::OnSuspend()
@@ -194,38 +191,36 @@ void GameCore::ProcessTests(float32 timeElapsed)
             }
         }
         
-#if defined( TEST_COVERAGE )
+#if defined(TEST_COVERAGE)
         RefPtr<File> covergeFile(File::Create(CoveredFileName, File::APPEND | File::WRITE));
         TEST_VERIFY(covergeFile);
-        
-        auto toJson= [&covergeFile] (DAVA::String item)  { covergeFile->Write( item.c_str(), item.size() ); };
 
-        toJson( "{ \n    \"ProjectFolders\": \"" + DAVA::String( DAVA_FOLDERS ) + "\",\n" );
-        
-        toJson( "    \"Coverage\":  {\n" );
-        
+        auto toJson = [&covergeFile](DAVA::String item) { covergeFile->Write(item.c_str(), item.size()); };
+
+        toJson("{ \n    \"ProjectFolders\": \"" + DAVA::String(DAVA_FOLDERS) + "\",\n");
+
+        toJson("    \"Coverage\":  {\n");
+
         for (const auto& x : map)
         {
-            toJson( "         \"" + x.first + "\": \"" );
-            
+            toJson("         \"" + x.first + "\": \"");
+
             const Vector<String>& v = x.second;
             for (const auto& s : v)
             {
-                toJson( s + ( &s != &*v.rbegin() ?  " " : "" ) );
+                toJson(s + (&s != &*v.rbegin() ? " " : ""));
             }
-            
-            toJson( x.first != map.rbegin()->first ? "\",\n" : "\"\n" );
+
+            toJson(x.first != map.rbegin()->first ? "\",\n" : "\"\n");
         }
-        
-        toJson( "     }\n" );
-        toJson( "}\n" );
+
+        toJson("     }\n");
+        toJson("}\n");
 
         
 #endif // TEST_COVERAGE
-        
-        
+
         FinishTests();
-        
     }
 }
 
