@@ -202,12 +202,12 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
         }
     }
     int result = FileAPI::RenameFile(fromFile.c_str(), toFile.c_str());
-    if (result == EXDEV)
+    if (0 != result && EXDEV == errno)
     {
-        result = FileSystem::CopyFile(existingFile, newFile);
+        result = CopyFile(existingFile, newFile);
         if (result)
         {
-            result = FileSystem::DeleteFile(existingFile);
+            result = DeleteFile(existingFile);
             if (result)
             {
                 result = 0;
