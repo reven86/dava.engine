@@ -274,8 +274,8 @@ def main():
 
     cov = CoverageReport( options )
 
-    cov.generate_report_coverage()
     cov.generate_report_html()
+    cov.generate_report_coverage()
 
 
 if __name__ == '__main__':
