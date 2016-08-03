@@ -137,10 +137,7 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
     }
 
     HRESULT hr = _D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl);
-
-    if (FAILED(hr))
-    {
-    }
+    CHECK_HR(hr)
 
     return vdecl;
 }
@@ -300,10 +297,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
     }
 
     HRESULT hr = _D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl);
-
-    if (FAILED(hr))
-    {
-    }
+    CHECK_HR(hr)
 
     return vdecl;
 }

@@ -286,6 +286,9 @@ public:
     void SetDefaultTapCountSettings();
     void SetTapCountSettings(float32 time, float32 inch);
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+
 private:
     void ProcessScreenLogic();
 
@@ -337,6 +340,9 @@ private:
         bool lastClickEnded = false;
     };
     LastClickData lastClickData;
+
+    int32 ui3DViewCount = 0;
+    bool needClearMainPass = true;
 };
 };
 

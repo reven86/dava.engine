@@ -62,6 +62,8 @@ AutotestingSystem::~AutotestingSystem()
     SafeRelease(luaSystem);
     if (AutotestingDB::Instance())
         AutotestingDB::Instance()->Release();
+
+    SafeRelease(screenShotTexture);
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -137,6 +139,17 @@ void AutotestingSystem::OnAppStarted()
     AutotestingDB::Instance()->WriteLogHeader();
 
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
+
+    Size2i size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+    Texture::FBODescriptor desc;
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = FORMAT_RGBA8888;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+
+    screenShotTexture = Texture::CreateFBO(desc);
 }
 
 void AutotestingSystem::OnAppFinished()
@@ -378,7 +391,22 @@ void AutotestingSystem::MakeScreenShot()
     screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
     String log = Format("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
     AutotestingDB::Instance()->Log("INFO", log.c_str());
-    Renderer::RequestGLScreenShot(this);
+
+    UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
+    if (currentScreen)
+    {
+        const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+        rhi::Viewport viewport;
+        viewport.x = viewport.y = 0;
+        viewport.width = size.dx;
+        viewport.height = size.dy;
+        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, viewport);
+    }
+    else
+    {
+        Logger::Error("AutotestingSystem::MakeScreenShot no current screen");
+    }
 }
 
 const String& AutotestingSystem::GetScreenShotName()
@@ -387,24 +415,28 @@ const String& AutotestingSystem::GetScreenShotName()
     return screenShotName;
 }
 
-void AutotestingSystem::OnScreenShot(Image* image)
+void AutotestingSystem::OnScreenShot(Texture* texture)
 {
-    Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
+    Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, texture);
     JobManager::Instance()->CreateWorkerJob(fn);
     isScreenShotSaving = true;
 }
 
-void AutotestingSystem::OnScreenShotInternal(Image* image)
+void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 {
-    DVASSERT(image);
+    DVASSERT(texture);
 
     Logger::Info("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+
+    DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
+    const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
+
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
     isScreenShotSaving = false;
-    SafeRelease(image);
 }
 
 void AutotestingSystem::ClickSystemBack()

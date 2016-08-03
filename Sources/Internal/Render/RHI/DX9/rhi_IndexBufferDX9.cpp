@@ -113,15 +113,20 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }
+    else
+    {
+        SetRecreatePending(false);
+    }
 
-    if (!RecreatePending() && mappedData)
+    if (!RecreatePending() && (mappedData != nullptr))
     {
         DVASSERT(!isMapped)
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;
-        isMapped = false;
     }
+
+    MarkRestored();
 }
 
 //------------------------------------------------------------------------------
@@ -129,8 +134,6 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 static Handle
 dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 {
-    CommandBufferDX9::BlockNonRenderThreads();
-
     Handle handle = IndexBufferDX9Pool::Alloc();
     IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get(handle);
 
@@ -150,7 +153,6 @@ dx9_IndexBuffer_Delete(Handle ib)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->SetRecreatePending(false);
-    self->MarkRestored();
     self->Destroy();
     IndexBufferDX9Pool::Free(ib);
 }
@@ -290,13 +292,7 @@ void SetToRHI(Handle ib)
 
 void ReleaseAll()
 {
-    IndexBufferDX9Pool::Lock();
-    for (IndexBufferDX9Pool::Iterator b = IndexBufferDX9Pool::Begin(), b_end = IndexBufferDX9Pool::End(); b != b_end; ++b)
-    {
-        b->SetRecreatePending(true);
-        b->Destroy(true);
-    }
-    IndexBufferDX9Pool::Unlock();
+    IndexBufferDX9Pool::ReleaseAll();
 }
 
 void ReCreateAll()
@@ -304,8 +300,12 @@ void ReCreateAll()
     IndexBufferDX9Pool::ReCreateAll();
 }
 
-unsigned
-NeedRestoreCount()
+void LogUnrestoredBacktraces()
+{
+    IndexBufferDX9Pool::LogUnrestoredBacktraces();
+}
+
+unsigned NeedRestoreCount()
 {
     return IndexBufferDX9Pool::PendingRestoreCount();
 }

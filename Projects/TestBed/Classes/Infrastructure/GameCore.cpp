@@ -27,6 +27,7 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 //$UNITTEST_INCLUDE
 
@@ -217,6 +218,7 @@ void GameCore::RegisterTests()
     new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
+    new AssertTest();
     new FloatingPointExceptionTest(this);
     new PackManagerTest(this);
     //$UNITTEST_CTOR
@@ -228,6 +230,8 @@ using namespace DAVA::Net;
 #if !defined(__DAVAENGINE_COREV2__)
 void GameCore::OnAppStarted()
 {
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 

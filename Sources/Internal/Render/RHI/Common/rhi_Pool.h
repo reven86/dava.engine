@@ -1,9 +1,15 @@
 #pragma once
 
+#define RHI_RESOURCE_INCLUDE_BACKTRACE 0
+
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/LockGuard.h"
 #include "MemoryManager/MemoryProfiler.h"
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+#include "Debug/Backtrace.h"
+#endif
 
 namespace rhi
 {
@@ -37,7 +43,9 @@ public:
     static bool IsAlive(Handle h);
 
     static void Reserve(unsigned maxCount);
+    static unsigned ReleaseAll();
     static unsigned ReCreateAll();
+    static void LogUnrestoredBacktraces();
 
     static uint32 PendingRestoreCount();
 
@@ -69,6 +77,11 @@ public:
             return i.entry != this->entry;
         }
 
+        Entry* GetEntry() const
+        {
+            return entry;
+        }
+
     private:
         friend class ResourcePool<T, RT, DT, need_restore>;
 
@@ -97,6 +110,24 @@ private:
         uint32 allocated : 1;
         uint32 generation : 8;
         uint32 nextObjectIndex : 16;
+        uint32 pad : 7;
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+        enum : uint32
+        {
+            MAX_BACKTRACE_SIZE = 32,
+            FRAMES_TO_SKIP = 3
+        };
+
+        void* backtrace[MAX_BACKTRACE_SIZE];
+        uint32 backtraceFrameCount = 0;
+
+        void CaptureBacktrace()
+        {
+            memset(backtrace, sizeof(backtrace), 0);
+            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MAX_BACKTRACE_SIZE));
+        }
+#endif
     };
 
     static Entry* Object;
@@ -163,6 +194,10 @@ ResourcePool<T, RT, DT, nr>::Alloc()
 
     e->allocated = true;
     ++e->generation;
+
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    e->CaptureBacktrace();
+#endif
 
     handle = 0;
     handle = ((uint32(e - Object) << HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) |
@@ -247,6 +282,24 @@ ResourcePool<T, RT, DT, nr>::End()
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline unsigned
+ResourcePool<T, RT, DT, nr>::ReleaseAll()
+{
+    DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
+
+    unsigned count = 0;
+    for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
+    {
+        i->SetRecreatePending(true);
+        i->Destroy(true);
+        ++count;
+    }
+    return count;
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline unsigned
 ResourcePool<T, RT, DT, nr>::ReCreateAll()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
@@ -254,15 +307,50 @@ ResourcePool<T, RT, DT, nr>::ReCreateAll()
     unsigned count = 0;
     for (Iterator i = Begin(), i_end = End(); i != i_end; ++i)
     {
-        DT desc = i->CreationDesc();
-        i->SetRecreatePending(true);
-        i->Destroy(true);
-        i->Create(desc, true);
-        i->SetRecreatePending(false);
-        i->MarkNeedRestore();
+        if (i->RecreatePending())
+        {
+            i->Create(i->CreationDesc(), true);
+            i->SetRecreatePending(false);
+            i->MarkNeedRestore();
+        }
         ++count;
     }
     return count;
+}
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline void
+ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
+{
+#if (RHI_RESOURCE_INCLUDE_BACKTRACE)
+    uint32 total = 0;
+    uint32 unrestored = 0;
+    uint32 counter = ResourceImpl<T, DT>::PendingRestoreCount();
+
+    Lock();
+    for (Iterator i = Begin(), e = End(); i != e; ++i)
+    {
+        if (i->NeedRestore())
+        {
+            DAVA::Logger::Error("----------------------------");
+            Entry* entry = i.GetEntry();
+            for (uint32 frame = Entry::FRAMES_TO_SKIP; frame < entry->backtraceFrameCount; ++frame)
+            {
+                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(entry->backtrace[frame]);
+                DAVA::Logger::Error(symbol.c_str());
+            }
+            ++unrestored;
+        }
+        ++total;
+    }
+    Unlock();
+
+    DAVA::Logger::Error("----------------------------------------------");
+    DAVA::Logger::Error("Unrestored resources: %u of %u, counter = %u", unrestored, total, counter);
+    DAVA::Logger::Error("----------------------------------------------");
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -356,6 +444,5 @@ ResourcePool<T, RT, DT, nr>::PendingRestoreCount()
     return ResourceImpl<T, DT>::PendingRestoreCount();
 }
 
-#define RHI_IMPL_RESOURCE(T, DT) \
-template<> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
+#define RHI_IMPL_RESOURCE(T, DT) template <> DAVA::Atomic<uint32> rhi::ResourceImpl<T, DT>::ObjectsToRestore(0);
 }
