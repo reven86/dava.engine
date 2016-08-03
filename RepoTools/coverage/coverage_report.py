@@ -69,6 +69,7 @@ class CoverageReport():
 
         self.coverFilePath          = os.path.join    ( self.pathExecutDir,   '{0}.cover'.format( self.executName ) )
         self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
+        self.pathLlvmProfdata       = os.path.join    ( self.pathCoverageDir, 'llvm-profdata')
         self.pathCallLlvmGcov       = os.path.join    ( self.pathCoverageDir, 'llvm-gcov.sh')
         self.pathLcov               = os.path.join    ( self.pathCoverageDir, 'lcov')
         self.pathCovInfoFull        = os.path.join    ( self.coverageTmpPath, 'cov_full.info')
@@ -153,6 +154,40 @@ class CoverageReport():
 
             shutil.copy(file, self.coverageTmpPath )
 
+    def __error_coverage_file_log( self, test, file ):
+
+        os.chdir( self.pathExecutDir );
+
+        pathExecutExt = get_exe( self.pathExecut )
+        param = [ self.pathLlvmCov, 
+                  'show', 
+                  pathExecutExt, 
+                  '-instr-profile={0}.profdata'.format(self.executName), 
+                  file  
+                ] 
+        sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        subProcessContinue = True
+        while subProcessContinue:
+            try:
+                line = sub_process.stdout.readline()
+                if line == '':
+                    subProcessContinue = False
+                    continue
+
+                split_line = line.split( )
+                if len( split_line ) == 0:
+                    continue
+                
+                coverValue = re.findall('\d+', split_line[0])
+                if len( coverValue ) > 0 and int(coverValue[0]) == 0:
+                    lineValue = re.findall('\d+', split_line[1])
+                    print '{0}:{1}: warning: bad cover test :{2}'.format(file,int(lineValue[0]),test)
+
+            except IOError as err:
+                sys.stdout.write(err.message)
+                sys.stdout.flush()
+
 
     def generate_report_html( self ):
 
@@ -165,7 +200,7 @@ class CoverageReport():
 
         os.chdir( self.pathCoverageDir ) 
 
-###
+        ###
         params = [ self.pathLcov,
                     '--directory',      self.coverageTmpPath,  
                     '--base-directory', self.pathExecutDir,
@@ -174,7 +209,8 @@ class CoverageReport():
                     '-o', self.pathCovInfoFull
                  ]        
         self.__execute( params )
-###        
+        
+        ###        
         params = [ self.pathLcov,
                     '--extract', self.pathCovInfoFull, 
                     '-o', self.pathCovInfoTests
@@ -183,7 +219,7 @@ class CoverageReport():
          
         self.__execute( params ) 
 
-###
+        ###
         params = [ self.pathGenHtml,
                    self.pathCovInfoFull, 
                    '-o', self.pathReportOutFull,
@@ -197,7 +233,7 @@ class CoverageReport():
                    '--legend'
                  ]
         self.__execute( params)         
-###
+        ###
 
         print '##teamcity[testFinished name=\'Generate cover html\']'
 
@@ -211,7 +247,10 @@ class CoverageReport():
                        FIND_Lines =2, 
                        FIND_Taken =3 )
 
-        os.chdir( self.coverageTmpPath );
+
+        self.__execute( [ self.pathLlvmProfdata, 'merge', '-o', '{0}.profdata'.format(self.executName), 'default.profraw' ] )
+
+        os.chdir( self.coverageTmpPath )
         for test in self.testsCoverage:
             state = eState.FIND_File
 
@@ -276,6 +315,11 @@ class CoverageReport():
                     print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
             print ''
 
+        for test in self.testsCoverage:
+            for fileCover in self.testsCoverage[ test ]:
+                if CoverageMinimum > fileCover.coverLines:                
+                    basename = os.path.basename( fileCover.file )
+                    self.__error_coverage_file_log( test, fileCover.file )
 
         for test in self.testsCoverage:
             for fileCover in self.testsCoverage[ test ]:
@@ -298,7 +342,7 @@ def main():
 
     cov = CoverageReport( options )
 
-    cov.generate_report_html()
+    #cov.generate_report_html()
     cov.generate_report_coverage()
 
 
