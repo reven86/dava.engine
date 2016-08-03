@@ -100,9 +100,9 @@ bool FrameReady()
 
 uint32 FramesCount()
 {
-    FrameLoop::frameSync.Lock();
+    frameSync.Lock();
     uint32 frame_cnt = static_cast<uint32>(frames.size());
-    FrameLoop::frameSync.Unlock();
+    frameSync.Unlock();
     return frame_cnt;
 }
 void AddPass(Handle pass, uint32 priority)
@@ -115,6 +115,7 @@ void AddPass(Handle pass, uint32 priority)
         DispatchPlatform::InvalidateFrameCache();
     }
     frames.back().pass.push_back(pass);
+    frameSync.Unlock();
 }
 }
 }
