@@ -212,6 +212,13 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
 
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
+
+        if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
+        {
+            float32 value = 0.0f;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
+            _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
+        }
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
