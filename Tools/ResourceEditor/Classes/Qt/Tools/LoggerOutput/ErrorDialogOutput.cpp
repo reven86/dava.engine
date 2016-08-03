@@ -40,7 +40,7 @@ bool HasIgnoredWords(const DAVA::String& testedString)
 
     for (const DAVA::String& word : ignoredWords)
     {
-        if (testedString.find_first_of(word) != DAVA::String::npos)
+        if (testedString.find(word) != DAVA::String::npos)
         {
             return true;
         }
