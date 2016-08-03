@@ -28,6 +28,7 @@ Project::Project(QObject* parent)
 
 Project::~Project()
 {
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 bool Project::Open(const QString& path)
