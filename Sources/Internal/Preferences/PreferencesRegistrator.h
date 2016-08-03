@@ -22,6 +22,7 @@ class PreferencesRegistrator
 {
 public:
     PreferencesRegistrator(T* obj);
+    ~PreferencesRegistrator();
 
 private:
     T* objectPtr = nullptr;
@@ -32,6 +33,12 @@ PreferencesRegistrator<T>::PreferencesRegistrator(T* obj)
     : objectPtr(obj)
 {
     PreferencesStorage::Instance()->RegisterPreferences(objectPtr);
+}
+
+template <typename T>
+PreferencesRegistrator<T>::~PreferencesRegistrator()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(objectPtr);
 }
 
 //use this macro to register PreferencesRegistrator as class member. Will not work if preferences methods use class members, which will be created in c-tor after
