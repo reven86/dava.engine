@@ -106,7 +106,7 @@ ColorControl::ColorControl()
 
 ColorControl::~ColorControl()
 {
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
+    PreferencesStorage::Instance()->UnregisterPreferences(this); // TODO: fix REGISTER_PREFERENCES for unregistring preferences
 }
 
 Color ColorControl::GetBackgroundColor0() const
