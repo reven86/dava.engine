@@ -73,16 +73,16 @@ class CoverageReport():
 
 
         if self.notRunExecutable == 'false' :
-            self.run_executable()
+            pathExecutExt = get_exe( self.pathExecut )
+            os.chdir( self.pathExecutDir )
+            self.execute( [ pathExecutExt ] )
     
         self.coppy_gcda_gcno_files()
 
 
-    def run_executable(self) :
-        pathExecutExt = get_exe( self.pathExecut )
+    def execute(self, param) :
 
-        os.chdir( self.pathExecutDir )
-        sub_process = subprocess.Popen([pathExecutExt], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         subProcessContinue = True
 
@@ -146,7 +146,7 @@ class CoverageReport():
                     '-o', self.pathCovInfo
                  ]
         
-        subprocess.call(params)
+        self.execute( params )
 
         #
         params = [ self.pathGenHtml,
@@ -154,8 +154,8 @@ class CoverageReport():
                    '-o', self.pathReportOut
                  ]
 
-        subprocess.call(params)
-        
+        self.execute( params) 
+
         print '##teamcity[testFinished name=\'Generate cover html\']'
 
 
