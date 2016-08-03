@@ -60,6 +60,7 @@ private:
     QStandardItem* importedPackageRootItem = nullptr;
 
     DAVA::Vector<ControlNode*> defaultControls;
+    DAVA::Vector<DAVA::FilePath> libraryPackagePaths;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__

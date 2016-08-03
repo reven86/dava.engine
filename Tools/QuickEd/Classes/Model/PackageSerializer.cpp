@@ -189,6 +189,17 @@ void PackageSerializer::CollectPackages(Vector<PackageNode*>& packages, ControlN
         }
     }
 
+    for (int32 index = 0; index < node->GetPackage()->GetImportedPackagesNode()->GetCount(); index++)
+    {
+        PackageNode* package = node->GetPackage()->GetImportedPackagesNode()->GetImportedPackage(index);
+        StyleSheetsNode* styles = package->GetStyleSheets();
+        for (int i = 0; i < styles->GetCount(); i++)
+        {
+            StyleSheetNode* node = styles->Get(i);
+            node->Get
+        }
+    }
+
     for (int32 index = 0; index < node->GetCount(); index++)
         CollectPackages(packages, node->Get(index));
 }
