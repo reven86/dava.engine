@@ -160,7 +160,7 @@ void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
 
 void CoreV2Test::DispatcherEventHandler(int type)
 {
-    Logger::Debug("###### CoreV2Test::EventHandler: thread=%llu, type=%d", Thread::GetCurrentIdAsInteger(), type);
+    Logger::Debug("###### CoreV2Test::EventHandler: thread=%llu, type=%d", Thread::GetCurrentIdAsUInt64(), type);
     if (type == 1 || type == 2 || type == 3)
     {
         // 1: post to even dispatchers

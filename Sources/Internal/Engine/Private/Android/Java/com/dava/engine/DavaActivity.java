@@ -10,17 +10,18 @@ import android.util.Log;
 
 public final class DavaActivity extends Activity
 {
-    public static final boolean CALL_NATIVE = true;
     public static final String LOG_TAG = "DAVA";
-
     public static DavaActivity activitySingleton;
     
     private static Thread davaMainThread;
-    
-    protected boolean isPaused;
-    protected boolean hasFocus;
 
-    private DavaSurface primarySurface;
+    protected boolean isPaused = true;
+    protected boolean hasFocus = false;
+    protected boolean exitCalledFromJava = false;
+
+    protected DavaCommandHandler commandHandler;
+    
+    private DavaSurfaceView primarySurfaceView;
     private ViewGroup layout;
 
     static {
@@ -29,23 +30,17 @@ public final class DavaActivity extends Activity
         System.loadLibrary("TestBed");
     }
     
-    public static native void nativeInitEngine(String externalFilesDir,
-                                               String internalFilesDir,
-                                               String appPath,
-                                               String packageName,
-                                               String cmdline);
+    public static native void nativeInitializeEngine(String externalFilesDir,
+                                                     String internalFilesDir,
+                                                     String appPath,
+                                                     String packageName,
+                                                     String cmdline);
+    public static native void nativeShutdownEngine();
     public static native long nativeOnCreate();
-    public static native void nativeOnStart();
     public static native void nativeOnResume();
     public static native void nativeOnPause();
-    public static native void nativeOnStop();
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
-    
-    public DavaActivity()
-    {
-        super();
-    }
     
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -53,6 +48,7 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
+        commandHandler = new DavaCommandHandler();
         
         Application app = getApplication();
         String externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -60,38 +56,20 @@ public final class DavaActivity extends Activity
         String sourceDir = app.getApplicationInfo().publicSourceDir;
         String packageName = app.getApplicationInfo().packageName;
         String cmdline = GetCommandLine();
-        nativeInitEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
+        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
-        if (CALL_NATIVE)
-        {
-            long primaryWindowBackendPointer = nativeOnCreate();
-            primarySurface = new DavaSurface(getApplication(), primaryWindowBackendPointer, true);
-        }
-        else
-        {
-            primarySurface = new DavaSurface(getApplication(), 0, true);
-        }
+        long primaryWindowBackendPointer = nativeOnCreate();
+        primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         
         layout = new RelativeLayout(this);
-        layout.addView(primarySurface);
+        layout.addView(primarySurfaceView);
         setContentView(layout);
-        
-        isPaused = true;
-        hasFocus = false;
     }
 
     protected void onStart()
     {
         Log.d(LOG_TAG, "DavaActivity.onStart");
         super.onStart();
-        
-        if (davaMainThread != null)
-        {
-            if (CALL_NATIVE)
-            {
-                nativeOnStart();
-            }
-        }
     }
 
     protected void onResume()
@@ -110,51 +88,36 @@ public final class DavaActivity extends Activity
         handlePause();
     }
 
-    protected void onStop()
-    {
-        Log.d(LOG_TAG, "DavaActivity.onStop");
-        super.onStop();
-        
-        if (davaMainThread != null)
-        {
-            if (CALL_NATIVE)
-            {
-                nativeOnStop();
-            }
-        }
-    }
-
     protected void onRestart()
     {
         Log.d(LOG_TAG, "DavaActivity.onRestart");
         super.onRestart();
     }
+    
+    protected void onStop()
+    {
+        Log.d(LOG_TAG, "DavaActivity.onStop");
+        super.onStop();
+    }
 
     protected void onDestroy()
     {
         Log.d(LOG_TAG, "DavaActivity.onDestroy");
-        
-        if (CALL_NATIVE)
-        {
-            nativeOnDestroy();
-        }
-        Log.d(LOG_TAG, "DavaActivity.onDestroy: nativeOnDestroy called");
-        
+        super.onDestroy();
+
+        exitCalledFromJava = true;
+        nativeOnDestroy();
         if (davaMainThread != null)
         {
-            Log.d(LOG_TAG, "DavaActivity.onDestroy: wait thread");
             try {
                 davaMainThread.join();
             } catch (Exception e) {
-                Log.e(LOG_TAG, "DavaActivity.onDestroy: davaWatcherThread.join() failed " + e);
+                Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
             }
-
             davaMainThread = null;
         }
+        nativeShutdownEngine();
         activitySingleton = null;
-        
-        super.onDestroy();
-        Log.d(LOG_TAG, "DavaActivity.onDestroy: leave");
     }
     
     public void onWindowFocusChanged(boolean hasWindowFocus)
@@ -176,54 +139,35 @@ public final class DavaActivity extends Activity
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void handleResume()
+    protected void handleResume()
     {
-        if (davaMainThread == null)
-        {
-            if (CALL_NATIVE)
-            {
-                startDavaMainThread();
-            }
-        }
-        
+        startDavaMainThreadIfNotRunning();
         if (isPaused && hasFocus)
         {
-            Log.d(LOG_TAG, "********* DavaActivity.handleResume");
             isPaused = false;
-            
-            if (CALL_NATIVE)
-            {
-                nativeOnResume();
-            }
-            primarySurface.handleResume();
+            nativeOnResume();
+            primarySurfaceView.handleResume();
         }
     }
 
-    public void handlePause()
+    protected void handlePause()
     {
         if (!isPaused)
         {
-            Log.d(LOG_TAG, "********* DavaActivity.handlePause");
             isPaused = true;
-            
-            primarySurface.handlePause();
-            if (CALL_NATIVE)
-            {
-                nativeOnPause();
-            }
+            primarySurfaceView.handlePause();
+            nativeOnPause();
         }
     }
 
-    protected void startDavaMainThread()
+    protected void startDavaMainThreadIfNotRunning()
     {
         if (davaMainThread == null)
         {
             davaMainThread = new Thread(new Runnable() {
-                @Override
-                public void run()
+                @Override public void run()
                 {
                     nativeGameThread();
-                    Log.d(LOG_TAG, "########## main-thread: leave");
                 }
             }, "DAVA main thread");
             davaMainThread.start();
@@ -232,7 +176,7 @@ public final class DavaActivity extends Activity
     
     private String GetCommandLine()
     {
-        String result = "";
+        String result = "app_process ";
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {

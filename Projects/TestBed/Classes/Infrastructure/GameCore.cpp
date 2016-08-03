@@ -55,6 +55,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#elif defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
 
     bool console = false;
@@ -155,7 +157,7 @@ void GameCore::OnWindowDestroyed(DAVA::Window& w)
 
 void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
-    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }
 
 void GameCore::OnSuspended()

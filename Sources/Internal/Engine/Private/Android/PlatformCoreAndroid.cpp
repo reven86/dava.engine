@@ -11,23 +11,20 @@
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
 #include "Platform/SystemTimer.h"
-#include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 
-extern DAVA::Private::AndroidBridge* androidBridge;
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
 namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore(EngineBackend* ebackend)
-    : engineBackend(ebackend)
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(engineBackend)
     , dispatcher(engineBackend->GetDispatcher())
-    , bridge(androidBridge)
     , nativeService(new NativeService(this))
 {
-    androidBridge->core = this;
+    AndroidBridge::AttachPlatformCore(this);
 }
 
 PlatformCore::~PlatformCore() = default;
@@ -68,60 +65,47 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::GameThread()
+WindowBackend* PlatformCore::ActivityOnCreate()
 {
-    Logger::Info("******** PlatformCore::GameThread: enter");
-
-    Vector<String> cmdline;
-    GameMain(std::move(cmdline));
-
-    Logger::Info("******** PlatformCore::GameThread: leave");
-}
-
-WindowBackend* PlatformCore::OnCreate()
-{
-    Logger::Info("******** PlatformCore::OnCreate: thread=%llX", Thread::GetCurrentIdAsInteger());
+    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnCreate");
 
     WindowBackend* primaryWindowBackend = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
     return primaryWindowBackend;
 }
 
-void PlatformCore::OnStart()
+void PlatformCore::ActivityOnResume()
 {
-    Logger::Info("******** PlatformCore::OnStart: thread=%llX", Thread::GetCurrentIdAsInteger());
-}
+    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnResume");
 
-void PlatformCore::OnResume()
-{
-    Logger::Info("******** PlatformCore::OnResume: thread=%llX", Thread::GetCurrentIdAsInteger());
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_RESUMED;
+    MainDispatcherEvent e(MainDispatcherEvent::APP_RESUMED);
     dispatcher->PostEvent(e);
 }
 
-void PlatformCore::OnPause()
+void PlatformCore::ActivityOnPause()
 {
-    Logger::Info("******** PlatformCore::OnPause: thread=%llX", Thread::GetCurrentIdAsInteger());
+    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnPause");
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_SUSPENDED;
+    MainDispatcherEvent e(MainDispatcherEvent::APP_SUSPENDED);
     dispatcher->SendEvent(e); // Blocking call !!!
 }
 
-void PlatformCore::OnStop()
+void PlatformCore::ActivityOnDestroy()
 {
-    Logger::Info("******** PlatformCore::OnStop: thread=%llX", Thread::GetCurrentIdAsInteger());
+    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnDestroy");
+
+    // Do nonblocking call as Java part will wait until native thread is finished
+    MainDispatcherEvent e(MainDispatcherEvent::APP_IMMEDIATE_TERMINATE);
+    dispatcher->PostEvent(e);
 }
 
-void PlatformCore::OnDestroy()
+void PlatformCore::GameThread()
 {
-    Logger::Info("******** PlatformCore::OnDestroy: thread=%llX", Thread::GetCurrentIdAsInteger());
+    Logger::FrameworkDebug("=========== PlatformCore::GameThread: enter");
 
-    MainDispatcherEvent e;
-    e.window = nullptr;
-    e.type = MainDispatcherEvent::APP_IMMEDIATE_TERMINATE;
-    dispatcher->PostEvent(e);
+    Vector<String> cmdline;
+    GameMain(std::move(cmdline));
+
+    Logger::FrameworkDebug("=========== PlatformCore::GameThread: leave");
 }
 
 } // namespace Private

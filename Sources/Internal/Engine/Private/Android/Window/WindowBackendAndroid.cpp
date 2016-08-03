@@ -7,6 +7,7 @@
 #include "Engine/Public/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
@@ -29,23 +30,18 @@ WindowBackend::~WindowBackend() = default;
 
 bool WindowBackend::Create(float32 width, float32 height)
 {
+    // For now primary window is created in java, later add ability to create secondary (presentation) windows
     return false;
 }
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    // Android windows are always stretched to screen size
 }
 
 void WindowBackend::Close()
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+    // For now android windows cannot be closed. Later add ability to close non-primary windows
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -73,10 +69,8 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        DoCloseWindow();
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -88,50 +82,107 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 
 void WindowBackend::OnResume()
 {
-    Logger::Info("******** WindowBackend::OnResume: thread=%llX", Thread::GetCurrentIdAsInteger());
-
     window->PostVisibilityChanged(true);
     window->PostFocusChanged(true);
 }
 
 void WindowBackend::OnPause()
 {
-    Logger::Info("******** WindowBackend::OnPause: thread=%llX", Thread::GetCurrentIdAsInteger());
-
     window->PostFocusChanged(false);
     window->PostVisibilityChanged(false);
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int width, int height)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height)
 {
-    Logger::Info("******** WindowBackend::SurfaceChanged: thread=%llX, w=%d, h=%d", Thread::GetCurrentIdAsInteger(), width, height);
-
-    if (androidWindow != nullptr)
     {
-        ANativeWindow_release(androidWindow);
+        ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
+
+        MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
+        e.functor = [this, nativeWindow]() {
+            if (androidWindow != nullptr)
+            {
+                ANativeWindow_release(androidWindow);
+            }
+            androidWindow = nativeWindow;
+        };
+        dispatcher->PostEvent(e);
     }
-    androidWindow = ANativeWindow_fromSurface(env, surface);
 
     if (firstTimeSurfaceChanged)
     {
-        window->PostWindowCreated(this, static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+        MainDispatcherEvent e(MainDispatcherEvent::WINDOW_CREATED, window);
+        e.windowCreatedEvent.windowBackend = this;
+        e.windowCreatedEvent.size.width = static_cast<float32>(width);
+        e.windowCreatedEvent.size.height = static_cast<float32>(height);
+        e.windowCreatedEvent.size.scaleX = 1.0f;
+        e.windowCreatedEvent.size.scaleY = 1.0f;
+        dispatcher->PostEvent(e);
+
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        window->PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+        MainDispatcherEvent e(MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED, window);
+        e.sizeEvent.width = static_cast<float32>(width);
+        e.sizeEvent.height = static_cast<float32>(height);
+        e.sizeEvent.scaleX = 1.0f;
+        e.sizeEvent.scaleY = 1.0f;
+        dispatcher->PostEvent(e);
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
-    Logger::Info("******** WindowBackend::SurfaceDestroyed: thread=%llX", Thread::GetCurrentIdAsInteger());
-
-    if (androidWindow != nullptr)
+    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
+    e.functor = [this]()
     {
-        ANativeWindow_release(androidWindow);
-        androidWindow = nullptr;
+        if (androidWindow != nullptr)
+        {
+            ANativeWindow_release(androidWindow);
+            androidWindow = nullptr;
+        }
+    };
+    dispatcher->PostEvent(e);
+}
+
+void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
+{
+    enum
+    {
+        ACTION_DOWN = 0,
+        ACTION_UP = 1,
+        ACTION_MOVE = 2,
+        ACTION_POINTER_DOWN = 5,
+        ACTION_POINTER_UP = 6
+    };
+
+    if (action == ACTION_POINTER_DOWN)
+        action = ACTION_DOWN;
+    else if (action == ACTION_POINTER_UP)
+        action = ACTION_UP;
+
+    MainDispatcherEvent e(window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+
+    switch (action)
+    {
+    case ACTION_MOVE:
+        e.type = MainDispatcherEvent::TOUCH_MOVE;
+        e.tmoveEvent.touchId = touchId;
+        e.tmoveEvent.x = x;
+        e.tmoveEvent.y = y;
+        break;
+    case ACTION_UP:
+    case ACTION_DOWN:
+        e.type = action == ACTION_UP ? MainDispatcherEvent::TOUCH_UP : MainDispatcherEvent::TOUCH_DOWN;
+        e.tclickEvent.touchId = touchId;
+        e.tclickEvent.x = x;
+        e.tclickEvent.y = y;
+        break;
+    default:
+        return;
     }
+    dispatcher->PostEvent(e);
 }
 
 } // namespace Private

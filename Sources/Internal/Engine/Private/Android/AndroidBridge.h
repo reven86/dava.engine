@@ -22,6 +22,7 @@ struct AndroidBridge final
     static JNIEnv* GetEnv();
     static bool AttachCurrentThreadToJavaVM();
     static bool DetachCurrentThreadFromJavaVM();
+    static bool HandleJavaException(JNIEnv* env);
 
     static const String& GetExternalDocumentsDir();
     static const String& GetInternalDocumentsDir();
@@ -32,27 +33,30 @@ struct AndroidBridge final
     static WideString JavaStringToWideString(jstring string, JNIEnv* jniEnv = nullptr);
     static jstring WideStringToJavaString(const WideString& string, JNIEnv* jniEnv = nullptr);
 
-    void OnInitEngine(String externalFilesDir,
-                      String internalFilesDir,
-                      String sourceDir,
-                      String apkName,
-                      String cmdline);
-    WindowBackend* OnCreateActivity();
-    void OnStartActivity();
-    void OnResumeActivity();
-    void OnPauseActivity();
-    void OnStopActivity();
-    void OnDestroyActivity();
-    void OnTermEngine();
+    static void AttachPlatformCore(PlatformCore* platformCore);
+
+    void InitializeEngine(String externalFilesDir,
+                          String internalFilesDir,
+                          String sourceDir,
+                          String apkName,
+                          String cmdline);
+    void ShutdownEngine();
+
+    WindowBackend* ActivityOnCreate();
+    void ActivityOnResume();
+    void ActivityOnPause();
+    void ActivityOnDestroy();
 
     void GameThread();
 
-    void SurfaceResume(WindowBackend* wbackend);
-    void SurfacePause(WindowBackend* wbackend);
-    void SurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int width, int height);
-    void SurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env);
+    void SurfaceViewOnResume(WindowBackend* wbackend);
+    void SurfaceViewOnPause(WindowBackend* wbackend);
+    void SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height);
+    void SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env);
+    void SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y);
 
     JavaVM* javaVM = nullptr;
+
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;
 

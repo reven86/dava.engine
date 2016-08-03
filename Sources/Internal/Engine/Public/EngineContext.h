@@ -29,6 +29,8 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
+class AssetsManager;
+
 namespace Net
 {
 class NetCore;
@@ -65,6 +67,8 @@ public:
     RenderSystem2D* renderSystem2D = nullptr;
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;
+
+    AssetsManager* assetsManager = nullptr;
 };
 
 } // namespace DAVA

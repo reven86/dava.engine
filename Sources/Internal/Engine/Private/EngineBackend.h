@@ -59,7 +59,7 @@ public:
     int32 OnFrame();
 
     void InitRenderer(Window* w);
-    void ResetRenderer(Window* w, bool resetToNull);
+    void ResetRenderer(Window* w);
     void DeinitRender(Window* w);
 
 private:

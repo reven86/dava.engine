@@ -46,8 +46,9 @@ private:
 
     void OnResume();
     void OnPause();
-    void SurfaceChanged(JNIEnv* env, jobject surface, int width, int height);
+    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
     void SurfaceDestroyed();
+    void OnTouch(int32 action, int32 touchId, float32 x, float32 y);
 
 private:
     ANativeWindow* androidWindow = nullptr;

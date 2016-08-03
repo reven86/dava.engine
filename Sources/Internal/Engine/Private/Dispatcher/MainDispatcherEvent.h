@@ -105,6 +105,21 @@ struct MainDispatcherEvent final
         bool isRepeated;
     };
 
+    MainDispatcherEvent() = default;
+    MainDispatcherEvent(eType type)
+        : type(type)
+    {
+    }
+    MainDispatcherEvent(Window* window)
+        : window(window)
+    {
+    }
+    MainDispatcherEvent(eType type, Window* window)
+        : type(type)
+        , window(window)
+    {
+    }
+
     eType type = DUMMY;
     uint64 timestamp = 0;
     Window* window = nullptr;

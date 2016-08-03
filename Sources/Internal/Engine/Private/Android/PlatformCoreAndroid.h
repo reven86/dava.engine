@@ -15,11 +15,8 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* ebackend);
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
-
-    PlatformCore(const PlatformCore&) = delete;
-    PlatformCore& operator=(const PlatformCore&) = delete;
 
     NativeService* GetNativeService() const;
 
@@ -28,19 +25,16 @@ public:
     void Quit();
 
 private:
-    void GameThread();
+    WindowBackend* ActivityOnCreate();
+    void ActivityOnResume();
+    void ActivityOnPause();
+    void ActivityOnDestroy();
 
-    WindowBackend* OnCreate();
-    void OnStart();
-    void OnResume();
-    void OnPause();
-    void OnStop();
-    void OnDestroy();
+    void GameThread();
 
 private:
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
-    AndroidBridge* bridge = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool quitGameThread = false;
