@@ -1,143 +1,123 @@
 #pragma once
 #include "Base/BaseTypes.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectionWrappers.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Reflection/Public/Wrappers.h"
+#include "Reflection/Public/ReflectedMeta.h"
+#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {
 class StructureWrapperClass : public StructureWrapper
 {
 public:
-    StructureWrapperClass() = default;
+    struct ClassBase
+    {
+        const Type* type;
+        const ReflectedType* refType;
 
-    bool IsDynamic() const override
-    {
-        return false;
-    }
+        Type::CastToBaseOP castToBaseOP;
+        ReflectedObject GetBaseObject(const ReflectedObject& obj) const;
+    };
 
-    bool CanAdd() const override
+    struct ClassField
     {
-        return false;
-    }
-    bool CanInsert() const override
-    {
-        return false;
-    }
-    bool CanRemove() const override
-    {
-        return false;
-    }
+        DAVA_DEPRECATED(ClassField()) = default; // visual studio 2013 require this
+        DAVA_DEPRECATED(ClassField(ClassField&& cf)) // visual studio 2013 require this
+        : vw(std::move(cf.vw))
+          ,
+          meta(std::move(cf.meta))
+          ,
+          type(std::move(cf.type))
+        {
+        }
 
-    bool AddField(const ReflectedObject& object, const Any& key, const Any& value) const override
-    {
-        return false;
-    }
-    bool InsertField(const ReflectedObject& object, const Any& key, const Any& beforeKey, const Any& value) const override
-    {
-        return false;
-    }
-    bool RemoveField(const ReflectedObject& object, const Any& key) const override
-    {
-        return false;
-    }
+        const ReflectedType* type;
 
-    Ref::Field GetField(const ReflectedObject& object, const Any& key) const override;
-    Ref::FieldsList GetFields(const ReflectedObject& object) const override;
+        std::unique_ptr<ValueWrapper> vw;
+        std::unique_ptr<ReflectedMeta> meta;
+    };
+
+    StructureWrapperClass(const Type*);
+
+    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    Reflection::Field GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
+    Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
+
+    bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    Reflection::Method GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
+    Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
 
     template <typename T>
     void AddField(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
     {
-        ClassField field;
-        field.name = fieldName;
-        field.vw = std::move(vw);
-        field.db = ReflectionDB::GetGlobalDB<T>();
-        fields.push_back(std::move(field));
+        ClassField clField;
+        clField.type = ReflectedType::Get<T>();
+        clField.vw = std::move(vw);
+        fields.emplace_back(std::make_pair(fieldName, std::move(clField)));
     }
 
     template <typename T>
     void AddFieldFn(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
     {
-        ClassField field;
-        field.name = fieldName;
-        field.vw = std::move(vw);
-        field.db = FieldFnDBGetter<T>::Get();
-        fields.push_back(std::move(field));
+        ClassField clField;
+        clField.type = FnRetTypeToFieldType<T>::Get();
+        clField.vw = std::move(vw);
+        fields.emplace_back(std::make_pair(fieldName, std::move(clField)));
     }
 
-    template <typename B, typename C>
-    void AddBase()
+    template <typename F>
+    void AddMethod(const char* methodName, const F& fn)
     {
-        static_assert(std::is_base_of<B, C>::value, "C should be derived from B");
-
-        BaseClass base;
-        base.db = ReflectionDB::GetGlobalDB<B>();
-        base.castOP = [](const ReflectedObject& obj) -> ReflectedObject
-        {
-            C* classPtr = obj.GetPtr<C>();
-            B* basePtr = static_cast<B*>(classPtr);
-            return basePtr;
-        };
-
-        bases.emplace_back(std::move(base));
+        methods.emplace_back(std::make_pair(methodName, AnyFn(fn)));
     }
 
-protected:
-    struct BaseClass
+    void AddMeta(ReflectedMeta&& meta)
     {
-        const ReflectionDB* db;
-        ReflectedObject (*castOP)(const ReflectedObject& obj);
-    };
-
-    struct ClassField
-    {
-        ClassField() = default;
-        ClassField(const ClassField&) = delete;
-
-        ClassField(ClassField&& cf)
-            : name(std::move(cf.name))
-            , vw(std::move(cf.vw))
-            , db(cf.db)
+        if (fields.size() > 0)
         {
+            ClassField& clsFiled = fields.back().second;
+            clsFiled.meta = std::make_unique<ReflectedMeta>(std::move(meta));
         }
+    }
 
-        String name;
-        std::unique_ptr<ValueWrapper> vw;
-        const ReflectionDB* db;
-    };
-
+private:
     template <typename T>
-    struct FieldFnDBGetter
+    struct FnRetTypeToFieldType
     {
-        static inline const ReflectionDB* Get()
+        static inline const ReflectedType* Get()
         {
-            return ReflectionDB::GetGlobalDB<std::nullptr_t>();
+            return ReflectedType::Get<std::nullptr_t>();
         }
     };
 
     template <typename T>
-    struct FieldFnDBGetter<T*>
+    struct FnRetTypeToFieldType<T*>
     {
-        static inline const ReflectionDB* Get()
+        static inline const ReflectedType* Get()
         {
-            return ReflectionDB::GetGlobalDB<T>();
+            return ReflectedType::Get<T>();
         }
     };
 
     template <typename T>
-    struct FieldFnDBGetter<T&>
+    struct FnRetTypeToFieldType<T&>
     {
-        static inline const ReflectionDB* Get()
+        static inline const ReflectedType* Get()
         {
-            return ReflectionDB::GetGlobalDB<T>();
+            return ReflectedType::Get<T>();
         }
     };
 
-    Vector<BaseClass> bases;
-    Vector<ClassField> fields;
+    const Type* thisType;
+
+    Vector<std::pair<String, ClassField>> fields;
+    Vector<std::pair<String, AnyFn>> methods;
+
+    mutable bool basesInitialized = false;
+    mutable Vector<ClassBase> bases;
+
+    void InitBaseClasses() const;
 };
 
 } // namespace DAVA
-
-#endif

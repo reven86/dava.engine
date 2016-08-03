@@ -1,8 +1,5 @@
 #pragma once
-
-#include "Reflection/ReflectionWrappers.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Reflection/Public/Wrappers.h"
 
 namespace DAVA
 {
@@ -52,7 +49,7 @@ public:
         if (!IsReadonly() && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            const Type* inType = object.GetType()->GetIndirectionType();
+            const Type* inType = object.GetType()->Deref();
             value.SaveValue(ptr, inType->GetSize());
 
             ret = true;
@@ -71,5 +68,3 @@ protected:
 };
 
 } // namespace DAVA
-
-#endif

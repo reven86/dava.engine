@@ -1,99 +1,145 @@
 #pragma once
-#ifndef DAVAENGINE_TYPE__H
-// include Type.h for help IDE parse types here.
+
+#ifndef __Dava_Type__
 #include "Base/Type.h"
 #endif
+
 #include <atomic>
 
 namespace DAVA
 {
-namespace TypeDetails
+inline size_t Type::GetSize() const
+{
+    return size;
+}
+
+inline const char* Type::GetName() const
+{
+    return name;
+}
+
+inline bool Type::IsConst() const
+{
+    return isConst;
+}
+
+inline bool Type::IsPointer() const
+{
+    return isPointer;
+}
+
+inline bool Type::IsReference() const
+{
+    return isReference;
+}
+
+inline bool Type::IsDerivedFrom(const Type* type) const
+{
+    return (baseTypes.count(type) > 0);
+}
+
+inline const Type* Type::Decay() const
+{
+    return decayType;
+}
+
+inline const Type* Type::Deref() const
+{
+    return derefType;
+}
+
+inline const Type* Type::Pointer() const
+{
+    return pointerType;
+}
+
+inline const UnorderedMap<const Type*, Type::CastToBaseOP>& Type::GetBaseTypes() const
+{
+    return baseTypes;
+}
+
+inline const UnorderedSet<const Type*> Type::GetDerivedTypes() const
+{
+    return derivedTypes;
+}
+
+namespace TypeDetail
 {
 template <typename T>
-struct TypeInitializerRunner
+struct TypeSize
 {
-protected:
-    template <typename U, void (*)()>
-    struct SFINAE
-    {
-    };
+    static const size_t size = sizeof(T);
+};
 
-    template <typename U>
-    static char Test(SFINAE<U, &U::__TypeInitializer>*);
-
-    template <typename U>
-    static int Test(...);
-
-    static const bool value = std::is_same<decltype(Test<T>(0)), char>::value;
-
-    inline static void RunImpl(std::true_type)
-    {
-        // T has TypeInitializer function,
-        // so we should run it
-        T::__TypeInitializer();
-    }
-
-    inline static void RunImpl(std::false_type)
-    {
-        // T don't have TypeInitializer function,
-        // so nothing to do here
-    }
-
-public:
-    static void Run()
-    {
-        using CheckType = typename std::conditional<std::is_class<T>::value, TypeInitializerRunner<T>, std::false_type>::type;
-        RunImpl(std::integral_constant<bool, CheckType::value>());
-    }
+template <>
+struct TypeSize<void>
+{
+    static const size_t size = 0;
 };
 
 template <typename T>
 const Type* GetTypeIfTrue(std::false_type)
-{
-    return nullptr;
-}
+    {
+        return nullptr;
+    }
 
-template <typename T>
-const Type* GetTypeIfTrue(std::true_type)
-{
-    return Type::Instance<T>();
-}
+    template <typename T>
+    const Type* GetTypeIfTrue(std::true_type)
+    {
+        return Type::Instance<T>();
+    }
+
+    template <typename D, typename B>
+    void* CastToBase(void* p)
+    {
+        D* derived = static_cast<D*>(p);
+        B* base = static_cast<B*>(derived);
+        return base;
+    }
+
+    template <typename T>
+    struct TypeHolder
+    {
+        static const Type* type;
+    };
+
+    template <typename T>
+    const Type* TypeHolder<T>::type = nullptr;
 
 } // namespace TypeDetails
 
 template <typename T>
-void Type::Init()
+void Type::Init(Type** ptype)
 {
-#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
-    // android old-style way
-    using T0 = typename std::remove_cv<T>::type;
-    using T1 = typename std::remove_reference<T0>::type;
-    using DerefT = typename std::remove_pointer<T1>::type;
-    using DecayT = typename std::conditional<std::is_pointer<T>::value, typename std::add_pointer<typename std::decay<typename std::remove_pointer<T>::type>::type>::type, typename std::decay<T>::type>;
-#else
-    // standard c++14 way
+    static Type type;
+
+    *ptype = &type;
+
     using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
     using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
-#endif
+    using PointerT = std::add_pointer_t<std::decay_t<T>>;
 
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
     static const bool needDecay = (!std::is_same<T, DecayT>::value);
+    static const bool needPointer = (!std::is_pointer<T>::value);
 
-    name = typeid(T).name();
-    size = sizeof(T);
+    type.name = typeid(T).name();
+    type.size = TypeDetail::TypeSize<T>::size;
 
-    isConst = std::is_const<T>::value;
-    isPointer = std::is_pointer<T>::value;
-    isReference = std::is_reference<T>::value;
+    type.isConst = std::is_const<T>::value;
+    type.isPointer = std::is_pointer<T>::value;
+    type.isReference = std::is_reference<T>::value;
 
     auto condDeref = std::integral_constant<bool, needDeref>();
-    derefType = TypeDetails::GetTypeIfTrue<DerefT>(condDeref);
+    type.derefType = TypeDetail::GetTypeIfTrue<DerefT>(condDeref);
 
     auto condDecay = std::integral_constant<bool, needDecay>();
-    decayType = TypeDetails::GetTypeIfTrue<DecayT>(condDecay);
+    type.decayType = TypeDetail::GetTypeIfTrue<DecayT>(condDecay);
 
-    // try to run TypeInitializer if T has this function
-    TypeDetails::TypeInitializerRunner<T>::Run();
+    auto condPointer = std::integral_constant<bool, needPointer>();
+    type.pointerType = TypeDetail::GetTypeIfTrue<PointerT>(condPointer);
+
+    TypeDetail::TypeHolder<T>::type = &type;
 }
 
 template <typename T>
@@ -103,11 +149,19 @@ inline const Type* Type::Instance()
 
     if (nullptr == type)
     {
-        type = new Type();
-        type->Init<T>();
+        Type::Init<T>(&type);
     }
 
     return type;
+}
+
+template <typename T, typename... Bases>
+void Type::RegisterBases()
+{
+    const Type* type = Type::Instance<T>();
+
+    bool basesUnpack[] = { false, type->baseTypes.insert(std::make_pair(Type::Instance<Bases>(), &TypeDetail::CastToBase<T, Bases>)).second... };
+    bool derivedUnpack[] = { false, Type::Instance<Bases>()->derivedTypes.insert(type).second... };
 }
 
 } // namespace DAVA

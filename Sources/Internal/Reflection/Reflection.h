@@ -1,75 +1,91 @@
-#pragma once
-#define DAVA_REFLECTION__H
+#ifndef __DAVA_Reflection_Definition__
+#define __DAVA_Reflection_Definition__
 
-#include <cassert>
-
-#if !defined(__DAVAENGINE_ANDROID__)
-
+#include <sstream>
+#include "Base/Type.h"
 #include "Base/Any.h"
-#include "Base/BaseTypes.h"
-#include "Reflection/ReflectedObject.h"
-#include "Reflection/ReflectionVirt.h"
+#include "Base/AnyFn.h"
 
-#define DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION \
-    const DAVA::ReflectionDB* GetVirtualReflectionDB() const override \
-    { \
-        return DAVA::Ref::AutoGetReflectionDB(this); \
-    }
+#include "Public/ReflectedBase.h"
+#include "Public/ReflectedObject.h"
+#include "Public/ReflectedMeta.h"
 
 namespace DAVA
 {
 class ValueWrapper;
-class CtorWrapper;
-class DtorWrapper;
-class MethodWrapper;
 class StructureWrapper;
+class StructureEditorWrapper;
 
 class Reflection final
 {
 public:
-    Reflection() = default;
-    Reflection(const ReflectedObject& obj, const ValueWrapper* vw_, const ReflectionDB* db_)
-        : that(obj)
-        , vw(vw_)
-        , db(db_)
-    {
-    }
+    struct Field;
+    struct Method;
 
-    void Dump(std::ostream& stream);
+    Reflection() = default;
+    Reflection(const ReflectedObject& object, ValueWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
 
     bool IsValid() const;
     bool IsReadonly() const;
 
+    const Type* GetValueType() const;
+
     Any GetValue() const;
     bool SetValue(const Any&) const;
 
-    const Type* GetValueType() const;
-    ReflectedObject GetValueObject() const;
+    bool HasFields() const;
+    Field GetField(const Any&) const;
+    Vector<Field> GetFields() const;
 
-    const CtorWrapper* GetCtor() const;
-    const CtorWrapper* GetCtor(const Vector<const Type*>& params) const;
-    Vector<const CtorWrapper*> GetCtors() const;
+    // TODO:
+    // add/remove fields
+    // ...
 
-    const DtorWrapper* GetDtor() const;
+    bool HasMethods() const;
+    Method GetMethod(const String& key) const;
+    Vector<Method> GetMethods() const;
 
-    const MethodWrapper* GetMethod(const char* name);
-    const MethodWrapper* GetMethod(const char* name, const Vector<const Type*>& params);
-    Vector<const MethodWrapper*> GetMethods() const;
+    template <typename Meta>
+    bool HasMeta() const;
 
-    const StructureWrapper* GetStructure() const;
+    template <typename Meta>
+    const Meta* GetMeta() const;
+
+    void Dump(std::ostream& out, size_t maxlevel = 0) const;
+    void DumpMethods(std::ostream& out) const;
 
     template <typename T>
-    static Reflection Reflect(T* object);
+    static Reflection::Field Create(const T* ptr, const Any& key = Any());
 
 private:
-    ReflectedObject that;
-
     const ValueWrapper* vw = nullptr;
-    const ReflectionDB* db = nullptr;
+    const StructureWrapper* sw = nullptr;
+    const StructureEditorWrapper* sew = nullptr;
+    const ReflectedMeta* meta = nullptr;
+
+    ReflectedObject object;
+};
+
+struct Reflection::Field
+{
+    Any key;
+    Reflection ref;
+};
+
+struct Reflection::Method
+{
+    String key;
+    AnyFn fn;
 };
 
 } // namespace DAVA
-    
-#include "Private/ReflectionImpl.h"
 
+#endif // __DAVA_Reflection_Definition__
+
+#ifndef __DAVA_Reflection_Definition_Only__
+#define __DAVA_Reflection__
+#include "Reflection/Public/Wrappers.h"
+#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/Private/Reflection_impl.h"
+#include "Reflection/Private/StructureWrapperClass.h"
 #endif

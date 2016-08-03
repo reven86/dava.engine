@@ -1,8 +1,6 @@
 #pragma once
 #include "Functional/Function.h"
-#include "Reflection/ReflectionWrappers.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Reflection/Public/Wrappers.h"
 
 namespace DAVA
 {
@@ -89,4 +87,3 @@ private:
 
 } // namespace DAVA
 
-#endif

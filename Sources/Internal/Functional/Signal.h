@@ -1,15 +1,17 @@
-#ifndef __DAVA_SIGNAL_H__
-#define __DAVA_SIGNAL_H__
+#pragma once
+
+// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
 
 #include "Base/BaseTypes.h"
+#include "Functional/Function.h"
+#include "Functional/SignalBase.h"
+
+#ifdef ENABLE_MULTITHREADED_SIGNALS
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Atomic.h"
-#include "Functional/Function.h"
-#include "Functional/SignalBase.h"
-
-// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
+#endif
 
 namespace DAVA
 {
@@ -290,5 +292,3 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 #endif
 
 } // namespace DAVA
-
-#endif // __DAVA_SIGNAL_H__

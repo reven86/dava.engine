@@ -1,38 +1,29 @@
 #pragma once
-#define DAVAENGINE_ANY__H
 
 #include <typeindex>
 #include <string>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
+#include "BaseTypes.h"
 #include "Type.h"
-#include "AutoStorage.h"
-#include "Base/BaseTypes.h"
+#include "Private/AutoStorage.h"
 
 namespace DAVA
 {
-class Any
+class Any final
 {
 public:
-    using Storage = AutoStorage<>;
+    using AnyStorage = AutoStorage<>;
+
     using CompareOP = bool (*)(const void*, const void*);
-    using LoadOP = void (*)(Storage&, const void* src);
-    using SaveOP = void (*)(const Storage&, void* dst);
+    using LoadOP = void (*)(AnyStorage&, const void* src);
+    using SaveOP = void (*)(const AnyStorage&, void* dst);
+    using CastOP = void (*)(const void* src, void* dst);
 
     template <typename T>
     using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
-    struct AnyOP
+    struct Exception : public std::runtime_error
     {
-        CompareOP compare = nullptr;
-        LoadOP load = nullptr;
-        SaveOP save = nullptr;
-    };
-
-    class Exception : public std::runtime_error
-    {
-    public:
         enum ErrorCode
         {
             BadGet,
@@ -47,8 +38,8 @@ public:
         ErrorCode errorCode;
     };
 
-    Any() = default;
-    ~Any() = default;
+    inline Any() = default;
+    inline ~Any() = default;
 
     Any(Any&&);
     Any(const Any&) = default;
@@ -91,20 +82,42 @@ public:
     bool operator!=(const Any&) const;
 
     template <typename T>
-    static void RegisterOP();
+    static void RegisterDefaultOPs(const LoadOP& lop, const SaveOP& sop, const CompareOP& cop);
 
-    template <typename T>
-    static void RegisterCustomOP(const AnyOP& ops);
+    // TODO:
+    // implement castOP
+    // ...
+    //
+    // template <typename From, typename To>
+    // static void RegisterCastOP(Any::CastOP &castOP);
 
 private:
-    const Type* type = nullptr;
-    Storage storage;
+    struct AnyOPs
+    {
+        CompareOP compare = nullptr;
+        LoadOP load = nullptr;
+        SaveOP save = nullptr;
 
-    static UnorderedMap<const Type*, AnyOP> operations;
+        // TODO:
+        // implement castOP
+        // ...
+        // Map<const Type*, CastOP> casts;
+    };
+
+    const Type* type = nullptr;
+    AnyStorage anyStorage;
+
+    // TODO:
+    // for plugins here should be pointer
+    // ...
+    static UnorderedMap<const Type*, AnyOPs>* operations;
 };
 
 } // namespace DAVA
 
-#include "Private/Any_impl.h"
+#define __Dava_Any__
+#include "Base/Private/Any_impl.h"
 
-#endif
+// TODO
+// ...
+// #include "Base/Private/AnyCast_impl.h"
