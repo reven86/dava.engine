@@ -31,16 +31,17 @@ void ServerTransportHolder::Stop()
     }
     else
     {
-        DVASSERT_MSG(false, "Listener stops server without unsubscribing. Memory leak is possible");
+        DVASSERT_MSG(false, "Owner stops server without unsubscribing. Memory leak is possible");
     }
 }
 
 void ServerTransportHolder::OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* client)
 {
     if (owner)
+    {
         owner->OnTransportSpawned(parent, client);
-
-    client->Start(this);
+        client->Start(this);
+    }
 }
 
 void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* serv)

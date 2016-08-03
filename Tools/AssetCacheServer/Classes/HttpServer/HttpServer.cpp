@@ -70,14 +70,14 @@ void HttpServer::Stop()
     }
 }
 
-void HttpServer::RemoveClient(DAVA::Net::IClientTransport* clt)
+void HttpServer::RemoveClient(DAVA::Net::IClientTransport* client)
 {
-    DVASSERT(clt);
+    DVASSERT(client);
 
-    size_t erasedCount = clientSessions.erase(clt);
+    size_t erasedCount = clientSessions.erase(client);
     if (erasedCount > 0)
     {
-        clt->Stop();
+        client->Stop();
     }
 }
 
@@ -85,15 +85,15 @@ void HttpServer::RemoveAllClients()
 {
     for (auto& session : clientSessions)
     {
-        DAVA::Net::IClientTransport* clt = session.first;
-        clt->Stop();
+        DAVA::Net::IClientTransport* client = session.first;
+        client->Stop();
     }
     clientSessions.clear();
 }
 
 void HttpServer::OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* client)
 {
-    clientSessions.emplace(std::make_pair(client, ClientSession(client)));
+    clientSessions.emplace(client, ClientSession(client));
 }
 
 void HttpServer::OnTransportTerminated(DAVA::Net::IServerTransport* serv)
@@ -101,22 +101,22 @@ void HttpServer::OnTransportTerminated(DAVA::Net::IServerTransport* serv)
     Stop();
 }
 
-void HttpServer::OnTransportTerminated(DAVA::Net::IClientTransport* clt)
+void HttpServer::OnTransportTerminated(DAVA::Net::IClientTransport* client)
 {
-    RemoveClient(clt);
+    RemoveClient(client);
 }
 
-void HttpServer::OnTransportConnected(DAVA::Net::IClientTransport* clt, const DAVA::Net::Endpoint& endp)
-{
-}
-
-void HttpServer::OnTransportDisconnected(DAVA::Net::IClientTransport* clt, DAVA::int32 error)
+void HttpServer::OnTransportConnected(DAVA::Net::IClientTransport* client, const DAVA::Net::Endpoint& endp)
 {
 }
 
-void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const void* buffer, size_t length)
+void HttpServer::OnTransportDisconnected(DAVA::Net::IClientTransport* client, DAVA::int32 error)
 {
-    const auto& sessionEntry = clientSessions.find(clt);
+}
+
+void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* client, const void* buffer, size_t length)
+{
+    const auto sessionEntry = clientSessions.find(client);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;
@@ -130,44 +130,44 @@ void HttpServer::OnTransportDataReceived(DAVA::Net::IClientTransport* clt, const
         else
         {
             DAVA::Logger::Error("Data receiving is unexpected for clientID=%d", session.clientID);
-            RemoveClient(clt);
+            RemoveClient(client);
             return;
         }
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", clt).c_str());
+        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
     }
 }
 
-void HttpServer::OnTransportSendComplete(DAVA::Net::IClientTransport* clt)
+void HttpServer::OnTransportSendComplete(DAVA::Net::IClientTransport* client)
 {
-    const auto& sessionEntry = clientSessions.find(clt);
+    const auto sessionEntry = clientSessions.find(client);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;
 
         if (session.state == ClientSession::WaitingForSendComplete)
         {
-            RemoveClient(clt);
+            RemoveClient(client);
             return;
         }
         else
         {
             DAVA::Logger::Error("Unexpected send complete is received for current state %d", session.state);
-            RemoveClient(clt);
+            RemoveClient(client);
             return;
         }
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", clt).c_str());
+        DVASSERT_MSG(false, DAVA::Format("Can't find session for client transport %d", client).c_str());
     }
 }
 
-void HttpServer::OnTransportReadTimeout(DAVA::Net::IClientTransport* clt)
+void HttpServer::OnTransportReadTimeout(DAVA::Net::IClientTransport* client)
 {
-    RemoveClient(clt);
+    RemoveClient(client);
 }
 
 void HttpServer::OnDataChunkAdded(ClientSession& session)
@@ -227,8 +227,8 @@ void HttpServer::OnDataChunkAdded(ClientSession& session)
     }
 }
 
-HttpServer::ClientSession::ClientSession(ClientID clt)
-    : clientID(clt)
+HttpServer::ClientSession::ClientSession(ClientID client)
+    : clientID(client)
 {
     Clear();
 }
@@ -250,20 +250,22 @@ void HttpServer::OnRequestAssembled(ClientSession& session)
 
 void HttpServer::ParseHttpHeaders(ClientSession& session)
 {
-    DAVA::Vector<DAVA::String> lines;
-    DAVA::Split(session.data, HttpServerDetail::CRLF, lines, false, false, true);
+    using namespace DAVA;
+
+    Vector<String> lines;
+    Split(session.data, HttpServerDetail::CRLF, lines, false, false, true);
 
     if (lines.empty())
     {
-        DAVA::Logger::Error("Can't detect any lines in request string '%s'", session.data.c_str());
+        Logger::Error("Can't detect any lines in request string '%s'", session.data.c_str());
         session.state = ClientSession::Error;
         return;
     }
 
-    DAVA::String& startingLine = lines[0];
+    String& startingLine = lines[0];
 
-    DAVA::Vector<DAVA::String> startingLineTokens;
-    DAVA::Split(startingLine, " ", startingLineTokens);
+    Vector<String> startingLineTokens;
+    Split(startingLine, " ", startingLineTokens);
     size_t numOfTokens = startingLineTokens.size();
 
     if (numOfTokens > 0)
@@ -283,11 +285,11 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
 
     for (auto linesIt = lines.begin() + 1; linesIt != lines.end(); ++linesIt)
     {
-        DAVA::String& headerLine = *linesIt;
+        String& headerLine = *linesIt;
 
-        DAVA::Vector<DAVA::String> tokens;
-        DAVA::Split(headerLine, " ", tokens);
-        if (tokens.size() >= 2 && DAVA::CompareCaseInsensitive(tokens[0], "Content-Length:") == 0)
+        Vector<String> tokens;
+        Split(headerLine, " ", tokens);
+        if (tokens.size() >= 2 && CompareCaseInsensitive(tokens[0], "Content-Length:") == 0)
         {
             int scannedCount = sscanf(tokens[1].c_str(), "%u", &session.contentLength);
             if (scannedCount == 1)
@@ -296,7 +298,7 @@ void HttpServer::ParseHttpHeaders(ClientSession& session)
             }
             else
             {
-                DAVA::Logger::Warning("Can't parse content-length from '%s' token", tokens[1].c_str());
+                Logger::Warning("Can't parse content-length from '%s' token", tokens[1].c_str());
                 session.state = ClientSession::Error;
             }
             return;
@@ -326,19 +328,22 @@ void HttpServer::NotifyRequestReceived(ClientID clientId, HttpRequest& rq)
 
 void HttpServer::SendResponse(ClientID clientId, HttpResponse& resp)
 {
-    const auto& sessionEntry = clientSessions.find(clientId);
+    const auto sessionEntry = clientSessions.find(clientId);
     if (sessionEntry != clientSessions.end())
     {
         ClientSession& session = sessionEntry->second;
 
         if (session.state == ClientSession::WaitingForOurResponse)
         {
-            session.data =
-            resp.version + " " + resp.code + HttpServerDetail::CRLF +
-            "Content-Length: " + std::to_string(resp.body.size()) + HttpServerDetail::CRLF +
-            "Connection: close" + HttpServerDetail::DOUBLE_CRLF +
-            resp.body;
             session.state = ClientSession::WaitingForSendComplete;
+
+            DAVA::StringStream ss;
+            ss << resp.version + " " + resp.code + HttpServerDetail::CRLF;
+            ss << "Content-Length: " + std::to_string(resp.body.size()) + HttpServerDetail::CRLF;
+            ss << "Connection: close" + HttpServerDetail::DOUBLE_CRLF;
+            ss << resp.body;
+            session.data.assign(ss.str());
+
             SendRawData(clientId, session.data.data(), session.data.size());
             return;
         }
