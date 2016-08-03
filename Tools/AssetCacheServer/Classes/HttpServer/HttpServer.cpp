@@ -46,8 +46,7 @@ void HttpServer::Start(const DAVA::Net::Endpoint& endpoint)
     DVASSERT(started == false);
     DVASSERT(serverTransportHolder == nullptr);
     serverTransportHolder = new ServerTransportHolder(loop, endpoint, HttpServerDetail::PACKET_WAIT_TIMEOUT_MS);
-    serverTransportHolder->SetOwner(this);
-    serverTransportHolder->Start();
+    serverTransportHolder->Start(this);
     started = true;
 }
 
@@ -61,7 +60,6 @@ void HttpServer::Stop()
 
         if (serverTransportHolder)
         {
-            serverTransportHolder->SetOwner(nullptr);
             serverTransportHolder->Stop();
             serverTransportHolder = nullptr;
         }

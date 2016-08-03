@@ -12,46 +12,23 @@ ServerTransportHolder::~ServerTransportHolder()
     DVASSERT(isWorking == false);
 }
 
-DAVA::int32 ServerTransportHolder::Start()
+DAVA::int32 ServerTransportHolder::Start(ServerTransportListener* owner_)
 {
     DVASSERT(isWorking == false);
+    DVASSERT(owner == nullptr);
+
     isWorking = true;
+    owner = owner_;
     return serverTransport.Start(this);
 }
 
 void ServerTransportHolder::Stop()
 {
+    owner = nullptr;
+
     if (isWorking)
     {
         serverTransport.Stop();
-    }
-    else if (owner == nullptr)
-    {
-        DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &ServerTransportHolder::DeleteItself));
-    }
-    else
-    {
-        DVASSERT_MSG(false, "Owner stops server without unsubscribing. Memory leak is possible");
-    }
-}
-
-void ServerTransportHolder::OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* client)
-{
-    if (owner)
-    {
-        owner->OnTransportSpawned(parent, client);
-        client->Start(this);
-    }
-}
-
-void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* serv)
-{
-    isWorking = false;
-
-    if (owner)
-    {
-        IServerListener* serverListener = owner;
-        serverListener->OnTransportTerminated(serv);
     }
     else
     {
@@ -61,16 +38,42 @@ void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* s
 
 void ServerTransportHolder::DeleteItself()
 {
-    DVASSERT(isWorking == false);
+    DVASSERT(isWorking == false && owner == nullptr);
     delete this;
+}
+
+void ServerTransportHolder::OnTransportSpawned(DAVA::Net::IServerTransport* parent, DAVA::Net::IClientTransport* client)
+{
+    if (owner)
+    {
+        owner->OnTransportSpawned(parent, client);
+        client->Start(this);
+    }
+    else
+    {
+        client->Stop();
+    }
+}
+
+void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IServerTransport* serv)
+{
+    isWorking = false;
+
+    if (owner)
+    {
+        static_cast<IServerListener*>(owner)->OnTransportTerminated(serv);
+    }
+    else
+    {
+        DAVA::JobManager::Instance()->CreateWorkerJob(DAVA::MakeFunction(this, &ServerTransportHolder::DeleteItself));
+    }
 }
 
 void ServerTransportHolder::OnTransportTerminated(DAVA::Net::IClientTransport* clt)
 {
     if (owner)
     {
-        IClientListener* clientListener = owner;
-        clientListener->OnTransportTerminated(clt);
+        static_cast<IClientListener*>(owner)->OnTransportTerminated(clt);
     }
 
     serverTransport.ReclaimClient(clt);

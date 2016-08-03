@@ -23,12 +23,8 @@ public:
     ServerTransportHolder(DAVA::Net::IOLoop* aLoop, const DAVA::Net::Endpoint& aEndpoint, DAVA::uint32 readTimeout);
     ~ServerTransportHolder() override;
 
-    DAVA::int32 Start();
+    DAVA::int32 Start(ServerTransportListener* owner);
     void Stop();
-    void Reset();
-    void ReclaimClient(DAVA::Net::IClientTransport* client);
-
-    void SetOwner(ServerTransportListener* owner);
 
 private:
     // IServerListener
@@ -47,11 +43,6 @@ private:
 
 private:
     bool isWorking = false;
-    DAVA::Net::TCPServerTransport serverTransport;
     ServerTransportListener* owner = nullptr;
+    DAVA::Net::TCPServerTransport serverTransport;
 };
-
-inline void ServerTransportHolder::SetOwner(ServerTransportListener* owner_)
-{
-    owner = owner_;
-}
