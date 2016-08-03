@@ -53,6 +53,9 @@ class CoverageReport():
         self.pathBuild              = arg.pathBuild
         self.pathExecut             = arg.pathExecut
         self.pathReportOut          = arg.pathReportOut
+        self.pathReportOutFull      = os.path.join( arg.pathReportOut, 'CoverageFull' ) 
+        self.pathReportOutTests     = os.path.join( arg.pathReportOut, 'CoverageTests' )
+
         self.buildConfig            = arg.buildConfig
         self.notRunExecutable       = arg.notRunExecutable
 
@@ -68,15 +71,17 @@ class CoverageReport():
         self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
         self.pathCallLlvmGcov       = os.path.join    ( self.pathCoverageDir, 'llvm-gcov.sh')
         self.pathLcov               = os.path.join    ( self.pathCoverageDir, 'lcov')
-        self.pathCovInfo            = os.path.join    ( self.coverageTmpPath, 'cov.info')
+        self.pathCovInfoFull        = os.path.join    ( self.coverageTmpPath, 'cov_full.info')
+        self.pathCovInfoTests       = os.path.join    ( self.coverageTmpPath, 'cov_tests.info')        
         self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
         self.testsCoverage          = {}
+        self.testsCoverageFiles     = []
 
         if self.notRunExecutable == 'false' :
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            self.__execute( [ pathExecutExt ] )
+            #self.__execute( [ pathExecutExt ] )
     
         self.__coppy_gcda_gcno_files()
         self.__load_json_cover_data()
@@ -109,7 +114,8 @@ class CoverageReport():
         jsonData           = json.loads(coverFile)
         projectFolders     = jsonData[ 'ProjectFolders' ].split(' ')
 
-        self.testsCoverage = {}
+        self.testsCoverage      = {}
+        self.testsCoverageFiles = []
 
         for test in jsonData[ 'Coverage' ]:
             testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
@@ -119,7 +125,7 @@ class CoverageReport():
                     if len( find_list ):
                         fileCover = FileCover( find_list[0], None )
                         self.testsCoverage.setdefault(test, []).append( fileCover )
-    
+                        self.testsCoverageFiles +=  [find_list[0]]
 
     def __coppy_gcda_gcno_files( self ):
 
@@ -159,24 +165,39 @@ class CoverageReport():
 
         os.chdir( self.pathCoverageDir ) 
 
-        #
+###
         params = [ self.pathLcov,
                     '--directory',      self.coverageTmpPath,  
                     '--base-directory', self.pathExecutDir,
                     '--gcov-tool',      self.pathCallLlvmGcov,
                     '--capture',   
-                    '-o', self.pathCovInfo
-                 ]
-        
+                    '-o', self.pathCovInfoFull
+                 ]        
         self.__execute( params )
+###        
+        params = [ self.pathLcov,
+                    '--extract', self.pathCovInfoFull, 
+                    '-o', self.pathCovInfoTests
+                 ] + self.testsCoverageFiles
+        print params       
+         
+        self.__execute( params ) 
 
-        #
+###
         params = [ self.pathGenHtml,
-                   self.pathCovInfo, 
-                   '-o', self.pathReportOut
+                   self.pathCovInfoFull, 
+                   '-o', self.pathReportOutFull,
+                   '--legend'
                  ]
-
         self.__execute( params) 
+
+        params = [ self.pathGenHtml,
+                   self.pathCovInfoTests, 
+                   '-o', self.pathReportOutTests,
+                   '--legend'
+                 ]
+        self.__execute( params)         
+###
 
         print '##teamcity[testFinished name=\'Generate cover html\']'
 
