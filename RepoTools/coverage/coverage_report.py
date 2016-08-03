@@ -18,7 +18,7 @@ class FileCover():
 def enum(**enums):
     return type('Enum', (), enums)
 
-def find_file(pattern, dirs):
+def find_files(pattern, dirs):
     result = []
     for path in dirs:
         for root, dirs, files in os.walk(path):
@@ -57,7 +57,7 @@ class CoverageReport():
         self.pathReportOutTests     = os.path.join( arg.pathReportOut, 'CoverageTests' )
 
         self.buildConfig            = arg.buildConfig
-        self.notRunExecutable       = arg.notRunExecutable
+        self.teamcityMode           = arg.teamcityMode
 
         self.coverageTmpPath        = os.path.join( arg.pathBuild, 'CoverageTmpData' )
     
@@ -79,14 +79,17 @@ class CoverageReport():
         self.testsCoverage          = {}
         self.testsCoverageFiles     = []
 
-        if self.notRunExecutable == 'false' :
+        if self.teamcityMode == 'false' :
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            #self.__execute( [ pathExecutExt ] )
+            self.__execute( [ pathExecutExt ] )
     
         self.__coppy_gcda_gcno_files()
         self.__load_json_cover_data()
 
+    def __teamcity_print( self, str ):
+        if self.teamcityMode == 'true' :
+            print str
 
     def __execute(self, param) :
 
@@ -122,7 +125,7 @@ class CoverageReport():
             testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
             for file in testedFiles:
                 for ext in [ 'cpp', 'c']:
-                    find_list = find_file( '{0}.{1}'.format( file, ext ) , projectFolders )
+                    find_list = find_files( '{0}.{1}'.format( file, ext ) , projectFolders )
                     if len( find_list ):
                         fileCover = FileCover( find_list[0], None )
                         self.testsCoverage.setdefault(test, []).append( fileCover )
@@ -154,7 +157,7 @@ class CoverageReport():
 
             shutil.copy(file, self.coverageTmpPath )
 
-    def __error_coverage_file_log( self, test, file ):
+    def __error_log_coverage_file( self, test, file ):
 
         os.chdir( self.pathExecutDir );
 
@@ -182,7 +185,7 @@ class CoverageReport():
                 coverValue = re.findall('\d+', split_line[0])
                 if len( coverValue ) > 0 and int(coverValue[0]) == 0:
                     lineValue = re.findall('\d+', split_line[1])
-                    print '{0}:{1}: warning: bad cover test :{2}'.format(file,int(lineValue[0]),test)
+                    print '{0}:{1}: warning: bad cover: {2}'.format(file,int(lineValue[0]),test)
 
             except IOError as err:
                 sys.stdout.write(err.message)
@@ -191,7 +194,7 @@ class CoverageReport():
 
     def generate_report_html( self ):
 
-        print '##teamcity[testStarted name=\'Generate cover html\']'
+        self.__teamcity_print( '##teamcity[testStarted name=\'Generate cover html\']' )
 
         if os.path.isdir( self.pathReportOut ):
             shutil.rmtree( self.pathReportOut )
@@ -235,12 +238,12 @@ class CoverageReport():
         self.__execute( params)         
         ###
 
-        print '##teamcity[testFinished name=\'Generate cover html\']'
+        self.__teamcity_print( '##teamcity[testFinished name=\'Generate cover html\']' )
 
 
     def generate_report_coverage( self ):
 
-        print '##teamcity[testStarted name=\'Coverage test\']'
+        self.__teamcity_print( '##teamcity[testStarted name=\'Coverage test\']' )
 
         eState = enum( UNDEF      =0, 
                        FIND_File  =1, 
@@ -307,27 +310,28 @@ class CoverageReport():
                         except IOError as err:
                             sys.stdout.write(err.message)
                             sys.stdout.flush()
-
+        
         for test in self.testsCoverage:
             for fileCover in self.testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
                     print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
             print ''
+        
+        if self.teamcityMode == 'false' :
+            for test in self.testsCoverage:
+                for fileCover in self.testsCoverage[ test ]:
+                    if CoverageMinimum > fileCover.coverLines:                
+                        basename = os.path.basename( fileCover.file )
+                        self.__error_log_coverage_file( test, fileCover.file )
+        else:
+            for test in self.testsCoverage:
+                for fileCover in self.testsCoverage[ test ]:
+                    if CoverageMinimum > fileCover.coverLines:                
+                        basename = os.path.basename( fileCover.file )
+                        self.__teamcity_print( '##teamcity[testFailed name=\'Cover\' message=\'{0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum) )
 
-        for test in self.testsCoverage:
-            for fileCover in self.testsCoverage[ test ]:
-                if CoverageMinimum > fileCover.coverLines:                
-                    basename = os.path.basename( fileCover.file )
-                    self.__error_coverage_file_log( test, fileCover.file )
-
-        for test in self.testsCoverage:
-            for fileCover in self.testsCoverage[ test ]:
-                if CoverageMinimum > fileCover.coverLines:                
-                    basename = os.path.basename( fileCover.file )
-                    print '##teamcity[testFailed name=\'Cover\' message=\'{0}\' details=\'file {1}: {2}% must be at least: {3}%\']'.format(test,basename,fileCover.coverLines,CoverageMinimum)
-
-        print '##teamcity[testFinished name=\'Coverage test\']'
+        self.__teamcity_print( '##teamcity[testFinished name=\'Coverage test\']' )
 
 
 def main():
@@ -336,13 +340,15 @@ def main():
     parser.add_argument( '--pathExecut', required = True )
     parser.add_argument( '--pathReportOut', required = True )
     parser.add_argument( '--buildConfig', choices=['Debug', 'Release'] )
-    parser.add_argument( '--notRunExecutable', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )
 
     options = parser.parse_args()
 
     cov = CoverageReport( options )
 
-    #cov.generate_report_html()
+    if options.teamcityMode == 'true' :
+        cov.generate_report_html()
+
     cov.generate_report_coverage()
 
 

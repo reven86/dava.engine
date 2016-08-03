@@ -704,9 +704,9 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
                     --pathBuild     ${CMAKE_BINARY_DIR}
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
-
-            COMMAND open ${CMAKE_BINARY_DIR}/Coverage/index.html
+            #COMMAND open ${CMAKE_BINARY_DIR}/Coverage/index.html
         )
+    
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
     string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )

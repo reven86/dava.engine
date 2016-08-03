@@ -184,7 +184,7 @@ if sys.platform == "darwin":
                 '--pathExecut', pathExecut,                   
                 '--pathReportOut', pathReportOut,
                 '--buildConfig', 'Release',
-                '--notRunExecutable', 'true'
+                '--teamcityMode', 'true'
                  ]
 
     subprocess.call(params)
