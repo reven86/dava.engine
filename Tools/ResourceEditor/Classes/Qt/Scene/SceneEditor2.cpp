@@ -10,7 +10,6 @@
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/DavaGLWidget/DavaRenderer.h"
 
@@ -27,6 +26,7 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 
 #include <QShortcut>
 
@@ -131,6 +131,9 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
+    editorVegetationSystem = new EditorVegetationSystem(this);
+    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
+
     selectionSystem->AddDelegate(modifSystem);
     selectionSystem->AddDelegate(hoodSystem);
     selectionSystem->AddDelegate(wayEditSystem);
@@ -166,8 +169,8 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         isLoaded = true;
     }
 
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
+    SceneValidator::ExtractEmptyRenderObjects(this);
+    SceneValidator::Instance()->ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -246,8 +249,12 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
-    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
-    selectionSystem->EnableSystem(false);
+    bool isSelectionEnabled = false;
+    if (selectionSystem != nullptr)
+    {
+        isSelectionEnabled = selectionSystem->IsSystemEnabled();
+        selectionSystem->EnableSystem(false);
+    }
 
     for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
@@ -256,7 +263,11 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
-    selectionSystem->EnableSystem(isSelectionEnabled);
+
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->EnableSystem(isSelectionEnabled);
+    }
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
@@ -282,6 +293,7 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 
         return (sceneExported && objectExported);
     }
+
     return false;
 }
 

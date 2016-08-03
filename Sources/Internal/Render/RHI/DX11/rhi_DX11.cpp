@@ -141,7 +141,10 @@ dx11_SuspendRendering()
 
     IDXGIDevice3* dxgiDevice3 = NULL;
 
-    if (SUCCEEDED(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3))))
+    HRESULT hr = _D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3));
+    CHECK_HR(hr)
+
+    if (SUCCEEDED(hr))
     {
         _D3D11_ImmediateContext->ClearState();
         dxgiDevice3->Trim();
@@ -159,23 +162,12 @@ dx11_ResumeRendering()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_TakeScreenshot(ScreenShotCallback callback)
-{
-    _D3D11_ScreenshotCallbackSync.Lock();
-    DVASSERT(!_D3D11_PendingScreenshotCallback);
-    _D3D11_PendingScreenshotCallback = callback;
-    _D3D11_ScreenshotCallbackSync.Unlock();
-}
-
-//------------------------------------------------------------------------------
-
 void _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
-    _D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext);
+    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
     get_device_description(_DeviceCapsDX11.deviceDescription);
 
 #else
@@ -363,7 +355,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
-    DispatchDX11.impl_TakeScreenshot = &dx11_TakeScreenshot;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 
@@ -398,6 +389,7 @@ void dx11_Initialize(const InitParam& param)
     _DeviceCapsDX11.isZeroBaseClipRange = true;
     _DeviceCapsDX11.isCenterPixelMapping = false;
     _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    _DeviceCapsDX11.maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 }
 
 //==============================================================================

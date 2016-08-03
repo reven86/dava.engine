@@ -58,7 +58,9 @@ public:
     void ApplyRotateValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
     void ApplyScaleValues(ST_Axis axis, const SelectableGroup& entities, const DAVA::Vector3& values, bool absoluteTransform);
 
-protected:
+    const SelectableGroup& GetTransformableSelection() const;
+
+private:
     struct EntityToModify
     {
         Selectable object;
@@ -109,6 +111,8 @@ protected:
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
+    void UpdateTransformableSelection();
+
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
     SceneCameraSystem* cameraSystem = nullptr;
@@ -118,6 +122,9 @@ private:
     DAVA::Vector<EntityToModify> modifEntities;
     DAVA::Vector<DAVA::Entity*> clonedEntities;
     DAVA::List<EntityModificationSystemDelegate*> delegates;
+
+    SelectableGroup currentSelection;
+    SelectableGroup transformableSelection;
 
     // values calculated, when starting modification
     DAVA::Vector3 modifEntitiesCenter;

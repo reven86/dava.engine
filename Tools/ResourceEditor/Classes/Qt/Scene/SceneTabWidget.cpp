@@ -108,7 +108,7 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
-    CloseAllTabsInternal(true);
+    DVASSERT(GetTabCount() == 0);
 
     ReleaseDAVAUI();
 }
@@ -120,7 +120,6 @@ void SceneTabWidget::InitDAVAUI()
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
 
     davaUIScreen = new DAVA::UIScreen();
-    davaUIScreen->AddControl(dava3DView);
 
     DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
     DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
@@ -259,10 +258,8 @@ bool SceneTabWidget::CloseTabInternal(int index, bool silent)
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
-        if (silent == false)
-        {
-            SceneSignals::Instance()->EmitDeactivated(scene);
-        }
+        davaUIScreen->RemoveControl(dava3DView);
+        SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
     SafeRelease(scene);
@@ -297,6 +294,8 @@ void SceneTabWidget::SetCurrentTab(int index)
 
         if (NULL != curScene)
         {
+            davaUIScreen->AddControl(dava3DView);
+
             dava3DView->SetScene(curScene);
             curScene->SetViewportRect(dava3DView->GetRect());
 
@@ -577,23 +576,32 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
     return -1;
 }
 
-bool SceneTabWidget::CloseAllTabs()
+bool SceneTabWidget::CloseAllTabs(bool silent)
 {
-    return CloseAllTabsInternal(false);
-}
+    bool areTabBarSignalsBlocked = false;
+    if (silent)
+    {
+        areTabBarSignalsBlocked = tabBar->blockSignals(true);
+    }
 
-bool SceneTabWidget::CloseAllTabsInternal(bool silent)
-{
+    bool closed = true;
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
         if (!CloseTabInternal(GetCurrentTab(), silent))
         {
-            return false;
+            closed = false;
+            break;
         }
         count--;
     }
-    return true;
+
+    if (silent)
+    {
+        tabBar->blockSignals(areTabBarSignalsBlocked);
+    }
+
+    return closed;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
