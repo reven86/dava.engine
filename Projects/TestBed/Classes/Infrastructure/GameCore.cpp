@@ -218,7 +218,7 @@ void GameCore::RegisterTests()
     new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
-    new AssertTest();
+    new AssertTest(this);
     new FloatingPointExceptionTest(this);
     new PackManagerTest(this);
     //$UNITTEST_CTOR
