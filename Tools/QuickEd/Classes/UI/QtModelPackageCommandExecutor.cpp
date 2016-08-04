@@ -327,7 +327,7 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
     nodesToMove.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
+        if (node->CanMoveTo(dest, destIndex))
             nodesToMove.push_back(node);
     }
     Vector<ControlNode*> movedNodes;
@@ -346,14 +346,10 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
                 if (src == dest && index > srcIndex)
                     index--;
 
-                node->Retain();
-                RemoveControlImpl(node);
-                if (IsNodeInHierarchy(dest))
+                if (MoveControlImpl(node, dest, index))
                 {
-                    InsertControlImpl(node, dest, index);
                     movedNodes.push_back(node);
                 }
-                node->Release();
 
                 index++;
             }
@@ -649,6 +645,61 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     }
 }
 
+bool QtModelPackageCommandExecutor::MoveControlImpl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 destIndex)
+{
+    node->Retain();
+    ControlsContainerNode* src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
+    bool result = false;
+    if (src)
+    {
+        int32 srcIndex = src->GetIndex(node);
+        PushCommand(new RemoveControlCommand(packageNode, node, src, srcIndex));
+
+        Vector<ControlNode*> instances = node->GetInstances();
+
+        if (IsNodeInHierarchy(dest))
+        {
+            PushCommand(new InsertControlCommand(packageNode, node, dest, destIndex));
+
+            ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
+            if (destControl)
+            {
+                for (ControlNode* destInstance : destControl->GetInstances())
+                {
+                    auto it = std::find_if(instances.begin(), instances.end(), [destInstance](const ControlNode* node) {
+                        return IsControlNodesHasSameParentControlNode(node, destInstance);
+                    });
+
+                    if (it != instances.end())
+                    {
+                        ControlNode* srcInstance = *it;
+                        instances.erase(it);
+                        MoveControlImpl(srcInstance, destInstance, destIndex);
+                    }
+                    else
+                    {
+                        ControlNode* copy = ControlNode::CreateFromPrototypeChild(node);
+                        InsertControlImpl(copy, destInstance, destIndex);
+                        SafeRelease(copy);
+                    }
+                }
+            }
+
+            result = true;
+        }
+
+        for (ControlNode* instance : instances)
+            RemoveControlImpl(instance);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+
+    node->Release();
+    return result;
+}
+
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, int32 typeIndex, int32 index, ComponentPropertiesSection* prototypeSection)
 {
     UIComponent::eType type = static_cast<UIComponent::eType>(typeIndex);
@@ -696,6 +747,25 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode* nod
             return true;
         p = p->GetParent();
     }
+    return false;
+}
+
+bool QtModelPackageCommandExecutor::IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2)
+{
+    for (const PackageBaseNode* t1 = n1; t1 != nullptr; t1 = t1->GetParent())
+    {
+        if (t1->GetControl() != nullptr)
+        {
+            for (const PackageBaseNode* t2 = n2; t2 != nullptr; t2 = t2->GetParent())
+            {
+                if (t2 == t1)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
     return false;
 }
 
