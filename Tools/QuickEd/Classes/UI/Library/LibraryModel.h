@@ -19,7 +19,6 @@ class LibraryModel : public QStandardItemModel, PackageListener
     enum
     {
         POINTER_DATA = Qt::UserRole + 1,
-        INNER_NAME_DATA,
         PROTOTYPE
     };
 
@@ -34,15 +33,16 @@ public:
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     void SetPackageNode(PackageNode* package);
 
+    QModelIndex GetDefaultControlsModelIndex() const;
+
 private:
     QVariant data(const QModelIndex& index, int role) const override;
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();
-    void AddControl(ControlNode* node);
-    void AddImportedControl(PackageNode* node);
-    void CreateControlsRootItem(int row);
-    void CreateImportPackagesRootItem(int row);
+    void AddControl(ControlNode* node, QStandardItem* rootItem, bool haveToMakeInstance);
+    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool haveToMakeInstance);
+    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool haveToMakeInstance);
 
     //Package Signals
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;

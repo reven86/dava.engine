@@ -24,6 +24,7 @@
 #include "ControlProperties/StyleSheetProperty.h"
 
 #include "UI/UIPackage.h"
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -189,19 +190,48 @@ void PackageSerializer::CollectPackages(Vector<PackageNode*>& packages, ControlN
         }
     }
 
-    for (int32 index = 0; index < node->GetPackage()->GetImportedPackagesNode()->GetCount(); index++)
+    if (node->GetPackage())
     {
-        PackageNode* package = node->GetPackage()->GetImportedPackagesNode()->GetImportedPackage(index);
-        StyleSheetsNode* styles = package->GetStyleSheets();
-        for (int i = 0; i < styles->GetCount(); i++)
+        for (int32 index = 0; index < node->GetPackage()->GetImportedPackagesNode()->GetCount(); index++)
         {
-            StyleSheetNode* node = styles->Get(i);
-            node->Get
+            PackageNode* package = node->GetPackage()->GetImportedPackagesNode()->GetImportedPackage(index);
+            if (IsControlNodeDependsOnStylesFromPackage(node, package))
+            {
+                packages.push_back(package);
+            }
         }
     }
 
     for (int32 index = 0; index < node->GetCount(); index++)
         CollectPackages(packages, node->Get(index));
+}
+
+bool PackageSerializer::IsControlNodeDependsOnStylesFromPackage(ControlNode* node, PackageNode* package) const
+{
+    StyleSheetsNode* styles = package->GetStyleSheets();
+
+    for (int i = 0; i < styles->GetCount(); i++)
+    {
+        StyleSheetNode* ssNode = styles->Get(i);
+        StyleSheetRootProperty* root = ssNode->GetRootProperty();
+        StyleSheetSelectorsSection* selectorsSection = root->GetSelectors();
+        for (int j = 0; j < selectorsSection->GetCount(); j++)
+        {
+            StyleSheetSelectorProperty* selectorProperty = selectorsSection->GetProperty(j);
+            const UIStyleSheetSelectorChain& chain = selectorProperty->GetSelectorChain();
+            for (const UIStyleSheetSelector& selector : chain)
+            {
+                for (const FastName& cl : selector.classes)
+                {
+                    if (node->GetControl()->HasClass(cl))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool PackageSerializer::IsControlInSerializationList(ControlNode* control) const
