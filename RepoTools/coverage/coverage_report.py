@@ -44,6 +44,10 @@ def get_exe( pathExecut ):
         else:
             return pathExecut
 
+def check_sting_in_file( str, fname ):
+    with open(fname) as dataf:
+        return any(str in line for line in dataf)
+
 
 class CoverageReport():
 
@@ -76,6 +80,7 @@ class CoverageReport():
         self.pathCovInfoTests       = os.path.join    ( self.coverageTmpPath, 'cov_tests.info')        
         self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
+        self.pathUnityPack          = ''
         self.testsCoverage          = {}
         self.testsCoverageFiles     = []
 
@@ -118,6 +123,7 @@ class CoverageReport():
         jsonData           = json.loads(coverFile)
         projectFolders     = jsonData[ 'ProjectFolders' ].split(' ')
 
+        self.pathUnityPack      = jsonData[ 'UnityFolder' ]
         self.testsCoverage      = {}
         self.testsCoverageFiles = []
 
@@ -191,6 +197,16 @@ class CoverageReport():
                 sys.stdout.write(err.message)
                 sys.stdout.flush()
 
+    def __find_unity_pack_gcda( self, file ):
+        unity_files = []
+        for root, dirs, files in os.walk( self.pathUnityPack ):
+            for name in files:
+                unity_file = os.path.join(root, name)
+                if( check_sting_in_file(file, unity_file) ) :
+                    fileName = os.path.basename( unity_file )
+                    fileName, fileExt = os.path.splitext( fileName )
+                    return [ '{0}.gcda'.format(fileName) ]
+        return []
 
     def generate_report_html( self ):
 
@@ -267,6 +283,9 @@ class CoverageReport():
                 if  os.path.isfile( fileGcda ) :
                     fileGcdaList = [ fileGcda ]
                 else:
+                    fileGcdaList = self.__find_unity_pack_gcda( fileCover.file )
+
+                if len( fileGcdaList ) == 0:
                     for rootdir, dirs, files in os.walk( self.coverageTmpPath ):
                         for file in files:   
                             if file.endswith( ('.gcda')  ): 

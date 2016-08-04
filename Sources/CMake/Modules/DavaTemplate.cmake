@@ -714,7 +714,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
 
     add_definitions( -DTEST_COVERAGE )
     add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
-
+    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
 
 endif()
 

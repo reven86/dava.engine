@@ -198,7 +198,11 @@ void GameCore::ProcessTests(float32 timeElapsed)
         auto toJson = [&covergeFile](DAVA::String item) { covergeFile->Write(item.c_str(), item.size()); };
 
         toJson("{ \n    \"ProjectFolders\": \"" + DAVA::String(DAVA_FOLDERS) + "\",\n");
-
+        
+#if defined(DAVA_UNITY_FOLDER)
+        toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
+#endif
+        
         toJson("    \"Coverage\":  {\n");
 
         for (const auto& x : map)
@@ -216,7 +220,6 @@ void GameCore::ProcessTests(float32 timeElapsed)
 
         toJson("     }\n");
         toJson("}\n");
-
         
 #endif // TEST_COVERAGE
 
