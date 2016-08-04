@@ -2,6 +2,9 @@
 #include "filemanager.h"
 #include "errormessenger.h"
 #include "processhelper.h"
+
+#include "QtTools/Utils/Utils.h"
+
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
@@ -61,12 +64,31 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     localConfig.SaveToFile(localConfigFilePath);
 }
 
+namespace ApplicationManagerDetails
+{
+QString GetBranchDirectory_kostil(const QString& branchID)
+{
+    QString path = FileManager::GetBaseAppsDirectory() + branchID + "/";
+    return path;
+}
+QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
+{
+    QString path = GetBranchDirectory_kostil(branchID) + appID + "/";
+    return path;
+}
+}
+
 QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
 {
     QRegularExpression spaceRegex("\\s+");
     branchID.replace(spaceRegex, "");
     appID.replace(spaceRegex, "");
     QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
+    if (QFile::exists(runPath))
+    {
+        return runPath;
+    }
+    runPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchID, appID);
     if (QFile::exists(runPath))
     {
         return runPath;
@@ -80,6 +102,11 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
         for (const QString& appKey : appKeys)
         {
             QString newRunPath = FileManager::GetApplicationDirectory(branchKey, appKey);
+            if (QFile::exists(newRunPath))
+            {
+                return newRunPath;
+            }
+            newRunPath = ApplicationManagerDetails::GetApplicationDirectory_kostil(branchKey, appKey);
             if (QFile::exists(newRunPath))
             {
                 return newRunPath;
@@ -181,29 +208,48 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
-void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
+QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
-    if (version)
+    if (version == nullptr)
     {
-        QString runPath = GetApplicationDirectory(branchID, appID);
-        if (runPath.isEmpty())
-        {
-            return;
-        }
-        runPath += version->runPath;
-        if (!QFile::exists(runPath))
-        {
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
-        }
-        else
-        {
-            if (!ProcessHelper::IsProcessRuning(runPath))
-                ProcessHelper::RunProcess(runPath);
-            else
-                ErrorMessenger::ShowNotificationDlg("Application is already launched.");
-        }
+        return "";
     }
+    QString runPath = GetApplicationDirectory(branchID, appID);
+    if (runPath.isEmpty())
+    {
+        return "";
+    }
+    runPath += version->runPath;
+    if (!QFile::exists(runPath))
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
+        return "";
+    }
+    return runPath;
+}
+
+void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID)
+{
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    if (runPath.isEmpty())
+    {
+        return;
+    }
+    ShowFileInExplorer(runPath);
+}
+
+void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
+{
+    QString runPath = ExtractApplicationRunPath(branchID, appID, versionID);
+    if (runPath.isEmpty())
+    {
+        return;
+    }
+    if (!ProcessHelper::IsProcessRuning(runPath))
+        ProcessHelper::RunProcess(runPath);
+    else
+        ErrorMessenger::ShowNotificationDlg("Application is already launched.");
 }
 
 bool ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID)

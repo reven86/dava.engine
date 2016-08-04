@@ -11,6 +11,8 @@
 #include "Engine/Public/OsX/WindowNativeServiceOsX.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Engine/Public/iOS/WindowNativeServiceiOS.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Public/Android/WindowNativeServiceAndroid.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

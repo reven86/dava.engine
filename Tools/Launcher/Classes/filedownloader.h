@@ -19,15 +19,11 @@ public slots:
     void Cancel();
 
 private slots:
-    void NetworkError(QNetworkReply::NetworkError code);
     void DownloadFinished();
 
 private:
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkReply* currentDownload = nullptr;
-
-    int lastErrorCode = 0;
-    QString lastErrorDesc;
 };
 
 #endif // FILEDOWNLOADER_H

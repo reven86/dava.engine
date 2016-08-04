@@ -77,7 +77,7 @@ Dispatcher<T>::Dispatcher(const Function<void(const T&)>& handler)
 template <typename T>
 void Dispatcher<T>::LinkToCurrentThread()
 {
-    linkedThreadId = Thread::GetCurrentIdAsInteger();
+    linkedThreadId = Thread::GetCurrentIdAsUInt64();
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ void Dispatcher<T>::SendEvent(const T& e)
 {
     DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
-    uint64 curThreadId = Thread::GetCurrentIdAsInteger();
+    uint64 curThreadId = Thread::GetCurrentIdAsUInt64();
     if (linkedThreadId == curThreadId)
     {
         // If blocking call is made from the same thread as thread that calls ProcessEvents

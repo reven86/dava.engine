@@ -43,6 +43,45 @@ void SetDispatchTable(const Dispatch& dispatch)
     _Impl = dispatch;
 }
 
+bool
+ApiIsSupported(Api api)
+{
+    bool supported = false;
+
+    switch (api)
+    {
+    case RHI_DX9:
+    {
+            #if defined(__DAVAENGINE_WIN32__)
+        supported = true;
+            #endif
+    }
+    break;
+
+    case RHI_DX11:
+    {
+            #if defined(__DAVAENGINE_WIN32__)
+        supported = true;
+            #endif
+    }
+    break;
+
+    case RHI_METAL:
+    {
+            #if defined(__DAVAENGINE_IPHONE__) && TARGET_IPHONE_SIMULATOR != 1
+        supported = rhi_MetalIsSupported();
+            #endif
+    }
+    break;
+
+    case RHI_GLES2:
+        supported = true;
+        break;
+    }
+
+    return supported;
+}
+
 void Initialize(Api api, const InitParam& param)
 {
     switch (api)
@@ -129,12 +168,6 @@ void InvalidateCache()
 {
     if (_Impl.impl_InvalidateCache)
         (*_Impl.impl_InvalidateCache)();
-}
-
-void TakeScreenshot(ScreenShotCallback callback)
-{
-    if (_Impl.impl_TakeScreenshot)
-        (*_Impl.impl_TakeScreenshot)(callback);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -263,9 +296,14 @@ void Delete(Handle buf)
     (*_Impl.impl_QueryBuffer_Delete)(buf);
 }
 
+bool BufferIsReady(Handle buf)
+{
+    return (*_Impl.impl_QueryBuffer_IsReady)(buf);
+}
+
 bool IsReady(Handle buf, uint32 objectIndex)
 {
-    return (*_Impl.impl_QueryBuffer_IsReady)(buf, objectIndex);
+    return (*_Impl.impl_QueryBuffer_ObjectIsReady)(buf, objectIndex);
 }
 
 int Value(Handle buf, uint32 objectIndex)

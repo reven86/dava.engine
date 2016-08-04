@@ -59,7 +59,7 @@ public:
     int32 OnFrame();
 
     void InitRenderer(Window* w);
-    void ResetRenderer(Window* w, bool resetToNull);
+    void ResetRenderer(Window* w);
     void DeinitRender(Window* w);
 
 private:
@@ -80,6 +80,7 @@ private:
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
+    void HandleAppImmediateTerminate(const MainDispatcherEvent& e);
 
     Window* CreatePrimaryWindowBackend();
 

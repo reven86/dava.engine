@@ -98,8 +98,6 @@ void ImageSplitterDialog::PathChanged(const QString& path)
         ui->greenImgLbl->SetImage(channels.green);
         ui->blueImgLbl->SetImage(channels.blue);
         ui->alphaImgLbl->SetImage(channels.alpha);
-
-        channels.ReleaseImages();
     }
     else
     {
@@ -128,7 +126,7 @@ void ImageSplitterDialog::ImageAreaChanged()
     bool isSomeAreaSet = false;
     foreach (ImageArea* control, rgbaControls)
     {
-        if (control != sender && control->GetImage() != NULL)
+        if (control != sender && control->GetImage())
         {
             isSomeAreaSet = true;
             break;
@@ -248,7 +246,7 @@ void ImageSplitterDialog::OnFillBtnClicked()
     DAVA::uint32 height = acceptableSize.y;
     DAVA::Vector<DAVA::uint8> buffer(width * height, 0);
     buffer.assign(buffer.size(), value);
-    DAVA::Image* bufferImg = DAVA::Image::CreateFromData(width, height, DAVA::FORMAT_A8, &buffer[0]);
+    DAVA::ScopedPtr<DAVA::Image> bufferImg(DAVA::Image::CreateFromData(width, height, DAVA::FORMAT_A8, &buffer[0]));
     if (targetImage == NULL)
     {
         targetImageArea->SetImage(bufferImg);
@@ -258,8 +256,6 @@ void ImageSplitterDialog::OnFillBtnClicked()
         targetImage->InsertImage(bufferImg, 0, 0);
         targetImageArea->UpdatePreviewPicture();
     }
-
-    DAVA::SafeRelease(bufferImg);
 }
 
 void ImageSplitterDialog::OnReload()
@@ -322,7 +318,7 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
         DAVA::SafeRelease(mergedImage);
         ui->path->SetPath(QString::fromStdString(filePath.GetAbsolutePathname()));
     }
-    QMessageBox::information(this, "Save succes", "Saved!", QMessageBox::Ok);
+    QMessageBox::information(this, "Save success", "Save successfull", QMessageBox::Ok);
 }
 
 DAVA::String ImageSplitterDialog::GetDefaultPath() const

@@ -35,6 +35,8 @@ struct WindowNativeBridge;
 #elif defined(__DAVAENGINE_IPHONE__)
 struct CoreNativeBridge;
 struct WindowNativeBridge;
+#elif defined(__DAVAENGINE_ANDROID__)
+struct AndroidBridge;
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation 

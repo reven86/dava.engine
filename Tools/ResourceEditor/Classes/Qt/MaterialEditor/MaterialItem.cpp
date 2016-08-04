@@ -10,6 +10,7 @@
 #include "Main/QtUtils.h"
 #include "TextureBrowser/TextureCache.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "QtTools/Utils/Themes/Themes.h"
 
 namespace MaterialItemLocal
 {
@@ -66,7 +67,7 @@ QVariant MaterialItem::data(int role) const
         ret = QStandardItem::data(role);
         if (GetFlag(MaterialItem::IS_PART_OF_SELECTION))
         {
-            ret = QVariant::fromValue(qApp->palette().brush(QPalette::Highlight));
+            ret = QVariant::fromValue(Themes::GetHighligtedItemTextColor());
         }
     }
     break;

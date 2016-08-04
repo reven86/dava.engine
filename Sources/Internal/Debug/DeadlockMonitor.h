@@ -43,7 +43,7 @@
         using namespace DAVA; \
         Vector<uint64> callChain; \
         Debug::InterthreadBlockingCallMonitor* monitor = Debug::InterthreadBlockingCallMonitor::Instance(); \
-        bool deadlock = monitor->BeginBlockingCall(Thread::GetCurrentIdAsInteger(), targetThread, callChain); \
+        bool deadlock = monitor->BeginBlockingCall(Thread::GetCurrentIdAsUInt64(), targetThread, callChain); \
         if (deadlock) \
         { \
             String s = monitor->CallChainToString(callChain); \
@@ -54,7 +54,7 @@
 #define DAVA_END_BLOCKING_CALL(targetThread) \
     do { \
         using namespace DAVA; \
-        Debug::InterthreadBlockingCallMonitor::Instance()->EndBlockingCall(Thread::GetCurrentIdAsInteger(), targetThread); \
+        Debug::InterthreadBlockingCallMonitor::Instance()->EndBlockingCall(Thread::GetCurrentIdAsUInt64(), targetThread); \
     } while (0)
 
 #else

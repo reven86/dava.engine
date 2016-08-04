@@ -37,9 +37,9 @@ void SettingsManager::Init()
     CreateValue(Settings::General_ReloadParticlesOnPojectOpening, DAVA::VariantType(true));
     CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
     CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(true));
-    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT))
-                                                      ,
+    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::TextureConverter::ECQ_DEFAULT)),
                 DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
+    CreateValue(Settings::General_ShowErrorDialog, DAVA::VariantType(true));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_SwitchColor1, DAVA::VariantType(DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f)));
@@ -47,6 +47,14 @@ void SettingsManager::Init()
     CreateValue(Settings::General_MaterialEditor_LodColor1, DAVA::VariantType(DAVA::Color(0.7f, 0.7f, 0.7f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_MaterialEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f)));
+
+    CreateValue(Settings::General_LODEditor_LodColor0, DAVA::VariantType(DAVA::Color(0.2f, 0.35f, 0.62f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor1, DAVA::VariantType(DAVA::Color(0.25f, 0.45f, 0.78f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.33f, 0.56f, 0.97f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.62f, 0.75f, 0.98f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_InactiveColor, DAVA::VariantType(DAVA::Color(0.59f, 0.59f, 0.59f, 1.0f)));
+    CreateValue(Settings::General_LODEditor_FitSliders, DAVA::VariantType(false));
+
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
@@ -79,9 +87,10 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_DebugBoxWaypointScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DragAndDropWithShift, DAVA::VariantType(false));
     CreateValue(Settings::Scene_AutoselectNewEntities, DAVA::VariantType(true));
-    CreateValue(Settings::Scene_RefreshLodForNonSolid, DAVA::VariantType(true));
     CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SaveEmitters, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SaveStaticOcclusion, DAVA::VariantType(true));
+    CreateValue(Settings::Scene_DefaultCustomColorIndex, DAVA::VariantType(0u));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
@@ -104,7 +113,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType(static_cast<DAVA::int32>(EditorMaterialSystem::LIGHTVIEW_ALL)));
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType(static_cast<bool>(false)));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType(static_cast<bool>(false)));
-    CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType(static_cast<bool>(false)));
+    CreateValue(Settings::Internal_LODEditor_Mode, DAVA::VariantType(static_cast<bool>(false)));
+    CreateValue(Settings::Internal_LODEditor_Recursive, DAVA::VariantType(false));
     CreateValue(DAVA::FastName("Internal/RunActionEventWidget/CurrentType"), DAVA::VariantType(static_cast<DAVA::uint32>(0)));
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
     CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));

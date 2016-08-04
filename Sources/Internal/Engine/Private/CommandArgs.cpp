@@ -23,6 +23,17 @@ Vector<String> GetCommandArgs(int argc, char* argv[])
     return cmdargs;
 }
 
+Vector<String> GetCommandArgs(const String& cmdline)
+{
+    // TODO: manually break command line into args
+    Vector<String> cmdargs;
+    if (cmdline.empty())
+    {
+        cmdargs.push_back(cmdline);
+    }
+    return cmdargs;
+}
+
 #if defined(__DAVAENGINE_WIN32__)
 
 Vector<String> GetCommandArgs()
@@ -48,14 +59,8 @@ Vector<String> GetCommandArgs()
 
 Vector<String> GetCommandArgs()
 {
-    Vector<String> cmdargs;
-
-    int nargs = 0;
     LPWSTR cmdline = ::GetCommandLineW();
-
-    // TODO: manually break command line into args
-    cmdargs.push_back(WStringToString(cmdline));
-    return cmdargs;
+    return GetCommandArgs(WStringToString(cmdline));
 }
 
 #endif

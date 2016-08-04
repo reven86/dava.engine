@@ -139,9 +139,13 @@ Thread::Id Thread::GetCurrentId()
     return pthread_self();
 }
 
-uint64 Thread::GetCurrentIdAsInteger()
+uint64 Thread::GetCurrentIdAsUInt64()
 {
+#if defined(__DAVAENGINE_APPLE__)
     return reinterpret_cast<uint64>(GetCurrentId());
+#elif defined(__DAVAENGINE_ANDROID__)
+    return static_cast<uint64>(GetCurrentId());
+#endif
 }
 
 #if defined(__DAVAENGINE_APPLE__)

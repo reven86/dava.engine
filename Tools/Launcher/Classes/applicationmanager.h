@@ -23,6 +23,7 @@ public:
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
+    void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
     bool RemoveApplication(const QString& branchID, const QString& appID, const QString& versionID);
     bool RemoveBranch(const QString& branchID);
@@ -37,6 +38,7 @@ public slots:
 private:
     void LoadLocalConfig(const QString& configPath);
     void ParseRemoteConfigData(const QByteArray& data);
+    QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 
     QString localConfigFilePath;
 

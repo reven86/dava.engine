@@ -3,6 +3,7 @@
 
 #include "DAVAEngine.h"
 #include "Base/TypeHolders.h"
+#include "Scene3D/Lod/LodComponent.h"
 
 namespace CreatePlaneLODCommandHelper
 {
@@ -16,7 +17,6 @@ struct Request : public DAVA::RefCounter
     DAVA::int32 newLodIndex = 0;
     DAVA::uint32 textureSize = 0;
     DAVA::FilePath texturePath;
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     DAVA::Atomic<bool> completed;
     rhi::HTexture depthTexture;
 

@@ -1,7 +1,6 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "Render/RenderHelper.h"
-#include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -94,7 +93,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     }
     else
     {
@@ -102,23 +101,16 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
-        config.depthStencilBuffer.texture = currentTarget.depthAttachment;
+        config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.priority = currentTarget.priority + basePriority;
-        config.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
+        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     }
-
-    bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
     scene->SetMainPassViewport(viewportRc);
     scene->Draw();
-
-    if (uiDrawQueryWasOpen)
-        FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     if (drawToFrameBuffer)
     {
@@ -200,5 +192,23 @@ void UI3DView::PrepareFrameBuffer()
     Vector2 fbSize = Vector2(static_cast<float32>(frameBuffer->GetWidth()), static_cast<float32>(frameBuffer->GetHeight()));
 
     fbTexSize = fbRenderSize / fbSize;
+}
+
+void UI3DView::OnVisible()
+{
+    if (!registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = true;
+        UIControlSystem::Instance()->UI3DViewAdded();
+    }
+}
+
+void UI3DView::OnInvisible()
+{
+    if (registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = false;
+        UIControlSystem::Instance()->UI3DViewRemoved();
+    }
 }
 }

@@ -318,6 +318,10 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
@@ -381,6 +385,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \

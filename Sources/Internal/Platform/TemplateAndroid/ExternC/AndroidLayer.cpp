@@ -1,5 +1,28 @@
-#ifndef _ANDROID_LAYER_
-#define _ANDROID_LAYER_
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+
+#include "Engine/Private/Android/AndroidBridge.h"
+
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    return Private::AndroidBridge::GetJavaVM();
+}
+
+} // namespace JNI
+} // namespace DAVA
+
+#endif // __DAVAENGINE_ANDROID__
+
+#else
+
+#if defined(__DAVAENGINE_ANDROID__)
 
 #include "AndroidLayer.h"
 
@@ -489,4 +512,5 @@ void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject clas
 
 // END OF JNISurfaceView
 
-#endif //#ifndef _ANDROID_LAYER_
+#endif // __DAVAENGINE_ANDROID__
+#endif // !__DAVAENGINE_COREV2__
