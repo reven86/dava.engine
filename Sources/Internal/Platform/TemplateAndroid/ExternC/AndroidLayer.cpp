@@ -53,9 +53,9 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv*
 
 //JNISurfaceView
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject allInputs);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode, jint modifiers);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
@@ -84,6 +84,7 @@ jfieldID gInputEventTidField;
 jfieldID gInputEventXField;
 jfieldID gInputEventYField;
 jfieldID gInputEventTimeField;
+jfieldID gInputEventModifiersField;
 
 AndroidDelegate* androidDelegate = nullptr;
 ANativeWindow* nativeWindow = nullptr;
@@ -195,6 +196,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
+    gInputEventModifiersField = env->GetFieldID(*gInputEventClass, "modifiers", DAVA::JNI::TypeMetrics<jint>());
 
     DAVA::Logger::Info("finish OnCreateApplication");
 }
@@ -335,6 +337,7 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
                                                            gInputEventYField);
     // timestamp in seconds, JNIEnv retern in milliseconds
     event.timestamp = env->GetDoubleField(input, gInputEventTimeField) / 1000.0;
+    event.modifiers = env->GetIntField(input, gInputEventModifiersField);
     event.phase = GetPhase(action, source);
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
@@ -388,27 +391,27 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers)
 {
     if (core)
     {
-        core->KeyDown(keyCode);
+        core->KeyDown(keyCode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers)
 {
     if (core)
     {
-        core->KeyUp(keyCode);
+        core->KeyUp(keyCode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode, jint modifiers)
 {
     if (core)
     {
-        core->OnGamepadElement(elementKey, value, isKeycode);
+        core->OnGamepadElement(elementKey, value, isKeycode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 

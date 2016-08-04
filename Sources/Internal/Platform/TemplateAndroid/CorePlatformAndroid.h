@@ -54,11 +54,11 @@ public:
     void OnCreateActivity();
     void OnDestroyActivity();
 
-    void KeyUp(int32 keyCode);
-    void KeyDown(int32 keyCode);
+    void KeyUp(int32 keyCode, uint32 modifiers);
+    void KeyDown(int32 keyCode, uint32 modifiers);
 
     void OnInput(Vector<UIEvent>& allInputs);
-    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
+    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode, uint32 modifiers);
 
     void OnGamepadAvailable(bool isAvailable);
     void OnGamepadTriggersAvailable(bool isAvailable);

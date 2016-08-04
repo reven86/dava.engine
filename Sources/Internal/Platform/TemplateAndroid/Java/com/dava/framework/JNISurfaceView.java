@@ -20,16 +20,16 @@ import android.view.inputmethod.InputConnection;
 
 public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callback
 {
-	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
+    private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
 
-	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
-	private native void nativeOnKeyDown(int keyCode);
-	private native void nativeOnKeyUp(int keyCode);
-	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
+    private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > allInputs);
+    private native void nativeOnKeyDown(int keyCode, int modifiers);
+    private native void nativeOnKeyUp(int keyCode, int modifiers);
+    private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode, int modifiers);
 
-	private native void nativeSurfaceCreated(Surface surface);
-	private native void nativeSurfaceChanged(Surface surface, int width, int height);
-	private native void nativeSurfaceDestroyed();
+    private native void nativeSurfaceCreated(Surface surface);
+    private native void nativeSurfaceChanged(Surface surface, int width, int height);
+    private native void nativeSurfaceDestroyed();
 
     private native void nativeProcessFrame();
 
@@ -37,107 +37,107 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     // System can create new JNISurfaceView instance before deleting previous instance
     // So use surface as current surface
     // TODO: work with surface in SDL way 
-	static private Surface surface = null;
-	private int surfaceWidth = 0, surfaceHeight = 0;
+    static private Surface surface = null;
+    private int surfaceWidth = 0, surfaceHeight = 0;
 
-	private boolean isMultitouchEnabled = true;
-	
-	private Integer[] gamepadAxises = null;
-	private Integer[] overridedGamepadKeys = null;
-	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
-	
-	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
-	private volatile boolean mEventQueueReady = true;
+    private boolean isMultitouchEnabled = true;
+    
+    private Integer[] gamepadAxises = null;
+    private Integer[] overridedGamepadKeys = null;
+    private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
+    
+    private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
+    private volatile boolean mEventQueueReady = true;
 
-	public JNISurfaceView(Context context) 
-	{
-		super(context);
-		Init();
-	}
+    public JNISurfaceView(Context context) 
+    {
+        super(context);
+        Init();
+    }
 
-	public JNISurfaceView(Context context, AttributeSet attrs)
-	{
-		super(context, attrs);
-		Init();
-	}
+    public JNISurfaceView(Context context, AttributeSet attrs)
+    {
+        super(context, attrs);
+        Init();
+    }
 
-	private void Init()
-	{
-		getHolder().setFormat(PixelFormat.TRANSLUCENT);
-		
-		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
-		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
-		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
-		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_GAS));
-		
+    private void Init()
+    {
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        
+        gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
+        gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
+        gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
+        gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_GAS));
+        
         getHolder().addCallback(this);
-	}
-	
-	public void ProcessQueuedEvents()
-	{
-		ArrayList<Runnable> queueCopy = null;
+    }
+    
+    public void ProcessQueuedEvents()
+    {
+        ArrayList<Runnable> queueCopy = null;
 
-		synchronized (mEventQueue) {
-			queueCopy = new ArrayList<Runnable>(mEventQueue);
-			mEventQueue.clear();
-		}
-		
-		for(Runnable r : queueCopy) {
-    		r.run();
-    	}
+        synchronized (mEventQueue) {
+            queueCopy = new ArrayList<Runnable>(mEventQueue);
+            mEventQueue.clear();
+        }
+        
+        for(Runnable r : queueCopy) {
+            r.run();
+        }
 
-    	synchronized(mEventQueue) {
-    		mEventQueueReady = true;
-    		mEventQueue.notify();
-    	}
-	}
+        synchronized(mEventQueue) {
+            mEventQueueReady = true;
+            mEventQueue.notify();
+        }
+    }
 
-	public void WaitQueuedEvents()
-	{
-    	synchronized(mEventQueue)
-    	{
+    public void WaitQueuedEvents()
+    {
+        synchronized(mEventQueue)
+        {
             if(!mEventQueue.isEmpty()) {
-    		    mEventQueueReady = false;
-    		    while(!mEventQueueReady) {
+                mEventQueueReady = false;
+                while(!mEventQueueReady) {
                     try {
-	    			    mEventQueue.wait();
+                        mEventQueue.wait();
                     } catch(InterruptedException e) {
                         e.printStackTrace();
                     }
-    		    }
+                }
             }
-		}		
-	}
+        }        
+    }
 
-	public void ProcessFrame()
-	{
+    public void ProcessFrame()
+    {
         if (!JNIAssert.waitUserInputOnAssertDialog)
         {
             nativeProcessFrame();
         }
-	}
-	
-	public void SetAvailableGamepadAxises(Integer[] axises)
-	{
-		gamepadAxises = axises;
-		
-		Set<Integer> overridedKeys = new HashSet<Integer>();
-		for(Pair<Integer, Integer> p : gamepadButtonsAxisMap) {
-			for(Integer a : axises) {
-				if(a == p.second) {
-					overridedKeys.add(p.first);
-				}
-			}
-		}
-		
-		overridedGamepadKeys = overridedKeys.toArray(new Integer[overridedKeys.size()]);
-	}
-	
-	public void SetMultitouchEnabled(boolean enabled)
-	{
-		isMultitouchEnabled = enabled;
-	}
-	
+    }
+    
+    public void SetAvailableGamepadAxises(Integer[] axises)
+    {
+        gamepadAxises = axises;
+        
+        Set<Integer> overridedKeys = new HashSet<Integer>();
+        for(Pair<Integer, Integer> p : gamepadButtonsAxisMap) {
+            for(Integer a : axises) {
+                if(a == p.second) {
+                    overridedKeys.add(p.first);
+                }
+            }
+        }
+        
+        overridedGamepadKeys = overridedKeys.toArray(new Integer[overridedKeys.size()]);
+    }
+    
+    public void SetMultitouchEnabled(boolean enabled)
+    {
+        isMultitouchEnabled = enabled;
+    }
+    
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) 
     {
@@ -147,205 +147,254 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         return super.onCreateInputConnection(outAttrs);
     }
     
-	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) 
-	{
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) 
+    {
         // On some devices (e.g. Samsung SM-G900F with Android 5) when
         // starting app from notification label on lock screen
         // method onSizeChanged is called with dimension like
         // in portrait mode despite of landscape orientation in AndroidManifest.xml.
-		// So tell superclass of our expected and desired width and height, hehe
+        // So tell superclass of our expected and desired width and height, hehe
         // See also method surfaceChanged
-		if (w < h)
-		{
-			int temp = w;
-			w = h;
-			h = temp;
-		}
-		super.onSizeChanged(w, h, oldw, oldh);
-	}
-	
-	public class InputRunnable implements Runnable
-	{
-		public class InputEvent
-		{
-			int tid;
-			float x;
-			float y;
-			double time;
-
-			InputEvent(int tid, float x, float y, double time)
-			{
-				this.tid = tid;
-				this.x = x;
-				this.y = y;
-				this.time = time;
-			}
-		}
-
-		ArrayList<InputEvent> activeEvents;
-		ArrayList<InputEvent> allEvents;
-
-		int action;
-		int source;
-		int groupSize;
-
-		int touchIdForPointerId(int pointerId) {
-			return pointerId + 1;
-		}
-
-		public InputRunnable(final android.view.MotionEvent event) {
-			allEvents = new ArrayList<InputEvent>();
-
-			action = event.getActionMasked();
-			source = event.getSource();
-			groupSize = 1;
-
-			final int pointerCount = event.getPointerCount();
-
-			if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
-
-				final int historySize = event.getHistorySize();
-
-				for (int historyStep = 0; historyStep < historySize; historyStep++) {
-					for (int i = 0; i < pointerCount; i++) {
-						for (int a = 0; a < gamepadAxises.length; ++a) {
-							InputEvent ev = new InputEvent(gamepadAxises[a],
-									event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0,
-									event.getHistoricalEventTime(historyStep));
-
-							allEvents.add(ev);
-						}
-					}
-				}
-
-				for (int i = 0; i < pointerCount; i++) {
-					for (int a = 0; a < gamepadAxises.length; ++a) {
-						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
-								event.getEventTime());
-						allEvents.add(ev);
-					}
-				}
-			} else if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
-				int actionIndex = event.getActionIndex();
-				int pointerId = event.getPointerId(actionIndex);
-				if (android.view.MotionEvent.ACTION_MOVE == action
-						|| android.view.MotionEvent.ACTION_CANCEL == action) {
-
-					groupSize = pointerCount;
-
-					for (int i = 0; i < pointerCount; i++) {
-						pointerId = event.getPointerId(i);
-						if (isMultitouchEnabled) {
-							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
-									event.getEventTime());
-							allEvents.add(ev);
-						}
-					}
-				} else {
-					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
-							event.getY(actionIndex), event.getEventTime());
-					allEvents.add(ev);
-				}
-			} else
-			{
-				Log.d(JNIConst.LOG_TAG, "unsupported moution input source: " + source);
-			}
-		}
-
-		@Override
-		public void run() 
-		{
-			if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
-			{
-				for(InputEvent event : allEvents)
-				{
-					if(event.tid == MotionEvent.AXIS_Y || event.tid == MotionEvent.AXIS_RZ || event.tid == MotionEvent.AXIS_RY) 
-					{
-						nativeOnGamepadElement(event.tid, -event.x, false);
-					} 
-					else
-					{
-						nativeOnGamepadElement(event.tid, event.x, false);
-					}
-				}
-			}
-			else if(allEvents.size() != 0) 
-			{
-				nativeOnInput(action, source, groupSize, allEvents);
-			}
-		}
+        if (w < h)
+        {
+            int temp = w;
+            w = h;
+            h = temp;
+        }
+        super.onSizeChanged(w, h, oldw, oldh);
     }
-	
-	boolean IsGamepadButton(int keyCode)
-	{
-		for(Integer o : overridedGamepadKeys) {
-			if(o == keyCode) {
-				return false;
-			}
-		}
-		
-		return KeyEvent.isGamepadButton(keyCode);
-	}
-	
+    
+    // duplicate from dava.framework\Sources\Internal\UI\UIEvent.h
+    public class DavaModifier
+    {
+        public static final int NONE = 0;
+        public static final int CAPS_LOCK_DOWN = 1 << 0;
+        public static final int SHIFT_DOWN = 1 << 1;
+        public static final int CONTROL_DOWN = 1 << 2;
+        public static final int ALT_DOWN = 1 << 3;
+    }
+
+    private int ConvertJavaModifierToDava(int javaModifier)
+    {
+
+      int davaModifier = 0;
+
+      int modifier = android.view.KeyEvent.META_CAPS_LOCK_ON;
+      if ((modifier & javaModifier) == modifier)
+      {
+          davaModifier |= DavaModifier.CAPS_LOCK_DOWN;
+      }
+
+        modifier = android.view.KeyEvent.META_SHIFT_ON;
+      if ((modifier & javaModifier) == modifier)
+      {
+          davaModifier |= DavaModifier.SHIFT_DOWN;
+      }
+
+         modifier = android.view.KeyEvent.META_CTRL_ON;
+      if ((modifier & javaModifier) == modifier)
+      {
+          davaModifier |= DavaModifier.CONTROL_DOWN;
+      }
+
+      modifier = android.view.KeyEvent.META_ALT_ON;
+      if ((modifier & javaModifier) == modifier)
+      {
+          davaModifier |= DavaModifier.ALT_DOWN;
+      }
+
+      return davaModifier;
+    }
+    
+    public class InputRunnable implements Runnable
+    {
+        public class InputEvent
+        {
+            int tid;
+            float x;
+            float y;
+            double time;
+            int modifiers;
+
+            InputEvent(int tid, float x, float y, double time, int modifiers)
+            {
+                this.tid = tid;
+                this.x = x;
+                this.y = y;
+                this.time = time;
+                this.modifiers = ConvertJavaModifierToDava(modifiers);
+            }
+        }
+
+        ArrayList<InputEvent> activeEvents;
+        ArrayList<InputEvent> allEvents;
+
+        int action;
+        int source;
+        int groupSize;
+
+        int touchIdForPointerId(int pointerId) {
+            return pointerId + 1;
+        }
+
+        public InputRunnable(final android.view.MotionEvent event) {
+            allEvents = new ArrayList<InputEvent>();
+
+            action = event.getActionMasked();
+            source = event.getSource();
+            groupSize = 1;
+
+            final int pointerCount = event.getPointerCount();
+            int modifiers = event.getMetaState();
+
+            if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+
+                final int historySize = event.getHistorySize();
+
+                for (int historyStep = 0; historyStep < historySize; historyStep++) {
+                    for (int i = 0; i < pointerCount; i++) {
+                        for (int a = 0; a < gamepadAxises.length; ++a) {
+                            InputEvent ev = new InputEvent(gamepadAxises[a],
+                                    event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0,
+                                    event.getHistoricalEventTime(historyStep), modifiers);
+
+                            allEvents.add(ev);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < pointerCount; i++) {
+                    for (int a = 0; a < gamepadAxises.length; ++a) {
+                        InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0,
+                                event.getEventTime(), modifiers);
+                        allEvents.add(ev);
+                    }
+                }
+            } else if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
+                int actionIndex = event.getActionIndex();
+                int pointerId = event.getPointerId(actionIndex);
+                if (android.view.MotionEvent.ACTION_MOVE == action
+                        || android.view.MotionEvent.ACTION_CANCEL == action) {
+
+                    groupSize = pointerCount;
+
+                    for (int i = 0; i < pointerCount; i++) {
+                        pointerId = event.getPointerId(i);
+                        if (isMultitouchEnabled) {
+                            InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i),
+                                    event.getEventTime(), modifiers);
+                            allEvents.add(ev);
+                        }
+                    }
+                } else {
+                    InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIndex),
+                            event.getY(actionIndex), event.getEventTime(), modifiers);
+                    allEvents.add(ev);
+                }
+            } else
+            {
+                Log.d(JNIConst.LOG_TAG, "unsupported moution input source: " + source);
+            }
+        }
+
+        @Override
+        public void run() 
+        {
+            if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+            {
+                for(InputEvent event : allEvents)
+                {
+                    if(event.tid == MotionEvent.AXIS_Y || event.tid == MotionEvent.AXIS_RZ || event.tid == MotionEvent.AXIS_RY) 
+                    {
+                        nativeOnGamepadElement(event.tid, -event.x, false, event.modifiers);
+                    } 
+                    else
+                    {
+                        nativeOnGamepadElement(event.tid, event.x, false, event.modifiers);
+                    }
+                }
+            }
+            else if(allEvents.size() != 0) 
+            {
+                nativeOnInput(action, source, groupSize, allEvents);
+            }
+        }
+    }
+    
+    boolean IsGamepadButton(int keyCode)
+    {
+        for(Integer o : overridedGamepadKeys) {
+            if(o == keyCode) {
+                return false;
+            }
+        }
+        
+        return KeyEvent.isGamepadButton(keyCode);
+    }
+    
     class KeyInputRunnable implements Runnable {
-    	int keyCode;
-    	boolean isDown;
-    	
-    	public KeyInputRunnable(int keyCode, boolean isDown) {
-    		this.keyCode = keyCode;
-    		this.isDown = isDown;
-    	}
-    	
-    	@Override
-    	public void run() {
-    		if(IsGamepadButton(keyCode))
-    		{
-    			nativeOnGamepadElement(keyCode, isDown ? 1 : 0, true);
-    		}
-    		else
-    		{
-    			if (isDown)
-    			{
-    				nativeOnKeyDown(keyCode);
-    			} else
-    			{
-    				nativeOnKeyUp(keyCode);
-    			}
-    		}
-    	}
+        int keyCode;
+        boolean isDown;
+        int modifiers;
+        
+        public KeyInputRunnable(int keyCode, boolean isDown, int modifiers) {
+            this.keyCode = keyCode;
+            this.isDown = isDown;
+            this.modifiers = ConvertJavaModifierToDava(modifiers);
+        }
+        
+        @Override
+        public void run() {
+            if(IsGamepadButton(keyCode))
+            {
+                nativeOnGamepadElement(keyCode, isDown ? 1 : 0, true, modifiers);
+            }
+            else
+            {
+                if (isDown)
+                {
+                    nativeOnKeyDown(keyCode, modifiers);
+                } else
+                {
+                    nativeOnKeyUp(keyCode, modifiers);
+                }
+            }
+        }
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
-    	{
-    		return super.onKeyDown(keyCode, event);
-    	}
-    	
-    	queueEvent(new KeyInputRunnable(keyCode, true));
-    	
-    	if (event.isSystem())
-    	{
-    		return super.onKeyDown(keyCode, event);	
-    	}
-    	return true;
+        if(keyCode >= MAX_KEYS) // Ignore too big Android keycodes
+        {
+            return super.onKeyDown(keyCode, event);
+        }
+        int modifiers = event.getMetaState();
+
+        queueEvent(new KeyInputRunnable(keyCode, true, modifiers));
+        
+        if (event.isSystem())
+        {
+            return super.onKeyDown(keyCode, event);
+        }
+        return true;
     }
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
-    	{
-    		return super.onKeyUp(keyCode, event);
-    	}
-    	
-    	queueEvent(new KeyInputRunnable(keyCode, false));
-    	
-    	if (event.isSystem())
-    	{
-    		return super.onKeyUp(keyCode, event);	
-    	}
-    	return true;
+        if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+        {
+            return super.onKeyUp(keyCode, event);
+        }
+        int modifiers = event.getMetaState();
+        
+        queueEvent(new KeyInputRunnable(keyCode, false, modifiers));
+        
+        if (event.isSystem())
+        {
+            return super.onKeyUp(keyCode, event);
+        }
+        return true;
     }
     
     @Override
@@ -358,8 +407,8 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public boolean onGenericMotionEvent(MotionEvent event)
     {
-    	queueEvent(new InputRunnable(event));
-    	return true;
+        queueEvent(new InputRunnable(event));
+        return true;
     }
     
     public void queueEvent(Runnable r)
@@ -372,41 +421,41 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void surfaceCreated(SurfaceHolder holder)
     {
-    	if (surface != null)
-    	{
-    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated: previous surface is alive, call nativeSurfaceDestroyed");
-    		queueEvent(new Runnable() {
-    			public void run() {
+        if (surface != null)
+        {
+            Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated: previous surface is alive, call nativeSurfaceDestroyed");
+            queueEvent(new Runnable() {
+                public void run() {
                     Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in: call nativeSurfaceDestroyed");
-    		    	nativeSurfaceDestroyed();
+                    nativeSurfaceDestroyed();
                     Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out: call nativeSurfaceDestroyed");
-    			}
-    		});
-    	}
-    	
+                }
+            });
+        }
+        
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated in");
-    	surface = holder.getSurface();
-    	surfaceWidth = surfaceHeight = 0;
-    	
-    	queueEvent(new Runnable() {
-			public void run() {
+        surface = holder.getSurface();
+        surfaceWidth = surfaceHeight = 0;
+        
+        queueEvent(new Runnable() {
+            public void run() {
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable in");
-		    	nativeSurfaceCreated(surface);
+                nativeSurfaceCreated(surface);
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated runnable out");
-			}
-		});
+            }
+        });
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceCreated out");
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-    	if (surface != holder.getSurface())
-    	{
-    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
-    		return;
-    	}
-    	
+        if (surface != holder.getSurface())
+        {
+            Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged for previous object! Do nothing");
+            return;
+        }
+        
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged in");
 
         // while we always in landscape mode, but some devices
@@ -438,16 +487,16 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {
-            	surfaceWidth = width;
-            	surfaceHeight = height;
+                surfaceWidth = width;
+                surfaceHeight = height;
 
-            	queueEvent(new Runnable() {
-        			public void run() {
+                queueEvent(new Runnable() {
+                    public void run() {
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
-        		    	nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
+                        nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
-        			}
-        		});
+                    }
+                });
 
                 // Workaround! we have to initialize keyboard after glView(OpenGL)
                 // initialization for some devices like
@@ -460,35 +509,35 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                 });
 
-        		WaitQueuedEvents();
+                WaitQueuedEvents();
             }
         }
 
-		JNIActivity.isSurfaceReady = true;
+        JNIActivity.isSurfaceReady = true;
 
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged out");
     }
     
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-    	if (surface != holder.getSurface())
-    	{
-    		Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed for previous object! Do nothing");
-    		return;
-    	}
-    	
+        if (surface != holder.getSurface())
+        {
+            Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed for previous object! Do nothing");
+            return;
+        }
+        
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed in");
-    	queueEvent(new Runnable() {
-			public void run() {
+        queueEvent(new Runnable() {
+            public void run() {
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable in");
-		    	nativeSurfaceDestroyed();
+                nativeSurfaceDestroyed();
                 Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed runnable out");
-			}
-		});
+            }
+        });
 
-		WaitQueuedEvents();
+        WaitQueuedEvents();
 
-		JNIActivity.isSurfaceReady = false;
+        JNIActivity.isSurfaceReady = false;
 
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
