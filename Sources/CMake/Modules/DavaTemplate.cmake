@@ -697,8 +697,6 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
 
     add_custom_target ( COVERAGE_${PROJECT_NAME}  
             SOURCES ${COVERAGE_SCRIPT}
-                    #${CMAKE_BINARY_DIR}/Coverage/index.html
-
             COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
                     --pathExecut    ${EXECUT_FILE}
                     --pathBuild     ${CMAKE_BINARY_DIR}
