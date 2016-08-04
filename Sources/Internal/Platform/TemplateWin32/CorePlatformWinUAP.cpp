@@ -10,10 +10,6 @@
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
-using namespace Windows::UI::Core;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::ViewManagement;
-
 namespace DAVA
 {
 int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
@@ -32,6 +28,8 @@ void CorePlatformWinUAP::InitArgs()
 
 void CorePlatformWinUAP::Run()
 {
+    using namespace ::Windows::UI::Xaml;
+
     auto appStartCallback = ref new ApplicationInitializationCallback([this](ApplicationInitializationCallbackParams ^ ) {
         xamlApp = ref new WinUAPXamlApp();
     });
@@ -45,6 +43,8 @@ void CorePlatformWinUAP::Quit()
 
 Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 {
+    using ::Windows::UI::ViewManagement::ApplicationViewWindowingMode;
+
     // will be called from UI thread
     ApplicationViewWindowingMode viewMode;
     auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
@@ -64,6 +64,8 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 
 bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
 {
+    using ::Windows::UI::ViewManagement::ApplicationViewWindowingMode;
+
     switch (screenMode)
     {
     case DAVA::Core::eScreenMode::FULLSCREEN:
@@ -98,6 +100,9 @@ bool CorePlatformWinUAP::IsUIThread() const
 
 void CorePlatformWinUAP::RunOnUIThread(std::function<void()>&& fn, bool blocked)
 {
+    using ::Windows::UI::Core::DispatchedHandler;
+    using ::Windows::UI::Core::CoreDispatcherPriority;
+
     if (!blocked)
     {
         xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(std::forward<std::function<void()>>(fn)));

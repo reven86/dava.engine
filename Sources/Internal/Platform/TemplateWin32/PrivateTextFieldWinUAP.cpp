@@ -28,22 +28,6 @@
 
 #include <ppltasks.h>
 
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
-using namespace Windows::UI::Core;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Input;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
-using namespace Windows::UI::ViewManagement;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
-using namespace concurrency;
-
 namespace DAVA
 {
 namespace
@@ -222,6 +206,10 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
 
 PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 {
+    using ::Windows::Foundation::EventRegistrationToken;
+    using ::Windows::UI::Xaml::UIElement;
+    using ::Windows::UI::ViewManagement::InputPane;
+
     if (nativeControl != nullptr)
     {
         UIElement ^ p = nativeControlHolder;
@@ -497,6 +485,15 @@ void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 
 void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
+    using ::Windows::UI::Colors;
+    using ::Windows::UI::Xaml::Thickness;
+    using ::Windows::UI::Xaml::Visibility;
+    using ::Windows::UI::Xaml::Media::SolidColorBrush;
+    using ::Windows::UI::Xaml::Controls::TextBox;
+    using ::Windows::UI::Xaml::Controls::PasswordBox;
+    using ::Windows::UI::Xaml::Controls::Border;
+    using ::Windows::UI::Xaml::Input::KeyboardNavigationMode;
+
     if (customTextBoxStyle == nullptr)
     {
         // Load custom textbox and password styles that allow transparent background when control has focus
@@ -576,7 +573,11 @@ void PrivateTextFieldWinUAP::DeleteNativeControl()
 
 void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
 {
-    using Platform::Object;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
+    using ::Windows::UI::Xaml::Input::KeyEventHandler;
+    using ::Windows::UI::Xaml::Input::KeyRoutedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyDown = ref new KeyEventHandler([this, self_weak](Object ^, KeyRoutedEventArgs ^ args) {
@@ -598,7 +599,11 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallTextEventHandlers()
 {
-    using Platform::Object;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
+    using ::Windows::UI::Xaml::Controls::TextChangedEventHandler;
+    using ::Windows::UI::Xaml::Controls::TextChangedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ ) {
@@ -615,7 +620,9 @@ void PrivateTextFieldWinUAP::InstallTextEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
 {
-    using namespace Platform;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ ) {
@@ -627,6 +634,10 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::UI::ViewManagement::InputPane;
+    using ::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs;
+
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
         if (auto self = self_weak.lock())
@@ -640,8 +651,10 @@ void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
     tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
-void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args)
 {
+    using ::Windows::System::VirtualKey;
+
     savedCaretPosition = GetNativeCaretPosition();
 
     switch (args->Key)
@@ -694,6 +707,8 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    using ::Windows::UI::ViewManagement::InputPane;
+
 #if defined(__DAVAENGINE_COREV2__)
 // TODO: core->XamlApplication()->CaptureTextBox(nativeControl);
 #else
@@ -831,13 +846,15 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnKeyboardHiding(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
     args->EnsuredFocusedElementInView = true;
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnKeyboardShowing(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
+    using ::Windows::UI::ViewManagement::InputPane;
+
     // Tell keyboard that application will position native controls by itself
     args->EnsuredFocusedElementInView = true;
 
@@ -891,7 +908,7 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
     if (props.focusChanged)
     {
         if (props.focus)
-            nativeControl->Focus(FocusState::Pointer);
+            nativeControl->Focus(::Windows::UI::Xaml::FocusState::Pointer);
         else if (HasFocus())
 #if defined(__DAVAENGINE_COREV2__)
             window->GetNativeService()->UnfocusXamlControl();
@@ -983,6 +1000,8 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
 
 void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
 {
+    using ::Windows::UI::Xaml::Visibility;
+
     // Single line native text field is always rendered to texture and placed offscreen
     // Multiline native text field is always onscreen according to visibiliy flag
     if (IsMultiline())
@@ -1003,6 +1022,8 @@ void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
 
 void PrivateTextFieldWinUAP::SetNativeMultiline(bool multiline)
 {
+    using ::Windows::UI::Xaml::TextWrapping;
+
     if (!IsPassword())
     {
         nativeText->AcceptsReturn = multiline;
@@ -1044,6 +1065,8 @@ void PrivateTextFieldWinUAP::SetNativeFontSize(float32 fontSize)
 
 void PrivateTextFieldWinUAP::SetNativeTextColor(const Color& textColor)
 {
+    using ::Windows::UI::Xaml::Media::SolidColorBrush;
+
     Windows::UI::Color nativeColor;
     nativeColor.R = static_cast<unsigned char>(textColor.r * 255.0f);
     nativeColor.G = static_cast<unsigned char>(textColor.g * 255.0f);
@@ -1054,6 +1077,9 @@ void PrivateTextFieldWinUAP::SetNativeTextColor(const Color& textColor)
 
 void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool textRtlAlignment)
 {
+    using ::Windows::UI::Xaml::TextAlignment;
+    using ::Windows::UI::Xaml::VerticalAlignment;
+
     // As far as I understood RTL text alignment affects only text alignment inside control rect
     // If RTL text alignment flag is set then invert text alignment from left to right and vice versa
     if (textRtlAlignment)
@@ -1094,6 +1120,10 @@ void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool te
 
 void PrivateTextFieldWinUAP::SetNativeKeyboardType(int32 type)
 {
+    using ::Windows::UI::Xaml::Input::InputScope;
+    using ::Windows::UI::Xaml::Input::InputScopeName;
+    using ::Windows::UI::Xaml::Input::InputScopeNameValue;
+
     InputScopeNameValue nativeValue = InputScopeNameValue::Default;
     if (!IsPassword())
     {
@@ -1143,6 +1173,8 @@ void PrivateTextFieldWinUAP::SetNativeSpellChecking(bool enabled)
 
 bool PrivateTextFieldWinUAP::HasFocus() const
 {
+    using ::Windows::UI::Xaml::FocusState;
+
     return FocusState::Unfocused != nativeControl->FocusState;
 }
 
@@ -1211,6 +1243,12 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
 
 void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+    using ::Windows::Storage::Streams::DataReader;
+    using ::Windows::Storage::Streams::IBuffer;
+    using ::Windows::UI::Xaml::Media::Imaging::RenderTargetBitmap;
+
     auto self{ shared_from_this() };
     RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 

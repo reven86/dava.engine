@@ -32,19 +32,6 @@
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
-using namespace concurrency;
-
 namespace DAVA
 {
 // clang-format off
@@ -54,17 +41,17 @@ namespace DAVA
     UriResolver is used in PrivateWebViewWinUAP's OpenFromBuffer method which allows to load
     HTML string specifying location of resource files (css, images, etc).
 */
-private ref class UriResolver sealed : public IUriToStreamResolver
+private ref class UriResolver sealed : public ::Windows::Web::IUriToStreamResolver
 {
 internal:
     UriResolver(const String& htmlData, const FilePath& basePath);
 
 public:
-    virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
+    virtual ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriToStreamAsync(::Windows::Foundation::Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
-    IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
+    ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
+    ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
     Platform::String^ htmlData;
     FilePath basePath;
@@ -76,7 +63,7 @@ UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath_)
 {
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriResolver::UriToStreamAsync(::Windows::Foundation::Uri^ uri)
 {
     DVASSERT(uri != nullptr);
 
@@ -90,8 +77,15 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
+    using ::concurrency::create_async;
+    using ::Windows::Storage::StorageFile;
+    using ::Windows::Storage::FileAccessMode;
+    using ::Windows::Storage::Streams::IInputStream;
+    using ::Windows::Storage::Streams::IRandomAccessStream;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     String fileNameStr = filePath.GetAbsolutePathname();
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
     Platform::String^ fileName = StringToRTString(fileNameStr);
@@ -114,8 +108,13 @@ IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const 
     });
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
 {
+    using ::concurrency::create_async;
+    using ::Windows::Storage::Streams::DataWriter;
+    using ::Windows::Storage::Streams::IInputStream;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
     DataWriter^ writer = ref new DataWriter(stream->GetOutputStreamAt(0));
 
@@ -163,6 +162,8 @@ PrivateWebViewWinUAP::PrivateWebViewWinUAP(UIWebView* uiWebView_)
 
 PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
 {
+    using ::Windows::UI::Xaml::Controls::WebView;
+
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
@@ -338,6 +339,9 @@ void PrivateWebViewWinUAP::Update()
 
 void PrivateWebViewWinUAP::CreateNativeControl()
 {
+    using ::Windows::UI::Xaml::Visibility;
+    using ::Windows::UI::Xaml::Controls::WebView;
+
     nativeWebView = ref new WebView();
     defaultBkgndColor = nativeWebView->DefaultBackgroundColor;
     InstallEventHandlers();
@@ -356,6 +360,11 @@ void PrivateWebViewWinUAP::CreateNativeControl()
 
 void PrivateWebViewWinUAP::InstallEventHandlers()
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::UI::Xaml::Controls::WebView;
+    using ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs;
+    using ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs;
+
     // clang-format off
     std::weak_ptr<PrivateWebViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
@@ -372,7 +381,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigationStartingEventArgs ^ args)
+void PrivateWebViewWinUAP::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -401,12 +410,12 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigat
 
     if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
     {
-        Launcher::LaunchUriAsync(args->Uri);
+        ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
     }
     args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNavigationCompletedEventArgs ^ args)
+void PrivateWebViewWinUAP::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -501,11 +510,14 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
 
 void PrivateWebViewWinUAP::SetNativeBackgroundTransparency(bool enabled)
 {
+    using ::Windows::UI::Colors;
     nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : defaultBkgndColor;
 }
 
 void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
 {
+    using ::Windows::Foundation::Uri;
+
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
     {
@@ -534,6 +546,9 @@ void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
 
 void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+
     // clang-format off
     Platform::String^ script = ref new Platform::String(StringToWString(jsScript).c_str());
 
@@ -595,6 +610,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
 
 void PrivateWebViewWinUAP::RenderToTexture()
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+    using ::Windows::Storage::Streams::DataReader;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     // clang-format off
     int32 width = static_cast<int32>(nativeWebView->Width);
     int32 height = static_cast<int32>(nativeWebView->Height);
@@ -608,7 +628,7 @@ void PrivateWebViewWinUAP::RenderToTexture()
         auto taskLoad = create_task(reader->LoadAsync(streamSize));
         taskLoad.then([this, self, reader, width, height, streamSize](task<unsigned int>) {
             size_t index = 0;
-            std::vector<uint8> buf(streamSize, 0);
+            Vector<uint8> buf(streamSize, 0);
             while (reader->UnconsumedBufferLength > 0)
             {
                 buf[index] = reader->ReadByte();

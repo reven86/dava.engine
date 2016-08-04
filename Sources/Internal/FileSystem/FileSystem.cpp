@@ -681,7 +681,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
     //take local folder as user documents folder
-    using namespace Windows::Storage;
+    using ::Windows::Storage::ApplicationData;
+
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 
