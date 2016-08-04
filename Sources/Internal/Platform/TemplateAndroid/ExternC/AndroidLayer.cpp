@@ -1,8 +1,7 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/Android/AndroidBridge.h"
 
@@ -18,13 +17,7 @@ JavaVM* GetJVM()
 } // namespace JNI
 } // namespace DAVA
 
-#endif // __DAVAENGINE_ANDROID__
-
-#else
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "AndroidLayer.h"
+#else // __DAVAENGINE_COREV2__
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Logger/Logger.h"
@@ -512,5 +505,5 @@ void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject clas
 
 // END OF JNISurfaceView
 
-#endif // __DAVAENGINE_ANDROID__
 #endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

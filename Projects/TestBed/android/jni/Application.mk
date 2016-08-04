@@ -16,10 +16,12 @@ APP_CFLAGS += -DUSE_LOCAL_RESOURCES #use local resources
 #APP_OPTIM := release
 
 APP_CFLAGS += -Qunused-arguments
-APP_CFLAGS += -D__DAVAENGINE_COREV2__
+
+# Uncomment to use core v2, do not forget to edit AndroidManifest.xml
+# APP_CFLAGS += -D__DAVAENGINE_COREV2__
 
 APP_ABI := armeabi-v7a
-#APP_ABI += x86
+APP_ABI += x86
 APP_PLATFORM := android-14
 
 NDK_TOOLCHAIN_VERSION=clang
