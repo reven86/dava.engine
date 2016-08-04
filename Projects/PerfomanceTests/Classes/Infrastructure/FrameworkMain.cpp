@@ -8,7 +8,7 @@ void FrameworkDidLaunched()
     KeyedArchive* appOptions = new KeyedArchive();
 
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("shader_const_buffer_size", 2 * 1024 * 1024);
+    appOptions->SetInt32("shader_const_buffer_size", 4 * 1024 * 1024);
 
     appOptions->SetInt32("max_index_buffer_count", 3 * 1024);
     appOptions->SetInt32("max_vertex_buffer_count", 3 * 1024);
