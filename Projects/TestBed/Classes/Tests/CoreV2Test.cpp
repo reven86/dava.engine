@@ -56,6 +56,8 @@ void CoreV2Test::LoadResources()
     buttonDispTrigger1000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 1000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger2000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3000", &CoreV2Test::OnDispatcherTest);
+
+    SafeRelease(font);
 }
 
 void CoreV2Test::UnloadResources()

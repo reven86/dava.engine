@@ -5,7 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
-#include "Engine/Public/Window.h"
+#include "Engine/Public/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 #include "UI/UIEvent.h"
@@ -29,7 +29,11 @@ public:
     void EngineDestroyed();
 
     //////////////////////////////////////////////////////////////////////////
+    eEngineRunMode GetRunMode() const;
+    bool IsStandaloneGUIMode() const;
+    bool IsEmbeddedGUIMode() const;
     bool IsConsoleMode() const;
+
     EngineContext* GetEngineContext() const;
     Window* GetPrimaryWindow() const;
     uint32 GetGlobalFrameIndex() const;
@@ -44,7 +48,7 @@ public:
     void SetOptions(KeyedArchive* options_);
     KeyedArchive* GetOptions();
 
-    void Init(bool consoleMode_, const Vector<String>& modules);
+    void Init(eEngineRunMode engineRunMode, const Vector<String>& modules);
     int Run();
     void Quit(int32 exitCode_);
 
@@ -99,7 +103,7 @@ private:
     Window* primaryWindow = nullptr;
     Set<Window*> windows;
 
-    bool consoleMode = false;
+    eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool quitConsole = false;
     bool appIsSuspended = false;
     bool appIsTerminating = false;
@@ -112,9 +116,24 @@ private:
     static EngineBackend* instance;
 };
 
+inline eEngineRunMode EngineBackend::GetRunMode() const
+{
+    return runMode;
+}
+
+inline bool EngineBackend::IsStandaloneGUIMode() const
+{
+    return runMode == eEngineRunMode::GUI_STANDALONE;
+}
+
+inline bool EngineBackend::IsEmbeddedGUIMode() const
+{
+    return runMode == eEngineRunMode::GUI_EMBEDDED;
+}
+
 inline bool EngineBackend::IsConsoleMode() const
 {
-    return consoleMode;
+    return runMode == eEngineRunMode::CONSOLE;
 }
 
 inline EngineContext* EngineBackend::GetEngineContext() const

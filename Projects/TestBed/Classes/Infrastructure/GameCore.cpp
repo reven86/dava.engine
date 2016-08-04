@@ -60,10 +60,10 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
 
-    bool console = false;
-    if (cmdline.size() > 1)
+    eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
+    if (cmdline.size() > 1 && cmdline[1] == "--console")
     {
-        console = cmdline[1] == "--console";
+        runmode = eEngineRunMode::CONSOLE;
     }
 
     Vector<String> modules = {
@@ -76,7 +76,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     DAVA::Engine e;
     e.SetOptions(appOptions);
-    e.Init(console, modules);
+    e.Init(runmode, modules);
 
     GameCore game(&e);
     return e.Run();

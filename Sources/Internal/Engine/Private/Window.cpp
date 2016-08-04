@@ -357,6 +357,8 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
 
+    // TODO: let input system decide what to do when shift is pressed while wheelling
+    // Now use implementation from current core
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
     {

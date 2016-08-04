@@ -39,9 +39,6 @@ class NetCore;
 class EngineContext final
 {
 public:
-    EngineContext();
-    ~EngineContext();
-
     // Subsystems that are created on demand
     JobManager* jobManager = nullptr;
     LocalizationSystem* localizationSystem = nullptr;

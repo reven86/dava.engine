@@ -3,6 +3,7 @@
 #include "Engine/Public/Engine.h"
 
 #include "Engine/Public/EngineContext.h"
+#include "Engine/Public/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -111,12 +112,12 @@ NativeService* EngineBackend::GetNativeService() const
     return platformCore->GetNativeService();
 }
 
-void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
+void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
-    consoleMode = consoleMode_;
+    runMode = engineRunMode;
 
     platformCore->Init();
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
 #if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_ANDROID__)
         CreatePrimaryWindowBackend();
@@ -136,7 +137,7 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     context->fileSystem->SetDefaultDocumentsDirectory();
     context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         DeviceInfo::InitializeScreenInfo();
 
@@ -149,7 +150,7 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
 
 int EngineBackend::Run()
 {
-    if (consoleMode)
+    if (IsConsoleMode())
     {
         RunConsole();
     }
@@ -163,13 +164,19 @@ int EngineBackend::Run()
 void EngineBackend::Quit(int exitCode_)
 {
     exitCode = exitCode_;
-    if (consoleMode)
+    switch (runMode)
     {
-        quitConsole = true;
-    }
-    else
-    {
+    case eEngineRunMode::GUI_STANDALONE:
         PostAppTerminate();
+        break;
+    case eEngineRunMode::GUI_EMBEDDED:
+        Logger::Warning("Engine does not support Quit command in embedded mode");
+        break;
+    case eEngineRunMode::CONSOLE:
+        quitConsole = true;
+        break;
+    default:
+        break;
     }
 }
 
@@ -211,7 +218,7 @@ void EngineBackend::OnGameLoopStarted()
 void EngineBackend::OnGameLoopStopped()
 {
     engine->gameLoopStopped.Emit();
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         if (Renderer::IsInitialized())
             Renderer::Uninitialize();
@@ -577,7 +584,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         }
     }
 
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         context->animationManager = new AnimationManager();
         context->fontManager = new FontManager();
@@ -600,7 +607,7 @@ void EngineBackend::DestroySubsystems()
         context->jobManager->WaitMainJobs();
     }
 
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();

@@ -7,21 +7,21 @@
 
 namespace DAVA
 {
-namespace
+namespace EngineSingletonNamespace
 {
 Engine* engineSingleton = nullptr;
 }
 
 Engine* Engine::Instance()
 {
-    return engineSingleton;
+    return EngineSingletonNamespace::engineSingleton;
 }
 
 Engine::Engine()
 {
-    DVASSERT(engineSingleton == nullptr);
+    DVASSERT(EngineSingletonNamespace::engineSingleton == nullptr);
 
-    engineSingleton = this;
+    EngineSingletonNamespace::engineSingleton = this;
 
     engineBackend = Private::EngineBackend::Instance();
     engineBackend->EngineCreated(this);
@@ -32,7 +32,7 @@ Engine::~Engine()
     engineBackend->EngineDestroyed();
     engineBackend = nullptr;
 
-    engineSingleton = nullptr;
+    EngineSingletonNamespace::engineSingleton = nullptr;
 }
 
 EngineContext* Engine::GetContext() const
@@ -50,9 +50,29 @@ Window* Engine::PrimaryWindow() const
     return engineBackend->GetPrimaryWindow();
 }
 
-void Engine::Init(bool consoleMode, const Vector<String>& modules)
+eEngineRunMode Engine::GetRunMode() const
 {
-    engineBackend->Init(consoleMode, modules);
+    return engineBackend->GetRunMode();
+}
+
+bool Engine::IsStandaloneGUIMode() const
+{
+    return engineBackend->IsStandaloneGUIMode();
+}
+
+bool Engine::IsEmbeddedGUIMode() const
+{
+    return engineBackend->IsEmbeddedGUIMode();
+}
+
+bool Engine::IsConsoleMode() const
+{
+    return engineBackend->IsConsoleMode();
+}
+
+void Engine::Init(eEngineRunMode runMode, const Vector<String>& modules)
+{
+    engineBackend->Init(runMode, modules);
 }
 
 int Engine::Run()
@@ -83,11 +103,6 @@ uint32 Engine::GetGlobalFrameIndex() const
 const Vector<String>& Engine::GetCommandLine() const
 {
     return engineBackend->GetCommandLine();
-}
-
-bool Engine::IsConsoleMode() const
-{
-    return engineBackend->IsConsoleMode();
 }
 
 void Engine::SetOptions(KeyedArchive* options)
