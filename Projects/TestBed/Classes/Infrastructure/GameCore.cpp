@@ -35,6 +35,9 @@
 #include "MemoryManager/MemoryProfiler.h"
 #endif
 
+using namespace DAVA;
+using namespace DAVA::Net;
+
 #if defined(__DAVAENGINE_COREV2__)
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
@@ -182,7 +185,49 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
         engine->Quit();
     }
 }
-#endif
+#else // __DAVAENGINE_COREV2__
+
+void GameCore::OnAppStarted()
+{
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
+    testListScreen = new TestListScreen();
+    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
+
+    InitNetwork();
+    RunOnlyThisTest();
+    RegisterTests();
+    RunTests();
+}
+
+GameCore::GameCore()
+    : currentScreen(nullptr)
+    , testListScreen(nullptr)
+{
+}
+
+GameCore::~GameCore()
+{
+}
+
+void GameCore::OnAppFinished()
+{
+    for (auto testScreen : screens)
+    {
+        SafeRelease(testScreen);
+    }
+    screens.clear();
+
+    SafeRelease(testListScreen);
+    netLogger.Uninstall();
+}
+
+void GameCore::BeginFrame()
+{
+    ApplicationCore::BeginFrame();
+}
+
+#endif // !__DAVAENGINE_COREV2__
 
 void GameCore::RunOnlyThisTest()
 {
@@ -224,34 +269,6 @@ void GameCore::RegisterTests()
     //$UNITTEST_CTOR
 }
 
-using namespace DAVA;
-using namespace DAVA::Net;
-
-#if !defined(__DAVAENGINE_COREV2__)
-void GameCore::OnAppStarted()
-{
-    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
-
-    testListScreen = new TestListScreen();
-    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-
-    InitNetwork();
-    RunOnlyThisTest();
-    RegisterTests();
-    RunTests();
-}
-
-GameCore::GameCore()
-    : currentScreen(nullptr)
-    , testListScreen(nullptr)
-{
-}
-
-GameCore::~GameCore()
-{
-}
-#endif
-
 void GameCore::RegisterScreen(BaseScreen* screen)
 {
     UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
@@ -283,25 +300,6 @@ File* GameCore::CreateDocumentsFile(const String& filePathname)
     File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
 }
-
-#if !defined(__DAVAENGINE_COREV2__)
-void GameCore::OnAppFinished()
-{
-    for (auto testScreen : screens)
-    {
-        SafeRelease(testScreen);
-    }
-    screens.clear();
-
-    SafeRelease(testListScreen);
-    netLogger.Uninstall();
-}
-
-void GameCore::BeginFrame()
-{
-    ApplicationCore::BeginFrame();
-}
-#endif
 
 void GameCore::RunTests()
 {
