@@ -190,10 +190,6 @@ void Core::CreateSingletons()
 {
     new Logger();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    JNI::JavaClass::RegisterClass("com/dava/framework/JNIAssert");
-#endif
-
 #ifdef DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
     fpu_exceptions::EnableFloatingPointExceptions();
 #else

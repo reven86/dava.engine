@@ -8,7 +8,6 @@
 #include "Debug/DVAssert.h"
 #include "Functional/Function.h"
 #include "Math/Rect.h"
-#include "Base/HashMap.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
 {\
@@ -592,11 +591,10 @@ public:
 class JavaClass
 {
 public:
-    static const JavaClass& RegisterClass(const String& className);
-    static const JavaClass* Get(const String& className);
+    static void Initialize();
 
     JavaClass() = default;
-    JavaClass(const String& className, bool useJobManager = true);
+    JavaClass(const String& className);
     JavaClass(const JavaClass& copy);
     ~JavaClass();
 
@@ -651,7 +649,8 @@ private:
     jclass javaClass = nullptr;
     String name;
 
-    static UnorderedMap<String, JavaClass> registredClasses;
+    static jobject classLoader;
+    static jmethodID jmethod_ClassLoader_findClass;
 };
 
 inline JavaClass::operator jclass() const

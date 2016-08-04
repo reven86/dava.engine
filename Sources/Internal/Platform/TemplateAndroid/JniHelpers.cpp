@@ -110,53 +110,69 @@ jstring ToJNIString(const DAVA::WideString& string)
     return env->NewStringUTF(utf8.c_str());
 }
 
-UnorderedMap<String, JavaClass> JavaClass::registredClasses;
+jobject JavaClass::classLoader = nullptr;
+jmethodID JavaClass::jmethod_ClassLoader_findClass = nullptr;
 
-const JavaClass& JavaClass::RegisterClass(const String& className)
+void JavaClass::Initialize()
 {
-    DVASSERT(Thread::IsMainThread());
-    DVASSERT(!className.empty());
+    JNIEnv* env = JNI::GetEnv();
 
-    const auto it = registredClasses.find(className);
-    if (it != registredClasses.end())
+    jclass jclass_JNIActivity = env->FindClass("com/dava/framework/JNIActivity");
+    if (jclass_JNIActivity == nullptr)
     {
-        return it->second;
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
     }
-    else
+
+    jclass jclass_Class = env->GetObjectClass(jclass_JNIActivity);
+    if (jclass_Class == nullptr)
     {
-        auto result = registredClasses.insert(std::pair<const String, JavaClass>(className, JavaClass(className, false)));
-        DVASSERT_MSG(result.second, "Key already exists");
-        return result.first->second; // Return reference to added JavaClass
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
+    }
+
+    jclass jclass_ClassLoader = env->FindClass("java/lang/ClassLoader");
+    if (jclass_ClassLoader == nullptr)
+    {
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
+    }
+
+    jmethodID jmethod_Class_getClassLoader = env->GetMethodID(jclass_Class, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    if (jmethod_Class_getClassLoader == nullptr)
+    {
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
+    }
+
+    jobject classLoader1 = env->CallObjectMethod(jclass_JNIActivity, jmethod_Class_getClassLoader);
+    if (classLoader1 == nullptr)
+    {
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
+    }
+
+    classLoader = env->NewGlobalRef(classLoader1);
+    if (classLoader == nullptr)
+    {
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
+    }
+
+    jmethod_ClassLoader_findClass = env->GetMethodID(jclass_ClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    if (jmethod_ClassLoader_findClass == nullptr)
+    {
+        DAVA_JNI_EXCEPTION_CHECK
+        abort();
     }
 }
 
-const JavaClass* JavaClass::Get(const String& className)
-{
-    auto it = registredClasses.find(className);
-    if (it != registredClasses.end())
-    {
-        return &it->second;
-    }
-    return nullptr;
-}
-
-JavaClass::JavaClass(const String& className, bool useJobManager)
+JavaClass::JavaClass(const String& className)
     : javaClass(NULL)
 {
-    // TODO: make basic constructor with className independent from JobManager
     DVASSERT(!className.empty());
     name = className;
-
-    if (useJobManager)
-    {
-        Function<void()> findJClass(this, &JavaClass::FindJavaClass);
-        uint32 jobId = JobManager::Instance()->CreateMainJob(findJClass);
-        JobManager::Instance()->WaitMainJobID(jobId);
-    }
-    else
-    {
-        FindJavaClass();
-    }
+    FindJavaClass();
 }
 
 JavaClass::JavaClass(const JavaClass& copy)
@@ -186,15 +202,17 @@ JavaClass& JavaClass::operator=(const JavaClass& other)
 
 void JavaClass::FindJavaClass()
 {
-    DVASSERT(Thread::IsMainThread());
-
     JNIEnv* env = GetEnv();
 
-    jclass foundLocalRefClass = env->FindClass(name.c_str());
+    jstring className = env->NewStringUTF(name.c_str());
+    jclass foundLocalRefClass = static_cast<jclass>(env->CallObjectMethod(classLoader, jmethod_ClassLoader_findClass, className));
+    env->DeleteLocalRef(className);
+
     DAVA_JNI_EXCEPTION_CHECK
 
-    if (NULL == foundLocalRefClass)
+    if (nullptr == foundLocalRefClass)
     {
+        Logger::Error("FindJavaClass error: %s not found", name.c_str());
         javaClass = NULL;
         return;
     }
