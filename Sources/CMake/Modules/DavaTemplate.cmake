@@ -129,6 +129,7 @@ if( DAVA_FOUND )
 
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
 
 endif()
 

@@ -46,8 +46,6 @@
 #include "Network/NetCore.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include <cfenv>
-#pragma STDC FENV_ACCESS on
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #endif
