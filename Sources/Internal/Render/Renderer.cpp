@@ -18,7 +18,7 @@ namespace Renderer
 {
 namespace //for private variables
 {
-bool ininialized = false;
+bool initialized = false;
 rhi::Api api;
 int32 desiredFPS = 60;
 

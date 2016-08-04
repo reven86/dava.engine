@@ -21,6 +21,10 @@ endif ()
 
 if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
     add_definitions(-D__DAVAENGINE_QT__)
+    if ( MACOS )
+        add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+        add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+    endif()
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
 endif()
 

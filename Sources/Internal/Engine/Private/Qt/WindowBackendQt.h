@@ -11,6 +11,11 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Functional/Function.h"
 
+namespace rhi
+{
+struct InitParam;
+}
+
 namespace DAVA
 {
 namespace Private
@@ -59,6 +64,9 @@ private:
 
     float32 DpiConvert(int32 coord);
     uint32 ConvertButtons(Qt::MouseButton button);
+#if defined(Q_OS_OSX)
+    uint32 ConvertQtKeyToSystemScanCode(int key);
+#endif
 
 private:
     EngineBackend* engine = nullptr;
@@ -74,7 +82,7 @@ private:
 
 inline float32 WindowBackend::DpiConvert(int32 coord)
 {
-    return static_cast<float32>(coord) * renderWidget->devicePixelRatioF();
+    return static_cast<float32>(coord);
 }
 
 } // namespace Private

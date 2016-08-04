@@ -12,6 +12,8 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Qt/WindowBackendQt.h"
 
+#include "Render/RHI/rhi_Public.h"
+
 #include "UI/UIEvent.h"
 
 #include <QApplication>
@@ -357,8 +359,8 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     QPoint pixelDelta = qtEvent->pixelDelta();
     if (!pixelDelta.isNull())
     {
-        e.mwheelEvent.deltaX = static_cast<float32>(qtEvent->pixelDelta().x());
-        e.mwheelEvent.deltaY = static_cast<float32>(qtEvent->pixelDelta().y());
+        e.mwheelEvent.deltaX = static_cast<float32>(pixelDelta.x());
+        e.mwheelEvent.deltaY = static_cast<float32>(pixelDelta.y());
     }
     else
     {
@@ -387,7 +389,7 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
     uint32 virtKey = qtEvent->nativeVirtualKey();
     if (virtKey == 0)
     {
-        virtKey = ConvertQtCommandKeysToDava(qtEvent->key());
+        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
@@ -431,7 +433,7 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
     qint32 virtKey = qtEvent->nativeVirtualKey();
     if (virtKey == 0)
     {
-        virtKey = ConvertQtCommandKeysToDava(qtEvent->key());
+        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
@@ -496,6 +498,119 @@ uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)
 
     return static_cast<uint32>(mouseButton);
 }
+    
+#if defined(Q_OS_OSX)
+class QtToSystemMacKeyTranslator
+{
+public:
+    QtToSystemMacKeyTranslator()
+    {
+        keyTranslator[Qt::Key_Left] = 0x7B;
+        keyTranslator[Qt::Key_Right] = 0x7C;
+        keyTranslator[Qt::Key_Up] = 0x7E;
+        keyTranslator[Qt::Key_Down] = 0x7D;
+        keyTranslator[Qt::Key_Delete] = 0x75;
+        keyTranslator[Qt::Key_Escape] = 0x35;
+        keyTranslator[Qt::Key_Backspace] = 0x33;
+        keyTranslator[Qt::Key_Enter] = 0x24;
+        keyTranslator[Qt::Key_Tab] = 0x30;
+
+        keyTranslator[Qt::Key_Meta] = 59;
+        keyTranslator[Qt::Key_Alt] = 58;
+        keyTranslator[Qt::Key_Shift] = 56;
+
+        keyTranslator[Qt::Key_CapsLock] = 57;
+        keyTranslator[Qt::Key_Control] = 55;
+        keyTranslator[Qt::Key_Space] = 0x31;
+
+        keyTranslator[Qt::Key_Equal] = 24;
+        keyTranslator[Qt::Key_Minus] = 27;
+        keyTranslator[Qt::Key_Period] = 47;
+        keyTranslator[Qt::Key_Comma] = 43;
+        keyTranslator[Qt::Key_Semicolon] = 41;
+        keyTranslator[Qt::Key_Slash] = 44;
+        keyTranslator[Qt::Key_BracketLeft] = 33;
+        keyTranslator[Qt::Key_Backslash] = 42;
+        keyTranslator[Qt::Key_BracketRight] = 30;
+        keyTranslator[Qt::Key_Apostrophe] = 39;
+        keyTranslator[Qt::Key_Insert] = 114;
+        keyTranslator[Qt::Key_Home] = 115;
+        keyTranslator[Qt::Key_PageUp] = 116;
+        keyTranslator[Qt::Key_End] = 119;
+        keyTranslator[Qt::Key_PageDown] = 121;
+        keyTranslator[Qt::Key_multiply] = 67;
+
+        keyTranslator[Qt::Key_A] = 0x00;
+        keyTranslator[static_cast<Qt::Key>(1060)] = 0x00;
+        keyTranslator[Qt::Key_B] = 0x0B;
+        keyTranslator[Qt::Key_C] = 0x08;
+        keyTranslator[Qt::Key_D] = 0x02;
+        keyTranslator[Qt::Key_E] = 0x0E;
+        keyTranslator[Qt::Key_F] = 0x03;
+        keyTranslator[Qt::Key_G] = 0x05;
+        keyTranslator[Qt::Key_H] = 0x04;
+        keyTranslator[Qt::Key_I] = 0x22;
+        keyTranslator[Qt::Key_J] = 0x26;
+        keyTranslator[Qt::Key_K] = 0x28;
+        keyTranslator[Qt::Key_L] = 0x25;
+        keyTranslator[Qt::Key_N] = 0x2D;
+        keyTranslator[Qt::Key_M] = 0x2E;
+        keyTranslator[Qt::Key_O] = 0x1F;
+        keyTranslator[Qt::Key_P] = 0x23;
+        keyTranslator[Qt::Key_Q] = 0x0C;
+        keyTranslator[Qt::Key_R] = 0x0F;
+        keyTranslator[Qt::Key_S] = 0x01;
+        keyTranslator[Qt::Key_T] = 0x11;
+        keyTranslator[Qt::Key_U] = 0x20;
+        keyTranslator[Qt::Key_V] = 0x09;
+        keyTranslator[Qt::Key_W] = 0x0D;
+        keyTranslator[Qt::Key_X] = 0x07;
+        keyTranslator[Qt::Key_Y] = 0x10;
+        keyTranslator[Qt::Key_Z] = 0x06;
+
+        keyTranslator[Qt::Key_0] = 0x1D;
+        keyTranslator[Qt::Key_1] = 0x12;
+        keyTranslator[Qt::Key_2] = 0x13;
+        keyTranslator[Qt::Key_3] = 0x14;
+        keyTranslator[Qt::Key_4] = 0x15;
+        keyTranslator[Qt::Key_5] = 0x17;
+        keyTranslator[Qt::Key_6] = 0x16;
+        keyTranslator[Qt::Key_7] = 0x1A;
+        keyTranslator[Qt::Key_8] = 0x1C;
+        keyTranslator[Qt::Key_9] = 0x19;
+
+        keyTranslator[Qt::Key_F1] = 0x7A;
+        keyTranslator[Qt::Key_F2] = 0x78;
+        keyTranslator[Qt::Key_F3] = 0x63;
+        keyTranslator[Qt::Key_F4] = 0x76;
+        keyTranslator[Qt::Key_F5] = 0x60;
+        keyTranslator[Qt::Key_F6] = 0x61;
+        keyTranslator[Qt::Key_F7] = 0x62;
+        keyTranslator[Qt::Key_F8] = 0x64;
+        keyTranslator[Qt::Key_F9] = 0x65;
+        keyTranslator[Qt::Key_F10] = 0x6D;
+        keyTranslator[Qt::Key_F11] = 0x67;
+        keyTranslator[Qt::Key_F12] = 0x6F;
+
+        keyTranslator[Qt::Key_NumLock] = 71;
+        keyTranslator[Qt::Key_F14] = 107;
+        keyTranslator[Qt::Key_F13] = 105;
+    }
+
+    UnorderedMap<Qt::Key, uint32> keyTranslator;
+};
+
+uint32 WindowBackend::ConvertQtKeyToSystemScanCode(int key)
+{
+    static QtToSystemMacKeyTranslator tr;
+    auto iter = tr.keyTranslator.find(static_cast<Qt::Key>(key));
+    if (iter != tr.keyTranslator.end())
+        return iter->second;
+
+    DAVA::Logger::Warning("[WindowBackend::ConvertQtKeyToSystemScanCode] Unresolved Qt::Key: %d", key);
+    return 0;
+}
+#endif
 
 } // namespace Private
 } // namespace DAVA

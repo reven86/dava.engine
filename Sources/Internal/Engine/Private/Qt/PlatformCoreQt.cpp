@@ -45,6 +45,10 @@ void PlatformCore::Init()
         Memcpy(argvMemory[i], arg.data(), sizeof(char8) * size);
     }
 
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(0);
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+
     application.reset(new QApplication(argc, argvMemory));
 }
 
