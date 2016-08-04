@@ -329,13 +329,11 @@ void DAVAFloat32SpinBox::clear()
 
 void DAVAFloat32SpinBox::setValue(DAVA::float32 val)
 {
-    if (originalValue != val)
+    if (originalValue != val || lineEdit()->text().isEmpty())
     {
         originalValue = val;
-        originalString = QString::number((double)val, 'f', precision);
+        lineEdit()->setText(QString::number((double)val, 'f', precision));
     }
-
-    lineEdit()->setText(originalString);
 }
 
 bool DAVAFloat32SpinBox::eventFilter(QObject* object, QEvent* event)
