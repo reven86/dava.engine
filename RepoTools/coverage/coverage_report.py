@@ -198,6 +198,10 @@ class CoverageReport():
                 sys.stdout.flush()
 
     def __find_unity_pack_gcda( self, file ):
+        
+        if len( file ) == 0
+            return []
+
         unity_files = []
         for root, dirs, files in os.walk( self.pathUnityPack ):
             for name in files:
