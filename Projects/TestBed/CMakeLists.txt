@@ -14,10 +14,15 @@ endif()
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-set ( DAVA_COMPONENTS "Sound" )
-if ( WIN32 AND NOT WIN_UAP )
+set ( DAVA_COMPONENTS "Sound")
+if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
+
+if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
+    add_definitions(-D__DAVAENGINE_QT__)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+endif()
 
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
@@ -60,6 +65,8 @@ set( LIBRARIES                  )
 if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
 endif ()
+
+set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()
 if (DAVA_COREV2)

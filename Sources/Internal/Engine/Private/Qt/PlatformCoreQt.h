@@ -6,6 +6,9 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Engine/Private/EnginePrivateFwd.h"
+
+class QApplication;
 namespace DAVA
 {
 class Window;
@@ -15,7 +18,7 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore();
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
     PlatformCore(const PlatformCore&) = delete;
@@ -25,17 +28,20 @@ public:
     void Run();
     void Quit();
 
-    WindowBackend* CreateNativeWindow(Window* w);
-
-    void (*AcqureContext())();
-    void (*ReleaseContext())();
-
-    void Prepare(void (*acqureContextFunc)(), void (*releaseContextFunc)());
-    void OnFrame();
+    QApplication* GetApplication();
+    NativeService* GetNativeService();
 
 private:
-    void (*acqureContext)() = nullptr;
-    void (*releaseContext)() = nullptr;
+    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
+
+private:
+    std::unique_ptr<QApplication> application;
+    EngineBackend* engineBackend = nullptr;
+    WindowBackend* windowBackend = nullptr;
+    std::unique_ptr<NativeService> nativeService;
+
+    int32 argc = 0;
+    char8** argvMemory = nullptr;
 };
 
 } // namespace Private

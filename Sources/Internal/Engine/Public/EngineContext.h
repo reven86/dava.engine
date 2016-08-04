@@ -63,7 +63,6 @@ public:
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;
-    FrameOcclusionQueryManager* frameOcclusionQueryManager = nullptr;
     RenderSystem2D* renderSystem2D = nullptr;
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;

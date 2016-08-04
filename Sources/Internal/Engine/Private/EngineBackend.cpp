@@ -6,6 +6,9 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#if defined(__DAVAENGINE_QT__)
+#include "Engine/Public/Qt/WindowNativeServiceQt.h"
+#endif
 
 #include "Render/Renderer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -37,7 +40,6 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -289,14 +291,13 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
+    Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
-    context->frameOcclusionQueryManager->ResetFrameStats();
     for (Window* w : windows)
     {
         w->Draw();
     }
-    context->frameOcclusionQueryManager->ProccesRenderedFrame();
 
     engine->draw.Emit();
     context->renderSystem2D->EndFrame();
@@ -440,6 +441,11 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
+#if defined(__DAVAENGINE_QT__)
+    WindowNativeService* nativeService = GetPrimaryWindow()->GetNativeService();
+    nativeService->InitRenderParams(rendererParams);
+#endif
+
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
@@ -499,7 +505,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->fontManager = new FontManager();
         context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->frameOcclusionQueryManager = new FrameOcclusionQueryManager();
         context->virtualCoordSystem = new VirtualCoordinatesSystem();
         context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
@@ -565,7 +570,6 @@ void EngineBackend::DestroySubsystems()
         context->uiControlSystem->Release();
         context->fontManager->Release();
         context->animationManager->Release();
-        context->frameOcclusionQueryManager->Release();
         context->virtualCoordSystem->Release();
         context->renderSystem2D->Release();
         context->inputSystem->Release();
