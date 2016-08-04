@@ -89,7 +89,7 @@ bool PackageControlsNode::IsInsertingControlsSupported() const
     return !IsReadOnly();
 }
 
-bool PackageControlsNode::CanInsertControl(ControlNode* node, DAVA::int32 pos) const
+bool PackageControlsNode::CanInsertControl(const ControlNode* node, DAVA::int32 pos) const
 {
     return !IsReadOnly();
 }
