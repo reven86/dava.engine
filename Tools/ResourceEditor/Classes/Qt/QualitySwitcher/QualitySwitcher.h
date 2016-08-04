@@ -26,6 +26,7 @@ protected:
 
 protected slots:
     void OnTxQualitySelect(int index);
+    void OnAnQualitySelect(int index);
     void OnMaQualitySelect(int index);
     void OnOptionClick(bool);
     void OnParticlesQualityChanged(int index);

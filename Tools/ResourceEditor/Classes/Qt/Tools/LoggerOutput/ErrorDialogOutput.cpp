@@ -19,6 +19,36 @@ bool ShouldBeHiddenByUI()
 { //need be filled with context for special cases after Qa and Using
     return false;
 }
+
+bool HasIgnoredWords(const DAVA::String& testedString)
+{
+    static const DAVA::Vector<DAVA::String> ignoredWords =
+    {
+      "DV_ASSERT",
+      "DV_WARNING",
+      "==== callstack ===="
+    };
+
+    for (const DAVA::String& word : ignoredWords)
+    {
+        if (testedString.find_first_of(word) != DAVA::String::npos)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool ShouldIgnoreMessage(DAVA::Logger::eLogLevel ll, const DAVA::String& textMessage)
+{
+    bool enabled = (SettingsManager::Instance() != nullptr) ? SettingsManager::GetValue(Settings::General_ShowErrorDialog).AsBool() : false;
+    if ((ll < DAVA::Logger::LEVEL_ERROR) || !enabled)
+    {
+        return true;
+    }
+    return HasIgnoredWords(textMessage);
+}
 }
 
 ErrorDialogOutput::ErrorDialogOutput(std::shared_ptr<GlobalOperations> globalOperations_, QObject* parent)
@@ -37,13 +67,12 @@ ErrorDialogOutput::~ErrorDialogOutput()
 
 void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    bool enabled = (SettingsManager::Instance() != nullptr) ? SettingsManager::GetValue(Settings::General_ShowErrorDialog).AsBool() : false;
-    if ((ll < DAVA::Logger::LEVEL_ERROR) || !enabled)
+    if (ErrorDialogDetail::ShouldIgnoreMessage(ll, text))
     {
         return;
     }
 
-    {
+    { //lock container to add new text
         DAVA::LockGuard<DAVA::Mutex> lock(errorsLocker);
         if (errors.size() < ErrorDialogDetail::maxErrorsPerDialog)
         {
