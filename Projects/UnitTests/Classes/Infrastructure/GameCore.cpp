@@ -202,7 +202,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
 #if defined(DAVA_UNITY_FOLDER)
         toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
 #endif
-        
+
         toJson("    \"Coverage\":  {\n");
 
         for (const auto& x : map)
