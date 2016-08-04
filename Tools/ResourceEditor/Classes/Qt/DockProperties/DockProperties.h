@@ -23,7 +23,7 @@ public:
     DockProperties(QWidget* parent = NULL);
     ~DockProperties();
 
-    void Init(Ui::MainWindow* mainwindowUi, std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(Ui::MainWindow* mainwindowUi, const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected slots:
     void ActionFavoritesEdit();

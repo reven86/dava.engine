@@ -52,7 +52,7 @@ LODEditor::LODEditor(QWidget* parent)
 
 LODEditor::~LODEditor() = default;
 
-void LODEditor::Init(std::shared_ptr<GlobalOperations> globalOperations_)
+void LODEditor::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
 }

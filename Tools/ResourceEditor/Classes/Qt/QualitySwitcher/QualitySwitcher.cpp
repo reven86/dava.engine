@@ -13,7 +13,7 @@
 
 QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 
-QualitySwitcher::QualitySwitcher(std::shared_ptr<GlobalOperations> globalOperations_)
+QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& globalOperations_)
     : QDialog(globalOperations_->GetGlobalParentWidget(), Qt::Dialog | Qt::WindowStaysOnTopHint) //https://bugreports.qt.io/browse/QTBUG-34767
     , globalOperations(globalOperations_)
 {

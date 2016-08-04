@@ -30,7 +30,7 @@ public:
     explicit LODEditor(QWidget* parent = nullptr);
     ~LODEditor() override;
 
-    void Init(std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 private slots:
 

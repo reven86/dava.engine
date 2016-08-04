@@ -24,7 +24,7 @@ class SpritesPackerModule final : public QObject
     Q_OBJECT
 
 public:
-    SpritesPackerModule(std::shared_ptr<GlobalOperations> globalOperations);
+    SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations);
     ~SpritesPackerModule() override;
 
     QAction* GetReloadAction() const;

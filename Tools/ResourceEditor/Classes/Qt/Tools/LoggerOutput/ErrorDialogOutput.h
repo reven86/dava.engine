@@ -12,7 +12,7 @@ class ErrorDialogOutput final : public QObject, public DAVA::LoggerOutput
     Q_OBJECT
 
 public:
-    ErrorDialogOutput(std::shared_ptr<GlobalOperations> globalOperations, QObject* parent);
+    ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations, QObject* parent);
     ~ErrorDialogOutput() override;
 
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;

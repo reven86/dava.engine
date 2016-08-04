@@ -7,6 +7,7 @@
 #include "Qt/Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Scene/System/EditorStatisticsSystem.h"
+#include "Qt/Scene/System/EditorVegetationSystem.h"
 
 #include "ImageTools/ImageTools.h"
 

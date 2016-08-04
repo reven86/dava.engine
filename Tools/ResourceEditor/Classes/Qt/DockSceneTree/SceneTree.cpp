@@ -818,7 +818,7 @@ SceneTree::~SceneTree()
     delete treeModel;
 }
 
-void SceneTree::Init(std::shared_ptr<GlobalOperations> globalOperations_)
+void SceneTree::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
 }

@@ -2,6 +2,8 @@
 
 #include "Base/FastName.h"
 
+#include "Render/RenderBase.h"
+
 class Settings
 {
 public:
@@ -101,4 +103,5 @@ public:
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
 
+    static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings

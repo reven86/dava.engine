@@ -36,7 +36,7 @@ public:
     explicit SceneTabWidget(QWidget* parent);
     ~SceneTabWidget();
 
-    void Init(std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
     int OpenTab();
     int OpenTab(const DAVA::FilePath& scenePath);

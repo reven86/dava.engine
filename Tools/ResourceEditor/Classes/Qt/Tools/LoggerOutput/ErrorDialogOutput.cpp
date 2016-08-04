@@ -51,7 +51,7 @@ bool ShouldIgnoreMessage(DAVA::Logger::eLogLevel ll, const DAVA::String& textMes
 }
 }
 
-ErrorDialogOutput::ErrorDialogOutput(std::shared_ptr<GlobalOperations> globalOperations_, QObject* parent)
+ErrorDialogOutput::ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations_, QObject* parent)
     : QObject(parent)
     , globalOperations(globalOperations_)
 {

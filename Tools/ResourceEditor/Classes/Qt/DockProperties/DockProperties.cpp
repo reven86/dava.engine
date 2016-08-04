@@ -16,8 +16,9 @@ DockProperties::~DockProperties()
 {
 }
 
-void DockProperties::Init(Ui::MainWindow* mainwindowUi, std::shared_ptr<GlobalOperations> globalOperations)
+void DockProperties::Init(Ui::MainWindow* mainwindowUi, const std::shared_ptr<GlobalOperations>& globalOperations)
 {
+    DVASSERT(mainwindowUi != nullptr);
     toolbar = mainwindowUi->propertiesToolBar;
     propertiesEditor = mainwindowUi->propertyEditor;
 

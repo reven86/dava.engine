@@ -57,7 +57,7 @@ public:
     LibraryWidget(QWidget* parent = 0);
     ~LibraryWidget();
 
-    void SetupSignals(std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected slots:
 

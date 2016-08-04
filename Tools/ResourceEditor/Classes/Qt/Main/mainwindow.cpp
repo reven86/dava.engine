@@ -19,7 +19,6 @@
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
-#include "Classes/Qt/Settings/SettingsHelper.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
@@ -778,7 +777,7 @@ void QtMainWindow::SetupDocks()
     QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, this, &QtMainWindow::RestartParticleEffects);
     QObject::connect(spritesPacker.get(), &SpritesPackerModule::SpritesReloaded, ui->sceneInfo, &SceneInfo::SpritesReloaded);
 
-    ui->libraryWidget->SetupSignals(globalOperations);
+    ui->libraryWidget->Init(globalOperations);
     // Run Action Event dock
     {
         dockActionEvent = new QDockWidget("Run Action Event", this);
@@ -1584,7 +1583,7 @@ void QtMainWindow::OnEnableDisableShadows(bool enable)
 
 void QtMainWindow::OnReloadTextures()
 {
-    SetGPUFormat(settings::GetGPUFormat());
+    SetGPUFormat(Settings::GetGPUFormat());
 }
 
 void QtMainWindow::OnReloadTexturesTriggered(QAction* reloadAction)
@@ -2091,7 +2090,7 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2* scene)
 
 void QtMainWindow::LoadGPUFormat()
 {
-    int curGPU = settings::GetGPUFormat();
+    int curGPU = Settings::GetGPUFormat();
 
     QList<QAction*> allActions = ui->menuTexturesForGPU->actions();
     for (int i = 0; i < allActions.size(); ++i)
@@ -2991,7 +2990,7 @@ void QtMainWindow::OnAddPathEntity()
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
-    DAVA::eGPUFamily gpuFormat = settings::GetGPUFormat();
+    DAVA::eGPUFamily gpuFormat = Settings::GetGPUFormat();
     if (gpuFormat != DAVA::GPU_ORIGIN)
     {
         int answer = ShowQuestion("Inappropriate texture format",

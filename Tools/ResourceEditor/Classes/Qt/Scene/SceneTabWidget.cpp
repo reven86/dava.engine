@@ -114,7 +114,7 @@ SceneTabWidget::~SceneTabWidget()
     ReleaseDAVAUI();
 }
 
-void SceneTabWidget::Init(std::shared_ptr<GlobalOperations> globalOperations_)
+void SceneTabWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
 }

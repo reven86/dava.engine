@@ -21,7 +21,7 @@ public:
     explicit SceneTree(QWidget* parent = 0);
     ~SceneTree();
 
-    void Init(std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected:
     void dropEvent(QDropEvent* event) override;

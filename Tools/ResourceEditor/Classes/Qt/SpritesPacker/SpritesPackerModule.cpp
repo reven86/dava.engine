@@ -12,7 +12,7 @@
 #include <QAction>
 #include <QDir>
 
-SpritesPackerModule::SpritesPackerModule(std::shared_ptr<GlobalOperations> globalOperations_)
+SpritesPackerModule::SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations_)
     : QObject(nullptr)
     , spritesPacker(new SpritesPacker())
     , globalOperations(globalOperations_)

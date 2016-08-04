@@ -147,7 +147,7 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
     return extList;
 }
 
-void LibraryWidget::SetupSignals(std::shared_ptr<GlobalOperations> globalOperations_)
+void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
     QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &LibraryWidget::ProjectOpened);

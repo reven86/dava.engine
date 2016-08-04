@@ -13,7 +13,7 @@
 
 using namespace DAVA;
 
-SpeedTreeImportDialog::SpeedTreeImportDialog(std::shared_ptr<GlobalOperations> globlaOperations_, QWidget* parent /*= 0*/)
+SpeedTreeImportDialog::SpeedTreeImportDialog(const std::shared_ptr<GlobalOperations>& globlaOperations_, QWidget* parent /*= 0*/)
     : QDialog(parent)
     , ui(new Ui::QtTreeImportDialog)
     , globalOperations(globlaOperations_)

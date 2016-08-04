@@ -87,7 +87,7 @@ PropertyEditor::~PropertyEditor()
     ClearCurrentNodes();
 }
 
-void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, std::shared_ptr<GlobalOperations> globalOperations_)
+void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
     globalOperations = globalOperations_;
     connect(mainWindowUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));

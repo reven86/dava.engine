@@ -51,7 +51,7 @@ public:
     PropertyEditor(QWidget* parent = 0, bool connectToSceneSignals = true);
     ~PropertyEditor();
 
-    void Init(Ui::MainWindow* mainWindowUi, std::shared_ptr<GlobalOperations> globalOperations);
+    void Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<GlobalOperations>& globalOperations);
 
     virtual void SetEntities(const SelectableGroup* selected);
 

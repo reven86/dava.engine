@@ -1,7 +1,7 @@
 #include "TexturePathValidator.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "Qt/Settings/SettingsHelper.h"
+#include "Qt/Settings/Settings.h"
 
 #include "FileSystem/FileSystem.h"
 
@@ -36,7 +36,7 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
             auto found = texturesMap.find(FILEPATH_MAP_KEY(descriptorPath));
             if (found != texturesMap.end())
             {
-                found->second->ReloadAs(settings::GetGPUFormat());
+                found->second->ReloadAs(Settings::GetGPUFormat());
             }
 
             v = QVariant(QString::fromStdString(descriptorPath.GetAbsolutePathname()));

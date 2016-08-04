@@ -12,7 +12,7 @@ public:
     static void ShowDialog(std::shared_ptr<GlobalOperations> globalOperations);
 
 protected:
-    QualitySwitcher(std::shared_ptr<GlobalOperations> globalOperations);
+    QualitySwitcher(const std::shared_ptr<GlobalOperations>& globalOperations);
     ~QualitySwitcher();
 
     void ApplyTx();
