@@ -28,6 +28,7 @@ if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
         add_definitions(-DDISABLE_NATIVE_WEBVIEW)
     endif()
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+    set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 endif()
 
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
@@ -71,8 +72,6 @@ set( LIBRARIES                  )
 if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
 endif ()
-
-set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()
 if (DAVA_COREV2)
