@@ -202,7 +202,7 @@ if( NOT ANDROID_TOOLCHAIN_NAME )
 endif()
 
 if( NOT ANDROID_STL )
- set ( ANDROID_STL "c++shared" )
+ set ( ANDROID_STL "c++_shared" )
 endif()
 
 if( DEFINED CMAKE_CROSSCOMPILING )
@@ -858,7 +858,7 @@ set( ANDROID_STL_FORCE_FEATURES ON CACHE BOOL "automatically configure rtti and 
 mark_as_advanced( ANDROID_STL ANDROID_STL_FORCE_FEATURES )
 
 if( BUILD_WITH_ANDROID_NDK )
- if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|c\\+\\+static|c\\+\\+shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared)$")
+ if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|c\\+\\+_static|c\\+\\+_shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared)$")
   message( FATAL_ERROR "ANDROID_STL is set to invalid value \"${ANDROID_STL}\".
 The possible values are:
   none           -> Do not configure the runtime.
@@ -870,8 +870,8 @@ The possible values are:
   stlport_shared -> Use the STLport runtime as a shared library.
   gnustl_static  -> (default) Use the GNU STL as a static library.
   gnustl_shared  -> Use the GNU STL as a shared library.
-  c++static      -> Use the LLVM C++ runtime as a static library.
-  c++shared      -> Use the LLVM C++ runtime as a shared library.
+  c++_static     -> Use the LLVM C++ runtime as a static library.
+  c++_shared     -> Use the LLVM C++ runtime as a shared library.
 " )
  endif()
 elseif( BUILD_WITH_STANDALONE_TOOLCHAIN )
@@ -1004,7 +1004,7 @@ if( BUILD_WITH_ANDROID_NDK )
  
  if( ANDROID_STL STREQUAL "none" )
   # do nothing
- elseif( ANDROID_STL STREQUAL "c++shared" OR ANDROID_STL STREQUAL "с++static" )
+ elseif( ANDROID_STL STREQUAL "c++_shared" OR ANDROID_STL STREQUAL "с++_static" )
   set( ANDROID_EXCEPTIONS       ON )
   set( ANDROID_RTTI             ON )
   set( ANDROID_STL_ROOT         "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/${ANDROID_CLANG_VERSION}" )
