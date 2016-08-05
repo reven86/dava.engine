@@ -317,6 +317,11 @@ void UIStaticText::SetParentColor(const Color& parentColor)
     textBg->SetParentColor(parentColor);
 }
 
+const Vector<WideString>& UIStaticText::GetMultilineStrings() const
+{
+    return textBlock->GetMultilineStrings();
+}
+
 const WideString& UIStaticText::GetText() const
 {
     return textBlock->GetText();

@@ -100,6 +100,7 @@ public:
     void PrepareSprite();
 
     DAVA_DEPRECATED(const WideString& GetText() const);
+    const Vector<WideString>& GetMultilineStrings() const;
 
     Font* GetFont() const;
     float32 GetFontSize() const;
