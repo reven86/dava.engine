@@ -25,7 +25,6 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
-#include "Tests/ExceptionAndAssertionTest.h"
 #include "Tests/AssertTest.h"
 //$UNITTEST_INCLUDE
 
@@ -66,7 +65,6 @@ void GameCore::RegisterTests()
     new GPUTest();
     new FloatingPointExceptionTest();
     new PackManagerTest();
-    new ExceptionAndAssertionTest();
     new AssertTest();
     //$UNITTEST_CTOR
 }
