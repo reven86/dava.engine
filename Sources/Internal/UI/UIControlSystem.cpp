@@ -326,10 +326,9 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    resizePerFrame = 0;
-    TIME_PROFILE("UIControlSystem::Draw");
+    PROFILER_SCOPED_TIMING("UIControlSystem::Draw");
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
+    resizePerFrame = 0;
 
     drawCounter = 0;
 
@@ -350,8 +349,6 @@ void UIControlSystem::Draw()
     }
 
     GetScreenshoter()->OnFrame();
-
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
 void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)

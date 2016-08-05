@@ -15,12 +15,245 @@ using namespace DAVA;
 
 //==============================================================================
 
-static inline long
-CurTimeUs()
+static inline uint64 CurTimeUs()
 {
-    return static_cast<long>(SystemTimer::Instance()->GetAbsoluteUs());
+    return static_cast<uint64>(SystemTimer::Instance()->GetAbsoluteUs());
 }
 
+namespace Profiler
+{
+struct CounterEvent
+{
+    enum Phase
+    {
+        PHASE_NONE = 0,
+        PHASE_BEGIN = 1,
+        PHASE_END = 2,
+    };
+
+    Thread::Id tid = 0;
+    uint64 time = 0;
+    const char* name;
+    Phase phase = PHASE_NONE;
+};
+
+static bool profilerInited = false;
+static bool profilerStarted = false;
+static size_t headIndex = 0;
+
+static DAVA::Vector<CounterEvent> events;
+static DAVA::Mutex eventsSync;
+
+void EnsureInited(uint32 eventsCount)
+{
+    if (!profilerInited)
+    {
+        events.resize(eventsCount);
+        profilerInited = true;
+    }
+}
+
+void Start()
+{
+    profilerStarted = true;
+}
+
+void Stop()
+{
+    profilerStarted = false;
+}
+
+void AddCounterEvent(const char* counterName, CounterEvent::Phase phase)
+{
+    if (!profilerStarted)
+        return;
+
+    eventsSync.Lock();
+
+    CounterEvent& e = events[headIndex++];
+    if (headIndex >= events.size())
+        headIndex = 0;
+
+    eventsSync.Unlock();
+
+    e.tid = Thread::GetCurrentId();
+    e.time = CurTimeUs();
+    e.name = counterName;
+    e.phase = phase;
+}
+
+void StartCounter(const char* counterName)
+{
+    AddCounterEvent(counterName, CounterEvent::PHASE_BEGIN);
+}
+
+void StopCounter(const char* counterName)
+{
+    AddCounterEvent(counterName, CounterEvent::PHASE_END);
+}
+
+uint64 GetLastCounterTime(const char* counterName)
+{
+    DAVA::LockGuard<Mutex> guard(eventsSync);
+
+    uint64 beginTime = 0, endTime = 0;
+    for (size_t i = events.size() - 1; i >= 0; --i)
+    {
+        size_t eventIndex = (headIndex - 1 + i) % events.size();
+        const CounterEvent& e = events[eventIndex];
+        if (e.name == counterName && e.phase == CounterEvent::PHASE_END)
+        {
+            endTime = e.time;
+        }
+        if (endTime != 0 && e.name == counterName && CounterEvent::PHASE_BEGIN)
+        {
+            beginTime = e.time;
+            break;
+        }
+    }
+
+    return (endTime - beginTime);
+}
+
+void DumpLast(const char* counterName, uint32 counterCount)
+{
+}
+
+void Dump()
+{
+    LockGuard<Mutex> guard(eventsSync);
+
+    if (!events.size())
+        return;
+
+    char indentStr[256] = {};
+
+    Vector<Thread::Id> threadIDs, processedThreads;
+    threadIDs.push_back(events.front().tid);
+
+    while (threadIDs.size())
+    {
+        Thread::Id currentThread = threadIDs.back();
+        threadIDs.pop_back();
+        processedThreads.push_back(currentThread);
+
+        uint32 treeLevel = 0;
+
+        Logger::Info("Thread %lld =================================", uint64(currentThread));
+
+        for (size_t i = 0; i < events.size(); ++i)
+        {
+            size_t eventIndex = (headIndex + i) % events.size();
+            const CounterEvent& e = events[eventIndex];
+
+            if (e.phase == CounterEvent::PHASE_NONE)
+                continue;
+
+            if (std::find(threadIDs.begin(), threadIDs.end(), e.tid) == threadIDs.end() &&
+                std::find(processedThreads.begin(), processedThreads.end(), e.tid) == processedThreads.end())
+            {
+                threadIDs.push_back(e.tid);
+            }
+
+            if (e.tid == currentThread)
+            {
+                switch (e.phase)
+                {
+                case CounterEvent::PHASE_BEGIN:
+                    for (size_t j = 0; j < events.size(); ++j)
+                    {
+                        size_t eIndex = (eventIndex + j) % events.size();
+                        const CounterEvent& endEvent = events[eIndex];
+                        if (e.name == endEvent.name && endEvent.phase == CounterEvent::PHASE_END)
+                        {
+                            uint64 timeDelta = endEvent.time - e.time;
+
+                            if (treeLevel)
+                                Memset(indentStr, ' ', treeLevel * 4);
+                            indentStr[treeLevel] = 0;
+
+                            Logger::Info("%s%s    %llu us", indentStr, e.name.c_str(), timeDelta);
+
+                            break;
+                        }
+                    }
+                    treeLevel++;
+                    break;
+
+                case CounterEvent::PHASE_END:
+                {
+                    if (treeLevel)
+                        treeLevel--;
+                    //if (eventStack.size() && eventStack.top()->name == e.name)
+                    //{
+                    //    uint64 timeDelta = e.time - eventStack.top()->time;
+                    //    eventStack.pop();
+
+                    //    if (eventStack.size())
+                    //        Memset(indentStr, ' ', eventStack.size() * 4);
+                    //    indentStr[eventStack.size() * 4] = 0;
+
+                    //    Logger::Info("%s%s    %llu us", indentStr, e.name.c_str(), timeDelta);
+                    //}
+                }
+                break;
+                case CounterEvent::PHASE_NONE:
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void Dump(const char* fileName)
+{
+    File* json = File::Create(fileName, File::CREATE | File::WRITE);
+    json->WriteLine("{ \"traceEvents\": [ ");
+
+    eventsSync.Lock();
+    char buf[1024];
+    for (size_t i = 0; i < events.size(); ++i)
+    {
+        size_t eventIndex = (headIndex + i) % events.size();
+        const CounterEvent& e = events[eventIndex];
+
+        const char* ph = "";
+
+        switch (e.phase)
+        {
+        case CounterEvent::PHASE_BEGIN:
+            ph = "B";
+            break;
+        case CounterEvent::PHASE_END:
+            ph = "E";
+            break;
+        case CounterEvent::PHASE_NONE:
+            break;
+        }
+        Snprintf(buf, 1024,
+                 "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 0,
+                 uint64(e.tid),
+                 e.time,
+                 ph,
+                 "",
+                 e.name,
+                 (i != events.size() - 1) ? ", " : "");
+        json->WriteLine(buf);
+    }
+
+    eventsSync.Unlock();
+
+    json->WriteLine("] }");
+    json->Release();
+}
+
+void DumpAverage(const char* eventName, uint32 count)
+{
+}
+}
+
+#if 0
 namespace profiler
 {
 //==============================================================================
@@ -795,3 +1028,5 @@ void SaveEvents(const char* fileName)
 
 //==============================================================================
 } // namespace profiler
+
+#endif

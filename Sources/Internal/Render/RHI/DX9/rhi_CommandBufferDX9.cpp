@@ -681,7 +681,6 @@ CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, u
 
 void CommandBufferDX9_t::Execute()
 {
-    SCOPED_FUNCTION_TIMING();
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
     uint32 cur_stride[MAX_VERTEX_STREAM_COUNT];

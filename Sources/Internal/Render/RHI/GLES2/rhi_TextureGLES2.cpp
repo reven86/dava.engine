@@ -775,7 +775,6 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     }
 
     GL_CALL(glBindTexture(target, self->uid));
-    //{SCOPED_NAMED_TIMING("gl-BindTexture");}
 
     if (sampler_i == 0)
     {

@@ -58,10 +58,6 @@
 #include "Debug/Profiler.h"
 
 #include "Core.h"
-#define PROF__FRAME 0
-#define PROF__FRAME_UPDATE 1
-#define PROF__FRAME_DRAW 2
-#define PROF__FRAME_ENDFRAME 3
 
 namespace DAVA
 {
@@ -512,11 +508,7 @@ void Core::SystemAppStarted()
 {
     Logger::Info("Core::SystemAppStarted in");
     #if PROFILER_ENABLED
-    profiler::EnsureInited();
-    NAME_COUNTER(PROF__FRAME, "frame");
-    NAME_COUNTER(PROF__FRAME_UPDATE, "frame-update");
-    NAME_COUNTER(PROF__FRAME_DRAW, "frame-draw");
-    NAME_COUNTER(PROF__FRAME_ENDFRAME, "frame-endframe");
+    Profiler::EnsureInited();
     #endif
 
     if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
@@ -545,12 +537,8 @@ void Core::SystemAppFinished()
     systemAppFinished.Emit();
     if (core != nullptr)
     {
-        #if TRACER_ENABLED
-        //        profiler::DumpEvents();
-        profiler::SaveEvents("trace.json");
-        #endif
         core->OnAppFinished();
-        Core::Instance()->ReleaseRenderer();
+        //Core::Instance()->ReleaseRenderer();
     }
 
     Logger::Info("Core::SystemAppFinished out");
@@ -559,16 +547,10 @@ void Core::SystemAppFinished()
 void Core::SystemProcessFrame()
 {
     #if PROFILER_ENABLED
-    profiler::EnsureInited();
-    profiler::Start();
-    START_TIMING(PROF__FRAME);
+    Profiler::EnsureInited();
     #endif
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame");
-    SCOPE_EXIT
-    {
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::SystemProcessFrame");
-    };
+    PROFILER_SCOPED_TIMING("Core::SystemProcessFrame");
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -588,6 +570,7 @@ void Core::SystemProcessFrame()
     }
     EGLuint64NV start = eglGetSystemTimeNV() / frequency;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
 
@@ -600,43 +583,23 @@ void Core::SystemProcessFrame()
 
     if (!core)
     {
-        #if PROFILER_ENABLED
-        profiler::Stop();
-        #endif
         return;
     }
 
     if (!isActive)
     {
         LCP;
-        #if PROFILER_ENABLED
-        profiler::Stop();
-        #endif
         return;
     }
 
     SystemTimer::Instance()->Start();
-
-    /**
-        Check if device not in lost state first / after that be
-    */
-    //  if (!Renderer::IsDeviceLost())
     {
-        // #ifdef __DAVAENGINE_DIRECTX9__
-        //      if(firstRun)
-        //      {
-        //          core->BeginFrame();
-        //          firstRun = false;
-        //      }
-        // #else
         InputSystem::Instance()->OnBeforeUpdate();
 
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
+        PROFILER_START_TIMING("Core::BeginFrame")
         core->BeginFrame();
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::BeginFrame")
+        PROFILER_STOP_TIMING("Core::BeginFrame")
 
-//#endif
-// delete after change resize in Android and IOS (Core::WindowSizeChanged)
 #if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
         VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
@@ -663,37 +626,28 @@ void Core::SystemProcessFrame()
             }
         }
 
-        START_TIMING(PROF__FRAME_UPDATE);
-
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
         packManager->Update();
 
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
+        PROFILER_START_TIMING("JobManager::Update");
         JobManager::Instance()->Update();
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
+        PROFILER_STOP_TIMING("JobManager::Update");
 
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        PROFILER_START_TIMING("Core::Update")
         updated.Emit(frameDelta);
         core->Update(frameDelta);
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        PROFILER_STOP_TIMING("Core::Update")
 
         InputSystem::Instance()->OnAfterUpdate();
-        STOP_TIMING(PROF__FRAME_UPDATE);
 
-        START_TIMING(PROF__FRAME_DRAW);
-
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
+        PROFILER_START_TIMING("Core::Draw")
         core->Draw();
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Draw")
-        STOP_TIMING(PROF__FRAME_DRAW);
+        PROFILER_STOP_TIMING("Core::Draw")
 
-        START_TIMING(PROF__FRAME_ENDFRAME);
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
+        PROFILER_START_TIMING("Core::EndFrame")
         core->EndFrame();
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::EndFrame")
-
-        STOP_TIMING(PROF__FRAME_ENDFRAME);
+        PROFILER_STOP_TIMING("Core::EndFrame")
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;
@@ -702,13 +656,6 @@ void Core::SystemProcessFrame()
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
-
-    #if PROFILER_ENABLED
-    STOP_TIMING(PROF__FRAME);
-    profiler::Stop();
-    //profiler::Dump();
-    profiler::DumpAverage();
-    #endif
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
     if (screenMetrics.initialized && screenMetrics.screenMetricsModified)

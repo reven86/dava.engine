@@ -106,6 +106,8 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
+    PROFILER_SCOPED_TIMING("MainRenderPass::PrepareVisibilityArrays")
+
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
@@ -320,18 +322,16 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
     PrepareVisibilityArrays(mainCamera, renderSystem);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
     passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
     passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
 
     if (BeginRenderPass())
     {
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+        PROFILER_START_TIMING("MainRenderPass::DrawLayers")
         DrawLayers(mainCamera);
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
+        PROFILER_STOP_TIMING("MainRenderPass::DrawLayers")
 
         if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
             PrepareReflectionRefractionTextures(renderSystem);

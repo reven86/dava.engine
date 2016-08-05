@@ -37,17 +37,17 @@ void ApplicationCore::Update(float32 timeElapsed)
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
+    PROFILER_START_TIMING("SoundSystem::Update")
     SoundSystem::Instance()->Update(timeElapsed);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
+    PROFILER_STOP_TIMING("SoundSystem::Update")
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
+    PROFILER_START_TIMING("AnimationManager::Update")
     AnimationManager::Instance()->Update(timeElapsed);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
+    PROFILER_STOP_TIMING("AnimationManager::Update")
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
+    PROFILER_START_TIMING("UIControlSystem::Update")
     UIControlSystem::Instance()->Update();
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
+    PROFILER_STOP_TIMING("UIControlSystem::Update")
     
 #if defined(__DAVAENGINE_STEAM__)
     Steam::Update();

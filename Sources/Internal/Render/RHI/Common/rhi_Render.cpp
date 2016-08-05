@@ -858,7 +858,8 @@ void EndPacketList(HPacketList packetList, HSyncObject syncObject)
 
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount)
 {
-    SCOPED_NAMED_TIMING("rhi.AddPackets");
+    //PROFILER_SCOPED_TIMING("rhi::AddPackets");
+
     PacketList_t* pl = PacketListPool::Get(packetList);
     Handle cmdBuf = pl->cmdBuf;
 
@@ -1088,9 +1089,9 @@ void Present()
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
 
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
+    PROFILER_START_TIMING("rhi::ProcessScheduledDelete")
     ProcessScheduledDelete();
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
+    PROFILER_STOP_TIMING("rhi::ProcessScheduledDelete")
 
     scheduledDeleteMutex.Unlock();
 }

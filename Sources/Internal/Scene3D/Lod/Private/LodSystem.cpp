@@ -25,7 +25,7 @@ LodSystem::LodSystem(Scene* scene)
 
 void LodSystem::Process(float32 timeElapsed)
 {
-    SCOPED_NAMED_TIMING("LodSystem::Process");
+    PROFILER_SCOPED_TIMING("LodSystem::Process");
 
     Camera* camera = GetScene()->GetCurrentCamera();
     if (!camera)

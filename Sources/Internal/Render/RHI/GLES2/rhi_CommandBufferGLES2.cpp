@@ -1067,7 +1067,6 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
 
 void CommandBufferGLES2_t::Execute()
 {
-    //SCOPED_NAMED_TIMING("gl.exec");
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
     uint32 cur_base_vert = 0;
@@ -1537,8 +1536,6 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__DRAW_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->mode;
@@ -1593,8 +1590,6 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__DRAW_INDEXED_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DIP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->mode;
@@ -1746,7 +1741,6 @@ void CommandBufferGLES2_t::Execute()
             uint32 baseInst = uint32(arg[5]);
             c += 6;
             #endif
-            //{SCOPED_NAMED_TIMING("gl.DIP")}
 
             if (last_ps != cur_ps)
             {
@@ -1833,13 +1827,13 @@ void CommandBufferGLES2_t::Execute()
             _GLES2_PendingImmediateCmdSync.Lock();
             if (_GLES2_PendingImmediateCmd)
             {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+                PROFILER_START_TIMING("rhi::ExecuteImmidiateCmds");
 
                 _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                 _GLES2_PendingImmediateCmd = nullptr;
                 _GLES2_PendingImmediateCmdCount = 0;
 
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+                PROFILER_STOP_TIMING("rhi::ExecuteImmidiateCmds");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -1979,9 +1973,9 @@ _GLES2_ExecuteQueuedCommands()
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
+            PROFILER_START_TIMING("cb::Execute");
             cb->Execute();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
+            PROFILER_STOP_TIMING("cb::Execute");
 
             if (cb->sync != InvalidHandle)
             {
@@ -2010,7 +2004,7 @@ _GLES2_ExecuteQueuedCommands()
     {
         // do swap-buffers
 
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
+        PROFILER_START_TIMING("rhi::SwapBuffers");
         
 #if defined(__DAVAENGINE_WIN32__)
         Trace("rhi-gl.swap-buffers...\n");
@@ -2034,7 +2028,7 @@ _GLES2_ExecuteQueuedCommands()
 
 #endif
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
+        PROFILER_STOP_TIMING("rhi::SwapBuffers");
     }
 
     // update sync-objects
@@ -2053,7 +2047,7 @@ _GLES2_ExecuteQueuedCommands()
 static void
 gles2_Present(Handle sync)
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
+    PROFILER_SCOPED_TIMING("rhi::Present");
 
     if (_GLES2_RenderThreadFrameCount)
     {
@@ -2079,7 +2073,7 @@ gles2_Present(Handle sync)
         }
 
         uint32 frame_cnt = 0;
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
+        PROFILER_START_TIMING("rhi::WaitFrameExecution");
         do
         {
             _GLES2_FrameSync.Lock();
@@ -2090,11 +2084,10 @@ gles2_Present(Handle sync)
             {
                 _GLES2_FrameDoneEvent.Wait();
             }
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
         }
         while (frame_cnt >= _GLES2_RenderThreadFrameCount);
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
+        PROFILER_STOP_TIMING("rhi::WaitFrameExecution");
     }
     else
     {
@@ -2107,8 +2100,6 @@ gles2_Present(Handle sync)
 
         _GLES2_ExecuteQueuedCommands();
     }
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 }
 
 //------------------------------------------------------------------------------
@@ -2127,8 +2118,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
-
+        PROFILER_START_TIMING("rhi::RenderLoop");
         {
             if (_GLES2_RenderThreadSuspended.Get())
             {
@@ -2144,7 +2134,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             ios_gl_check_layer();
 #endif
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
+            PROFILER_START_TIMING("rhi::WaitFrame");
 
             // CRAP: busy-wait
             bool do_wait = true;
@@ -2160,18 +2150,16 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 _GLES2_PendingImmediateCmdSync.Lock();
                 if (_GLES2_PendingImmediateCmd)
                 {
-                    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+                    PROFILER_START_TIMING("rhi::ExecuteImmidiateCmds");
+
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-                    //Trace("exec-imm-cmd done\n");
-                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
+
+                    PROFILER_STOP_TIMING("rhi::ExecuteImmidiateCmds");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
 
-                //            _CmdQueueSync.Lock();
-                //            cnt = _RenderQueue.size();
-                //            _CmdQueueSync.Unlock();
                 _GLES2_FrameSync.Lock();
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
@@ -2181,19 +2169,19 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _GLES2_FramePreparedEvent.Wait();
                 }
             }
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
+
+            PROFILER_STOP_TIMING("rhi::WaitFrame");
 
             if (!do_exit)
             {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+                PROFILER_START_TIMING("rhi::ExecuteQueuedCmds");
                 _GLES2_ExecuteQueuedCommands();
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
+                PROFILER_STOP_TIMING("rhi::ExecuteQueuedCmds");
             }
 
             _GLES2_FrameDoneEvent.Signal();
         }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
+        PROFILER_STOP_TIMING("rhi::RenderLoop");
     }
 
     Logger::Info("[RHI] render-thread finished");
@@ -2716,7 +2704,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+        PROFILER_START_TIMING("rhi::WaitImmediateCmd");
 
         while (!scheduled)
         {
@@ -2747,7 +2735,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             }
         }
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+        PROFILER_STOP_TIMING("rhi::WaitImmediateCmd");
     }
 }
 

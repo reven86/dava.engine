@@ -80,7 +80,6 @@ void ios_gl_init(void* nativeLayer)
 
 void ios_gl_begin_frame()
 {
-    SCOPED_NAMED_TIMING("ios_GL_begin_frame");
 }
 
 void ios_gl_reset(void* nativeLayer)
@@ -92,7 +91,6 @@ void ios_gl_reset(void* nativeLayer)
 
 void ios_gl_end_frame()
 {
-    SCOPED_NAMED_TIMING("ios_GL_end_frame");
     const GLenum discards[] = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
 
     glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);

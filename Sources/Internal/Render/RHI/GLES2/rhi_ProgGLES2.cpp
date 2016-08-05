@@ -315,7 +315,6 @@ void ProgGLES2::SetupTextureUnits(unsigned baseUnit) const
     {
         if (texunitLoc[i] != -1)
         {
-            //{SCOPED_NAMED_TIMING("gl-Uniform1i")}
             GL_CALL(glUniform1i(texunitLoc[i], baseUnit + i));
         }
     }
@@ -485,7 +484,6 @@ ProgGLES2::ConstBuf::Instance() const
         else
         {
 #endif
-            //SCOPED_NAMED_TIMING("gl.cb-inst");
             inst = _GLES2_DefaultConstRingBuffer.Alloc(count * 4);
             memcpy(inst, data, 4 * count * sizeof(float));
 #if RHI_GL__USE_STATIC_CONST_BUFFER_OPTIMIZATION
@@ -512,7 +510,6 @@ void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
     DVASSERT(progUid == glProg);
     if (instData != *lastInst)
     {
-        //SCOPED_NAMED_TIMING("gl-Uniform4fv");
         GLfloat* data = reinterpret_cast<GLfloat*>(const_cast<void*>(instData));
         GL_CALL(glUniform4fv(location, count, data));
         *lastInst = const_cast<void*>(instData);

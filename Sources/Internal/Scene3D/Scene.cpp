@@ -631,9 +631,7 @@ void Scene::SetupTestLighting()
 
 void Scene::Update(float timeElapsed)
 {
-    TIME_PROFILE("Scene::Update");
-
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
+    PROFILER_SCOPED_TIMING("Scene::Update")
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
@@ -661,15 +659,11 @@ void Scene::Update(float timeElapsed)
     }
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
-
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Update")
 }
 
 void Scene::Draw()
 {
-    TIME_PROFILE("Scene::Draw");
-
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
+    PROFILER_SCOPED_TIMING("Scene::Draw")
 
     //TODO: re-think configuring global dynamic bindings
     static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
@@ -692,8 +686,6 @@ void Scene::Draw()
     //foliageSystem->DebugDrawVegetation();
 
     drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
-
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Scene::Draw")
 }
 
 void Scene::SceneDidLoaded()
