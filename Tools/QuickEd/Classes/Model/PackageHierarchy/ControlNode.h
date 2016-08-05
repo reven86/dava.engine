@@ -77,6 +77,12 @@ public:
 
     DAVA::String GetPathToPrototypeChild() const;
 
+    DAVA::Vector<ControlNode*>::const_iterator begin() const override;
+    DAVA::Vector<ControlNode*>::const_iterator end() const override;
+
+    DAVA::Vector<ControlNode*>::iterator begin() override;
+    DAVA::Vector<ControlNode*>::iterator end() override;
+
 private:
     bool IsInstancedFrom(const ControlNode* prototype) const;
     bool IsDependsOnPrototype(const ControlNode* prototype) const;

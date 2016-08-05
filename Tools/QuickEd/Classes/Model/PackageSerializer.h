@@ -43,11 +43,11 @@ private: // PackageVisitor
 
 private:
     void AcceptChildren(PackageBaseNode* node);
-    void CollectPackages(DAVA::Vector<PackageNode*>& packages, ControlNode* node) const;
-    bool IsControlNodeDependsOnStylesFromPackage(ControlNode* node, PackageNode* package) const;
-    bool IsControlInSerializationList(ControlNode* control) const;
-    void CollectPrototypeChildrenWithChanges(ControlNode* node, DAVA::Vector<ControlNode*>& out) const;
-    bool HasNonPrototypeChildren(ControlNode* node) const;
+    void CollectPackages(DAVA::Vector<PackageNode*>& packages, const ControlNode* node) const;
+    bool IsControlNodeDependsOnStylesFromPackage(const ControlNode* node, const PackageNode* package) const;
+    bool IsControlInSerializationList(const ControlNode* control) const;
+    void CollectPrototypeChildrenWithChanges(const ControlNode* node, DAVA::Vector<ControlNode*>& out) const;
+    bool HasNonPrototypeChildren(const ControlNode* node) const;
 
 private: // PropertyVisitor
     void VisitRootProperty(RootProperty* property) override;

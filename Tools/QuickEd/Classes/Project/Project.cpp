@@ -118,7 +118,7 @@ bool Project::OpenInternal(const QString& path)
         libraryPackages.clear();
         if (libraryNode != nullptr)
         {
-            for (int i = 0; i < libraryNode->GetCount(); i++)
+            for (uint32 i = 0; i < libraryNode->GetCount(); i++)
             {
                 libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
             }
@@ -138,7 +138,7 @@ bool Project::CanOpenProject(const QString& projectPath) const
     return fileInfo.exists() && fileInfo.isFile();
 }
 
-const Vector<FilePath>& Project::GetLibraryPackages()
+const Vector<FilePath>& Project::GetLibraryPackages() const
 {
     return libraryPackages;
 }

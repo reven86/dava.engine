@@ -304,9 +304,9 @@ void LibraryModel::AddPackageControls(PackageControlsNode* packageControls, QSta
 {
     if (packageControls->GetCount())
     {
-        for (int i = 0; i < packageControls->GetCount(); i++)
+        for (ControlNode* node : *packageControls)
         {
-            AddControl(packageControls->Get(i), rootItem, haveToMakeInstance);
+            AddControl(node, rootItem, haveToMakeInstance);
         }
     }
 }

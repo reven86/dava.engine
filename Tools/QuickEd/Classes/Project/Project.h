@@ -26,7 +26,7 @@ public:
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
-    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages();
+    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
     static const QString& GetScreensRelativePath();
     static const QString& GetProjectFileName();
     QString CreateNewProject(DAVA::Result* result = nullptr);
