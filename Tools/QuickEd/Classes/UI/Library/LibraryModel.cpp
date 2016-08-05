@@ -251,7 +251,7 @@ QModelIndex LibraryModel::indexByNode(const void* node, const QStandardItem* ite
 
 void LibraryModel::BuildModel()
 {
-    int index = 0;
+    int32 index = 0;
     for (const FilePath& path : libraryPackagePaths)
     {
         QuickEdPackageBuilder builder;
@@ -275,9 +275,9 @@ void LibraryModel::BuildModel()
     AddPackageControls(package->GetPackageControlsNode(), controlsRootItem, true);
 
     ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
-    for (int i = 0; i < importedPackagesNode->GetCount(); ++i)
+    for (PackageNode* package : *importedPackagesNode)
     {
-        importedPackageRootItem->appendRow(CreatePackageControlsItem(importedPackagesNode->GetImportedPackage(i), true));
+        importedPackageRootItem->appendRow(CreatePackageControlsItem(package, true));
     }
 }
 
