@@ -35,7 +35,7 @@ public class JNICrashReporter {
         report += ("MODEL: " + Build.MODEL + "\n");
         report += ("OS: " + Build.VERSION.RELEASE + "\n");
         report += ("Locale: " + Locale.getDefault().getDisplayLanguage(Locale.US) + "\n");
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() == null)
         {
             report += ("Country: " + DavaActivity.activitySingleton.getResources().getConfiguration().locale.getCountry() + "\n");
         }

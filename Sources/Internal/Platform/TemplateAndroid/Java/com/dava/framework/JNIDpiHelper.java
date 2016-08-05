@@ -8,7 +8,7 @@ public class JNIDpiHelper {
     public static int GetScreenDPI()
     {
         DisplayMetrics dm = new DisplayMetrics();
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() == null)
         {
             DavaActivity.activitySingleton.getWindowManager().getDefaultDisplay().getMetrics(dm);
         }
