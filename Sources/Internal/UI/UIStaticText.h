@@ -58,8 +58,11 @@ public:
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2::Zero);
-    void SetTextWithoutRect(const WideString& text);
+    DAVA_DEPRECATED(virtual void SetText(const WideString& string, const Vector2& requestedTextRectSize = Vector2::Zero));
+
+    void SetUtf8Text(const String& utf8String, const Vector2& requestedTextRectSize = Vector2::Zero);
+    void SetUtf8TextWithoutRect(const String& utf8String);
+    String GetUtf8Text() const;
 
     void SetFont(Font* font);
     void SetFontSize(float32 newSize);
@@ -96,8 +99,7 @@ public:
 
     void PrepareSprite();
 
-    const WideString& GetText() const;
-    const Vector<WideString>& GetMultilineStrings() const;
+    DAVA_DEPRECATED(const WideString& GetText() const);
 
     Font* GetFont() const;
     float32 GetFontSize() const;
@@ -179,7 +181,7 @@ public:
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("text", "Text", GetUtf8Text, SetUtf8TextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT));
 };

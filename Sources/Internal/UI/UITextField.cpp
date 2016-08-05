@@ -3,6 +3,7 @@
 #include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
@@ -30,6 +31,11 @@ public:
 
 namespace DAVA
 {
+void UITextFieldDelegate::TextFieldOnTextChanged(UITextField* textField, const String& newUtf8Text, const String& oldUtf8Text, eReason type)
+{
+    TextFieldOnTextChanged(textField, UTF8Utils::EncodeToWideString(newUtf8Text), UTF8Utils::EncodeToWideString(oldUtf8Text), type);
+}
+
 UITextField::UITextField(const Rect& rect)
     : UIControl(rect)
 {
@@ -282,6 +288,16 @@ void UITextField::SetText(const WideString& text_)
 {
     textFieldImpl->SetText(text_);
     text = text_;
+}
+
+String UITextField::GetUtf8Text()
+{
+    return UTF8Utils::EncodeToUTF8(GetText());
+}
+
+void UITextField::SetUtf8Text(const String& utf8String)
+{
+    SetText(UTF8Utils::EncodeToWideString(utf8String));
 }
 
 const WideString& UITextField::GetText()
