@@ -11,6 +11,7 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
@@ -19,22 +20,6 @@ __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 const wchar_t* KOSTIL_SURFACE_MOUSE = L"NTRG0001";
 const wchar_t* KOSTIL_SURFACE_KEYBOARD = L"MSHW0029";
-
-using namespace ::Windows::UI::Core;
-using namespace ::Windows::Graphics::Display;
-using namespace ::Windows::Devices::Input;
-using namespace ::Windows::UI::ViewManagement;
-using namespace ::Windows::Foundation;
-using namespace ::Windows::Devices;
-using namespace ::Windows::Devices::Enumeration;
-using namespace ::Windows::Devices::HumanInterfaceDevice;
-using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
-using namespace ::Windows::Networking::Connectivity;
-using namespace ::Windows::System::UserProfile;
-using namespace ::Windows::UI::Xaml;
-using namespace ::Windows::System::Profile;
-using namespace ::Windows::Globalization;
-using namespace ::Windows::UI::ViewManagement;
 
 namespace DAVA
 {
@@ -46,7 +31,14 @@ const char* DEFAULT_TOUCH_ID = "touchId";
 
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
-    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+    using ::Windows::Foundation::Metadata::ApiInformation;
+    using ::Windows::Devices::Input::TouchCapabilities;
+    using ::Windows::System::Profile::AnalyticsInfo;
+    using ::Windows::System::Profile::AnalyticsVersionInfo;
+    using ::Windows::System::UserProfile::AdvertisingManager;
+    using ::Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation;
+
+    isMobileMode = ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
@@ -60,7 +52,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     AnalyticsVersionInfo ^ versionInfo = AnalyticsInfo::VersionInfo;
     Platform::String ^ deviceVersion = versionInfo->DeviceFamilyVersion;
     Platform::String ^ deviceFamily = versionInfo->DeviceFamily;
-    String vertionString = RTStringToString(deviceVersion);
+    String vertionString = UTF8Utils::EncodeToUTF8(deviceVersion->Data());
     int64 versionInt = _atoi64(vertionString.c_str());
     std::stringstream versionStream;
     versionStream << ((versionInt & 0xFFFF000000000000L) >> 48) << ".";
@@ -68,23 +60,21 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     versionStream << ((versionInt & 0x00000000FFFF0000L) >> 16) << ".";
     versionStream << (versionInt & 0x000000000000FFFFL);
     version = versionStream.str();
-    platformString = RTStringToString(versionInfo->DeviceFamily);
-
-    EasClientDeviceInformation deviceInfo;
-    manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
-    modelName = RTStringToString(deviceInfo.SystemSku);
-    deviceName = WideString(deviceInfo.FriendlyName->Data());
-    gpu = GPUFamily();
+    platformString = UTF8Utils::EncodeToUTF8(versionInfo->DeviceFamily->Data());
 
     try
     {
-        uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
+        EasClientDeviceInformation deviceInfo;
+        manufacturer = UTF8Utils::EncodeToUTF8(deviceInfo.SystemManufacturer->Data());
+        modelName = UTF8Utils::EncodeToUTF8(deviceInfo.SystemSku->Data());
+        deviceName = WideString(deviceInfo.FriendlyName->Data());
+        uDID = UTF8Utils::EncodeToUTF8(AdvertisingManager::AdvertisingId->Data());
     }
     catch (Platform::Exception ^ e)
     {
         Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
-        uDID = "";
     }
+    gpu = GPUFamily();
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -114,16 +104,20 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
+    using ::Windows::System::UserProfile::GlobalizationPreferences;
     return RTStringToString(GlobalizationPreferences::Languages->GetAt(0));
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
+    using ::Windows::System::UserProfile::GlobalizationPreferences;
     return RTStringToString(GlobalizationPreferences::HomeGeographicRegion);
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
+    using ::Windows::Globalization::Calendar;
+
     Calendar calendar;
     return RTStringToString(calendar.GetTimeZone());
 }
@@ -170,6 +164,9 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
+    using ::Windows::Networking::Connectivity::NetworkInformation;
+    using ::Windows::Networking::Connectivity::ConnectionProfile;
+
     DeviceInfo::NetworkInfo networkInfo;
     ConnectionProfile ^ icp = NetworkInformation::GetInternetConnectionProfile();
     if (icp != nullptr && icp->NetworkAdapter != nullptr)
@@ -194,6 +191,9 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 // temporary decision
 void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit)
 {
+    using ::Windows::UI::ViewManagement::UIViewSettings;
+    using ::Windows::UI::ViewManagement::UserInteractionMode;
+
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 
     if (screenInfo_.width > 0 && screenInfo_.height > 0)
@@ -262,7 +262,7 @@ bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
 
 List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
-    using namespace Windows::Storage;
+    using ::Windows::Storage::KnownFolders;
 
     List<DeviceInfo::StorageInfo> result;
     FileSystem* fileSystem = FileSystem::Instance();
@@ -336,8 +336,14 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
     return GPU_DX11;
 }
 
-DeviceWatcher ^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
+::Windows::Devices::Enumeration::DeviceWatcher ^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::Devices::Enumeration::DeviceWatcher;
+    using ::Windows::Devices::Enumeration::DeviceInformation;
+    using ::Windows::Devices::Enumeration::DeviceInformationUpdate;
+    using ::Windows::Devices::HumanInterfaceDevice::HidDevice;
+
     hids.GetAccessor()->emplace(type, Set<String>());
     DeviceWatcher ^ watcher = nullptr;
     Platform::Collections::Vector<Platform::String ^> ^ requestedProperties = ref new Platform::Collections::Vector<Platform::String ^>();
@@ -390,7 +396,7 @@ void DeviceInfoPrivate::CreateAndStartHIDWatcher()
     watchers.emplace_back(CreateDeviceWatcher(TOUCH));
 }
 
-void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation ^ information)
+void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, ::Windows::Devices::Enumeration::DeviceInformation ^ information)
 {
     if (!information->IsEnabled)
     {
@@ -423,7 +429,7 @@ void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation ^ in
     }
 }
 
-void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate ^ information)
+void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, ::Windows::Devices::Enumeration::DeviceInformationUpdate ^ information)
 {
     String id = RTStringToString(information->Id);
     auto hidsAccessor(hids.GetAccessor());
@@ -436,8 +442,10 @@ void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpd
     }
 }
 
-void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, DeviceInformationUpdate ^ information)
+void DeviceInfoPrivate::OnDeviceUpdated(NativeHIDType type, ::Windows::Devices::Enumeration::DeviceInformationUpdate ^ information)
 {
+    using ::Windows::Devices::Input::TouchCapabilities;
+
     auto hidsAccessor(hids.GetAccessor());
     Set<String>& setIdDevices = (*(hidsAccessor))[type];
     if (TOUCH == type)

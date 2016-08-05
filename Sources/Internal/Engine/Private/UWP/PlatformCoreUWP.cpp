@@ -120,7 +120,7 @@ void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionE
 
 void PlatformCore::GameThread()
 {
-    Logger::Debug("****** CoreWinUWP::GameThread enter: thread=%d", GetCurrentThreadId());
+    Logger::Debug("****** PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
 
     try
     {
@@ -134,7 +134,7 @@ void PlatformCore::GameThread()
         // throw;
     }
 
-    Logger::Debug("****** CoreWinUWP::GameThread leave: thread=%d", GetCurrentThreadId());
+    Logger::Debug("****** PlatformCore::GameThread leave: thread=%d", GetCurrentThreadId());
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();

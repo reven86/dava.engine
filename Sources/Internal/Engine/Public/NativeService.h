@@ -9,6 +9,10 @@
 #include "Engine/Public/UWP/NativeServiceUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
 #include "Engine/Public/OsX/NativeServiceOsX.h"
+#elif defined(__DAVAENGINE_IPHONE__)
+#include "Engine/Public/iOS/NativeServiceiOS.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Public/Android/NativeServiceAndroid.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

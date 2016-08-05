@@ -2,8 +2,6 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
-
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)

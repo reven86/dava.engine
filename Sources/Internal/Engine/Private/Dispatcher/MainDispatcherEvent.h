@@ -41,6 +41,7 @@ struct MainDispatcherEvent final
         APP_RESUMED,
 
         APP_TERMINATE,
+        APP_IMMEDIATE_TERMINATE,
     };
 
     struct WindowStateEvent
@@ -103,6 +104,21 @@ struct MainDispatcherEvent final
         uint32 key;
         bool isRepeated;
     };
+
+    MainDispatcherEvent() = default;
+    MainDispatcherEvent(eType type)
+        : type(type)
+    {
+    }
+    MainDispatcherEvent(Window* window)
+        : window(window)
+    {
+    }
+    MainDispatcherEvent(eType type, Window* window)
+        : type(type)
+        , window(window)
+    {
+    }
 
     eType type = DUMMY;
     uint64 timestamp = 0;

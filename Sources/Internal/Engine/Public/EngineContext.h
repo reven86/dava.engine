@@ -25,10 +25,11 @@ class VirtualCoordinatesSystem;
 class SoundSystem;
 class AnimationManager;
 class FontManager;
-class FrameOcclusionQueryManager;
 class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
+
+class AssetsManager;
 
 namespace Net
 {
@@ -38,9 +39,6 @@ class NetCore;
 class EngineContext final
 {
 public:
-    EngineContext();
-    ~EngineContext();
-
     // Subsystems that are created on demand
     JobManager* jobManager = nullptr;
     LocalizationSystem* localizationSystem = nullptr;
@@ -66,6 +64,8 @@ public:
     RenderSystem2D* renderSystem2D = nullptr;
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;
+
+    AssetsManager* assetsManager = nullptr;
 };
 
 } // namespace DAVA

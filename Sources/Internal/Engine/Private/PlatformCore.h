@@ -12,6 +12,8 @@
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Engine/Private/Android/PlatformCoreAndroid.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

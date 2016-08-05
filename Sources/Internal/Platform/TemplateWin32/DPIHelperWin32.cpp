@@ -44,7 +44,7 @@ uint32 DPIHelper::GetScreenDPI()
     uint32 d(0);
     auto func = [&d]()
     {
-        using namespace Windows::Graphics::Display;
+        using ::Windows::Graphics::Display::DisplayInformation;
         d = uint32(DisplayInformation::GetForCurrentView()->RawDpiX);
         Logger::FrameworkDebug("[DPIHelper] GetScreenDPI = %d", d);
     };

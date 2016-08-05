@@ -7,15 +7,14 @@
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 
-using namespace ::Windows::UI::Core;
-using namespace ::Windows::UI::Xaml;
-using namespace ::Windows::UI::Xaml::Controls;
-
 namespace DAVA
 {
 void MouseDeviceUWP::SetMode(eCaptureMode newMode)
 {
+    using ::Windows::UI::Core::CoreCursor;
+    using ::Windows::UI::Core::CoreCursorType;
     using ::Windows::UI::Xaml::Window;
+    using ::Windows::UI::Xaml::Controls::SwapChainPanel;
 
 #if !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());

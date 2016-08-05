@@ -129,6 +129,7 @@ if( DAVA_FOUND )
 
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
 
 endif()
 
@@ -451,8 +452,13 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
     set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_TARGET_API_LEVEL} )
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    if (DAVA_COREV2)
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest_v2.in
+                        ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    else()
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
+                        ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AntProperties.in
                     ${CMAKE_CURRENT_BINARY_DIR}/ant.properties )

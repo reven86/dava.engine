@@ -254,7 +254,7 @@ void Window::FinishEventHandlingOnCurrentFrame()
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_CREATED: this=%p, w=%.1f, h=%.1f", this, e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
+    Logger::FrameworkDebug("=========== WINDOW_CREATED: w=%.1f, h=%.1f", e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
 
     windowBackend = e.windowCreatedEvent.windowBackend;
 
@@ -276,7 +276,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_DESTROYED: this=%p", this);
+    Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
 
     destroyed.Emit(*this);
 
@@ -289,6 +289,8 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
+    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
+
     width = e.sizeEvent.width;
     height = e.sizeEvent.height;
     scaleX = e.sizeEvent.scaleX;
@@ -298,7 +300,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_FOCUS_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
+    Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state ? "got_focus" : "lost_focus");
 
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
@@ -309,7 +311,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::Error("****** WINDOW_VISIBILITY_CHANGED: this=%p, state=%u", this, e.stateEvent.state);
+    Logger::FrameworkDebug("=========== WINDOW_VISIBILITY_CHANGED: state=%s", e.stateEvent.state ? "visible" : "hidden");
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(*this, isVisible);
@@ -318,8 +320,6 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 {
     bool pressed = e.type == Private::MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-
-    Logger::Debug("****** %s: this=%p, x=%.1f, y=%.1f, button=%d", pressed ? "MOUSE_BUTTON_DOWN" : "MOUSE_BUTTON_UP", this, e.mclickEvent.x, e.mclickEvent.y, e.mclickEvent.button);
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
@@ -357,6 +357,8 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
 
+    // TODO: let input system decide what to do when shift is pressed while wheelling
+    // Now use implementation from current core
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
     {
@@ -402,8 +404,6 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
 {
     bool pressed = e.type == Private::MainDispatcherEvent::TOUCH_DOWN;
 
-    Logger::Debug("****** %s: this=%p, x=%.1f, y=%.1f, touchId=%d", pressed ? "TOUCH_DOWN" : "TOUCH_UP", this, e.tclickEvent.x, e.tclickEvent.y, e.tclickEvent.touchId);
-
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
@@ -429,8 +429,6 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 {
     bool pressed = e.type == Private::MainDispatcherEvent::KEY_DOWN;
-
-    Logger::Debug("****** %s: this=%p", pressed ? "KEY_DOWN" : "KEY_UP", this);
 
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
@@ -461,8 +459,6 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 {
-    Logger::Debug("****** KEY_CHAR: this=%p", this);
-
     UIEvent uie;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
     uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
@@ -481,25 +477,24 @@ void Window::HandlePendingSizeChanging()
 
     if (pendingInitRender)
     {
-        Logger::Debug("****** WindowBackend init renderer: this=%p, w=%d, h=%d, pw=%d, ph=%d", this, w, h, physW, physH);
-
         engineBackend->InitRenderer(this);
         pendingInitRender = false;
     }
     else
     {
-        Logger::Debug("****** WindowBackend reset renderer: this=%p, w=%d, h=%d, pw=%d, ph=%d", this, w, h, physW, physH);
-
-        engineBackend->ResetRenderer(this, false);
+        engineBackend->ResetRenderer(this);
     }
 
-    virtualCoordSystem->SetInputScreenAreaSize(w, h);
-    virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
-    virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-    virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
-    virtualCoordSystem->ScreenSizeChanged();
+    if (windowBackend->GetHandle() != nullptr)
+    {
+        virtualCoordSystem->SetInputScreenAreaSize(w, h);
+        virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
+        virtualCoordSystem->UnregisterAllAvailableResourceSizes();
+        virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
+        virtualCoordSystem->ScreenSizeChanged();
 
-    sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+        sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+    }
 }
 
 void Window::ClearMouseButtons()

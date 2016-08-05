@@ -18,15 +18,6 @@
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #endif
 
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace concurrency;
-
 namespace DAVA
 {
 void PrivateMovieViewWinUAP::MovieViewProperties::ClearChangedFlags()
@@ -50,6 +41,8 @@ PrivateMovieViewWinUAP::PrivateMovieViewWinUAP()
 
 PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
 {
+    using ::Windows::UI::Xaml::Controls::MediaElement;
+
     if (nativeControl != nullptr)
     {
         MediaElement ^ p = nativeControl;
@@ -237,6 +230,8 @@ void PrivateMovieViewWinUAP::Update()
 
 void PrivateMovieViewWinUAP::ProcessProperties(const MovieViewProperties& props)
 {
+    using ::Windows::UI::Xaml::Controls::MediaElement;
+
     if (props.createNew)
     {
         nativeControl = ref new MediaElement();
@@ -300,6 +295,11 @@ void PrivateMovieViewWinUAP::ApplyChangedProperties(const MovieViewProperties& p
 
 void PrivateMovieViewWinUAP::InstallEventHandlers()
 {
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::ExceptionRoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
+    using ::Windows::UI::Xaml::ExceptionRoutedEventArgs;
+
     std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
     auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
@@ -330,6 +330,9 @@ void PrivateMovieViewWinUAP::InstallEventHandlers()
 
 Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
 {
+    using ::Windows::Storage::StorageFile;
+    using ::Windows::Storage::FileAccessMode;
+
     String pathName = path.GetAbsolutePathname();
     std::replace(pathName.begin(), pathName.end(), '/', '\\');
     Platform::String ^ filePath = StringToRTString(pathName);
@@ -355,6 +358,8 @@ Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateS
 
 void PrivateMovieViewWinUAP::SetNativeVisible(bool visible)
 {
+    using ::Windows::UI::Xaml::Visibility;
+
     nativeControl->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
 }
 
@@ -426,7 +431,7 @@ void PrivateMovieViewWinUAP::OnMediaEnded()
     TellPlayingStatus(false);
 }
 
-void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs ^ args)
+void PrivateMovieViewWinUAP::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args)
 {
     TellPlayingStatus(false);
     String errMessage = WStringToString(args->ErrorMessage->Data());

@@ -6,6 +6,8 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
@@ -32,7 +34,11 @@
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Private/Android/AndroidBridge.h"
+#else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#endif
 #include <unistd.h>
 #endif //PLATFORMS
 
@@ -675,7 +681,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
     //take local folder as user documents folder
-    using namespace Windows::Storage;
+    using ::Windows::Storage::ApplicationData;
+
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 
@@ -715,14 +722,22 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetInternalStoragePathname();
+#endif
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetExternalStoragePathname();
+#endif
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

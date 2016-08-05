@@ -1,12 +1,8 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_DX11.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-    
-    #include "_dx11.h"
+#include "../Common/rhi_Pool.h"
+#include "Debug/DVAssert.h"
+#include "rhi_DX11.h"
+#include "_dx11.h"
 
 namespace rhi
 {
@@ -33,7 +29,7 @@ RHI_IMPL_POOL(SamplerStateDX11_t, RESOURCE_SAMPLER_STATE, SamplerState::Descript
 //------------------------------------------------------------------------------
 
 static D3D11_FILTER
-_TextureFilterDX11(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter)
+_TextureFilterDX11(TextureFilter min_filter, TextureFilter mag_filter, TextureMipFilter mip_filter, DAVA::uint32 anisotropy)
 {
     D3D11_FILTER f = D3D11_FILTER_MIN_MAG_MIP_POINT;
 
@@ -55,7 +51,9 @@ _TextureFilterDX11(TextureFilter min_filter, TextureFilter mag_filter, TextureMi
 
     case TEXMIPFILTER_LINEAR:
     {
-        if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
+        if (anisotropy > 1)
+            f = D3D11_FILTER_ANISOTROPIC;
+        else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_NEAREST)
             f = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
         else if (min_filter == TEXFILTER_NEAREST && mag_filter == TEXFILTER_LINEAR)
             f = D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
@@ -137,19 +135,25 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
     {
-        D3D11_SAMPLER_DESC s_desc;
-        HRESULT hr;
+        D3D11_SAMPLER_DESC s_desc = {};
 
-        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.fragmentSampler[s].minFilter), TextureFilter(desc.fragmentSampler[s].magFilter), TextureMipFilter(desc.fragmentSampler[s].mipFilter));
+        s_desc.MaxAnisotropy = desc.fragmentSampler[s].anisotropyLevel;
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
+        DVASSERT(s_desc.MaxAnisotropy <= rhi::DeviceCaps().maxAnisotropy);
+
+        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.fragmentSampler[s].minFilter),
+                                           TextureFilter(desc.fragmentSampler[s].magFilter),
+                                           TextureMipFilter(desc.fragmentSampler[s].mipFilter),
+                                           s_desc.MaxAnisotropy);
         s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrU));
         s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrV));
         s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.fragmentSampler[s].addrW));
-        s_desc.MipLODBias = 0;
-        s_desc.MaxAnisotropy = 0;
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
-        hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
+
+        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
         CHECK_HR(hr)
 
         if (FAILED(hr))
@@ -162,19 +166,25 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->vertexSamplerCount = desc.vertexSamplerCount;
     for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
     {
-        D3D11_SAMPLER_DESC s_desc;
-        HRESULT hr;
+        D3D11_SAMPLER_DESC s_desc = {};
 
-        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.vertexSampler[s].minFilter), TextureFilter(desc.vertexSampler[s].magFilter), TextureMipFilter(desc.vertexSampler[s].mipFilter));
+        s_desc.MaxAnisotropy = desc.vertexSampler[s].anisotropyLevel;
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
+        DVASSERT(s_desc.MaxAnisotropy <= rhi::DeviceCaps().maxAnisotropy);
+
+        s_desc.Filter = _TextureFilterDX11(TextureFilter(desc.vertexSampler[s].minFilter),
+                                           TextureFilter(desc.vertexSampler[s].magFilter),
+                                           TextureMipFilter(desc.vertexSampler[s].mipFilter),
+                                           s_desc.MaxAnisotropy);
         s_desc.AddressU = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrU));
         s_desc.AddressV = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrV));
         s_desc.AddressW = _TextureAddrModeDX11(TextureAddrMode(desc.vertexSampler[s].addrW));
-        s_desc.MipLODBias = 0;
-        s_desc.MaxAnisotropy = 0;
         s_desc.MinLOD = -D3D11_FLOAT32_MAX;
         s_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
-        hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
+        DVASSERT(s_desc.MaxAnisotropy >= 1);
+
+        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
         CHECK_HR(hr)
 
         if (FAILED(hr))

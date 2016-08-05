@@ -56,6 +56,8 @@ void CoreV2Test::LoadResources()
     buttonDispTrigger1000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 1000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger2000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3000", &CoreV2Test::OnDispatcherTest);
+
+    SafeRelease(font);
 }
 
 void CoreV2Test::UnloadResources()
@@ -160,7 +162,7 @@ void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
 
 void CoreV2Test::DispatcherEventHandler(int type)
 {
-    Logger::Debug("###### CoreV2Test::EventHandler: thread=%llu, type=%d", Thread::GetCurrentIdAsInteger(), type);
+    Logger::Debug("###### CoreV2Test::EventHandler: thread=%llu, type=%d", Thread::GetCurrentIdAsUInt64(), type);
     if (type == 1 || type == 2 || type == 3)
     {
         // 1: post to even dispatchers

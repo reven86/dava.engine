@@ -1,12 +1,13 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "rhi_Metal.h"
+#include "../Common/rhi_Pool.h"
+#include "../rhi_Public.h"
+#include "rhi_Metal.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
 
-    #include "_metal.h"
+#include "_metal.h"
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 namespace rhi
@@ -97,6 +98,8 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->fp_count = desc.fragmentSamplerCount;
     for (unsigned s = 0; s != desc.fragmentSamplerCount; ++s)
     {
+        DVASSERT(desc.fragmentSampler[s].anisotropyLevel <= DeviceCaps().maxAnisotropy);
+
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.fragmentSampler[s].addrW));
@@ -105,7 +108,7 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.mipFilter = _TextureMipFilter(TextureMipFilter(desc.fragmentSampler[s].mipFilter));
         s_desc.lodMinClamp = 0.0f;
         s_desc.lodMaxClamp = FLT_MAX;
-        s_desc.maxAnisotropy = 1;
+        s_desc.maxAnisotropy = desc.fragmentSampler[s].anisotropyLevel;
         s_desc.normalizedCoordinates = YES;
 
         state->fp_uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];
@@ -114,6 +117,8 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
     state->vp_count = desc.vertexSamplerCount;
     for (unsigned s = 0; s != desc.vertexSamplerCount; ++s)
     {
+        DVASSERT(desc.vertexSampler[s].anisotropyLevel <= DeviceCaps().maxAnisotropy);
+
         s_desc.sAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrU));
         s_desc.tAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrV));
         s_desc.rAddressMode = _AddrMode(TextureAddrMode(desc.vertexSampler[s].addrW));
@@ -122,7 +127,7 @@ metal_SamplerState_Create(const SamplerState::Descriptor& desc)
         s_desc.mipFilter = _TextureMipFilter(TextureMipFilter(desc.vertexSampler[s].mipFilter));
         s_desc.lodMinClamp = 0.0f;
         s_desc.lodMaxClamp = FLT_MAX;
-        s_desc.maxAnisotropy = 1;
+        s_desc.maxAnisotropy = desc.vertexSampler[s].anisotropyLevel;
         s_desc.normalizedCoordinates = YES;
 
         state->vp_uid[s] = [_Metal_Device newSamplerStateWithDescriptor:s_desc];

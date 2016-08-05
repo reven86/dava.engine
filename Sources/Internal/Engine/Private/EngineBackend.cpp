@@ -3,6 +3,7 @@
 #include "Engine/Public/Engine.h"
 
 #include "Engine/Public/EngineContext.h"
+#include "Engine/Public/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -47,6 +48,11 @@
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
 
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Private/Android/AndroidBridge.h"
+#endif
+
 #include "UI/UIEvent.h"
 
 namespace DAVA
@@ -71,7 +77,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
 
     context->logger = new Logger;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_ANDROID__)
     CreatePrimaryWindowBackend();
 #endif
 }
@@ -107,18 +113,19 @@ NativeService* EngineBackend::GetNativeService() const
     return platformCore->GetNativeService();
 }
 
-void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
+void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
-    consoleMode = consoleMode_;
+    runMode = engineRunMode;
 
     platformCore->Init();
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_ANDROID__)
         CreatePrimaryWindowBackend();
 #endif
     }
 
+    Thread::InitMainThread();
     // For now only next subsystems/modules are created on demand:
     //  - LocalizationSystem
     //  - JobManager
@@ -131,7 +138,7 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
     context->fileSystem->SetDefaultDocumentsDirectory();
     context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         DeviceInfo::InitializeScreenInfo();
 
@@ -139,13 +146,12 @@ void EngineBackend::Init(bool consoleMode_, const Vector<String>& modules)
         context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 
-    Thread::InitMainThread();
     RegisterDAVAClasses();
 }
 
 int EngineBackend::Run()
 {
-    if (consoleMode)
+    if (IsConsoleMode())
     {
         RunConsole();
     }
@@ -159,13 +165,19 @@ int EngineBackend::Run()
 void EngineBackend::Quit(int exitCode_)
 {
     exitCode = exitCode_;
-    if (consoleMode)
+    switch (runMode)
     {
-        quitConsole = true;
-    }
-    else
-    {
+    case eEngineRunMode::GUI_STANDALONE:
         PostAppTerminate();
+        break;
+    case eEngineRunMode::GUI_EMBEDDED:
+        Logger::Warning("Engine does not support Quit command in embedded mode");
+        break;
+    case eEngineRunMode::CONSOLE:
+        quitConsole = true;
+        break;
+    default:
+        break;
     }
 }
 
@@ -207,9 +219,10 @@ void EngineBackend::OnGameLoopStarted()
 void EngineBackend::OnGameLoopStopped()
 {
     engine->gameLoopStopped.Emit();
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
-        Renderer::Uninitialize();
+        if (Renderer::IsInitialized())
+            Renderer::Uninitialize();
     }
 }
 
@@ -253,16 +266,22 @@ int32 EngineBackend::OnFrame()
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
 #if defined(__DAVAENGINE_QT__)
-    rhi::InvalidateCache();
+    if (Renderer::IsInitialized())
+    {
+        rhi::InvalidateCache();
+    }
 #endif
 
     DoEvents();
     if (!appIsSuspended)
     {
-        OnBeginFrame();
-        OnUpdate(frameDelta);
-        OnDraw();
-        OnEndFrame();
+        if (Renderer::IsInitialized())
+        {
+            OnBeginFrame();
+            OnUpdate(frameDelta);
+            OnDraw();
+            OnEndFrame();
+        }
     }
 
     return Renderer::GetDesiredFPS();
@@ -332,6 +351,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
+    case MainDispatcherEvent::APP_IMMEDIATE_TERMINATE:
+        HandleAppImmediateTerminate(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -379,18 +401,41 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     }
 }
 
+void EngineBackend::HandleAppImmediateTerminate(const MainDispatcherEvent& e)
+{
+    MainDispatcherEvent dummyEvent;
+    dummyEvent.type = MainDispatcherEvent::WINDOW_DESTROYED;
+    for (Window* w : windows)
+    {
+        dummyEvent.window = w;
+        w->HandleWindowDestroyed(dummyEvent);
+        engine->windowDestroyed.Emit(*w);
+        delete w;
+    }
+    windows.clear();
+    platformCore->Quit();
+}
+
 void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
 {
-    appIsSuspended = true;
-    rhi::SuspendRendering();
-    engine->suspended.Emit();
+    if (!appIsSuspended)
+    {
+        appIsSuspended = true;
+        if (Renderer::IsInitialized())
+            rhi::SuspendRendering();
+        engine->suspended.Emit();
+    }
 }
 
 void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
 {
-    appIsSuspended = false;
-    rhi::ResumeRendering();
-    engine->resumed.Emit();
+    if (appIsSuspended)
+    {
+        appIsSuspended = false;
+        if (Renderer::IsInitialized())
+            rhi::ResumeRendering();
+        engine->resumed.Emit();
+    }
 }
 
 void EngineBackend::PostAppTerminate()
@@ -451,22 +496,23 @@ void EngineBackend::InitRenderer(Window* w)
     context->renderSystem2D->Init();
 }
 
-void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
+void EngineBackend::ResetRenderer(Window* w)
 {
     rhi::ResetParam rendererParams;
-    if (resetToNull)
+    void* handle = w->GetNativeHandle();
+    if (handle == nullptr)
     {
         rendererParams.window = nullptr;
         rendererParams.width = 0;
         rendererParams.height = 0;
-        rendererParams.scaleX = 0.f;
-        rendererParams.scaleY = 0.f;
+        rendererParams.scaleX = 1.f;
+        rendererParams.scaleY = 1.f;
     }
     else
     {
         int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
         int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
-        rendererParams.window = w->GetNativeHandle();
+        rendererParams.window = handle;
         rendererParams.width = physW;
         rendererParams.height = physH;
         rendererParams.scaleX = w->GetRenderSurfaceScaleX();
@@ -499,17 +545,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->versionInfo = new VersionInfo();
     context->fileSystem = new FileSystem();
 
-    if (!consoleMode)
-    {
-        context->animationManager = new AnimationManager();
-        context->fontManager = new FontManager();
-        context->uiControlSystem = new UIControlSystem();
-        context->inputSystem = new InputSystem();
-        context->virtualCoordSystem = new VirtualCoordinatesSystem();
-        context->renderSystem2D = new RenderSystem2D();
-        context->uiScreenManager = new UIScreenManager();
-        context->localNotificationController = new LocalNotificationController();
-    }
+#if defined(__DAVAENGINE_ANDROID__)
+    context->assetsManager = new AssetsManager();
+    context->assetsManager->Init(AndroidBridge::GetApplicatiionPath());
+#endif
 
     // Naive implementation of on demand module creation
     for (const String& m : modules)
@@ -551,6 +590,18 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
             }
         }
     }
+
+    if (!IsConsoleMode())
+    {
+        context->animationManager = new AnimationManager();
+        context->fontManager = new FontManager();
+        context->uiControlSystem = new UIControlSystem();
+        context->inputSystem = new InputSystem();
+        context->virtualCoordSystem = new VirtualCoordinatesSystem();
+        context->renderSystem2D = new RenderSystem2D();
+        context->uiScreenManager = new UIScreenManager();
+        context->localNotificationController = new LocalNotificationController();
+    }
 }
 
 void EngineBackend::DestroySubsystems()
@@ -563,7 +614,7 @@ void EngineBackend::DestroySubsystems()
         context->jobManager->WaitMainJobs();
     }
 
-    if (!consoleMode)
+    if (!IsConsoleMode())
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
@@ -597,6 +648,10 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Finish(true);
         context->netCore->Release();
     }
+
+#if defined(__DAVAENGINE_ANDROID__)
+    context->assetsManager->Release();
+#endif
 
     context->fileSystem->Release();
     context->systemTimer->Release();

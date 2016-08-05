@@ -119,7 +119,7 @@ Thread::Id Thread::GetCurrentId()
     return ::GetCurrentThreadId();
 }
 
-uint64 Thread::GetCurrentIdAsInteger()
+uint64 Thread::GetCurrentIdAsUInt64()
 {
     return static_cast<uint64>(GetCurrentId());
 }

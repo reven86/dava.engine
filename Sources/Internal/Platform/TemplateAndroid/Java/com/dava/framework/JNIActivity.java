@@ -38,41 +38,41 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
     protected JNISurfaceView surfaceView = null;
 
-	private static int errorState = 0;
+    private static int errorState = 0;
 
-	private JNIAccelerometer accelerometer = null;
-	private View splashView = null;
-	
-	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
-	
-	private InputManagerCompat inputManager = null;
-	
-	private long mainLoopThreadID = 0;
-	
-	private native void nativeOnCreate();
-	private native void nativeOnStart();
-	private native void nativeOnStop();
-	private native void nativeOnDestroy();
-	private native void nativeFinishing();
-	private native void nativeOnAccelerometer(float x, float y, float z);
-	private native void nativeOnGamepadAvailable(boolean isAvailable);
-	private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
-	private native boolean nativeIsMultitouchEnabled();
-	private native int nativeGetDesiredFPS();
+    private JNIAccelerometer accelerometer = null;
+    private View splashView = null;
+    
+    private FMODAudioDevice fmodDevice = new FMODAudioDevice();
+    
+    private InputManagerCompat inputManager = null;
+    
+    private long mainLoopThreadID = 0;
+    
+    private native void nativeOnCreate();
+    private native void nativeOnStart();
+    private native void nativeOnStop();
+    private native void nativeOnDestroy();
+    private native void nativeFinishing();
+    private native void nativeOnAccelerometer(float x, float y, float z);
+    private native void nativeOnGamepadAvailable(boolean isAvailable);
+    private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
+    private native boolean nativeIsMultitouchEnabled();
+    private native int nativeGetDesiredFPS();
     private native void nativeOnPause(boolean isLocked);
     private native void nativeOnResume();
-	
+    
     private static String commandLineParams = null;
-	
+    
     private volatile boolean mainThreadNeedExit = false;
     private volatile boolean mainThreadNeedResume = true;
     private volatile boolean mainThreadNeedSuspend = false;
     private final Object mainThreadSync = new Object();
     
     public abstract JNISurfaceView FindSurfaceView();
-	
+    
     private static JNIActivity activity = null;
-    protected static SingalStrengthListner singalStrengthListner = null;
+    protected static SignalStrengthListener signalStrengthListener = null;
 
     public boolean GetIsPausing()
     {
@@ -80,26 +80,26 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     }
 
     public static JNIActivity GetActivity()
-	{
-		return activity;
-	}
+    {
+        return activity;
+    }
         
     /**
      * Get instance of {@link JNISurfaceView} without loading content view
      * @return instance of {@link JNISurfaceView} or null
      */
     public JNISurfaceView GetSurfaceView() {
-    	return surfaceView;
+        return surfaceView;
     }
     
     // https://code.google.com/p/android/issues/detail?id=81083
     private void FixNoClassDefFoundError81083() {
-    	try {
-    		Class.forName("android.os.AsyncTask");
-    	}
-    	catch(Throwable e) {
-    		Log.e(JNIConst.LOG_TAG, e.toString());
-    	}
+        try {
+            Class.forName("android.os.AsyncTask");
+        }
+        catch(Throwable e) {
+            Log.e(JNIConst.LOG_TAG, e.toString());
+        }
     }
     
     @Override
@@ -110,7 +110,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         FixNoClassDefFoundError81083();
         
-    	activity = this;
+        activity = this;
         super.onCreate(savedInstanceState);
         
         commandLineParams = initCommandLineParams();
@@ -128,17 +128,17 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         
         final View decorView = getWindow().getDecorView();
-		// Try hide navigation bar for detect correct GL view size
+        // Try hide navigation bar for detect correct GL view size
         HideNavigationBar(decorView);
         // Subscribe listener on UI changing for hiding navigation bar after keyboard hiding
         decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-        	@Override
-			public void onSystemUiVisibilityChange(int visibility) {
-				if((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
-					HideNavigationBar(decorView);
-				}
-			}
-		});
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                    HideNavigationBar(decorView);
+                }
+            }
+        });
         
         // initialize GL VIEW
         surfaceView = FindSurfaceView();
@@ -154,52 +154,52 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         if (tm != null) {
-            singalStrengthListner = new SingalStrengthListner();
-            tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+            signalStrengthListener = new SignalStrengthListener();
+            tm.listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);
         } else {
-			Log.d("", "no singalStrengthListner");
-		}
+            Log.d("", "no singalStrengthListner");
+        }
 
-		JNIApplication.mainCPPThread = new Thread(new Runnable() 
-		{
-			long startTime;
-			
-			@Override
-			public void run() 
-			{
-	        	Log.d(JNIConst.LOG_TAG, "[C++ main thread] started!");
-	        	
-		        // Initialize native framework core         
-		        JNIApplication.GetApplication().InitFramework(commandLineParams);
+        JNIApplication.mainCPPThread = new Thread(new Runnable() 
+        {
+            long startTime;
+            
+            @Override
+            public void run() 
+            {
+                Log.d(JNIConst.LOG_TAG, "[C++ main thread] started!");
+                
+                // Initialize native framework core         
+                JNIApplication.GetApplication().InitFramework(commandLineParams);
 
-		        nativeOnCreate();
-		        
-		        UpdateGamepadAxises();
-		        
-		        startTime = System.currentTimeMillis();
-		        
-				while(!mainThreadNeedExit)
-				{
-					{
-			            long elapsedTime = System.currentTimeMillis() - startTime;
-		                long fpsLimit = nativeGetDesiredFPS();
-		                if (fpsLimit > 0)
-			            {
-			                long averageFrameTime = 1000L / fpsLimit;
-			                if(averageFrameTime > elapsedTime)
-			                {
-			                    long sleepMs = averageFrameTime - elapsedTime;
-			                    try {
-									Thread.sleep(sleepMs);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-			                }
-			            }
-			            startTime = System.currentTimeMillis();
-			        }
-					
-					surfaceView.ProcessQueuedEvents();
+                nativeOnCreate();
+                
+                UpdateGamepadAxises();
+                
+                startTime = System.currentTimeMillis();
+                
+                while(!mainThreadNeedExit)
+                {
+                    {
+                        long elapsedTime = System.currentTimeMillis() - startTime;
+                        long fpsLimit = nativeGetDesiredFPS();
+                        if (fpsLimit > 0)
+                        {
+                            long averageFrameTime = 1000L / fpsLimit;
+                            if(averageFrameTime > elapsedTime)
+                            {
+                                long sleepMs = averageFrameTime - elapsedTime;
+                                try {
+                                    Thread.sleep(sleepMs);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        startTime = System.currentTimeMillis();
+                    }
+                    
+                    surfaceView.ProcessQueuedEvents();
 
                     if(JNIActivity.this.mainThreadNeedResume)
                     {
@@ -233,16 +233,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                     {
                         surfaceView.ProcessFrame();
                     }
-				}
+                }
 
                 Log.d(JNIConst.LOG_TAG, "[C++ main thread] destroying native...");
-				nativeOnDestroy();
-				Log.d(JNIConst.LOG_TAG, "[C++ main thread] finished!");
-			}
-		}, "cpp_main_thread");
+                nativeOnDestroy();
+                Log.d(JNIConst.LOG_TAG, "[C++ main thread] finished!");
+            }
+        }, "cpp_main_thread");
 
-		mainLoopThreadID = JNIApplication.mainCPPThread.getId();
-		JNIApplication.mainCPPThread.start();
+        mainLoopThreadID = JNIApplication.mainCPPThread.getId();
+        JNIApplication.mainCPPThread.start();
 
         // check if we are starting from android notification popup
         // and execute appropriate runnable
@@ -267,40 +267,40 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.d(JNIConst.LOG_TAG, "[Activity::onCreate] out");
     }
     
-	private String initCommandLineParams() {
-		String commandLine = "";
-		Bundle extras = this.getIntent().getExtras();
-		if (extras != null) {
-			commandLine = "";
-			for (String key : extras.keySet()) {
-				String value = extras.getString(key);
-				commandLine += key + " " + value + " ";
-			}
-			commandLine = commandLine.trim();
-		}
-		Log.i(JNIConst.LOG_TAG, "command line params: " + commandLine);
-		return commandLine;
-	}
+    private String initCommandLineParams() {
+        String commandLine = "";
+        Bundle extras = this.getIntent().getExtras();
+        if (extras != null) {
+            commandLine = "";
+            for (String key : extras.keySet()) {
+                String value = extras.getString(key);
+                commandLine += key + " " + value + " ";
+            }
+            commandLine = commandLine.trim();
+        }
+        Log.i(JNIConst.LOG_TAG, "command line params: " + commandLine);
+        return commandLine;
+    }
     
-	public long GetMainLoopThreadID()
-	{
-		return mainLoopThreadID;
-	}
-	
+    public long GetMainLoopThreadID()
+    {
+        return mainLoopThreadID;
+    }
+    
     @Override
     protected void onStart()
     {
         Log.d(JNIConst.LOG_TAG, "[Activity::onStart] in");
-    	super.onStart();
-    	fmodDevice.start();
-    	
-    	if (isFocused)
+        super.onStart();
+        fmodDevice.start();
+        
+        if (isFocused)
         {
-        	// we not lost focus, it can happen if 
-        	// user disable any lock screen in security settings
-        	// and turn off screen, then turn on screen, our window
-        	// steel has focus
-    		HideSplashScreenView();
+            // we not lost focus, it can happen if 
+            // user disable any lock screen in security settings
+            // and turn off screen, then turn on screen, our window
+            // steel has focus
+            HideSplashScreenView();
         }
 
         RunOnMainLoopThread(new Runnable() {
@@ -447,12 +447,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
          */
          // start of workaround ---->
         Runnable navigationBarHider = new Runnable() {
-    		@Override
-			public void run() {
-				HideNavigationBar(getWindow().getDecorView());
-			}
-		};
-		
+            @Override
+            public void run() {
+                HideNavigationBar(getWindow().getDecorView());
+            }
+        };
+        
         Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(navigationBarHider, 500);
         // <----- end of workaround
@@ -478,7 +478,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         fmodDevice.stop();
         super.onStop();
         
-    	// The activity is no longer visible (it is now "stopped")
+        // The activity is no longer visible (it is now "stopped")
         Log.d(JNIConst.LOG_TAG, "[Activity::onStop] out");
     }
     
@@ -489,7 +489,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] in");
 
         // set flag to notify C++ thread to finish
-       	mainThreadNeedExit = true;
+        mainThreadNeedExit = true;
         
         Log.d(JNIConst.LOG_TAG, "[Activity::onDestroy] c++ main thread join start");
 
@@ -530,10 +530,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             
         if(hasFocus) {
             HideSplashScreenView();
-    		HideNavigationBar(getWindow().getDecorView());
+            HideNavigationBar(getWindow().getDecorView());
             InitKeyboardLayout();
-    	}
-    	Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
+        }
+        Log.d(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] out");
     }
     
     // we have to call next function after initialization of glView
@@ -581,27 +581,27 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     }
     
     protected final List<Integer> supportedAxises = Arrays.asList(
-			MotionEvent.AXIS_X,
-			MotionEvent.AXIS_Y,
-			MotionEvent.AXIS_Z,
-			MotionEvent.AXIS_RX,
-			MotionEvent.AXIS_RY,
-			MotionEvent.AXIS_RZ,
-			MotionEvent.AXIS_LTRIGGER,
-			MotionEvent.AXIS_RTRIGGER,
-			MotionEvent.AXIS_BRAKE,
-			MotionEvent.AXIS_GAS
-	);
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+            MotionEvent.AXIS_Z,
+            MotionEvent.AXIS_RX,
+            MotionEvent.AXIS_RY,
+            MotionEvent.AXIS_RZ,
+            MotionEvent.AXIS_LTRIGGER,
+            MotionEvent.AXIS_RTRIGGER,
+            MotionEvent.AXIS_BRAKE,
+            MotionEvent.AXIS_GAS
+    );
     
     protected void UpdateGamepadAxises()
     {
-		RunOnMainLoopThread(new Runnable() 
-		{			
-			@Override
-			public void run() 
-			{
+        RunOnMainLoopThread(new Runnable() 
+        {			
+            @Override
+            public void run() 
+            {
 
-		    	boolean isGamepadAvailable = false;
+                boolean isGamepadAvailable = false;
                 int[] inputDevices = InputDevice.getDeviceIds();
                 Set<Integer> avalibleAxises = new HashSet<Integer>();
                 for (int id : inputDevices) {
@@ -633,43 +633,43 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         });
     }
     
-	@Override
-	public void onInputDeviceAdded(int deviceId) 
-	{
-		UpdateGamepadAxises();
-	}
+    @Override
+    public void onInputDeviceAdded(int deviceId) 
+    {
+        UpdateGamepadAxises();
+    }
 
-	@Override
-	public void onInputDeviceChanged(int deviceId) 
-	{
-		UpdateGamepadAxises();
-	}
+    @Override
+    public void onInputDeviceChanged(int deviceId) 
+    {
+        UpdateGamepadAxises();
+    }
 
-	@Override
-	public void onInputDeviceRemoved(int deviceId) 
-	{
-		UpdateGamepadAxises();
-	}
+    @Override
+    public void onInputDeviceRemoved(int deviceId) 
+    {
+        UpdateGamepadAxises();
+    }
     
     public void onAccelerationChanged(float x, float y, float z)
-	{
-		nativeOnAccelerometer(x, y, z);
-	}
-	
+    {
+        nativeOnAccelerometer(x, y, z);
+    }
+    
     // execute on c++ main thread (GL, Game) not Java UI main thread
-	public void RunOnMainLoopThread(Runnable event) {
-		surfaceView.queueEvent(event);
-	}
+    public void RunOnMainLoopThread(Runnable event) {
+        surfaceView.queueEvent(event);
+    }
 
-	public int GetNotificationIcon() {
+    public int GetNotificationIcon() {
         return android.R.drawable.sym_def_app_icon;
     }
-	
-	/**
-	 * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
-	 */
+    
+    /**
+     * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
+     */
     public static void HideNavigationBar(View view) {
-    	// The UI options currently enabled are represented by a bitfield.
+        // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
         int uiOptions = view.getSystemUiVisibility();
         
@@ -692,57 +692,57 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // semi-transparent, and the UI flag does not get cleared when the user interacts with
         // the screen.
         if (Build.VERSION.SDK_INT >= 19) {
-        	uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION 
-        			| 0x00000200 //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        			| 0x00000100 //View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-			        | 0x00000400 //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-			        | 0x00001000; //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION 
+                    | 0x00000200 //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | 0x00000100 //View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | 0x00000400 //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | 0x00001000; //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
-    	
-		view.setSystemUiVisibility(uiOptions);
-	}
-	
-	public View GetSplashView() {
-		return null;
-	}
-	
-	public void ShowSplashScreenView() {
+        
+        view.setSystemUiVisibility(uiOptions);
+    }
+    
+    public View GetSplashView() {
+        return null;
+    }
+    
+    public void ShowSplashScreenView() {
         if(null != splashView) {
-	        Log.d(JNIConst.LOG_TAG, "splashView set visible");
-	        splashView.setVisibility(View.VISIBLE);
+            Log.d(JNIConst.LOG_TAG, "splashView set visible");
+            splashView.setVisibility(View.VISIBLE);
         }
 
         JNITextField.HideAllTextFields();
         JNIWebView.HideAllWebViews();
-	}
-	
-	public void HideSplashScreenView() {
+    }
+    
+    public void HideSplashScreenView() {
         if(null != splashView) {
-    	    Log.d(JNIConst.LOG_TAG, "splashView hide");
-	   	    splashView.setVisibility(View.GONE);
+            Log.d(JNIConst.LOG_TAG, "splashView hide");
+            splashView.setVisibility(View.GONE);
         }
 
-		JNITextField.ShowVisibleTextFields();
-		JNIWebView.ShowVisibleWebViews();
-		surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
-	}
-	
-	@SuppressWarnings("deprecation")
-	private boolean isScreenLocked() {
-		PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
-		boolean isScreenLocked = false;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-			isScreenLocked = !pm.isInteractive();
-		} else {
-			isScreenLocked = !pm.isScreenOn();
-		}
-		return isScreenLocked;
-	}
+        JNITextField.ShowVisibleTextFields();
+        JNIWebView.ShowVisibleWebViews();
+        surfaceView.SetMultitouchEnabled(nativeIsMultitouchEnabled());
+    }
+    
+    @SuppressWarnings("deprecation")
+    private boolean isScreenLocked() {
+        PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
+        boolean isScreenLocked = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            isScreenLocked = !pm.isInteractive();
+        } else {
+            isScreenLocked = !pm.isScreenOn();
+        }
+        return isScreenLocked;
+    }
 
-	public static void finishActivity()
+    public static void finishActivity()
     {
-    	Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
-    	
+        Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] in");
+        
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {

@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
+#include "Engine/Public/EngineTypes.h"
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -27,7 +28,12 @@ public:
     NativeService* GetNativeService() const;
     Window* PrimaryWindow() const;
 
-    void Init(bool consoleMode, const Vector<String>& modules);
+    eEngineRunMode GetRunMode() const;
+    bool IsStandaloneGUIMode() const;
+    bool IsEmbeddedGUIMode() const;
+    bool IsConsoleMode() const;
+
+    void Init(eEngineRunMode runMode, const Vector<String>& modules);
     int Run();
     void Quit(int exitCode = 0);
 
@@ -40,7 +46,6 @@ public:
 
     uint32 GetGlobalFrameIndex() const;
     const Vector<String>& GetCommandLine() const;
-    bool IsConsoleMode() const;
 
 public:
     // Signals

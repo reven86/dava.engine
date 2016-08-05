@@ -27,12 +27,16 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
 #endif
+
+using namespace DAVA;
+using namespace DAVA::Net;
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -55,12 +59,14 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#elif defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
 
-    bool console = false;
-    if (cmdline.size() > 1)
+    eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
+    if (cmdline.size() > 1 && cmdline[1] == "--console")
     {
-        console = cmdline[1] == "--console";
+        runmode = eEngineRunMode::CONSOLE;
     }
 
     Vector<String> modules = {
@@ -73,7 +79,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     DAVA::Engine e;
     e.SetOptions(appOptions);
-    e.Init(console, modules);
+    e.Init(runmode, modules);
 
     GameCore game(&e);
     return e.Run();
@@ -157,7 +163,7 @@ void GameCore::OnWindowDestroyed(DAVA::Window& w)
 
 void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
-    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h==%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }
 
 void GameCore::OnSuspended()
@@ -181,7 +187,49 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
         engine->Quit();
     }
 }
-#endif
+#else // __DAVAENGINE_COREV2__
+
+void GameCore::OnAppStarted()
+{
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
+    testListScreen = new TestListScreen();
+    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
+
+    InitNetwork();
+    RunOnlyThisTest();
+    RegisterTests();
+    RunTests();
+}
+
+GameCore::GameCore()
+    : currentScreen(nullptr)
+    , testListScreen(nullptr)
+{
+}
+
+GameCore::~GameCore()
+{
+}
+
+void GameCore::OnAppFinished()
+{
+    for (auto testScreen : screens)
+    {
+        SafeRelease(testScreen);
+    }
+    screens.clear();
+
+    SafeRelease(testListScreen);
+    netLogger.Uninstall();
+}
+
+void GameCore::BeginFrame()
+{
+    ApplicationCore::BeginFrame();
+}
+
+#endif // !__DAVAENGINE_COREV2__
 
 void GameCore::RunOnlyThisTest()
 {
@@ -217,36 +265,11 @@ void GameCore::RegisterTests()
     new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
+    new AssertTest(this);
     new FloatingPointExceptionTest(this);
     new PackManagerTest(this);
     //$UNITTEST_CTOR
 }
-
-using namespace DAVA;
-using namespace DAVA::Net;
-
-#if !defined(__DAVAENGINE_COREV2__)
-void GameCore::OnAppStarted()
-{
-    testListScreen = new TestListScreen();
-    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-
-    InitNetwork();
-    RunOnlyThisTest();
-    RegisterTests();
-    RunTests();
-}
-
-GameCore::GameCore()
-    : currentScreen(nullptr)
-    , testListScreen(nullptr)
-{
-}
-
-GameCore::~GameCore()
-{
-}
-#endif
 
 void GameCore::RegisterScreen(BaseScreen* screen)
 {
@@ -279,25 +302,6 @@ File* GameCore::CreateDocumentsFile(const String& filePathname)
     File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
 }
-
-#if !defined(__DAVAENGINE_COREV2__)
-void GameCore::OnAppFinished()
-{
-    for (auto testScreen : screens)
-    {
-        SafeRelease(testScreen);
-    }
-    screens.clear();
-
-    SafeRelease(testListScreen);
-    netLogger.Uninstall();
-}
-
-void GameCore::BeginFrame()
-{
-    ApplicationCore::BeginFrame();
-}
-#endif
 
 void GameCore::RunTests()
 {
