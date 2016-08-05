@@ -27,6 +27,9 @@ signals:
 private:
     void ShowErrorDialog();
 
+    class IgnoreHelper;
+    std::unique_ptr<IgnoreHelper> ignoreHelper;
+
     DAVA::UnorderedSet<DAVA::String> errors;
     DAVA::Mutex errorsLocker;
 

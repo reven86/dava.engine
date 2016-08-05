@@ -896,11 +896,7 @@ void PropertyEditor::ActionEditComponent()
         editor.exec();
 
         SceneEditor2* curScene = sceneHolder.GetScene();
-        SelectableGroup newSelection;
-        DAVA::AABBox3 bbox = curScene->selectionSystem->GetUntransformedBoundingBox(node);
-        DVASSERT(!bbox.IsEmpty());
-        newSelection.Add(node, bbox);
-        curScene->selectionSystem->SetSelection(newSelection);
+        SetEntities(&curScene->selectionSystem->GetSelection());
 
         if (editor.IsModified())
         {
