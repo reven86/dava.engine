@@ -1,14 +1,22 @@
-#include "Base/Platform.h"
+#include "UI/Private/OSX/WebViewControlMacOS.h"
+
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
-#include "UI/Private/OSX/WebViewControlMacOS.h"
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
+#endif
+
+#include "Render/Image/Image.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
+#include "UI/UIWebView.h"
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
-
-using namespace DAVA;
 
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
@@ -41,9 +49,9 @@ using namespace DAVA;
 @interface WebViewPolicyDelegate : NSObject
 #endif
 {
-    IUIWebViewDelegate* delegate;
-    UIWebView* webView;
-    WebViewControl* webViewControl;
+    DAVA::IUIWebViewDelegate* delegate;
+    DAVA::UIWebView* webView;
+    DAVA::WebViewControl* webViewControl;
 }
 
 - (id)init;
@@ -53,10 +61,10 @@ using namespace DAVA;
 - (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;
-- (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
+- (void)setDelegate:(DAVA::IUIWebViewDelegate*)d andWebView:(DAVA::UIWebView*)w;
 - (void)onExecuteJScript:(NSString*)result;
-- (void)setWebViewControl:(WebViewControl*)webControl;
-- (void)setUiWebViewControl:(UIWebView*)uiWebControl;
+- (void)setWebViewControl:(DAVA::WebViewControl*)webControl;
+- (void)setUiWebViewControl:(DAVA::UIWebView*)uiWebControl;
 
 @end
 
@@ -80,6 +88,8 @@ using namespace DAVA;
 
 - (void)webView:(WebView*)webView decidePolicyForNavigationAction:(NSDictionary*)actionInformation request:(NSURLRequest*)request frame:(WebFrame*)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
+    using namespace DAVA;
+
     BOOL process = YES;
 
     if (delegate && self->webView)
@@ -137,8 +147,8 @@ using namespace DAVA;
     }
 }
 
-- (void)setDelegate:(IUIWebViewDelegate*)d
-         andWebView:(UIWebView*)w
+- (void)setDelegate:(DAVA::IUIWebViewDelegate*)d
+         andWebView:(DAVA::UIWebView*)w
 {
     delegate = d;
     webView = w;
@@ -148,17 +158,17 @@ using namespace DAVA;
 {
     if (delegate)
     {
-        delegate->OnExecuteJScript(webView, String([result UTF8String]));
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
     }
 }
 
-- (void)setWebViewControl:(WebViewControl*)webControl
+- (void)setWebViewControl:(DAVA::WebViewControl*)webControl
 {
     DVASSERT(webControl);
     webViewControl = webControl;
 }
 
-- (void)setUiWebViewControl:(UIWebView*)uiWebControl
+- (void)setUiWebViewControl:(DAVA::UIWebView*)uiWebControl
 {
     DVASSERT(uiWebControl);
     webView = uiWebControl;
@@ -166,76 +176,89 @@ using namespace DAVA;
 
 @end
 
-WebViewControl::WebViewControl(UIWebView& ptr)
-    : webImageCachePtr(0)
-    , uiWebViewControl(ptr)
-    , isRenderToTexture(false)
-    , isVisible(true)
+namespace DAVA
 {
-    NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);
-    webViewPtr = [[WebView alloc] initWithFrame:emptyRect
-                                      frameName:nil
-                                      groupName:nil];
+// Struct to hold Objective-C classes and get rid of void* in WebViewControl
+struct WebViewControl::WebViewObjCBridge final
+{
+    WebView* webView = nullptr;
+    WebViewPolicyDelegate* policyDelegate = nullptr;
+    WebViewControlUIDelegate* controlUIDelegate = nullptr;
+    NSBitmapImageRep* bitmapImageRep = nullptr;
+};
 
-    WebView* localWebView = static_cast<WebView*>(webViewPtr);
-    [localWebView setWantsLayer:YES];
+WebViewControl::WebViewControl(UIWebView& uiWebView)
+    : uiWebViewControl(uiWebView)
+#if defined(__DAVAENGINE_COREV2__)
+    , window(Engine::Instance()->PrimaryWindow())
+#endif
+    , bridge(new WebViewObjCBridge)
+{
+    bridge->controlUIDelegate = [[WebViewControlUIDelegate alloc] init];
+    bridge->policyDelegate = [[WebViewPolicyDelegate alloc] init];
+    bridge->webView = [[WebView alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f)
+                                           frameName:nil
+                                           groupName:nil];
+    [bridge->webView setWantsLayer:YES];
+    [bridge->webView setShouldUpdateWhileOffscreen:YES]; // for rendering to texture
 
-    webViewDelegatePtr = [[WebViewControlUIDelegate alloc] init];
-    [localWebView setUIDelegate:static_cast<WebViewControlUIDelegate*>(webViewDelegatePtr)];
+    [bridge->webView setUIDelegate:bridge->controlUIDelegate];
+    [bridge->webView setPolicyDelegate:bridge->policyDelegate];
+    [bridge->webView setFrameLoadDelegate:bridge->policyDelegate];
 
-    WebViewPolicyDelegate* webviewPolicyDelegate = [[WebViewPolicyDelegate alloc] init];
-    webViewPolicyDelegatePtr = webviewPolicyDelegate;
+    [bridge->policyDelegate setWebViewControl:this];
+    [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
-    [localWebView setPolicyDelegate:webviewPolicyDelegate];
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->AddNSView(bridge->webView);
 
-    [localWebView setFrameLoadDelegate:webviewPolicyDelegate];
-
-    [webviewPolicyDelegate setWebViewControl:this];
-    [webviewPolicyDelegate setUiWebViewControl:&uiWebViewControl];
-
+    windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
+#else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    [openGLView addSubview:localWebView];
-
-    // if switch to renderToTexture mode
-    [localWebView setShouldUpdateWhileOffscreen:YES];
-
-    SetBackgroundTransparency(true);
+    [openGLView addSubview:bridge->webView];
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
+#endif
+
+    SetBackgroundTransparency(true);
 }
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+#else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+#endif
 
-    NSBitmapImageRep* imageRep = static_cast<NSBitmapImageRep*>(webImageCachePtr);
-    [imageRep release];
-    webImageCachePtr = 0;
+    [bridge->bitmapImageRep release];
+    bridge->bitmapImageRep = nullptr;
 
-    WebView* innerWebView = static_cast<WebView*>(webViewPtr);
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->RemoveNSView(bridge->webView);
+#else
+    [bridge->webView removeFromSuperview];
+#endif
 
-    [innerWebView setUIDelegate:nil];
+    [bridge->webView setUIDelegate:nil];
+    [bridge->webView close];
+    [bridge->webView release];
+    bridge->webView = nullptr;
 
-    [innerWebView removeFromSuperview];
-    [innerWebView close];
-    [innerWebView release];
-    webViewPtr = 0;
+    [bridge->policyDelegate release];
+    bridge->policyDelegate = nullptr;
 
-    WebViewPolicyDelegate* w = static_cast<WebViewPolicyDelegate*>(webViewPolicyDelegatePtr);
-    [w release];
-    webViewPolicyDelegatePtr = 0;
+    [bridge->controlUIDelegate release];
+    bridge->controlUIDelegate = nullptr;
 
-    WebViewControlUIDelegate* c = static_cast<WebViewControlUIDelegate*>(webViewDelegatePtr);
-    [c release];
-    webViewDelegatePtr = 0;
+    delete bridge;
 }
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, UIWebView* webView)
 {
-    WebViewPolicyDelegate* w = static_cast<WebViewPolicyDelegate*>(webViewPolicyDelegatePtr);
-    [w setDelegate:delegate andWebView:webView];
+    [bridge->policyDelegate setDelegate:delegate andWebView:webView];
 }
 
 void WebViewControl::Initialize(const Rect& rect)
@@ -247,7 +270,7 @@ void WebViewControl::Initialize(const Rect& rect)
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
     NSString* nsURLPathToOpen = [NSString stringWithUTF8String:urlToOpen.c_str()];
-    [static_cast<WebView*>(webViewPtr) setMainFrameURL:nsURLPathToOpen];
+    [bridge->webView setMainFrameURL:nsURLPathToOpen];
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htlmString)
@@ -256,9 +279,8 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
     initWithBytes:htlmString.data()
            length:htlmString.size() * sizeof(wchar_t)
          encoding:NSUTF32LittleEndianStringEncoding] autorelease];
-    [[static_cast<WebView*>(webViewPtr) mainFrame]
-    loadHTMLString:htmlPageToLoad
-           baseURL:[[NSBundle mainBundle] bundleURL]];
+    [[bridge->webView mainFrame] loadHTMLString:htmlPageToLoad
+                                        baseURL:[[NSBundle mainBundle] bundleURL]];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -287,8 +309,7 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
     NSURL* baseUrl = [NSURL URLWithString:escapedBasePath];
 
-    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
-    [[nativeWebView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
+    [[bridge->webView mainFrame] loadHTMLString:dataToOpen baseURL:baseUrl];
 }
 
 void WebViewControl::SetRect(const Rect& srcRect)
@@ -304,9 +325,13 @@ void WebViewControl::SetRect(const Rect& srcRect)
     rect.dy = std::max(0.0f, rect.dy);
 
     // 2. map physical to window
+#if defined(__DAVAENGINE_COREV2__)
+    NSRect controlRect = [[bridge->webView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
+#else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-    [static_cast<WebView*>(webViewPtr) setFrame:controlRect];
+#endif
+    [bridge->webView setFrame:controlRect];
 
     if (isRenderToTexture)
     {
@@ -326,8 +351,7 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
-    WebView* webView = static_cast<WebView*>(webViewPtr);
-    [webView setDrawsBackground:(enabled ? NO : YES)];
+    [bridge->webView setDrawsBackground:enabled ? NO : YES];
 }
 
 void WebViewControl::SetRenderToTexture(bool value)
@@ -352,47 +376,47 @@ void WebViewControl::SetRenderToTexture(bool value)
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& uiWebViewControl)
 {
     bool recreateImageRep = true;
+#if !defined(__DAVAENGINE_COREV2__)
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    WebView* nativeWebView = static_cast<WebView*>(webViewPtr);
-    NSBitmapImageRep* imageRep = static_cast<NSBitmapImageRep*>(webImageCachePtr);
-    if (imageRep != nullptr)
+#endif
+    if (bridge->bitmapImageRep != nullptr)
     {
-        NSSize imageRepSize = [imageRep size];
-        NSSize webViewSize = [nativeWebView frame].size;
+        NSSize imageRepSize = [bridge->bitmapImageRep size];
+        NSSize webViewSize = [bridge->webView frame].size;
+
         recreateImageRep = imageRepSize.width != webViewSize.width || imageRepSize.height != webViewSize.height;
     }
     if (recreateImageRep)
     {
-        [imageRep release];
-        imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:[nativeWebView frame]];
-        if (imageRep != nullptr)
+        [bridge->bitmapImageRep release];
+#if defined(__DAVAENGINE_COREV2__)
+        bridge->bitmapImageRep = [[bridge->webView superview] bitmapImageRepForCachingDisplayInRect:[bridge->webView frame]];
+#else
+        bridge->bitmapImageRep = [openGLView bitmapImageRepForCachingDisplayInRect:[bridge->webView frame]];
+#endif
+        if (bridge->bitmapImageRep != nullptr)
         {
-            webImageCachePtr = imageRep;
-            [imageRep retain];
-        }
-        else
-        {
-            webImageCachePtr = nullptr;
+            [bridge->bitmapImageRep retain];
         }
     }
 
-    if (nullptr == imageRep)
+    if (bridge->bitmapImageRep == nullptr)
     {
         uiWebViewControl.SetSprite(nullptr, 0);
         return;
     }
 
-    NSSize imageRepSize = [imageRep size];
+    NSSize imageRepSize = [bridge->bitmapImageRep size];
     NSRect imageRect = NSMakeRect(0.f, 0.f, imageRepSize.width, imageRepSize.height);
 
     // render web view into bitmap image
-    [nativeWebView cacheDisplayInRect:imageRect toBitmapImageRep:imageRep];
+    [bridge->webView cacheDisplayInRect:imageRect toBitmapImageRep:bridge->bitmapImageRep];
 
-    const uint8* rawData = [imageRep bitmapData];
-    const int w = [imageRep pixelsWide];
-    const int h = [imageRep pixelsHigh];
-    const int BPP = [imageRep bitsPerPixel];
-    const int pitch = [imageRep bytesPerRow];
+    const uint8* rawData = [bridge->bitmapImageRep bitmapData];
+    const int w = [bridge->bitmapImageRep pixelsWide];
+    const int h = [bridge->bitmapImageRep pixelsHigh];
+    const int BPP = [bridge->bitmapImageRep bitsPerPixel];
+    const int pitch = [bridge->bitmapImageRep bytesPerRow];
 
     PixelFormat format = FORMAT_INVALID;
     if (24 == BPP)
@@ -401,7 +425,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
     }
     else if (32 == BPP)
     {
-        DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
+        DVASSERT(!([bridge->bitmapImageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
         format = FORMAT_RGBA8888;
     }
     else
@@ -448,32 +472,31 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
 void WebViewControl::ExecuteJScript(const String& scriptString)
 {
     NSString* jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
-    NSString* resultString = [static_cast<WebView*>(webViewPtr) stringByEvaluatingJavaScriptFromString:jScriptString];
+    NSString* resultString = [bridge->webView stringByEvaluatingJavaScriptFromString:jScriptString];
 
-    WebViewPolicyDelegate* w = static_cast<WebViewPolicyDelegate*>(webViewPolicyDelegatePtr);
-    if (w)
+    if (bridge->policyDelegate != nullptr)
     {
-        [w performSelector:@selector(onExecuteJScript:) withObject:resultString afterDelay:0.0];
+        [bridge->policyDelegate performSelector:@selector(onExecuteJScript:) withObject:resultString afterDelay:0.0];
     }
-}
-
-void WebViewControl::SetImageCache(void* ptr)
-{
-    DVASSERT(ptr);
-    webImageCachePtr = ptr;
-}
-
-void* WebViewControl::GetImageCache() const
-{
-    return webImageCachePtr;
 }
 
 void WebViewControl::SetNativeVisible(bool visible)
 {
-    WebView* view = static_cast<WebView*>(webViewPtr);
-    [view setHidden:!visible];
+    [bridge->webView setHidden:!visible];
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void WebViewControl::OnWindowVisibilityChanged(Window& w, bool visible)
+{
+    if (visible && isVisible)
+    {
+        // Force WebView repaint after restoring application window
+        // Repaint is done by hiding and showing control as people in internet say
+        SetNativeVisible(false);
+        SetNativeVisible(true);
+    }
+}
+#else
 void WebViewControl::OnAppMinimizedRestored(bool minimized)
 {
     if (!minimized && isVisible)
@@ -484,5 +507,7 @@ void WebViewControl::OnAppMinimizedRestored(bool minimized)
         SetNativeVisible(true);
     }
 }
+#endif
+} // namespace DAVA
 
 #endif //defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW

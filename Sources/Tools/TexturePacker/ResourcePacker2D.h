@@ -8,8 +8,7 @@
 #include "TexturePacker/Spritesheet.h"
 #include <atomic>
 
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedItemValue.h"
+#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {

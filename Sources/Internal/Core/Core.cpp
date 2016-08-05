@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -23,7 +25,6 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "PackManager/PackManager.h"
-#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -236,7 +237,6 @@ void Core::CreateSingletons()
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
@@ -332,7 +332,6 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 
@@ -975,3 +974,5 @@ PackManager& Core::GetPackManager()
 }
 
 } // namespace DAVA
+
+#endif //!__DAVAENGINE_COREV2__

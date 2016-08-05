@@ -1,9 +1,15 @@
 #include "Tests/CoreTest.h"
+#include "Infrastructure/GameCore.h"
+
+#include <Engine/Engine.h>
 
 using namespace DAVA;
 
-CoreTest::CoreTest()
-    : BaseScreen("CoreTest")
+CoreTest::CoreTest(GameCore* g)
+    : BaseScreen(g, "CoreTest")
+#if defined(__DAVAENGINE_COREV2__)
+    , engine(g->GetEngine())
+#endif
 {
 }
 
@@ -26,5 +32,9 @@ void CoreTest::UnloadResources()
 
 void CoreTest::Quit(BaseObject* obj, void* data, void* callerData)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->Quit();
+#else
     Core::Instance()->Quit();
+#endif
 }

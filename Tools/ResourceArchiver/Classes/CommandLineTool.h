@@ -12,6 +12,7 @@ public:
     void SetOkCode(int errorCode);
 
     DAVA::String GetToolKey() const;
+    bool ParseOptions(const DAVA::Vector<DAVA::String>& cmdline);
     bool ParseOptions(DAVA::uint32 argc, char* argv[]);
     void PrintUsage() const;
     DAVA::String GetUsageString() const;

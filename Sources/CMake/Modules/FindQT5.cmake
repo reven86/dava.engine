@@ -68,7 +68,7 @@ set ( CMAKE_INCLUDE_CURRENT_DIR ON )
 # Instruct CMake to run moc automatically when needed.
 set ( CMAKE_AUTOMOC ON )
 
-list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick Network)
+#list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent Qml Quick QuickWidgets Network)
 list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
 set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
@@ -83,6 +83,7 @@ set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${QT_ACTUAL_PATH}/lib/cmake")
 foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     if (NOT Qt5${COMPONENT}_FOUND)
         find_package("Qt5${COMPONENT}")
+        include_directories( "${Qt5${COMPONENT}_INCLUDE_DIRS}" )
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")

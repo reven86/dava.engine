@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
-#define __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__
+#pragma once
 
 #include "Base/Platform.h"
 
@@ -10,13 +9,17 @@
 #include "Math/Color.h"
 #include "Concurrency/Mutex.h"
 
+#include "Engine/EngineFwd.h"
+
 namespace DAVA
 {
 class Color;
 class Sprite;
 class UITextField;
 class UITextFieldDelegate;
+#if !defined(__DAVAENGINE_COREV2__)
 class CorePlatformWinUAP;
+#endif
 
 class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFieldWinUAP>
 {
@@ -176,7 +179,11 @@ private: // Event handlers
     void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
 private:
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#else
     CorePlatformWinUAP* core;
+#endif
     UITextField* uiTextField = nullptr;
     UITextFieldDelegate* textFieldDelegate = nullptr;
     // Windows UAP has two different controls for text input and password input
@@ -202,6 +209,10 @@ private:
     WideString lastProgrammaticText;
     TextFieldProperties properties;
     bool programmaticTextChange = false;
+
+    static Windows::UI::Xaml::Style ^ customTextBoxStyle;
+    static Windows::UI::Xaml::Style ^ customPasswordBoxStyle;
+    static Platform::String ^ xamlTextBoxStyles;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,4 +245,3 @@ inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // __DAVAENGINE_PRIVATETEXTFIELD_WINUAP_H__

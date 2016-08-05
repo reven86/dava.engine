@@ -1,7 +1,7 @@
+#if !defined(__DAVAENGINE_COREV2__)
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
-#include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
@@ -65,16 +65,15 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
+    Renderer::GetRenderStats().Reset();
+
     TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
-
-    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
 
     UIControlSystem::Instance()->Draw();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
-    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
     RenderSystem2D::Instance()->EndFrame();
 }
 
@@ -191,3 +190,5 @@ void ApplicationCore::OnFocusReceived()
     // Default implementation is empty.
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

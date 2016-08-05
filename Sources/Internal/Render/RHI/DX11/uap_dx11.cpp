@@ -16,11 +16,8 @@
 
 using namespace rhi;
 using namespace Microsoft::WRL;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::Graphics::Display;
-using namespace Windows::UI::Core;
 
-static SwapChainPanel ^ m_swapChainPanel = nullptr;
+static Windows::UI::Xaml::Controls::SwapChainPanel ^ m_swapChainPanel = nullptr;
 static ComPtr<ID3D11Device1> m_d3dDevice;
 static ComPtr<IDXGIAdapter> m_dxgiAdapter;
 static ComPtr<ID3D11DeviceContext1> m_d3dContext;
@@ -39,8 +36,8 @@ static Windows::Foundation::Size m_backbufferSize;
 static Windows::Foundation::Size m_backbufferScale;
 
 DirectX::XMFLOAT4X4 m_orientationTransform3D;
-DisplayOrientations m_nativeOrientation;
-DisplayOrientations m_currentOrientation;
+Windows::Graphics::Display::DisplayOrientations m_nativeOrientation;
+Windows::Graphics::Display::DisplayOrientations m_currentOrientation;
 float m_dpi = 1.f;
 
 static bool useSwapchainSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
@@ -48,9 +45,9 @@ static bool useSwapchainSizeWorkaround = false; //'workaround' for ATI HD ****G 
 DXGI_MODE_ROTATION ComputeDisplayRotation();
 void CreateDeviceResources();
 void CreateWindowSizeDependentResources();
-void SetSwapChainPanel(SwapChainPanel ^ panel);
+void SetSwapChainPanel(Windows::UI::Xaml::Controls::SwapChainPanel ^ panel);
 void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Windows::Foundation::Size& backbufferScale);
-void SetCurrentOrientation(DisplayOrientations currentOrientation);
+void SetCurrentOrientation(Windows::Graphics::Display::DisplayOrientations currentOrientation);
 void ValidateDevice();
 void HandleDeviceLost();
 void Trim();
@@ -122,6 +119,8 @@ inline bool SdkLayersAvailable()
 // current display orientation.
 DXGI_MODE_ROTATION ComputeDisplayRotation()
 {
+    using Windows::Graphics::Display::DisplayOrientations;
+
     DXGI_MODE_ROTATION rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
 
     // Note: NativeOrientation can only be Landscape or Portrait even though
@@ -394,6 +393,8 @@ void CreateWindowSizeDependentResources()
         DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
         0);
 
+        CHECK_HR(hr)
+
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
         {
             // If the device was removed for any reason, a new device and swap chain will need to be created.
@@ -448,6 +449,8 @@ void CreateWindowSizeDependentResources()
 
         // Associate swap chain with SwapChainPanel
         // UI changes will need to be dispatched back to the UI thread
+        using Windows::UI::Core::CoreDispatcherPriority;
+        using Windows::UI::Core::DispatchedHandler;
         m_swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler([]() {
                                                    // Get backing native interface for SwapChainPanel
                                                    ComPtr<ISwapChainPanelNative> panelNative;
@@ -554,7 +557,7 @@ void CreateWindowSizeDependentResources()
 }
 
 // This method is called when the XAML control is created (or re-created).
-void SetSwapChainPanel(SwapChainPanel ^ panel)
+void SetSwapChainPanel(Windows::UI::Xaml::Controls::SwapChainPanel ^ panel)
 {
     //DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
@@ -577,7 +580,7 @@ void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Wi
 }
 
 // This method is called in the event handler for the OrientationChanged event.
-void SetCurrentOrientation(DisplayOrientations currentOrientation)
+void SetCurrentOrientation(Windows::Graphics::Display::DisplayOrientations currentOrientation)
 {
     if (m_currentOrientation != currentOrientation)
     {
@@ -701,6 +704,7 @@ void Present()
 
 void init_device_and_swapchain_uap(void* panel)
 {
+    using ::Windows::UI::Xaml::Controls::SwapChainPanel;
     SwapChainPanel ^ swapChain = reinterpret_cast<SwapChainPanel ^>(panel);
 
     CreateDeviceResources();

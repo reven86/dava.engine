@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidBacktraceChooser.h"
 
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)
@@ -33,3 +35,4 @@ void AndroidBacktraceChooser::ReleaseBacktraceInterface()
 }
 
 #endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
+#endif // !__DAVAENGINE_COREV2__

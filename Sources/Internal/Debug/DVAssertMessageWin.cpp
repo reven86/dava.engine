@@ -10,14 +10,16 @@ namespace DAVA
 bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
     // Modal Type is ignored by Win32.
-    const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
+    const int flags = MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
     int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
     {
-    case IDCANCEL:
+    case IDABORT:
         return true; // break executions
-    case IDOK:
+    case IDIGNORE:
         return false; // continue execution
+    case IDRETRY:
+        return InnerShow(modalType, content);
     default:
         // should never happen!
         Logger::Instance()->Error(
@@ -46,6 +48,9 @@ namespace DAVA
 {
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return true; // Alwayes break
+#else
     using namespace Windows::UI::Popups;
 
     enum eUserChoice
@@ -118,6 +123,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
         msg->ShowAsync(); // This is always async call
     }
     return USER_CHOOSE_BREAK == userChoice;
+#endif
 }
 
 } // namespace DAVA

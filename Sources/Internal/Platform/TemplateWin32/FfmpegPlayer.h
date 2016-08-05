@@ -35,6 +35,7 @@ extern "C"
 
 namespace DAVA
 {
+class Thread;
 class FfmpegPlayer : public SoundStreamDelegate
 {
 public:

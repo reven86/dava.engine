@@ -3,6 +3,8 @@
 
 #include <cassert>
 
+#include "Base/BaseTypes.h"
+
 #if !defined(__DAVAENGINE_ANDROID__)
 
 #include "Base/Any.h"

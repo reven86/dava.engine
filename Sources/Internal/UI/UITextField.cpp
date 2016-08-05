@@ -8,7 +8,7 @@
 #include "UITextFieldAndroid.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UITextFieldiPhone.h"
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldWinUAP.h"
 #elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/UITextFieldMacOS.h"
@@ -104,7 +104,7 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
 #endif
@@ -112,7 +112,7 @@ void UITextField::OnActive()
 
 void UITextField::OnInactive()
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
     textFieldImpl->HideField();
 #endif
 }
@@ -236,7 +236,7 @@ void UITextField::SetFontSize(float32 size)
 void UITextField::SetDelegate(UITextFieldDelegate* _delegate)
 {
     delegate = _delegate;
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
     textFieldImpl->SetDelegate(_delegate);
 #endif
 }

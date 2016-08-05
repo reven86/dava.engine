@@ -14,6 +14,7 @@
 
 namespace DAVA
 {
+class Engine;
 class JobManager : public Singleton<JobManager>
 {
 public:
@@ -26,13 +27,23 @@ public:
     };
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    JobManager(Engine* e);
+    Engine* engine = nullptr;
+    size_t sigUpdateId = 0;
+#else
     JobManager();
+#endif
     virtual ~JobManager();
 
     /*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
 		will be performed inside this function. 
 	*/
+#if defined(__DAVAENGINE_COREV2__)
+    void Update(float32 frameDelta = 0.0f);
+#else
     void Update();
+#endif
 
     /*! Add function to execute in the main-thread.
 		\param [in] fn Function to execute.

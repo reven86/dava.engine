@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
+set( COVERAGE true )
 project ( UnitTests )
 
 set( DAVA_DISABLE_AUTOTESTS true )

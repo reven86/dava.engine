@@ -1,5 +1,7 @@
 #include "Infrastructure/GameCore.h"
 
+#include "Engine/Engine.h"
+
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
@@ -25,53 +27,172 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/AssertTest.h"
+#include "Tests/CoreV2Test.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
 #endif
 
-void GameCore::RunOnlyThisTest()
-{
-    //runOnlyThisTest = "NotificationScreen";
-}
-
-void GameCore::OnError()
-{
-    DavaDebugBreak();
-}
-
-void GameCore::RegisterTests()
-{
-    new DlcTest();
-    new UIScrollViewTest();
-    new NotificationScreen();
-    new SpeedLoadImagesTest();
-    new MultilineTest();
-    new StaticTextTest();
-    new StaticWebViewTest();
-    new UIMovieTest();
-    new FontTest();
-    new WebViewTest();
-    new FunctionSignalTest();
-    new KeyboardTest();
-    new FullscreenTest();
-    new UIBackgroundTest();
-    new ClipTest();
-    new InputTest();
-    new CoreTest();
-    new FormatsTest();
-    new GPUTest();
-    new FloatingPointExceptionTest();
-    new PackManagerTest();
-    //$UNITTEST_CTOR
-}
-
 using namespace DAVA;
 using namespace DAVA::Net;
 
+#if defined(__DAVAENGINE_COREV2__)
+
+int GameMain(DAVA::Vector<DAVA::String> cmdline)
+{
+    KeyedArchive* appOptions = new KeyedArchive();
+    appOptions->SetString("title", "TestBed");
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
+#if defined(__DAVAENGINE_QT__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_MACOS__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_IPHONE__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_WIN32__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#elif defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+    eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
+    if (cmdline.size() > 1 && cmdline[1] == "--console")
+    {
+        runmode = eEngineRunMode::CONSOLE;
+    }
+
+    Vector<String> modules = {
+        "JobManager",
+        "NetCore",
+        "LocalizationSystem",
+        "SoundSystem",
+        "DownloadManager",
+    };
+
+    DAVA::Engine e;
+    e.SetOptions(appOptions);
+    e.Init(runmode, modules);
+
+    GameCore game(&e);
+    return e.Run();
+}
+
+GameCore::GameCore(Engine* e)
+    : engine(e)
+    , currentScreen(nullptr)
+    , testListScreen(nullptr)
+{
+    engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
+    engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
+    engine->beforeTerminate.Connect(this, &GameCore::OnBeforeTerminate);
+
+    engine->suspended.Connect(this, &GameCore::OnSuspended);
+    engine->resumed.Connect(this, &GameCore::OnResumed);
+
+    if (engine->IsConsoleMode())
+    {
+        engine->update.Connect(this, &GameCore::OnUpdateConsole);
+    }
+    else
+    {
+        engine->windowCreated.Connect(this, &GameCore::OnWindowCreated);
+        engine->windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
+
+        Window* w = engine->PrimaryWindow();
+        w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+    }
+
+    engine->GetContext()->uiControlSystem->SetClearColor(Color::Black);
+}
+
+void GameCore::OnGameLoopStarted()
+{
+    Logger::Debug("****** GameCore::OnGameLoopStarted");
+
+    InitNetwork();
+    RunOnlyThisTest();
+
+    if (engine->IsConsoleMode())
+    {
+        engine->RunAsyncOnMainThread([]() {
+            Logger::Error("******** KABOOM on main thread********");
+        });
+    }
+}
+
+void GameCore::OnGameLoopStopped()
+{
+    Logger::Debug("****** GameCore::OnGameLoopStopped");
+
+    for (auto testScreen : screens)
+    {
+        SafeRelease(testScreen);
+    }
+    screens.clear();
+    SafeRelease(testListScreen);
+}
+
+void GameCore::OnBeforeTerminate()
+{
+    Logger::Debug("****** GameCore::OnBeforeTerminate");
+    netLogger.Uninstall();
+}
+
+void GameCore::OnWindowCreated(DAVA::Window& w)
+{
+    Logger::Error("****** GameCore::OnWindowCreated");
+
+    testListScreen = new TestListScreen();
+    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
+    RegisterTests();
+    RunTests();
+}
+
+void GameCore::OnWindowDestroyed(DAVA::Window& w)
+{
+    Logger::Error("****** GameCore::OnWindowDestroyed");
+}
+
+void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+{
+    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+}
+
+void GameCore::OnSuspended()
+{
+    Logger::Error("****** GameCore::OnSuspended");
+}
+
+void GameCore::OnResumed()
+{
+    Logger::Error("****** GameCore::OnResumed");
+}
+
+void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
+{
+    static int frameCount = 0;
+    frameCount += 1;
+    Logger::Debug("****** update: count=%d, delta=%f", frameCount, frameDelta);
+    if (frameCount >= 100)
+    {
+        Logger::Debug("****** quit");
+        engine->Quit();
+    }
+}
+#else // __DAVAENGINE_COREV2__
+
 void GameCore::OnAppStarted()
 {
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 
@@ -89,6 +210,65 @@ GameCore::GameCore()
 
 GameCore::~GameCore()
 {
+}
+
+void GameCore::OnAppFinished()
+{
+    for (auto testScreen : screens)
+    {
+        SafeRelease(testScreen);
+    }
+    screens.clear();
+
+    SafeRelease(testListScreen);
+    netLogger.Uninstall();
+}
+
+void GameCore::BeginFrame()
+{
+    ApplicationCore::BeginFrame();
+}
+
+#endif // !__DAVAENGINE_COREV2__
+
+void GameCore::RunOnlyThisTest()
+{
+    //runOnlyThisTest = "NotificationScreen";
+}
+
+void GameCore::OnError()
+{
+    DavaDebugBreak();
+}
+
+void GameCore::RegisterTests()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    new CoreV2Test(this);
+#endif
+    new DlcTest(this);
+    new UIScrollViewTest(this);
+    new NotificationScreen(this);
+    new SpeedLoadImagesTest(this);
+    new MultilineTest(this);
+    new StaticTextTest(this);
+    new StaticWebViewTest(this);
+    new UIMovieTest(this);
+    new FontTest(this);
+    new WebViewTest(this);
+    new FunctionSignalTest(this);
+    new KeyboardTest(this);
+    new FullscreenTest(this);
+    new UIBackgroundTest(this);
+    new ClipTest(this);
+    new InputTest(this);
+    new GPUTest(this);
+    new CoreTest(this);
+    new FormatsTest(this);
+    new AssertTest(this);
+    new FloatingPointExceptionTest(this);
+    new PackManagerTest(this);
+    //$UNITTEST_CTOR
 }
 
 void GameCore::RegisterScreen(BaseScreen* screen)
@@ -121,23 +301,6 @@ File* GameCore::CreateDocumentsFile(const String& filePathname)
 
     File* retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
     return retFile;
-}
-
-void GameCore::OnAppFinished()
-{
-    for (auto testScreen : screens)
-    {
-        SafeRelease(testScreen);
-    }
-    screens.clear();
-
-    SafeRelease(testListScreen);
-    netLogger.Uninstall();
-}
-
-void GameCore::BeginFrame()
-{
-    ApplicationCore::BeginFrame();
 }
 
 void GameCore::RunTests()

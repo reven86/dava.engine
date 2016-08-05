@@ -898,14 +898,19 @@ gles2_SyncObject_IsSignaled(Handle obj)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
 
-    if (!SyncObjectPoolGLES2::IsAlive(obj))
-        return true;
-
     bool signaled = false;
-    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
 
-    if (sync)
-        signaled = sync->is_signaled;
+    if (SyncObjectPoolGLES2::IsAlive(obj))
+    {
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(obj);
+
+        if (sync)
+            signaled = sync->is_signaled;
+    }
+    else
+    {
+        signaled = true;
+    }
 
     return signaled;
 }
@@ -1078,7 +1083,6 @@ void CommandBufferGLES2_t::Execute()
     IndexSize idx_size = INDEX_SIZE_16BIT;
     unsigned tex_unit_0 = 0;
     Handle cur_query_buf = InvalidHandle;
-    uint32 cur_query_i = DAVA::InvalidIndex;
     GLint def_viewport[4] = { 0, 0, 0, 0 };
 
     for (unsigned i = 0; i != MAX_VERTEX_STREAM_COUNT; ++i)
@@ -1128,6 +1132,7 @@ void CommandBufferGLES2_t::Execute()
             GL_CALL(glEnable(GL_DEPTH_TEST));
             GL_CALL(glDepthFunc(GL_LEQUAL));
             GL_CALL(glDepthMask(GL_TRUE));
+            GL_CALL(glDisable(GL_SCISSOR_TEST));
 
             if (isFirstInPass)
             {
@@ -1184,6 +1189,8 @@ void CommandBufferGLES2_t::Execute()
                 {
                     GL_CALL(glClear(flags));
                 }
+
+                DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
             }
         }
         break;
@@ -1197,24 +1204,29 @@ void CommandBufferGLES2_t::Execute()
             c += 1;
             #endif
 
-            #if defined(__DAVAENGINE_IPHONE__)
-            if ((isLastInPass) && (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)) //defualt framebuffer is discard once after frame
+            if (isLastInPass)
             {
-                GLenum discards[3];
-                int32 discardsCount = 0;
-                if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
-                    discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
-                if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
+                if (cur_query_buf != InvalidHandle)
+                    QueryBufferGLES2::QueryComplete(cur_query_buf);
+
+#if defined(__DAVAENGINE_IPHONE__)
+                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) //defualt framebuffer is discard once after frame
                 {
-                    discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
-                    discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
+                    GLenum discards[3];
+                    int32 discardsCount = 0;
+                    if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
+                        discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
+                    if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
+                    {
+                        discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
+                        discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
+                    }
+
+                    if (discardsCount != 0)
+                        GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
                 }
-
-                if (discardsCount != 0)
-                    GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+#endif
             }
-
-            #endif
         }
         break;
 
@@ -1277,9 +1289,11 @@ void CommandBufferGLES2_t::Execute()
         case GLES2__SET_QUERY_INDEX:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            cur_query_i = (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex;
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferGLES2::SetQueryIndex(cur_query_buf, (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex);
             #else
-            cur_query_i = uint32(arg[0]);
+            if (cur_query_buf != InvalidHandle)
+                QueryBufferGLES2::SetQueryIndex(cur_query_buf, uint32(arg[0]));
             c += 1;
             #endif
         }
@@ -1552,9 +1566,6 @@ void CommandBufferGLES2_t::Execute()
                     ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             if (vdecl_pending)
             {
                 PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
@@ -1577,9 +1588,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
         }
         break;
 
@@ -1625,9 +1633,6 @@ void CommandBufferGLES2_t::Execute()
                 cur_base_vert = firstVertex;
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             int i_sz = GL_UNSIGNED_SHORT;
             int i_off = startIndex * sizeof(uint16);
 
@@ -1653,9 +1658,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
         }
         break;
 
@@ -1690,9 +1692,6 @@ void CommandBufferGLES2_t::Execute()
                     ConstBufferGLES2::SetToRHI(fp_const[i], cur_gl_prog, fp_const_data[i]);
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             if (vdecl_pending)
             {
                 PipelineStateGLES2::SetVertexDeclToRHI(cur_ps, cur_vdecl, 0, countof(cur_vb), cur_vb);
@@ -1726,9 +1725,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
         }
         break;
 
@@ -1777,9 +1773,6 @@ void CommandBufferGLES2_t::Execute()
                 cur_base_vert = firstVertex;
             }
 
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::BeginQuery(cur_query_buf, cur_query_i);
-
             int i_sz = GL_UNSIGNED_SHORT;
             int i_off = startIndex * sizeof(uint16);
 
@@ -1818,9 +1811,6 @@ void CommandBufferGLES2_t::Execute()
                 StatSet::IncStat(stat_DLL, 1);
                 break;
             }
-
-            if (cur_query_i != DAVA::InvalidIndex)
-                QueryBufferGLES2::EndQuery(cur_query_buf, cur_query_i);
         }
         break;
 
@@ -1929,6 +1919,8 @@ _RejectAllFrames()
 static void
 _GLES2_ExecuteQueuedCommands()
 {
+    StatSet::ResetAll();
+
     Trace("rhi-gl.exec-queued-cmd\n");
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;
@@ -1936,7 +1928,7 @@ _GLES2_ExecuteQueuedCommands()
     bool do_exit = false;
 
     _GLES2_FrameSync.Lock();
-    if (_GLES2_Frame.size())
+    if (_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute)
     {
         for (std::vector<Handle>::iterator p = _GLES2_Frame.begin()->pass.begin(), p_end = _GLES2_Frame.begin()->pass.end(); p != p_end; ++p)
         {
@@ -2016,40 +2008,6 @@ _GLES2_ExecuteQueuedCommands()
 
     if (_GLES2_Context)
     {
-        // take screenshot, if needed
-
-        _GLES2_ScreenshotCallbackSync.Lock();
-        if (_GLES2_PendingScreenshotCallback)
-        {
-            const uint32 stride = 4 * _GLES2_DefaultFrameBuffer_Width;
-            uint8* rgba = new uint8[stride * _GLES2_DefaultFrameBuffer_Height];
-
-            GLCommand cmd[] =
-            {
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer } },
-              { GLCommand::PIXEL_STORE_I, { GL_PACK_ALIGNMENT, 1 } },
-              { GLCommand::READ_PIXELS, { 0, 0, uint64(_GLES2_DefaultFrameBuffer_Width), uint64(_GLES2_DefaultFrameBuffer_Height), GL_RGBA, GL_UNSIGNED_BYTE, uint64(rgba) } },
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
-            };
-
-            _ExecGL(cmd, countof(cmd));
-            for (int y = 0; y < _GLES2_DefaultFrameBuffer_Height / 2; ++y)
-            {
-                uint8* line1 = rgba + y * stride;
-                uint8* line2 = rgba + (_GLES2_DefaultFrameBuffer_Height - y - 1) * stride;
-                uint8 tmp[5 * 1024 * 4];
-
-                DVASSERT(stride <= sizeof(tmp));
-                memcpy(tmp, line1, stride);
-                memcpy(line1, line2, stride);
-                memcpy(line2, tmp, stride);
-            }
-            (*_GLES2_PendingScreenshotCallback)(_GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, rgba);
-            delete[] rgba;
-            _GLES2_PendingScreenshotCallback = nullptr;
-        }
-        _GLES2_ScreenshotCallbackSync.Unlock();
-
         // do swap-buffers
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
@@ -2690,6 +2648,54 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
                 #endif
         }
         break;
+
+        case GLCommand::GET_QUERYOBJECT_UIV:
+        {
+#if defined(__DAVAENGINE_IPHONE__)
+            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+#endif
+            cmd->status = err;
+        }
+        break;
+
+        case GLCommand::DELETE_QUERIES:
+        {
+#if defined(__DAVAENGINE_IPHONE__)
+            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+#endif
+            cmd->status = err;
+        }
+        break;
+
+        case GLCommand::GET_QUERY_RESULT_NO_WAIT:
+        {
+            GLuint result = 0;
+
+#if defined(__DAVAENGINE_IPHONE__)
+            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
+#endif
+            cmd->status = err;
+
+            if (err == GL_NO_ERROR && result)
+            {
+#if defined(__DAVAENGINE_IPHONE__)
+                EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+#endif
+            }
+        }
+        break;
         }
     }
     RELEASE_CONTEXT();
@@ -2737,6 +2743,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
             if (!executed)
             {
                 _GLES2_FramePreparedEvent.Signal();
+                DAVA::Thread::Yield();
             }
         }
 

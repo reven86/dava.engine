@@ -3,7 +3,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
-#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
@@ -93,7 +93,7 @@ void RenderUpdateSystem::UpdateActiveIndexes(Entity* entity, RenderObject* objec
         LodComponent* lc = GetLodComponent(parent);
         if (nullptr != lc)
         {
-            object->SetLodIndex(lc->currentLod);
+            object->SetLodIndex(lc->GetCurrentLod());
             break;
         }
 

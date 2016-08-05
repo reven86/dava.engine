@@ -6,6 +6,8 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/MouseDeviceWinUAP.h"
 
+#include "Engine/Engine.h"
+
 namespace DAVA
 {
 class MouseDeviceStub : public MouseDeviceInterface
@@ -48,7 +50,11 @@ MouseDevice::MouseDevice()
 #endif
     context = new MouseDeviceContext();
 
+#if defined(__DAVAENGINE_COREV2__)
+    auto focusChanged = [this](Window&, bool isFocused) -> void
+#else
     auto focusChanged = [this](bool isFocused) -> void
+#endif
     {
         if (context->focused != isFocused)
         {
@@ -72,8 +78,14 @@ MouseDevice::MouseDevice()
             }
         }
     };
+#if defined(__DAVAENGINE_COREV2__)
+    Window* primaryWindow = Engine::Instance()->PrimaryWindow();
+    primaryWindow->focusChanged.Connect(focusChanged);
+    context->focused = primaryWindow->HasFocus();
+#else
     Core::Instance()->focusChanged.Connect(focusChanged);
     context->focused = Core::Instance()->IsFocused();
+#endif
 }
 
 MouseDevice::~MouseDevice()
@@ -142,7 +154,11 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
         else if ((event->device == UIEvent::Device::MOUSE) && (event->phase == UIEvent::Phase::ENDED))
         {
             bool inRect = true;
+#if defined(__DAVAENGINE_COREV2__)
+            Vector2 windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
+#else
             Vector2 windowSize = Core::Instance()->GetWindowSize();
+#endif
             inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
             inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
             if (inRect && context->focused)

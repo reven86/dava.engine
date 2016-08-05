@@ -1,4 +1,4 @@
-#include "Base/Platform.h"
+#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -8,8 +8,13 @@
 #include "Base/RefPtr.h"
 #include "Debug/DVAssert.h"
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#endif
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -21,25 +26,11 @@
 #include "Utils/Utils.h"
 
 #include "UI/UIWebView.h"
-#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
-
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
-using namespace concurrency;
 
 namespace DAVA
 {
@@ -50,17 +41,17 @@ namespace DAVA
     UriResolver is used in PrivateWebViewWinUAP's OpenFromBuffer method which allows to load
     HTML string specifying location of resource files (css, images, etc).
 */
-private ref class UriResolver sealed : public IUriToStreamResolver
+private ref class UriResolver sealed : public ::Windows::Web::IUriToStreamResolver
 {
 internal:
     UriResolver(const String& htmlData, const FilePath& basePath);
 
 public:
-    virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
+    virtual ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriToStreamAsync(::Windows::Foundation::Uri^ uri);
 
 private:
-    IAsyncOperation<IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
-    IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
+    ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream ^> ^ GetStreamFromFilePathAsync(const FilePath& filePath);
+    ::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
 
     Platform::String^ htmlData;
     FilePath basePath;
@@ -72,7 +63,7 @@ UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath_)
 {
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriResolver::UriToStreamAsync(::Windows::Foundation::Uri^ uri)
 {
     DVASSERT(uri != nullptr);
 
@@ -86,33 +77,44 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
     return GetStreamFromFilePathAsync(path);
 }
 
-IAsyncOperation<IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream ^> ^ UriResolver::GetStreamFromFilePathAsync(const FilePath& filePath)
 {
+    using ::concurrency::create_async;
+    using ::Windows::Storage::StorageFile;
+    using ::Windows::Storage::FileAccessMode;
+    using ::Windows::Storage::Streams::IInputStream;
+    using ::Windows::Storage::Streams::IRandomAccessStream;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     String fileNameStr = filePath.GetAbsolutePathname();
     std::replace(fileNameStr.begin(), fileNameStr.end(), '/', '\\');
     Platform::String^ fileName = StringToRTString(fileNameStr);
 
-    return create_async([ this, fileName ]() -> IInputStream^
-                        {
-                            try
-                            {
-                                StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
-                                IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
-                                return static_cast<IInputStream^>(stream);
-                            }
-                            catch (Platform::COMException^ e)
-                            {
-                                Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
-                                              RTStringToString(fileName).c_str(),
-                                              RTStringToString(e->Message).c_str(),
-                                              e->HResult);
-                                return ref new InMemoryRandomAccessStream();
-                            }
-                        });
+    return create_async([ this, fileName ]() -> IInputStream^ {
+        try
+        {
+            StorageFile^ storageFile = WaitAsync(StorageFile::GetFileFromPathAsync(fileName));
+            IRandomAccessStream^ stream = WaitAsync(storageFile->OpenAsync(FileAccessMode::Read));
+            return static_cast<IInputStream^>(stream);
+        }
+        catch (Platform::COMException^ e)
+        {
+            Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
+                            RTStringToString(fileName).c_str(),
+                            RTStringToString(e->Message).c_str(),
+                            e->HResult);
+            return ref new InMemoryRandomAccessStream();
+        }
+    });
 }
 
-IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
+::Windows::Foundation::IAsyncOperation<::Windows::Storage::Streams::IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
 {
+    using ::concurrency::create_async;
+    using ::Windows::Storage::Streams::DataWriter;
+    using ::Windows::Storage::Streams::IInputStream;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
     DataWriter^ writer = ref new DataWriter(stream->GetOutputStreamAt(0));
 
@@ -149,20 +151,33 @@ void PrivateWebViewWinUAP::WebViewProperties::ClearChangedFlags()
 }
 
 PrivateWebViewWinUAP::PrivateWebViewWinUAP(UIWebView* uiWebView_)
-    : uiWebView(uiWebView_)
-    , core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#if defined(__DAVAENGINE_COREV2__)
+    : window(Engine::Instance()->PrimaryWindow())
+#else
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#endif
+    , uiWebView(uiWebView_)
 {
 }
 
 PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
 {
+    using ::Windows::UI::Xaml::Controls::WebView;
+
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
+#if defined(__DAVAENGINE_COREV2__)
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice]() {
+            nservice->RemoveXamlControl(p);
+        });
+#else
         core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
+#endif
         nativeWebView = nullptr;
     }
 }
@@ -232,12 +247,22 @@ void PrivateWebViewWinUAP::SetVisible(bool isVisible)
         properties.anyPropertyChanged = true;
         if (!isVisible)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 }
             });
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeWebView != nullptr)
+                {
+                    SetNativePositionAndSize(rectInWindowSpace, true);
+                }
+            });
+#endif
         }
     }
 }
@@ -266,12 +291,22 @@ void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
         properties.anyPropertyChanged = true;
         if (!value)
         { // Immediately hide native control if it has been already created
-            core->RunOnUIThread([this]() {
+            auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 }
             });
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeWebView != nullptr)
+                {
+                    SetNativePositionAndSize(rectInWindowSpace, true);
+                }
+            });
+#endif
         }
     }
 }
@@ -287,9 +322,15 @@ void PrivateWebViewWinUAP::Update()
     {
         auto self{ shared_from_this() };
         WebViewProperties props(properties);
+#if defined(__DAVAENGINE_COREV2__)
+        window->RunAsyncOnUIThread([this, self, props]() {
+            ProcessProperties(props);
+        });
+#else
         core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
         });
+#endif
 
         properties.createNew = false;
         properties.ClearChangedFlags();
@@ -298,6 +339,9 @@ void PrivateWebViewWinUAP::Update()
 
 void PrivateWebViewWinUAP::CreateNativeControl()
 {
+    using ::Windows::UI::Xaml::Visibility;
+    using ::Windows::UI::Xaml::Controls::WebView;
+
     nativeWebView = ref new WebView();
     defaultBkgndColor = nativeWebView->DefaultBackgroundColor;
     InstallEventHandlers();
@@ -306,12 +350,21 @@ void PrivateWebViewWinUAP::CreateNativeControl()
     nativeWebView->MinHeight = 0.0;
     nativeWebView->Visibility = Visibility::Visible;
 
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->AddXamlControl(nativeWebView);
+#else
     core->XamlApplication()->AddUIElement(nativeWebView);
+#endif
     SetNativePositionAndSize(rectInWindowSpace, true); // After creation move native control offscreen
 }
 
 void PrivateWebViewWinUAP::InstallEventHandlers()
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::UI::Xaml::Controls::WebView;
+    using ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs;
+    using ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs;
+
     // clang-format off
     std::weak_ptr<PrivateWebViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
@@ -328,7 +381,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigationStartingEventArgs ^ args)
+void PrivateWebViewWinUAP::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -339,22 +392,30 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView ^ sender, WebViewNavigat
 
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
-                                 {
-                                     if (uiWebView != nullptr && webViewDelegate != nullptr)
-                                     {
-                                         whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-                                     }
-                                 });
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAndWaitOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        }
+    });
+#else
+    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        }
+    });
+#endif
 
     if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
     {
-        Launcher::LaunchUriAsync(args->Uri);
+        ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
     }
     args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNavigationCompletedEventArgs ^ args)
+void PrivateWebViewWinUAP::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -377,12 +438,21 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView ^ sender, WebViewNaviga
     }
 
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            webViewDelegate->PageLoaded(uiWebView);
+        }
+    });
+#else
     core->RunOnMainThread([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             webViewDelegate->PageLoaded(uiWebView);
         }
     });
+#endif
 }
 
 void PrivateWebViewWinUAP::ProcessProperties(const WebViewProperties& props)
@@ -431,16 +501,23 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
     }
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+#else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+#endif
 }
 
 void PrivateWebViewWinUAP::SetNativeBackgroundTransparency(bool enabled)
 {
+    using ::Windows::UI::Colors;
     nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : defaultBkgndColor;
 }
 
 void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
 {
+    using ::Windows::Foundation::Uri;
+
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
     {
@@ -469,6 +546,9 @@ void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
 
 void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+
     // clang-format off
     Platform::String^ script = ref new Platform::String(StringToWString(jsScript).c_str());
 
@@ -478,13 +558,23 @@ void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
     auto js = nativeWebView->InvokeScriptAsync(L"eval", args);
     auto self{shared_from_this()};
     create_task(js).then([this, self](Platform::String^ result) {
-        core->RunOnMainThread([this, result]() {
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
                 String jsResult = WStringToString(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
+#else
+        core->RunOnMainThread([this, self, result]() {
+            if (webViewDelegate != nullptr && uiWebView != nullptr)
+            {
+                String jsResult = WStringToString(result->Data());
+                webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
+            }
+        });
+#endif
     }).then([self](task<void> t) {
         try {
             t.get();
@@ -506,7 +596,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     rect += coordSystem->GetPhysicalDrawOffset();
 
     // 2. map physical to window
+#if defined(__DAVAENGINE_COREV2__)
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
     const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
     rect.x /= scaleFactor;
     rect.y /= scaleFactor;
     rect.dx /= scaleFactor;
@@ -516,6 +610,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
 
 void PrivateWebViewWinUAP::RenderToTexture()
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+    using ::Windows::Storage::Streams::DataReader;
+    using ::Windows::Storage::Streams::InMemoryRandomAccessStream;
+
     // clang-format off
     int32 width = static_cast<int32>(nativeWebView->Width);
     int32 height = static_cast<int32>(nativeWebView->Height);
@@ -529,7 +628,7 @@ void PrivateWebViewWinUAP::RenderToTexture()
         auto taskLoad = create_task(reader->LoadAsync(streamSize));
         taskLoad.then([this, self, reader, width, height, streamSize](task<unsigned int>) {
             size_t index = 0;
-            std::vector<uint8> buf(streamSize, 0);
+            Vector<uint8> buf(streamSize, 0);
             while (reader->UnconsumedBufferLength > 0)
             {
                 buf[index] = reader->ReadByte();
@@ -539,6 +638,15 @@ void PrivateWebViewWinUAP::RenderToTexture()
             RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], width, height));
             if (sprite.Valid())
             {
+#if defined(__DAVAENGINE_COREV2__)
+                window->GetEngine()->RunAsyncOnMainThread([this, self, sprite]()
+                {
+                    if (uiWebView != nullptr)
+                    {
+                        uiWebView->SetSprite(sprite.Get(), 0);
+                    }
+                });
+#else
                 core->RunOnMainThread([this, self, sprite]()
                 {
                     if (uiWebView != nullptr)
@@ -546,6 +654,7 @@ void PrivateWebViewWinUAP::RenderToTexture()
                         uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
+#endif
             }
         });
     }).then([this, self](task<void> t) {

@@ -12,6 +12,7 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/Stats.h"
 
+#include "Engine/Engine.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
@@ -60,8 +61,15 @@ static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
 Mutex SoundSystem::soundGroupsMutex;
 
+#if defined(__DAVAENGINE_COREV2__)
+SoundSystem::SoundSystem(Engine* e)
+    : engine(e)
+{
+    sigUpdateId = engine->update.Connect(this, &SoundSystem::Update);
+#else
 SoundSystem::SoundSystem()
 {
+#endif
     SetDebugMode(false);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -113,6 +121,10 @@ SoundSystem::SoundSystem()
 
 SoundSystem::~SoundSystem()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->update.Disconnect(sigUpdateId);
+#endif
+
     if (fmodEventSystem)
     {
         FMOD_VERIFY(fmodEventSystem->release());

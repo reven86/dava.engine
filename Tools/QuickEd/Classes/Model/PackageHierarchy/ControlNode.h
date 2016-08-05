@@ -56,9 +56,10 @@ public:
 
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingControlsSupported() const override;
-    virtual bool CanInsertControl(ControlNode* node, DAVA::int32 pos) const override;
+    virtual bool CanInsertControl(const ControlNode* node, DAVA::int32 pos) const override;
     virtual bool CanRemove() const override;
     virtual bool CanCopy() const override;
+    bool CanMoveTo(const ControlsContainerNode* node, DAVA::int32 pos) const;
 
     eCreationType GetCreationType() const
     {
@@ -78,6 +79,8 @@ public:
 
 private:
     bool IsInstancedFrom(const ControlNode* prototype) const;
+    bool IsDependsOnPrototype(const ControlNode* prototype) const;
+    bool IsParentOf(const ControlNode* node) const;
     void AddControlToInstances(ControlNode* control);
     void RemoveControlFromInstances(ControlNode* control);
 

@@ -23,6 +23,9 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
 #endif
@@ -74,6 +77,15 @@ Landscape::Landscape()
 
         //Workaround for some mali drivers (Android 4.x + T6xx gpu): it does not support fetch from texture mips in vertex program
         renderMode = (majorVersion == 4 && maliT600series) ? RENDERMODE_INSTANCING : RENDERMODE_INSTANCING_MORPHING;
+    }
+    if (renderMode != RENDERMODE_NO_INSTANCING)
+    {
+        //Workaround for Lenovo P90: on this device vertex texture fetch is very slow
+        //(relevant for Android 4.4.4, currently there is no update to Android 5.0)
+        if (strstr(DeviceInfo::GetModel().c_str(), "Lenovo P90") != nullptr)
+        {
+            renderMode = RENDERMODE_NO_INSTANCING;
+        }
     }
 #endif
 
@@ -1326,7 +1338,10 @@ void Landscape::Save(KeyedArchive* archive, SerializationContext* serializationC
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
     }
 
-    heightmap->Save(heightmapPath);
+    if (heightmap != nullptr)
+    {
+        heightmap->Save(heightmapPath);
+    }
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
 }

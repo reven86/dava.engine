@@ -1,8 +1,7 @@
-#include "Base/Platform.h"
+#include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
 #include "Platform/TemplateWin32/PrivateMovieViewWinUAP.h"
 
 namespace DAVA
@@ -61,6 +60,11 @@ void MovieViewControl::Resume()
 bool MovieViewControl::IsPlaying() const
 {
     return privateImpl->IsPlaying();
+}
+
+void MovieViewControl::Update()
+{
+    privateImpl->Update();
 }
 
 } // namespace DAVA

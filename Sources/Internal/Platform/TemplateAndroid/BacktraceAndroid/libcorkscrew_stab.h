@@ -1,6 +1,8 @@
 #ifndef LIBCORKSCREW_STAB_H_
 #define LIBCORKSCREW_STAB_H_
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include <dlfcn.h>
 #include <unistd.h>
 ///------------------------------------------------------------------------
@@ -61,5 +63,7 @@ extern t_unwind_backtrace unwind_backtrace;
 ///--- function to load libcorkscrew dynamicly
 ///------------------------------------------------------------------------
 bool DynLoadLibcorkscrew();
+
+#endif // !__DAVAENGINE_COREV2__
 
 #endif /* LIBCORKSCREW_STAB_H_ */

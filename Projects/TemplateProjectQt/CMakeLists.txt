@@ -33,6 +33,12 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+if (DAVA_COREV2)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+    add_definitions(-D__DAVAENGINE_QT__)
+    set (NO_CEF 1)
+endif()
+
 find_package          ( NgtTools      REQUIRED )
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )

@@ -8,7 +8,7 @@ namespace DAVA
 class AssetCacheClient;
 }
 
-class GetRequest : public CacheRequest, DAVA::AssetCache::ClientNetProxyListener
+class GetRequest : public CacheRequest
 {
 public:
     GetRequest();
