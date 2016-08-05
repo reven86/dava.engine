@@ -44,34 +44,34 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool updateControl, bool clearAlpha)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha, bool updateControl)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot.Get(), nullptr, updateControl, clearAlpha);
+    MakeScreenshotInternal(control, screenshot.Get(), nullptr, clearAlpha, updateControl);
 
     return screenshot;
 }
 
-RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool updateControl, bool clearAlpha)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot.Get(), callback, updateControl, clearAlpha);
+    MakeScreenshotInternal(control, screenshot.Get(), callback, clearAlpha, updateControl);
 
     return screenshot;
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, bool updateControl, bool clearAlpha)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha, bool updateControl)
 {
-    MakeScreenshotInternal(control, screenshot, nullptr, updateControl, clearAlpha);
+    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha, updateControl);
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool updateControl, bool clearAlpha, const rhi::Viewport& viewport)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl, const rhi::Viewport& viewport)
 {
-    MakeScreenshotInternal(control, screenshot, callback, updateControl, clearAlpha, viewport);
+    MakeScreenshotInternal(control, screenshot, callback, clearAlpha, updateControl, viewport);
 }
 
 void UIScreenshoter::Unsubscribe(Texture* screenshot)
@@ -85,7 +85,7 @@ void UIScreenshoter::Unsubscribe(Texture* screenshot)
     }
 }
 
-void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool updateControl, bool clearAlpha, const rhi::Viewport& viewport)
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl, const rhi::Viewport& viewport)
 {
     if (control == nullptr)
         return;
