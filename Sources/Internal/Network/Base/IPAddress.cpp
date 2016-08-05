@@ -17,12 +17,7 @@ IPAddress::IPAddress(const char8* address)
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
-    
-#if !defined(DAVA_NETWORK_DISABLE)
     return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
-#else
-    return false;
-#endif
 }
 
 String IPAddress::ToString() const
