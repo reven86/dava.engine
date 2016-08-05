@@ -31,11 +31,6 @@ public:
 
 namespace DAVA
 {
-void UITextFieldDelegate::TextFieldOnTextChanged(UITextField* textField, const String& newUtf8Text, const String& oldUtf8Text, eReason type)
-{
-    TextFieldOnTextChanged(textField, UTF8Utils::EncodeToWideString(newUtf8Text), UTF8Utils::EncodeToWideString(oldUtf8Text), type);
-}
-
 UITextField::UITextField(const Rect& rect)
     : UIControl(rect)
 {

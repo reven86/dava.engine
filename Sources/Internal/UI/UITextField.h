@@ -61,13 +61,11 @@ public:
                     {
                     });
 
-    DAVA_DEPRECATED(virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
-                    {
-                        DVASSERT(newText != oldText);
-                        TextFieldOnTextChanged(textField, newText, oldText);
-                    });
-
-    virtual void TextFieldOnTextChanged(UITextField* textField, const String& newUtf8Text, const String& oldUtf8Text, eReason type);
+    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
+    {
+        DVASSERT(newText != oldText);
+        TextFieldOnTextChanged(textField, newText, oldText);
+    }
 
     /*
         \brief Called when device keyboard is displayed/hidden.
