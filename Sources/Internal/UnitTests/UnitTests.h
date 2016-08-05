@@ -155,7 +155,7 @@
 #define TEST_VERIFY(condition) TEST_VERIFY_WITH_MESSAGE(condition, DAVA::String())
 
 //////////////////////////////////////////////////////////////////////////
-// Macros that declare classes that are covered by unit test
+// Macros that declare source files that are covered by unit test
 //
 // Usage:
 //  DAVA_TESTCLASS(UsefulTest)
