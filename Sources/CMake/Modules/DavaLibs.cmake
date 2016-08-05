@@ -80,7 +80,6 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_a
                                     "-llog"
                                     "-landroid"
                                     "-lGLESv2"
-                                    "-lstdc++" 
                                     "-latomic" 
                                     )
                                     
