@@ -34,7 +34,7 @@ void* WindowNativeBridge::GetHandle() const
 
 bool WindowNativeBridge::DoCreateWindow()
 {
-    UIScreen* screen = [UIScreen mainScreen];
+    ::UIScreen* screen = [ ::UIScreen mainScreen];
     CGRect rect = [screen bounds];
     float32 scale = [screen scale];
 
@@ -103,7 +103,7 @@ void WindowNativeBridge::LoadView()
 
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
-    float32 scale = [[UIScreen mainScreen] scale];
+    float32 scale = [[ ::UIScreen mainScreen] scale];
     windowBackend->GetWindow()->PostSizeChanged(w, h, scale, scale);
 }
 
