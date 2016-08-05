@@ -5,8 +5,6 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (DateTimeTest)
 {
-    DEDUCE_COVERED_FILES_FROM_TESTCLASS()
-
     DAVA_TEST (TestFunction)
     {
         TEST_VERIFY(FormatDateTime(DateTime(1970, 0, 1, 0, 0, 0, 0)) == "1970-00-01 00:00:00+0");

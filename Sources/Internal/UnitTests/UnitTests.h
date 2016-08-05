@@ -161,16 +161,16 @@
 //  DAVA_TESTCLASS(UsefulTest)
 //  {
 //      BEGIN_CLASSES_COVERED_BY_TESTS()
-//          DECLARE_COVERED_FILES(FileSystem)
-//          DECLARE_COVERED_FILES(JobManager)
+//          DECLARE_COVERED_FILES("FileSystem")
+//          DECLARE_COVERED_FILES("JobManager")
 //      END_FILES_COVERED_BY_TESTS()
 //
 //      DAVA_TEST(test1) {}
 //  };
 //
-// Test class UsefulTest covers two classes: FileSystem and JobManager
+// Test class UsefulTest covers two file: "FileSystem.cpp" and "JobManager.cpp"
 //
-// or to automatically deduce covered class from test class name
+// or to automatically deduce covered file from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
 //  {
 //      DEDUCE_COVERED_FILES_FROM_TESTCLASS()
@@ -182,7 +182,7 @@
 // This is test author's responsibility to specify valid and corresponding classes
 //
 // You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
-// which returns Map<String, Vector<String>> where key is test class name and value is vector of covered classes
+// which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
 
 #define BEGIN_CLASSES_COVERED_BY_TESTS() \

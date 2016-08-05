@@ -8,7 +8,7 @@ import shutil
 import json
 import re
 
-CoverageMinimum    = 80.0
+CoverageMinimum    = 75.0
 
 class FileCover():
     def __init__(self, fileName, coverLines):

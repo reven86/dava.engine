@@ -11,7 +11,7 @@
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #endif
 
-const DAVA::String CoveredFileName = "UnitTests.cover";
+const DAVA::String TestCoverageFileName = "UnitTests.cover";
 
 using namespace DAVA;
 
@@ -83,7 +83,7 @@ void GameCore::OnAppStarted()
     else
     {
 #if defined(TEST_COVERAGE)
-        RefPtr<File> covergeFile(File::Create(CoveredFileName, File::CREATE | File::WRITE));
+        RefPtr<File> covergeFile(File::Create(TestCoverageFileName, File::CREATE | File::WRITE));
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
@@ -181,7 +181,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
         Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
         Logger::Info("Test coverage");
 
-        for (const auto& x : map)
+        for (const std::pair<String, Vector<String>>& x : map)
         {
             Logger::Info("  %s:", x.first.c_str());
             const Vector<String>& v = x.second;
@@ -192,10 +192,10 @@ void GameCore::ProcessTests(float32 timeElapsed)
         }
         
 #if defined(TEST_COVERAGE)
-        RefPtr<File> covergeFile(File::Create(CoveredFileName, File::APPEND | File::WRITE));
-        TEST_VERIFY(covergeFile);
+        RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
+        DVASSERT(coverageFile);
 
-        auto toJson = [&covergeFile](DAVA::String item) { covergeFile->Write(item.c_str(), item.size()); };
+        auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
 
         toJson("{ \n    \"ProjectFolders\": \"" + DAVA::String(DAVA_FOLDERS) + "\",\n");
         
@@ -210,7 +210,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
             toJson("         \"" + x.first + "\": \"");
 
             const Vector<String>& v = x.second;
-            for (const auto& s : v)
+            for (const String& s : v)
             {
                 toJson(s + (&s != &*v.rbegin() ? " " : ""));
             }

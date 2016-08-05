@@ -5,8 +5,6 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (FileSystemTest)
 {
-    DEDUCE_COVERED_FILES_FROM_TESTCLASS()
-
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
