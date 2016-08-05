@@ -180,7 +180,6 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
     yaml_parser_set_input(&parser, read_handler, dataHolder);
 
     String utf8Key;
-    String utf8Value;
     bool isKey = true;
     StringFile* strFile = new StringFile();
 
@@ -203,16 +202,15 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
 
         case YAML_SCALAR_EVENT:
         {
-            const uint8* str = reinterpret_cast<const uint8*>(event.data.scalar.value);
-            size_t size = static_cast<size_t>(event.data.scalar.length);
+            const auto& scalar = event.data.scalar;
+            String utf8String(scalar.value, scalar.value + scalar.length);
             if (isKey)
             {
-                utf8Key = String(str, str + size);
+                utf8Key = utf8String;
             }
             else
             {
-                utf8Value = String(str, str + size);
-                strFile->strings[utf8Key] = utf8Value;
+                strFile->strings[utf8Key] = utf8String;
             }
 
             isKey = !isKey;
