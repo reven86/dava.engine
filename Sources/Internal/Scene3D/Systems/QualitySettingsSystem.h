@@ -23,6 +23,12 @@ struct MaterialQuality
     size_t weight;
 };
 
+struct AnisotropyQuality
+{
+    uint32 weight;
+    uint32 maxAnisotropy;
+};
+
 struct LandscapeQuality
 {
     union
@@ -69,6 +75,15 @@ public:
     void SetCurTextureQuality(const FastName& name);
 
     const TextureQuality* GetTxQuality(const FastName& name) const;
+
+    // anisotropy quality
+    size_t GetAnisotropyQualityCount() const;
+    FastName GetAnisotropyQualityName(size_t index) const;
+
+    FastName GetCurAnisotropyQuality() const;
+    void SetCurAnisotropyQuality(const FastName& name);
+
+    const AnisotropyQuality* GetAnisotropyQuality(const FastName& name) const;
 
     // materials quality
     size_t GetMaterialQualityGroupCount() const;
@@ -142,6 +157,12 @@ protected:
         TextureQuality quality;
     };
 
+    struct ANQ
+    {
+        FastName name;
+        AnisotropyQuality quality;
+    };
+
     struct MAGrQ
     {
         size_t curQuality;
@@ -161,30 +182,31 @@ protected:
     };
 
     // textures
-    int32 curTextureQuality;
+    int32 curTextureQuality = 0;
     Vector<TXQ> textureQualities;
+
+    // anisotropy
+    int32 curAnisotropyQuality = 0;
+    Vector<ANQ> anisotropyQualities;
 
     // materials
     FastNameMap<MAGrQ> materialGroups;
 
-    //sounds
-    int32 curSoundQuality;
+    // sounds
+    int32 curSoundQuality = 0;
     Vector<SFXQ> soundQualities;
 
-    //landscape
-    int32 curLandscapeQuality;
+    // landscape
+    int32 curLandscapeQuality = 0;
     Vector<LCQ> landscapeQualities;
 
     FastNameMap<bool> qualityOptions;
 
     ParticlesQualitySettings particlesQualitySettings;
 
-    bool cutUnusedVertexStreams;
-
-    bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
-
+    bool cutUnusedVertexStreams = false;
+    bool keepUnusedQualityEntities = false; //for editor to prevent cutting entities with unused quality
     bool metalPreviewEnabled = false;
-
     bool runtimeQualitySwitching = false;
 };
 

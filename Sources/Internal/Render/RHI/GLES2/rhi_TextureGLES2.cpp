@@ -1,16 +1,12 @@
 #include "../Common/rhi_Private.h"
-    #include "../Common/rhi_Pool.h"
-    #include "../Common/rhi_FormatConversion.h"
-    #include "rhi_GLES2.h"
-
-    #include "Debug/DVAssert.h"
-    #include "Debug/Profiler.h"
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-
-    #include "_gl.h"
-
-    #include <string.h>
+#include "../Common/rhi_Pool.h"
+#include "../Common/rhi_FormatConversion.h"
+#include "../rhi_Public.h"
+#include "rhi_GLES2.h"
+#include "Debug/DVAssert.h"
+#include "Debug/Profiler.h"
+#include "Logger/Logger.h"
+#include "_gl.h"
 
 namespace rhi
 {
@@ -795,6 +791,13 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_S, _AddrModeGLES2(TextureAddrMode(sampler->addrU))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_WRAP_T, _AddrModeGLES2(TextureAddrMode(sampler->addrV))));
 
+        if (rhi::DeviceCaps().isAnisotropicFilteringSupported())
+        {
+            DVASSERT(sampler->anisotropyLevel >= 1);
+            DVASSERT(sampler->anisotropyLevel <= rhi::DeviceCaps().maxAnisotropy);
+            GL_CALL(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, sampler->anisotropyLevel));
+        }
+
         self->samplerState = *sampler;
         self->forceSetSamplerState = false;
     }
@@ -884,7 +887,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
             }
             else
             {
-                Logger::Error("glCheckFramebufferStatus= %08X", status);
+                DAVA::Logger::Error("glCheckFramebufferStatus= %08X", status);
                 DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
             }
         }

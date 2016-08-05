@@ -56,6 +56,28 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
                 comboTx->setCurrentIndex(comboTx->count() - 1);
             }
         }
+
+        if (DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount() > 0)
+        {
+            QLabel* labAn = new QLabel("Anisotropy:", texturesGroup);
+            texturesLayout->addWidget(labAn, 1, 0);
+
+            QComboBox* comboAn = new QComboBox(texturesGroup);
+            comboAn->setObjectName("AnisotropyCombo");
+            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnAnQualitySelect(int)));
+            texturesLayout->addWidget(comboAn, 1, 1);
+
+            DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount(); ++i)
+            {
+                DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
+                comboAn->addItem(anQualityName.c_str());
+                if (anQualityName == curAnQuality)
+                {
+                    comboAn->setCurrentIndex(comboAn->count() - 1);
+                }
+            }
+        }
     }
 
     // materials quality
@@ -315,6 +337,17 @@ void QualitySwitcher::ApplySettings()
     bool materialSettingsChanged = false;
     bool optionSettingsChanged = false;
     {
+        QComboBox* combo = findChild<QComboBox*>("AnisotropyCombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newAnQuality(combo->currentText().toLatin1());
+            if (newAnQuality != DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality())
+            {
+                materialSettingsChanged = true;
+                DAVA::QualitySettingsSystem::Instance()->SetCurAnisotropyQuality(newAnQuality);
+            }
+        }
+
         for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
             DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
@@ -445,6 +478,11 @@ void QualitySwitcher::ShowDialog()
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)
+{
+    SetSettingsDirty(true);
+}
+
+void QualitySwitcher::OnAnQualitySelect(int index)
 {
     SetSettingsDirty(true);
 }

@@ -39,6 +39,7 @@ public:
     uint64 AbsoluteMS();
     uint64 GetAbsoluteNano();
     uint64 GetAbsoluteUs();
+    uint64 GetSystemTime(); // seconds since 00:00 hours, Jan 1, 1970
 
     static void SetFrameDelta(float32 _delta); //for replay playback only
 

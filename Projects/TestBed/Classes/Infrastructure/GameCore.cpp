@@ -26,6 +26,7 @@
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
 #include "Tests/ExceptionAndAssertionTest.h"
+#include "Tests/AssertTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -66,6 +67,7 @@ void GameCore::RegisterTests()
     new FloatingPointExceptionTest();
     new PackManagerTest();
     new ExceptionAndAssertionTest();
+    new AssertTest();
     //$UNITTEST_CTOR
 }
 
@@ -74,6 +76,8 @@ using namespace DAVA::Net;
 
 void GameCore::OnAppStarted()
 {
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 
