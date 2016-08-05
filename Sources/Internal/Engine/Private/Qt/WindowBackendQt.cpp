@@ -206,6 +206,11 @@ void WindowBackend::Close()
     platformDispatcher.PostEvent(e);
 }
 
+bool WindowBackend::IsWindowReadyForRender() const
+{
+    return renderWidget != nullptr && renderWidget->initialized;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     UIDispatcherEvent e;

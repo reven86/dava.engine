@@ -64,6 +64,11 @@ void WindowBackend::Close()
     // iOS windows cannot be closed
 }
 
+bool WindowBackend::IsWindowReadyForRender() const
+{
+    return GetHandle() != nullptr;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     UIDispatcherEvent e;

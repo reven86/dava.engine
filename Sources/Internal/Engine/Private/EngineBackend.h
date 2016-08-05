@@ -63,7 +63,7 @@ public:
     int32 OnFrame();
 
     void InitRenderer(Window* w);
-    void ResetRenderer(Window* w);
+    void ResetRenderer(Window* w, bool resetToNull);
     void DeinitRender(Window* w);
 
 private:

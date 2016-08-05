@@ -496,11 +496,10 @@ void EngineBackend::InitRenderer(Window* w)
     context->renderSystem2D->Init();
 }
 
-void EngineBackend::ResetRenderer(Window* w)
+void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 {
     rhi::ResetParam rendererParams;
-    void* handle = w->GetNativeHandle();
-    if (handle == nullptr)
+    if (resetToNull == true)
     {
         rendererParams.window = nullptr;
         rendererParams.width = 0;
@@ -512,7 +511,7 @@ void EngineBackend::ResetRenderer(Window* w)
     {
         int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
         int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
-        rendererParams.window = handle;
+        rendererParams.window = w->GetNativeHandle();
         rendererParams.width = physW;
         rendererParams.height = physH;
         rendererParams.scaleX = w->GetRenderSurfaceScaleX();

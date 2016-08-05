@@ -89,6 +89,11 @@ void WindowBackend::Close()
     platformDispatcher.PostEvent(e);
 }
 
+bool WindowBackend::IsWindowReadyForRender() const
+{
+    return GetHandle() != nullptr;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     UIDispatcherEvent e;
