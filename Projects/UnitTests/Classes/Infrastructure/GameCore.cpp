@@ -185,7 +185,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
         {
             Logger::Info("  %s:", x.first.c_str());
             const Vector<String>& v = x.second;
-            for (const auto& s : v)
+            for (const String& s : v)
             {
                 Logger::Info("        %s", s.c_str());
             }
