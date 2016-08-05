@@ -10,6 +10,7 @@ public class TestBedApp extends JNIApplication {
 	}
 	
 	static {
+		System.loadLibrary("crystax");
 		System.loadLibrary("c++_shared");
 		System.loadLibrary("TestBed");
 	}

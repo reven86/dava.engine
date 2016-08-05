@@ -202,11 +202,15 @@ DV_LOCAL_CPPFLAGS += -Wno-unused-value
 DV_LOCAL_CPPFLAGS += -Wno-self-assign-field
 DV_LOCAL_CPPFLAGS += -Wno-undefined-reinterpret-cast
 
-# These warnings were added after switch ndk 12
+# These warnings were added after switch on ndk 12
 DV_LOCAL_CPPFLAGS += -Wno-documentation-unknown-command
 DV_LOCAL_CPPFLAGS += -Wno-double-promotion
 DV_LOCAL_CPPFLAGS += -Wno-over-aligned
 DV_LOCAL_CPPFLAGS += -Wno-shift-negative-value
+
+# These warnings were added after switch on crystax ndk
+DV_LOCAL_CPPFLAGS += -Wno-macro-redefined
+DV_LOCAL_CPPFLAGS += -Wno-format
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -313,6 +317,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Base/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
@@ -337,7 +342,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
-	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 

@@ -645,20 +645,33 @@ endif()
 
 if( ANDROID )
 
+    if ( CMAKE_LIBRARY_OUTPUT_DIRECTORY )
+        set ( DAVA_LIBRARY_OUTPUT "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" )
+    else ()
+        set ( DAVA_LIBRARY_OUTPUT "${LIBRARY_OUTPUT_PATH}" )
+    endif ()
+
     # Copy STL .so to output dir on Android
-    if (DEFINED ANDROID_NDK 
-        AND DEFINED ANDROID_STL_PREFIX 
-        AND DEFINED ANDROID_ABI)
+    if ( DEFINED ANDROID_NDK AND DEFINED ANDROID_STL_SO_PATH )
         
-        set ( ANDROID_STL_SO_NAME "libc++_shared.so" )
-        set ( ANDROID_STL_SO_PATH "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/${ANDROID_STL_SO_NAME}" )
-        
-        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
-        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}")
-            message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${LIBRARY_OUTPUT_PATH}/${ANDROID_STL_SO_NAME}" )
+        get_filename_component ( ANDROID_STL_SO_NAME "${ANDROID_STL_SO_PATH}" NAME )        
+        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
+        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}")
+            message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}" )
         endif()
         
     endif ()
+    
+    # Copy Crystax .so to output dir on Android
+    if ( DEFINED ANDROID_NDK AND CRYSTAX_NDK )
+    
+        get_filename_component ( CRYSTAX_SO_NAME "${CRYSTAX_SO_PATH}" NAME )
+        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CRYSTAX_SO_PATH}" "${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}" RESULT_VARIABLE RESULT )
+        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}")
+            message( FATAL_ERROR "Failed copying of ${CRYSTAX_SO_PATH} to the ${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}" )
+        endif()
+    
+    endif()
     
     # add custom target to strip symbols from shared library
     # strip symbols only if needed

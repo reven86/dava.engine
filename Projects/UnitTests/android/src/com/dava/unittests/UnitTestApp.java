@@ -10,6 +10,7 @@ public class UnitTestApp extends JNIApplication {
 	}
 	
 	static {
+		System.loadLibrary("crystax");
 		System.loadLibrary("c++_shared");
 		System.loadLibrary("UnitTests");
 	}
