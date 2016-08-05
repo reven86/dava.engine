@@ -212,7 +212,6 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
             else
             {
                 utf8Value = String(str, str + size);
-                ;
                 strFile->strings[utf8Key] = utf8Value;
             }
 
@@ -320,7 +319,7 @@ String LocalizationSystem::GetLocalizedString(const String& utf8Key) const
     return utf8Key;
 }
 
-DAVA::String LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
+String LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
