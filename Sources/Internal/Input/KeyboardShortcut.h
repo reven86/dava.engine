@@ -10,7 +10,6 @@ namespace DAVA
 class KeyboardShortcut final
 {
 public:
-
     KeyboardShortcut();
     KeyboardShortcut(const KeyboardShortcut& shortcut);
     KeyboardShortcut(Key key, uint32 modifiers = 0);

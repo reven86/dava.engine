@@ -96,5 +96,4 @@ String KeyboardShortcut::ToString() const
 
     return stream.str();
 }
-
 }
