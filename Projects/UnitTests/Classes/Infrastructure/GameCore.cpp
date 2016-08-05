@@ -181,7 +181,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
         Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
         Logger::Info("Test coverage");
 
-        for (const std::pair<String, Vector<String>>& x : map)
+        for (const auto& x : map)
         {
             Logger::Info("  %s:", x.first.c_str());
             const Vector<String>& v = x.second;
