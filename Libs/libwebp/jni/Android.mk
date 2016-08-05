@@ -125,7 +125,7 @@ LOCAL_STATIC_LIBRARIES := cpufeatures
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm
 
-LOCAL_MODULE := libwebp_android
+LOCAL_MODULE := libwebp
 
 include $(BUILD_STATIC_LIBRARY)
 
