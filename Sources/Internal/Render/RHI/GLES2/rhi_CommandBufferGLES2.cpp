@@ -6,6 +6,7 @@
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/dbg_StatSet.h"
 #include "../Common/CommonImpl.h"
+#include "../Common/SoftwareCommandBuffer.h"
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
@@ -25,301 +26,34 @@ using DAVA::Logger;
 
 namespace rhi
 {
-enum CommandGLES2Type
-{
-    GLES2__BEGIN = 1,
-    GLES2__END = 2,
-
-    GLES2__SET_VERTEX_DATA = 11,
-    GLES2__SET_INDICES = 12,
-    GLES2__SET_QUERY_BUFFER = 13,
-    GLES2__SET_QUERY_INDEX = 14,
-
-    GLES2__SET_PIPELINE_STATE = 21,
-    GLES2__SET_DEPTHSTENCIL_STATE = 22,
-    GLES2__SET_SAMPLER_STATE = 23,
-    GLES2__SET_CULL_MODE = 24,
-    GLES2__SET_SCISSOR_RECT = 25,
-    GLES2__SET_VIEWPORT = 26,
-    GLES2__SET_FILLMODE = 27,
-
-    GLES2__SET_VERTEX_PROG_CONST_BUFFER = 31,
-    GLES2__SET_FRAGMENT_PROG_CONST_BUFFER = 32,
-    GLES2__SET_VERTEX_TEXTURE = 33,
-    GLES2__SET_FRAGMENT_TEXTURE = 34,
-
-    GLES2__DRAW_PRIMITIVE = 41,
-    GLES2__DRAW_INDEXED_PRIMITIVE = 42,
-    GLES2__DRAW_INSTANCED_PRIMITIVE = 43,
-    GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE = 44,
-
-    GLES2__SET_MARKER = 51,
-
-    GLES2__NOP = 77
-};
-
 struct RenderPassGLES2_t
 {
     std::vector<Handle> cmdBuf;
     int priority;
 };
 
-#if defined(__DAVAENGINE_WIN32__)
-#pragma pack(push, 1)
-#endif
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-#define DV_ATTR_PACKED __attribute__((packed))
+#if RHI_GLES2__USE_CMDBUF_PACKING
+typedef SoftwareCommandBuffer SoftwareCommandBufferType;
 #else
-#define DV_ATTR_PACKED 
+typedef SoftwareCommandBufferUnpacked SoftwareCommandBufferType;
 #endif
 
-struct
-CommandGLES2
-{
-    uint8 type;
-    uint8 size;
-
-    CommandGLES2(uint8 t, uint8 sz)
-        : type(t)
-        , size(sz)
-    {
-    }
-} DV_ATTR_PACKED;
-
-template <class T, CommandGLES2Type t>
-struct
-CommandGLES2Impl
-: public CommandGLES2
-{
-    CommandGLES2Impl()
-        : CommandGLES2(t, sizeof(T))
-    {
-    }
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_Begin : public CommandGLES2Impl<CommandGLES2_Begin, GLES2__BEGIN>
-{
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_End : public CommandGLES2Impl<CommandGLES2_End, GLES2__END>
-{
-    Handle syncObject;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetVertexData : public CommandGLES2Impl<CommandGLES2_SetVertexData, GLES2__SET_VERTEX_DATA>
-{
-    uint16 streamIndex;
-    Handle vb;
-} /*DV_ATTR_PACKED*/;
-
-struct
-CommandGLES2_SetIndices : public CommandGLES2Impl<CommandGLES2_SetIndices, GLES2__SET_INDICES>
-{
-    Handle ib;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetQueryBuffer : public CommandGLES2Impl<CommandGLES2_SetQueryBuffer, GLES2__SET_QUERY_BUFFER>
-{
-    Handle queryBuf;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetQueryIndex : public CommandGLES2Impl<CommandGLES2_SetQueryIndex, GLES2__SET_QUERY_INDEX>
-{
-    uint32 objectIndex;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetPipelineState : public CommandGLES2Impl<CommandGLES2_SetPipelineState, GLES2__SET_PIPELINE_STATE>
-{
-    uint32 vdecl;
-    uint32 ps;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetDepthStencilState : public CommandGLES2Impl<CommandGLES2_SetDepthStencilState, GLES2__SET_DEPTHSTENCIL_STATE>
-{
-    Handle depthStencilState;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetSamplerState : public CommandGLES2Impl<CommandGLES2_SetSamplerState, GLES2__SET_SAMPLER_STATE>
-{
-    Handle samplerState;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetCullMode : public CommandGLES2Impl<CommandGLES2_SetCullMode, GLES2__SET_CULL_MODE>
-{
-    uint8 mode;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetScissorRect : public CommandGLES2Impl<CommandGLES2_SetScissorRect, GLES2__SET_SCISSOR_RECT>
-{
-    uint16 x;
-    uint16 y;
-    uint16 width;
-    uint16 height;
-} /*DV_ATTR_PACKED*/;
-
-struct
-CommandGLES2_SetViewport : public CommandGLES2Impl<CommandGLES2_SetViewport, GLES2__SET_VIEWPORT>
-{
-    uint16 x;
-    uint16 y;
-    uint16 width;
-    uint16 height;
-} /*DV_ATTR_PACKED*/;
-
-struct
-CommandGLES2_SetFillMode : public CommandGLES2Impl<CommandGLES2_SetFillMode, GLES2__SET_FILLMODE>
-{
-    uint8 mode;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetVertexProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetVertexProgConstBuffer, GLES2__SET_VERTEX_PROG_CONST_BUFFER>
-{
-    uint8 bufIndex;
-    Handle buffer;
-    const void* inst;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetFragmentProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetFragmentProgConstBuffer, GLES2__SET_FRAGMENT_PROG_CONST_BUFFER>
-{
-    uint8 bufIndex;
-    Handle buffer;
-    const void* inst;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetVertexTexture : public CommandGLES2Impl<CommandGLES2_SetVertexTexture, GLES2__SET_VERTEX_TEXTURE>
-{
-    uint8 unitIndex;
-    Handle tex;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetFragmentTexture : public CommandGLES2Impl<CommandGLES2_SetFragmentTexture, GLES2__SET_FRAGMENT_TEXTURE>
-{
-    uint8 unitIndex;
-    Handle tex;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_DrawPrimitive : public CommandGLES2Impl<CommandGLES2_DrawPrimitive, GLES2__DRAW_PRIMITIVE>
-{
-    uint8 mode;
-    uint32 vertexCount;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_DrawInstancedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedPrimitive, GLES2__DRAW_INSTANCED_PRIMITIVE>
-{
-    uint8 mode;
-    uint32 vertexCount;
-    uint16 instanceCount;
-    uint16 baseInstance;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_DrawIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawIndexedPrimitive, GLES2__DRAW_INDEXED_PRIMITIVE>
-{
-    uint8 mode;
-    uint32 vertexCount;
-    uint32 firstVertex;
-    uint32 startIndex;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_DrawInstancedIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedIndexedPrimitive, GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE>
-{
-    uint8 mode;
-    uint32 vertexCount;
-    uint32 firstVertex;
-    uint32 startIndex;
-    uint16 instanceCount;
-    uint16 baseInstance;
-} DV_ATTR_PACKED;
-
-struct
-CommandGLES2_SetMarker : public CommandGLES2Impl<CommandGLES2_SetMarker, GLES2__SET_MARKER>
-{
-    const char* text;
-};
-
-
-#ifdef __DAVAENGINE_WIN32__
-#pragma pack(pop)
-#endif
-
-struct
-CommandBufferGLES2_t
+struct CommandBufferGLES2_t : public SoftwareCommandBufferType
 {
 public:
     CommandBufferGLES2_t();
     ~CommandBufferGLES2_t();
-
-    void Begin();
-    void End();
     void Execute();
 
-#if RHI_GLES2__USE_CMDBUF_PACKING
-    template <class T>
-    T* allocCmd()
-    {
-        if (curUsedSize + sizeof(T) >= cmdDataSize)
-        {
-            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
-            cmdData = reinterpret_cast<uint8*>(::realloc(cmdData, cmdDataSize));
-        }
-
-        uint8* p = cmdData + curUsedSize;
-        curUsedSize += sizeof(T);
-
-        return new (reinterpret_cast<T*>(p)) T();
-    }
-
-    uint8* cmdData;
-    uint32 cmdDataSize;
-    uint32 curUsedSize;
-
-#else
-
-    void Command(uint64 cmd);
-    void Command(uint64 cmd, uint64 arg1);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
-
-    std::vector<uint64> _cmd;
-
-#endif
-
-    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
     RenderPassConfig passCfg;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
-
-    //    uint32              dbgCommandCount;
-    RingBuffer* text;
-
     Handle sync;
 };
 
-struct
-SyncObjectGLES2_t
+struct SyncObjectGLES2_t
 {
     uint32 frame;
     uint32 is_signaled : 1;
@@ -334,65 +68,9 @@ RHI_IMPL_POOL(CommandBufferGLES2_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Desc
 RHI_IMPL_POOL(RenderPassGLES2_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectGLES2_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-const uint64 CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
-
-static bool _GLES2_CmdBufIsBeingExecuted = false;
-static DAVA::Spinlock _GLES2_CmdBufIsBeingExecutedSync;
-
-static GLCommand* _GLES2_PendingImmediateCmd = nullptr;
-static uint32 _GLES2_PendingImmediateCmdCount = 0;
-static DAVA::Mutex _GLES2_PendingImmediateCmdSync;
-
-static bool _GLES2_RenderThreadExitPending = false;
-static DAVA::Spinlock _GLES2_RenderThreadExitSync;
-static DAVA::Semaphore _GLES2_RenderThredStartedSync(1);
-
-static DAVA::Semaphore _GLES2_RenderThreadSuspendSync;
-static DAVA::Atomic<bool> _GLES2_RenderThreadSuspended(false);
-
-static volatile bool _GLES2_RenderThreadSuspendSyncReached = false;
-
-static DAVA::Thread* _GLES2_RenderThread = nullptr;
-static uint32 _GLES2_RenderThreadFrameCount = 0;
-
 static DAVA::Mutex _GLES2_SyncObjectsSync;
 
-struct
-FrameGLES2
-{
-    unsigned number;
-    Handle sync;
-    std::vector<Handle> pass;
-    uint32 readyToExecute : 1;
-};
-
-static std::vector<FrameGLES2> _GLES2_Frame;
-static bool _GLES2_FrameStarted = false;
-static unsigned _GLES2_FrameNumber = 1;
-static DAVA::Spinlock _GLES2_FrameSync;
-//static DAVA::Mutex              _FrameSync;
-
-static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
-static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
-
-static void _ExecGL(GLCommand* command, uint32 cmdCount);
-
-static void ProcessImmediateCmd()
-{
-    _GLES2_PendingImmediateCmdSync.Lock();
-    if (_GLES2_PendingImmediateCmd)
-    {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-        _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
-        _GLES2_PendingImmediateCmd = nullptr;
-        _GLES2_PendingImmediateCmdCount = 0;
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-    }
-    _GLES2_PendingImmediateCmdSync.Unlock();
-}
-
-static Handle
-gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
+static Handle gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
 
@@ -422,31 +100,11 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     return handle;
 }
 
-static void
-gles2_RenderPass_Begin(Handle pass)
+static void gles2_RenderPass_Begin(Handle pass)
 {
-    _GLES2_FrameSync.Lock();
-
-    if (!_GLES2_FrameStarted)
-    {
-        _GLES2_Frame.push_back(FrameGLES2());
-        _GLES2_Frame.back().number = _GLES2_FrameNumber;
-        _GLES2_Frame.back().sync = rhi::InvalidHandle;
-        _GLES2_Frame.back().readyToExecute = false;
-
-        Trace("\n\n-------------------------------\nframe %u started\n", _GLES2_FrameNumber);
-        _GLES2_FrameStarted = true;
-        ++_GLES2_FrameNumber;
-        ProgGLES2::InvalidateAllConstBufferInstances();
-    }
-
-    _GLES2_Frame.back().pass.push_back(pass);
-
-    _GLES2_FrameSync.Unlock();
 }
 
-static void
-gles2_RenderPass_End(Handle pass)
+static void gles2_RenderPass_End(Handle pass)
 {
 }
 
@@ -467,8 +125,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_Begin(Handle cmdBuf)
+static void gles2_CommandBuffer_Begin(Handle cmdBuf)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -476,14 +133,13 @@ gles2_CommandBuffer_Begin(Handle cmdBuf)
     CommandGLES2_Begin* cmd = cb->allocCmd<CommandGLES2_Begin>();
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Begin();
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__BEGIN);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_BEGIN);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
+static void gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -491,14 +147,13 @@ gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     cmd->syncObject = syncObject;
     cb->End();
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__END, syncObject);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_END, syncObject);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
+static void gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -506,21 +161,20 @@ gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
     cmd->vdecl = uint16(vdecl);
     cmd->ps = ps;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_PIPELINE_STATE, ps, vdecl);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_PIPELINE_STATE, ps, vdecl);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
+static void gles2_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetCullMode* cmd = cb->allocCmd<CommandGLES2_SetCullMode>();
     cmd->mode = mode;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_CULL_MODE, mode);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_CULL_MODE, mode);
 #endif
 }
 
@@ -536,14 +190,13 @@ void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     cmd->width = rect.width;
     cmd->height = rect.height;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
+static void gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -553,28 +206,26 @@ gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
     cmd->width = uint16(vp.width);
     cmd->height = uint16(vp.height);
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
+static void gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     CommandGLES2_SetFillMode* cmd = cb->allocCmd<CommandGLES2_SetFillMode>();
     cmd->mode = mode;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FILLMODE, mode);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_FILLMODE, mode);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
+static void gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
@@ -582,14 +233,13 @@ gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
     cmd->vb = vb;
     cmd->streamIndex = uint16(streamIndex);
 #else
-    CommandBufferPool::Get(cmdBuf)->Command(GLES2__SET_VERTEX_DATA, vb, streamIndex);
+    CommandBufferPool::Get(cmdBuf)->Command(CMD_SET_VERTEX_DATA, vb, streamIndex);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
+static void gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
@@ -602,7 +252,7 @@ gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
         cmd->bufIndex = bufIndex;
         cmd->inst = ConstBufferGLES2::Instance(buffer);
 #else
-        CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+        CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
 #endif
     }
 }
@@ -620,7 +270,7 @@ gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
         cmd->unitIndex = unitIndex;
         cmd->tex = tex;
 #else
-        CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_VERTEX_TEXTURE, unitIndex, tex);
+        CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_VERTEX_TEXTURE, unitIndex, tex);
 #endif
     }
 }
@@ -635,7 +285,7 @@ gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
     CommandGLES2_SetIndices* cmd = cb->allocCmd<CommandGLES2_SetIndices>();
     cmd->ib = ib;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_INDICES, ib);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_INDICES, ib);
 #endif
 }
 
@@ -649,7 +299,7 @@ gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     CommandGLES2_SetQueryIndex* cmd = cb->allocCmd<CommandGLES2_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_QUERY_INDEX, objectIndex);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_QUERY_INDEX, objectIndex);
 #endif
 }
 
@@ -663,7 +313,7 @@ gles2_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
     CommandGLES2_SetQueryBuffer* cmd = cb->allocCmd<CommandGLES2_SetQueryBuffer>();
     cmd->queryBuf = queryBuf;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_QUERY_BUFFER, queryBuf);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_QUERY_BUFFER, queryBuf);
 #endif
 }
 
@@ -684,7 +334,7 @@ gles2_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
         cmd->buffer = buffer;
         cmd->inst = ConstBufferGLES2::Instance(buffer);
 #else
-        CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
+        CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)));
 #endif
     }
 }
@@ -702,7 +352,7 @@ gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
         cmd->unitIndex = unitIndex;
         cmd->tex = tex;
 #else
-        CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_FRAGMENT_TEXTURE, unitIndex, tex);
+        CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_FRAGMENT_TEXTURE, unitIndex, tex);
 #endif
     }
 }
@@ -717,7 +367,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
     CommandGLES2_SetDepthStencilState* cmd = cb->allocCmd<CommandGLES2_SetDepthStencilState>();
     cmd->depthStencilState = depthStencilState;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_DEPTHSTENCIL_STATE, depthStencilState);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_DEPTHSTENCIL_STATE, depthStencilState);
 #endif
 }
 
@@ -732,7 +382,7 @@ gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
     CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
     cmd->samplerState = samplerState;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__SET_SAMPLER_STATE, samplerState);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_SAMPLER_STATE, samplerState);
 #endif
 }
 
@@ -778,7 +428,7 @@ gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
     cmd->mode = mode;
     cmd->vertexCount = v_cnt;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_DRAW_PRIMITIVE, uint32(mode), v_cnt);
 #endif
 }
 
@@ -798,7 +448,7 @@ gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt, firstVertex, startIndex);
 #endif
 }
 
@@ -818,7 +468,7 @@ gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
     cmd->instanceCount = instCount;
     cmd->baseInstance = 0;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_PRIMITIVE, uint32(mode), instCount, v_cnt);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_DRAW_INSTANCED_PRIMITIVE, uint32(mode), instCount, v_cnt);
 #endif
 }
 
@@ -840,7 +490,7 @@ gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
     cmd->instanceCount = instCount;
     cmd->baseInstance = baseInstance;
 #else
-    CommandBufferPoolGLES2::Get(cmdBuf)->Command(GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex, baseInstance);
+    CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE, uint32(mode), instCount, v_cnt, firstVertex, startIndex, baseInstance);
 #endif
 }
 
@@ -869,7 +519,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
     CommandGLES2_SetMarker* cmd = cb->allocCmd<CommandGLES2_SetMarker>();
     cmd->text = text;
 #else
-    cb->Command(GLES2__SET_MARKER, (uint64)(txt));
+    cb->Command(CMD_SET_MARKER, (uint64)(txt));
 #endif
 
 #endif
@@ -932,15 +582,7 @@ gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
-    , text(nullptr)
-    ,
-#if RHI_GLES2__USE_CMDBUF_PACKING
-    cmdData(nullptr)
-    , cmdDataSize(0)
-    , curUsedSize(0)
-    ,
-#endif
-    sync(InvalidHandle)
+    , sync(InvalidHandle)
 {
 }
 
@@ -952,130 +594,7 @@ CommandBufferGLES2_t::~CommandBufferGLES2_t()
 
 //------------------------------------------------------------------------------
 
-void CommandBufferGLES2_t::Begin()
-{
-#if RHI_GLES2__USE_CMDBUF_PACKING
-    curUsedSize = 0;
-#else
-    _cmd.clear();
-#endif
-    //dbgCommandCount = 0;
-}
 
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::End()
-{
-#if RHI_GLES2__USE_CMDBUF_PACKING    
-#else
-    _cmd.push_back(EndCmd);
-#endif
-}
-
-
-#if !RHI_GLES2__USE_CMDBUF_PACKING
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd)
-{
-    _cmd.push_back(cmd);
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1)
-{
-    _cmd.resize(_cmd.size() + 1 + 1);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 1);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2)
-{
-    _cmd.resize(_cmd.size() + 1 + 2);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 2);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3)
-{
-    _cmd.resize(_cmd.size() + 1 + 3);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 3);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4)
-{
-    _cmd.resize(_cmd.size() + 1 + 4);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 4);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5)
-{
-    _cmd.resize(_cmd.size() + 1 + 5);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 5);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-    //++dbgCommandCount;
-}
-
-//------------------------------------------------------------------------------
-
-inline void
-CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6)
-{
-    _cmd.resize(_cmd.size() + 1 + 6);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 6);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-    b[6] = arg6;
-    //++dbgCommandCount;
-}
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -1137,7 +656,7 @@ void CommandBufferGLES2_t::Execute()
         switch (cmd)
 #endif
         {
-        case GLES2__BEGIN:
+        case CMD_BEGIN:
         {
             GL_CALL(glFrontFace(GL_CW));
             GL_CALL(glEnable(GL_CULL_FACE));
@@ -1209,7 +728,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__END:
+        case CMD_END:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             sync = (static_cast<const CommandGLES2_End*>(cmd))->syncObject;
@@ -1244,7 +763,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_VERTEX_DATA:
+        case CMD_SET_VERTEX_DATA:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle vb = (static_cast<const CommandGLES2_SetVertexData*>(cmd))->vb;
@@ -1270,7 +789,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_INDICES:
+        case CMD_SET_INDICES:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle ib = (static_cast<const CommandGLES2_SetIndices*>(cmd))->ib;
@@ -1288,7 +807,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_QUERY_BUFFER:
+        case CMD_SET_QUERY_BUFFER:
         {
             DVASSERT(cur_query_buf == InvalidHandle);
             #if RHI_GLES2__USE_CMDBUF_PACKING
@@ -1300,7 +819,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_QUERY_INDEX:
+        case CMD_SET_QUERY_INDEX:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             if (cur_query_buf != InvalidHandle)
@@ -1313,7 +832,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_PIPELINE_STATE:
+        case CMD_SET_PIPELINE_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle ps = (static_cast<const CommandGLES2_SetPipelineState*>(cmd))->ps;
@@ -1346,7 +865,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_CULL_MODE:
+        case CMD_SET_CULL_MODE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             CullMode mode = CullMode((static_cast<const CommandGLES2_SetCullMode*>(cmd))->mode);
@@ -1376,7 +895,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_SCISSOR_RECT:
+        case CMD_SET_SCISSOR_RECT:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             GLint x = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->x;
@@ -1406,7 +925,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_VIEWPORT:
+        case CMD_SET_VIEWPORT:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             GLint x = (static_cast<const CommandGLES2_SetViewport*>(cmd))->x;
@@ -1435,7 +954,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_FILLMODE:
+        case CMD_SET_FILLMODE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             FillMode mode = FillMode((static_cast<const CommandGLES2_SetFillMode*>(cmd))->mode);
@@ -1450,7 +969,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_DEPTHSTENCIL_STATE:
+        case CMD_SET_DEPTHSTENCIL_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle state = (static_cast<const CommandGLES2_SetDepthStencilState*>(cmd))->depthStencilState;
@@ -1463,7 +982,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_SAMPLER_STATE:
+        case CMD_SET_SAMPLER_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             Handle state = (static_cast<const CommandGLES2_SetSamplerState*>(cmd))->samplerState;
@@ -1477,7 +996,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_VERTEX_PROG_CONST_BUFFER:
+        case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
 //++stcb_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
@@ -1496,7 +1015,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_FRAGMENT_PROG_CONST_BUFFER:
+        case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
 //++stcb_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
@@ -1515,7 +1034,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_FRAGMENT_TEXTURE:
+        case CMD_SET_FRAGMENT_TEXTURE:
         {
 //++sttx_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
@@ -1532,7 +1051,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_VERTEX_TEXTURE:
+        case CMD_SET_VERTEX_TEXTURE:
         {
 //++sttx_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
@@ -1549,7 +1068,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__DRAW_PRIMITIVE:
+        case CMD_DRAW_PRIMITIVE:
         {
 //++dip_cnt;
 //{SCOPED_NAMED_TIMING("gl.DP")}
@@ -1605,7 +1124,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__DRAW_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INDEXED_PRIMITIVE:
         {
 //++dip_cnt;
 //{SCOPED_NAMED_TIMING("gl.DIP")}
@@ -1675,7 +1194,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__DRAW_INSTANCED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->vertexCount;
@@ -1742,7 +1261,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->vertexCount;
@@ -1828,7 +1347,7 @@ void CommandBufferGLES2_t::Execute()
         }
         break;
 
-        case GLES2__SET_MARKER:
+        case CMD_SET_MARKER:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             const char* text = (static_cast<const CommandGLES2_SetMarker*>(cmd))->text;
@@ -1844,12 +1363,12 @@ void CommandBufferGLES2_t::Execute()
 
         if (--immediate_cmd_ttw <= 0)
         {
-            ProcessImmediateCmd();
+            RenderLoop::CheckImmediateCommand();
             immediate_cmd_ttw = 10;
         }
         
         #if RHI_GLES2__USE_CMDBUF_PACKING
-        if (cmd->type == GLES2__END)
+        if (cmd->type == CMD_END)
             break;
 
         c += cmd->size;
@@ -1866,60 +1385,45 @@ void CommandBufferGLES2_t::Execute()
 
 //------------------------------------------------------------------------------
 
-#ifdef __DAVAENGINE_ANDROID__
-static void
-_RejectAllFrames()
+static void _GLES2_RejectFrame(CommonImpl::Frame&& frame)
 {
-    _GLES2_FrameSync.Lock();
-    for (std::vector<FrameGLES2>::iterator f = _GLES2_Frame.begin(); f != _GLES2_Frame.end();)
+#ifdef __DAVAENGINE_ANDROID__
+
+    if (frame.sync != InvalidHandle)
     {
-        if (f->readyToExecute)
+        SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(frame.sync);
+        s->is_signaled = true;
+        s->is_used = true;
+    }
+    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    {
+        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
+
+        for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
         {
-            if (f->sync != InvalidHandle)
+            CommandBufferGLES2_t* cc = CommandBufferPoolGLES2::Get(*c);
+            if (cc->sync != InvalidHandle)
             {
-                SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(f->sync);
+                SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(cc->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
-            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
-            {
-                RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
-
-                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
-                {
-                    CommandBufferGLES2_t* cc = CommandBufferPoolGLES2::Get(*c);
-                    if (cc->sync != InvalidHandle)
-                    {
-                        SyncObjectGLES2_t* s = SyncObjectPoolGLES2::Get(cc->sync);
-                        s->is_signaled = true;
-                        s->is_used = true;
-                    }
-                    #if RHI_GLES2__USE_CMDBUF_PACKING
-                    cc->curUsedSize = 0;
-                    #else
-                    cc->_cmd.clear();
-                    #endif
-                    CommandBufferPoolGLES2::Free(*c);
-                }
-
-                RenderPassPoolGLES2::Free(*p);
-            }
-            f = _GLES2_Frame.erase(f);
-        }
-        else
-        {
-            ++f;
-        }
-    }
-
-    _GLES2_FrameSync.Unlock();
-}
+#if RHI_GLES2__USE_CMDBUF_PACKING
+            cc->curUsedSize = 0;
+#else
+            cc->_cmd.clear();
 #endif
+            CommandBufferPoolGLES2::Free(*c);
+        }
+
+        RenderPassPoolGLES2::Free(*p);
+    }           
+#endif
+}
 
 //------------------------------------------------------------------------------
 
-static void
-_GLES2_ExecuteQueuedCommands()
+static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {
     StatSet::ResetAll();
 
@@ -1927,51 +1431,37 @@ _GLES2_ExecuteQueuedCommands()
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;
     unsigned frame_n = 0;
-    bool do_exit = false;
 
-    _GLES2_FrameSync.Lock();
-    if (_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute)
+    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
     {
-        for (std::vector<Handle>::iterator p = _GLES2_Frame.begin()->pass.begin(), p_end = _GLES2_Frame.begin()->pass.end(); p != p_end; ++p)
+        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
+        bool do_add = true;
+
+        for (unsigned i = 0; i != pass.size(); ++i)
         {
-            RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
-            bool do_add = true;
-
-            for (unsigned i = 0; i != pass.size(); ++i)
+            if (pp->priority > pass[i]->priority)
             {
-                if (pp->priority > pass[i]->priority)
-                {
-                    pass.insert(pass.begin() + i, 1, pp);
-                    do_add = false;
-                    break;
-                }
+                pass.insert(pass.begin() + i, 1, pp);
+                do_add = false;
+                break;
             }
-
-            if (do_add)
-                pass.push_back(pp);
         }
 
-        pass_h = _GLES2_Frame.begin()->pass;
-        frame_n = _GLES2_Frame.begin()->number;
+        if (do_add)
+            pass.push_back(pp);
     }
-    else
-    {
-        do_exit = true;
-    }
-    if (_GLES2_Frame.size() && (_GLES2_Frame.begin()->sync != InvalidHandle))
-    {
-        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(_GLES2_Frame.begin()->sync);
 
+    pass_h = frame.pass;
+    frame_n = frame.frameNumber;
+
+    if (frame.sync != InvalidHandle)
+    {
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(frame.sync);
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
-    _GLES2_FrameSync.Unlock();
 
-    if (do_exit)
-        return;
-
-    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
     for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
     {
         RenderPassGLES2_t* pp = *p;
@@ -1997,50 +1487,10 @@ _GLES2_ExecuteQueuedCommands()
             CommandBufferPoolGLES2::Free(cb_h);
         }
     }
+    for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
+        RenderPassPoolGLES2::Free(*p);
 
-    _GLES2_FrameSync.Lock();
-    {
-        Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-        _GLES2_Frame.erase(_GLES2_Frame.begin());
-
-        for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-            RenderPassPoolGLES2::Free(*p);
-    }
-    _GLES2_FrameSync.Unlock();
-
-    if (_GLES2_Context)
-    {
-        // do swap-buffers
-
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
-        
-#if defined(__DAVAENGINE_WIN32__)
-        Trace("rhi-gl.swap-buffers...\n");
-        SwapBuffers(_GLES2_WindowDC);
-        Trace("rhi-gl.swap-buffers done\n");
-#elif defined(__DAVAENGINE_MACOS__)
-        macos_gl_end_frame();
-#elif defined(__DAVAENGINE_IPHONE__)
-        ios_gl_end_frame();
-#elif defined(__DAVAENGINE_ANDROID__)
-
-        bool success = android_gl_end_frame();
-        if (!success) //'false' mean lost context, need restore resources
-        {
-            _RejectAllFrames();
-
-            TextureGLES2::ReCreateAll();
-            VertexBufferGLES2::ReCreateAll();
-            IndexBufferGLES2::ReCreateAll();
-        }
-
-#endif
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
-    }
-
-    // update sync-objects
-
+    //update sync objects for gl
     _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
@@ -2050,235 +1500,47 @@ _GLES2_ExecuteQueuedCommands()
     _GLES2_SyncObjectsSync.Unlock();
 }
 
-//------------------------------------------------------------------------------
-
-static void
-gles2_Present(Handle sync)
+bool _GLES2_PresentBuffer()
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
+    bool success = true;
+    DVASSERT(_GLES2_Context)
 
-    if (_GLES2_RenderThreadFrameCount)
-    {
-        Trace("rhi-gl.present\n");
+// do swap-buffers            
+    #if defined(__DAVAENGINE_WIN32__)
+    Trace("rhi-gl.swap-buffers...\n");
+    SwapBuffers(_GLES2_WindowDC);
+    Trace("rhi-gl.swap-buffers done\n");
+    #elif defined(__DAVAENGINE_MACOS__)
+    macos_gl_end_frame();
+    #elif defined(__DAVAENGINE_IPHONE__)
+    ios_gl_end_frame();
+    #elif defined(__DAVAENGINE_ANDROID__)
+    success = android_gl_end_frame();        
+    #endif
 
-        _GLES2_FrameSync.Lock();
-        {
-            if (_GLES2_Frame.size())
-            {
-                _GLES2_Frame.back().readyToExecute = true;
-                _GLES2_Frame.back().sync = sync;
-                _GLES2_FrameStarted = false;
-                Trace("\n\n-------------------------------\nframe %u generated\n", _GLES2_Frame.back().number);
-            }
-
-            //        _FrameStarted = false;
-        }
-        _GLES2_FrameSync.Unlock();
-
-        if (!_GLES2_RenderThreadSuspended.GetRelaxed())
-        {
-            _GLES2_FramePreparedEvent.Signal();
-        }
-
-        uint32 frame_cnt = 0;
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
-        do
-        {
-            _GLES2_FrameSync.Lock();
-            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
-            _GLES2_FrameSync.Unlock();
-
-            if (frame_cnt >= _GLES2_RenderThreadFrameCount)
-            {
-                _GLES2_FrameDoneEvent.Wait();
-            }
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-        }
-        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
-    }
-    else
-    {
-        if (_GLES2_Frame.size())
-        {
-            _GLES2_Frame.back().readyToExecute = true;
-            _GLES2_Frame.back().sync = sync;
-            _GLES2_FrameStarted = false;
-        }
-
-        _GLES2_ExecuteQueuedCommands();
-    }
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
+    return success;
 }
 
-//------------------------------------------------------------------------------
-
-static void
-_RenderFunc(DAVA::BaseObject* obj, void*, void*)
-{
-    DispatchPlatform::AcquireContext();
-
-    _GLES2_RenderThredStartedSync.Post();
-    Trace("RHI render-thread started\n");
-
-    Logger::Info("[RHI] render-thread started");
-
-    bool do_exit = false;
-    while (!do_exit)
-    {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
-
-        {
-            if (_GLES2_RenderThreadSuspended.Get())
-            {
-                GL_CALL(glFinish());
-                _GLES2_RenderThreadSuspendSyncReached = true;
-                _GLES2_RenderThreadSuspendSync.Wait();
-            }
-            
-
-#if defined __DAVAENGINE_ANDROID__
-            android_gl_checkSurface();
-#elif defined __DAVAENGINE_IPHONE__
-            ios_gl_check_layer();
+void _GLES2_ResetBlock()
+{        
+#if defined(__DAVAENGINE_ANDROID__)
+    TextureGLES2::ReCreateAll();
+    VertexBufferGLES2::ReCreateAll();
+    IndexBufferGLES2::ReCreateAll();
 #endif
-
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-
-            // CRAP: busy-wait
-            bool do_wait = true;
-            while (do_wait)
-            {
-                _GLES2_RenderThreadExitSync.Lock();
-                do_exit = _GLES2_RenderThreadExitPending;
-                _GLES2_RenderThreadExitSync.Unlock();
-
-                if (do_exit)
-                    break;
-                ProcessImmediateCmd();
-
-                _GLES2_FrameSync.Lock();
-                do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
-                _GLES2_FrameSync.Unlock();
-
-                if (do_wait)
-                {
-                    _GLES2_FramePreparedEvent.Wait();
-                }
-            }
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-
-            if (!do_exit)
-            {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-                _GLES2_ExecuteQueuedCommands();
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-            }
-
-            _GLES2_FrameDoneEvent.Signal();
-        }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
-    }
-
-    Logger::Info("[RHI] render-thread finished");
-    Trace("RHI render-thread stopped\n");
 }
 
-void InitializeRenderThreadGLES2(uint32 frameCount)
+void _GLES2_InvalidateFrameCache()
 {
-    _GLES2_RenderThreadFrameCount = frameCount;
-
-    if (_GLES2_RenderThreadFrameCount)
-    {
-        DispatchPlatform::ReleaseContext();
-
-        _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
-        _GLES2_RenderThread->SetName("RHI.gl-render");
-        _GLES2_RenderThread->Start();
-        //        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
-        _GLES2_RenderThredStartedSync.Wait();
-    }
+    ProgGLES2::InvalidateAllConstBufferInstances();
 }
 
 //------------------------------------------------------------------------------
 
-void UninitializeRenderThreadGLES2()
-{
-    if (_GLES2_RenderThreadFrameCount)
-    {
-        _GLES2_RenderThreadExitSync.Lock();
-        _GLES2_RenderThreadExitPending = true;
-        _GLES2_RenderThreadExitSync.Unlock();
-
-        if (_GLES2_RenderThreadSuspended.Get())
-        {
-            Logger::Info("RenderThreadGLES2 is suspended. Need resume it to be able to join.");
-            ResumeGLES2();
-        }
-
-        _GLES2_FramePreparedEvent.Signal();
-
-        Logger::Info("UninitializeRenderThreadGLES2 join begin");
-        _GLES2_RenderThread->Join();
-        Logger::Info("UninitializeRenderThreadGLES2 join end");
-    }
-}
 
 //------------------------------------------------------------------------------
 
-void SuspendGLES2()
-{
-    if (_GLES2_RenderThreadSuspended.CompareAndSwap(false, true))
-    {
-        while (!_GLES2_RenderThreadSuspendSyncReached)
-        {
-            _GLES2_FramePreparedEvent.Signal(); //avoid stall
-        }
-        _GLES2_RenderThreadSuspendSyncReached = false;
-    }
-    else
-    {
-        DVASSERT_MSG(false, "[RHI] Render was suspended twice");
-    }
-
-    Logger::Error("Render GLES Suspended");
-}
-
-//------------------------------------------------------------------------------
-
-void ResumeGLES2()
-{
-    Logger::Error("Render GLES Resumed");
-
-    if (_GLES2_RenderThreadSuspended.CompareAndSwap(true, false))
-    {
-        _GLES2_RenderThreadSuspendSync.Post();
-    }
-    else
-    {
-        DVASSERT_MSG(false, "[RHI] Render was resumed twice");
-    }
-}
-
-//------------------------------------------------------------------------------
-
-#if 0
-    
-static void
-_LogGLError( const char* expr, int err )
-{
-    Trace( "FAILED  %s (err= 0x%X) : %s\n", expr, err, GetGLErrorString(err) );
-    DVASSERT(!"KABOOM!!!");
-}
-#endif
-
-//------------------------------------------------------------------------------
-
-static void
-_ExecGL(GLCommand* command, uint32 cmdCount)
+static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
     int err = GL_NO_ERROR;
 
@@ -2290,13 +1552,6 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define RELEASE_CONTEXT()
 #endif
 
-    /*
-    do 
-    {
-        err = glGetError();
-    } 
-    while ( err != GL_NO_ERROR );
-*/
     ACQUIRE_CONTEXT();
 
 #if 0
@@ -2316,8 +1571,8 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
     #define EXEC_GL(expr) expr 
 
 #endif
-
-    for (GLCommand *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
+    GLCommand* commandData = reinterpret_cast<GLCommand*>(command->cmdData);
+    for (GLCommand *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
 
@@ -2690,51 +1945,13 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
 //------------------------------------------------------------------------------
 
-void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
+void ExecGL(GLCommand* command, uint32 cmdCount, bool forceImmediate)
 {
-    if (force_immediate || !_GLES2_RenderThreadFrameCount)
-    {
-        _ExecGL(command, cmdCount);
-    }
-    else
-    {
-        bool scheduled = false;
-        bool executed = false;
-
-        // CRAP: busy-wait
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
-
-        while (!scheduled)
-        {
-            _GLES2_PendingImmediateCmdSync.Lock();
-            if (!_GLES2_PendingImmediateCmd)
-            {
-                _GLES2_PendingImmediateCmd = command;
-                _GLES2_PendingImmediateCmdCount = cmdCount;
-                scheduled = true;
-            }
-            _GLES2_PendingImmediateCmdSync.Unlock();
-        }
-
-        // CRAP: busy-wait
-        while (!executed)
-        {
-            _GLES2_PendingImmediateCmdSync.Lock();
-            if (!_GLES2_PendingImmediateCmd)
-            {
-                executed = true;
-            }
-            _GLES2_PendingImmediateCmdSync.Unlock();
-
-            if (!executed)
-            {
-                _GLES2_FramePreparedEvent.Signal();
-                DAVA::Thread::Yield();
-            }
-        }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
-    }
+    CommonImpl::ImmediateCommand cmd;
+    cmd.cmdData = command;
+    cmd.cmdCount = cmdCount;
+    cmd.forceImmediate = forceImmediate;
+    RenderLoop::IssueImmediateCommand(&cmd);
 }
 
 namespace CommandBufferGLES2
@@ -2772,9 +1989,12 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &gles2_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &gles2_SyncObject_IsSignaled;
 
-    dispatch->impl_Present = &gles2_Present;
-
-    DispatchPlatform::ProcessImmediateCommands = &ProcessImmediateCmd;
+    DispatchPlatform::ProcessImmediateCommand = _GLES2_ExecImmediateCommand;
+    DispatchPlatform::ExecuteFrame = _GLES2_ExecuteQueuedCommands;
+    DispatchPlatform::RejectFrame = _GLES2_RejectFrame;
+    DispatchPlatform::PresntBuffer = _GLES2_PresentBuffer;
+    DispatchPlatform::ResetBlock = _GLES2_ResetBlock;
+    DispatchPlatform::InvalidateFrameCache = _GLES2_InvalidateFrameCache;
 }
 }
 

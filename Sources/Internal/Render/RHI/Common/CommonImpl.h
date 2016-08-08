@@ -12,6 +12,13 @@ struct Frame
     bool readyToExecute = false;
     uint32 frameNumber;
 };
+
+struct ImmediateCommand
+{
+    void* cmdData = nullptr;
+    uint32 cmdCount;
+    bool forceImmediate = false;
+};
 }
 
 namespace DispatchPlatform
@@ -22,7 +29,7 @@ static void (*ReleaseContext)() = nullptr;
 static void (*CheckSurface)() = nullptr;
 static void (*Suspend)() = nullptr;
 
-static void (*ProcessImmediateCommands)() = nullptr;
+static void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command) = nullptr; //called from render thread
 
 static void (*InvalidateFrameCache)() = nullptr;
 static void (*ExecuteFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here

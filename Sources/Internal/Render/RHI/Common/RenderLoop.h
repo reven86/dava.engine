@@ -1,5 +1,6 @@
 #pragma once
 #include "../rhi_Type.h"
+#include "CommonImpl.h"
 
 namespace rhi
 {
@@ -12,5 +13,8 @@ void UninitializeRenderLoop();
 
 void SuspendRender();
 void ResumeRender();
+
+void IssueImmediateCommand(CommonImpl::ImmediateCommand* command); //blocking until complete
+void CheckImmediateCommand(); //called from render thread only
 }
 }

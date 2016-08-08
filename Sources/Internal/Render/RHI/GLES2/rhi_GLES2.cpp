@@ -353,7 +353,7 @@ void gles2_Uninitialize()
     //TODO: release GL resources
     //now it's crash cause Qt context deleted before uninit renderer
     //QueryBufferGLES2::ReleaseQueryObjectsPool();
-    UninitializeRenderThreadGLES2();
+    //UninitializeRenderThreadGLES2();
 }
 
 //------------------------------------------------------------------------------
@@ -491,8 +491,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
-    DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
-    DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);

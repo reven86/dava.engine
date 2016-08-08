@@ -1,3 +1,4 @@
+#include "RenderLoop.h"
 #include "rhi_Pool.h"
 #include "CommonImpl.h"
 #include "FrameLoop.h"
@@ -6,15 +7,10 @@
 #include "Concurrency/Concurrency.h"
 #include "Debug/Profiler.h"
 #include "Logger/Logger.h"
-/*#include "../Common/rhi_Private.h"
-#include "../Common/rhi_RingBuffer.h"
-#include "../Common/dbg_StatSet.h"*/
 
 namespace rhi
 {
 namespace RenderLoop
-{
-namespace Details
 {
 static DAVA::AutoResetEvent framePreparedEvent(false, 400);
 static DAVA::AutoResetEvent frameDoneEvent(false, 400);
@@ -27,9 +23,10 @@ static DAVA::Atomic<bool> renderThreadSuspendSyncReached(false);
 static DAVA::Atomic<bool> renderThreadSuspended(false);
 
 static DAVA::Atomic<bool> renderThreadExitPending(false);
-}
 
-using namespace Details;
+static DAVA::Atomic<CommonImpl::ImmediateCommand*> pendingImmediateCmd(nullptr);
+static DAVA::Mutex pendingImmediateCmdSync;
+
 using DAVA::Logger;
 
 void Present(Handle syncHandle) // called from main thread
@@ -96,7 +93,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
             if (renderThreadExitPending || renderThreadSuspended.Get())
                 break;
 
-            DispatchPlatform::ProcessImmediateCommands();
+            CheckImmediateCommand();
             frameReady = FrameLoop::FrameReady();
 
             if (!frameReady)
@@ -184,6 +181,58 @@ void UninitializeRenderLoop()
         Logger::Info("UninitializeRenderThread join begin");
         renderThread->Join();
         Logger::Info("UninitializeRenderThread join end");
+    }
+}
+
+void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
+{
+    if (command->forceImmediate || (renderThreadFrameCount == 0))
+    {
+        DispatchPlatform::ProcessImmediateCommand(command);
+    }
+    else
+    {
+        bool scheduled = false;
+        bool executed = false;
+
+        // CRAP: busy-wait
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+
+        while (!scheduled)
+        {
+            pendingImmediateCmdSync.Lock();
+            if (pendingImmediateCmd.Get() == nullptr)
+            {
+                pendingImmediateCmd = command;
+                scheduled = true;
+            }
+            pendingImmediateCmdSync.Unlock();
+        }
+
+        // CRAP: busy-wait
+        while (!executed)
+        {
+            if (pendingImmediateCmd.GetRelaxed() == nullptr)
+            {
+                executed = true;
+            }
+            if (!executed)
+            {
+                framePreparedEvent.Signal();
+                DAVA::Thread::Yield();
+            }
+        }
+
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+    }
+}
+void CheckImmediateCommand()
+{
+    if (pendingImmediateCmd.GetRelaxed() != nullptr)
+    {
+        CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.Get();
+        if (cmd != nullptr)
+            DispatchPlatform::ProcessImmediateCommand(cmd);
     }
 }
 }
