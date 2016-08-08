@@ -63,7 +63,6 @@ private:
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 
-    float32 DpiConvert(int32 coord);
     uint32 ConvertButtons(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
     uint32 ConvertQtKeyToSystemScanCode(int key);
