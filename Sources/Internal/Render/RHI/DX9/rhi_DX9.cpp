@@ -321,6 +321,9 @@ void _InitDX9()
         {
             if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
             {
+                DAVA::String deviceDesc = DAVA::Format("%s v%u.%u.%u.%u", info.Description, HIWORD(info.DriverVersion.HighPart), LOWORD(info.DriverVersion.HighPart), HIWORD(info.DriverVersion.LowPart), LOWORD(info.DriverVersion.LowPart));
+                Memcpy(_DeviceCapsDX9.deviceDescription, deviceDesc.c_str(), DAVA::Min(countof(_DeviceCapsDX9.deviceDescription), deviceDesc.length() + 1));
+
                 Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),
