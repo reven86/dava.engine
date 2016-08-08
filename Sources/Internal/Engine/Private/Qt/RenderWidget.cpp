@@ -6,6 +6,8 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Logger/Logger.h"
+
 #include <QQuickWindow>
 #include <QOpenGLContext>
 

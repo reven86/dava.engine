@@ -18,6 +18,7 @@
 
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QOpenGLContext>
 #include <QObject>
 
 namespace DAVA
