@@ -5,11 +5,10 @@
 
 namespace DAVA
 {
-class PackManagerImpl;
-
-class PackManager final
+class IPackManager
 {
 public:
+    virtual ~IPackManager();
     enum class InitState : uint32
     {
         FirstInit,
@@ -80,20 +79,6 @@ public:
         bool isReadOnly = false; // find in build readonly dir assets
     };
 
-    class ISync
-    {
-    public:
-        virtual ~ISync();
-
-        virtual InitState GetState() const = 0;
-        virtual InitError GetError() const = 0;
-        virtual const String& GetErrorMessage() const = 0;
-        virtual bool CanRetry() const = 0;
-        virtual void Retry() = 0;
-        virtual bool IsPaused() const = 0;
-        virtual void Pause() = 0; // if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "Retry"
-    };
-
     // proxy interface to easily check pack request progress
     class IRequest
     {
@@ -110,15 +95,12 @@ public:
 
     // user have to wait till InitializationState become Ready
     // second argument - status text usfull for loging
-    Signal<ISync&> asyncConnectStateChanged;
+    Signal<IPackManager&> asyncConnectStateChanged;
     // signal user about every pack state change
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
     // signal per user request with complete size of all depended packs
     Signal<const IRequest&> requestProgressChanged;
-
-    PackManager();
-    ~PackManager();
 
     struct Hints
     {
@@ -128,56 +110,65 @@ public:
     };
 
     // you can call it first line in FrameworkDidLaunched (throw exception on error)
-    void InitCommonPacks(const FilePath& readOnlyPacksDir,
-                         const FilePath& downloadPacksDir,
-                         const Hints& hints);
+    virtual void InitLocalCommonPacks(const FilePath& readOnlyPacksDir,
+                                      const FilePath& downloadPacksDir,
+                                      const Hints& hints) = 0;
 
     // you can call after InitCommonPacks in GameCore::OnAppStarted (throw exception on error)
-    void InitGpuPacks(const String& architecture, const String& dbFileName);
+    virtual void InitLocalGpuPacks(const String& architecture, const String& dbFileName) = 0;
 
     // complex async connect to server
-    void SyncWithServer(const String& urlToServerSuperpack);
+    virtual void InitRemotePacks(const String& urlToServerSuperpack) = 0;
 
-    bool IsGpuPacksInitialized() const;
+    virtual bool IsGpuPacksInitialized() const = 0;
 
-    ISync& GetISync();
+    virtual InitState GetInitState() const = 0;
 
-    bool IsRequestingEnabled() const;
+    virtual InitError GetInitError() const = 0;
+
+    virtual const String& GetInitErrorMessage() const = 0;
+
+    virtual bool CanRetryInit() const = 0;
+
+    virtual void RetryInit() = 0;
+
+    virtual bool IsPausedInit() const = 0;
+
+    virtual void PauseInit() = 0; // if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "RetryInit"
+
+    virtual bool IsRequestingEnabled() const = 0;
     // enable user request processing
-    void EnableRequesting();
+    virtual void EnableRequesting() = 0;
     // disable user request processing
-    void DisableRequesting();
+    virtual void DisableRequesting() = 0;
 
     // internal method called per frame in framework (can thow exception)
-    void Update();
+    virtual void Update() = 0;
 
     // return unique pack name or empty string
-    const String& FindPackName(const FilePath& relativePathInArchive) const;
+    virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
 
     // fast find using index
-    const Pack& FindPack(const String& packName) const;
+    virtual const Pack& FindPack(const String& packName) const = 0;
 
     // thow exception if can't find pack
-    const Pack& RequestPack(const String& packName);
+    virtual const Pack& RequestPack(const String& packName) = 0;
 
     // return request contains pack or nullptr
     // requestedPackName - previous requested pack currently in downloading
     // or present in wait queue
-    const IRequest* FindRequest(const String& requestedPackName) const;
+    virtual const IRequest* FindRequest(const String& requestedPackName) const = 0;
 
     // order - [0..1] - 0 - first, 1 - last
-    void ChangeDownloadOrder(const String& packName, float order);
+    virtual void SetRequestOrder(const String& packName, float order) = 0;
 
     // all packs state, valid till next call Update()
-    const Vector<Pack>& GetPacks() const;
+    virtual const Vector<Pack>& GetPacks() const = 0;
 
-    void DeletePack(const String& packName);
+    virtual void DeletePack(const String& packName) = 0;
 
-    const FilePath& GetLocalPacksDirectory() const;
-    const String& GetSuperPackUrl() const;
-
-private:
-    std::unique_ptr<PackManagerImpl> impl;
+    virtual const FilePath& GetLocalPacksDirectory() const = 0;
+    virtual const String& GetSuperPackUrl() const = 0;
 };
 
 } // end namespace DAVA

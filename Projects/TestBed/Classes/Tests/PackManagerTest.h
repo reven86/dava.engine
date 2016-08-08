@@ -25,10 +25,10 @@ private:
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void OnPackStateChange(const DAVA::PackManager::Pack& pack);
-    void OnPackDownloadChange(const DAVA::PackManager::Pack& pack);
-    void OnRequestChange(const DAVA::PackManager::IRequest& request);
-    void OnInitChange(DAVA::PackManager::ISync& init);
+    void OnPackStateChange(const DAVA::IPackManager::Pack& pack);
+    void OnPackDownloadChange(const DAVA::IPackManager::Pack& pack);
+    void OnRequestChange(const DAVA::IPackManager::IRequest& request);
+    void OnInitChange(DAVA::IPackManager& init);
 
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
