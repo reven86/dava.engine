@@ -17,7 +17,8 @@ DataContext::~DataContext()
 
 void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
 {
-    DAVA::Reflection reflect = DAVA::Reflection::Reflect(node.get());
+    DataNode* nodePointer = node.get();
+    DAVA::Reflection reflect = DAVA::Reflection::Reflect(&nodePointer);
     const DAVA::Type* type = reflect.GetValueType();
     DVASSERT(dataMap.count(type) == 0);
     dataMap.emplace(std::make_pair(type, node.release()));

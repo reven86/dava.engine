@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/ContextAccessor.h"
-#include "Core/ContextManager.h"
+#include "TArcCore/ContextAccessor.h"
+#include "TArcCore/ContextManager.h"
 
 #include "Engine/EngineFwd.h"
 #include "Base/BaseTypes.h"
@@ -18,6 +18,7 @@ class Core final : private ContextAccessor, private ContextManager
 {
 public:
     Core(DAVA::Engine& engine_);
+    ~Core();
 
     void AddModule(std::unique_ptr<ClientModule>&& module);
     void SetControllerModule(std::unique_ptr<ControllerModule>&& module);
@@ -32,7 +33,8 @@ private:
     DataContext& GetContext(DataContext::ContextID contextID) override;
     DataContext& GetActiveContext() override;
     bool HasActiveContext() const override;
-    DataWrapper CreateWrapper(const DAVA::Type* type);
+    DataWrapper CreateWrapper(const DAVA::Type* type, bool listenRecursive = false) override;
+    DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive = false) override;
 
     // Inherited via ContextManager
     DataContext::ContextID CreateContext() override;

@@ -7,23 +7,10 @@
 namespace tarc
 {
 
-class DataWrapper : public DAVA::BaseObject
+class DataListener;
+class DataWrapper
 {
 public:
-    class Listener
-    {
-    public:
-        virtual ~Listener();
-        virtual void OnDataChanged(const DataWrapper& wrapper) = 0;
-
-    private:
-        friend class DataWrapper;
-        void InitListener(DataWrapper& wrapper);
-
-    private:
-        DAVA::RefPtr<DataWrapper> holder;
-    };
-
     template<typename T>
     class Editor
     {
@@ -42,30 +29,31 @@ public:
     private:
         DAVA::Reflection reflection;
         T dataCopy;
-        DAVA::RefPtr<DataWrapper> holder;
+        DataWrapper holder;
     };
 
     using DataAccessor = DAVA::Function<DAVA::Reflection(DataContext&)>;
 
-    template<typename T>
-    DataWrapper(DataContext& context, bool listenRecursive = false);
-    DataWrapper(std::unique_ptr<DataNode>&& data, DataContext& context, bool listenRecursive = false);
-    DataWrapper(const DataAccessor& accessor, DataContext& context, bool listenRecursive = false);
-
-    DataWrapper(const DataWrapper& other) = delete;
-    DataWrapper& operator=(const DataWrapper& other) = delete;
+    DataWrapper(const DataWrapper& other) = default;
+    DataWrapper& operator=(const DataWrapper& other) = default;
 
     DataWrapper(DataWrapper&& other);
     DataWrapper& operator=(DataWrapper&& other);
 
     bool HasData() const;
-    void AddListener(Listener* listener);
-    void RemoveListener(Listener* listener);
+    void AddListener(DataListener* listener);
+    void RemoveListener(DataListener* listener);
 
     template<typename T>
     Editor<T> CreateEditor();
 
 private:
+    friend class Core;
+    DataWrapper(const DAVA::Type* type, bool listenRecursive = false);
+    DataWrapper(const DataAccessor& accessor, bool listenRecursive = false);
+
+    void SetContext(DataContext* context);
+
     void Sync();
     void SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA::Any>& values);
     void NotifyListeners();
@@ -73,14 +61,24 @@ private:
     static DAVA::Reflection GetDataDefault(DataContext& context, const DAVA::Type* type);
 
 private:
-    DataContext& context;
-    bool listenRecursive;
-    DataAccessor dataAccessor;
-    DAVA::Vector<DAVA::Any> cachedValues;
+    struct Impl;
+    std::shared_ptr<Impl> impl;
+};
 
-    DAVA::Set<Listener*> listeners;
+class DataListener
+{
+public:
+    virtual ~DataListener();
+    virtual void OnDataChanged(const DataWrapper& wrapper) = 0;
+
+private:
+    friend class DataWrapper;
+    void InitListener(const DataWrapper& wrapper);
+
+private:
+    DataWrapper holder;
 };
 
 }
 
-#include "Private/DataWrapper_impl.h"
+#include "DataProcessing/Private/DataWrapper_impl.h"

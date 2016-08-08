@@ -1,4 +1,5 @@
 #pragma once
+#define DAVAENGINE_DATACONTEXT__H
 
 #include "Base/BaseTypes.h"
 #include "Base/Type.h"
@@ -13,7 +14,7 @@ namespace tarc
 class DataContext
 {
 public:
-    DataContext();
+    DataContext() = default;
     ~DataContext();
 
     void CreateData(std::unique_ptr<DataNode>&& node);
@@ -31,12 +32,17 @@ public:
     DataNode& GetData(const DAVA::Type* type); // throw std::runtime_exception if T not exists
     void DeleteData(const DAVA::Type* type);
 
-    void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
+    /*void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
     void UnregisterAction(int id);
-    void CallAction(int id, const DAVA::Any& args);
+    void CallAction(int id, const DAVA::Any& args);*/
+
+    using ContextID = DAVA::uint64;
+    ContextID GetID() const;
 
 private:
-    //DAVA::UnorderedMap<const DAVA::Type*, std::unique_ptr<DataNode>> dataMap;
+    DAVA::UnorderedMap<const DAVA::Type*, DataNode*> dataMap;
 };
 
 }
+
+#include "DataProcessing/Private/DataContext_impl.h"

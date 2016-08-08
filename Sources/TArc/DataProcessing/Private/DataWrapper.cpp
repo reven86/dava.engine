@@ -25,6 +25,11 @@ DataWrapper::DataWrapper(const DataAccessor& accessor, bool listenRecursive_)
     impl->listenRecursive = listenRecursive_;
 }
 
+void DataWrapper::SetContext(DataContext* context)
+{
+    impl->activeContext = context;
+}
+
 bool DataWrapper::HasData() const
 {
     if (impl->activeContext == nullptr)

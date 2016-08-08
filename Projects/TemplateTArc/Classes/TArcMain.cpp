@@ -1,8 +1,9 @@
-#include "Base/BaseTypes.h"
-#include "FileSystem/KeyedArchive.h"
-#include "Render/RHI/rhi_Type.h"
+#include "TArcCore/TArcCore.h"
 
 #include "Engine/Engine.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Base/BaseTypes.h"
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
@@ -24,6 +25,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     DAVA::Engine e;
+    tarc::Core core(e);
 
     e.SetOptions(appOptions);
     e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);

@@ -1,6 +1,6 @@
-#include "Core/TArcCore.h"
-#include "Core/ControllerModule.h"
-#include "Core/ClientModule.h"
+#include "TArcCore/TArcCore.h"
+#include "TArcCore/ControllerModule.h"
+#include "TArcCore/ClientModule.h"
 
 #include "Engine/Engine.h"
 #include "Functional/Function.h"
@@ -16,6 +16,13 @@ Core::Core(DAVA::Engine& engine_)
     engine.beginFrame.Connect(DAVA::MakeFunction(this, &Core::OnFrame));
     engine.gameLoopStarted.Connect(DAVA::MakeFunction(this, &Core::OnLoopStarted));
     engine.gameLoopStopped.Connect(DAVA::MakeFunction(this, &Core::OnLoopStopped));
+}
+
+Core::~Core()
+{
+    DVASSERT(modules.empty());
+    DVASSERT(contexts.empty());
+    DVASSERT(wrappers.empty());
 }
 
 void Core::AddModule(std::unique_ptr<ClientModule>&& module)
@@ -100,9 +107,18 @@ bool Core::HasActiveContext() const
     return activeContext != nullptr;
 }
 
-DataWrapper Core::CreateWrapper(const DAVA::Type* type)
+DataWrapper Core::CreateWrapper(const DAVA::Type* type, bool listenRecursive)
 {
-    return DataWrapper();
+    DataWrapper wrapper(type, listenRecursive);
+    wrapper.SetContext(activeContext);
+    return wrapper;
+}
+
+DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive)
+{
+    DataWrapper wrapper(accessor, listenRecursive);
+    wrapper.SetContext(activeContext);
+    return wrapper;
 }
 
 DataContext::ContextID Core::CreateContext()

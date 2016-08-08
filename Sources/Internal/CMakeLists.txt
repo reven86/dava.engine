@@ -9,6 +9,7 @@ set( NAME_MODULE DavaFramework )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+set( EXTERNAL_MODULES           ${DAVA_SOURCES_DIR}/TArc )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )

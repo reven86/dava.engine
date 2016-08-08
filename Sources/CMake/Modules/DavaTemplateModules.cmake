@@ -196,6 +196,8 @@ macro( setup_main_module )
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
                      )
+
+
         list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
         list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
@@ -288,6 +290,12 @@ macro( setup_main_module )
                                                  BINARY_WIN64_DIR_RELWITHDEB )
                 endif()
 
+            endif()
+
+            file_tree_check( "${CMAKE_CURRENT_LIST_DIR}" )
+
+            if( TARGET_FILE_TREE_FOUND )
+                add_dependencies(  ${NAME_MODULE} FILE_TREE_${NAME_MODULE} )
             endif()
 
             if( DEFINITIONS_PRIVATE )

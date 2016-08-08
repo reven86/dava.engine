@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DAVAENGINE_ANY__H
-#include "TArc/DataProcessing/Any.h"
+#ifndef DAVAENGINE_DATAWRAPPER__H
+#include "DataProcessing/DataWrapper.h"
 #endif
 
 namespace tarc
@@ -50,20 +50,8 @@ T& DataWrapper::Editor<T>::operator->()
     return dataCopy;
 }
 
-template<typename T>
-DataWrapper::DataWrapper(DataContext& context_, bool listenRecursive_)
-    : context(context_)
-    , dataAccessor(DAVA::Bind(&DataWrapper::GetDataDefault, std::placeholders::_1, DAVA::Type::Instance<T>()))
-    , listenRecursive(listenRecursive_)
-{
-}
-
 DataWrapper::DataWrapper(DataWrapper&& other)
-    : context(other.context)
-    , listenRecursive(other.listenRecursive)
-    , dataAccessor(std::move(other.dataAccessor))
-    , cachedValues(std::move(other.cachedValues))
-    , listeners(std::move(other.listeners))
+    : impl(std::move(other.impl))
 {
 }
 
@@ -72,11 +60,7 @@ DataWrapper& DataWrapper::operator=(DataWrapper&& other)
     if (&other == this)
         return *this;
 
-    context = other.context;
-    listenRecursive = other.listenRecursive;
-    dataAccessor = std::move(other.dataAccessor);
-    cachedValues = std::move(other.cachedValues);
-    listeners = std::move(other.listeners);
+    impl = std::move(other.impl);
 
     return *this;
 }
