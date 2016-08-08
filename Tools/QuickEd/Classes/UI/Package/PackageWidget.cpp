@@ -34,7 +34,7 @@ struct PackageContext : WidgetContext
 template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    DAVA::Set<PackageBaseNode*> sortedNodes;
+    SortedPackageBaseNodeSet sortedNodes(CompareByLCA);
     std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
         return (dynamic_cast<NodeType*>(node) != nullptr);
     });
