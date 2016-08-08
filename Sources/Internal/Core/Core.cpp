@@ -538,7 +538,7 @@ void Core::SystemAppFinished()
     if (core != nullptr)
     {
         core->OnAppFinished();
-        //Core::Instance()->ReleaseRenderer();
+        Core::Instance()->ReleaseRenderer();
     }
 
     Logger::Info("Core::SystemAppFinished out");
