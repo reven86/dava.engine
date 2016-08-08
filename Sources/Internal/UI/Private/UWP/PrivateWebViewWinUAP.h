@@ -101,7 +101,7 @@ private: // WebView event handlers
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args);
 
 private:
-    // clang-format off
+// clang-format off
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
 #else

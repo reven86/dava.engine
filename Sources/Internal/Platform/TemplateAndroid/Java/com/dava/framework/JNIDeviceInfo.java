@@ -53,7 +53,7 @@ public class JNIDeviceInfo {
 
     public static String GetRegion()
     {
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() == null)
         {
             return DavaActivity.activitySingleton.getResources().getConfiguration().locale.getCountry();
         }
@@ -71,7 +71,7 @@ public class JNIDeviceInfo {
     public static String GetUDID()
     {
         String aid;
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() == null)
         {
             aid = Secure.getString(DavaActivity.activitySingleton.getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
         }
@@ -133,7 +133,7 @@ public class JNIDeviceInfo {
     
     public static int GetNetworkType() {
         NetworkInfo info;
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() == null)
         {
             ConnectivityManager cm = (ConnectivityManager)DavaActivity.activitySingleton.getSystemService(Context.CONNECTIVITY_SERVICE);
             info = cm.getActiveNetworkInfo();
@@ -168,7 +168,7 @@ public class JNIDeviceInfo {
         switch (networkType) {
         case NETWORK_TYPE_WIFI: {
             WifiInfo wifiInfo;
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() == null)
             {
                 WifiManager wifiManager = (WifiManager)DavaActivity.activitySingleton.getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
@@ -182,7 +182,7 @@ public class JNIDeviceInfo {
         }
         
         case NETWORK_TYPE_MOBILE: {
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() == null)
             {
                 return 0;
             }

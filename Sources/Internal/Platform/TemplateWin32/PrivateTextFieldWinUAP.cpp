@@ -1206,7 +1206,7 @@ Rect PrivateTextFieldWinUAP::VirtualToWindow(const Rect& srcRect) const
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
 
-    // 2. map physical to window
+// 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
@@ -1224,10 +1224,11 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
     Rect rect = srcRect;
-    // 1. map window to physical
 #if defined(__DAVAENGINE_COREV2__)
+    // 1. map window to physical
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
+    // 1. map window to physical
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x *= scaleFactor;

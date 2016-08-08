@@ -36,12 +36,15 @@ public:
 #endif
     virtual ~JobManager();
 
-    /*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
-		will be performed inside this function. 
-	*/
 #if defined(__DAVAENGINE_COREV2__)
+    /*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
+        will be performed inside this function. 
+    */
     void Update(float32 frameDelta = 0.0f);
 #else
+    /*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
+        will be performed inside this function. 
+    */
     void Update();
 #endif
 

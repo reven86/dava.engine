@@ -39,7 +39,7 @@ public class JNIFileList {
             }
         } else {
             AssetManager assetManager;
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() == null)
             {
                 assetManager = DavaActivity.activitySingleton.getAssets();
             }
