@@ -383,23 +383,25 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
 void LODEditor::UpdateForceSliderRange()
 {
     DAVA::float32 maxDistanceValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
-    bool fitSlidersActivated = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
-    if (fitSlidersActivated)
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+    if (system != nullptr)
     {
-        EditorLODSystem* system = GetCurrentEditorLODSystem();
-        if (system != nullptr)
+        const LODComponentHolder* lodData = system->GetActiveLODData();
+        const DAVA::Vector<DAVA::float32>& distances = lodData->GetDistances();
+        for (DAVA::float32 dist : distances)
         {
-            const LODComponentHolder* lodData = system->GetActiveLODData();
-            const DAVA::Vector<DAVA::float32>& distances = lodData->GetDistances();
-            for (DAVA::float32 dist : distances)
+            if (fabs(dist - EditorLODSystem::LOD_DISTANCE_INFINITY) < DAVA::EPSILON)
             {
-                if (fabs(dist - EditorLODSystem::LOD_DISTANCE_INFINITY) < DAVA::EPSILON)
-                {
-                    break;
-                }
-                maxDistanceValue = dist;
+                break;
             }
+            maxDistanceValue = dist;
         }
+    }
+
+    bool fitSlidersActivated = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool() || (maxDistanceValue > DAVA::LodComponent::MAX_LOD_DISTANCE);
+    if (!fitSlidersActivated)
+    {
+        maxDistanceValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
     }
     ui->forceSlider->setRange(LodComponent::INVALID_DISTANCE, maxDistanceValue);
 

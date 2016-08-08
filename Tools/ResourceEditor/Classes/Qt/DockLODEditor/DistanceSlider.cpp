@@ -115,9 +115,15 @@ const DAVA::Vector<DAVA::float32>& DistanceSlider::GetDistances() const
 
 void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_, const DAVA::Vector<bool>& multiple_)
 {
-    fitModeEnabled = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
 
     ApplyDistances(distances_);
+    fitModeEnabled = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
+    if (!fitModeEnabled && notInfDistancesCount > 0)
+    {
+        fitModeEnabled = (realDistances[notInfDistancesCount - 1] > DAVA::LodComponent::MAX_LOD_DISTANCE);
+    }
+
+    BuildUI();
     ApplyMultiple(multiple_);
 
     ColorizeUI();
@@ -145,8 +151,6 @@ void DistanceSlider::ApplyDistances(const DAVA::Vector<DAVA::float32>& distances
             realDistances[layer] = DAVA::Round(distances_[layer]);
         }
     }
-
-    BuildUI();
 }
 
 void DistanceSlider::ApplyMultiple(const DAVA::Vector<bool>& multiple_)
