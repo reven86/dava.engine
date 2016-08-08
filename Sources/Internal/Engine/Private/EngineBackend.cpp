@@ -110,6 +110,17 @@ NativeService* EngineBackend::GetNativeService() const
     return platformCore->GetNativeService();
 }
 
+Vector<char*> EngineBackend::GetCommandLineAsArgv()
+{
+    Vector<char*> argv;
+    argv.reserve(cmdargs.size());
+    for (String& a : cmdargs)
+    {
+        argv.push_back(&*a.begin());
+    }
+    return argv;
+}
+
 void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
     runMode = engineRunMode;
