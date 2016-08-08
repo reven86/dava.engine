@@ -19,10 +19,11 @@ Function<bool(DVAssertMessage::eModalType, const char8*)> innerShowOverride;
 bool ShowMessage(eModalType modalType, const char8* text, ...)
 {
     bool userClickBreak = false;
-    // we don't need to show assert window for console mode
 #if defined(__DAVAENGINE_COREV2__)
+    // we don't need to show assert window for console mode
     if (Engine::Instance()->IsConsoleMode())
 #else
+    // we don't need to show assert window for console mode
     if (Core::Instance()->IsConsoleMode())
 #endif
         return userClickBreak; // TODO what to do here? is loging only in console mode?

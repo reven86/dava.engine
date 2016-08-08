@@ -283,10 +283,11 @@ enum MoviePlayerHelperPlaybackState
     rect += coordSystem->GetPhysicalDrawOffset();
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
-    // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
+    // 2. map physical to window
     NSRect controlRect = [[videoView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #else
+    // 2. map physical to window
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #endif

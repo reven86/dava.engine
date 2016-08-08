@@ -595,10 +595,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
 
-    // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
+    // 2. map physical to window
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
+    // 2. map physical to window
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x /= scaleFactor;
