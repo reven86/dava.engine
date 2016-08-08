@@ -6,7 +6,6 @@
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Engine/Public/Qt/RenderWidget.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace rhi
@@ -16,6 +15,8 @@ struct InitParam;
 
 namespace DAVA
 {
+class RenderWidget;
+
 class WindowNativeService final
 {
 public:

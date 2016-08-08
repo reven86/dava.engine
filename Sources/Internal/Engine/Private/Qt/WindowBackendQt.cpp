@@ -121,7 +121,8 @@ public:
     QtEventListener(const TCallback& triggered_,
                     const TCallback& destroyed_,
                     QObject* parent)
-        : triggered(triggered_)
+        : QObject(parent)
+        , triggered(triggered_)
         , destroyed(destroyed_)
     {
     }
@@ -306,8 +307,8 @@ void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
     e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
     e.mclickEvent.clicks = 1;
     e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = DpiConvert(qtEvent->x());
-    e.mclickEvent.y = DpiConvert(qtEvent->y());
+    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
+    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
     dispatcher->PostEvent(e);
 }
 
@@ -319,8 +320,8 @@ void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
     e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
     e.mclickEvent.clicks = 1;
     e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = DpiConvert(qtEvent->x());
-    e.mclickEvent.y = DpiConvert(qtEvent->y());
+    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
+    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
     dispatcher->PostEvent(e);
 }
 
@@ -330,8 +331,8 @@ void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.timestamp = qtEvent->timestamp();
     e.window = window;
-    e.mmoveEvent.x = DpiConvert(qtEvent->x());
-    e.mmoveEvent.y = DpiConvert(qtEvent->y());
+    e.mmoveEvent.x = static_cast<float32>(qtEvent->x());
+    e.mmoveEvent.y = static_cast<float32>(qtEvent->y());
     dispatcher->PostEvent(e);
 }
 
@@ -343,8 +344,8 @@ void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
     e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
     e.mclickEvent.clicks = 2;
     e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = DpiConvert(qtEvent->x());
-    e.mclickEvent.y = DpiConvert(qtEvent->y());
+    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
+    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
     dispatcher->PostEvent(e);
 }
 
@@ -359,8 +360,8 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     e.type = MainDispatcherEvent::MOUSE_WHEEL;
     e.timestamp = qtEvent->timestamp();
     e.window = window;
-    e.mwheelEvent.x = DpiConvert(qtEvent->x());
-    e.mwheelEvent.y = DpiConvert(qtEvent->y());
+    e.mwheelEvent.x = static_cast<float32>(qtEvent->x());
+    e.mwheelEvent.y = static_cast<float32>(qtEvent->y());
     QPoint pixelDelta = qtEvent->pixelDelta();
     if (!pixelDelta.isNull())
     {

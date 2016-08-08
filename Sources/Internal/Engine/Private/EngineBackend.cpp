@@ -4,12 +4,10 @@
 
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Public/Window.h"
+#include "Engine/Public/WindowNativeService.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#if defined(__DAVAENGINE_QT__)
-#include "Engine/Public/Qt/WindowNativeServiceQt.h"
-#endif
 
 #include "Render/Renderer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"

@@ -81,11 +81,6 @@ private:
     QtEventListener* qtEventListener = nullptr;
 };
 
-inline float32 WindowBackend::DpiConvert(int32 coord)
-{
-    return static_cast<float32>(coord);
-}
-
 } // namespace Private
 } // namespace DAVA
 
