@@ -16,41 +16,27 @@ namespace DAVA
 {
 namespace Private
 {
+std::unique_ptr<QApplication> globalApplication;
+
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , nativeService(new NativeService(this))
 {
 }
 
-PlatformCore::~PlatformCore()
-{
-    for (int32 i = 0; i < argc; ++i)
-    {
-        delete[] argvMemory[i];
-    }
-    delete[] argvMemory;
-}
+PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    const Vector<String>& commandLine = engineBackend->GetCommandLine();
-    argc = static_cast<int>(commandLine.size());
-    argvMemory = new char8*[argc];
-    for (int i = 0; i < argc; ++i)
-    {
-        const String& arg = commandLine[i];
-        size_t size = arg.size();
-        argvMemory[i] = new char8[size + 1];
-        Memset(argvMemory[i], 0, sizeof(char8) * size + 1);
-        Memcpy(argvMemory[i], arg.data(), sizeof(char8) * size);
-    }
-
-    application.reset(new QApplication(argc, argvMemory));
+    DVASSERT(globalApplication == nullptr);
+    Vector<char*> cmdLine = engineBackend->GetCommandLineAsArgv();
+    int argc = static_cast<int>(cmdLine.size());
+    globalApplication.reset(new QApplication(argc, cmdLine.data()));
 }
 
 void PlatformCore::Run()
 {
-    DVASSERT(application);
+    DVASSERT(globalApplication);
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
@@ -72,15 +58,20 @@ void PlatformCore::Run()
         return;
     }
     timer.start(16.0);
-    application->exec();
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnBeforeTerminate();
+
+    QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()
+                     {
+                         engineBackend->OnGameLoopStopped();
+                         engineBackend->OnBeforeTerminate();
+                     });
+
+    globalApplication->exec();
 }
 
 void PlatformCore::Quit()
 {
-    DVASSERT(application);
-    application->quit();
+    DVASSERT(globalApplication);
+    globalApplication->quit();
 }
 
 DAVA::NativeService* PlatformCore::GetNativeService()
@@ -102,7 +93,7 @@ WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float3
 
 QApplication* PlatformCore::GetApplication()
 {
-    return application.get();
+    return globalApplication.get();
 }
 
 } // namespace Private

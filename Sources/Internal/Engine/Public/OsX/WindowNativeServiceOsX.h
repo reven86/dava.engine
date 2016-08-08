@@ -12,11 +12,17 @@
 
 @class NSView;
 
+namespace rhi
+{
+struct InitParam;
+}
+
 namespace DAVA
 {
 class WindowNativeService final
 {
 public:
+    void InitRenderParams(rhi::InitParam& params);
     void AddNSView(NSView* nsview);
     void RemoveNSView(NSView* nsview);
 

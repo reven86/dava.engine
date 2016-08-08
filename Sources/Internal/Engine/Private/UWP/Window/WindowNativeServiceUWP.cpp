@@ -13,6 +13,10 @@ WindowNativeService::WindowNativeService(Private::WindowNativeBridge ^ cxxBridge
 {
 }
 
+void WindowNativeService::InitRenderParams(rhi::InitParam& params)
+{
+}
+
 void WindowNativeService::AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl)
 {
     bridge->AddXamlControl(xamlControl);

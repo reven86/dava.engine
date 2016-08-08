@@ -20,6 +20,10 @@ WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBrid
 {
 }
 
+void WindowNativeService::InitRenderParams(rhi::InitParam& params)
+{
+}
+
 void WindowNativeService::AddNSView(NSView* nsview)
 {
     [bridge->renderView addSubview:nsview];

@@ -497,10 +497,8 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
-#if defined(__DAVAENGINE_QT__)
     WindowNativeService* nativeService = GetPrimaryWindow()->GetNativeService();
     nativeService->InitRenderParams(rendererParams);
-#endif
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
