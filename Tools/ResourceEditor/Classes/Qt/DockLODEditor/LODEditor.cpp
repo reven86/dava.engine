@@ -388,21 +388,20 @@ void LODEditor::UpdateForceSliderRange()
     {
         const LODComponentHolder* lodData = system->GetActiveLODData();
         const DAVA::Vector<DAVA::float32>& distances = lodData->GetDistances();
-        for (DAVA::float32 dist : distances)
+
+        if (EditorLODSystem::IsFitModeEnabled(distances))
         {
-            if (fabs(dist - EditorLODSystem::LOD_DISTANCE_INFINITY) < DAVA::EPSILON)
+            for (DAVA::float32 dist : distances)
             {
-                break;
+                if (fabs(dist - EditorLODSystem::LOD_DISTANCE_INFINITY) < DAVA::EPSILON)
+                {
+                    break;
+                }
+                maxDistanceValue = dist;
             }
-            maxDistanceValue = dist;
         }
     }
 
-    bool fitSlidersActivated = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool() || (maxDistanceValue > DAVA::LodComponent::MAX_LOD_DISTANCE);
-    if (!fitSlidersActivated)
-    {
-        maxDistanceValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
-    }
     ui->forceSlider->setRange(LodComponent::INVALID_DISTANCE, maxDistanceValue);
 
     QString text = QString("%1 to %2").arg(DAVA::LodComponent::MIN_LOD_DISTANCE).arg(maxDistanceValue);
