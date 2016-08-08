@@ -81,6 +81,7 @@ if(TARGETS STREQUAL "all")
 	init_project ()
 	set          ( DAVA_MEGASOLUTION      1 )
 
+## tools
 	add_tool     ( ResourceEditor   )
 	add_tool     ( QuickEd          )
 	add_tool     ( ResourcePacker   )
@@ -88,6 +89,8 @@ if(TARGETS STREQUAL "all")
 	add_tool     ( ImageUnpacker    )
 	add_tool     ( AssetCacheClient )
 	add_tool     ( AssetCacheServer )
+
+## other
     add_tool     ( Launcher )
 
 	add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
