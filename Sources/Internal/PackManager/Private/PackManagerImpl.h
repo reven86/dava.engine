@@ -10,53 +10,55 @@ namespace DAVA
 {
 struct PackPriorityComparator;
 
-static const String devmode_file_exist_on_filesystem{ "dummy_not_existing_pack_for_dev_mod" };
-
-class PackManagerImpl : public PackManager::ISync
+class PackManagerImpl : public IPackManager
 {
 public:
     PackManagerImpl() = default;
 
-    void InitCommonPacks(const FilePath& readOnlyPacksDir_,
-                         const FilePath& downloadPacksDir_,
-                         const PackManager::Hints& hints_,
-                         PackManager* packManager_);
+    void InitLocalCommonPacks(const FilePath& readOnlyPacksDir_,
+                              const FilePath& downloadPacksDir_,
+                              const Hints& hints_) override;
 
-    void InitGpuPacks(const String& architecture_, const String& dbFileName);
+    void InitLocalGpuPacks(const String& architecture_, const String& dbFileName) override;
 
-    bool IsGpuPacksInitialized() const;
+    bool IsGpuPacksInitialized() const override;
 
-    void SyncWithServer(const String& urlToServerSuperpack);
+    void InitRemotePacks(const String& urlToServerSuperpack) override;
 
-    // start PackManager::IInitialization ///////////////////////////////
-    PackManager::InitState GetState() const override;
-    PackManager::InitError GetError() const override;
-    const String& GetErrorMessage() const override;
-    bool CanRetry() const override;
-    void Retry() override;
-    bool IsPaused() const override;
-    void Pause() override; // if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "Retry"
-    // end PackManager::IInitialization /////////////////////////////////
+    InitState GetInitState() const override;
 
-    bool IsProcessingEnabled() const;
+    InitError GetInitError() const override;
 
-    void EnableProcessing();
+    const String& GetInitErrorMessage() const override;
 
-    void DisableProcessing();
+    bool CanRetryInit() const override;
 
-    void Update();
+    void RetryInit() override;
 
-    const String& FindPackName(const FilePath& relativePathInPack) const;
+    bool IsPausedInit() const override;
 
-    const PackManager::Pack& RequestPack(const String& packName);
+    void PauseInit() override;
 
-    const PackManager::IRequest* FindRequest(const String& pack) const;
+    bool IsRequestingEnabled() const override;
 
-    void ChangePackPriority(const String& packName, float newPriority) const;
+    void EnableRequesting() override;
 
-    uint32 GetPackIndex(const String& packName);
+    void DisableRequesting() override;
 
-    PackManager::Pack& GetPack(const String& packName);
+    void Update() override;
+
+    const String& FindPackName(const FilePath& relativePathInPack) const override;
+
+    const Pack& RequestPack(const String& packName) override;
+
+    const IRequest* FindRequest(const String& pack) const override;
+
+    void SetRequestOrder(const String& packName, float newPriority) override;
+
+    uint32 GetPackIndex(const String& packName) const;
+    Pack& GetPack(const String& packName);
+
+    const Pack& FindPack(const String& packName) const override;
 
     void MountPacks(const Set<FilePath>& basePacks);
 
@@ -64,23 +66,18 @@ public:
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
-    const Vector<PackManager::Pack>& GetAllState() const;
+    const Vector<Pack>& GetPacks() const override;
 
-    const FilePath& GetLocalPacksDir() const;
+    const FilePath& GetLocalPacksDirectory() const override;
 
     const String& GetSuperPackUrl() const;
-
-    PackManager& GetPM()
-    {
-        return *packManager;
-    }
 
     const PackFormat::PackFile::FooterBlock& GetInitFooter() const
     {
         return initFooterOnServer;
     }
 
-    const PackManager::Hints& GetHints() const
+    const Hints& GetHints() const
     {
         return hints;
     }
@@ -109,9 +106,8 @@ private:
     String superPackUrl;
     String architecture;
     bool isProcessingEnabled = false;
-    PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
-    Vector<PackManager::Pack> packs;
+    Vector<Pack> packs;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
@@ -121,8 +117,8 @@ private:
 
     String initLocalDBFileName;
     String initErrorMsg;
-    PackManager::InitState initState = PackManager::InitState::FirstInit;
-    PackManager::InitError initError = PackManager::InitError::AllGood;
+    InitState initState = InitState::FirstInit;
+    InitError initError = InitError::AllGood;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
@@ -134,23 +130,23 @@ private:
 
     List<FilePath> mountedCommonPacks;
 
-    PackManager::Hints hints;
+    Hints hints;
 };
 
 struct PackPriorityComparator
 {
-    bool operator()(const PackManager::Pack* lhs, const PackManager::Pack* rhs) const
+    bool operator()(const IPackManager::Pack* lhs, const IPackManager::Pack* rhs) const
     {
         return lhs->priority < rhs->priority;
     }
 };
 
-inline bool PackManagerImpl::IsProcessingEnabled() const
+bool PackManagerImpl::IsRequestingEnabled() const
 {
     return isProcessingEnabled;
 }
 
-inline void PackManagerImpl::EnableProcessing()
+void PackManagerImpl::EnableRequesting()
 {
     if (!isProcessingEnabled)
     {
@@ -162,7 +158,7 @@ inline void PackManagerImpl::EnableProcessing()
     }
 }
 
-inline void PackManagerImpl::DisableProcessing()
+void PackManagerImpl::DisableRequesting()
 {
     if (isProcessingEnabled)
     {
@@ -174,13 +170,13 @@ inline void PackManagerImpl::DisableProcessing()
     }
 }
 
-inline const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
+const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
     const String& result = db->FindPack(relativePathInPack);
     return result;
 }
 
-inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
+uint32 PackManagerImpl::GetPackIndex(const String& packName) const
 {
     auto it = packsIndex.find(packName);
     if (it != end(packsIndex))
@@ -190,23 +186,29 @@ inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
     throw std::runtime_error("can't find pack with name: " + packName);
 }
 
-inline PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
+IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
     uint32 index = GetPackIndex(packName);
     return packs.at(index);
 }
 
-inline const Vector<PackManager::Pack>& PackManagerImpl::GetAllState() const
+const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) const
+{
+    uint32 index = GetPackIndex(packName);
+    return packs.at(index);
+}
+
+const Vector<IPackManager::Pack>& PackManagerImpl::GetPacks() const
 {
     return packs;
 }
 
-inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
+const FilePath& PackManagerImpl::GetLocalPacksDirectory() const
 {
     return localPacksDir;
 }
 
-inline const String& PackManagerImpl::GetSuperPackUrl() const
+const String& PackManagerImpl::GetSuperPackUrl() const
 {
     return superPackUrl;
 }

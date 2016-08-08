@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_)
+PackRequest::PackRequest(PackManagerImpl& packManager_, IPackManager::Pack& pack_)
     : packManagerImpl(&packManager_)
     , rootPack(&pack_)
 {
@@ -16,11 +16,11 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
     DVASSERT(rootPack != nullptr);
     // find all dependenciec
     // put it all into vector and put final pack into vector too
-    CollectDownlodbleDependency(rootPack->name, dependencyList);
+    CollectDownloadableDependency(rootPack->name, dependencyList);
 
     dependencies.reserve(dependencyList.size() + 1);
 
-    for (PackManager::Pack* depPack : dependencyList)
+    for (IPackManager::Pack* depPack : dependencyList)
     {
         SubRequest subRequest;
 
@@ -45,20 +45,20 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_
                   });
 }
 
-void PackRequest::CollectDownlodbleDependency(const String& packName, Vector<PackManager::Pack*>& dependency)
+void PackRequest::CollectDownloadableDependency(const String& packName, Vector<IPackManager::Pack*>& dependency)
 {
-    const PackManager::Pack& packState = packManagerImpl->GetPack(packName);
+    const IPackManager::Pack& packState = packManagerImpl->FindPack(packName);
     for (const String& dependName : packState.dependency)
     {
-        PackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
-        if (dependPack.state != PackManager::Pack::Status::Mounted)
+        IPackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
+        if (dependPack.state != IPackManager::Pack::Status::Mounted)
         {
             if (find(begin(dependency), end(dependency), &dependPack) == end(dependency))
             {
                 dependency.push_back(&dependPack);
             }
 
-            CollectDownlodbleDependency(dependName, dependency);
+            CollectDownloadableDependency(dependName, dependency);
         }
     }
 }
@@ -143,11 +143,11 @@ void PackRequest::GetFooter()
             }
             else
             {
-                rootPack->state = PackManager::Pack::Status::ErrorLoading;
+                rootPack->state = IPackManager::Pack::Status::ErrorLoading;
                 rootPack->downloadError = error;
                 rootPack->otherErrorMsg = "can't load superpack footer";
 
-                packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
+                packManagerImpl->requestProgressChanged.Emit(*this);
             }
         }
     }
@@ -165,9 +165,9 @@ void PackRequest::StartLoadingPackFile()
 
     // build url to pack file and build filePath to pack file
 
-    PackManager::Pack& pack = *subRequest.pack;
+    IPackManager::Pack& pack = *subRequest.pack;
 
-    FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+    FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + pack.name + RequestManager::packPostfix;
     String url = packManagerImpl->GetSuperPackUrl();
 
     // start downloading
@@ -176,9 +176,9 @@ void PackRequest::StartLoadingPackFile()
     // switch state to LoadingPackFile
     subRequest.status = SubRequest::LoadingPackFile;
 
-    pack.state = PackManager::Pack::Status::Downloading;
+    pack.state = IPackManager::Pack::Status::Downloading;
 
-    packManagerImpl->GetPM().packStateChanged.Emit(pack);
+    packManagerImpl->packStateChanged.Emit(pack);
 }
 
 bool PackRequest::IsLoadingPackFileFinished()
@@ -189,7 +189,7 @@ bool PackRequest::IsLoadingPackFileFinished()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& currentPack = *subRequest.pack;
+    IPackManager::Pack& currentPack = *subRequest.pack;
 
     DownloadManager* dm = DownloadManager::Instance();
     DownloadStatus status = DL_UNKNOWN;
@@ -213,8 +213,8 @@ bool PackRequest::IsLoadingPackFileFinished()
                     currentPack.downloadedSize = static_cast<uint32>(progress);
                     currentPack.totalSize = static_cast<uint32>(total);
                     // fire event on update progress
-                    packManagerImpl->GetPM().packDownloadChanged.Emit(currentPack);
-                    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
+                    packManagerImpl->packDownloadChanged.Emit(currentPack);
+                    packManagerImpl->requestProgressChanged.Emit(*this);
                 }
             }
         }
@@ -233,26 +233,26 @@ bool PackRequest::IsLoadingPackFileFinished()
 
                 currentPack.downloadProgress = 1.0f;
                 currentPack.downloadedSize = progress;
-                packManagerImpl->GetPM().packDownloadChanged.Emit(currentPack);
+                packManagerImpl->packDownloadChanged.Emit(currentPack);
             }
             else
             {
                 String errorMsg = DLC::ToString(downloadError);
-                currentPack.state = PackManager::Pack::Status::ErrorLoading;
+                currentPack.state = IPackManager::Pack::Status::ErrorLoading;
                 currentPack.downloadError = downloadError;
                 currentPack.otherErrorMsg = "can't load pack: " + currentPack.name + " dlc: " + errorMsg;
 
                 if (currentPack.name != rootPack->name)
                 {
-                    rootPack->state = PackManager::Pack::Status::OtherError;
+                    rootPack->state = IPackManager::Pack::Status::OtherError;
                     rootPack->otherErrorMsg = "can't load dependency: " + currentPack.name;
                 }
 
                 subRequest.status = SubRequest::Error;
 
-                packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
+                packManagerImpl->packStateChanged.Emit(currentPack);
             }
-            packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
+            packManagerImpl->requestProgressChanged.Emit(*this);
         }
         else
         {
@@ -266,21 +266,21 @@ bool PackRequest::IsLoadingPackFileFinished()
     return result;
 }
 
-void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, PackManager::Pack& currentPack)
+void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subRequest, IPackManager::Pack& currentPack)
 {
-    currentPack.state = PackManager::Pack::Status::OtherError;
+    currentPack.state = IPackManager::Pack::Status::OtherError;
     subRequest.status = SubRequest::Error;
 
     if (rootPack->name != currentPack.name)
     {
-        rootPack->state = PackManager::Pack::Status::OtherError;
+        rootPack->state = IPackManager::Pack::Status::OtherError;
         rootPack->otherErrorMsg = "error with dependency: " + currentPack.name;
     }
 
     // inform user about problem with pack
-    packManagerImpl->GetPM().packStateChanged.Emit(currentPack);
+    packManagerImpl->packStateChanged.Emit(currentPack);
 
-    packManagerImpl->GetPM().requestProgressChanged.Emit(*this);
+    packManagerImpl->requestProgressChanged.Emit(*this);
 }
 
 void PackRequest::StartCheckHash()
@@ -289,10 +289,10 @@ void PackRequest::StartCheckHash()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& currentPack = *subRequest.pack;
+    IPackManager::Pack& currentPack = *subRequest.pack;
 
     // calculate crc32 from PackFile
-    FilePath packPath = packManagerImpl->GetLocalPacksDir() + subRequest.pack->name + RequestManager::packPostfix;
+    FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + subRequest.pack->name + RequestManager::packPostfix;
 
     if (!FileSystem::Instance()->IsFile(packPath))
     {
@@ -324,20 +324,20 @@ void PackRequest::MountPack()
 
     SubRequest& subRequest = dependencies.at(0);
 
-    PackManager::Pack& pack = *subRequest.pack;
+    IPackManager::Pack& pack = *subRequest.pack;
 
     if (pack.hashFromDB != RequestManager::emptyLZ4HCArchiveCrc32)
     {
-        FilePath packPath = packManagerImpl->GetLocalPacksDir() + pack.name + RequestManager::packPostfix;
+        FilePath packPath = packManagerImpl->GetLocalPacksDirectory() + pack.name + RequestManager::packPostfix;
         FileSystem* fs = FileSystem::Instance();
         fs->Mount(packPath, "Data/");
     }
 
     subRequest.status = SubRequest::Mounted;
 
-    pack.state = PackManager::Pack::Status::Mounted;
+    pack.state = IPackManager::Pack::Status::Mounted;
 
-    packManagerImpl->GetPM().packStateChanged.Emit(pack);
+    packManagerImpl->packStateChanged.Emit(pack);
 }
 
 void PackRequest::GoToNextSubRequest()
@@ -431,7 +431,7 @@ void PackRequest::ChangePriority(float32 newPriority)
 {
     for (SubRequest& subRequest : dependencies)
     {
-        PackManager::Pack& pack = *subRequest.pack;
+        IPackManager::Pack& pack = *subRequest.pack;
         pack.priority = newPriority;
     }
 }
@@ -464,17 +464,18 @@ uint64 PackRequest::GetFullSizeWithDependencies() const
 
 uint64 PackRequest::GetDownloadedSize() const
 {
-    uint64 result = 0;
-    std::for_each(begin(dependencyList), end(dependencyList), [&](PackManager::Pack* p)
-                  {
-                      result += p->downloadedSize;
-                  });
+    uint64 result = 0ULL;
+
+    for (auto pack : dependencyList)
+    {
+        result += pack->downloadedSize;
+    }
 
     result += rootPack->downloadedSize;
     return result;
 }
 
-const PackManager::Pack& PackRequest::GetErrorPack() const
+const IPackManager::Pack& PackRequest::GetErrorPack() const
 {
     auto& subRequest = GetCurrentSubRequest();
     return *subRequest.pack;

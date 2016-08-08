@@ -52,7 +52,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // now with PackManager we can improve perfomance by lookup pack name
         // from DB with all files, then check if such pack mounted and from
         // mountedPackIndex find by name archive with file or skip to next step
-        PackManager& pm = Core::Instance()->GetPackManager();
+        IPackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
 
         if (pm.IsGpuPacksInitialized())
@@ -324,7 +324,7 @@ bool File::GetNextChar(uint8* nextChar)
 uint64 File::GetPos() const
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    return static_cast<uint32>(_ftelli64(file));
+    return _ftelli64(file);
 #else
     return static_cast<uint64>(ftello(file));
 #endif

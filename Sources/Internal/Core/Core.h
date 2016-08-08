@@ -12,8 +12,8 @@
 
 /**
 	\defgroup core Core
-	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and 
-    platform functions you can use later during app execution.  
+	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and
+    platform functions you can use later during app execution.
 */
 namespace DAVA
 {
@@ -25,43 +25,43 @@ using AppHandle = struct android_app*;
 using AppHandle = uint32;
 #endif
 
-class PackManager;
+class IPackManager;
 
 /**
 	\ingroup core
-	\brief	Core is a main singleton that initialize everything under all of platforms. 
+	\brief	Core is a main singleton that initialize everything under all of platforms.
             It's a place where you can get some specific information about your application on every supported platform.
-			To read about the process of application initialization check documentation for \ref ApplicationCore class. 
-			
- 
-			Supported engine configuration options: 
-				
-			\section w32_macos Win32 / MacOS X 
+			To read about the process of application initialization check documentation for \ref ApplicationCore class.
+
+
+			Supported engine configuration options:
+
+			\section w32_macos Win32 / MacOS X
 			width: 1024<br/>
 			height: 768<br/>
 			fullscreen: 1<br/>
 			bitsperpixel: 32<br/>
-			 
+
 			\section ios iOS
 			orientation:	SCREEN_ORIENTATION_LANDSCAPE_RIGHT,
 							SCREEN_ORIENTATION_LANDSCAPE_LEFT,
 							SCREEN_ORIENTATION_PORTRAIT,
 							SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN<br/>
- 
-            renderer:         
-                RENDERER_OPENGL_ES_1_0, 
-                RENDERER_OPENGL_ES_2_0, 
+
+            renderer:
+                RENDERER_OPENGL_ES_1_0,
+                RENDERER_OPENGL_ES_2_0,
                 RENDERER_OPENGL_ES_3_0,
                 RENDERER_OPENGL,
                 RENDERER_DIRECTX9       <br/>
-           
-			
+
+
 			\section all All platforms
 			zbuffer: 1	<br/>
 
 			Specific implementation notes (for people who involved to development of platform dependant templates)
 			Core::CreateSingletons must be always called from main thread of application or from main rendering thread.
-			It's required to perform thread system initialization correctly. 
+			It's required to perform thread system initialization correctly.
  */
 class Core : public Singleton<Core>
 {
@@ -168,47 +168,47 @@ public:
     virtual Vector2 GetWindowMinimumSize() const;
 
     /*
-		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X) 
+		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X)
 	 */
 
     /* This code disabled for now and left for the future
 	MacOS X Version: it works right (commented in MainWindowController.mm) but it require convertaton to virtual coordinates
 	For Win32 function not implemented yet, and I do not have time to implement it right now, so left that for the future.
-     
+
      */
     /*
 		\brief Function that return number of frame from the launch of the application
-		
-		This function supposed for such situations when you do not want to recompute something during one frame more than 
-		once. So you can store frameIndex in your object and check have you updated it already or not. 
-		By default this counter starts from frame with index 1, so you can initialize your variables by 0 if you want to 
-		use this index. 
-		
-		Usage example: 
+
+		This function supposed for such situations when you do not want to recompute something during one frame more than
+		once. So you can store frameIndex in your object and check have you updated it already or not.
+		By default this counter starts from frame with index 1, so you can initialize your variables by 0 if you want to
+		use this index.
+
+		Usage example:
 		\code
 		uint32 updateFrameIndex = 0;
-	 
+
 		void UpdateFunction()
 		{
 			if (updateFrameIndex == )return; // no update
 			updateCounter = Core::Instance()->GetGlobalFrameIndex();
-	 
+
 		}
-	 
+
 		\endcode
-		
+
 		\returns global frame index from the launch of your application
 	 */
     uint32 GetGlobalFrameIndex();
 
     /*
-		This function performs message on main thread 
+		This function performs message on main thread
 		\param[in] message message to be performed
 	 */
     //void PerformMessageOnMainThread(const Message & message, bool waitUntilDone = true);
 
     /*
-		* FOR INTERNAL FRAMEWORK USAGE ONLY * 
+		* FOR INTERNAL FRAMEWORK USAGE ONLY *
 		MUST BE CALLED FROM templates on different OS
 	 */
 
@@ -245,7 +245,7 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    PackManager& GetPackManager();
+    IPackManager& GetPackManager();
 
 protected:
     eScreenOrientation screenOrientation;
@@ -283,7 +283,7 @@ private:
     };
     ScreenMetrics screenMetrics;
 
-    std::unique_ptr<PackManager> packManager;
+    std::unique_ptr<IPackManager> packManager;
 };
 
 inline bool Core::IsActive()

@@ -477,13 +477,10 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 #ifdef __DAVAENGINE_ANDROID__
     // ~res:/ or Data/... or tips.yaml
     auto assets = AssetsManagerAndroid::Instance();
-    if (assets->IsInitialized())
+    const String& path = pathToCheck.GetAbsolutePathname();
+    if (assets->HasFile(path))
     {
-        const String& path = pathToCheck.GetAbsolutePathname();
-        if (assets->HasFile(path))
-        {
-            return true;
-        }
+        return true;
     }
 #endif
 
@@ -522,12 +519,9 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
         }
 
         auto assets = AssetsManagerAndroid::Instance();
-        if (assets->IsInitialized())
+        if (assets->HasDirectory(strDir))
         {
-            if (assets->HasDirectory(strDir))
-            {
-                return true;
-            }
+            return true;
         }
     }
 #endif // __DAVAENGINE_ANDROID__

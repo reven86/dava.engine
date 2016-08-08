@@ -8,10 +8,10 @@ namespace DAVA
 {
 class PackManagerImpl;
 
-class PackRequest : public PackManager::IRequest
+class PackRequest : public IPackManager::IRequest
 {
 public:
-    PackRequest(PackManagerImpl& packManager_, PackManager::Pack& pack_);
+    PackRequest(PackManagerImpl& packManager_, IPackManager::Pack& pack_);
 
     void Start();
     void Update();
@@ -37,13 +37,13 @@ public:
             Error
         };
 
-        PackManager::Pack* pack = nullptr;
+        IPackManager::Pack* pack = nullptr;
         String errorMsg;
         uint32 taskId = 0;
         Status status = Wait;
     };
 
-    const PackManager::Pack& GetRootPack() const override
+    const IPackManager::Pack& GetRootPack() const override
     {
         return *rootPack;
     }
@@ -59,13 +59,13 @@ public:
     uint64 GetFullSizeWithDependencies() const override;
 
     uint64 GetDownloadedSize() const override;
-    const PackManager::Pack& GetErrorPack() const override;
+    const IPackManager::Pack& GetErrorPack() const override;
     const String& GetErrorMessage() const override;
 
 private:
     void ClearSuperpackData();
-    void CollectDownlodbleDependency(const String& packName, Vector<PackManager::Pack*>& dependency);
-    void SetErrorStatusAndFireSignal(SubRequest& subRequest, PackManager::Pack& currentPack);
+    void CollectDownloadableDependency(const String& packName, Vector<IPackManager::Pack*>& dependency);
+    void SetErrorStatusAndFireSignal(SubRequest& subRequest, IPackManager::Pack& currentPack);
 
     void AskFooter();
     void GetFooter();
@@ -77,8 +77,8 @@ private:
     void GoToNextSubRequest();
 
     PackManagerImpl* packManagerImpl = nullptr;
-    PackManager::Pack* rootPack = nullptr;
-    Vector<PackManager::Pack*> dependencyList;
+    IPackManager::Pack* rootPack = nullptr;
+    Vector<IPackManager::Pack*> dependencyList;
     Vector<SubRequest> dependencies; // first all dependencies then pack sub request
     uint64 totalAllPacksSize = 0;
 

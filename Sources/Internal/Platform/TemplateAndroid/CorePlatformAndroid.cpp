@@ -1,7 +1,5 @@
 #include "Base/Platform.h"
 
-//#include "Core/Core.h"
-
 #if defined(__DAVAENGINE_ANDROID__)
 
 extern void FrameworkDidLaunched();
@@ -121,7 +119,7 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
 
     Core::CreateSingletons();
 
-    AssetsManagerAndroid::Instance()->Init(assets);
+    new AssetsManagerAndroid(assets);
 
     Logger::SetTag(logTag);
 }

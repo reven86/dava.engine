@@ -201,31 +201,6 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
                 }
             }
         }
-
-        // deprecated OLD method:
-        //        JniFileList jniFileList;
-        //        Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
-        //        FileEntry entry;
-        //        for (int32 i = 0; i < entrys.size(); ++i)
-        //        {
-        //            const JniFileList::JniFileListEntry& jniEntry = entrys[i];
-        //
-        //            entry.path = path + jniEntry.name;
-        //            entry.name = jniEntry.name;
-        //            entry.size = jniEntry.size;
-        //            entry.isDirectory = jniEntry.isDirectory;
-        //            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
-        //
-        //            if (entry.isDirectory)
-        //            {
-        //                entry.path.MakeDirectoryPathname();
-        //            }
-        //
-        //            if (!entry.isHidden || includeHidden)
-        //            {
-        //                fileList.push_back(entry);
-        //            }
-        //        }
     }
 #endif //PLATFORMS
 

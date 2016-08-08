@@ -6,19 +6,8 @@
 
 namespace DAVA
 {
-AssetsManagerAndroid::AssetsManagerAndroid() = default;
-
-AssetsManagerAndroid::~AssetsManagerAndroid() = default;
-
-static const String assetsDirectory = "assets/Data/";
-
-void AssetsManagerAndroid::Init(const String& apkFileName)
+AssetsManagerAndroid::AssetsManagerAndroid(const String& apkFileName)
 {
-    if (apk)
-    {
-        throw std::runtime_error("[AssetsManager::Init] should be initialized only once.");
-    }
-
     FilePath apkPath(apkFileName);
     RefPtr<File> file(File::Create(apkPath, File::OPEN | File::READ));
     if (!file)
@@ -28,6 +17,10 @@ void AssetsManagerAndroid::Init(const String& apkFileName)
 
     apk.reset(new ZipArchive(file, apkPath));
 }
+
+AssetsManagerAndroid::~AssetsManagerAndroid() = default;
+
+static const String assetsDirectory = "assets/Data/";
 
 bool AssetsManagerAndroid::HasDirectory(const String& relativeDirName) const
 {

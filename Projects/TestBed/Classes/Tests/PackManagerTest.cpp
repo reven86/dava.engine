@@ -233,29 +233,29 @@ void PackManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnPackStateChange(const DAVA::PackManager::Pack& pack)
+void PackManagerTest::OnPackStateChange(const DAVA::IPackManager::Pack& pack)
 {
-    if (pack.state == PackManager::Pack::Status::Mounted)
+    if (pack.state == IPackManager::Pack::Status::Mounted)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
     }
-    else if (pack.state == PackManager::Pack::Status::ErrorLoading || pack.state == PackManager::Pack::Status::OtherError)
+    else if (pack.state == IPackManager::Pack::Status::ErrorLoading || pack.state == IPackManager::Pack::Status::OtherError)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("error: %s, %d, %s", pack.name.c_str(), pack.downloadError, pack.otherErrorMsg.c_str())));
     }
-    else if (pack.state == PackManager::Pack::Status::Downloading)
+    else if (pack.state == IPackManager::Pack::Status::Downloading)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("downloading: %s %d", pack.name.c_str(), pack.downloadError,
                                                                             static_cast<int>(100 * pack.downloadProgress))));
     }
 }
 
-void PackManagerTest::OnPackDownloadChange(const DAVA::PackManager::Pack& pack)
+void PackManagerTest::OnPackDownloadChange(const DAVA::IPackManager::Pack& pack)
 {
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
 }
 
-void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request)
+void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& request)
 {
     // change total download progress
     uint64 total = request.GetFullSizeWithDependencies();
@@ -267,20 +267,20 @@ void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnInitChange(PackManager::ISync& init)
+void PackManagerTest::OnInitChange(IPackManager& packManager)
 {
     StringStream ss;
 
-    ss << "init change state: " << static_cast<uint32>(init.GetState()) << '\n';
+    ss << "init change state: " << static_cast<uint32>(packManager.GetInitState()) << '\n';
 
-    if (init.GetError() != PackManager::InitError::AllGood)
+    if (packManager.GetInitError() != IPackManager::InitError::AllGood)
     {
-        ss << "error: " << static_cast<uint32>(init.GetError()) << " message: " << init.GetErrorMessage() << '\n';
+        ss << "error: " << static_cast<uint32>(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
 
-        if (init.CanRetry())
+        if (packManager.CanRetryInit())
         {
             ss << "do you want to retry?\n";
-            init.Pause(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
+            packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
         }
     }
 
@@ -291,7 +291,7 @@ void PackManagerTest::OnInitChange(PackManager::ISync& init)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    PackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = Core::Instance()->GetPackManager();
 
     if (pm.IsRequestingEnabled())
     {
@@ -306,11 +306,11 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
     // clear and renew all packs state
-    pm.InitCommonPacks(readOnlyDirWithPacks,
-                       folderWithDownloadedPacks,
-                       PackManager::Hints());
+    pm.InitLocalCommonPacks(readOnlyDirWithPacks,
+                            folderWithDownloadedPacks,
+                            IPackManager::Hints());
 
-    pm.InitGpuPacks(gpuArchitecture, dbFile);
+    pm.InitLocalGpuPacks(gpuArchitecture, dbFile);
 
     pm.EnableRequesting();
 
@@ -320,18 +320,18 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     packNameLoading->SetText(L"done: start sync");
-    PackManager& pm = Core::Instance()->GetPackManager();
-    pm.SyncWithServer(urlToServerSuperpack);
+    IPackManager& pm = Core::Instance()->GetPackManager();
+    pm.InitRemotePacks(urlToServerSuperpack);
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    PackManager& pm = Core::Instance()->GetPackManager();
-    const Vector<PackManager::Pack>& packs = pm.GetPacks();
+    IPackManager& pm = Core::Instance()->GetPackManager();
+    const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
-    std::for_each(begin(packs), end(packs), [&pm](const PackManager::Pack& pack)
+    std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
                   {
-                      if (pack.state == PackManager::Pack::Status::Mounted && pack.isReadOnly == false)
+                      if (pack.state == IPackManager::Pack::Status::Mounted && pack.isReadOnly == false)
                       {
                           pm.DeletePack(pack.name);
                       }
@@ -345,13 +345,13 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    PackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = Core::Instance()->GetPackManager();
 
     std::stringstream ss;
 
     for (auto& pack : pm.GetPacks())
     {
-        if (pack.state == PackManager::Pack::Status::Mounted)
+        if (pack.state == IPackManager::Pack::Status::Mounted)
         {
             ss << pack.name << ", ";
         }
@@ -370,9 +370,9 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    PackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = Core::Instance()->GetPackManager();
 
-    if (pm.GetISync().GetState() < PackManager::InitState::MountingReadOnlyPacks)
+    if (pm.GetInitState() < IPackManager::InitState::MountingReadOnlyPacks)
     {
         return;
     }
@@ -397,7 +397,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    PackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = Core::Instance()->GetPackManager();
     WideString packName = packNextInput->GetText();
 
     try
@@ -405,7 +405,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
         packNameLoading->SetText(L"loading: " + packName);
         String pName = UTF8Utils::EncodeToUTF8(packName);
         pm.RequestPack(pName);
-        pm.ChangeDownloadOrder(pName, 0.f);
+        pm.SetRequestOrder(pName, 0.f);
     }
     catch (std::exception& ex)
     {

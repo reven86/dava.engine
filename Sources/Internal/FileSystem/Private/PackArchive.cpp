@@ -17,11 +17,11 @@ void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& 
     compressedNamesBuffer.resize(footerBlock.info.namesSizeCompressed, '\0');
 
     uint32 sizeOfFilesData = footerBlock.info.numFiles * sizeof(PackFormat::FileTableEntry);
-    const char* startOfCompressedNames = reinterpret_cast<const char*>(&tmpBuffer[sizeOfFilesData]);
+    const uint8* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
 
     fileTableBlock.names.compressedNames.resize(footerBlock.info.namesSizeCompressed);
 
-    std::copy_n(startOfCompressedNames, footerBlock.info.namesSizeCompressed, reinterpret_cast<char*>(fileTableBlock.names.compressedNames.data()));
+    std::copy_n(startOfCompressedNames, footerBlock.info.namesSizeCompressed, fileTableBlock.names.compressedNames.data());
 
     Vector<uint8> originalNamesBuffer;
     originalNamesBuffer.resize(footerBlock.info.namesSizeOriginal);
@@ -84,28 +84,13 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
                   });
 }
 
-static File* file = nullptr;
-static std::string relativeFileName;
-static std::mutex gFileMutex;
-
 PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
     : archiveName(archiveName_)
     , file(file_)
 {
     using namespace PackFormat;
 
-    //std::lock_guard<std::mutex> lock(gFileMutex);
-
-    //if (file != nullptr)
-    //{
-    //    file->Release();
-    //    file = nullptr;
-    //    relativeFileName = "";
-    //}
-
-    //file = (File::Create(archiveName, File::OPEN | File::READ));
     String fileName = archiveName.GetAbsolutePathname();
-    relativeFileName = fileName;
 
     if (!file)
     {
@@ -277,7 +262,7 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     // check crc32 for file content
     if (fileEntry.originalCrc32 != 0 && fileEntry.originalCrc32 != CRC32::ForBuffer(output.data(), output.size()))
     {
-        throw std::runtime_error("original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue());
+        throw FileCrc32FromPackNotMatch("original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue());
     }
 
     return true;

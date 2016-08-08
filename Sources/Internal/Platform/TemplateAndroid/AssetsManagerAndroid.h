@@ -11,14 +11,8 @@ class ZipArchive;
 class AssetsManagerAndroid : public Singleton<AssetsManagerAndroid>
 {
 public:
-    AssetsManagerAndroid();
+    explicit AssetsManagerAndroid(const String& packageName);
     virtual ~AssetsManagerAndroid();
-
-    void Init(const String& packageName);
-    inline bool IsInitialized() const
-    {
-        return !!apk;
-    }
 
     bool HasDirectory(const String& relativeDirName) const;
     bool HasFile(const String& relativeFilePath) const;
@@ -27,7 +21,6 @@ public:
 
 private:
     String packageName;
-
     std::unique_ptr<ZipArchive> apk;
 };
 };

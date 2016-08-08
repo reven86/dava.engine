@@ -117,7 +117,7 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
     return result;
 }
 
-void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
+void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
     packs.reserve(911); // now we have 911 packs
@@ -128,9 +128,9 @@ void PacksDB::InitializePacks(Vector<PackManager::Pack>& packs) const
 
         selectQuery >> [&](String name, String hash, int32 isGpu, int32 size, String dependency)
         {
-            PackManager::Pack pack;
+            IPackManager::Pack pack;
             pack.name = name;
-            pack.state = PackManager::Pack::Status::NotRequested;
+            pack.state = IPackManager::Pack::Status::NotRequested;
             pack.isGPU = (isGpu == 1);
             pack.totalSizeFromDB = static_cast<uint32>(size);
 

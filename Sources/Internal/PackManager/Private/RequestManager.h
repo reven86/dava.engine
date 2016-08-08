@@ -32,7 +32,7 @@ private:
     void CheckRestartLoading();
 
     PackManagerImpl& packManager;
-    String currrentTopLoadingPack;
+    String currentTopLoadingPack;
     Vector<PackRequest> items;
 };
 } // end namespace DAVA

@@ -16,7 +16,7 @@ public:
 
     const String& FindPack(const FilePath& relativeFilePath) const;
 
-    void InitializePacks(Vector<PackManager::Pack>& out) const;
+    void InitializePacks(Vector<IPackManager::Pack>& out) const;
 
 private:
     std::unique_ptr<PacksDBData> data;

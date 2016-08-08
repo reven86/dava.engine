@@ -10,7 +10,7 @@ const String RequestManager::packPostfix = ".dvpk";
 
 void RequestManager::Start()
 {
-    if (packManager.IsProcessingEnabled())
+    if (packManager.IsRequestingEnabled())
     {
         if (!Empty())
         {
@@ -42,14 +42,14 @@ void RequestManager::Update()
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
             if (request.GetRootPack().name != subRequest.pack->name)
             {
-                PackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
-                rootPack.state = PackManager::Pack::Status::OtherError;
+                IPackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
+                rootPack.state = IPackManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
                                                 rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.pack->otherErrorMsg.c_str());
 
                 Pop(); // first pop current request and only then inform user
 
-                packManager.GetPM().packStateChanged.Emit(rootPack);
+                packManager.packStateChanged.Emit(rootPack);
             }
             else
             {
@@ -107,18 +107,18 @@ void RequestManager::CheckRestartLoading()
 
     if (Size() == 1)
     {
-        currrentTopLoadingPack = top.GetRootPack().name;
+        currentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
-    else if (!currrentTopLoadingPack.empty() && top.GetRootPack().name != currrentTopLoadingPack)
+    else if (!currentTopLoadingPack.empty() && top.GetRootPack().name != currentTopLoadingPack)
     {
         // we have to cancel current pack request and start new with higher priority
-        if (IsInQueue(currrentTopLoadingPack))
+        if (IsInQueue(currentTopLoadingPack))
         {
-            PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
+            PackRequest& prevTopRequest = Find(currentTopLoadingPack);
             prevTopRequest.Stop();
         }
-        currrentTopLoadingPack = top.GetRootPack().name;
+        currentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
 }
@@ -130,15 +130,15 @@ void RequestManager::Push(const String& packName, float32 priority)
         throw std::runtime_error("second time push same pack in queue, pack: " + packName);
     }
 
-    PackManager::Pack& pack = packManager.GetPack(packName);
+    IPackManager::Pack& pack = packManager.GetPack(packName);
 
-    pack.state = PackManager::Pack::Status::Requested;
+    pack.state = IPackManager::Pack::Status::Requested;
     pack.priority = priority;
 
     items.emplace_back(packManager, pack);
     stable_sort(begin(items), end(items));
 
-    packManager.GetPM().packStateChanged.Emit(pack);
+    packManager.packStateChanged.Emit(pack);
 
     CheckRestartLoading();
 }
@@ -163,7 +163,6 @@ void RequestManager::Pop()
     DVASSERT(!items.empty());
 
     items.erase(items.begin());
-    stable_sort(begin(items), end(items));
 }
 
 } // end namespace DAVA

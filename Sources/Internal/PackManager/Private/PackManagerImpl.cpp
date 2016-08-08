@@ -11,6 +11,8 @@
 
 namespace DAVA
 {
+IPackManager::~IPackManager() = default;
+
 static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 {
     ScopedPtr<File> f(File::Create(path, File::WRITE | File::CREATE));
@@ -26,10 +28,9 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
-void PackManagerImpl::InitCommonPacks(const FilePath& readOnlyPacksDir_,
-                                      const FilePath& downloadPacksDir_,
-                                      const PackManager::Hints& hints_,
-                                      PackManager* packManager_)
+void PackManagerImpl::InitLocalCommonPacks(const FilePath& readOnlyPacksDir_,
+                                           const FilePath& downloadPacksDir_,
+                                           const IPackManager::Hints& hints_)
 {
     readOnlyPacksDir = readOnlyPacksDir_;
     localPacksDir = downloadPacksDir_;
@@ -37,15 +38,9 @@ void PackManagerImpl::InitCommonPacks(const FilePath& readOnlyPacksDir_,
     architecture.clear();
     mountedCommonPacks.clear();
 
-    packManager = packManager_;
-    if (nullptr == packManager)
-    {
-        throw std::runtime_error("PackManager is nullptr");
-    }
-
     hints = hints_;
 
-    initState = PackManager::InitState::Starting;
+    initState = InitState::Starting;
 
     // now init all pack in local read only dir
     FirstTimeInit();
@@ -55,76 +50,76 @@ void PackManagerImpl::InitCommonPacks(const FilePath& readOnlyPacksDir_,
 
 bool PackManagerImpl::IsGpuPacksInitialized() const
 {
-    return initState >= PackManager::InitState::GpuReadOnlyPacksReady;
+    return initState >= InitState::GpuReadOnlyPacksReady;
 }
 
-void PackManagerImpl::SyncWithServer(const String& urlToServerSuperpack)
+void PackManagerImpl::InitRemotePacks(const String& urlToServerSuperpack)
 {
     superPackUrl = urlToServerSuperpack;
 
-    if (initState != PackManager::InitState::GpuReadOnlyPacksReady)
+    if (initState != InitState::GpuReadOnlyPacksReady)
     {
         throw std::runtime_error("first call InitCommonPacks then call InitGpuPacks only then SyncWithServer");
     }
 
-    initState = PackManager::InitState::LoadingRequestAskFooter;
+    initState = InitState::LoadingRequestAskFooter;
 }
 
-// start PackManager::ISync //////////////////////////////////////
-PackManager::InitState PackManagerImpl::GetState() const
+// start ISync //////////////////////////////////////
+IPackManager::InitState PackManagerImpl::GetInitState() const
 {
     return initState;
 }
 
-PackManager::InitError PackManagerImpl::GetError() const
+IPackManager::InitError PackManagerImpl::GetInitError() const
 {
     return initError;
 }
 
-const String& PackManagerImpl::GetErrorMessage() const
+const String& PackManagerImpl::GetInitErrorMessage() const
 {
     return initErrorMsg;
 }
 
-bool PackManagerImpl::CanRetry() const
+bool PackManagerImpl::CanRetryInit() const
 {
     switch (initState)
     {
-    case PackManager::InitState::FirstInit:
-    case PackManager::InitState::Starting:
-    case PackManager::InitState::MountingReadOnlyPacks:
-    case PackManager::InitState::CommonReadOnlyPacksReady:
-    case PackManager::InitState::GpuReadOnlyPacksReady:
+    case InitState::FirstInit:
+    case InitState::Starting:
+    case InitState::MountingReadOnlyPacks:
+    case InitState::CommonReadOnlyPacksReady:
+    case InitState::GpuReadOnlyPacksReady:
         return false;
-    case PackManager::InitState::LoadingRequestAskFooter:
-    case PackManager::InitState::LoadingRequestGetFooter:
-    case PackManager::InitState::LoadingRequestAskFileTable:
-    case PackManager::InitState::LoadingRequestGetFileTable:
+    case InitState::LoadingRequestAskFooter:
+    case InitState::LoadingRequestGetFooter:
+    case InitState::LoadingRequestAskFileTable:
+    case InitState::LoadingRequestGetFileTable:
         return true;
-    case PackManager::InitState::CalculateLocalDBHashAndCompare:
+    case InitState::CalculateLocalDBHashAndCompare:
         return false;
-    case PackManager::InitState::LoadingRequestAskDB:
-    case PackManager::InitState::LoadingRequestGetDB:
+    case InitState::LoadingRequestAskDB:
+    case InitState::LoadingRequestGetDB:
         return true;
-    case PackManager::InitState::UnpakingDB:
-    case PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash:
-    case PackManager::InitState::LoadingPacksDataFromLocalDB:
-    case PackManager::InitState::MountingDownloadedPacks:
-    case PackManager::InitState::Ready:
+    case InitState::UnpakingDB:
+    case InitState::DeleteDownloadedPacksIfNotMatchHash:
+    case InitState::LoadingPacksDataFromLocalDB:
+    case InitState::MountingDownloadedPacks:
+    case InitState::Ready:
         return false;
     }
     DVASSERT(false && "add state");
     return false;
 }
 
-void PackManagerImpl::Retry()
+void PackManagerImpl::RetryInit()
 {
-    if (CanRetry())
+    if (CanRetryInit())
     {
         // for now just go to server check
-        initState = PackManager::InitState::LoadingRequestAskFooter;
+        initState = InitState::LoadingRequestAskFooter;
         // clear error state
-        initError = PackManager::InitError::AllGood;
+        initError = InitError::AllGood;
         if (initPaused)
         {
             initPaused = false;
@@ -136,27 +131,27 @@ void PackManagerImpl::Retry()
     }
 }
 
-bool PackManagerImpl::IsPaused() const
+bool PackManagerImpl::IsPausedInit() const
 {
     return initPaused;
 }
 
-void PackManagerImpl::Pause()
+void PackManagerImpl::PauseInit()
 {
-    if (initState != PackManager::InitState::Ready)
+    if (initState != InitState::Ready)
     {
         initPaused = true;
     }
 }
-// end PackManager::IInitialization ////////////////////////////////////////
+// end IInitialization ////////////////////////////////////////
 
 void PackManagerImpl::Update()
 {
-    if (PackManager::InitState::FirstInit != initState)
+    if (InitState::FirstInit != initState)
     {
         if (!initPaused)
         {
-            if (initState != PackManager::InitState::Ready)
+            if (initState != InitState::Ready)
             {
                 ContinueInitialization();
             }
@@ -173,76 +168,76 @@ void PackManagerImpl::Update()
 
 void PackManagerImpl::ContinueInitialization()
 {
-    const PackManager::InitState beforeState = initState;
+    const InitState beforeState = initState;
 
-    if (PackManager::InitState::LoadingRequestAskFooter == initState)
+    if (InitState::LoadingRequestAskFooter == initState)
     {
         AskFooter();
     }
-    else if (PackManager::InitState::LoadingRequestGetFooter == initState)
+    else if (InitState::LoadingRequestGetFooter == initState)
     {
         GetFooter();
     }
-    else if (PackManager::InitState::LoadingRequestAskFileTable == initState)
+    else if (InitState::LoadingRequestAskFileTable == initState)
     {
         AskFileTable();
     }
-    else if (PackManager::InitState::LoadingRequestGetFileTable == initState)
+    else if (InitState::LoadingRequestGetFileTable == initState)
     {
         GetFileTable();
     }
-    else if (PackManager::InitState::CalculateLocalDBHashAndCompare == initState)
+    else if (InitState::CalculateLocalDBHashAndCompare == initState)
     {
         CompareLocalDBWitnRemoteHash();
     }
-    else if (PackManager::InitState::LoadingRequestAskDB == initState)
+    else if (InitState::LoadingRequestAskDB == initState)
     {
         AskDB();
     }
-    else if (PackManager::InitState::LoadingRequestGetDB == initState)
+    else if (InitState::LoadingRequestGetDB == initState)
     {
         GetDB();
     }
-    else if (PackManager::InitState::UnpakingDB == initState)
+    else if (InitState::UnpakingDB == initState)
     {
         UnpackingDB();
     }
-    else if (PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash == initState)
+    else if (InitState::DeleteDownloadedPacksIfNotMatchHash == initState)
     {
         DeleteOldPacks();
     }
-    else if (PackManager::InitState::LoadingPacksDataFromLocalDB == initState)
+    else if (InitState::LoadingPacksDataFromLocalDB == initState)
     {
         LoadPacksDataFromDB();
     }
-    else if (PackManager::InitState::MountingDownloadedPacks == initState)
+    else if (InitState::MountingDownloadedPacks == initState)
     {
         MountDownloadedPacks();
     }
-    else if (PackManager::InitState::Ready == initState)
+    else if (InitState::Ready == initState)
     {
         // happy end
     }
 
-    const PackManager::InitState newState = initState;
+    const InitState newState = initState;
 
     if (newState != beforeState)
     {
-        packManager->asyncConnectStateChanged.Emit(*this);
+        asyncConnectStateChanged.Emit(*this);
     }
 }
 
 void PackManagerImpl::FirstTimeInit()
 {
-    initState = PackManager::InitState::Starting;
+    initState = InitState::Starting;
 }
 
 void PackManagerImpl::InitStarting()
 {
     Logger::FrameworkDebug("pack manager init_starting");
 
-    DVASSERT(initState != PackManager::InitState::FirstInit);
-    initState = PackManager::InitState::MountingReadOnlyPacks;
+    DVASSERT(initState != InitState::FirstInit);
+    initState = InitState::MountingReadOnlyPacks;
 }
 
 void PackManagerImpl::InitializePacks()
@@ -257,17 +252,17 @@ void PackManagerImpl::InitializePacks()
     }
 }
 
-static void ListPacksInDirAndCopyIfNeed(const FilePath& localPacksDir, const FilePath& dir, bool needCopyToDocs, Set<FilePath>& resultSet)
+static void ListPacksInDirAndCopyIfNecessary(const FilePath& copyToDir, const FilePath& fromDir, bool copy, Set<FilePath>& resultSet)
 {
-    ScopedPtr<FileList> common(new FileList(dir));
+    ScopedPtr<FileList> common(new FileList(fromDir));
     for (uint32 i = 0u; i < common->GetCount(); ++i)
     {
         FilePath path = common->GetPathname(i);
         if (path.GetExtension() == RequestManager::packPostfix)
         {
-            if (needCopyToDocs)
+            if (copy)
             {
-                FilePath docPath(localPacksDir + "/" + path.GetFilename());
+                FilePath docPath(copyToDir + "/" + path.GetFilename());
                 if (!FileSystem::Instance()->Exists(docPath))
                 {
                     bool result = FileSystem::Instance()->CopyFile(path, docPath);
@@ -296,29 +291,29 @@ void PackManagerImpl::MountCommonBasePacks()
         throw std::runtime_error("can't open dir: " + readOnlyPacksDir.GetStringValue());
     }
 
-    ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
+    ListPacksInDirAndCopyIfNecessary(localPacksDir, readOnlyPacksDir + "common/", hints.copyBasePacksToDocs, basePacks);
 
     if (!architecture.empty())
     {
-        ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
+        ListPacksInDirAndCopyIfNecessary(localPacksDir, readOnlyPacksDir + architecture + "/", hints.copyBasePacksToDocs, basePacks);
     }
 
     MountPacks(basePacks);
 
-    for_each(begin(packs), end(packs), [](PackManager::Pack& p)
+    for_each(begin(packs), end(packs), [](Pack& p)
              {
-                 if (p.state == PackManager::Pack::Status::Mounted)
+                 if (p.state == Pack::Status::Mounted)
                  {
                      p.isReadOnly = true;
                  }
              });
 
-    initState = PackManager::InitState::CommonReadOnlyPacksReady;
+    initState = InitState::CommonReadOnlyPacksReady;
 }
 
-void PackManagerImpl::InitGpuPacks(const String& architecture_, const String& dbFile_)
+void PackManagerImpl::InitLocalGpuPacks(const String& architecture_, const String& dbFile_)
 {
-    if (PackManager::InitState::CommonReadOnlyPacksReady != initState)
+    if (InitState::CommonReadOnlyPacksReady != initState)
     {
         throw std::runtime_error("first call InitCommonPacks and then InitGpuPacks");
     }
@@ -392,13 +387,13 @@ void PackManagerImpl::InitGpuPacks(const String& architecture_, const String& db
         throw std::runtime_error("can't open dir: " + readOnlyGpuPacksDir.GetStringValue());
     }
 
-    ListPacksInDirAndCopyIfNeed(localPacksDir, readOnlyGpuPacksDir, hints.copyBasePacksToDocs, basePacks);
+    ListPacksInDirAndCopyIfNecessary(localPacksDir, readOnlyGpuPacksDir, hints.copyBasePacksToDocs, basePacks);
 
     MountPacks(basePacks);
 
-    for_each(begin(packs), end(packs), [](PackManager::Pack& p)
+    for_each(begin(packs), end(packs), [](Pack& p)
              {
-                 if (p.state == PackManager::Pack::Status::Mounted)
+                 if (p.state == Pack::Status::Mounted)
                  {
                      p.isReadOnly = true;
                  }
@@ -407,7 +402,7 @@ void PackManagerImpl::InitGpuPacks(const String& architecture_, const String& db
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
 
-    initState = PackManager::InitState::GpuReadOnlyPacksReady;
+    initState = InitState::GpuReadOnlyPacksReady;
 }
 
 void PackManagerImpl::AskFooter()
@@ -440,10 +435,10 @@ void PackManagerImpl::AskFooter()
                     }
                     else
                     {
-                        initError = PackManager::InitError::LoadingRequestFailed;
+                        initError = InitError::LoadingRequestFailed;
                         initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error);
 
-                        packManager->asyncConnectStateChanged.Emit(*this);
+                        asyncConnectStateChanged.Emit(*this);
                     }
                 }
             }
@@ -459,7 +454,7 @@ void PackManagerImpl::AskFooter()
         uint64 downloadOffset = fullSizeServerData - sizeof(initFooterOnServer);
         uint32 sizeofFooter = static_cast<uint32>(sizeof(initFooterOnServer));
         downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, &initFooterOnServer, sizeofFooter, downloadOffset, sizeofFooter);
-        initState = PackManager::InitState::LoadingRequestGetFooter;
+        initState = InitState::LoadingRequestGetFooter;
     }
 }
 
@@ -483,16 +478,16 @@ void PackManagerImpl::GetFooter()
                     throw std::runtime_error("on server bad superpack!!! Footer not match crc32");
                 }
                 usedPackFile.footer = initFooterOnServer;
-                initState = PackManager::InitState::LoadingRequestAskFileTable;
+                initState = InitState::LoadingRequestAskFileTable;
             }
             else
             {
-                initError = PackManager::InitError::LoadingRequestFailed;
+                initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error);
 
                 Logger::FrameworkDebug("%s", initErrorMsg.c_str());
 
-                packManager->asyncConnectStateChanged.Emit(*this);
+                asyncConnectStateChanged.Emit(*this);
             }
         }
     }
@@ -513,7 +508,7 @@ void PackManagerImpl::AskFileTable()
 
     downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, buffer.size());
     DVASSERT(0 != downloadTaskId);
-    initState = PackManager::InitState::LoadingRequestGetFileTable;
+    initState = InitState::LoadingRequestGetFileTable;
 }
 
 void PackManagerImpl::GetFileTable()
@@ -540,14 +535,14 @@ void PackManagerImpl::GetFileTable()
                 PackArchive::ExtractFileTableData(initFooterOnServer, buffer, fileNames, usedPackFile.filesTable);
                 PackArchive::FillFilesInfo(usedPackFile, fileNames, initFileData, initfilesInfo);
 
-                initState = PackManager::InitState::CalculateLocalDBHashAndCompare;
+                initState = InitState::CalculateLocalDBHashAndCompare;
             }
             else
             {
-                initError = PackManager::InitError::LoadingRequestFailed;
+                initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error);
 
-                packManager->asyncConnectStateChanged.Emit(*this);
+                asyncConnectStateChanged.Emit(*this);
             }
         }
     }
@@ -573,12 +568,12 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
             if (localCrc32 != it->second->originalCrc32)
             {
                 // we have to download new localDB file from server!
-                initState = PackManager::InitState::LoadingRequestAskDB;
+                initState = InitState::LoadingRequestAskDB;
             }
             else
             {
                 // all good go to
-                initState = PackManager::InitState::MountingDownloadedPacks;
+                initState = InitState::MountingDownloadedPacks;
             }
         }
         else
@@ -614,7 +609,7 @@ void PackManagerImpl::AskDB()
     downloadTaskId = dm->DownloadIntoBuffer(superPackUrl, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
     DVASSERT(0 != downloadTaskId);
 
-    initState = PackManager::InitState::LoadingRequestGetDB;
+    initState = InitState::LoadingRequestGetDB;
 }
 
 void PackManagerImpl::GetDB()
@@ -631,14 +626,14 @@ void PackManagerImpl::GetDB()
             dm->GetError(downloadTaskId, error);
             if (DLE_NO_ERROR == error)
             {
-                initState = PackManager::InitState::UnpakingDB;
+                initState = InitState::UnpakingDB;
             }
             else
             {
-                initError = PackManager::InitError::LoadingRequestFailed;
+                initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get DB file from server, download error: " + DLC::ToString(error);
 
-                packManager->asyncConnectStateChanged.Emit(*this);
+                asyncConnectStateChanged.Emit(*this);
             }
         }
     }
@@ -687,7 +682,7 @@ void PackManagerImpl::UnpackingDB()
     buffer.clear();
     buffer.shrink_to_fit();
 
-    initState = PackManager::InitState::DeleteDownloadedPacksIfNotMatchHash;
+    initState = InitState::DeleteDownloadedPacksIfNotMatchHash;
 }
 
 void PackManagerImpl::DeleteOldPacks()
@@ -726,7 +721,7 @@ void PackManagerImpl::DeleteOldPacks()
         }
     }
 
-    initState = PackManager::InitState::LoadingPacksDataFromLocalDB;
+    initState = InitState::LoadingPacksDataFromLocalDB;
 }
 
 void PackManagerImpl::LoadPacksDataFromDB()
@@ -738,7 +733,7 @@ void PackManagerImpl::LoadPacksDataFromDB()
     {
         for (auto& pack : packs)
         {
-            if (pack.state == PackManager::Pack::Status::Mounted)
+            if (pack.state == Pack::Status::Mounted)
             {
                 FileSystem::Instance()->Unmount(pack.name);
             }
@@ -746,7 +741,7 @@ void PackManagerImpl::LoadPacksDataFromDB()
 
         MountCommonBasePacks();
 
-        initState = PackManager::InitState::MountingDownloadedPacks;
+        initState = InitState::MountingDownloadedPacks;
     }
     else
     {
@@ -758,15 +753,15 @@ void PackManagerImpl::MountDownloadedPacks()
 {
     Logger::FrameworkDebug("pack manager mount_downloaded_packs");
     // better mount pack on every request - faster startup time
-    initState = PackManager::InitState::Ready;
+    initState = InitState::Ready;
 }
 
-const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
+const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
     if (requestManager)
     {
-        PackManager::Pack& pack = GetPack(packName);
-        if (pack.state == PackManager::Pack::Status::NotRequested)
+        Pack& pack = GetPack(packName);
+        if (pack.state == Pack::Status::NotRequested)
         {
             // first try mount pack in it exist on local dounload dir
             FilePath path = localPacksDir + "/" + packName + RequestManager::packPostfix;
@@ -776,7 +771,7 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
                 try
                 {
                     fs->Mount(path, "Data/");
-                    pack.state = PackManager::Pack::Status::Mounted;
+                    pack.state = Pack::Status::Mounted;
                 }
                 catch (std::exception& ex)
                 {
@@ -789,23 +784,23 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
                 requestManager->Push(packName, 1.0f); // 1.0f last order by default
             }
         }
-        else if (pack.state == PackManager::Pack::Status::Mounted)
+        else if (pack.state == Pack::Status::Mounted)
         {
             // pass
         }
-        else if (pack.state == PackManager::Pack::Status::Downloading)
+        else if (pack.state == Pack::Status::Downloading)
         {
             // pass
         }
-        else if (pack.state == PackManager::Pack::Status::ErrorLoading)
+        else if (pack.state == Pack::Status::ErrorLoading)
         {
             requestManager->Push(packName, 1.0f);
         }
-        else if (pack.state == PackManager::Pack::Status::OtherError)
+        else if (pack.state == Pack::Status::OtherError)
         {
             requestManager->Push(packName, 1.0f);
         }
-        else if (pack.state == PackManager::Pack::Status::Requested)
+        else if (pack.state == Pack::Status::Requested)
         {
             // pass
         }
@@ -814,7 +809,7 @@ const PackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
     throw std::runtime_error("can't process request initialization not finished");
 }
 
-const PackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
+const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
 {
     try
     {
@@ -826,7 +821,7 @@ const PackManager::IRequest* PackManagerImpl::FindRequest(const String& packName
     }
 }
 
-void PackManagerImpl::ChangePackPriority(const String& packName, float newPriority) const
+void PackManagerImpl::SetRequestOrder(const String& packName, float newPriority)
 {
     if (requestManager->IsInQueue(packName))
     {
@@ -840,20 +835,20 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 
     if (packsIndex.empty())
     {
-        for_each(begin(basePacks), end(basePacks), [&](const FilePath& filePath)
-                 {
-                     String fileName = filePath.GetBasename();
+        for (const auto& filePath : basePacks)
+        {
+            String fileName = filePath.GetBasename();
 
-                     try
-                     {
-                         fs->Mount(filePath, "Data/");
-                         mountedCommonPacks.emplace_back(filePath);
-                     }
-                     catch (std::exception& ex)
-                     {
-                         Logger::Error("%s", ex.what());
-                     }
-                 });
+            try
+            {
+                fs->Mount(filePath, "Data/");
+                mountedCommonPacks.emplace_back(filePath);
+            }
+            catch (std::exception& ex)
+            {
+                Logger::Error("%s", ex.what());
+            }
+        };
     }
     else
     {
@@ -866,12 +861,12 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
                          throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
                      }
 
-                     PackManager::Pack& pack = packs.at(it->second);
+                     Pack& pack = packs.at(it->second);
 
                      try
                      {
                          fs->Mount(filePath, "Data/");
-                         pack.state = PackManager::Pack::Status::Mounted;
+                         pack.state = Pack::Status::Mounted;
                      }
                      catch (std::exception& ex)
                      {
@@ -885,7 +880,7 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
             auto& pack = GetPack(filePath.GetBasename());
             if (fs->IsMounted(filePath))
             {
-                pack.state = PackManager::Pack::Status::Mounted;
+                pack.state = Pack::Status::Mounted;
             }
             else
             {
@@ -900,10 +895,10 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 void PackManagerImpl::DeletePack(const String& packName)
 {
     auto& pack = GetPack(packName);
-    if (pack.state == PackManager::Pack::Status::Mounted)
+    if (pack.state == Pack::Status::Mounted)
     {
         // first modify DB
-        pack.state = PackManager::Pack::Status::NotRequested;
+        pack.state = Pack::Status::NotRequested;
         pack.priority = 0.0f;
         pack.downloadProgress = 0.f;
 
@@ -918,7 +913,7 @@ void PackManagerImpl::DeletePack(const String& packName)
 
 uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& packPath)
 {
-    PackManager::Pack& pack = GetPack(packName);
+    Pack& pack = GetPack(packName);
     String packFile = packName + RequestManager::packPostfix;
 
     if (pack.isGPU)
