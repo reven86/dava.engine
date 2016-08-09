@@ -181,7 +181,7 @@ void EngineBackend::Quit(int exitCode_)
     case eEngineRunMode::GUI_EMBEDDED:
         Logger::Warning("Engine does not support Quit command in embedded mode");
         break;
-    case eEngineRunMode::CONSOLE:
+    case eEngineRunMode::CONSOLE_MODE:
         quitConsole = true;
         break;
     default:
