@@ -523,7 +523,8 @@ function TupState.BuildLists(self)
 end
 
 function TupState.BuildPacks(self)
-    local superPackGroup = "<superpack>"
+    local superPackGroup = "superpack"
+    local superPackGroupPath = self.projectDir .. "/<" .. superPackGroup .. ">"
     local superPackFiles = { }
 
     for pai, pack in pairs(self.packs) do
@@ -555,7 +556,7 @@ function TupState.BuildPacks(self)
  
             -- merge lists
             local mergePackMask = self.packlistDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.delimiter .. "*" .. self.conf.packlistExt 
-            local mergePackCmd = self.cmd.fwdep .. " merge " .. mergePackMask .. " -o %o"
+            local mergePackCmd = self.cmd.fwdep .. " merge " .. mergePackMask .. " -o %o -- %<" .. packGroup .. ">"
             local mergePackCmdText = "^ Gen merged list for " .. packGroup .. "^ "
             local mergePackOutput = self.mergeDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.mergedlistExt
             
@@ -591,7 +592,7 @@ function TupState.BuildPacks(self)
         -- merge final sql
         local mergeSqlMaskCommon = self.sqlDir .. "/" .. self.conf.commonGpu .. "/*.sql"
         local mergeSqlMaskGpu = self.sqlDir .. "/" .. gpu .. "/*.sql"  
-        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o"
+        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o -- %<" .. sqlGroup .. ">"
         local mergeSqlCmdText = "^ Gen merged sql " .. gpu .. "^ "
         local mergeSqlOutput = self.mergeDir .. "/" .. gpu .. "/final.sql" 
 
@@ -633,18 +634,18 @@ function TupState.BuildPacks(self)
             local superPartOutput = self.packlistDir .. "/super-" .. i .. self.conf.packlistExt
             local superPartCmd = self.cmd.fwdep .. " echo %f -rp " .. packsDirPrefix .." -o %o"
             local superPartCmdText = "^ Gen superpack list-" .. i .. "^ "
-            tup.rule(part, superPartCmdText .. superPartCmd, { superPartOutput, superPackGroup })
+            tup.rule(part, superPartCmdText .. superPartCmd, { superPartOutput, superPackGroupPath })
         end
 
         -- merge superpack lists
         local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o"
+        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o -- %<" .. superPackGroup .. ">"
         local mergedSuperCmdText = "^ Gen merged superlist^ "
         local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 
         mergedSuperCmd = UtilConvertToPlatformPath(self.platform, mergedSuperCmd)
 
-        tup.rule({ mergedSuperMask, superPackGroup }, mergedSuperCmdText .. mergedSuperCmd, mergedSuperOutput)
+        tup.rule({ mergedSuperMask, superPackGroupPath }, mergedSuperCmdText .. mergedSuperCmd, mergedSuperOutput)
 
         -- create super pack
         local superpackOutput = self.conf.superpackDir .. "/superpack.dvpk"
