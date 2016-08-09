@@ -12,7 +12,7 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/Stats.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"

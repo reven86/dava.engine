@@ -5,7 +5,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

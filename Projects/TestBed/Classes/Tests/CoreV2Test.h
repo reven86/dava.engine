@@ -4,11 +4,12 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-#include "Engine/EngineFwd.h"
 #include "Engine/Public/Dispatcher.h"
 
 namespace DAVA
 {
+class Engine;
+
 class UIButton;
 class Font;
 struct Rect;

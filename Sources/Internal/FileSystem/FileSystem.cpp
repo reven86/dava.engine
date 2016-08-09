@@ -14,7 +14,7 @@
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>

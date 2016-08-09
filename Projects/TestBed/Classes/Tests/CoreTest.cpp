@@ -1,7 +1,7 @@
 #include "Tests/CoreTest.h"
 #include "Infrastructure/GameCore.h"
 
-#include <Engine/Engine.h>
+#include <Engine/EngineModule.h>
 
 using namespace DAVA;
 

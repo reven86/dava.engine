@@ -1,6 +1,6 @@
 #include "Infrastructure/GameCore.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
