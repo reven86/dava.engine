@@ -10,7 +10,7 @@
 #include "Sound/FMODSoundStream.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 
 #ifdef __DAVAENGINE_IPHONE__
@@ -392,7 +392,7 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-    TIME_PROFILE("SoundSystem::Update");
+    PROFILER_TIMING("SoundSystem::Update");
 
     if (fmodEventSystem)
     {

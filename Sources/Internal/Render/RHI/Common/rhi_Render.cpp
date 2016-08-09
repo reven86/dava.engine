@@ -858,7 +858,7 @@ void EndPacketList(HPacketList packetList, HSyncObject syncObject)
 
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount)
 {
-    //PROFILER_SCOPED_TIMING("rhi::AddPackets");
+    //PROFILER_TIMING("rhi::AddPackets");
 
     PacketList_t* pl = PacketListPool::Get(packetList);
     Handle cmdBuf = pl->cmdBuf;
@@ -1028,6 +1028,8 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 
 void ProcessScheduledDelete()
 {
+    PROFILER_TIMING("rhi::ProcessScheduledDelete")
+
     for (int i = 0; i < frameSyncObjectsCount; i++)
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
@@ -1089,9 +1091,7 @@ void Present()
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
 
-    PROFILER_START_TIMING("rhi::ProcessScheduledDelete")
     ProcessScheduledDelete();
-    PROFILER_STOP_TIMING("rhi::ProcessScheduledDelete")
 
     scheduledDeleteMutex.Unlock();
 }

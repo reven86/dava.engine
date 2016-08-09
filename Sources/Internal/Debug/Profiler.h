@@ -1,25 +1,22 @@
 #pragma once
 
 #include <Base/BaseTypes.h>
+using DAVA::int32;
 using DAVA::uint32;
 using DAVA::uint64;
-using DAVA::int32;
-#include <Base/Hash.h>
 
 #define PROFILER_ENABLED 1
-#define TRACER_ENABLED 1
 
 #if PROFILER_ENABLED
 
+namespace DAVA
+{
 namespace Profiler
 {
-void EnsureInited(uint32 eventsCount = 10 * 1024);
+void EnsureInited(uint32 counterCount = 10 * 1024);
 
 void Start();
 void Stop();
-
-void StartCounter(const char* counterName);
-void StopCounter(const char* counterName);
 
 uint64 GetLastCounterTime(const char* counterName);
 
@@ -28,35 +25,28 @@ void Dump(const char* fileName);
 void DumpLast(const char* counterName, uint32 counterCount = 1);
 void DumpAverage(const char* counterName, uint32 counterCount);
 
+struct TimeCounter;
 class ScopedCounter
 {
 public:
-    ScopedCounter(const char* _name)
-        : name(_name)
-    {
-        Profiler::StartCounter(name);
-    }
-    ~ScopedCounter()
-    {
-        Profiler::StopCounter(name);
-    }
+    ScopedCounter(const char* counterName);
+    ~ScopedCounter();
 
 private:
-    const char* name;
+    TimeCounter* counter = nullptr;
 };
-}
 
-#define PROFILER_START_TIMING(counter_name) Profiler::StartCounter(counter_name);
-#define PROFILER_STOP_TIMING(counter_name) Profiler::StopCounter(counter_name);
-#define PROFILER_SCOPED_TIMING(counter_name) Profiler::ScopedCounter time_profiler_scope_counter(counter_name);
+} //ns Profiler
+
+#define PROFILER_TIMING(counter_name) DAVA::Profiler::ScopedCounter time_profiler_scope_counter(counter_name);
 
 #else
 
-#define PROFILER_START_TIMING(counter_name)
-#define PROFILER_STOP_TIMING(counter_name)
-#define PROFILER_SCOPED_TIMING(counter_name)
+#define PROFILER_TIMING(counter_name)
 
 #endif
+
+} //ns DAVA
 
 #if 0
 

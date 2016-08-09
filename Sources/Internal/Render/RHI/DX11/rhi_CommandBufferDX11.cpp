@@ -1102,6 +1102,8 @@ dx11_SyncObject_IsSignaled(Handle obj)
 static void
 _ExecuteQueuedCommandsDX11()
 {
+    PROFILER_TIMING("rhi::ExecuteQueuedCmds");
+
     StatSet::ResetAll();
 
     Trace("rhi-dx11.exec-queued-cmd\n");
@@ -1210,9 +1212,7 @@ _ExecuteQueuedCommandsDX11()
 
                 if (!do_discard)
                 {
-                    PROFILER_START_TIMING("cb::Execute");
                     cb->Execute();
-                    PROFILER_STOP_TIMING("cb::Execute");
                 }
 
                 if (cb->sync != InvalidHandle)
@@ -1242,9 +1242,11 @@ _ExecuteQueuedCommandsDX11()
 
         // do present
 
-        PROFILER_START_TIMING("SwapChain::Present");
-        HRESULT hr = _D3D11_SwapChain->Present(1, 0);
-        PROFILER_STOP_TIMING("SwapChain::Present");
+        HRESULT hr;
+        {
+            PROFILER_TIMING("SwapChain::Present");
+            hr = _D3D11_SwapChain->Present(1, 0);
+        }
 
         CHECK_HR(hr)
         if (hr == DXGI_ERROR_DEVICE_REMOVED)
@@ -1277,6 +1279,8 @@ _ExecuteQueuedCommandsDX11()
 static void
 _ExecDX11(DX11Command* command, uint32 cmdCount)
 {
+    PROFILER_TIMING("rhi::ExecuteImmidiateCmds");
+
     for (DX11Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
         const uint64* arg = cmd->arg;
@@ -1323,7 +1327,7 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        PROFILER_START_TIMING("rhi::WaitImmediateCmd");
+        PROFILER_TIMING("rhi::WaitImmediateCmd");
 
         while (!scheduled)
         {
@@ -1352,8 +1356,6 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
                 _DX11_FramePreparedEvent.Signal();
             }
         }
-
-        PROFILER_STOP_TIMING("rhi::WaitImmediateCmd");
     }
 }
 
@@ -1370,57 +1372,52 @@ _RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        PROFILER_START_TIMING("rhi::RenderLoop");
-        PROFILER_START_TIMING("rhi::WaitFrame");
+        PROFILER_TIMING("rhi::RenderLoop");
 
-        bool do_wait = true;
-        while (do_wait)
         {
-            // CRAP: busy-wait
-            _DX11_RenderThreadExitSync.Lock();
-            do_exit = _DX11_RenderThreadExitPending;
-            _DX11_RenderThreadExitSync.Unlock();
+            PROFILER_TIMING("rhi::WaitFrame");
 
-            if (do_exit)
-                break;
-
-            _DX11_PendingImmediateCmdSync.Lock();
-            if (_DX11_PendingImmediateCmd)
+            bool do_wait = true;
+            while (do_wait)
             {
-                Trace("exec imm cmd (%u)\n", _DX11_PendingImmediateCmdCount);
-                PROFILER_START_TIMING("rhi::ExecuteImmidiateCmds");
+                // CRAP: busy-wait
+                _DX11_RenderThreadExitSync.Lock();
+                do_exit = _DX11_RenderThreadExitPending;
+                _DX11_RenderThreadExitSync.Unlock();
 
-                _ExecDX11(_DX11_PendingImmediateCmd, _DX11_PendingImmediateCmdCount);
-                _DX11_PendingImmediateCmd = nullptr;
-                _DX11_PendingImmediateCmdCount = 0;
+                if (do_exit)
+                    break;
 
-                PROFILER_STOP_TIMING("rhi::ExecuteImmidiateCmds");
-                Trace("exec-imm-cmd done\n");
-            }
-            _DX11_PendingImmediateCmdSync.Unlock();
+                _DX11_PendingImmediateCmdSync.Lock();
+                if (_DX11_PendingImmediateCmd)
+                {
+                    Trace("exec imm cmd (%u)\n", _DX11_PendingImmediateCmdCount);
 
-            _DX11_FrameSync.Lock();
-            do_wait = !(_DX11_Frame.size() && _DX11_Frame.begin()->readyToExecute);
-            _DX11_FrameSync.Unlock();
+                    _ExecDX11(_DX11_PendingImmediateCmd, _DX11_PendingImmediateCmdCount);
+                    _DX11_PendingImmediateCmd = nullptr;
+                    _DX11_PendingImmediateCmdCount = 0;
 
-            if (do_wait)
-            {
-                _DX11_FramePreparedEvent.Wait();
+                    Trace("exec-imm-cmd done\n");
+                }
+                _DX11_PendingImmediateCmdSync.Unlock();
+
+                _DX11_FrameSync.Lock();
+                do_wait = !(_DX11_Frame.size() && _DX11_Frame.begin()->readyToExecute);
+                _DX11_FrameSync.Unlock();
+
+                if (do_wait)
+                {
+                    _DX11_FramePreparedEvent.Wait();
+                }
             }
         }
-
-        PROFILER_STOP_TIMING("rhi::WaitFrame");
 
         if (!do_exit)
         {
-            PROFILER_START_TIMING("rhi::ExecuteQueuedCmds");
             _ExecuteQueuedCommandsDX11();
-            PROFILER_STOP_TIMING("rhi::ExecuteQueuedCmds");
         }
 
         _DX11_FrameDoneEvent.Signal();
-
-        PROFILER_STOP_TIMING("rhi::RenderLoop");
     }
 
     Logger::Info("RHI render-thread stopped");
@@ -1465,7 +1462,7 @@ void UninitializeRenderThreadDX11()
 static void
 dx11_Present(Handle sync)
 {
-    PROFILER_SCOPED_TIMING("rhi::Present");
+    PROFILER_TIMING("rhi::Present");
 
     if (_DX11_RenderThreadFrameCount)
     {
@@ -1492,21 +1489,21 @@ dx11_Present(Handle sync)
         unsigned frame_cnt = 0;
         bool reset_pending = false;
 
-        PROFILER_START_TIMING("rhi::WaitFrameExecution");
-        do
         {
-            _DX11_FrameSync.Lock();
-            frame_cnt = static_cast<unsigned>(_DX11_Frame.size());
-            reset_pending = _DX11_ResetPending;
-            _DX11_FrameSync.Unlock();
-
-            if (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending)
+            PROFILER_TIMING("rhi::WaitFrameExecution");
+            do
             {
-                _DX11_FrameDoneEvent.Wait();
-            }
+                _DX11_FrameSync.Lock();
+                frame_cnt = static_cast<unsigned>(_DX11_Frame.size());
+                reset_pending = _DX11_ResetPending;
+                _DX11_FrameSync.Unlock();
+
+                if (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending)
+                {
+                    _DX11_FrameDoneEvent.Wait();
+                }
+            } while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
         }
-        while (frame_cnt >= _DX11_RenderThreadFrameCount || reset_pending);
-        PROFILER_STOP_TIMING("rhi::WaitFrameExecution");
     }
     else
     {
@@ -1688,6 +1685,8 @@ void CommandBufferDX11_t::_ApplyConstBuffers()
 
 void CommandBufferDX11_t::Execute()
 {
+    PROFILER_TIMING("cb::Execute");
+
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DVASSERT(isComplete);
     context->Release();

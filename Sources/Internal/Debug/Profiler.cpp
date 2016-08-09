@@ -1,54 +1,41 @@
 #include "Profiler.h"
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Concurrency/Spinlock.h"
-    #include "Concurrency/Mutex.h"
-    #include "Base/BaseTypes.h"
-    #include "Platform/SystemTimer.h"
-    #include "FileSystem/File.h"
-using namespace DAVA;
-
-
-    #include <stdio.h>
-    #include <string.h>
-    #include <vector>
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Concurrency/Mutex.h"
+#include "Platform/SystemTimer.h"
+#include "FileSystem/File.h"
 
 //==============================================================================
 
 static inline uint64 CurTimeUs()
 {
-    return static_cast<uint64>(SystemTimer::Instance()->GetAbsoluteUs());
+    return static_cast<DAVA::uint64>(DAVA::SystemTimer::Instance()->GetAbsoluteUs());
 }
 
+namespace DAVA
+{
 namespace Profiler
 {
-struct CounterEvent
+struct TimeCounter
 {
-    enum Phase
-    {
-        PHASE_NONE = 0,
-        PHASE_BEGIN = 1,
-        PHASE_END = 2,
-    };
-
+    uint64 startTime = 0;
+    uint64 endTime = 0;
+    const char* name = nullptr;
     Thread::Id tid = 0;
-    uint64 time = 0;
-    const char* name;
-    Phase phase = PHASE_NONE;
 };
 
 static bool profilerInited = false;
 static bool profilerStarted = false;
-static size_t headIndex = 0;
 
-static DAVA::Vector<CounterEvent> events;
-static DAVA::Mutex eventsSync;
+static size_t countersHeadIndex = 0;
+static Vector<TimeCounter> counters;
+static Mutex countersSync;
 
-void EnsureInited(uint32 eventsCount)
+void EnsureInited(uint32 counterCount)
 {
     if (!profilerInited)
     {
-        events.resize(eventsCount);
+        counters.resize(counterCount);
         profilerInited = true;
     }
 }
@@ -63,56 +50,73 @@ void Stop()
     profilerStarted = false;
 }
 
-void AddCounterEvent(const char* counterName, CounterEvent::Phase phase)
+ScopedCounter::ScopedCounter(const char* counterName)
 {
-    if (!profilerStarted)
-        return;
+    if (profilerStarted)
+    {
+        countersSync.Lock();
 
-    eventsSync.Lock();
+        TimeCounter& c = counters[countersHeadIndex++];
+        if (countersHeadIndex >= counters.size())
+            countersHeadIndex = 0;
 
-    CounterEvent& e = events[headIndex++];
-    if (headIndex >= events.size())
-        headIndex = 0;
+        countersSync.Unlock();
 
-    eventsSync.Unlock();
+        DVASSERT(((c.startTime == 0 && c.endTime == 0) || c.endTime != 0) && "Too few counters in array");
 
-    e.tid = Thread::GetCurrentId();
-    e.time = CurTimeUs();
-    e.name = counterName;
-    e.phase = phase;
+        counter = &c;
+        c.startTime = CurTimeUs();
+        c.endTime = 0;
+        c.name = counterName;
+        c.tid = Thread::GetCurrentId();
+    }
 }
 
-void StartCounter(const char* counterName)
+ScopedCounter::~ScopedCounter()
 {
-    AddCounterEvent(counterName, CounterEvent::PHASE_BEGIN);
+    if (profilerStarted && counter)
+    {
+        DVASSERT(counter->endTime == 0 && "Profiler counter ended but not started");
+        counter->endTime = CurTimeUs();
+    }
 }
 
-void StopCounter(const char* counterName)
+bool NameEquals(const char* name1, const char* name2)
 {
-    AddCounterEvent(counterName, CounterEvent::PHASE_END);
+    if (name1 == name2)
+        return true;
+
+    std::size_t n1len = strlen(name1);
+    std::size_t n2len = strlen(name2);
+
+    if (n1len != n2len)
+        return false;
+
+    return Memcmp(name1, name2, n1len) == 0;
 }
 
 uint64 GetLastCounterTime(const char* counterName)
 {
-    DAVA::LockGuard<Mutex> guard(eventsSync);
+    LockGuard<Mutex> guard(countersSync);
 
-    uint64 beginTime = 0, endTime = 0;
-    for (size_t i = events.size() - 1; i >= 0; --i)
+    uint64 timeDelta = 0;
+    size_t lastIndex = countersHeadIndex ? (countersHeadIndex - 1) : (counters.size() - 1);
+    for (size_t i = lastIndex; i != countersHeadIndex; --i)
     {
-        size_t eventIndex = (headIndex - 1 + i) % events.size();
-        const CounterEvent& e = events[eventIndex];
-        if (e.name == counterName && e.phase == CounterEvent::PHASE_END)
+        const TimeCounter& c = counters[i];
+        if (c.endTime != 0 && NameEquals(counterName, c.name))
         {
-            endTime = e.time;
-        }
-        if (endTime != 0 && e.name == counterName && CounterEvent::PHASE_BEGIN)
-        {
-            beginTime = e.time;
+            timeDelta = c.endTime - c.startTime;
             break;
+        }
+
+        if (i == 0)
+        {
+            i = counters.size();
         }
     }
 
-    return (endTime - beginTime);
+    return timeDelta;
 }
 
 void DumpLast(const char* counterName, uint32 counterCount)
@@ -121,137 +125,110 @@ void DumpLast(const char* counterName, uint32 counterCount)
 
 void Dump()
 {
-    LockGuard<Mutex> guard(eventsSync);
+    LockGuard<Mutex> guard(countersSync);
 
-    if (!events.size())
+    if (!counters.size())
         return;
 
-    char indentStr[256] = {};
+    Set<Thread::Id> threadsToProcess;
+    Set<Thread::Id> threadsProcessed;
 
-    Vector<Thread::Id> threadIDs, processedThreads;
-    threadIDs.push_back(events.front().tid);
+    size_t lastCounter = countersHeadIndex ? (countersHeadIndex - 1) : (counters.size() - 1);
+    if (counters[lastCounter].tid)
+        threadsToProcess.insert(counters[lastCounter].tid);
 
-    while (threadIDs.size())
+    while (threadsToProcess.size())
     {
-        Thread::Id currentThread = threadIDs.back();
-        threadIDs.pop_back();
-        processedThreads.push_back(currentThread);
+        Thread::Id threadID = *(threadsToProcess.cbegin());
 
-        uint32 treeLevel = 0;
+        Logger::Info("Thread %lld =================================", uint64(threadID));
 
-        Logger::Info("Thread %lld =================================", uint64(currentThread));
-
-        for (size_t i = 0; i < events.size(); ++i)
+        Stack<const TimeCounter*> parentStack;
+        for (size_t i = countersHeadIndex; i != lastCounter; i++)
         {
-            size_t eventIndex = (headIndex + i) % events.size();
-            const CounterEvent& e = events[eventIndex];
+            if (i == counters.size())
+            {
+                i = 0;
+            }
 
-            if (e.phase == CounterEvent::PHASE_NONE)
+            const TimeCounter& c = counters[i];
+
+            if (threadsProcessed.find(c.tid) != threadsProcessed.end())
                 continue;
 
-            if (std::find(threadIDs.begin(), threadIDs.end(), e.tid) == threadIDs.end() &&
-                std::find(processedThreads.begin(), processedThreads.end(), e.tid) == processedThreads.end())
+            if (c.endTime == 0)
+                continue;
+
+            if (c.tid == threadID)
             {
-                threadIDs.push_back(e.tid);
+                while (parentStack.size() && (c.startTime >= parentStack.top()->endTime))
+                    parentStack.pop();
+
+                Logger::Info("%*s%s    %llu us", parentStack.size(), "", c.name, c.endTime - c.startTime);
+
+                parentStack.push(&c);
             }
-
-            if (e.tid == currentThread)
+            else
             {
-                switch (e.phase)
-                {
-                case CounterEvent::PHASE_BEGIN:
-                    for (size_t j = 0; j < events.size(); ++j)
-                    {
-                        size_t eIndex = (eventIndex + j) % events.size();
-                        const CounterEvent& endEvent = events[eIndex];
-                        if (e.name == endEvent.name && endEvent.phase == CounterEvent::PHASE_END)
-                        {
-                            uint64 timeDelta = endEvent.time - e.time;
-
-                            if (treeLevel)
-                                Memset(indentStr, ' ', treeLevel * 4);
-                            indentStr[treeLevel] = 0;
-
-                            Logger::Info("%s%s    %llu us", indentStr, e.name.c_str(), timeDelta);
-
-                            break;
-                        }
-                    }
-                    treeLevel++;
-                    break;
-
-                case CounterEvent::PHASE_END:
-                {
-                    if (treeLevel)
-                        treeLevel--;
-                    //if (eventStack.size() && eventStack.top()->name == e.name)
-                    //{
-                    //    uint64 timeDelta = e.time - eventStack.top()->time;
-                    //    eventStack.pop();
-
-                    //    if (eventStack.size())
-                    //        Memset(indentStr, ' ', eventStack.size() * 4);
-                    //    indentStr[eventStack.size() * 4] = 0;
-
-                    //    Logger::Info("%s%s    %llu us", indentStr, e.name.c_str(), timeDelta);
-                    //}
-                }
-                break;
-                case CounterEvent::PHASE_NONE:
-                    break;
-                }
+                threadsToProcess.insert(c.tid);
             }
         }
+
+        threadsToProcess.erase(threadID);
+        threadsProcessed.insert(threadID);
     }
 }
 
 void Dump(const char* fileName)
 {
-    File* json = File::Create(fileName, File::CREATE | File::WRITE);
-    json->WriteLine("{ \"traceEvents\": [ ");
+    //File* json = File::Create(fileName, File::CREATE | File::WRITE);
+    //json->WriteLine("{ \"traceEvents\": [ ");
 
-    eventsSync.Lock();
-    char buf[1024];
-    for (size_t i = 0; i < events.size(); ++i)
-    {
-        size_t eventIndex = (headIndex + i) % events.size();
-        const CounterEvent& e = events[eventIndex];
+    //eventsSync.Lock();
+    //char buf[1024];
+    //for (size_t i = 0; i < events.size(); ++i)
+    //{
+    //    size_t eventIndex = (headIndex + i) % events.size();
+    //    const CounterEvent& e = events[eventIndex];
 
-        const char* ph = "";
+    //    const char* ph = "";
 
-        switch (e.phase)
-        {
-        case CounterEvent::PHASE_BEGIN:
-            ph = "B";
-            break;
-        case CounterEvent::PHASE_END:
-            ph = "E";
-            break;
-        case CounterEvent::PHASE_NONE:
-            break;
-        }
-        Snprintf(buf, 1024,
-                 "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-                 0,
-                 uint64(e.tid),
-                 e.time,
-                 ph,
-                 "",
-                 e.name,
-                 (i != events.size() - 1) ? ", " : "");
-        json->WriteLine(buf);
-    }
+    //    switch (e.phase)
+    //    {
+    //    case CounterEvent::PHASE_BEGIN:
+    //        ph = "B";
+    //        break;
+    //    case CounterEvent::PHASE_END:
+    //        ph = "E";
+    //        break;
+    //    case CounterEvent::PHASE_NONE:
+    //        break;
+    //    }
+    //    Snprintf(buf, 1024,
+    //             "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+    //             0,
+    //             uint64(e.tid),
+    //             e.time,
+    //             ph,
+    //             "",
+    //             e.name,
+    //             (i != events.size() - 1) ? ", " : "");
+    //    json->WriteLine(buf);
+    //}
 
-    eventsSync.Unlock();
+    //eventsSync.Unlock();
 
-    json->WriteLine("] }");
-    json->Release();
+    //json->WriteLine("] }");
+    //json->Release();
 }
 
 void DumpAverage(const char* eventName, uint32 count)
 {
 }
-}
+
+} //ns Profiler
+
+} //ns DAVA
 
 #if 0
 namespace profiler

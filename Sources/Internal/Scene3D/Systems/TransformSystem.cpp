@@ -34,13 +34,13 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 
 void TransformSystem::Process(float32 timeElapsed)
 {
-    PROFILER_SCOPED_TIMING("TransformSystem::Process");
+    PROFILER_TIMING("TransformSystem::Process");
 
     passedNodes = 0;
     multipliedNodes = 0;
 
     {
-        PROFILER_SCOPED_TIMING("TransformSystem::FindNodeThatRequireUpdate");
+        PROFILER_TIMING("TransformSystem::FindNodeThatRequireUpdate");
         uint32 size = static_cast<uint32>(updatableEntities.size());
         for (uint32 i = 0; i < size; ++i)
         {
@@ -50,7 +50,7 @@ void TransformSystem::Process(float32 timeElapsed)
     }
 
     {
-        PROFILER_SCOPED_TIMING("TransformSystem::GroupEvent");
+        PROFILER_TIMING("TransformSystem::GroupEvent");
         GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
     }
     sendEvent.clear();

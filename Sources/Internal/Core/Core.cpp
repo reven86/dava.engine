@@ -550,7 +550,7 @@ void Core::SystemProcessFrame()
     Profiler::EnsureInited();
     #endif
 
-    PROFILER_SCOPED_TIMING("Core::SystemProcessFrame");
+    PROFILER_TIMING("Core::SystemProcessFrame");
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -596,9 +596,7 @@ void Core::SystemProcessFrame()
     {
         InputSystem::Instance()->OnBeforeUpdate();
 
-        PROFILER_START_TIMING("Core::BeginFrame")
         core->BeginFrame();
-        PROFILER_STOP_TIMING("Core::BeginFrame")
 
 #if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
@@ -630,24 +628,20 @@ void Core::SystemProcessFrame()
         DownloadManager::Instance()->Update();
         packManager->Update();
 
-        PROFILER_START_TIMING("JobManager::Update");
         JobManager::Instance()->Update();
-        PROFILER_STOP_TIMING("JobManager::Update");
 
-        PROFILER_START_TIMING("Core::Update")
-        updated.Emit(frameDelta);
-        core->Update(frameDelta);
-        PROFILER_STOP_TIMING("Core::Update")
+        {
+            PROFILER_TIMING("Core::Update")
+
+            updated.Emit(frameDelta);
+            core->Update(frameDelta);
+        }
 
         InputSystem::Instance()->OnAfterUpdate();
 
-        PROFILER_START_TIMING("Core::Draw")
         core->Draw();
-        PROFILER_STOP_TIMING("Core::Draw")
 
-        PROFILER_START_TIMING("Core::EndFrame")
         core->EndFrame();
-        PROFILER_STOP_TIMING("Core::EndFrame")
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;

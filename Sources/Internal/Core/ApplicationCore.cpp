@@ -37,17 +37,10 @@ void ApplicationCore::Update(float32 timeElapsed)
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
-    PROFILER_START_TIMING("SoundSystem::Update")
+
     SoundSystem::Instance()->Update(timeElapsed);
-    PROFILER_STOP_TIMING("SoundSystem::Update")
-
-    PROFILER_START_TIMING("AnimationManager::Update")
     AnimationManager::Instance()->Update(timeElapsed);
-    PROFILER_STOP_TIMING("AnimationManager::Update")
-
-    PROFILER_START_TIMING("UIControlSystem::Update")
     UIControlSystem::Instance()->Update();
-    PROFILER_STOP_TIMING("UIControlSystem::Update")
     
 #if defined(__DAVAENGINE_STEAM__)
     Steam::Update();
@@ -64,6 +57,8 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
+    PROFILER_TIMING("Core::Draw")
+
     Renderer::GetRenderStats().Reset();
 
     TIME_PROFILE("ApplicationCore::Draw");
@@ -78,11 +73,15 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
+    PROFILER_TIMING("Core::BeginFrame")
+
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
+    PROFILER_TIMING("Core::EndFrame")
+
     Renderer::EndFrame();
 }
 

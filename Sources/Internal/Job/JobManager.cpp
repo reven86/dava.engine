@@ -5,6 +5,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -43,6 +44,8 @@ JobManager::~JobManager()
 
 void JobManager::Update()
 {
+    PROFILER_TIMING("JobManager::Update");
+
     bool hasFinishedJobs = false;
 
     mainQueueMutex.Lock();

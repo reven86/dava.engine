@@ -631,7 +631,7 @@ void Scene::SetupTestLighting()
 
 void Scene::Update(float timeElapsed)
 {
-    PROFILER_SCOPED_TIMING("Scene::Update")
+    PROFILER_TIMING("Scene::Update")
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
@@ -663,7 +663,7 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
-    PROFILER_SCOPED_TIMING("Scene::Draw")
+    PROFILER_TIMING("Scene::Draw")
 
     //TODO: re-think configuring global dynamic bindings
     static Color defShadowColor(1.f, 0.f, 0.f, 1.f);

@@ -1067,6 +1067,8 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
 
 void CommandBufferGLES2_t::Execute()
 {
+    PROFILER_TIMING("cb::Execute");
+
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
     uint32 cur_base_vert = 0;
@@ -1827,13 +1829,9 @@ void CommandBufferGLES2_t::Execute()
             _GLES2_PendingImmediateCmdSync.Lock();
             if (_GLES2_PendingImmediateCmd)
             {
-                PROFILER_START_TIMING("rhi::ExecuteImmidiateCmds");
-
                 _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                 _GLES2_PendingImmediateCmd = nullptr;
                 _GLES2_PendingImmediateCmdCount = 0;
-
-                PROFILER_STOP_TIMING("rhi::ExecuteImmidiateCmds");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -1913,6 +1911,8 @@ _RejectAllFrames()
 static void
 _GLES2_ExecuteQueuedCommands()
 {
+    PROFILER_TIMING("rhi::ExecuteQueuedCmds");
+
     StatSet::ResetAll();
 
     Trace("rhi-gl.exec-queued-cmd\n");
@@ -1973,9 +1973,7 @@ _GLES2_ExecuteQueuedCommands()
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            PROFILER_START_TIMING("cb::Execute");
             cb->Execute();
-            PROFILER_STOP_TIMING("cb::Execute");
 
             if (cb->sync != InvalidHandle)
             {
@@ -2004,7 +2002,7 @@ _GLES2_ExecuteQueuedCommands()
     {
         // do swap-buffers
 
-        PROFILER_START_TIMING("rhi::SwapBuffers");
+        PROFILER_TIMING("rhi::SwapBuffers");
         
 #if defined(__DAVAENGINE_WIN32__)
         Trace("rhi-gl.swap-buffers...\n");
@@ -2027,8 +2025,6 @@ _GLES2_ExecuteQueuedCommands()
         }
 
 #endif
-
-        PROFILER_STOP_TIMING("rhi::SwapBuffers");
     }
 
     // update sync-objects
@@ -2047,7 +2043,7 @@ _GLES2_ExecuteQueuedCommands()
 static void
 gles2_Present(Handle sync)
 {
-    PROFILER_SCOPED_TIMING("rhi::Present");
+    PROFILER_TIMING("rhi::Present");
 
     if (_GLES2_RenderThreadFrameCount)
     {
@@ -2072,22 +2068,22 @@ gles2_Present(Handle sync)
             _GLES2_FramePreparedEvent.Signal();
         }
 
-        uint32 frame_cnt = 0;
-        PROFILER_START_TIMING("rhi::WaitFrameExecution");
-        do
         {
-            _GLES2_FrameSync.Lock();
-            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
-            _GLES2_FrameSync.Unlock();
+            PROFILER_TIMING("rhi::WaitFrameExecution");
 
-            if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+            uint32 frame_cnt = 0;
+            do
             {
-                _GLES2_FrameDoneEvent.Wait();
-            }
-        }
-        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+                _GLES2_FrameSync.Lock();
+                frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
+                _GLES2_FrameSync.Unlock();
 
-        PROFILER_STOP_TIMING("rhi::WaitFrameExecution");
+                if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+                {
+                    _GLES2_FrameDoneEvent.Wait();
+                }
+            } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+        }
     }
     else
     {
@@ -2118,23 +2114,23 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        PROFILER_START_TIMING("rhi::RenderLoop");
+        PROFILER_TIMING("rhi::RenderLoop");
+
+        if (_GLES2_RenderThreadSuspended.Get())
         {
-            if (_GLES2_RenderThreadSuspended.Get())
-            {
-                GL_CALL(glFinish());
-                _GLES2_RenderThreadSuspendSyncReached = true;
-                _GLES2_RenderThreadSuspendSync.Wait();
-            }
+            GL_CALL(glFinish());
+            _GLES2_RenderThreadSuspendSyncReached = true;
+            _GLES2_RenderThreadSuspendSync.Wait();
+        }
             
 
 #if defined __DAVAENGINE_ANDROID__
-            android_gl_checkSurface();
+        android_gl_checkSurface();
 #elif defined __DAVAENGINE_IPHONE__
-            ios_gl_check_layer();
+        ios_gl_check_layer();
 #endif
-
-            PROFILER_START_TIMING("rhi::WaitFrame");
+        {
+            PROFILER_TIMING("rhi::WaitFrame");
 
             // CRAP: busy-wait
             bool do_wait = true;
@@ -2150,13 +2146,9 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 _GLES2_PendingImmediateCmdSync.Lock();
                 if (_GLES2_PendingImmediateCmd)
                 {
-                    PROFILER_START_TIMING("rhi::ExecuteImmidiateCmds");
-
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-
-                    PROFILER_STOP_TIMING("rhi::ExecuteImmidiateCmds");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -2169,19 +2161,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _GLES2_FramePreparedEvent.Wait();
                 }
             }
-
-            PROFILER_STOP_TIMING("rhi::WaitFrame");
-
-            if (!do_exit)
-            {
-                PROFILER_START_TIMING("rhi::ExecuteQueuedCmds");
-                _GLES2_ExecuteQueuedCommands();
-                PROFILER_STOP_TIMING("rhi::ExecuteQueuedCmds");
-            }
-
-            _GLES2_FrameDoneEvent.Signal();
         }
-        PROFILER_STOP_TIMING("rhi::RenderLoop");
+
+        if (!do_exit)
+        {
+            _GLES2_ExecuteQueuedCommands();
+        }
+
+        _GLES2_FrameDoneEvent.Signal();
     }
 
     Logger::Info("[RHI] render-thread finished");
@@ -2282,6 +2269,8 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL(GLCommand* command, uint32 cmdCount)
 {
+    //PROFILER_TIMING("rhi::ExecuteImmidiateCmds");
+
     int err = GL_NO_ERROR;
 
 #if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
@@ -2704,7 +2693,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        PROFILER_START_TIMING("rhi::WaitImmediateCmd");
+        PROFILER_TIMING("rhi::WaitImmediateCmd");
 
         while (!scheduled)
         {
@@ -2734,8 +2723,6 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 DAVA::Thread::Yield();
             }
         }
-
-        PROFILER_STOP_TIMING("rhi::WaitImmediateCmd");
     }
 }
 

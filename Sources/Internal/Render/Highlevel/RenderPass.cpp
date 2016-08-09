@@ -106,7 +106,7 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
-    PROFILER_SCOPED_TIMING("MainRenderPass::PrepareVisibilityArrays")
+    PROFILER_TIMING("MainRenderPass::PrepareVisibilityArrays")
 
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
@@ -147,6 +147,8 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
 
 void RenderPass::DrawLayers(Camera* camera)
 {
+    PROFILER_TIMING("RenderPass::DrawLayers")
+
     ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
@@ -329,9 +331,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 
     if (BeginRenderPass())
     {
-        PROFILER_START_TIMING("MainRenderPass::DrawLayers")
         DrawLayers(mainCamera);
-        PROFILER_STOP_TIMING("MainRenderPass::DrawLayers")
 
         if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
             PrepareReflectionRefractionTextures(renderSystem);

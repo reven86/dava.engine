@@ -296,7 +296,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
-    TIME_PROFILE("UIControlSystem::Update");
+    PROFILER_TIMING("UIControlSystem::Update");
 
     updateCounter = 0;
     ProcessScreenLogic();
@@ -326,7 +326,7 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    PROFILER_SCOPED_TIMING("UIControlSystem::Draw");
+    PROFILER_TIMING("UIControlSystem::Draw");
 
     resizePerFrame = 0;
 
