@@ -12,6 +12,7 @@
 namespace DAVA
 {
 IPackManager::~IPackManager() = default;
+IPackManager::IRequest::~IRequest() = default;
 
 static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
 {
@@ -939,6 +940,78 @@ uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& p
     const String& url = GetSuperPackUrl();
     uint32 result = dm->DownloadRange(url, packPath, downloadOffset, downloadSize);
     return result;
+}
+
+bool PackManagerImpl::IsRequestingEnabled() const
+{
+    return isProcessingEnabled;
+}
+
+void PackManagerImpl::EnableRequesting()
+{
+    if (!isProcessingEnabled)
+    {
+        isProcessingEnabled = true;
+        if (requestManager)
+        {
+            requestManager->Start();
+        }
+    }
+}
+
+void PackManagerImpl::DisableRequesting()
+{
+    if (isProcessingEnabled)
+    {
+        isProcessingEnabled = false;
+        if (requestManager)
+        {
+            requestManager->Stop();
+        }
+    }
+}
+
+const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
+{
+    const String& result = db->FindPack(relativePathInPack);
+    return result;
+}
+
+uint32 PackManagerImpl::GetPackIndex(const String& packName) const
+{
+    auto it = packsIndex.find(packName);
+    if (it != end(packsIndex))
+    {
+        return it->second;
+    }
+    throw std::runtime_error("can't find pack with name: " + packName);
+}
+
+IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
+{
+    uint32 index = GetPackIndex(packName);
+    return packs.at(index);
+}
+
+const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) const
+{
+    uint32 index = GetPackIndex(packName);
+    return packs.at(index);
+}
+
+const Vector<IPackManager::Pack>& PackManagerImpl::GetPacks() const
+{
+    return packs;
+}
+
+const FilePath& PackManagerImpl::GetLocalPacksDirectory() const
+{
+    return localPacksDir;
+}
+
+const String& PackManagerImpl::GetSuperPackUrl() const
+{
+    return superPackUrl;
 }
 
 } // end namespace DAVA
