@@ -4,7 +4,9 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_QT__)
+// TODO: plarform defines
+#elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
