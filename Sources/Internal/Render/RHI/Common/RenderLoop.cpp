@@ -203,7 +203,7 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
             pendingImmediateCmdSync.Lock();
             if (pendingImmediateCmd.Get() == nullptr)
             {
-                pendingImmediateCmd = command;
+                //pendingImmediateCmd = command;
                 scheduled = true;
             }
             pendingImmediateCmdSync.Unlock();

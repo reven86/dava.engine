@@ -23,19 +23,20 @@ struct ImmediateCommand
 
 namespace DispatchPlatform
 {
-static void (*InitContext)() = nullptr;
-static void (*AcquireContext)() = nullptr;
-static void (*ReleaseContext)() = nullptr;
-static void (*CheckSurface)() = nullptr;
-static void (*Suspend)() = nullptr;
+extern void (*InitContext)();
+extern void (*AcquireContext)();
+extern void (*ReleaseContext)();
+extern void (*CheckSurface)();
+extern void (*Suspend)();
 
-static void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command) = nullptr; //called from render thread
+extern void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
 
-static void (*InvalidateFrameCache)() = nullptr;
-static void (*ExecuteFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
-static void (*RejectFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
+extern void (*InvalidateFrameCache)();
+extern void (*ExecuteFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
+extern void (*RejectFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
 
-static bool (*PresntBuffer)() = nullptr;
-static void (*ResetBlock)() = nullptr;
+extern bool (*PresntBuffer)();
+extern void (*ResetBlock)();
+extern int test;
 }
 }

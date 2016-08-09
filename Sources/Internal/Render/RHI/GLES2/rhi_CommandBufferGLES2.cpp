@@ -1995,6 +1995,7 @@ void SetupDispatch(Dispatch* dispatch)
     DispatchPlatform::PresntBuffer = _GLES2_PresentBuffer;
     DispatchPlatform::ResetBlock = _GLES2_ResetBlock;
     DispatchPlatform::InvalidateFrameCache = _GLES2_InvalidateFrameCache;
+    DispatchPlatform::test = 11;
 }
 }
 

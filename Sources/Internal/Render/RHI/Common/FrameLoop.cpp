@@ -37,11 +37,11 @@ void ProcessFrame()
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 
-    if (!renderContextReady) //no render context - just reject frames and do nothing;
+    /*if (!renderContextReady) //no render context - just reject frames and do nothing;
     {
         RejectFrames();
         return;
-    }
+    }*/
 
     bool presentResult = false;
     if (!resetPending)
@@ -107,6 +107,7 @@ uint32 FramesCount()
 }
 void AddPass(Handle pass, uint32 priority)
 {
+    int v = DispatchPlatform::test;
     frameSync.Lock();
     if (!frameStarted)
     {
