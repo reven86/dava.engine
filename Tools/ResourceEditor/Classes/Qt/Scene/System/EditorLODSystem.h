@@ -139,6 +139,8 @@ public:
 
     DAVA::FilePath GetPathForPlaneEntity() const;
 
+    static bool IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances);
+
 protected:
     void ProcessCommand(const RECommand* command, bool redo);
 
