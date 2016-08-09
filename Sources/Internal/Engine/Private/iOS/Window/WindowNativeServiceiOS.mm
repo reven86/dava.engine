@@ -20,10 +20,6 @@ WindowNativeService::WindowNativeService(Private::WindowNativeBridge* nativeBrid
 {
 }
 
-void WindowNativeService::InitRenderParams(rhi::InitParam& params)
-{
-}
-
 void WindowNativeService::AddUIView(UIView* uiview)
 {
     bridge->AddUIView(uiview);

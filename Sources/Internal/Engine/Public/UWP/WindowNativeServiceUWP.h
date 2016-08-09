@@ -8,17 +8,11 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-namespace rhi
-{
-struct InitParam;
-}
-
 namespace DAVA
 {
 class WindowNativeService final
 {
 public:
-    void InitRenderParams(rhi::InitParam& params);
     void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
     void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
     void PositionXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl, float32 x, float32 y);

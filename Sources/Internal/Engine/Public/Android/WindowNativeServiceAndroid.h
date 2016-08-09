@@ -8,17 +8,11 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-namespace rhi
-{
-struct InitParam;
-}
-
 namespace DAVA
 {
 class WindowNativeService final
 {
 public:
-    void InitRenderParams(rhi::InitParam& params);
 
 private:
     WindowNativeService(Private::WindowBackend* wbackend);

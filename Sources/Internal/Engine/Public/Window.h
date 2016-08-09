@@ -10,6 +10,11 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+namespace rhi
+{
+struct InitParam;
+}
+
 namespace DAVA
 {
 class InputSystem;
@@ -106,6 +111,7 @@ private:
     void HandlePendingSizeChanging();
 
     void ClearMouseButtons();
+    void InitCustomRenderParams(rhi::InitParam& params);
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

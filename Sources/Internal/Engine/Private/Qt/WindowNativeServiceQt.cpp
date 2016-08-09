@@ -20,11 +20,6 @@ DAVA::RenderWidget* WindowNativeService::GetRenderWidget()
     return windowBackend->GetRenderWidget();
 }
 
-void WindowNativeService::InitRenderParams(rhi::InitParam& params)
-{
-    windowBackend->InitRenderParams(params);
-}
-
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__

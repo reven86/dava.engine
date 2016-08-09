@@ -4,7 +4,6 @@
 
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Public/Window.h"
-#include "Engine/Public/WindowNativeService.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -495,8 +494,7 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
-    WindowNativeService* nativeService = w->GetNativeService();
-    nativeService->InitRenderParams(rendererParams);
+    w->InitCustomRenderParams(rendererParams);
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);

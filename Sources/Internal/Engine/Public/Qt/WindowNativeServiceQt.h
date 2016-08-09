@@ -8,11 +8,6 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-namespace rhi
-{
-struct InitParam;
-}
-
 namespace DAVA
 {
 class RenderWidget;
@@ -21,7 +16,6 @@ class WindowNativeService final
 {
 public:
     RenderWidget* GetRenderWidget();
-    void InitRenderParams(rhi::InitParam& params);
 
 private:
     WindowNativeService(Private::WindowBackend* wbackend);

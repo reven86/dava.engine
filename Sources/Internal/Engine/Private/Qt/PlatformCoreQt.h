@@ -39,6 +39,11 @@ private:
     std::unique_ptr<NativeService> nativeService;
 };
 
+inline NativeService* PlatformCore::GetNativeService()
+{
+    return nativeService.get();
+}
+
 } // namespace Private
 } // namespace DAVA
 

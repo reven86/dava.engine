@@ -13,19 +13,12 @@
 @class UIView;
 @class UIImage;
 
-namespace rhi
-{
-struct InitParam;
-}
-
 namespace DAVA
 {
 class Image;
 class WindowNativeService final
 {
 public:
-    void InitRenderParams(rhi::InitParam& params);
-
     void AddUIView(UIView* uiview);
     void RemoveUIView(UIView* uiview);
 

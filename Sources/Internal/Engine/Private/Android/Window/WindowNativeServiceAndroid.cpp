@@ -15,10 +15,6 @@ WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
 {
 }
 
-void WindowNativeService::InitRenderParams(rhi::InitParam& params)
-{
-}
-
 } // namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__

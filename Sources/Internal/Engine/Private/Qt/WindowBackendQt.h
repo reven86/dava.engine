@@ -41,7 +41,7 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void TriggerPlatformEvents();
-    void InitRenderParams(rhi::InitParam& params);
+    void InitCustomRenderParams(rhi::InitParam& params);
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
@@ -79,6 +79,16 @@ private:
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;
 };
+
+inline void* WindowBackend::GetHandle() const
+{
+    return nullptr;
+}
+
+inline WindowNativeService* WindowBackend::GetNativeService() const
+{
+    return nativeService.get();
+}
 
 } // namespace Private
 } // namespace DAVA

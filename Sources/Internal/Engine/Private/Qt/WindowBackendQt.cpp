@@ -175,16 +175,6 @@ WindowBackend::~WindowBackend()
     delete renderWidget;
 }
 
-void* WindowBackend::GetHandle() const
-{
-    return nullptr;
-}
-
-WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
-}
-
 bool WindowBackend::Create(float32 width, float32 height)
 {
     renderWidget = new RenderWidget(this, static_cast<uint32>(width), static_cast<uint32>(height));
@@ -470,7 +460,7 @@ DAVA::RenderWidget* WindowBackend::GetRenderWidget()
     return renderWidget;
 }
 
-void WindowBackend::InitRenderParams(rhi::InitParam& params)
+void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;

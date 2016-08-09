@@ -74,11 +74,6 @@ void PlatformCore::Quit()
     globalApplication->quit();
 }
 
-DAVA::NativeService* PlatformCore::GetNativeService()
-{
-    return nativeService.get();
-}
-
 WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
 {
     WindowBackend* backend = new WindowBackend(engineBackend, w);
