@@ -636,13 +636,13 @@ bool QtModelPackageCommandExecutor::MoveControlImpl(ControlNode* node, ControlsC
     if (src)
     {
         int32 srcIndex = src->GetIndex(node);
-        PushCommand(new RemoveControlCommand(packageNode, node, src, srcIndex));
+        ExecCommand(Command::Create<RemoveControlCommand>(packageNode, node, src, srcIndex));
 
         Vector<ControlNode*> instances = node->GetInstances();
 
         if (IsNodeInHierarchy(dest))
         {
-            PushCommand(new InsertControlCommand(packageNode, node, dest, destIndex));
+            ExecCommand(Command::Create<InsertControlCommand>(packageNode, node, dest, destIndex));
 
             ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
             if (destControl)
