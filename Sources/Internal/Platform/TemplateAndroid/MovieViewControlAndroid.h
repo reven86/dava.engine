@@ -1,8 +1,9 @@
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_ANDROID_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_ANDROID_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -73,8 +74,7 @@ public:
 private:
     JniMovieViewControl jniMovieViewControl;
 };
-};
+} // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif //__DAVAENGINE_ANDROID__
-
-#endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_ANDROID_H__) */

@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
@@ -47,4 +48,5 @@ private:
 };
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_IPHONE__

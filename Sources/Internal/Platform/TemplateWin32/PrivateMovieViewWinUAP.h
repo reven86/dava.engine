@@ -3,6 +3,7 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
@@ -110,4 +111,5 @@ inline bool PrivateMovieViewWinUAP::IsPlaying()
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_WIN_UAP__

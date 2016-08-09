@@ -1,6 +1,7 @@
 #include "Platform/TemplateWin32/PrivateMovieViewWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
@@ -440,4 +441,5 @@ void PrivateMovieViewWinUAP::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedE
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_WIN_UAP__

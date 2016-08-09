@@ -1,6 +1,7 @@
 #include "Platform/TemplateiOS/MovieViewControliOS.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -143,4 +144,5 @@ bool MovieViewControl::IsPlaying() const
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_IPHONE__
