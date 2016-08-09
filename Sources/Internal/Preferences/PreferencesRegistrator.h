@@ -17,23 +17,6 @@ struct GlobalValuesRegistrator
     GlobalValuesRegistrator(const DAVA::FastName& key, const DAVA::VariantType& defaultValue);
 };
 
-template <typename T>
-class PreferencesRegistrator
-{
-public:
-    PreferencesRegistrator(T* obj);
-    ~PreferencesRegistrator();
-
-    PreferencesRegistrator(const PreferencesRegistrator&) = delete;
-    PreferencesRegistrator(PreferencesRegistrator&&) = delete;
-
-    PreferencesRegistrator& operator=(const PreferencesRegistrator&) = delete;
-    PreferencesRegistrator& operator=(PreferencesRegistrator&&) = delete;
-
-private:
-    T* objectPtr = nullptr;
-};
-
 //use this macro to register introspection when program starts. A PreferencesStorage require this to work correctly
 #define REGISTER_PREFERENCES_ON_START(Class, ...) \
     namespace Class##_local \
