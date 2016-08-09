@@ -69,4 +69,5 @@
         </activity>
         <receiver android:name="com.dava.framework.ScheduledNotificationReceiver"/>
     </application>
+
 </manifest>
