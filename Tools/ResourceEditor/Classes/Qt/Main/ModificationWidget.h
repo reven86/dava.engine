@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITORQT__MODIFICATIONWIDGET__
-#define __RESOURCEEDITORQT__MODIFICATIONWIDGET__
+#pragma once
 
 #include <QWidget>
 #include <QAbstractSpinBox>
@@ -9,9 +8,7 @@
 #include "Scene/SceneSignals.h"
 
 class DAVAFloat32SpinBox;
-
-class ModificationWidget
-: public QWidget
+class ModificationWidget : public QWidget
 {
     Q_OBJECT
 
@@ -58,14 +55,12 @@ private:
     bool groupMode = false;
 };
 
-class DAVAFloat32SpinBox
-: public QAbstractSpinBox
+class DAVAFloat32SpinBox : public QAbstractSpinBox
 {
     Q_OBJECT
 
 public:
     explicit DAVAFloat32SpinBox(QWidget* parent = nullptr);
-    virtual ~DAVAFloat32SpinBox();
 
     void showButtons(bool show);
 
@@ -75,7 +70,6 @@ public:
 
 signals:
     void valueEdited();
-    void valueChanged();
 
 public slots:
     void clear() override;
@@ -83,19 +77,17 @@ public slots:
 protected slots:
     void textEditingFinished();
 
-protected:
+private:
     bool eventFilter(QObject* object, QEvent* event) override;
-
-    DAVA::float32 originalValue;
-    QString originalString;
-
-    int precision;
-    bool hasButtons;
-    bool cleared;
 
     void keyPressEvent(QKeyEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     StepEnabled stepEnabled() const override;
-};
 
-#endif /* defined(__RESOURCEEDITORQT__MODIFICATIONWIDGET__) */
+    DAVA::float32 originalValue = 0;
+
+    static const int precision = 3;
+    static const DAVA::float32 eps;
+
+    bool hasButtons = true;
+};

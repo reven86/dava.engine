@@ -69,9 +69,9 @@ void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, boo
     MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha);
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport)
 {
-    MakeScreenshotInternal(control, screenshot, callback, clearAlpha);
+    MakeScreenshotInternal(control, screenshot, callback, clearAlpha, viewport);
 }
 
 void UIScreenshoter::Unsubscribe(Texture* screenshot)
@@ -85,7 +85,7 @@ void UIScreenshoter::Unsubscribe(Texture* screenshot)
     }
 }
 
-void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha)
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport)
 {
     if (control == nullptr)
         return;
@@ -99,26 +99,17 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     // End preparing
 
     // Render to texture
-
-    //[CLEAR]
-    rhi::Viewport viewport;
-    viewport.x = viewport.y = 0U;
-    viewport.width = screenshot->GetWidth();
-    viewport.height = screenshot->GetHeight();
-    RenderHelper::CreateClearPass(screenshot->handle, screenshot->handleDepthStencil, PRIORITY_SCREENSHOT + PRIORITY_CLEAR, Color::Clear, viewport);
-
-    //[DRAW]
     RenderSystem2D::RenderTargetPassDescriptor desc;
     desc.colorAttachment = screenshot->handle;
     desc.depthAttachment = screenshot->handleDepthStencil;
-    desc.width = screenshot->GetWidth();
-    desc.height = screenshot->GetHeight();
+    desc.width = viewport.width ? viewport.width : screenshot->GetWidth();
+    desc.height = viewport.height ? viewport.height : screenshot->GetHeight();
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    control->SystemUpdate(0.0f);
+    control->SystemUpdate(0.016f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 
     //[CLEAR ALPHA]

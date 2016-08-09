@@ -369,7 +369,7 @@ private:
                 }
                 else
                 {
-                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                    DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname()).c_str());
                 }
             }
         }
@@ -415,7 +415,7 @@ private:
             }
             if (!wrongPathes.empty())
             {
-                ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
+                DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes).c_str());
             }
             SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
             sceneEditor->selectionSystem->SetSelection(newSelection);
@@ -1071,6 +1071,12 @@ void SceneTree::TreeItemDoubleClicked(const QModelIndex& index)
 
 void SceneTree::ShowContextMenu(const QPoint& pos)
 {
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (curScene == nullptr || curScene->selectionSystem->GetSelection().IsEmpty())
+    {
+        return;
+    }
+
     QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
     if (!index.isValid())
     {

@@ -2,12 +2,16 @@
 
 #include "AddRequest.h"
 #include "GetRequest.h"
+#include "RemoveRequest.h"
+#include "ClearRequest.h"
 
 ClientApplication::ClientApplication()
     : cacheClient(true)
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new RemoveRequest()));
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new ClearRequest()));
 }
 
 ClientApplication::~ClientApplication()

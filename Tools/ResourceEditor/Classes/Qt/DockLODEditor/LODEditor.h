@@ -46,7 +46,8 @@ private slots:
     void LODDistanceChangedBySlider();
 
     //mode signals
-    void SceneOrSelectionModeSelected(bool allSceneModeActivated);
+    void SceneModeToggled(bool toggled);
+    void SelectionModeToggled(bool toggled);
     void RecursiveModeSelected(bool recursive);
 
     //action
@@ -59,6 +60,7 @@ private:
     void SetupInternalUI();
 
     void SetupForceUI();
+    void UpdateForceSliderRange();
 
     void UpdatePanelsUI(SceneEditor2* forScene);
     void UpdatePanelsForCurrentScene();
@@ -82,7 +84,6 @@ private:
     EditorLODSystem* GetCurrentEditorLODSystem() const;
     EditorStatisticsSystem* GetCurrentEditorStatisticsSystem() const;
 
-private:
     std::unique_ptr<Ui::LODEditor> ui;
 
     DAVA::Vector<LODDistanceWidget*> distanceWidgets;

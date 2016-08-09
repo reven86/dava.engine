@@ -66,6 +66,7 @@ if(TARGETS STREQUAL "all")
 	init_project ()
 	set          ( DAVA_MEGASOLUTION      1 )
 
+## tools
 	add_tool     ( ResourceEditor   )
 	add_tool     ( QuickEd          )
 	add_tool     ( ResourcePacker   )
@@ -74,9 +75,13 @@ if(TARGETS STREQUAL "all")
 	add_tool     ( AssetCacheClient )
 	add_tool     ( AssetCacheServer )
 
-	add_tool     ( UnitTests   ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
-	add_tool     ( TestBed     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
-	add_tool     ( SceneViewer ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
+## other
+    add_tool     ( Launcher )
+
+	add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
+	add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
+	add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
+    add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Projects/PerfomanceTests" )
 
 	if ( WIN32 )
 	    add_tool ( UWPRunner )

@@ -182,11 +182,13 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity* entity)
     {
         AABBox3 worldBox;
         AABBox3 localBox = selSystem->GetUntransformedBoundingBox(entity);
-        DVASSERT(!localBox.IsEmpty());
-        localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
+        if (!localBox.IsEmpty())
+        {
+            localBox.GetTransformedBox(entity->GetWorldTransform(), worldBox);
 
-        Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
-        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
+            Color soundColor = settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor();
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, ClampToUnityRange(soundColor), RenderHelper::DRAW_SOLID_DEPTH);
+        }
     }
 }
 

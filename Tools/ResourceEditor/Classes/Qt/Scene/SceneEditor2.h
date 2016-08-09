@@ -47,6 +47,7 @@ class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
 class EditorStatisticsSystem;
+class EditorVegetationSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 class RECommandStack;
@@ -71,36 +72,37 @@ public:
     ~SceneEditor2() override;
 
     // editor systems
-    SceneCameraSystem* cameraSystem;
-    SceneCollisionSystem* collisionSystem;
-    SceneGridSystem* gridSystem;
-    HoodSystem* hoodSystem;
-    SceneSelectionSystem* selectionSystem;
-    EntityModificationSystem* modifSystem;
-    LandscapeEditorDrawSystem* landscapeEditorDrawSystem;
-    HeightmapEditorSystem* heightmapEditorSystem;
-    TilemaskEditorSystem* tilemaskEditorSystem;
-    CustomColorsSystem* customColorsSystem;
-    RulerToolSystem* rulerToolSystem;
-    StructureSystem* structureSystem;
-    EditorParticlesSystem* particlesSystem;
-    EditorLightSystem* editorLightSystem;
-    TextDrawSystem* textDrawSystem;
-    DebugDrawSystem* debugDrawSystem;
-    BeastSystem* beastSystem;
-    OwnersSignatureSystem* ownersSignatureSystem;
-    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
-    EditorMaterialSystem* materialSystem;
+    SceneCameraSystem* cameraSystem = nullptr;
+    SceneCollisionSystem* collisionSystem = nullptr;
+    SceneGridSystem* gridSystem = nullptr;
+    HoodSystem* hoodSystem = nullptr;
+    SceneSelectionSystem* selectionSystem = nullptr;
+    EntityModificationSystem* modifSystem = nullptr;
+    LandscapeEditorDrawSystem* landscapeEditorDrawSystem = nullptr;
+    HeightmapEditorSystem* heightmapEditorSystem = nullptr;
+    TilemaskEditorSystem* tilemaskEditorSystem = nullptr;
+    CustomColorsSystem* customColorsSystem = nullptr;
+    RulerToolSystem* rulerToolSystem = nullptr;
+    StructureSystem* structureSystem = nullptr;
+    EditorParticlesSystem* particlesSystem = nullptr;
+    EditorLightSystem* editorLightSystem = nullptr;
+    TextDrawSystem* textDrawSystem = nullptr;
+    DebugDrawSystem* debugDrawSystem = nullptr;
+    BeastSystem* beastSystem = nullptr;
+    OwnersSignatureSystem* ownersSignatureSystem = nullptr;
+    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem = nullptr;
+    EditorMaterialSystem* materialSystem = nullptr;
     EditorLODSystem* editorLODSystem = nullptr;
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
+    EditorVegetationSystem* editorVegetationSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
     DAVA::RotationControllerSystem* rotationSystem = nullptr;
     DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
-    WayEditSystem* wayEditSystem;
-    PathSystem* pathSystem;
+    WayEditSystem* wayEditSystem = nullptr;
+    PathSystem* pathSystem = nullptr;
 
     // save/load
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;

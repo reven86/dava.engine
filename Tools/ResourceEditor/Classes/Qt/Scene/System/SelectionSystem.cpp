@@ -723,30 +723,24 @@ void SceneSelectionSystem::UpdateHoodPos() const
     }
     else
     {
-        bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
-        hoodSystem->LockModif(modificationEnabled == false);
+        const SelectableGroup& transformableSelection = modificationSystem->GetTransformableSelection();
+        bool transformableSelectionEmpty = transformableSelection.IsEmpty();
+        hoodSystem->LockModif(transformableSelectionEmpty);
 
-        DAVA::Vector3 hoodCenter;
-        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        if (!transformableSelectionEmpty)
         {
-            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
-        }
-        else
-        {
-            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
-        }
-        hoodSystem->SetPosition(hoodCenter);
-
-        bool hasNonTransformableObjects = false;
-        for (const auto& item : currentSelection.GetContent())
-        {
-            if (item.SupportsTransformType(Selectable::TransformType::Disabled) == false)
+            DAVA::Vector3 hoodCenter;
+            if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
             {
-                hasNonTransformableObjects = true;
-                break;
+                hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
             }
+            else
+            {
+                hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
+            }
+            hoodSystem->SetPosition(hoodCenter);
+            hoodSystem->SetVisible(true);
         }
-        hoodSystem->SetVisible(hasNonTransformableObjects == false);
     }
 
     SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());

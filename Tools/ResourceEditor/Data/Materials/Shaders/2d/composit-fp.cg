@@ -2,7 +2,7 @@ blending : src=one dst=inv_src_alpha
 
 #define GRADIENT_MULTIPLY 0
 #define GRADIENT_BLEND    1
-#define GRADIENT_ADD 	  2
+#define GRADIENT_ADD      2
 #define GRADIENT_SCREEN   3
 #define GRADIENT_OVERLAY  4
 
@@ -13,12 +13,12 @@ blending : src=one dst=inv_src_alpha
 
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(uvMask,2)
-	FPROG_IN_TEXCOORD1(uvDetail,2)
-	FPROG_IN_TEXCOORD2(uvGradient,2)
-	FPROG_IN_TEXCOORD3(uvContour,2)
+    FPROG_IN_TEXCOORD1(uvDetail,2)
+    FPROG_IN_TEXCOORD2(uvGradient,2)
+    FPROG_IN_TEXCOORD3(uvContour,2)
     FPROG_IN_COLOR0_LOW(color,4)
 FPROG_IN_END
-    	
+        
 FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
@@ -35,7 +35,7 @@ FPROG_BEGIN
     
     //fetch
     float maskColor = FP_TEXTURE2D(mask, FP_IN(uvMask)).a;
-    float4 detailColor = FP_TEXTURE2D(detail, FP_IN(uvDetail));	
+    float4 detailColor = FP_TEXTURE2D(detail, FP_IN(uvDetail)); 
     float4 gradientColor = FP_TEXTURE2D(gradient, FP_IN(uvGradient));
     float4 contourColor = FP_TEXTURE2D(contour, FP_IN(uvContour));
     
@@ -57,7 +57,7 @@ FPROG_BEGIN
     float3 detailPremult = detailImpact.rgb*detailImpact.a;
     float4 resColor = float4((contourColor.rgb-detailPremult)*contourColor.a+detailPremult, detailImpact.a + contourColor.a);
 
-    resColor = resColor * in_color;
+    resColor = resColor * float4(in_color);
 
     FP_OUT_COLOR = resColor; 
 

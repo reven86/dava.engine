@@ -13,6 +13,8 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QAction>
+#include <QVariant>
+#include <QOpenGLContext>
 
 namespace
 {
@@ -135,6 +137,7 @@ DavaGLWidget::DavaGLWidget(QWidget* parent)
 #else
     setenv("QSG_RENDER_LOOP", "basic", 1);
 #endif
+
     setAcceptDrops(true);
     setMouseTracking(true);
 
@@ -234,17 +237,26 @@ void Kostil_ForceUpdateCurrentScreen(DavaGLWidget* davaGLWidget)
 
 void DavaGLWidget::OnPaint()
 {
-    if (renderer == nullptr)
+    QVariant nativeHandle = davaGLView->openglContext()->nativeHandle();
+    if (!nativeHandle.isValid())
     {
-        DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
-
-        renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
-        emit Initialized();
-        OnResize();
+        DAVA::Logger::Error("GL context is not valid!");
+        throw std::runtime_error("GL context is not valid!");
     }
+    else
+    {
+        if (renderer == nullptr)
+        {
+            DAVAGLWidget_namespace::Kostil_ForceUpdateCurrentScreen(this);
 
-    renderer->paint();
-    davaGLView->resetOpenGLState();
+            renderer = new DavaRenderer(davaGLView, davaGLView->openglContext());
+            emit Initialized();
+            OnResize();
+        }
+
+        renderer->paint();
+        davaGLView->resetOpenGLState();
+    }
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent*)

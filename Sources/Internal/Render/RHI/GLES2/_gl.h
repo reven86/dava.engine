@@ -249,6 +249,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_RGB16F 0x881B
 #endif
 
+#if !defined(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
+
+#if !defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
@@ -305,8 +313,6 @@ extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
-extern rhi::ScreenShotCallback _GLES2_PendingScreenshotCallback;
-extern DAVA::Mutex _GLES2_ScreenshotCallbackSync;
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
 #endif

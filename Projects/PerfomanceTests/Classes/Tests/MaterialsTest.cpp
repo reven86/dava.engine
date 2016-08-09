@@ -172,19 +172,19 @@ void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
         {
             materialSubtestTime += frames[j].delta;
 
-            Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                         TeamcityTestsOutput::MATERIAL_FRAME_DELTA,
+            Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                         TeamcityPerformanceTestsOutput::MATERIAL_FRAME_DELTA,
                          DAVA::Format("%f", frames[j].delta))
                          .c_str());
         }
 
-        Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                     TeamcityTestsOutput::MATERIAL_TEST_TIME,
+        Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                     TeamcityPerformanceTestsOutput::MATERIAL_TEST_TIME,
                      DAVA::Format("%f", materialSubtestTime))
                      .c_str());
 
-        Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                     TeamcityTestsOutput::MATERIAL_ELAPSED_TEST_TIME,
+        Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                     TeamcityPerformanceTestsOutput::MATERIAL_ELAPSED_TEST_TIME,
                      DAVA::Format("%f", materialSubtestElapsedTime))
                      .c_str());
     }
