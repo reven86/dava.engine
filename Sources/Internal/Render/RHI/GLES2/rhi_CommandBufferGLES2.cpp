@@ -1503,13 +1503,12 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 bool _GLES2_PresentBuffer()
 {
     bool success = true;
-    DVASSERT(_GLES2_Context)
+    if (!_GLES2_Context) //this is special case when rendering is done inside other app render loop (eg: QT loop in ResEditor)
+        return true;
 
 // do swap-buffers            
     #if defined(__DAVAENGINE_WIN32__)
-    Trace("rhi-gl.swap-buffers...\n");
-    SwapBuffers(_GLES2_WindowDC);
-    Trace("rhi-gl.swap-buffers done\n");
+    SwapBuffers(_GLES2_WindowDC);    
     #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_end_frame();
     #elif defined(__DAVAENGINE_IPHONE__)

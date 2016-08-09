@@ -163,12 +163,12 @@ const RenderDeviceCaps& DeviceCaps()
 
 void SuspendRendering()
 {
-    (*_Impl.impl_SuspendRendering)();
+    RenderLoop::SuspendRender();
 }
 
 void ResumeRendering()
 {
-    (*_Impl.impl_ResumeRendering)();
+    RenderLoop::ResumeRender();
 }
 
 void InvalidateCache()

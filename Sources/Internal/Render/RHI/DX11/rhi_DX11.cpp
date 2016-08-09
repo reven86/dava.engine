@@ -355,8 +355,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
-    DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
-    DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
 
     SetDispatchTable(DispatchDX11);
 

@@ -231,8 +231,6 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_DeviceCaps = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
-    DispatchMetal.impl_ResumeRendering = &metal_Resume;
-    DispatchMetal.impl_SuspendRendering = &metal_Suspend;
 
     SetDispatchTable(DispatchMetal);
 

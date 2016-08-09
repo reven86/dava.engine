@@ -18,8 +18,6 @@ struct Dispatch
     bool (*impl_NeedRestoreResources)();
     bool (*impl_TextureFormatSupported)(TextureFormat);
 
-    void (*impl_SuspendRendering)();
-    void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();

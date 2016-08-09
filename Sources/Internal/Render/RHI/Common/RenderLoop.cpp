@@ -7,6 +7,7 @@
 #include "Concurrency/Concurrency.h"
 #include "Debug/Profiler.h"
 #include "Logger/Logger.h"
+#include <atomic>
 
 namespace rhi
 {
@@ -19,12 +20,12 @@ static uint32 renderThreadFrameCount = 0;
 static DAVA::Semaphore renderThredStartedSync(1);
 
 static DAVA::Semaphore renderThreadSuspendSync;
-static DAVA::Atomic<bool> renderThreadSuspendSyncReached(false);
-static DAVA::Atomic<bool> renderThreadSuspended(false);
+static std::atomic<bool> renderThreadSuspendSyncReached(false);
+static std::atomic<bool> renderThreadSuspended(false);
 
-static DAVA::Atomic<bool> renderThreadExitPending(false);
+static std::atomic<bool> renderThreadExitPending(false);
 
-static DAVA::Atomic<CommonImpl::ImmediateCommand*> pendingImmediateCmd(nullptr);
+static std::atomic<CommonImpl::ImmediateCommand*> pendingImmediateCmd(nullptr);
 static DAVA::Mutex pendingImmediateCmdSync;
 
 using DAVA::Logger;
@@ -32,7 +33,6 @@ using DAVA::Logger;
 void Present(Handle syncHandle) // called from main thread
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
-    Trace("rhi-gl.present\n");
 
     bool res = FrameLoop::FinishFrame(syncHandle);
     if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
@@ -76,7 +76,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
 
-        if (renderThreadSuspended.Get())
+        if (renderThreadSuspended.load())
         {
             DispatchPlatform::Suspend();
             renderThreadSuspendSyncReached = true;
@@ -90,7 +90,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
         while (!frameReady)
         {
             //exit or suspend should leave frame loop
-            if (renderThreadExitPending || renderThreadSuspended.Get())
+            if (renderThreadExitPending || renderThreadSuspended.load(std::memory_order_relaxed))
                 break;
 
             CheckImmediateCommand();
@@ -137,7 +137,7 @@ void InitializeRenderLoop(uint32 frameCount)
 void SuspendRender()
 {
     DVASSERT(!renderThreadSuspended);
-    renderThreadSuspended.Set(true);
+    renderThreadSuspended = true;
     if (renderThreadFrameCount)
     {
         while (!renderThreadSuspendSyncReached)
@@ -158,7 +158,7 @@ void ResumeRender()
 {
     DVASSERT(renderThreadSuspended);
     Logger::Error("Render Resumed");
-    renderThreadSuspended.Set(false);
+    renderThreadSuspended = (false);
     if (renderThreadFrameCount)
     {
         renderThreadSuspendSync.Post();
@@ -170,7 +170,7 @@ void UninitializeRenderLoop()
     if (renderThreadFrameCount) //?ASSERT
     {
         renderThreadExitPending = true;
-        if (renderThreadSuspended.Get())
+        if (renderThreadSuspended)
         {
             Logger::Info("RenderThread is suspended. Need resume it to be able to join.");
             ResumeRender();
@@ -201,9 +201,9 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
         while (!scheduled)
         {
             pendingImmediateCmdSync.Lock();
-            if (pendingImmediateCmd.Get() == nullptr)
+            if (pendingImmediateCmd.load() == nullptr)
             {
-                //pendingImmediateCmd = command;
+                pendingImmediateCmd = command;
                 scheduled = true;
             }
             pendingImmediateCmdSync.Unlock();
@@ -212,7 +212,7 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
         // CRAP: busy-wait
         while (!executed)
         {
-            if (pendingImmediateCmd.GetRelaxed() == nullptr)
+            if (pendingImmediateCmd.load(std::memory_order_relaxed) == nullptr)
             {
                 executed = true;
             }
@@ -228,9 +228,9 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 }
 void CheckImmediateCommand()
 {
-    if (pendingImmediateCmd.GetRelaxed() != nullptr)
+    if (pendingImmediateCmd.load(std::memory_order_relaxed) != nullptr)
     {
-        CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.Get();
+        CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.load();
         if (cmd != nullptr)
             DispatchPlatform::ProcessImmediateCommand(cmd);
     }
