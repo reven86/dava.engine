@@ -11,8 +11,8 @@ import android.util.Log;
 public final class DavaActivity extends Activity
 {
     public static final String LOG_TAG = "DAVA";
-    public static DavaActivity activitySingleton;
-    
+
+    private static DavaActivity activitySingleton;
     private static Thread davaMainThread;
 
     protected boolean isPaused = true;
@@ -41,7 +41,12 @@ public final class DavaActivity extends Activity
     public static native void nativeOnPause();
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
-    
+
+    public static DavaActivity instance()
+    {
+        return activitySingleton;
+    }
+
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");

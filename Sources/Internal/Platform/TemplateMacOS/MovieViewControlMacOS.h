@@ -7,10 +7,9 @@
 #include "UI/IMovieViewControl.h"
 #include "Functional/SignalBase.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 // Movie View Control - MacOS implementation.
 class MovieViewControl : public IMovieViewControl
 {

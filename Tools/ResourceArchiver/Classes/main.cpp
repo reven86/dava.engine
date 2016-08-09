@@ -1,7 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include <Base/BaseTypes.h>
-#include <Engine/Engine.h>
+#include <Engine/EngineModule.h>
 
 #include "CommandLineApplication.h"
 #include "ArchivePackTool.h"
@@ -24,7 +24,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.Init(true, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
 
     EngineContext* context = e.GetContext();
     context->logger->SetLogLevel(Logger::LEVEL_INFO);

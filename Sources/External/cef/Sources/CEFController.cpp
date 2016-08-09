@@ -9,7 +9,7 @@
 #include "Functional/Signal.h"
 #include "CEFController.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

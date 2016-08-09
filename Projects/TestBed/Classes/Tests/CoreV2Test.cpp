@@ -3,7 +3,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Infrastructure/GameCore.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;

@@ -7,7 +7,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>

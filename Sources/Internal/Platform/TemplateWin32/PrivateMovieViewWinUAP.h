@@ -6,11 +6,11 @@
 
 #include "UI/IMovieViewControl.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+class Window;
+#else
 class CorePlatformWinUAP;
 #endif
 class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>

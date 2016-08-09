@@ -14,7 +14,7 @@
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

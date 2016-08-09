@@ -148,7 +148,7 @@ inline bool EngineBackend::IsEmbeddedGUIMode() const
 
 inline bool EngineBackend::IsConsoleMode() const
 {
-    return runMode == eEngineRunMode::CONSOLE;
+    return runMode == eEngineRunMode::CONSOLE_MODE;
 }
 
 inline EngineContext* EngineBackend::GetEngineContext() const

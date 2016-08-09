@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_MACOS__)
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"

@@ -6,7 +6,7 @@
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

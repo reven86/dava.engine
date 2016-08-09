@@ -6,10 +6,9 @@
 
 #include "UI/IMovieViewControl.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 // Movie View Control - iOS implementation.
 class MovieViewControl : public IMovieViewControl
 {

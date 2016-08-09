@@ -2,9 +2,13 @@
 #define __CORETEST_TEST_H__
 
 #include <DAVAEngine.h>
-#include <Engine/EngineFwd.h>
 
 #include "Infrastructure/BaseScreen.h"
+
+namespace DAVA
+{
+class Engine;
+}
 
 class GameCore;
 class CoreTest : public BaseScreen

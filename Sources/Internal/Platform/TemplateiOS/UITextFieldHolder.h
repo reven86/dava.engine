@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import "UI/UITextField.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 @interface UITextFieldHolder : UIView<UITextFieldDelegate, UITextViewDelegate>
 {
