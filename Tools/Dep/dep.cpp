@@ -234,6 +234,11 @@ void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
                 throw std::runtime_error("can't open output file: " + output_name + " cause: " + err);
             }
         }
+        else if (arg == "--")
+        {
+            // don't parse args after --
+            break;
+        }
         else
         {
             patterns.insert(arg);
