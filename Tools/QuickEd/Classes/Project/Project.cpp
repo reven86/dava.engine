@@ -24,6 +24,7 @@ Project::Project(QObject* parent)
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 Project::~Project()

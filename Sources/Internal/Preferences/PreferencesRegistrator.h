@@ -34,23 +34,6 @@ private:
     T* objectPtr = nullptr;
 };
 
-template <typename T>
-PreferencesRegistrator<T>::PreferencesRegistrator(T* obj)
-    : objectPtr(obj)
-{
-    PreferencesStorage::Instance()->RegisterPreferences(objectPtr);
-}
-
-template <typename T>
-PreferencesRegistrator<T>::~PreferencesRegistrator()
-{
-    PreferencesStorage::Instance()->UnregisterPreferences(objectPtr);
-}
-
-//use this macro to register PreferencesRegistrator as class member. Will not work if preferences methods use class members, which will be created in c-tor after
-#define REGISTER_PREFERENCES(Class) \
-    PreferencesRegistrator<Class> preferencesRegistrator = PreferencesRegistrator<Class>(this);
-
 //use this macro to register introspection when program starts. A PreferencesStorage require this to work correctly
 #define REGISTER_PREFERENCES_ON_START(Class, ...) \
     namespace Class##_local \
