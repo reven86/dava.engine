@@ -24,11 +24,7 @@ public:
     {
         DAVA_DEPRECATED(ClassField()) = default; // visual studio 2013 require this
         DAVA_DEPRECATED(ClassField(ClassField&& cf)) // visual studio 2013 require this
-        : vw(std::move(cf.vw))
-          ,
-          meta(std::move(cf.meta))
-          ,
-          type(std::move(cf.type))
+        : vw(std::move(cf.vw)), meta(std::move(cf.meta)), type(std::move(cf.type))
         {
         }
 

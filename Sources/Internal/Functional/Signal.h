@@ -11,22 +11,20 @@
 #include "Concurrency/Thread.h"
 #include "Concurrency/Atomic.h"
 #include "Concurrency/LockGuard.h"
+#endif
 
 namespace DAVA
 {
 namespace Sig11
-    {
-    template <typename T>
-    using LockGuard = DAVA::LockGuard<T>;
-    }
-    }
+{
+
+#ifdef ENABLE_MULTITHREADED_SIGNALS
+
+template <typename T>
+using LockGuard = DAVA::LockGuard<T>;
 
 #else
 
-namespace DAVA
-{
-namespace Sig11
-{
 struct DummyMutex
 {
 };
@@ -34,6 +32,9 @@ struct DummyMutex
 template <typename T>
 struct DummyLockGuard
 {
+    DummyLockGuard(const T&)
+    {
+    }
 };
 
 struct DymmyThreadID
@@ -42,200 +43,194 @@ struct DymmyThreadID
 
 template <typename T>
 using LockGuard = DummyLockGuard<T>;
+
+#endif
+
+template <typename MutexType, typename ThreadIDType, typename... Args>
+class SignalImpl : public SignalBase
+{
+public:
+    using Func = Function<void(Args...)>;
+
+    SignalImpl() = default;
+    SignalImpl(const SignalImpl&) = delete;
+    SignalImpl& operator=(const SignalImpl&) = delete;
+
+    ~SignalImpl()
+    {
+        DisconnectAll();
     }
+
+    template <typename Fn>
+    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(nullptr, Func(fn), tid);
     }
 
-#endif // ENABLE_MULTITHREADED_SIGNALS
-
-    namespace DAVA
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
-    namespace Sig11
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
+    }
+
+    template <typename Obj, typename Cls>
+    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
     {
-    template <typename MutexType, typename ThreadIDType, typename... Args>
-    class SignalImpl : public SignalBase
+        Sig11::LockGuard<MutexType> guard(mutex);
+        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
+    }
+
+    void Disconnect(SigConnectionID id)
     {
-    public:
-        using Func = Function<void(Args...)>;
+        Sig11::LockGuard<MutexType> guard(mutex);
 
-        SignalImpl() = default;
-        SignalImpl(const SignalImpl&) = delete;
-        SignalImpl& operator=(const SignalImpl&) = delete;
-
-        ~SignalImpl()
+        auto it = connections.find(id);
+        if (it != connections.end())
         {
-            DisconnectAll();
-        }
-
-        template <typename Fn>
-        SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-            return AddConnection(nullptr, Func(fn), tid);
-        }
-
-        template <typename Obj, typename Cls>
-        SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-            return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
-        }
-
-        template <typename Obj, typename Cls>
-        SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-            return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
-        }
-
-        void Disconnect(SigConnectionID id)
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-
-            auto it = connections.find(id);
-            if (it != connections.end())
-            {
-                TrackedObject* obj = it->second.obj;
-                if (nullptr != obj)
-                {
-                    obj->Untrack(this);
-                }
-
-                connections.erase(it);
-            }
-        }
-
-        void Disconnect(TrackedObject* obj) override final
-        {
+            TrackedObject* obj = it->second.obj;
             if (nullptr != obj)
             {
-                Sig11::LockGuard<MutexType> guard(mutex);
-
-                auto it = connections.begin();
-                auto end = connections.end();
-
-                while (it != end)
-                {
-                    if (it->second.obj == obj)
-                    {
-                        obj->Untrack(this);
-                        it = connections.erase(it);
-                    }
-                    else
-                    {
-                        it++;
-                    }
-                }
+                obj->Untrack(this);
             }
-        }
 
-        void DisconnectAll()
+            connections.erase(it);
+        }
+    }
+
+    void Disconnect(TrackedObject* obj) override final
+    {
+        if (nullptr != obj)
         {
             Sig11::LockGuard<MutexType> guard(mutex);
 
-            for (auto&& con : connections)
+            auto it = connections.begin();
+            auto end = connections.end();
+
+            while (it != end)
             {
-                TrackedObject* obj = con.second.obj;
-                if (nullptr != obj)
+                if (it->second.obj == obj)
                 {
                     obj->Untrack(this);
+                    it = connections.erase(it);
                 }
-            }
-
-            connections.clear();
-        }
-
-        void Track(SigConnectionID id, TrackedObject* obj)
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-
-            auto it = connections.find(id);
-            if (it != connections.end())
-            {
-                if (nullptr != it->second.obj)
+                else
                 {
-                    it->second.obj->Untrack(this);
-                    it->second.obj = nullptr;
-                }
-
-                if (nullptr != obj)
-                {
-                    it->second.obj = obj;
-                    obj->Track(this);
+                    it++;
                 }
             }
         }
+    }
 
-        TrackedObject* GetTracked(SigConnectionID id) const
+    void DisconnectAll()
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+
+        for (auto&& con : connections)
         {
-            TrackedObject* ret = nullptr;
-
-            auto it = connections.find(id);
-            if (it != connections.end())
+            TrackedObject* obj = con.second.obj;
+            if (nullptr != obj)
             {
-                ret = it->second.obj;
-            }
-
-            return ret;
-        }
-
-        void Block(SigConnectionID id, bool block)
-        {
-            auto it = connections.find(id);
-            if (it != connections.end())
-            {
-                it->second.blocked = block;
+                obj->Untrack(this);
             }
         }
 
-        bool IsBlocked(SigConnectionID id) const
-        {
-            bool ret = false;
+        connections.clear();
+    }
 
-            auto it = connections.find(id);
-            if (it != connections.end())
+    void Track(SigConnectionID id, TrackedObject* obj)
+    {
+        Sig11::LockGuard<MutexType> guard(mutex);
+
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            if (nullptr != it->second.obj)
             {
-                ret = it->second.blocked;
+                it->second.obj->Untrack(this);
+                it->second.obj = nullptr;
             }
-
-            return ret;
-        }
-
-        virtual void Emit(Args...) = 0;
-
-    protected:
-        struct ConnData
-        {
-            ConnData(Func&& fn_, TrackedObject* obj_, ThreadIDType tid_)
-                : fn(std::move(fn_))
-                , obj(obj_)
-                , tid(tid_)
-                , blocked(false)
-            {
-            }
-
-            Func fn;
-            TrackedObject* obj;
-            ThreadIDType tid;
-            bool blocked;
-        };
-
-        MutexType mutex;
-        Map<SigConnectionID, ConnData> connections;
-
-    private:
-        SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
-        {
-            SigConnectionID id = SignalBase::GetUniqueConnectionID();
-            connections.emplace(std::make_pair(id, ConnData(std::move(fn), obj, tid)));
 
             if (nullptr != obj)
             {
+                it->second.obj = obj;
                 obj->Track(this);
             }
-
-            return id;
         }
+    }
+
+    TrackedObject* GetTracked(SigConnectionID id) const
+    {
+        TrackedObject* ret = nullptr;
+
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            ret = it->second.obj;
+        }
+
+        return ret;
+    }
+
+    void Block(SigConnectionID id, bool block)
+    {
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            it->second.blocked = block;
+        }
+    }
+
+    bool IsBlocked(SigConnectionID id) const
+    {
+        bool ret = false;
+
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            ret = it->second.blocked;
+        }
+
+        return ret;
+    }
+
+    virtual void Emit(Args...) = 0;
+
+protected:
+    struct ConnData
+    {
+        ConnData(Func&& fn_, TrackedObject* obj_, ThreadIDType tid_)
+            : fn(std::move(fn_))
+            , obj(obj_)
+            , tid(tid_)
+            , blocked(false)
+        {
+        }
+
+        Func fn;
+        TrackedObject* obj;
+        ThreadIDType tid;
+        bool blocked;
     };
+
+    MutexType mutex;
+    Map<SigConnectionID, ConnData> connections;
+
+private:
+    SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
+    {
+        SigConnectionID id = SignalBase::GetUniqueConnectionID();
+        connections.emplace(std::make_pair(id, ConnData(std::move(fn), obj, tid)));
+
+        if (nullptr != obj)
+        {
+            obj->Track(this);
+        }
+
+        return id;
+    }
+};
 
 } // namespace Sig11
 
