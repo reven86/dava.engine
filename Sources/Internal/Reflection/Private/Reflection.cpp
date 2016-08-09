@@ -119,7 +119,7 @@ struct Dumper
 
             line << "(";
 
-            if (::strlen(typeName) > w)
+            if (::strlen(typeName) > static_cast<size_t>(w))
             {
                 line.write(typeName, w);
             }
