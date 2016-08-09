@@ -5,51 +5,95 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
+#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "Engine/Public/Qt/RenderWidget.h"
+
+#include <QTimer>
+#include <QApplication>
 
 namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore() = default;
+std::unique_ptr<QApplication> globalApplication;
+
+PlatformCore::PlatformCore(EngineBackend* engineBackend_)
+    : engineBackend(engineBackend_)
+    , nativeService(new NativeService(this))
+{
+}
+
 PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    DVASSERT(globalApplication == nullptr);
+    Vector<char*> cmdLine = engineBackend->GetCommandLineAsArgv();
+    int argc = static_cast<int>(cmdLine.size());
+    globalApplication.reset(new QApplication(argc, cmdLine.data()));
 }
 
 void PlatformCore::Run()
 {
+    DVASSERT(globalApplication);
+    QTimer timer;
+    QObject::connect(&timer, &QTimer::timeout, [&]()
+                     {
+                         DVASSERT(windowBackend != nullptr);
+                         RenderWidget* widget = windowBackend->GetRenderWidget();
+                         DVASSERT(widget);
+                         QQuickWindow* window = widget->quickWindow();
+                         DVASSERT(window);
+                         if (window->isVisible())
+                         {
+                             window->update();
+                         }
+                     });
+
+    engineBackend->OnGameLoopStarted();
+    windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+    if (windowBackend == nullptr)
+    {
+        return;
+    }
+    timer.start(16.0);
+
+    QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()
+                     {
+                         engineBackend->OnGameLoopStopped();
+                         engineBackend->OnBeforeTerminate();
+                     });
+
+    globalApplication->exec();
 }
 
 void PlatformCore::Quit()
 {
+    DVASSERT(globalApplication);
+    globalApplication->quit();
 }
 
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w)
+DAVA::NativeService* PlatformCore::GetNativeService()
 {
-    return WindowBackend::Create(w);
+    return nativeService.get();
 }
 
-void (*PlatformCore::AcqureContext())()
+WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
 {
-    return acqureContext;
+    WindowBackend* backend = new WindowBackend(engineBackend, w);
+    if (!backend->Create(width, height))
+    {
+        delete backend;
+        backend = nullptr;
+    }
+
+    return backend;
 }
 
-void (*PlatformCore::ReleaseContext())()
+QApplication* PlatformCore::GetApplication()
 {
-    return releaseContext;
-}
-
-void PlatformCore::Prepare(void (*acqureContextFunc)(), void (*releaseContextFunc)())
-{
-    acqureContext = acqureContextFunc;
-    releaseContext = releaseContextFunc;
-
-    EngineBackend::instance->OnGameLoopStarted();
-}
-
-void PlatformCore::OnFrame()
-{
+    return globalApplication.get();
 }
 
 } // namespace Private

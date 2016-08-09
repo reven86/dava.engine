@@ -109,6 +109,8 @@ GameCore::GameCore(Engine* e)
         Window* w = engine->PrimaryWindow();
         w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
     }
+
+    engine->GetContext()->uiControlSystem->SetClearColor(Color::Black);
 }
 
 void GameCore::OnGameLoopStarted()

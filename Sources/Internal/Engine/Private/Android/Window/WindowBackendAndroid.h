@@ -33,6 +33,7 @@ public:
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
     void Close();
+    bool IsWindowReadyForRender() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 

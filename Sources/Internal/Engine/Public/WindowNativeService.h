@@ -2,7 +2,7 @@
 
 // Select right header for WindowNativeService class depending on platfrom
 #if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
+#include "Engine/Public/Qt/WindowNativeServiceQt.h"
 #elif defined(__DAVAENGINE_WIN32__)
 #include "Engine/Public/Win32/WindowNativeServiceWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)

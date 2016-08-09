@@ -4,6 +4,7 @@
 
 #include "Engine/Public/EngineContext.h"
 #include "Engine/Public/Window.h"
+#include "Engine/Public/WindowNativeService.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -318,6 +319,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
+    Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
     for (Window* w : windows)
@@ -493,16 +495,18 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
+    WindowNativeService* nativeService = w->GetNativeService();
+    nativeService->InitRenderParams(rendererParams);
+
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
 }
 
-void EngineBackend::ResetRenderer(Window* w)
+void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 {
     rhi::ResetParam rendererParams;
-    void* handle = w->GetNativeHandle();
-    if (handle == nullptr)
+    if (resetToNull == true)
     {
         rendererParams.window = nullptr;
         rendererParams.width = 0;
@@ -514,7 +518,7 @@ void EngineBackend::ResetRenderer(Window* w)
     {
         int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
         int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
-        rendererParams.window = handle;
+        rendererParams.window = w->GetNativeHandle();
         rendererParams.width = physW;
         rendererParams.height = physH;
         rendererParams.scaleX = w->GetRenderSurfaceScaleX();

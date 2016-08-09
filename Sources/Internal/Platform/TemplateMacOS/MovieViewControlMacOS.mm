@@ -113,7 +113,7 @@ enum MoviePlayerHelperPlaybackState
 
 - (void)dealloc
 {
-#if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__) and !defined(__DAVAENGINE_QT__)
     window->GetNativeService()->RemoveNSView(videoView);
 #else
     [videoView removeFromSuperview];
@@ -189,12 +189,14 @@ enum MoviePlayerHelperPlaybackState
     videoView = [[NSView alloc] init];
     [videoView setWantsLayer:YES];
     videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
+#if !defined(__DAVAENGINE_QT__)
 #if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->AddNSView(videoView);
 #else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView addSubview:videoView];
 #endif
+#endif //__DAVAENGINE_QT__
 
     AVPlayerLayer* newPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:videoPlayer];
     [newPlayerLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];

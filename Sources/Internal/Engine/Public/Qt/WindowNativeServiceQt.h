@@ -5,8 +5,6 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
-#elif defined(__DAVAENGINE_WIN32__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -17,9 +15,12 @@ struct InitParam;
 
 namespace DAVA
 {
+class RenderWidget;
+
 class WindowNativeService final
 {
 public:
+    RenderWidget* GetRenderWidget();
     void InitRenderParams(rhi::InitParam& params);
 
 private:
@@ -34,5 +35,5 @@ private:
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN32__
+#endif // __DAVAENGINE_QT__
 #endif // __DAVAENGINE_COREV2__

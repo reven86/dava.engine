@@ -45,6 +45,11 @@ void WindowBackend::Close()
     // For now android windows cannot be closed. Later add ability to close non-primary windows
 }
 
+bool WindowBackend::IsWindowReadyForRender() const
+{
+    return GetHandle() != nullptr;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     UIDispatcherEvent e;

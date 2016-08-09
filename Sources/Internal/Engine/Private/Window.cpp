@@ -482,10 +482,10 @@ void Window::HandlePendingSizeChanging()
     }
     else
     {
-        engineBackend->ResetRenderer(this);
+        engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
     }
 
-    if (windowBackend->GetHandle() != nullptr)
+    if (windowBackend->IsWindowReadyForRender())
     {
         virtualCoordSystem->SetInputScreenAreaSize(w, h);
         virtualCoordSystem->SetPhysicalScreenSize(physW, physH);

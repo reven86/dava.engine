@@ -16,10 +16,21 @@ endif()
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-set ( DAVA_COMPONENTS "Sound" )
-if ( WIN32 AND NOT WIN_UAP )
+set ( DAVA_COMPONENTS "Sound")
+if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
+
+if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
+    set (DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
+    add_definitions(-D__DAVAENGINE_QT__)
+    if ( MACOS )
+        add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+        add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+    endif()
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+    set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
+endif()
 
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
