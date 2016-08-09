@@ -13,7 +13,6 @@
 
 #include "QtTools/Utils/Utils.h"
 
-
 #include <QApplication>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -115,8 +114,7 @@ const DAVA::Vector<DAVA::float32>& DistanceSlider::GetDistances() const
 
 void DistanceSlider::SetDistances(const DAVA::Vector<DAVA::float32>& distances_, const DAVA::Vector<bool>& multiple_)
 {
-    fitModeEnabled = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
-
+    fitModeEnabled = EditorLODSystem::IsFitModeEnabled(distances_);
     ApplyDistances(distances_);
     ApplyMultiple(multiple_);
 
