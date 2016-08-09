@@ -15,7 +15,6 @@ namespace DAVA
 class WindowNativeService final
 {
 public:
-
 private:
     WindowNativeService(Private::WindowBackend* wbackend);
 

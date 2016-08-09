@@ -11,7 +11,6 @@
 class QApplication;
 namespace DAVA
 {
-
 namespace Private
 {
 class PlatformCore final
