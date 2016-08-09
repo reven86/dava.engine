@@ -8,7 +8,6 @@
 
 namespace DAVA
 {
-
 class PackManagerImpl : public IPackManager
 {
 public:
