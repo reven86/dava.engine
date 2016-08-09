@@ -84,7 +84,6 @@ private:
     void paintEvent(QPaintEvent* event) override;
     StepEnabled stepEnabled() const override;
 
-    QString originalString;
     DAVA::float32 originalValue = 0;
 
     static const int precision = 3;

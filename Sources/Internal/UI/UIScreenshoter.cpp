@@ -109,7 +109,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    control->SystemUpdate(0.0f);
+    control->SystemUpdate(0.016f);
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 
     //[CLEAR ALPHA]

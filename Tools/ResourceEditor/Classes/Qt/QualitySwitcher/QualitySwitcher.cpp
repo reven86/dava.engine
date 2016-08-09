@@ -57,22 +57,25 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
             }
         }
 
-        QLabel* labAn = new QLabel("Anisotropy:", texturesGroup);
-        texturesLayout->addWidget(labAn, 1, 0);
-
-        QComboBox* comboAn = new QComboBox(texturesGroup);
-        comboAn->setObjectName("AnisotropyCombo");
-        QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnAnQualitySelect(int)));
-        texturesLayout->addWidget(comboAn, 1, 1);
-
-        DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
-        for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount(); ++i)
+        if (DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount() > 0)
         {
-            DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
-            comboAn->addItem(anQualityName.c_str());
-            if (anQualityName == curAnQuality)
+            QLabel* labAn = new QLabel("Anisotropy:", texturesGroup);
+            texturesLayout->addWidget(labAn, 1, 0);
+
+            QComboBox* comboAn = new QComboBox(texturesGroup);
+            comboAn->setObjectName("AnisotropyCombo");
+            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnAnQualitySelect(int)));
+            texturesLayout->addWidget(comboAn, 1, 1);
+
+            DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount(); ++i)
             {
-                comboAn->setCurrentIndex(comboAn->count() - 1);
+                DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
+                comboAn->addItem(anQualityName.c_str());
+                if (anQualityName == curAnQuality)
+                {
+                    comboAn->setCurrentIndex(comboAn->count() - 1);
+                }
             }
         }
     }

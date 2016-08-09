@@ -28,40 +28,68 @@ bool ShouldBeHiddenByUI()
 { //need be filled with context for special cases after Qa and Using
     return false;
 }
+}
 
-bool HasIgnoredWords(const DAVA::String& testedString)
+class ErrorDialogOutput::IgnoreHelper
 {
-    static const DAVA::Vector<DAVA::String> ignoredWords =
+public:
+    bool ShouldIgnoreMessage(DAVA::Logger::eLogLevel ll, const DAVA::String& textMessage)
     {
-      "DV_ASSERT",
-      "DV_WARNING",
-      "==== callstack ===="
-    };
-
-    for (const DAVA::String& word : ignoredWords)
-    {
-        if (testedString.find_first_of(word) != DAVA::String::npos)
+        bool enabled = (SettingsManager::Instance() != nullptr) ? SettingsManager::GetValue(Settings::General_ShowErrorDialog).AsBool() : false;
+        if ((ll < DAVA::Logger::LEVEL_ERROR) || !enabled)
         {
             return true;
         }
+        return HasIgnoredWords(textMessage);
     }
 
-    return false;
-}
-
-bool ShouldIgnoreMessage(DAVA::Logger::eLogLevel ll, const DAVA::String& textMessage)
-{
-    bool enabled = (SettingsManager::Instance() != nullptr) ? SettingsManager::GetValue(Settings::General_ShowErrorDialog).AsBool() : false;
-    if ((ll < DAVA::Logger::LEVEL_ERROR) || !enabled)
+private:
+    bool HasIgnoredWords(const DAVA::String& testedString)
     {
-        return true;
+        static const DAVA::String callstackProlog = "==== callstack ====";
+        static const DAVA::String callstackEpilog = "==== callstack end ====";
+
+        if (testedString.find(callstackEpilog) != DAVA::String::npos)
+        {
+            callstackPrinting = false;
+            return true;
+        }
+
+        if (callstackPrinting == true)
+        {
+            return true;
+        }
+
+        static const DAVA::Vector<DAVA::String> ignoredWords =
+        {
+          "DV_ASSERT",
+          "DV_WARNING",
+        };
+
+        for (const DAVA::String& word : ignoredWords)
+        {
+            if (testedString.find(word) != DAVA::String::npos)
+            {
+                return true;
+            }
+        }
+
+        if (testedString.find(callstackProlog) != DAVA::String::npos)
+        {
+            callstackPrinting = true;
+            return true;
+        }
+
+        return false;
     }
-    return HasIgnoredWords(textMessage);
-}
-}
+
+private:
+    bool callstackPrinting = false;
+};
 
 ErrorDialogOutput::ErrorDialogOutput()
     : QObject(nullptr)
+    , ignoreHelper(new IgnoreHelper())
 {
     connect(this, &ErrorDialogOutput::FireError, this, &ErrorDialogOutput::OnError, Qt::QueuedConnection);
 
@@ -75,7 +103,7 @@ ErrorDialogOutput::~ErrorDialogOutput()
 
 void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    if (ErrorDialogDetail::ShouldIgnoreMessage(ll, text))
+    if (ignoreHelper->ShouldIgnoreMessage(ll, text))
     {
         return;
     }
