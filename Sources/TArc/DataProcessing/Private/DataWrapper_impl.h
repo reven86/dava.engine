@@ -8,17 +8,17 @@ namespace tarc
 
 template<typename T>
 DataWrapper::Editor<T>::Editor(DataWrapper& holder_, DAVA::Reflection reflection_)
-    : holder(DAVA::RefPtr<DataContext>::ConstructWithRetain(&holder_))
+    : holder(holder_)
     , reflection(reflection_)
-    , dataCopy(reflection.GetValue().Cast<T>())
+    , dataCopy(reflection.GetValueObject().GetPtr<T>())
 {
 }
 
 template<typename T>
 DataWrapper::Editor<T>::~Editor()
 {
-    reflection.SetValue(DAVA::Any(dataCopy));
-    holder->Sync();
+    //reflection.SetValue(DAVA::Any(dataCopy));
+    holder.Sync(false);
 }
 
 template<typename T>
@@ -45,24 +45,9 @@ DataWrapper::Editor<T>& DataWrapper::Editor<T>::operator=(Editor<T>&& other)
 }
 
 template<typename T>
-T& DataWrapper::Editor<T>::operator->()
+T* DataWrapper::Editor<T>::operator->()
 {
     return dataCopy;
-}
-
-DataWrapper::DataWrapper(DataWrapper&& other)
-    : impl(std::move(other.impl))
-{
-}
-
-DataWrapper& DataWrapper::operator=(DataWrapper&& other)
-{
-    if (&other == this)
-        return *this;
-
-    impl = std::move(other.impl);
-
-    return *this;
 }
 
 template<typename T>
@@ -70,10 +55,10 @@ DataWrapper::Editor<T> DataWrapper::CreateEditor()
 {
     if (HasData())
     {
-        DAVA::Reflection reflection = dataAccessor(context);
+        DAVA::Reflection reflection = GetData();
         try
         {
-            return Editor<T>(this, reflection);
+            return Editor<T>(*this, reflection);
         }
         catch (std::runtime_error& e)
         {

@@ -74,8 +74,8 @@ public:
     T* GetPtr() const
     {
         const Type* reqType = Type::Instance<T*>();
-
-        assert(reqType == type || reqType->Decay() == type || reqType->IsDerivedFrom(type));
+        assert(reqType == type || reqType->Decay() == type || reqType->IsDerivedFrom(type) ||
+               (reqType->IsPointer() && type->IsPointer() && reqType->Deref()->IsDerivedFrom(type->Deref())));
         return static_cast<T*>(ptr);
     }
 

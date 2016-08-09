@@ -8,7 +8,7 @@ namespace tarc
 
 class ControllerModule : public ClientModule
 {
-public:
+protected:
     ContextManager& GetContextManager();
 
 private:

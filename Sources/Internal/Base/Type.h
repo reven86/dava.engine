@@ -16,7 +16,7 @@ protected: \
     static void __TypeInitializer();
 
 #define DAVA_TYPE_INITIALIZER(T) \
-    void T::__TypeInitializer()
+    inline void T::__TypeInitializer()
 
 #define DAVA_TYPE_REGISTER(T) \
     DAVA::Type::Instance<T>()->RegisterPermanentName(#T)

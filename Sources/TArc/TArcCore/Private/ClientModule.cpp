@@ -15,8 +15,6 @@ void ClientModule::Init(ContextAccessor* contextAccessor_)
 {
     DVASSERT(contextAccessor == nullptr);
     contextAccessor = contextAccessor_;
-
-    PostInit();
 }
 
 }

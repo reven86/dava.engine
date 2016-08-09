@@ -24,16 +24,17 @@ public:
         Editor(Editor&& other);
         Editor& operator=(Editor&& other);
 
-        T& operator->();
+        T* operator->();
 
     private:
         DAVA::Reflection reflection;
-        T dataCopy;
+        T* dataCopy;
         DataWrapper holder;
     };
 
-    using DataAccessor = DAVA::Function<DAVA::Reflection(DataContext&)>;
+    using DataAccessor = DAVA::Function<DAVA::Reflection(const DataContext&)>;
 
+    DataWrapper() = default;
     DataWrapper(const DataWrapper& other) = default;
     DataWrapper& operator=(const DataWrapper& other) = default;
 
@@ -54,11 +55,12 @@ private:
 
     void SetContext(DataContext* context);
 
-    void Sync();
+    void Sync(bool notifyListeners);
     void SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA::Any>& values);
     void NotifyListeners();
+    DAVA::Reflection GetData() const;
 
-    static DAVA::Reflection GetDataDefault(DataContext& context, const DAVA::Type* type);
+    static DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::Type* type);
 
 private:
     struct Impl;

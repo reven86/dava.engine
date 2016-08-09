@@ -17,19 +17,18 @@ DataContext::~DataContext()
 
 void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
 {
-    DataNode* nodePointer = node.get();
-    DAVA::Reflection reflect = DAVA::Reflection::Reflect(&nodePointer);
-    const DAVA::Type* type = reflect.GetValueType();
+    //DAVA::Reflection reflect = DAVA::Reflection::Reflect(node.get());
+    const DAVA::Type* type = node->GetType();
     DVASSERT(dataMap.count(type) == 0);
     dataMap.emplace(std::make_pair(type, node.release()));
 }
 
-bool DataContext::HasData(const DAVA::Type* type)
+bool DataContext::HasData(const DAVA::Type* type) const
 {
     return dataMap.count(type) > 0;
 }
 
-DataNode& DataContext::GetData(const DAVA::Type* type)
+DataNode& DataContext::GetData(const DAVA::Type* type) const
 {
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())

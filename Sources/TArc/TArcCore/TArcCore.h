@@ -20,10 +20,23 @@ public:
     Core(DAVA::Engine& engine_);
     ~Core();
 
-    void AddModule(std::unique_ptr<ClientModule>&& module);
-    void SetControllerModule(std::unique_ptr<ControllerModule>&& module);
+    template<typename T>
+    void CreateModule()
+    {
+        AddModule(new T());
+    }
+
+    template<typename T>
+    void CreateControllerModule()
+    {
+        static_assert(std::is_base_of<tarc::ControllerModule, T>::value, "Controller modules should be Derived from tarc::ControllerModule");
+        SetControllerModule(new T());
+    }
 
 private:
+    void AddModule(ClientModule* module);
+    void SetControllerModule(ControllerModule* module);
+
     void OnFrame();
     void OnLoopStarted();
     void OnLoopStopped();
@@ -49,7 +62,7 @@ private:
     DAVA::Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
 
-    DAVA::Vector<std::unique_ptr<ClientModule>> modules;
+    DAVA::Vector<ClientModule*> modules;
     ControllerModule* controllerModule = nullptr;
 
     DAVA::Vector<DataWrapper> wrappers;

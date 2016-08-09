@@ -25,20 +25,25 @@ Core::~Core()
     DVASSERT(wrappers.empty());
 }
 
-void Core::AddModule(std::unique_ptr<ClientModule>&& module)
+void Core::AddModule(ClientModule* module)
 {
-    modules.push_back(std::move(module));
+    modules.push_back(module);
 }
 
-void Core::SetControllerModule(std::unique_ptr<ControllerModule>&& module)
+void Core::SetControllerModule(ControllerModule* module)
 {
     DVASSERT(controllerModule == nullptr);
-    controllerModule = module.get();
-    modules.push_back(std::move(module));
+    controllerModule = module;
+    modules.push_back(module);
 }
 
 void Core::OnFrame()
 {
+    DAVA::Logger::Info("On Frame call");
+    for (DataWrapper& wrapper : wrappers)
+    {
+        wrapper.Sync(true);
+    }
 }
 
 void Core::OnLoopStarted()
@@ -46,9 +51,14 @@ void Core::OnLoopStarted()
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
     controllerModule->SetContextManager(this);
 
-    for (std::unique_ptr<ClientModule>& module : modules)
+    for (ClientModule* module : modules)
     {
         module->Init(this);
+    }
+
+    for (ClientModule* module : modules)
+    {
+        module->PostInit();
     }
 }
 
@@ -58,13 +68,19 @@ void Core::OnLoopStopped()
     controllerModule = nullptr;
     for (std::unique_ptr<DataContext>& context : contexts)
     {
-        for (std::unique_ptr<ClientModule>& module : modules)
+        for (ClientModule* module : modules)
         {
             module->OnContextDeleted(*context);
         }
     }
 
     contexts.clear();
+
+    for (ClientModule* module : modules)
+    {
+        delete module;
+    }
+
     modules.clear();
     wrappers.clear();
 }
@@ -79,7 +95,7 @@ void Core::ForEachContext(const DAVA::Function<void(DataContext&)>& functor)
 
 DataContext& Core::GetContext(DataContext::ContextID contextID)
 {
-    auto iter = std::find(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+    auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
     {
         return context->GetID() == contextID;
     });
@@ -111,6 +127,7 @@ DataWrapper Core::CreateWrapper(const DAVA::Type* type, bool listenRecursive)
 {
     DataWrapper wrapper(type, listenRecursive);
     wrapper.SetContext(activeContext);
+    wrappers.push_back(wrapper);
     return wrapper;
 }
 
@@ -118,6 +135,7 @@ DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor, bool 
 {
     DataWrapper wrapper(accessor, listenRecursive);
     wrapper.SetContext(activeContext);
+    wrappers.push_back(wrapper);
     return wrapper;
 }
 
@@ -125,7 +143,7 @@ DataContext::ContextID Core::CreateContext()
 {
     contexts.push_back(std::make_unique<DataContext>());
     DataContext& context = *contexts.back();
-    for (std::unique_ptr<ClientModule>& module : modules)
+    for (ClientModule* module : modules)
     {
         module->OnContextCreated(context);
     }
@@ -135,7 +153,7 @@ DataContext::ContextID Core::CreateContext()
 
 void Core::DeleteContext(DataContext::ContextID contextID)
 {
-    auto iter = std::find(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+    auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
     {
         return context->GetID() == contextID;
     });
@@ -145,7 +163,7 @@ void Core::DeleteContext(DataContext::ContextID contextID)
         throw std::runtime_error(DAVA::Format("DeleteContext failed for contextID : %d", contextID));
     }
 
-    for (std::unique_ptr<ClientModule>& module : modules)
+    for (ClientModule* module : modules)
     {
         module->OnContextDeleted(**iter);
     }
@@ -160,7 +178,18 @@ void Core::DeleteContext(DataContext::ContextID contextID)
 
 void Core::ActivateContext(DataContext::ContextID contextID)
 {
-    auto iter = std::find(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+    if (activeContext->GetID() == contextID)
+    {
+        return;
+    }
+
+    if (contextID == DataContext::Empty)
+    {
+        ActivateContext(nullptr);
+        return;
+    }
+
+    auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
     {
         return context->GetID() == contextID;
     });

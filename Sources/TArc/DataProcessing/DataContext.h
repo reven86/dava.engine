@@ -28,8 +28,8 @@ public:
     template<typename T>
     void DeleteData();
 
-    bool HasData(const DAVA::Type* type);
-    DataNode& GetData(const DAVA::Type* type); // throw std::runtime_exception if T not exists
+    bool HasData(const DAVA::Type* type) const;
+    DataNode& GetData(const DAVA::Type* type) const; // throw std::runtime_exception if T not exists
     void DeleteData(const DAVA::Type* type);
 
     /*void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
@@ -38,6 +38,8 @@ public:
 
     using ContextID = DAVA::uint64;
     ContextID GetID() const;
+
+    static const ContextID Empty = 0;
 
 private:
     DAVA::UnorderedMap<const DAVA::Type*, DataNode*> dataMap;

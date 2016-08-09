@@ -25,14 +25,30 @@ DataWrapper::DataWrapper(const DataAccessor& accessor, bool listenRecursive_)
     impl->listenRecursive = listenRecursive_;
 }
 
+DataWrapper::DataWrapper(DataWrapper&& other)
+    : impl(std::move(other.impl))
+{
+}
+
+DataWrapper& DataWrapper::operator=(DataWrapper&& other)
+{
+    if (&other == this)
+        return *this;
+
+    impl = std::move(other.impl);
+
+    return *this;
+}
+
 void DataWrapper::SetContext(DataContext* context)
 {
+    DVASSERT(impl != nullptr);
     impl->activeContext = context;
 }
 
 bool DataWrapper::HasData() const
 {
-    if (impl->activeContext == nullptr)
+    if (impl == nullptr || impl->activeContext == nullptr)
     {
         return false;
     }
@@ -53,6 +69,11 @@ bool DataWrapper::HasData() const
 
 void DataWrapper::AddListener(DataListener* listener)
 {
+    if (impl == nullptr)
+    {
+        return;
+    }
+
     DVASSERT(listener != nullptr);
     listener->InitListener(*this);
     impl->listeners.insert(listener);
@@ -60,12 +81,18 @@ void DataWrapper::AddListener(DataListener* listener)
 
 void DataWrapper::RemoveListener(DataListener* listener)
 {
+    if (impl == nullptr)
+    {
+        return;
+    }
+
     DVASSERT(listener != nullptr);
     impl->listeners.erase(listener);
 }
 
-void DataWrapper::Sync()
+void DataWrapper::Sync(bool notifyListeners)
 {
+    DVASSERT(impl != nullptr);
     if (HasData())
     {
         DAVA::Vector<DAVA::Any> newValues;
@@ -75,27 +102,34 @@ void DataWrapper::Sync()
             std::equal(impl->cachedValues.begin(), impl->cachedValues.end(), newValues.begin()) == false)
         {
             impl->cachedValues = std::move(newValues);
-            NotifyListeners();
+            if (notifyListeners == true)
+            {
+                NotifyListeners();
+            }
         }
     }
     else
     {
         if (!impl->cachedValues.empty())
         {
-            NotifyListeners();
             impl->cachedValues.clear();
+            if (notifyListeners == true)
+            {
+                NotifyListeners();
+            }
         }
     }
 }
 
 void DataWrapper::SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA::Any>& values)
 {
+    DVASSERT(impl != nullptr);
     const DAVA::StructureWrapper* wrapper = reflection.GetStructure();
     DAVA::Ref::FieldsList fields = wrapper->GetFields(reflection.GetValueObject());
     values.reserve(values.size() + fields.size());
     for (const DAVA::Ref::Field& field : fields)
     {
-        impl->cachedValues.push_back(field.valueRef.GetValue());
+        values.push_back(field.valueRef.GetValue());
     }
 
     if (impl->listenRecursive)
@@ -109,18 +143,24 @@ void DataWrapper::SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA
 
 void DataWrapper::NotifyListeners()
 {
+    DVASSERT(impl != nullptr);
     std::for_each(impl->listeners.begin(), impl->listeners.end(), std::bind(&DataListener::OnDataChanged, std::placeholders::_1, std::cref(*this)));
 }
 
-DAVA::Reflection DataWrapper::GetDataDefault(DataContext& context, const DAVA::Type* type)
+DAVA::Reflection DataWrapper::GetData() const
+{
+    DVASSERT(HasData());
+    return impl->dataAccessor(*impl->activeContext);
+}
+
+DAVA::Reflection DataWrapper::GetDataDefault(const DataContext& context, const DAVA::Type* type)
 {
     if (!context.HasData(type))
     {
         return DAVA::Reflection();
     }
 
-    DataNode* node = &context.GetData(type);
-    return DAVA::Reflection::Reflect(&node);
+    return DAVA::Reflection::Reflect(&context.GetData(type));
 }
 
 DataListener::~DataListener()
