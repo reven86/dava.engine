@@ -232,7 +232,10 @@ void CheckImmediateCommand()
     {
         CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.load();
         if (cmd != nullptr)
+        {
             DispatchPlatform::ProcessImmediateCommand(cmd);
+            pendingImmediateCmd = nullptr;
+        }
     }
 }
 }

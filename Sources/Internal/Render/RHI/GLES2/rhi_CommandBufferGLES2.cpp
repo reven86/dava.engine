@@ -7,6 +7,7 @@
 #include "../Common/dbg_StatSet.h"
 #include "../Common/CommonImpl.h"
 #include "../Common/SoftwareCommandBuffer.h"
+#include "../Common/RenderLoop.h"
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
