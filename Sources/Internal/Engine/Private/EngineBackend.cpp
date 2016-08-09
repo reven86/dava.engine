@@ -495,7 +495,7 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
-    WindowNativeService* nativeService = GetPrimaryWindow()->GetNativeService();
+    WindowNativeService* nativeService = w->GetNativeService();
     nativeService->InitRenderParams(rendererParams);
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
