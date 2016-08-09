@@ -55,9 +55,9 @@ private:
 };
 
 //comparator to sort nodes by their hierarchy
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
+bool CompareByLCA(const PackageBaseNode* left, const PackageBaseNode* right);
 
 //automatically sort all nodes by their hierarchy using CompareByLCA function
-using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
+using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(const PackageBaseNode*, const PackageBaseNode*)>>;
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
