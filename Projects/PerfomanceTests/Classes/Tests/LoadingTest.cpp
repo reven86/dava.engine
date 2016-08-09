@@ -184,7 +184,7 @@ void LoadingTest::SystemUpdate(float32 timeElapsed)
 
 void LoadingTest::OnStart()
 {
-    Logger::Info(TeamcityTestsOutput::FormatTestStarted(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestStarted(GetSceneName()).c_str());
 }
 
 void LoadingTest::OnFinish()
@@ -193,11 +193,11 @@ void LoadingTest::OnFinish()
     {
         if (loadGroupSize[i])
         {
-            Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(DAVA::Format("Loading%d", i), DAVA::Format("%lld", loadResults[i] / loadGroupSize[i])).c_str());
+            Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(DAVA::Format("Loading%d", i), DAVA::Format("%lld", loadResults[i] / loadGroupSize[i])).c_str());
         }
     }
 
-    Logger::Info(TeamcityTestsOutput::FormatTestFinished(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestFinished(GetSceneName()).c_str());
 }
 
 bool LoadingTest::IsFinished() const

@@ -50,7 +50,7 @@ private:
     Vector<BaseTest*> testChain;
     std::unique_ptr<TestFlowController> testFlowController;
 
-    TeamcityTestsOutput teamCityOutput;
+    TeamcityPerformanceTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;
 };
 
