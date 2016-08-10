@@ -460,6 +460,15 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     if (textControl)
     {
         nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
+
+        auto layoutUpdated = ref new Windows::Foundation::EventHandler<Platform::Object ^>([this](Platform::Object ^, Platform::Object ^ ) {
+            // unfortunately, in win10, control cannot immediately change state, need re-create sprite from preview data
+            if (!IsMultiline() && !HasFocus())
+            {
+                RenderToTexture(waitRenderToTextureComplete);
+            }
+        });
+        nativeText->LayoutUpdated += layoutUpdated;
         nativeControl = nativeText;
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
         InstallTextEventHandlers();
