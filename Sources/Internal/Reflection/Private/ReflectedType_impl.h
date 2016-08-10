@@ -91,10 +91,12 @@ ReflectedType* ReflectedType::Edit()
     if (nullptr == ret->type)
     {
         ret->type = Type::Instance<DecayT>();
+        ret->rttiName = typeid(DecayT).name();
         ret->structureWrapper.reset(StructureWrapperCreator<T>::Create());
         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<T>::Create());
 
         typeToReflectedTypeMap[ret->type] = ret;
+        rttiNameToReflectedTypeMap[ret->rttiName] = ret;
 
         ReflectionDetail::ReflectionInitializerRunner<T>::Run();
     }
@@ -130,6 +132,16 @@ void ReflectedType::RegisterBases()
 {
     Type::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
+}
+
+inline const Type* ReflectedType::GetType() const
+{
+    return type;
+}
+
+inline const String& ReflectedType::GetPermanentName() const
+{
+    return permanentName;
 }
 
 } // namespace DAVA

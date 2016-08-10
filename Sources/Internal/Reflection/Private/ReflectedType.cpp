@@ -4,24 +4,25 @@
 namespace DAVA
 {
 UnorderedMap<const Type*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedType::nameToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedType::rttiNameToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedType::permanentNameToReflectedTypeMap;
 
-const Type* ReflectedType::GetType() const
+void ReflectedType::SetPermanentName(const String& name) const
 {
-    return type;
+    ReflectedType* rt = const_cast<ReflectedType*>(this);
+
+    assert(permanentName.empty() && "Name is already set");
+    assert(permanentNameToReflectedTypeMap.count(name) == 0 && "Permanent name alredy in use");
+
+    rt->permanentName = name;
+    rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
-const String& ReflectedType::GetName() const
-{
-    return name;
-}
-
-void ReflectedType::SetName(const String& name_) const
-{
-    assert(name.empty() && "Name is already set");
-    name = name_;
-}
-
+// TODO:
+//
+// this is example access methods for ctorsWrappers
+// should be reviewed and rewrited later
+//
 /*
 const CtorWrapper *ReflectedType::GetCtor() const
 {
@@ -67,36 +68,6 @@ const Set<const CtorWrapper *> &ReflectedType::GetCtors() const
 
     return ret;
 }
-
-const DtorWrapper *ReflectedType::GetDtor() const
-{
-    return nullptr;
-}
-
-const ChildrenWrapper *ReflectedType::GetChildren() const
-{
-    return nullptr;
-}
-
-const ChildrenEditorWrapper *ReflectedType::GetChildrenEditor() const
-{
-    return nullptr;
-}
-
-const MethodWrapper *ReflectedType::GetMethod(const String &name, const Vector<const Type *> &params) const
-{
-    return nullptr;
-}
-
-Vector<const MethodWrapper *> ReflectedType::GetMethods(const String &name) const
-{
-    return Vector<const MethodWrapper *>();
-}
-
-Vector<const MethodWrapper *> ReflectedType::GetMethods() const
-{
-    return Vector<const MethodWrapper *>();
-}
 */
 
 const ReflectedType* ReflectedType::GetByType(const Type* type)
@@ -112,10 +83,30 @@ const ReflectedType* ReflectedType::GetByType(const Type* type)
     return ret;
 }
 
-const ReflectedType* ReflectedType::GetByName(const String& name)
+const ReflectedType* ReflectedType::GetByRttiName(const String& name)
 {
-    assert(false && "not implemented");
-    return nullptr;
+    const ReflectedType* ret = nullptr;
+
+    auto it = rttiNameToReflectedTypeMap.find(name);
+    if (it != rttiNameToReflectedTypeMap.end())
+    {
+        ret = it->second;
+    }
+
+    return ret;
+}
+
+const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
+{
+    const ReflectedType* ret = nullptr;
+
+    auto it = permanentNameToReflectedTypeMap.find(name);
+    if (it != permanentNameToReflectedTypeMap.end())
+    {
+        ret = it->second;
+    }
+
+    return ret;
 }
 
 } // namespace DAVA

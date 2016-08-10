@@ -1,6 +1,5 @@
 #include "Base/Result.h"
-#include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
 

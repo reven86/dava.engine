@@ -1,1 +1,0 @@
-#include "Public/Registrator.h"

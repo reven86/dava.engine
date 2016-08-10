@@ -21,7 +21,7 @@
     static void __ReflectionInitializer() \
     { \
         static_assert(!std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectedBase"); \
-        DAVA::ReflectedType::Get<Cls>()->SetName(#Cls); \
+        DAVA::ReflectedType::Get<Cls>()->SetPermanentName(#Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
@@ -37,7 +37,7 @@
     { \
         static_assert(std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectedBase"); \
         DAVA::ReflectedType::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        DAVA::ReflectedType::Get<Cls>()->SetName(#Cls); \
+        DAVA::ReflectedType::Get<Cls>()->SetPermanentName(#Cls); \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
