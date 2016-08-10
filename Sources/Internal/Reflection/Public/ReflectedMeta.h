@@ -70,7 +70,7 @@ protected:
 };
 
 template <typename T, typename U>
-inline ReflectedMeta operator+(Meta<T>&& metaa, Meta<U>&& metab)
+inline ReflectedMeta operator, (Meta<T> && metaa, Meta<U>&& metab)
 {
     ReflectedMeta ret;
 
@@ -81,7 +81,7 @@ inline ReflectedMeta operator+(Meta<T>&& metaa, Meta<U>&& metab)
 }
 
 template <typename T>
-ReflectedMeta&& operator+(ReflectedMeta&& rmeta, Meta<T>&& meta)
+ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta)
 {
     rmeta.Emplace(std::move(meta));
     return std::move(rmeta);

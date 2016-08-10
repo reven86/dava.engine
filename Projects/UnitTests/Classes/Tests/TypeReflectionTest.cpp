@@ -45,6 +45,28 @@ public:
     }
 };
 
+template <typename T>
+struct ValueRange
+{
+    ValueRange(const T& from_, const T& to_)
+        : from(from_)
+        , to(to_)
+    {
+    }
+
+    T from;
+    T to;
+};
+
+template <typename T>
+struct ValueValidator
+{
+    bool IsValid()
+    {
+        return true;
+    }
+};
+
 class TestBaseClass : public BaseBase
 {
 public:
@@ -154,6 +176,10 @@ protected:
         .Constructor<int, int, int>()
         .Destructor()
         .Field("staticInt", &TestBaseClass::staticInt)
+        [
+        DAVA::Meta<ValueRange<int>>(100, 200),
+        DAVA::Meta<ValueValidator<int>>()
+        ]
         .Field("staticIntConst", &TestBaseClass::staticIntConst)
         .Field("staticCustom", &TestBaseClass::staticCustom)
         .Field("baseInt", &TestBaseClass::baseInt)
