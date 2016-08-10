@@ -752,16 +752,26 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
         set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
     endif()
 
+
+    set( COVERAGE_SCRIPT ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_report.py )
+
     add_custom_target ( COVERAGE_${PROJECT_NAME}  
-            COMMAND ${PYTHON_EXECUTABLE} ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_html_report.py
+            SOURCES ${COVERAGE_SCRIPT}
+            COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
                     --pathExecut    ${EXECUT_FILE}
                     --pathBuild     ${CMAKE_BINARY_DIR}
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
-
-            COMMAND open -a Safari  ${CMAKE_BINARY_DIR}/Coverage/index.html
         )
+    
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
+
+    string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )
+    string(REPLACE "\"" "" DAVA_FOLDERS "${DAVA_FOLDERS}" )
+
+    add_definitions( -DTEST_COVERAGE )
+    add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
+    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
 
 endif()
 
