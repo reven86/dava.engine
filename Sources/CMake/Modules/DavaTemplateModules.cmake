@@ -73,8 +73,18 @@ macro ( load_external_modules EXTERNAL_MODULES )
     endforeach()
 endmacro()
 #
+macro( reset_MAIN_MODULE_VALUES )
+    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+                                         QT_DEPLOY_LIST_VALUE 
+                                         QT_LINKAGE_LIST 
+                                         QT_LINKAGE_LIST_VALUE 
+                                         DEPENDENT_LIST)
+        set( ${VALUE})
+        set_property( GLOBAL PROPERTY ${VALUE} )
+    endforeach()
+endmacro()
+#
 macro( setup_main_module )
-
     if( NOT MODULE_TYPE )
         set( MODULE_TYPE INLINE )
     endif()
@@ -266,7 +276,7 @@ macro( setup_main_module )
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
+                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
