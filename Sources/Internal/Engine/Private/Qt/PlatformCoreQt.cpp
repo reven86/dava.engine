@@ -17,6 +17,8 @@ namespace DAVA
 namespace Private
 {
 std::unique_ptr<QApplication> globalApplication;
+Vector<char*> qtCommandLine;
+int qtArgc = 0;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
@@ -29,9 +31,9 @@ PlatformCore::~PlatformCore() = default;
 void PlatformCore::Init()
 {
     DVASSERT(globalApplication == nullptr);
-    Vector<char*> cmdLine = engineBackend->GetCommandLineAsArgv();
-    int argc = static_cast<int>(cmdLine.size());
-    globalApplication.reset(new QApplication(argc, cmdLine.data()));
+    qtCommandLine = engineBackend->GetCommandLineAsArgv();
+    qtArgc = static_cast<int>(qtCommandLine.size());
+    globalApplication.reset(new QApplication(qtArgc, qtCommandLine.data()));
 }
 
 void PlatformCore::Run()
