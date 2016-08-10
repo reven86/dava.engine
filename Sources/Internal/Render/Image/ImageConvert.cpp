@@ -353,7 +353,7 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if ((inFormat == FORMAT_RGBA32323232) && (outFormat == FORMAT_RGBA32323232))
     {
-        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, uint32, UnpackRGBA32323232, PackRGBA32323232> convert;
+        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, uint64, UnpackRGBA32323232, PackRGBA32323232> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA16F) && (outFormat == FORMAT_RGBA16F))
