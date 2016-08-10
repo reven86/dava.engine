@@ -114,11 +114,11 @@ bool PackageBaseNode::IsReadOnly() const
 
 namespace
 {
-uint32 CalculateDepth(PackageBaseNode* node)
+uint32 CalculateDepth(const PackageBaseNode* node)
 {
     DVASSERT(nullptr != node);
     uint32 depth = 0;
-    PackageBaseNode* parent = node->GetParent();
+    const PackageBaseNode* parent = node->GetParent();
     while (nullptr != parent)
     {
         ++depth;
@@ -127,7 +127,7 @@ uint32 CalculateDepth(PackageBaseNode* node)
     return depth;
 }
 
-PackageBaseNode* ReduceDepth(PackageBaseNode* node, uint32 reduceValue)
+const PackageBaseNode* ReduceDepth(const PackageBaseNode* node, uint32 reduceValue)
 {
     for (uint32 i = 0; i < reduceValue; ++i)
     {
@@ -138,7 +138,7 @@ PackageBaseNode* ReduceDepth(PackageBaseNode* node, uint32 reduceValue)
 }
 } //unnamed namepace
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
+bool CompareByLCA(const PackageBaseNode* left, const PackageBaseNode* right)
 {
     DVASSERT(nullptr != left && nullptr != right);
     if (left == right)
@@ -156,8 +156,8 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
         return true;
     }
 
-    PackageBaseNode* leftParent = left;
-    PackageBaseNode* rightParent = right;
+    const PackageBaseNode* leftParent = left;
+    const PackageBaseNode* rightParent = right;
 
     if (depthLeft > depthRight)
     {
