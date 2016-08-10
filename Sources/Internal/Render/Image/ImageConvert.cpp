@@ -375,7 +375,7 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     return true;
 }
 
-Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap/*= false*/)
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap /*= false*/)
 {
     DVASSERT(source != nullptr);
 
