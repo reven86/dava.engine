@@ -300,7 +300,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%u", e.stateEvent.state ? "got_focus" : "lost_focus");
+    Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
