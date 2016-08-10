@@ -507,9 +507,6 @@ ApplicationCore* Core::GetApplicationCore()
 void Core::SystemAppStarted()
 {
     Logger::Info("Core::SystemAppStarted in");
-    #if PROFILER_ENABLED
-    Profiler::EnsureInited();
-    #endif
 
     if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
     {
@@ -546,10 +543,6 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-    #if PROFILER_ENABLED
-    Profiler::EnsureInited();
-    #endif
-
     PROFILER_TIMING("Core::SystemProcessFrame");
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
