@@ -79,32 +79,32 @@ struct TypeSize<void>
 
 template <typename T>
 const Type* GetTypeIfTrue(std::false_type)
-    {
-        return nullptr;
-    }
+{
+    return nullptr;
+}
 
-    template <typename T>
-    const Type* GetTypeIfTrue(std::true_type)
-    {
-        return Type::Instance<T>();
-    }
+template <typename T>
+const Type* GetTypeIfTrue(std::true_type)
+{
+    return Type::Instance<T>();
+}
 
-    template <typename D, typename B>
-    void* CastToBase(void* p)
-    {
-        D* derived = static_cast<D*>(p);
-        B* base = static_cast<B*>(derived);
-        return base;
-    }
+template <typename D, typename B>
+void* CastToBase(void* p)
+{
+    D* derived = static_cast<D*>(p);
+    B* base = static_cast<B*>(derived);
+    return base;
+}
 
-    template <typename T>
-    struct TypeHolder
-    {
-        static const Type* type;
-    };
+template <typename T>
+struct TypeHolder
+{
+    static const Type* type;
+};
 
-    template <typename T>
-    const Type* TypeHolder<T>::type = nullptr;
+template <typename T>
+const Type* TypeHolder<T>::type = nullptr;
 
 } // namespace TypeDetails
 
