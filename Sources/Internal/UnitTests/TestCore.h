@@ -22,7 +22,7 @@ class TestCore final
         String name;
         bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
-        Vector<String> testedClasses;
+        Vector<String> testedFiles;
     };
 
 public:
