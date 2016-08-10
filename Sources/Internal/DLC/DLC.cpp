@@ -864,7 +864,7 @@ void DLC::StepPatchFinish()
     default:
         if (!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
         {
-            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch.");
+            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch. patching error: %d", dlcContext.patchingError);
             PostError(DE_PATCH_ERROR_FULL);
         }
         else

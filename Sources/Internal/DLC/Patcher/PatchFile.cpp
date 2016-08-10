@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "Logger/Logger.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
@@ -848,12 +849,33 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't allocate %d bytes for new data", curInfo.newSize);
                             }
                         }
-                        newFile->Release();
+                        if (newFile->Flush())
+                        {
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't flush newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
+                        }
+                        if (0 != newFile->Release())
+                        {
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't release newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
+                        }
 
                         // if no errors - check for new file CRC
                         if (ret)
                         {
-                            uint32 actualCRC = CRC32::ForFile(tmpNewPath);
+                            size_t counter = 0;
+                            uint32 actualCRC = 0;
+                            do
+                            {
+                                RefPtr<File> justWritten(File::Create(tmpNewPath, File::OPEN | File::READ));
+                                Vector<char> content(justWritten->GetSize());
+                                justWritten->Read(content.data(), static_cast<uint32>(content.size()));
+
+                                actualCRC = CRC32::ForBuffer(content.data(), static_cast<uint32>(content.size()));
+                                if (counter > 1)
+                                {
+                                    Thread::Sleep(100);
+                                }
+                            } while (++counter < 5 && actualCRC == 0);
+
                             if (curInfo.newCRC != actualCRC)
                             {
                                 lastErrorDetails.actual.path = tmpNewPath;
@@ -862,7 +884,9 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 lastErrorDetails.expected.crc = curInfo.newCRC;
                                 lastError = ERROR_NEW_CRC;
                                 ret = false;
-                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s", tmpNewPath.GetAbsolutePathname().c_str());
+
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s counter=%d actual_crc=0x%X expected_crc=0x%X",
+                                                    tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC);
                             }
                         }
 
