@@ -1,6 +1,9 @@
 #!/bin/bash
 TARGET=android-9
 
+# make ndk-which executable
+chmod a+x ndk-which
+
 real_path() {
   [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
 }
@@ -31,7 +34,7 @@ fi
 
 #Configure OpenSSL
 cd $SSLPATH
-./Configure android no-asm no-shared no-cast no-idea no-camellia no-whirpool
+./Configure android no-asm no-shared no-cast no-idea no-camellia no-whirpool no-comp no-hw no-engine 
 EXITCODE=$?
 if [ $EXITCODE -ne 0 ]; then
 	echo "Error running the ssl configure program"
@@ -48,6 +51,9 @@ if [ $EXITCODE -ne 0 ]; then
 	cd $PWD
 	exit $EXITCODE
 fi
+
+#Copy crystax lib to armeabi objs output
+cp $NDK_ROOT/sources/crystax/libs/armeabi/libcrystax.a $SCRIPTPATH/obj/local/armeabi/libcrystax.a
 
 #Configure cURL
 cd $CURLPATH
