@@ -64,7 +64,6 @@ void PlatformCore::Run()
     QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()
                      {
                          engineBackend->OnGameLoopStopped();
-                         windowBackend->GetRenderWidget();
                          engineBackend->OnBeforeTerminate();
                      });
 
