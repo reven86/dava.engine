@@ -863,10 +863,12 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                         {
                             size_t counter = 0;
                             uint32 actualCRC = 0;
+                            uint32 actualSizeFromFile = 0;
                             do
                             {
                                 RefPtr<File> justWritten(File::Create(tmpNewPath, File::OPEN | File::READ));
-                                Vector<char> content(justWritten->GetSize());
+                                actualSizeFromFile = justWritten->GetSize();
+                                Vector<char> content(actualSizeFromFile);
                                 justWritten->Read(content.data(), static_cast<uint32>(content.size()));
 
                                 actualCRC = CRC32::ForBuffer(content.data(), static_cast<uint32>(content.size()));
@@ -882,11 +884,15 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 lastErrorDetails.expected.path = tmpNewPath;
                                 lastErrorDetails.actual.crc = actualCRC;
                                 lastErrorDetails.expected.crc = curInfo.newCRC;
+                                lastErrorDetails.actual.size = actualSizeFromFile;
+                                lastErrorDetails.expected.size = curInfo.newSize;
                                 lastError = ERROR_NEW_CRC;
                                 ret = false;
 
-                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s counter=%d actual_crc=0x%X expected_crc=0x%X",
-                                                    tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC);
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected."
+                                                                 " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
+                                                    tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC, actualSizeFromFile, curInfo.newSize);
+                                DVASSERT_MSG(false, "check log now!");
                             }
                         }
 
