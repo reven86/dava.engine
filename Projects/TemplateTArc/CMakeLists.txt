@@ -12,7 +12,8 @@ add_definitions(
     -DDISABLE_NATIVE_TEXTFIELD
     -DDISABLE_NATIVE_WEBVIEW)
 
-set ( DAVA_COREV2 1)
+set ( DAVA_COREV2 1 )
+set ( DAVA_PLATFORM_QT 1 )
 set ( DAVA_COMPONENTS "Sound" "TArc")
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 
@@ -41,8 +42,6 @@ set( WIN32_RESOURCES     ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 setup_main_executable()
 convert_graphics()
 
-if (DAVA_COREV2)
-    if (WIN32)
-        set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-    endif()
+if (WIN32)
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
 endif()
