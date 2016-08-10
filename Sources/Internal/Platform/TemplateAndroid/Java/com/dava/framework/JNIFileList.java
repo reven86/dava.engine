@@ -39,13 +39,13 @@ public class JNIFileList {
             }
         } else {
             AssetManager assetManager;
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() != null)
             {
-                assetManager = DavaActivity.activitySingleton.getAssets();
+                assetManager = JNIActivity.GetActivity().getAssets();
             }
             else
             {
-                assetManager = JNIActivity.GetActivity().getAssets();
+                assetManager = DavaActivity.instance().getAssets();
             }
             try {
                 if (path.length() > 0 && path.charAt(path.length() - 1) == '/')

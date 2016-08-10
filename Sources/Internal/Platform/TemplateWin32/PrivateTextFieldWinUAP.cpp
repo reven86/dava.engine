@@ -19,7 +19,7 @@
 #include "Render/Image/Image.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -1206,7 +1206,7 @@ Rect PrivateTextFieldWinUAP::VirtualToWindow(const Rect& srcRect) const
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
 
-    // 2. map physical to window
+// 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
@@ -1224,10 +1224,11 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
     Rect rect = srcRect;
-    // 1. map window to physical
 #if defined(__DAVAENGINE_COREV2__)
+    // 1. map window to physical
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
+    // 1. map window to physical
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x *= scaleFactor;

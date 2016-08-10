@@ -30,10 +30,11 @@ public:
     void SetDownloader(Downloader* _downloader);
     Downloader* GetDownloader();
 
-    // Checks tasks status and determine current task and handles tasks queues
 #if defined(__DAVAENGINE_COREV2__)
+    // Checks tasks status and determine current task and handles tasks queues
     void Update(float32 frameDelta = 0.0f);
 #else
+    // Checks tasks status and determine current task and handles tasks queues
     void Update();
 #endif
 

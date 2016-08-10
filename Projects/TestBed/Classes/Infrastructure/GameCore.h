@@ -11,7 +11,11 @@
 #include "Network/Services/MMNet/MMNetServer.h"
 #endif
 
-#include "Engine/EngineFwd.h"
+namespace DAVA
+{
+class Engine;
+class Window;
+}
 
 class TestData;
 class BaseScreen;

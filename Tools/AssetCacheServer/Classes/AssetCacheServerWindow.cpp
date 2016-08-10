@@ -178,8 +178,8 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
     
 #elif defined(__DAVAENGINE_MACOS__)
 
-    FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
-    FileSystem::Instance()->DeleteFile(plist);
+    DAVA::FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
+    DAVA::FileSystem::Instance()->DeleteFile(plist);
 
     if (toLaunchOnStartup)
     {
@@ -223,7 +223,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
-        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::PureCreate(plist, DAVA::File::CREATE | DAVA::File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
     }
@@ -568,7 +568,7 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
 
 void AssetCacheServerWindow::UpdateUsageProgressbar(DAVA::uint64 occupied, DAVA::uint64 overall)
 {
-    float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
+    DAVA::float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
     int val = static_cast<int>(p * static_cast<DAVA::float64>(occupied));
     ui->occupiedSizeBar->setRange(0, 100);
     ui->occupiedSizeBar->setValue(val);

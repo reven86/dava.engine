@@ -9,7 +9,7 @@
 #include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -595,10 +595,11 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
 
-    // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
+    // 2. map physical to window
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
+    // 2. map physical to window
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x /= scaleFactor;

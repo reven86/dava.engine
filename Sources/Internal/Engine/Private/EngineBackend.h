@@ -40,6 +40,21 @@ public:
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
 
+    /// \brief Get command args in form suitable to use as argc and argv
+    ///
+    /// Some platforms want command line in form argc and argv, e.g. iOS's UIApplicationMain, Qt's QApplication, etc.
+    /// EngineBackend grabs command line at program start and stores it as DAVA::Vector of DAVA::strings, so GetCommandLineAsArgv allows
+    /// passing command line arguments to those functions.
+    ///
+    /// How to use:
+    /// \code{.cpp}
+    ///     Vector<char*> argv = engineBackend->GetCommandLineAsArgv();
+    ///     ::UIApplicationMain(static_cast<int>(argv.size()), &*argv.begin(), @"principal", @"delegate");
+    /// \endcode
+    ///
+    /// \return DAVA::Vector of char pointers to command line arguments.
+    Vector<char*> GetCommandLineAsArgv();
+
     Engine* GetEngine() const;
     MainDispatcher* GetDispatcher() const;
     NativeService* GetNativeService() const;
@@ -133,7 +148,7 @@ inline bool EngineBackend::IsEmbeddedGUIMode() const
 
 inline bool EngineBackend::IsConsoleMode() const
 {
-    return runMode == eEngineRunMode::CONSOLE;
+    return runMode == eEngineRunMode::CONSOLE_MODE;
 }
 
 inline EngineContext* EngineBackend::GetEngineContext() const

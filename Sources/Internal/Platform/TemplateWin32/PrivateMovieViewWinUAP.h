@@ -3,14 +3,15 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+class Window;
+#else
 class CorePlatformWinUAP;
 #endif
 class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>
@@ -110,4 +111,5 @@ inline bool PrivateMovieViewWinUAP::IsPlaying()
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_WIN_UAP__

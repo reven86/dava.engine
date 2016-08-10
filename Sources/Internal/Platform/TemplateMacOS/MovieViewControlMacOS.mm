@@ -1,9 +1,10 @@
 #include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
 
 #if defined(__DAVAENGINE_MACOS__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -113,7 +114,7 @@ enum MoviePlayerHelperPlaybackState
 
 - (void)dealloc
 {
-#if defined(__DAVAENGINE_COREV2__) and !defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->RemoveNSView(videoView);
 #else
     [videoView removeFromSuperview];
@@ -189,14 +190,13 @@ enum MoviePlayerHelperPlaybackState
     videoView = [[NSView alloc] init];
     [videoView setWantsLayer:YES];
     videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
-#if !defined(__DAVAENGINE_QT__)
+
 #if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->AddNSView(videoView);
 #else
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView addSubview:videoView];
 #endif
-#endif //__DAVAENGINE_QT__
 
     AVPlayerLayer* newPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:videoPlayer];
     [newPlayerLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
@@ -285,10 +285,11 @@ enum MoviePlayerHelperPlaybackState
     rect += coordSystem->GetPhysicalDrawOffset();
     rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
 
-    // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
+    // 2. map physical to window
     NSRect controlRect = [[videoView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #else
+    // 2. map physical to window
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
 #endif
@@ -427,4 +428,5 @@ void MovieViewControl::OnAppMinimizedRestored(bool minimized)
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_MACOS__

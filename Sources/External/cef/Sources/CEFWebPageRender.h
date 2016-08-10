@@ -7,10 +7,9 @@
 
 #include "Functional/SignalBase.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 class CEFWebPageRender : public CefRenderHandler
 {
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);

@@ -7,7 +7,7 @@
 #include "DownloadManager.h"
 #include "Downloader.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

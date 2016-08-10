@@ -3,13 +3,13 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 // Movie View Control - iOS implementation.
 class MovieViewControl : public IMovieViewControl
 {
@@ -48,4 +48,5 @@ private:
 };
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_IPHONE__

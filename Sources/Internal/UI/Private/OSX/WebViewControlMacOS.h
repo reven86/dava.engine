@@ -7,10 +7,9 @@
 #include "UI/IWebViewControl.h"
 #include "Functional/SignalBase.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 class UIWebView;
 
 // Web View Control - MacOS version.

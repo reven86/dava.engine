@@ -6,10 +6,9 @@
 
 #include "UI/IWebViewControl.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 class UIControl;
 class FilePath;
 class UIWebView;

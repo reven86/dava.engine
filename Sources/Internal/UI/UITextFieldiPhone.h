@@ -3,10 +3,9 @@
 
 #include "UI/UITextField.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 class UITextField;
 
 class TextFieldPlatformImpl

@@ -7,9 +7,6 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#if defined(__DAVAENGINE_QT__)
-#include "Engine/Public/Qt/WindowNativeServiceQt.h"
-#endif
 
 #include "Render/Renderer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -113,6 +110,17 @@ NativeService* EngineBackend::GetNativeService() const
     return platformCore->GetNativeService();
 }
 
+Vector<char*> EngineBackend::GetCommandLineAsArgv()
+{
+    Vector<char*> argv;
+    argv.reserve(cmdargs.size());
+    for (String& a : cmdargs)
+    {
+        argv.push_back(&*a.begin());
+    }
+    return argv;
+}
+
 void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
     runMode = engineRunMode;
@@ -173,7 +181,7 @@ void EngineBackend::Quit(int exitCode_)
     case eEngineRunMode::GUI_EMBEDDED:
         Logger::Warning("Engine does not support Quit command in embedded mode");
         break;
-    case eEngineRunMode::CONSOLE:
+    case eEngineRunMode::CONSOLE_MODE:
         quitConsole = true;
         break;
     default:
@@ -486,10 +494,7 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.scaleX = w->GetRenderSurfaceScaleX();
     rendererParams.scaleY = w->GetRenderSurfaceScaleY();
 
-#if defined(__DAVAENGINE_QT__)
-    WindowNativeService* nativeService = GetPrimaryWindow()->GetNativeService();
-    nativeService->InitRenderParams(rendererParams);
-#endif
+    w->InitCustomRenderParams(rendererParams);
 
     rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
     Renderer::Initialize(renderer, rendererParams);

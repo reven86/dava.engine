@@ -41,7 +41,7 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void TriggerPlatformEvents();
-    void InitRenderParams(rhi::InitParam& params);
+    void InitCustomRenderParams(rhi::InitParam& params);
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
@@ -63,7 +63,6 @@ private:
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 
-    float32 DpiConvert(int32 coord);
     uint32 ConvertButtons(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
     uint32 ConvertQtKeyToSystemScanCode(int key);
@@ -81,9 +80,14 @@ private:
     QtEventListener* qtEventListener = nullptr;
 };
 
-inline float32 WindowBackend::DpiConvert(int32 coord)
+inline void* WindowBackend::GetHandle() const
 {
-    return static_cast<float32>(coord);
+    return nullptr;
+}
+
+inline WindowNativeService* WindowBackend::GetNativeService() const
+{
+    return nativeService.get();
 }
 
 } // namespace Private

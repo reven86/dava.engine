@@ -53,13 +53,13 @@ public class JNIDeviceInfo {
 
     public static String GetRegion()
     {
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() != null)
         {
-            return DavaActivity.activitySingleton.getResources().getConfiguration().locale.getCountry();
+            return JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
         }
         else
         {
-            return JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
+            return DavaActivity.instance().getResources().getConfiguration().locale.getCountry();
         }
     }
 
@@ -71,13 +71,13 @@ public class JNIDeviceInfo {
     public static String GetUDID()
     {
         String aid;
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() != null)
         {
-            aid = Secure.getString(DavaActivity.activitySingleton.getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
+            aid = Secure.getString(JNIActivity.GetActivity().getApplicationContext() .getContentResolver(), Secure.ANDROID_ID);
         }
         else
         {
-            aid = Secure.getString(JNIActivity.GetActivity().getApplicationContext() .getContentResolver(), Secure.ANDROID_ID);
+            aid = Secure.getString(DavaActivity.instance().getApplicationContext().getContentResolver(), Secure.ANDROID_ID);
         }
 
         Object obj = null;
@@ -133,14 +133,14 @@ public class JNIDeviceInfo {
     
     public static int GetNetworkType() {
         NetworkInfo info;
-        if (DavaActivity.activitySingleton != null)
+        if (JNIActivity.GetActivity() != null)
         {
-            ConnectivityManager cm = (ConnectivityManager)DavaActivity.activitySingleton.getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = (ConnectivityManager)JNIActivity.GetActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
             info = cm.getActiveNetworkInfo();
         }
         else
         {
-            ConnectivityManager cm = (ConnectivityManager)JNIActivity.GetActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = (ConnectivityManager)DavaActivity.instance().getSystemService(Context.CONNECTIVITY_SERVICE);
             info = cm.getActiveNetworkInfo();
         }
         if (info == null || !info.isConnected())
@@ -168,36 +168,32 @@ public class JNIDeviceInfo {
         switch (networkType) {
         case NETWORK_TYPE_WIFI: {
             WifiInfo wifiInfo;
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() != null)
             {
-                WifiManager wifiManager = (WifiManager)DavaActivity.activitySingleton.getSystemService(Context.WIFI_SERVICE);
+                WifiManager wifiManager = (WifiManager)JNIActivity.GetActivity().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
             }
             else
             {
-                WifiManager wifiManager = (WifiManager) JNIActivity.GetActivity().getSystemService(Context.WIFI_SERVICE);
+                WifiManager wifiManager = (WifiManager)DavaActivity.instance().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
             }
             return WifiManager.calculateSignalLevel(wifiInfo.getRssi(), MaxSignalLevel);
         }
         
         case NETWORK_TYPE_MOBILE: {
-            if (DavaActivity.activitySingleton != null)
+            if (JNIActivity.GetActivity() != null)
             {
-                return 0;
-            }
-            else
-            {
-                if (JNIActivity.signalStrengthListener != null) {
+                if (JNIActivity.signalStrengthListener != null)
+                {
                     //Get the GSM Signal Strength, valid values are (0-31, 99) as defined in TS 27.007 8.5
                     int sign = JNIActivity.signalStrengthListener.GetSignalStrength();
                     if (sign == 99)
                         return -1;
                     return (int)(MaxSignalLevel * sign / 31.f); 
                 }
-                else
-                    return 0;
             }
+            return 0;
         }
         
         case NETWORK_TYPE_ETHERNET:

@@ -9,15 +9,15 @@
 #include "Math/Color.h"
 #include "Concurrency/Mutex.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
 class Color;
 class Sprite;
 class UITextField;
 class UITextFieldDelegate;
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+class Window;
+#else
 class CorePlatformWinUAP;
 #endif
 

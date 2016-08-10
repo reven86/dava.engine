@@ -19,7 +19,7 @@
 #include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -447,10 +447,11 @@ public:
             davaText->OnKeyboardHidden();
         }
 
-        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
 #if defined(__DAVAENGINE_COREV2__)
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         [[NSApp keyWindow] makeFirstResponder:[nsScrollView superview]];
 #else
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [[NSApp keyWindow] makeFirstResponder:openGLView];
 #endif
@@ -789,10 +790,11 @@ public:
             davaText->OnKeyboardHidden();
         }
 
-        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
 #if defined(__DAVAENGINE_COREV2__)
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         [[NSApp keyWindow] makeFirstResponder:[nsTextField superview]];
 #else
+        // http://stackoverflow.com/questions/4881676/changing-focus-from-nstextfield-to-nsopenglview
         NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
         [[NSApp keyWindow] makeFirstResponder:openGLView];
 #endif
@@ -1842,10 +1844,11 @@ doCommandBySelector:(SEL)commandSelector
 @implementation CustomTextField
 - (void)mouseDown:(NSEvent*)theEvent
 {
-    // pass event to DAVA input for selection and focus work
 #if defined(__DAVAENGINE_COREV2__)
+    // pass event to DAVA input for selection and focus work
     [[self superview] mouseDown:theEvent];
 #else
+    // pass event to DAVA input for selection and focus work
     NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
     [openGLView mouseDown:theEvent];
 #endif

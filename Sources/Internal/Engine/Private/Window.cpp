@@ -519,6 +519,11 @@ void Window::ClearMouseButtons()
     mouseButtonState.reset();
 }
 
+void Window::InitCustomRenderParams(rhi::InitParam& params)
+{
+    windowBackend->InitCustomRenderParams(params);
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__

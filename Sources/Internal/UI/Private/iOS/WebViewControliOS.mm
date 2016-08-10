@@ -9,7 +9,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #include "Core/Core.h"
@@ -498,10 +498,11 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 
-    // Apply the Retina scale divider, if any.
 #if defined(__DAVAENGINE_COREV2__)
+    // Apply the Retina scale divider, if any.
     float32 scaleDivider = window->GetScaleX();
 #else
+    // Apply the Retina scale divider, if any.
     float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 #endif
     webViewRect.origin.x /= scaleDivider;

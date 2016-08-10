@@ -9,7 +9,7 @@
 #include "Sound/SoundEvent.h"
 #include "Debug/Stats.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {

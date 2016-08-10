@@ -4,8 +4,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/EngineFwd.h"
-
 #include "Math/Rect.h"
 #include "FileSystem/FilePath.h"
 
@@ -14,7 +12,9 @@ namespace DAVA
 class UIWebView;
 class IUIWebViewDelegate;
 class Sprite;
-#if !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_COREV2__)
+class Window;
+#else
 class CorePlatformWinUAP;
 #endif
 
@@ -101,7 +101,7 @@ private: // WebView event handlers
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args);
 
 private:
-    // clang-format off
+// clang-format off
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
 #else

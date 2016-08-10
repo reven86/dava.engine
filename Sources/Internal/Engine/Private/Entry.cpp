@@ -2,7 +2,9 @@
 
 #include "Base/BaseTypes.h"
 #include "Engine/Private/CommandArgs.h"
-#include "Engine/Private/EngineStartup.h"
+#include "Engine/Private/EngineBackend.h"
+
+extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
 // clang-format off
 
@@ -13,11 +15,14 @@
 int main(int argc, char* argv[])
 {
     using namespace DAVA;
+    using DAVA::Private::EngineBackend;
+
     Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
-    return Private::EngineStart(cmdargs);
+    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+    return GameMain(std::move(cmdargs));
 }
 
-#elif defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+#elif defined(__DAVAENGINE_WIN32__)
 
 #include <windows.h>
 
@@ -28,17 +33,36 @@ int main(int argc, char* argv[])
 //  3. cmake script - set_target_properties(target PROPERTIES LINK_FLAGS "/ENTRY:wWinMainCRTStartup")
 // https://msdn.microsoft.com/en-us/library/dybsewaf.aspx
 // https://support.microsoft.com/en-us/kb/125750
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-// Windows Universal Application
-// WinMain should have attribute which specifies threading model
-[Platform::MTAThread]
-#endif
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
+    using DAVA::Private::EngineBackend;
+
     Vector<String> cmdargs = Private::GetCommandArgs();
-    return Private::EngineStart(cmdargs);
+    std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
+    return GameMain(std::move(cmdargs));
+}
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+#include <windows.h>
+
+namespace DAVA
+{
+namespace Private
+{
+extern int StartUWPApplication(const Vector<String>& cmdargs);
+} // namespace Private
+} // namespace DAVA
+
+// WinMain should have attribute which specifies threading model
+[Platform::MTAThread]
+int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+{
+    using namespace DAVA;
+
+    Vector<String> cmdargs = Private::GetCommandArgs();
+    return DAVA::Private::StartUWPApplication(cmdargs);
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)

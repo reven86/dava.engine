@@ -1,6 +1,6 @@
 #include "Infrastructure/GameCore.h"
 
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -66,7 +66,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     eEngineRunMode runmode = eEngineRunMode::GUI_STANDALONE;
     if (cmdline.size() > 1 && cmdline[1] == "--console")
     {
-        runmode = eEngineRunMode::CONSOLE;
+        runmode = eEngineRunMode::CONSOLE_MODE;
     }
 
     Vector<String> modules = {

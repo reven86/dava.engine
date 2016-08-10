@@ -1112,7 +1112,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
     for (const Selectable& item : selection.GetContent())
     {
-        float32 scaleValue = axisScaleValue;
+        DAVA::float32 scaleValue = axisScaleValue;
 
         DAVA::Matrix4 origMatrix = item.GetLocalTransform();
 

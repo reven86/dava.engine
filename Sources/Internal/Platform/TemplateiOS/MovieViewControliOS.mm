@@ -1,13 +1,14 @@
 #include "Platform/TemplateiOS/MovieViewControliOS.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #import <MediaPlayer/MediaPlayer.h>
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
+#include "Engine/EngineModule.h"
 #include "Engine/Public/WindowNativeService.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
@@ -92,10 +93,11 @@ void MovieViewControl::SetRect(const Rect& rect)
     playerViewRect.size.width = physicalRect.dx;
     playerViewRect.size.height = physicalRect.dy;
 
-    // Apply the Retina scale divider, if any.
 #if defined(__DAVAENGINE_COREV2__)
+    // Apply the Retina scale divider, if any.
     float32 scaleDivider = window->GetScaleX();
 #else
+    // Apply the Retina scale divider, if any.
     float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 #endif
     playerViewRect.origin.x /= scaleDivider;
@@ -142,4 +144,5 @@ bool MovieViewControl::IsPlaying() const
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_IPHONE__

@@ -3,14 +3,14 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_MACOS__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 #include "Functional/SignalBase.h"
 
-#include "Engine/EngineFwd.h"
-
 namespace DAVA
 {
+class Window;
 // Movie View Control - MacOS implementation.
 class MovieViewControl : public IMovieViewControl
 {
@@ -58,4 +58,5 @@ private:
 };
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_MACOS__

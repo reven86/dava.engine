@@ -11,7 +11,6 @@
 
 namespace DAVA
 {
-
 class Engine final
 {
 public:

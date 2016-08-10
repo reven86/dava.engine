@@ -11,6 +11,11 @@
 
 #include "Functional/Function.h"
 
+namespace rhi
+{
+struct InitParam;
+}
+
 namespace DAVA
 {
 namespace Private
@@ -29,6 +34,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close();
     bool IsWindowReadyForRender() const;
+    void InitCustomRenderParams(rhi::InitParam& params);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -64,6 +70,11 @@ inline Window* WindowBackend::GetWindow() const
 inline WindowNativeService* WindowBackend::GetNativeService() const
 {
     return nativeService.get();
+}
+
+inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
+{
+    // No custom render params
 }
 
 } // namespace Private

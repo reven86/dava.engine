@@ -60,7 +60,7 @@ public final class DavaSurfaceView extends SurfaceView
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
     {
         boolean skip = false;
-        int requestedOrientation = DavaActivity.activitySingleton.getRequestedOrientation();
+        int requestedOrientation = DavaActivity.instance().getRequestedOrientation();
         if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
         {
             // accept any

@@ -103,6 +103,8 @@ void CoreNativeBridge::Run()
         [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
         // NSApplicationMain never returns
+        // NSApplicationMain itself ignores the argc and argv arguments. Instead, Cocoa gets its arguments indirectly via _NSGetArgv, _NSGetArgc, and _NSGetEnviron.
+        // See https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Miscellaneous/AppKit_Functions/#//apple_ref/c/func/NSApplicationMain
         ::NSApplicationMain(0, nullptr);
     }
 }
