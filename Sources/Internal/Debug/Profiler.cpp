@@ -94,13 +94,49 @@ uint64 GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
+void LastChildLeaf(CounterArray::iterator begin, CounterArray::iterator& lastChild, CounterArray::iterator& lastLeaf)
+{
+    Thread::Id threadID = begin->tid;
+    Vector<CounterArray::iterator> parents;
+
+    uint64 endTime = begin->endTime;
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; it++)
+    {
+        const TimeCounter& c = *it;
+        if (c.tid == threadID)
+        {
+            if (c.endTime == 0)
+                break;
+
+            if (c.startTime <= endTime)
+                lastLeaf = it;
+            else
+                break;
+
+            while (parents.size() && (c.startTime >= parents.back()->endTime) && c.startTime != c.endTime)
+                parents.pop_back();
+
+            parents.push_back(it);
+        }
+    }
+
+    DVASSERT(parents.size());
+
+    if (parents.size() > 1)
+        lastChild = parents[1];
+    else
+        lastChild = begin;
+}
+
 void DumpInternal(CounterArray::iterator it)
 {
     Thread::Id threadID = it->tid;
-    Stack<const TimeCounter*> parentStack;
+    Vector<uint64> parents;
 
-    CounterArray::iterator itEnd = counters.end();
-    for (; it != itEnd; it++)
+    CounterArray::iterator lastChild, lastLeaf;
+    LastChildLeaf(it, lastChild, lastLeaf);
+    for (; it != lastLeaf + 1; it++)
     {
         const TimeCounter& c = *it;
 
@@ -109,16 +145,12 @@ void DumpInternal(CounterArray::iterator it)
 
         if (c.tid == threadID)
         {
-            while (parentStack.size() && (c.startTime >= parentStack.top()->endTime) && c.startTime != c.endTime)
-            {
-                parentStack.pop();
-                if (!parentStack.size())
-                    return;
-            }
+            while (parents.size() && (c.startTime >= parents.back()) && c.startTime != c.endTime)
+                parents.pop_back();
 
-            Logger::Info("%*s%s    %llu us", parentStack.size(), "", c.name, c.endTime - c.startTime);
+            Logger::Info("%*s%s    %llu us", parents.size(), "", c.name, c.endTime - c.startTime);
 
-            parentStack.push(&c);
+            parents.push_back(c.endTime);
         }
     }
 }
@@ -185,6 +217,10 @@ void Dump()
     }
 }
 
+void DumpAverage(const char* eventName, uint32 count)
+{
+}
+
 void Dump(const char* fileName)
 {
     File* json = File::Create(fileName, File::CREATE | File::WRITE);
@@ -210,9 +246,6 @@ void Dump(const char* fileName)
     json->Release();
 }
 
-void DumpAverage(const char* eventName, uint32 count)
-{
-}
 
 } //ns Profiler
 

@@ -197,6 +197,9 @@ public:
     class iterator
     {
     public:
+        iterator() = default;
+        ~iterator() = default;
+
         iterator(const reverse_iterator& it)
         {
             arrayData = it.arrayData;
@@ -204,6 +207,18 @@ public:
             index = it.index ^ ((exmask >> 1) + 1);
         }
 
+        inline iterator operator+(uint32 n)
+        {
+            iterator it(*this);
+            it.index = (index + n) & exmask;
+            return it;
+        }
+        inline iterator operator-(uint32 n)
+        {
+            iterator it(*this);
+            it.index = (index - n) & exmask;
+            return it;
+        }
         inline iterator& operator++()
         {
             index = (index + 1) & exmask;
@@ -266,6 +281,9 @@ public:
     class reverse_iterator
     {
     public:
+        reverse_iterator() = default;
+        ~reverse_iterator() = default;
+
         reverse_iterator(const iterator& it)
         {
             arrayData = it.arrayData;
@@ -273,6 +291,18 @@ public:
             index = it.index ^ ((exmask >> 1) + 1);
         }
 
+        inline reverse_iterator operator+(uint32 n)
+        {
+            reverse_iterator it(*this);
+            it.index = (index - n) & exmask;
+            return it;
+        }
+        inline reverse_iterator operator-(uint32 n)
+        {
+            reverse_iterator it(*this);
+            it.index = (index + n) & exmask;
+            return it;
+        }
         inline reverse_iterator& operator++()
         {
             index = (index - 1) & exmask;
