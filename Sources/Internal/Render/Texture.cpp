@@ -532,20 +532,6 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
         ImageSystem::Load(multipleMipPathname, *images, params);
 
         ImageSystem::EnsurePowerOf2Images(*images);
-        if (images->size() == 1 && texDescriptor->GetGenerateMipMaps())
-        {
-            ImageFormat imFormat = texDescriptor->GetImageFormatForGPU(gpu);
-            if (TextureDescriptor::IsSupportedCompressedFormat(imFormat) == false) //only tga, png, webp, jpeg
-            {
-                Image* img = *images->begin();
-                *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
-                SafeRelease(img);
-            }
-            else
-            {
-                Logger::Error("[Texture::LoadImages] Can't create mipmaps for GPU (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
-            }
-        }
     }
 
     if (!Validator::AreImagesCorrectForTexture(*images))
@@ -560,6 +546,19 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
 
         ReleaseImages(images);
         return false;
+    }
+
+    if (images->size() == 1 && texDescriptor->GetGenerateMipMaps())
+    {
+        Image* img = *images->begin();
+        *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
+        SafeRelease(img);
+
+        if (images->empty())
+        {
+            Logger::Error("[Texture::LoadImages] Can't create mipmaps for GPU (%s) for %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu), texDescriptor->pathname.GetStringValue().c_str());
+            return false;
+        }
     }
 
     isPink = false;
