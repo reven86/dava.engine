@@ -78,9 +78,9 @@ macro( reset_MAIN_MODULE_VALUES )
                                          QT_DEPLOY_LIST_VALUE 
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
-                                         DEPENDENT_LIST)
-        set( ${VALUE})
-        set_property( GLOBAL PROPERTY ${VALUE} )
+                                         DEPENDENT_LIST )
+        set( ${VALUE} )
+        set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
 endmacro()
 #
