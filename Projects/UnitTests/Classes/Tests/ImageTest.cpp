@@ -42,8 +42,10 @@ DAVA_TESTCLASS (ImageTest)
           { PixelFormat::FORMAT_ATC_RGB, 8, 8, false, false },
           { PixelFormat::FORMAT_ATC_RGBA_EXPLICIT_ALPHA, 8, 8, false, false },
           { PixelFormat::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, 8, 8, false, false },
+#if (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
           { PixelFormat::FORMAT_RGBA16F, 8, 8, true, true },
-          { PixelFormat::FORMAT_RGBA32F, 8, 8, true, true }
+          { PixelFormat::FORMAT_RGBA32F, 8, 8, true, true },
+#endif //#if (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
         };
 
         for (const TestData& td : tests)
