@@ -673,12 +673,20 @@ if( ANDROID )
     
     endif()
     
+    # copy binary files (*.a, *.so, *.o) as post-build step
+    message ("LIBRARY_OUTPUT_PATH: ${LIBRARY_OUTPUT_PATH}")
+    if ( DAVA_ANDROID_BINARY_FILES_OUTPUT )
+        add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/android_copy_binary_files.py ${LIBRARY_OUTPUT_PATH} ${DAVA_ANDROID_BINARY_FILES_OUTPUT}
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/android_copy_binary_files.py ${CMAKE_BINARY_DIR} ${DAVA_ANDROID_BINARY_FILES_OUTPUT}
+        )
+    endif ()
+    
     # add custom target to strip symbols from shared library
     # strip symbols only if needed
     if ( ANDROID_STRIP_SYMBOLS )
-        set ( LIB_FILE_PATH "${LIBRARY_OUTPUT_PATH}/lib${PROJECT_NAME}.so" )
         add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_STRIP} --strip-unneeded ${LIB_FILE_PATH}
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/strip_symbols_unix.py ${CMAKE_STRIP} ${LIBRARY_OUTPUT_PATH}
         )
     endif ()
 
