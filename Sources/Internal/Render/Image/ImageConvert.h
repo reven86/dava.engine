@@ -811,7 +811,7 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat);
 void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage = nullptr);
 void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr);
 
-Image* DownscaleTwiceBillinear(const Image* source);
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap = false);
 bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);

@@ -375,20 +375,28 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     return true;
 }
 
-Image* DownscaleTwiceBillinear(const Image* source)
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap/*= false*/)
 {
-    if (source->GetPixelFormat() == FORMAT_RGBA8888)
+    DVASSERT(source != nullptr);
+
+    PixelFormat pixelFormat = source->GetPixelFormat();
+    uint32 sWidth = source->GetWidth();
+    uint32 sHeigth = source->GetHeight();
+    uint32 dWidth = sWidth >> 1;
+    uint32 dHeigth = sHeigth >> 1;
+
+    Image* destination = Image::Create(dWidth, dHeigth, pixelFormat);
+    if (destination != nullptr)
     {
-        Image* destination = Image::Create(source->GetWidth() / 2, source->GetHeight() / 2, source->GetPixelFormat());
-        if (destination)
+        uint32 pitchMultiplier = PixelFormatDescriptor::GetPixelFormatSizeInBits(pixelFormat);
+        bool downscaled = DownscaleTwiceBillinear(pixelFormat, pixelFormat, source->GetData(), sWidth, sHeigth, sWidth * pitchMultiplier / 8, destination->GetData(), dWidth, dHeigth, dWidth * pitchMultiplier / 8, isNormalMap);
+        if (downscaled == false)
         {
-            ConvertDownscaleTwiceBillinear<uint32, uint32, uint32, UnpackRGBA8888, PackRGBA8888> convertFunc;
-            convertFunc(source->GetData(), source->GetWidth(), source->GetHeight(), source->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(source->GetPixelFormat()),
-                        destination->GetData(), destination->GetWidth(), destination->GetHeight(), destination->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(destination->GetPixelFormat()));
+            SafeRelease(destination);
         }
-        return destination;
     }
-    return 0;
+
+    return destination;
 }
 
 void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2)
