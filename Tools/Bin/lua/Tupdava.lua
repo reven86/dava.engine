@@ -556,7 +556,7 @@ function TupState.BuildPacks(self)
  
             -- merge lists
             local mergePackMask = self.packlistDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.delimiter .. "*" .. self.conf.packlistExt 
-            local mergePackCmd = self.cmd.fwdep .. " merge " .. mergePackMask .. " -o %o -- %<" .. packGroup .. ">"
+            local mergePackCmd = self.cmd.fwdep .. " merge " .. mergePackMask .. " -o %o" --[[" -- %<" .. packGroup .. ">"]]
             local mergePackCmdText = "^ Gen merged list for " .. packGroup .. "^ "
             local mergePackOutput = self.mergeDir .. "/" .. gpu .. "/" .. pack.name .. self.conf.mergedlistExt
             
@@ -592,7 +592,7 @@ function TupState.BuildPacks(self)
         -- merge final sql
         local mergeSqlMaskCommon = self.sqlDir .. "/" .. self.conf.commonGpu .. "/*.sql"
         local mergeSqlMaskGpu = self.sqlDir .. "/" .. gpu .. "/*.sql"  
-        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o -- %<" .. sqlGroup .. ">"
+        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o" --[[" -- %<" .. sqlGroup .. ">"]]
         local mergeSqlCmdText = "^ Gen merged sql " .. gpu .. "^ "
         local mergeSqlOutput = self.mergeDir .. "/" .. gpu .. "/final.sql" 
 
@@ -639,7 +639,7 @@ function TupState.BuildPacks(self)
 
         -- merge superpack lists
         local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o -- %<" .. superPackGroup .. ">"
+        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o" --[[" -- %<" .. superPackGroup .. ">"]]
         local mergedSuperCmdText = "^ Gen merged superlist^ "
         local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 
