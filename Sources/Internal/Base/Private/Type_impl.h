@@ -143,7 +143,7 @@ void Type::Init(Type** ptype)
 }
 
 template <typename T>
-inline const Type* Type::Instance()
+const Type* Type::Instance()
 {
     static Type* type = nullptr;
 

@@ -17,6 +17,15 @@ public:
         return argsList;
     };
 
+    // TODO:
+    // Create policy should be added
+    // Policies can be:
+    //      as pointer,
+    //      as value,
+    //      possible as unique_ptr
+    //      or shared_ptr
+    // ...
+
     Any Create() const override
     {
         auto tp = std::integral_constant<bool, 0 == sizeof...(Args)>();

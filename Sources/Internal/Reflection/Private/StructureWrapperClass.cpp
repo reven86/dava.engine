@@ -36,10 +36,19 @@ Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object,
 {
     Reflection::Field ret;
 
-    if (key.CanCast<String>())
-    {
-        const String& name = key.Cast<String>();
+    String name;
 
+    if (key.CanGet<String>())
+    {
+        name = key.Get<String>();
+    }
+    else if (key.CanGet<const char*>())
+    {
+        name = key.Get<const char*>();
+    }
+
+    if (!name.empty())
+    {
         auto end = fields.end();
         auto it = fields.begin();
 

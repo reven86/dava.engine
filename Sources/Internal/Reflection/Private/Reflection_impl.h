@@ -48,6 +48,11 @@ inline const Type* Reflection::GetValueType() const
     return vw->GetType();
 }
 
+inline ReflectedObject Reflection::GetValueObject() const
+{
+    return object;
+}
+
 inline Any Reflection::GetValue() const
 {
     return vw->GetValue(object);
@@ -101,7 +106,7 @@ inline const Meta* Reflection::GetMeta() const
 }
 
 template <typename T>
-Reflection::Field Reflection::Create(const T* ptr, const Any& key)
+Reflection::Field Reflection::Create(T* ptr, const Any& key)
 {
     if (nullptr != ptr)
     {

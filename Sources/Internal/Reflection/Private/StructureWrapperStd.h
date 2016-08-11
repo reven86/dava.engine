@@ -27,7 +27,7 @@ public:
             auto it = std::next(c->begin(), i);
             if (it != c->end())
             {
-                const V* v = &(*it);
+                V* v = &(*it);
                 ret = Reflection::Create(v, key);
             }
         }
@@ -45,7 +45,7 @@ public:
         ret.reserve(c->size());
         for (auto& it : *c)
         {
-            const V* v = &it;
+            V* v = &it;
             ret.emplace_back(Reflection::Create(v, Any(i++)));
         }
 
@@ -54,7 +54,61 @@ public:
 };
 
 template <typename C>
-class StructureWrapperStdKeyed : public StructureWrapperDefault
+class StructureWrapperStdSet : public StructureWrapperDefault
+{
+public:
+    using K = typename C::key_type;
+
+    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
+    {
+        C* c = vw->GetValueObject(object).GetPtr<C>();
+        return (c->size() > 0);
+    }
+
+    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    {
+        Reflection::Field ret;
+        if (key.CanCast<K>())
+        {
+            const K& k = key.Cast<K>();
+            C* c = vw->GetValueObject(obj).GetPtr<C>();
+
+            auto it = c->find(k);
+            if (it != c->end())
+            {
+                // std::set values shouldn't be modified
+                // so get const pointer on value
+                const K* v = &(*it);
+                ret = Reflection::Create(v, key);
+            }
+        }
+
+        return ret;
+    }
+
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    {
+        Vector<Reflection::Field> ret;
+
+        C* c = vw->GetValueObject(obj).GetPtr<C>();
+
+        ret.reserve(c->size());
+
+        auto end = c->end();
+        for (auto it = c->begin(); it != end; it++)
+        {
+            // std::set values shouldn't be modified
+            // so get const pointer on value
+            const K* v = &(*it);
+            ret.emplace_back(Reflection::Create(v, Any(*v)));
+        }
+
+        return ret;
+    }
+};
+
+template <typename C>
+class StructureWrapperStdMap : public StructureWrapperDefault
 {
 public:
     using K = typename C::key_type;
@@ -71,12 +125,12 @@ public:
         Reflection::Field ret;
         if (key.CanCast<K>())
         {
-            K k = key.Cast<K>();
+            const K& k = key.Cast<K>();
             C* c = vw->GetValueObject(obj).GetPtr<C>();
 
             if (c->count(k) > 0)
             {
-                const V* v = &c->at(k);
+                V* v = &c->at(k);
                 ret = Reflection::Create(v, key);
             }
         }
@@ -91,10 +145,10 @@ public:
         C* c = vw->GetValueObject(obj).GetPtr<C>();
 
         ret.reserve(c->size());
-        for (auto& it : *c)
+        for (auto& pair : *c)
         {
-            const V* v = &(it.second);
-            ret.emplace_back(Reflection::Create(v, Any(it.first)));
+            V* v = &(pair.second);
+            ret.emplace_back(Reflection::Create(v, Any(pair.first)));
         }
 
         return ret;
@@ -133,7 +187,7 @@ struct StructureWrapperCreator<Set<T, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdIndexed<Set<T, Eq>>();
+        return new StructureWrapperStdSet<Set<T, Eq>>();
     }
 };
 
@@ -142,7 +196,7 @@ struct StructureWrapperCreator<UnorderedSet<T, Hash, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdIndexed<UnorderedSet<T, Hash, Eq>>();
+        return new StructureWrapperStdSet<UnorderedSet<T, Hash, Eq>>();
     }
 };
 
@@ -151,7 +205,7 @@ struct StructureWrapperCreator<Map<K, V, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdKeyed<Map<K, V, Eq>>();
+        return new StructureWrapperStdMap<Map<K, V, Eq>>();
     }
 };
 
@@ -160,7 +214,7 @@ struct StructureWrapperCreator<MultiMap<K, V, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdKeyed<MultiMap<K, V, Eq>>();
+        return new StructureWrapperStdMap<MultiMap<K, V, Eq>>();
     }
 };
 
@@ -169,7 +223,7 @@ struct StructureWrapperCreator<UnorderedMap<K, V, Hash, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdKeyed<UnorderedMap<K, V, Hash, Eq>>();
+        return new StructureWrapperStdMap<UnorderedMap<K, V, Hash, Eq>>();
     }
 };
 
@@ -178,7 +232,7 @@ struct StructureWrapperCreator<UnorderedMultiMap<K, V, Hash, Eq>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdKeyed<UnorderedMultiMap<K, V, Hash, Eq>>();
+        return new StructureWrapperStdMap<UnorderedMultiMap<K, V, Hash, Eq>>();
     }
 };
 

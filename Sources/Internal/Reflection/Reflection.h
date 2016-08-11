@@ -29,6 +29,7 @@ public:
     bool IsReadonly() const;
 
     const Type* GetValueType() const;
+    ReflectedObject GetValueObject() const;
 
     Any GetValue() const;
     bool SetValue(const Any&) const;
@@ -55,7 +56,7 @@ public:
     void DumpMethods(std::ostream& out) const;
 
     template <typename T>
-    static Reflection::Field Create(const T* ptr, const Any& key = Any());
+    static Reflection::Field Create(T* ptr, const Any& key = Any());
 
 private:
     const ValueWrapper* vw = nullptr;

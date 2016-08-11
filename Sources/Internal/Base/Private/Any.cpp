@@ -2,27 +2,49 @@
 
 namespace DAVA
 {
-UnorderedMap<const Type*, Any::AnyOPs>* Any::operations = nullptr;
+std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap;
+std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
+
+/*
+Any::Any()
+{
+    if (nullptr == anyOPsMap && nullptr == castOPsMap)
+    {
+        anyOPsMap.reset(new AnyOPsMap());
+        castOPsMap.reset(new CastOPsMap());
+
+        RegisterDefaultOPs<void*>();
+        RegisterDefaultOPs<bool>();
+        RegisterDefaultOPs<DAVA::int8>();
+        RegisterDefaultOPs<DAVA::uint8>();
+        RegisterDefaultOPs<DAVA::float32>();
+        RegisterDefaultOPs<DAVA::float64>();
+        RegisterDefaultOPs<DAVA::int16>();
+        RegisterDefaultOPs<DAVA::uint16>();
+        RegisterDefaultOPs<DAVA::int32>();
+        RegisterDefaultOPs<DAVA::uint32>();
+        RegisterDefaultOPs<DAVA::int64>();
+        RegisterDefaultOPs<DAVA::uint64>();
+        RegisterDefaultOPs<DAVA::String>();
+    }
+}
+*/
 
 void Any::LoadValue(const Type* type_, void* data)
 {
-    if (operations == nullptr
-        || operations->count(type_) == 0
-        || operations->at(type_).load == nullptr)
+    if (anyOPsMap->count(type_) == 0 || anyOPsMap->at(type_).load == nullptr)
     {
         throw Exception(Exception::BadOperation, "Load operation wasn't registered");
     }
 
-    const AnyOPs& ops = operations->at(type_);
+    const AnyOPs& ops = anyOPsMap->at(type_);
     (*ops.load)(anyStorage, data);
     type = type_;
 }
 
-void Any::SaveValue(void* data, size_t size) const
+void Any::StoreValue(void* data, size_t size) const
 {
-    if (operations == nullptr
-        || operations->count(type) == 0
-        || operations->at(type).save == nullptr)
+    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).store == nullptr)
     {
         throw Exception(Exception::BadOperation, "Save operation wasn't registered");
     }
@@ -32,8 +54,8 @@ void Any::SaveValue(void* data, size_t size) const
         throw Exception(Exception::BadSize, "Type size mismatch while saving value into Any");
     }
 
-    const AnyOPs& ops = operations->at(type);
-    (*ops.save)(anyStorage, data);
+    const AnyOPs& ops = anyOPsMap->at(type);
+    (*ops.store)(anyStorage, data);
 }
 
 bool Any::operator==(const Any& any) const
@@ -47,14 +69,12 @@ bool Any::operator==(const Any& any) const
         return true;
     }
 
-    if (operations == nullptr
-        || operations->count(type) == 0
-        || operations->at(type).compare == nullptr)
+    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).compare == nullptr)
     {
         throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
     }
 
-    const AnyOPs& ops = operations->operator[](type);
+    const AnyOPs& ops = anyOPsMap->operator[](type);
     return (*ops.compare)(anyStorage.GetData(), any.anyStorage.GetData());
 }
 

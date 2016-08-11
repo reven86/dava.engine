@@ -24,24 +24,19 @@ void DefaultLoadOP(Any::AnyStorage& storage, const void* src)
 }
 
 template <typename T>
-void DefaultSaveOP(const Any::AnyStorage& storage, void* dst)
+void DefaultStoreOP(const Any::AnyStorage& storage, void* dst)
 {
     T* data = static_cast<T*>(dst);
     *data = storage.GetAuto<T>();
 }
 
-template <typename T>
-std::pair<const Type*, Any::AnyOPs> DefaultOPs()
-{
-    Any::AnyOPs ops;
-    ops.compare = &DefaultCompareOP<T>;
-    ops.load = &DefaultLoadOP<T>;
-    ops.save = &DefaultSaveOP<T>;
-
-    return std::make_pair(Type::Instance<T>(), std::move(ops));
-}
-
 } // namespace AnyDetails
+
+template <typename T>
+inline Any::Any(T&& value, NotAny<T>)
+{
+    Set(std::forward<T>(value));
+}
 
 inline Any::Any(Any&& any)
 {
@@ -85,19 +80,13 @@ inline bool Any::operator!=(const Any& any) const
 }
 
 template <typename T>
-inline Any::Any(T&& value, NotAny<T>)
-{
-    Set(std::forward<T>(value));
-}
-
-template <typename T>
 bool Any::CanGet() const
 {
     if (type->IsPointer())
     {
-        using PT = typename std::remove_pointer<T>::type;
+        using P = typename std::remove_pointer<T>::type;
 
-        static const bool is_void_ptr = std::is_pointer<T>::value && std::is_void<PT>::value;
+        static const bool is_void_ptr = std::is_pointer<T>::value && std::is_void<P>::value;
 
         if (is_void_ptr)
         {
@@ -105,7 +94,7 @@ bool Any::CanGet() const
         }
         else
         {
-            const Type* ptype = Type::Instance<typename std::decay<PT>::type>();
+            const Type* ptype = Type::Instance<typename std::decay<P>::type>();
 
             if (type->Deref()->IsDerivedFrom(ptype))
             {
@@ -123,25 +112,45 @@ bool Any::CanCast() const
     if (CanGet<T>())
         return true;
 
-    // TODO: implement
-    assert(false);
-    return false;
+    CastOPKey castOPKey{ type, Type::Instance<T>() };
+    return (castOPsMap->count(castOPKey) > 0);
 }
 
 template <typename T>
-inline T Any::Cast() const
+T Any::Cast() const
 {
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    // TODO: implement
+    // TODO:
+    // review cast OPs implementation
     // ...
+    //
+    // -->
+    //
 
-    throw Exception(Exception::BadCast, "Value can't be casted into requested T");
+    CastOPKey castOPKey{ type, Type::Instance<T>() };
+
+    auto it = castOPsMap->find(castOPKey);
+    if (it == castOPsMap->end())
+    {
+        throw Exception(Exception::BadCast, "Value can't be casted into requested T");
+    }
+
+    T ret;
+    CastOP castOP = *it;
+
+    castOP(anyStorage.GetData(), &ret);
+
+    //
+    // <--
+    //
+
+    return ret;
 }
 
 template <typename T>
-inline void Any::Set(T&& value, NotAny<T>)
+void Any::Set(T&& value, NotAny<T>)
 {
     using U = AnyStorage::StorableType<T>;
 
@@ -150,7 +159,7 @@ inline void Any::Set(T&& value, NotAny<T>)
 }
 
 template <typename T>
-inline const T& Any::Get() const
+const T& Any::Get() const
 {
     if (!CanGet<T>())
         throw Exception(Exception::BadGet, "Value can't be get as requested T");
@@ -164,35 +173,44 @@ inline const T& Any::Get(const T& defaultValue) const
 }
 
 template <typename T>
-inline void Any::RegisterDefaultOPs(const LoadOP& lop, const SaveOP& sop, const CompareOP& cop)
+static void Any::RegisterDefaultOPs()
 {
-    if (nullptr == operations)
+    if (nullptr == anyOPsMap)
     {
-        operations = new UnorderedMap<Type*, Any::AnyOPs>({
-        AnyDetails::DefaultOPs<void*>(),
-        AnyDetails::DefaultOPs<bool>(),
-        AnyDetails::DefaultOPs<DAVA::int8>(),
-        AnyDetails::DefaultOPs<DAVA::uint8>(),
-        AnyDetails::DefaultOPs<DAVA::float32>(),
-        AnyDetails::DefaultOPs<DAVA::float64>(),
-        AnyDetails::DefaultOPs<DAVA::int16>(),
-        AnyDetails::DefaultOPs<DAVA::uint16>(),
-        AnyDetails::DefaultOPs<DAVA::int32>(),
-        AnyDetails::DefaultOPs<DAVA::uint32>(),
-        AnyDetails::DefaultOPs<DAVA::int64>(),
-        AnyDetails::DefaultOPs<DAVA::uint64>(),
-        AnyDetails::DefaultOPs<DAVA::String>()
-        });
+        anyOPsMap.reset(new AnyOPsMap());
     }
 
-    AnyOPs ops;
+    Any::AnyOPs ops;
+    ops.compare = &AnyDetails::DefaultCompareOP<T>;
+    ops.load = &AnyDetails::DefaultLoadOP<T>;
+    ops.store = &AnyDetails::DefaultStoreOP<T>;
 
-    ops.load = lop;
-    ops.save = sop;
-    ops.compare = cop;
+    anyOPsMap->emplace(std::make_pair(Type::Instance<T>(), std::move(ops)));
+}
+
+template <typename T>
+static void Any::RegisterOPs(AnyOPs&& ops)
+{
+    if (nullptr == anyOPsMap)
+    {
+        anyOPsMap.reset(new AnyOPsMap());
+    }
 
     const Type* type = Type::Instance<T>();
-    *operations[type] = ops;
+    anyOPsMap->operator[](type) = std::move(ops);
+}
+
+template <typename From, typename To>
+static void Any::RegisterCastOP(CastOP& castOP)
+{
+    if (nullptr == castOPsMap)
+    {
+        castOPsMap.reset(new CastOPsMap());
+    }
+
+    const Type* fromType = Type::Instance<From>();
+    const Type* toType = Type::Instance<To>();
+    castOPsMap->operator[](CastOPKey{ fromType, toType }) = castOP;
 }
 
 } // namespace DAVA

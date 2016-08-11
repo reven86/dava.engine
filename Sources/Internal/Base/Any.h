@@ -14,13 +14,41 @@ class Any final
 public:
     using AnyStorage = AutoStorage<>;
 
-    using CompareOP = bool (*)(const void*, const void*);
     using LoadOP = void (*)(AnyStorage&, const void* src);
-    using SaveOP = void (*)(const AnyStorage&, void* dst);
-    using CastOP = void (*)(const void* src, void* dst);
+    using StoreOP = void (*)(const AnyStorage&, void* dst);
+    using CompareOP = bool (*)(const void* a, const void* b);
 
-    template <typename T>
-    using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
+    struct AnyOPs
+    {
+        CompareOP compare = nullptr;
+        LoadOP load = nullptr;
+        StoreOP store = nullptr;
+    };
+
+    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
+
+    // TODO:
+    // review cast OPs implementation
+    // ...
+    //
+    // -->
+    //
+    struct CastOPKey
+    {
+        const Type* from;
+        const Type* to;
+
+        size_t operator()(const CastOPKey& key) const
+        {
+            return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.from);
+        }
+    };
+
+    using CastOP = void (*)(const void* from, void* to);
+    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKey>;
+    //
+    // <--
+    //
 
     struct Exception : public std::runtime_error
     {
@@ -38,14 +66,17 @@ public:
         ErrorCode errorCode;
     };
 
+    template <typename T>
+    using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
+
     inline Any() = default;
     inline ~Any() = default;
 
-    Any(Any&&);
-    Any(const Any&) = default;
-
     template <typename T>
     Any(T&& value, NotAny<T> = true);
+
+    Any(Any&&);
+    Any(const Any&) = default;
 
     void Swap(Any&);
 
@@ -73,7 +104,7 @@ public:
     T Cast() const;
 
     void LoadValue(const Type* type, void* data);
-    void SaveValue(void* data, size_t size) const;
+    void StoreValue(void* data, size_t size) const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
@@ -82,35 +113,28 @@ public:
     bool operator!=(const Any&) const;
 
     template <typename T>
-    static void RegisterDefaultOPs(const LoadOP& lop, const SaveOP& sop, const CompareOP& cop);
+    static void RegisterDefaultOPs();
+
+    template <typename T>
+    static void RegisterOPs(AnyOPs&& ops);
 
     // TODO:
-    // implement castOP
+    // review cast OPs implementation
     // ...
+    // -->
     //
-    // template <typename From, typename To>
-    // static void RegisterCastOP(Any::CastOP &castOP);
+    template <typename From, typename To>
+    static void RegisterCastOP(CastOP& castOP);
+    //
+    // <--
+    //
 
 private:
-    struct AnyOPs
-    {
-        CompareOP compare = nullptr;
-        LoadOP load = nullptr;
-        SaveOP save = nullptr;
-
-        // TODO:
-        // implement castOP
-        // ...
-        // Map<const Type*, CastOP> casts;
-    };
-
     const Type* type = nullptr;
     AnyStorage anyStorage;
 
-    // TODO:
-    // for plugins here should be pointer
-    // ...
-    static UnorderedMap<const Type*, AnyOPs>* operations;
+    static std::unique_ptr<AnyOPsMap> anyOPsMap;
+    static std::unique_ptr<CastOPsMap> castOPsMap;
 };
 
 } // namespace DAVA
