@@ -23,6 +23,9 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Lod/LodSystem.h"
 
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
 using namespace DAVA;
 
 namespace LODComponentHolderDetail
@@ -686,4 +689,22 @@ void EditorLODSystem::RecalculateData()
     {
         lodData[m].SummarizeValues();
     }
+}
+
+bool EditorLODSystem::IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances)
+{
+    if (SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool())
+    {
+        return true;
+    }
+
+    for (DAVA::float32 dist : distances)
+    {
+        if ((fabs(dist - LOD_DISTANCE_INFINITY) > DAVA::EPSILON) && (dist > DAVA::LodComponent::MAX_LOD_DISTANCE))
+        { // not max float and more than 1000
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -545,7 +545,7 @@ void CanvasSystem::LayoutCanvas()
     systemsManager->CanvasSizeChanged.Emit();
 }
 
-void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
+void CanvasSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
 {
     Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
     Set<PackageBaseNode*> newNodes;
