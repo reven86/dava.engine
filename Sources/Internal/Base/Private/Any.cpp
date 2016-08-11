@@ -3,7 +3,10 @@
 namespace DAVA
 {
 std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap;
+
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
 std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
+#endif
 
 /*
 Any::Any()
