@@ -138,7 +138,7 @@ T Any::Cast() const
     }
 
     T ret;
-    CastOP castOP = *it;
+    CastOP castOP = it->second;
 
     castOP(anyStorage.GetData(), &ret);
 
