@@ -53,7 +53,7 @@ private:
 
     void FinishEditing();
 
-    DAVA::Command::Pointer CreateSaveFileNameCommand(const DAVA::String& filePath);
+    std::unique_ptr<DAVA::Command> CreateSaveFileNameCommand(const DAVA::String& filePath);
 
 private:
     DAVA::Texture* toolImageTexture = nullptr;

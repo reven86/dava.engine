@@ -7,7 +7,7 @@
 
 #include <QShowEvent>
 
-class RECommand;
+class RECommandNotificationObject;
 class SceneEditor2;
 class SelectableGroup;
 class EditorStatisticsSystem;
@@ -49,7 +49,7 @@ protected slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void OnCommmandExecuted(SceneEditor2* scene, const RECommand* command, bool isRedo);
+    void OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void OnThemeChanged();
 
 private:

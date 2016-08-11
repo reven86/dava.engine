@@ -2,11 +2,10 @@
 
 #include "Base/BaseTypes.h"
 #include "Command/CommandBatch.h"
-#include "Commands2/Base/RECommand.h"
+#include "Commands2/Base/RECommandIDHandler.h"
 
 class RECommand;
-
-class RECommandBatch final : public DAVA::CommandBatch, public RECommand
+class RECommandBatch final : public DAVA::CommandBatch, public RECommandIDHandler
 {
 public:
     RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount);

@@ -41,7 +41,7 @@
 #include "Commands2/RECommandIDs.h"
 #include "Commands2/Base/CommandAction.h"
 
-class RECommand;
+class RECommandNotificationObject;
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
@@ -124,7 +124,7 @@ public:
     void EndBatch();
 
     void ActivateCommandStack();
-    void Exec(DAVA::Command::Pointer&& command);
+    void Exec(std::unique_ptr<DAVA::Command>&& command);
     void RemoveCommands(DAVA::uint32 commandId);
 
     void ClearAllCommands();
@@ -187,7 +187,7 @@ protected:
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    void EditorCommandProcess(const RECommand* command, bool redo);
+    void EditorCommandProcess(const RECommandNotificationObject& commandNotification);
 
     void Draw() override;
 
@@ -209,7 +209,7 @@ private:
     {
     public:
         EditorCommandNotify(SceneEditor2* _editor);
-        void Notify(const RECommand* command, bool redo) override;
+        void Notify(const RECommandNotificationObject& commandNotification) override;
         void CleanChanged(bool clean) override;
         void CanUndoChanged(bool canUndo) override;
         void CanRedoChanged(bool canRedo) override;

@@ -1,5 +1,6 @@
 #include "ParticleEmitterPropertiesWidget.h"
 #include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/EntityAddCommand.h"
 #include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/ParticleEditorCommands.h"
@@ -162,7 +163,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     auto newTransform = DAVA::Matrix4::MakeTranslation(position);
 
     Selectable wrapper(GetEmitterInstance(activeScene));
-    GetActiveScene()->Exec(DAVA::Command::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
+    GetActiveScene()->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(wrapper, wrapper.GetLocalTransform(), newTransform)));
 
     Init(GetActiveScene(), GetEffect(activeScene), GetEmitterInstance(activeScene), false, false);
     emit ValueChanged();
@@ -197,7 +198,7 @@ bool HasInstance(const DAVA::Entity* entity, DAVA::ParticleEmitterInstance* inst
 }
 }
 
-void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommand* command, bool redo)
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     if (blockSignals || (GetActiveScene() != scene))
         return;
@@ -232,18 +233,7 @@ void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECom
         }
     };
 
-    if (IsCommandBatch(command))
-    {
-        const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-        for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)
-        {
-            tryRemoveSelectedEmitter(batch->GetCommand(i), redo);
-        }
-    }
-    else
-    {
-        tryRemoveSelectedEmitter(command, redo);
-    }
+    commandNotification.ExecuteForAllCommands(tryRemoveSelectedEmitter);
 
     if ((GetEmitterInstance(scene) != nullptr) && (GetEffect(scene) != nullptr))
     {
@@ -296,7 +286,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    auto commandUpdateEmitter = DAVA::Command::Create<CommandUpdateEmitter>(instance);
+    std::unique_ptr<CommandUpdateEmitter> commandUpdateEmitter(new CommandUpdateEmitter(instance));
     commandUpdateEmitter->Init(DAVA::FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),

@@ -22,7 +22,7 @@ public:
 };
 }
 
-DAVA_TESTCLASS (CommandsTest)
+DAVA_TESTCLASS (CommandTest)
 {
     DAVA_TEST (ObjectHandleCreationTest)
     {

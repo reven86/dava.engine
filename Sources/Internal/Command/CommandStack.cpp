@@ -5,15 +5,20 @@ namespace DAVA
 {
 CommandStack::~CommandStack() = default;
 
-void CommandStack::Exec(Command::Pointer&& command)
+void CommandStack::Exec(std::unique_ptr<Command>&& command)
 {
-    DVASSERT(command != nullptr);
-    if (command == nullptr)
+    DVASSERT(command);
+    if (command)
     {
-        return;
+        ExecInternal(std::move(command), true);
     }
-    if (rootBatch != nullptr)
+}
+
+void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand)
+{
+    if (rootBatch)
     {
+        DVASSERT(isSingleCommand == true);
         batchesStack.top()->AddAndRedo(std::move(command));
     }
     else
@@ -22,6 +27,11 @@ void CommandStack::Exec(Command::Pointer&& command)
         {
             commands.erase(commands.begin() + currentIndex + 1, commands.end());
         }
+
+        if (isSingleCommand)
+        {
+            command->Redo();
+        }
         commands.push_back(std::move(command));
         SetCurrentIndex(currentIndex + 1);
     }
@@ -29,35 +39,37 @@ void CommandStack::Exec(Command::Pointer&& command)
 
 void CommandStack::BeginBatch(const String& name, uint32 commandsCount)
 {
-    DAVA::Command::Pointer newCommandBatch = DAVA::Command::Create<DAVA::CommandBatch>(name, commandsCount);
-    DAVA::CommandBatch* newCommandBatchPtr = static_cast<DAVA::CommandBatch*>(newCommandBatch.get());
-    //we call BeginMacro first time
+    std::unique_ptr<CommandBatch> newCommandBatch(CreateCommmandBatch(name, commandsCount));
+    CommandBatch* newCommandBatchPtr = static_cast<CommandBatch*>(newCommandBatch.get());
     if (rootBatch == nullptr)
-    {
+    { //we call BeginMacro first time
         DVASSERT(batchesStack.empty());
         rootBatch = std::move(newCommandBatch);
         batchesStack.push(newCommandBatchPtr);
     }
-    //we already create one or more batches
     else
-    {
-        batchesStack.top()->AddAndRedo(std::move(newCommandBatch));
+    { //we already create one or more batches
+        batchesStack.top()->Add(std::move(newCommandBatch));
         batchesStack.push(newCommandBatchPtr);
     }
 }
 
+std::unique_ptr<CommandBatch> CommandStack::CreateCommmandBatch(const String& name, uint32 commandsCount)
+{
+    return std::unique_ptr<CommandBatch>(new CommandBatch(name, commandsCount));
+}
+
 void CommandStack::EndBatch()
 {
-    DVASSERT(rootBatch != nullptr && "CommandStack::EndMacro called without BeginMacro");
+    DVASSERT(rootBatch && "CommandStack::EndMacro called without BeginMacro");
     if (batchesStack.size() == 1)
     {
-        DVASSERT(rootBatch != nullptr);
-        DAVA::CommandBatch* rootBatchPtr = static_cast<DAVA::CommandBatch*>(rootBatch.get());
+        CommandBatch* rootBatchPtr = static_cast<CommandBatch*>(rootBatch.get());
         if (!rootBatchPtr->IsEmpty())
         {
             //we need to release rootBatch before we will do something
-            DAVA::Command::Pointer rootBatchCopy(std::move(rootBatch));
-            Exec(std::move(rootBatchCopy));
+            std::unique_ptr<Command> rootBatchCopy(std::move(rootBatch));
+            ExecInternal(std::move(rootBatchCopy), false);
         }
     }
     if (!batchesStack.empty())
@@ -121,19 +133,24 @@ void CommandStack::UpdateCleanState()
     for (int index = begin; index != end && !containsModifiedCommands; ++index)
     {
         //we need to look only next commands after
-        const Command::Pointer& command = commands.at(index + 1);
-        containsModifiedCommands |= command->IsModifying();
+        const std::unique_ptr<Command>& command = commands.at(index + 1);
+        containsModifiedCommands |= (command->IsClean() == false);
     }
     SetClean(!containsModifiedCommands);
 }
 
 void CommandStack::SetCurrentIndex(int32 currentIndex_)
 {
+    DVASSERT(currentIndex != currentIndex_);
+
+    int32 oldIndex = currentIndex;
     currentIndex = currentIndex_;
+
     UpdateCleanState();
     SetCanUndo(CanUndo());
     SetCanRedo(CanRedo());
-    currentIndexChanged.Emit(currentIndex);
+
+    currentIndexChanged.Emit(currentIndex, oldIndex);
 }
 
 void CommandStack::SetClean(bool isClean_)

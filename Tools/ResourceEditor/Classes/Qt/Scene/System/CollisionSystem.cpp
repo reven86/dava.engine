@@ -15,7 +15,7 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
-#include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include "Settings/SettingsManager.h"
 
@@ -390,14 +390,14 @@ void SceneCollisionSystem::Draw()
     }
 }
 
-void SceneCollisionSystem::ProcessCommand(const RECommand* command, bool redo)
+void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
-    if (command->MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
+    if (commandNotification.MatchCommandIDs({ CMDID_LANDSCAPE_SET_HEIGHTMAP, CMDID_HEIGHTMAP_MODIFY }))
     {
         UpdateCollisionObject(Selectable(curLandscapeEntity));
     }
 
-    static DAVA::Vector<DAVA::uint32> acceptableCommands =
+    static const DAVA::Vector<DAVA::uint32> acceptableCommands =
     {
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
@@ -406,10 +406,10 @@ void SceneCollisionSystem::ProcessCommand(const RECommand* command, bool redo)
       CMDID_TRANSFORM
     };
 
-    if (command->MatchCommandIDs(acceptableCommands) == false)
+    if (commandNotification.MatchCommandIDs(acceptableCommands) == false)
         return;
 
-    auto ProcessSingleCommand = [this](const RECommand* command, bool redo) {
+    auto processSingleCommand = [this](const RECommand* command, bool redo) {
         if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
             static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
@@ -441,18 +441,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommand* command, bool redo)
         }
     };
 
-    if (IsCommandBatch(command))
-    {
-        const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-        for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
-        {
-            ProcessSingleCommand(batch->GetCommand(i), redo);
-        }
-    }
-    else
-    {
-        ProcessSingleCommand(command, redo);
-    }
+    commandNotification.ExecuteForAllCommands(processSingleCommand);
 }
 
 void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)

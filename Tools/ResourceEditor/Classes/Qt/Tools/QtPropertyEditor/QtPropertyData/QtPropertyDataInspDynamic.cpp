@@ -124,12 +124,12 @@ bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-DAVA::Command::Pointer QtPropertyDataInspDynamic::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyDataInspDynamic::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return DAVA::Command::Create<InspDynamicModifyCommand>(*lastCommand);
+        return std::unique_ptr<DAVA::Command>(new InspDynamicModifyCommand(*lastCommand));
     }
 
-    return DAVA::Command::Pointer();
+    return std::unique_ptr<DAVA::Command>();
 }

@@ -319,7 +319,7 @@ void HeightmapEditorSystem::CreateHeightmapUndo()
 {
     SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
     DVASSERT(scene);
-    scene->Exec(DAVA::Command::Create<ModifyHeightmapCommand>(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect()));
+    scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
     SafeRelease(originalHeightmap);
 }
 

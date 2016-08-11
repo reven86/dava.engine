@@ -49,7 +49,7 @@ void BeastCommandLineTool::ProcessInternal()
     if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
-        scene->Exec(Command::Create<BeastAction>(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
+        scene->Exec(std::unique_ptr<BeastAction>(new BeastAction(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr)));
         scene->SaveScene();
     }
     RenderObjectsFlusher::Flush();

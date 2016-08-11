@@ -26,11 +26,11 @@ void CommandNotifyProvider::SetNotify(CommandNotify* notify)
     }
 }
 
-void CommandNotifyProvider::EmitNotify(const RECommand* command, bool redo)
+void CommandNotifyProvider::EmitNotify(const RECommandNotificationObject& commandNotification)
 {
     if (nullptr != curNotify)
     {
-        curNotify->Notify(command, redo);
+        curNotify->Notify(commandNotification);
     }
 }
 

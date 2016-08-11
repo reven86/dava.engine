@@ -7,7 +7,7 @@
 
 #include "MaterialModel.h"
 
-class RECommand;
+class RECommandNotificationObject;
 class SelectableGroup;
 class MaterialFilteringModel;
 
@@ -36,7 +36,7 @@ signals:
 
 public slots:
     void ShowContextMenu(const QPoint& pos);
-    void OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnSelectEntities();

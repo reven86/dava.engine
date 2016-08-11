@@ -24,6 +24,8 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Commands2/Base/RECommandNotificationObject.h"
+
 using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
@@ -592,19 +594,17 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommand* command, bool /*isRedo*/)
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    switch (command->GetID())
+    static const DAVA::Vector<DAVA::uint32> commandIDs =
     {
-    case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
-    case CMDID_MATERIAL_CREATE_CONFIG:
-    case CMDID_MATERIAL_REMOVE_TEXTURE:
-    case CMDID_INSP_MEMBER_MODIFY:
-    case CMDID_INSP_DYNAMIC_MODIFY:
+      CMDID_MATERIAL_CHANGE_CURRENT_CONFIG, CMDID_MATERIAL_CREATE_CONFIG,
+      CMDID_MATERIAL_REMOVE_TEXTURE, CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY
+    };
+
+    if (commandNotification.MatchCommandIDs(commandIDs))
+    {
         RefreshAllData(scene);
-        break;
-    default:
-        break;
     }
 }
 

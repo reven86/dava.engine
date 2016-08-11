@@ -183,7 +183,7 @@ void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
     SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
 
     QtPropertyData* data = propEditor->GetProperty(index);
-    DAVA::Command::Pointer command = data->CreateLastCommand();
+    std::unique_ptr<DAVA::Command> command = data->CreateLastCommand();
     if (command && nullptr != curScene)
     {
         curScene->Exec(std::move(command));

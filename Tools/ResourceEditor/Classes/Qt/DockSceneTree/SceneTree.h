@@ -11,6 +11,7 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
+class RECommandNotificationObject;
 class LazyUpdater;
 class SceneTree : public QTreeView
 {
@@ -37,7 +38,7 @@ private slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void CommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 

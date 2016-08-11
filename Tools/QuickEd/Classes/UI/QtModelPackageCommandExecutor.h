@@ -75,7 +75,7 @@ private:
     static bool IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2);
 
     DAVA::CommandStack* GetCommandStack() const;
-    void ExecCommand(DAVA::Command::Pointer&& cmd);
+    void ExecCommand(std::unique_ptr<DAVA::Command>&& cmd);
 
 private:
     Document* document = nullptr;

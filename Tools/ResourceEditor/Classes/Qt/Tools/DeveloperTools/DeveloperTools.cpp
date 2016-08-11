@@ -157,7 +157,7 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     renderComponent->SetRenderObject(skinnedMesh);
     entity->AddComponent(renderComponent);
 
-    currentScene->Exec(DAVA::Command::Create<EntityAddCommand>(entity, currentScene));
+    currentScene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(entity, currentScene)));
 }
 
 void DeveloperTools::OnImageSplitterNormals()

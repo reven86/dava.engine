@@ -1,6 +1,7 @@
 #include "TilemaskEditorPanel.h"
 
 #include "Commands2/RECommandIDs.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include "../../Scene/SceneSignals.h"
 #include "../../Scene/SceneEditor2.h"
@@ -145,8 +146,7 @@ void TilemaskEditorPanel::ConnectToSignals()
 {
     connect(SceneSignals::Instance(), SIGNAL(LandscapeEditorToggled(SceneEditor2*)),
             this, SLOT(EditorToggled(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)),
-            this, SLOT(OnCommandExecuted(SceneEditor2*, const RECommand*, bool)));
+    connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &TilemaskEditorPanel::OnCommandExecuted);
 
     connect(sliderWidgetBrushSize, SIGNAL(ValueChanged(int)), this, SLOT(SetBrushSize(int)));
     connect(sliderWidgetStrength, SIGNAL(ValueChanged(int)), this, SLOT(SetStrength(int)));
@@ -567,7 +567,7 @@ void TilemaskEditorPanel::OnTileColorChanged(DAVA::int32 tileNumber, DAVA::Color
     sceneEditor->tilemaskEditorSystem->SetTileColor(tileNumber, color);
 }
 
-void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     SceneEditor2* sceneEditor = GetActiveScene();
     if (scene != sceneEditor || !GetEditorEnabled())
@@ -575,7 +575,7 @@ void TilemaskEditorPanel::OnCommandExecuted(SceneEditor2* scene, const RECommand
         return;
     }
 
-    if (command->MatchCommandID(CMDID_SET_TILE_COLOR))
+    if (commandNotification.MatchCommandID(CMDID_SET_TILE_COLOR))
     {
         DAVA::uint32 count = sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
         for (DAVA::uint32 i = 0; i < count; ++i)

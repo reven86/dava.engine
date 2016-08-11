@@ -13,7 +13,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/RenderHelper.h"
 
-class RECommand;
+class RECommandNotificationObject;
 class CollisionBaseObject;
 class SceneCollisionDebugDrawer;
 enum CollisionSystemDrawMode
@@ -66,7 +66,7 @@ public:
 private:
     void Draw();
 
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     void AddEntity(DAVA::Entity* entity) override;

@@ -12,9 +12,9 @@ class CommandStack
 public:
     virtual ~CommandStack();
 
-    void Exec(Command::Pointer&& command);
+    void Exec(std::unique_ptr<Command>&& command);
 
-    void BeginBatch(const String& name, uint32 commandsCount = 0);
+    void BeginBatch(const String& name, uint32 commandsCount = 1);
     void EndBatch();
 
     bool IsClean() const;
@@ -29,23 +29,27 @@ public:
     Signal<bool> cleanChanged;
     Signal<bool> canUndoChanged;
     Signal<bool> canRedoChanged;
-    Signal<int32> currentIndexChanged;
+    Signal<int32, int32> currentIndexChanged;
 
 protected:
+    virtual std::unique_ptr<CommandBatch> CreateCommmandBatch(const String& name, uint32 commandsCount);
+
+    void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand);
+
     void UpdateCleanState();
     void SetCurrentIndex(int32 currentIndex);
 
-    static const DAVA::int32 EMPTY_INDEX = -1;
+    static const int32 EMPTY_INDEX = -1;
 
     int32 cleanIndex = EMPTY_INDEX;
     int32 currentIndex = EMPTY_INDEX;
 
-    Vector<Command::Pointer> commands;
+    Vector<std::unique_ptr<Command>> commands;
 
     //this stack is created to hold nested batches hierarchy
-    DAVA::Stack<DAVA::CommandBatch*> batchesStack;
+    Stack<CommandBatch*> batchesStack;
     //root command batch which created when "BeginBatch" is called first time
-    DAVA::Command::Pointer rootBatch;
+    std::unique_ptr<Command> rootBatch;
 
     //members to remember stack state and do not emit extra signals
     bool isClean = true;

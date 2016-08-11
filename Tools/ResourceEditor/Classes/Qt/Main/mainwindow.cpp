@@ -1,66 +1,67 @@
 #include "DAVAEngine.h"
 
 #include "mainwindow.h"
-#include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
-#include "Classes/Qt/CubemapEditor/CubemapUtils.h"
-#include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
-#include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
-#include "Classes/Qt/Main/QtUtils.h"
-#include "Classes/Qt/Main/Request.h"
-#include "Classes/Qt/MaterialEditor/MaterialEditor.h"
-#include "Classes/Qt/Project/ProjectManager.h"
-#include "Classes/Qt/QualitySwitcher/QualitySwitcher.h"
-#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
-#include "Classes/Qt/Scene/LandscapeThumbnails.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Scene/SceneHelper.h"
-#include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-#include "Classes/Qt/Settings/SettingsDialog.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
-#include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
-#include "Classes/Qt/TextureBrowser/TextureBrowser.h"
-#include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/NGTPropertyEditor/PropertyPanel.h"
-#include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
-#include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
-#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
-#include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
-#include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
-#include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
-#include "Classes/Qt/Tools/PathDescriptor/PathDescriptor.h"
-#include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
-#include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
-#include "Classes/Qt/Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
+#include "BeastDialog/BeastDialog.h"
+#include "CubemapEditor/CubemapTextureBrowser.h"
+#include "CubemapEditor/CubemapUtils.h"
+#include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
+#include "DeviceInfo/DeviceList/DeviceListController.h"
+#include "DeviceInfo/DeviceList/DeviceListWidget.h"
+#include "ImageSplitterDialog/ImageSplitterDialog.h"
+#include "Main/QtUtils.h"
+#include "Main/Request.h"
+#include "MaterialEditor/MaterialEditor.h"
+#include "Project/ProjectManager.h"
+#include "QualitySwitcher/QualitySwitcher.h"
+#include "RunActionEventWidget/RunActionEventWidget.h"
+#include "Scene/LandscapeThumbnails.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsManager.h"
+#include "SoundComponentEditor/FMODSoundBrowser.h"
+#include "SpritesPacker/SpritesPackerModule.h"
+#include "TextureBrowser/TextureBrowser.h"
+#include "TextureBrowser/TextureCache.h"
+#include "NGTPropertyEditor/PropertyPanel.h"
+#include "Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
+#include "Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
+#include "Tools/ColorPicker/ColorPicker.h"
+#include "Tools/DeveloperTools/DeveloperTools.h"
+#include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
+#include "Tools/HeightDeltaTool/HeightDeltaTool.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
+#include "Tools/QtLabelWithActions/QtLabelWithActions.h"
+#include "Tools/QtPosSaver/QtPosSaver.h"
+#include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
-#include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
+#include "SpeedTreeImport/SpeedTreeImportDialog.h"
 #endif
 
-#include "Classes/Deprecated/EditorConfig.h"
-#include "Classes/Deprecated/SceneValidator.h"
+#include "Deprecated/EditorConfig.h"
+#include "Deprecated/SceneValidator.h"
 
-#include "Classes/CommandLine/SceneSaver/SceneSaver.h"
-#include "Classes/Commands2/Base/RECommandStack.h"
-#include "Classes/Commands2/Base/RECommandBatch.h"
-#include "Classes/Commands2/AddComponentCommand.h"
-#include "Classes/Commands2/BeastAction.h"
-#include "Classes/Commands2/ConvertPathCommands.h"
-#include "Classes/Commands2/CustomColorsCommands2.h"
-#include "Classes/Commands2/EntityAddCommand.h"
-#include "Classes/Commands2/HeightmapEditorCommands2.h"
-#include "Classes/Commands2/PaintHeightDeltaAction.h"
-#include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/TilemaskEditorCommands.h"
-#include "Classes/Commands2/LandscapeToolsToggleCommand.h"
+#include "CommandLine/SceneSaver/SceneSaver.h"
+#include "Commands2/Base/RECommandStack.h"
+#include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/BeastAction.h"
+#include "Commands2/ConvertPathCommands.h"
+#include "Commands2/CustomColorsCommands2.h"
+#include "Commands2/EntityAddCommand.h"
+#include "Commands2/HeightmapEditorCommands2.h"
+#include "Commands2/PaintHeightDeltaAction.h"
+#include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/TilemaskEditorCommands.h"
+#include "Commands2/LandscapeToolsToggleCommand.h"
 
-#include "Classes/SceneProcessing/SceneProcessor.h"
+#include "SceneProcessing/SceneProcessor.h"
 
-#include "Classes/Constants.h"
-#include "Classes/StringConstants.h"
+#include "Constants.h"
+#include "StringConstants.h"
 
 #include "Render/2D/Sprite.h"
 
@@ -148,11 +149,11 @@ QtMainWindow::QtMainWindow(QWidget* parent)
 
     connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(ProjectOpened(const QString&)));
     connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
-    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const RECommand*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2*, const RECommand*, bool)));
-    connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(SceneActivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(SceneDeactivated(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(SceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
-    connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
+    connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &QtMainWindow::SceneCommandExecuted);
+    connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &QtMainWindow::SceneActivated);
+    connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &QtMainWindow::SceneDeactivated);
+    connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &QtMainWindow::SceneSelectionChanged);
+    connect(SceneSignals::Instance(), &SceneSignals::EditorLightEnabled, this, &QtMainWindow::EditorLightEnabled);
     connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
 
@@ -1128,43 +1129,31 @@ void QtMainWindow::UpdateModificationActionsState()
     ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
 }
 
-void QtMainWindow::UpdateWayEditor(const RECommand* command, bool redo)
+void QtMainWindow::UpdateWayEditor(const RECommandNotificationObject& commandNotification)
 {
-    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
+    if (commandNotification.MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
-        SetActionCheckedSilently(ui->actionWayEditor, redo);
+        DVASSERT(commandNotification.MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
+        SetActionCheckedSilently(ui->actionWayEditor, commandNotification.redo);
     }
-    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
+    else if (commandNotification.MatchCommandID(CMDID_DISABLE_WAYEDIT))
     {
-        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
-        SetActionCheckedSilently(ui->actionWayEditor, !redo);
+        DVASSERT(commandNotification.MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
+        SetActionCheckedSilently(ui->actionWayEditor, !commandNotification.redo);
     }
 }
 
-void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo)
+void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     if (scene == GetCurrentScene())
     {
         UpdateModificationActionsState();
-        UpdateWayEditor(command, redo);
+        UpdateWayEditor(commandNotification);
 
-        std::function<bool(const RECommand*)> updateCameraState;
-        updateCameraState = [this, scene, &updateCameraState](const RECommand* command)
+        auto updateCameraState = [this, scene](const RECommand* command)
         {
             DAVA::Entity* entity = nullptr;
-            if (IsCommandBatch(command))
-            {
-                const RECommandBatch* batch = static_cast<const RECommandBatch*>(command);
-                for (DAVA::uint32 i = 0, count = batch->Size(); i < count; ++i)
-                {
-                    if (updateCameraState(batch->GetCommand(i)))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else if (command->GetID() == CMDID_COMPONENT_ADD)
+            if (command->GetID() == CMDID_COMPONENT_ADD)
             {
                 const AddComponentCommand* addCommand = static_cast<const AddComponentCommand*>(command);
                 entity = addCommand->GetEntity();
@@ -1182,7 +1171,20 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2* scene, const RECommand* co
             return false;
         };
 
-        updateCameraState(command);
+        if (commandNotification.batch != nullptr)
+        {
+            for (DAVA::uint32 i = 0, count = commandNotification.batch->Size(); i < count; ++i)
+            {
+                if (updateCameraState(commandNotification.batch->GetCommand(i)))
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            updateCameraState(commandNotification.command);
+        }
     }
 }
 
@@ -1773,7 +1775,7 @@ void QtMainWindow::OnAddLandscape()
         bboxForLandscape.AddPoint(DAVA::Vector3(defaultLandscapeSize / 2.f, defaultLandscapeSize / 2.f, defaultLandscapeHeight));
         newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
 
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(entityToProcess, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(entityToProcess, sceneEditor)));
     }
 }
 
@@ -1791,7 +1793,7 @@ void QtMainWindow::OnAddVegetation()
         vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
         vegetationNode->SetLocked(true);
 
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(vegetationNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(vegetationNode, sceneEditor)));
     }
 }
 
@@ -1803,7 +1805,7 @@ void QtMainWindow::OnLightDialog()
         DAVA::ScopedPtr<DAVA::Entity> sceneNode(new DAVA::Entity());
         sceneNode->AddComponent(new DAVA::LightComponent(DAVA::ScopedPtr<DAVA::Light>(new DAVA::Light)));
         sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
 }
 
@@ -1828,7 +1830,7 @@ void QtMainWindow::OnCameraDialog()
 
         sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
 }
 
@@ -1840,7 +1842,7 @@ void QtMainWindow::OnUserNodeDialog()
         DAVA::ScopedPtr<DAVA::Entity> sceneNode(new DAVA::Entity());
         sceneNode->AddComponent(new DAVA::UserComponent());
         sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
 }
 
@@ -1853,7 +1855,7 @@ void QtMainWindow::OnParticleEffectDialog()
         sceneNode->AddComponent(new DAVA::ParticleEffectComponent());
         sceneNode->AddComponent(new DAVA::LodComponent());
         sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
 }
 
@@ -1877,7 +1879,7 @@ void QtMainWindow::On2DCameraDialog()
 
         sceneNode->AddComponent(new DAVA::CameraComponent(camera));
         sceneNode->SetName("Camera 2D");
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
 }
 
@@ -1907,7 +1909,7 @@ void QtMainWindow::On2DSpriteDialog()
     SceneEditor2* sceneEditor = GetCurrentScene();
     if (sceneEditor)
     {
-        sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(sceneNode, sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor)));
     }
     SafeRelease(sceneNode);
     SafeRelease(spriteObject);
@@ -2269,7 +2271,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
         return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(DAVA::Command::Create<BeastAction>(scene, path, mode, beastWaitDialog));
+    scene->Exec(std::unique_ptr<DAVA::Command>(new BeastAction(scene, path, mode, beastWaitDialog)));
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {
@@ -2363,7 +2365,7 @@ void QtMainWindow::OnCustomColorsEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(DAVA::Command::Create<EnableCustomColorsCommand>(sceneEditor, true));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableCustomColorsCommand(sceneEditor, true)));
         }
         else
         {
@@ -2383,7 +2385,7 @@ void QtMainWindow::OnCustomColorsEditor()
         }
     }
 
-    sceneEditor->Exec(DAVA::Command::Create<DisableCustomColorsCommand>(sceneEditor, true));
+    sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableCustomColorsCommand(sceneEditor, true)));
     ui->actionCustomColorsEditor->setChecked(false);
 }
 
@@ -2429,7 +2431,7 @@ void QtMainWindow::OnHeightmapEditor()
 
     if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(DAVA::Command::Create<DisableHeightmapEditorCommand>(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableHeightmapEditorCommand(sceneEditor)));
     }
     else
     {
@@ -2442,7 +2444,7 @@ void QtMainWindow::OnHeightmapEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(DAVA::Command::Create<EnableHeightmapEditorCommand>(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableHeightmapEditorCommand(sceneEditor)));
         }
         else
         {
@@ -2461,7 +2463,7 @@ void QtMainWindow::OnRulerTool()
 
     if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(DAVA::Command::Create<DisableRulerToolCommand>(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableRulerToolCommand(sceneEditor)));
     }
     else
     {
@@ -2474,7 +2476,7 @@ void QtMainWindow::OnRulerTool()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(DAVA::Command::Create<EnableRulerToolCommand>(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableRulerToolCommand(sceneEditor)));
         }
         else
         {
@@ -2493,7 +2495,7 @@ void QtMainWindow::OnTilemaskEditor()
 
     if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
     {
-        sceneEditor->Exec(DAVA::Command::Create<DisableTilemaskEditorCommand>(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableTilemaskEditorCommand(sceneEditor)));
     }
     else
     {
@@ -2506,7 +2508,7 @@ void QtMainWindow::OnTilemaskEditor()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(DAVA::Command::Create<EnableTilemaskEditorCommand>(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableTilemaskEditorCommand(sceneEditor)));
         }
         else
         {
@@ -2545,7 +2547,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
     if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
     {
-        sceneEditor->Exec(DAVA::Command::Create<DisableNotPassableCommand>(sceneEditor));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new DisableNotPassableCommand(sceneEditor)));
     }
     else
     {
@@ -2558,7 +2560,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
         if (LoadAppropriateTextureFormat())
         {
-            sceneEditor->Exec(DAVA::Command::Create<EnableNotPassableCommand>(sceneEditor));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EnableNotPassableCommand(sceneEditor)));
         }
         else
         {
@@ -2872,7 +2874,7 @@ void QtMainWindow::OnEmptyEntity()
     DAVA::ScopedPtr<DAVA::Entity> newEntity(new DAVA::Entity());
     newEntity->SetName(ResourceEditor::ENTITY_NAME);
 
-    scene->Exec(DAVA::Command::Create<EntityAddCommand>(newEntity, scene));
+    scene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(newEntity, scene)));
 }
 
 void QtMainWindow::OnAddWindEntity()
@@ -2889,7 +2891,7 @@ void QtMainWindow::OnAddWindEntity()
 
     windEntity->AddComponent(new DAVA::WindComponent());
 
-    scene->Exec(DAVA::Command::Create<EntityAddCommand>(windEntity, scene));
+    scene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(windEntity, scene)));
 }
 
 void QtMainWindow::OnAddPathEntity()
@@ -2903,7 +2905,7 @@ void QtMainWindow::OnAddPathEntity()
     DAVA::PathComponent* pc = scene->pathSystem->CreatePathComponent();
 
     pathEntity->AddComponent(pc);
-    scene->Exec(DAVA::Command::Create<EntityAddCommand>(pathEntity, scene));
+    scene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(pathEntity, scene)));
 }
 
 bool QtMainWindow::LoadAppropriateTextureFormat()

@@ -107,7 +107,7 @@ void LayerForceWidget::OnValueChanged()
     DAVA::PropLineWrapper<DAVA::float32> propForceOverLife;
     forceOverLifeTimeLine->GetValue(0, propForceOverLife.GetPropsPtr());
 
-    std::unique_ptr<CommandUpdateParticleForce> updateForceCmd = DAVA::Command::Create<CommandUpdateParticleForce>(layer, forceIndex);
+    std::unique_ptr<CommandUpdateParticleForce> updateForceCmd(new CommandUpdateParticleForce(layer, forceIndex));
     updateForceCmd->Init(propForce.GetPropLine(), propForceOverLife.GetPropLine());
 
     SceneEditor2* activeScene = GetActiveScene();

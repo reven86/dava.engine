@@ -2,13 +2,18 @@
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/CommandAction.h"
 
+#include "Commands2/Base/RECommandNotificationObject.h"
+
 RECommandStack::RECommandStack()
     : DAVA::CommandStack()
 {
     canRedoChanged.Connect(this, &RECommandStack::CanRedoChanged);
     canUndoChanged.Connect(this, &RECommandStack::CanUndoChanged);
     cleanChanged.Connect(this, &RECommandStack::EmitCleanChanged);
+    currentIndexChanged.Connect(this, &RECommandStack::CurrentIndexChanged);
 }
+
+RECommandStack::~RECommandStack() = default;
 
 void RECommandStack::Clear()
 {
@@ -19,19 +24,19 @@ void RECommandStack::Clear()
 
 void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
 {
-    for (DAVA::uint32 index = 0; index < commands.size(); ++index)
+    for (DAVA::int32 index = static_cast<DAVA::int32>(commands.size() - 1); index >= 0; --index)
     {
         DAVA::Command* commandPtr = commands.at(index).get();
         if (DAVA::IsCommandBatch(commandPtr))
         {
-            RECommandBatch* batch = static_cast<RECommandBatch*>(static_cast<DAVA::CommandBatch*>(commandPtr));
+            RECommandBatch* batch = static_cast<RECommandBatch*>(commandPtr);
             batch->RemoveCommands(commandId);
             if (batch->IsEmpty())
             {
                 RemoveCommand(index);
             }
         }
-        else if (IsRECommand(commandPtr))
+        else
         {
             const RECommand* reCommand = static_cast<const RECommand*>(commandPtr);
             if (reCommand->GetID() == commandId)
@@ -50,11 +55,11 @@ void RECommandStack::Activate()
 
 bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
 {
-    int beginIndex = std::max(cleanIndex, 0);
-    for (DAVA::uint32 index = std::max(cleanIndex, 0), size = commands.size(); index < size; ++index)
+    DAVA::uint32 size = static_cast<DAVA::uint32>(commands.size());
+    for (DAVA::uint32 index = std::max(cleanIndex, 0); index < size; ++index)
     {
         const DAVA::Command* commandPtr = commands.at(index).get();
-        if (IsRECommand(commandPtr))
+        if (IsCommandBatch(commandPtr) == false)
         {
             const RECommand* reCommandPtr = static_cast<const RECommand*>(commandPtr);
             if (reCommandPtr->MatchCommandID(commandId))
@@ -64,6 +69,11 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
         }
     }
     return false;
+}
+
+std::unique_ptr<DAVA::CommandBatch> RECommandStack::CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount)
+{
+    return std::unique_ptr<DAVA::CommandBatch>(new RECommandBatch(name, commandsCount));
 }
 
 void RECommandStack::RemoveCommand(DAVA::uint32 index)
@@ -77,5 +87,29 @@ void RECommandStack::RemoveCommand(DAVA::uint32 index)
     if (currentIndex > static_cast<DAVA::int32>(index))
     {
         SetCurrentIndex(currentIndex - 1);
+    }
+}
+
+void RECommandStack::CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex)
+{
+    if ((newIndex >= 0) && (newIndex < static_cast<DAVA::int32>(commands.size())))
+    {
+        DAVA::Command* cmd = commands[newIndex].get();
+
+        RECommandNotificationObject notification;
+        if (DAVA::IsCommandBatch(cmd))
+        {
+            notification.batch = static_cast<RECommandBatch*>(cmd);
+        }
+        else
+        {
+            notification.command = static_cast<RECommand*>(cmd);
+        }
+        notification.redo = (newIndex > oldIndex);
+        EmitNotify(notification);
+    }
+    else if (currentIndex != EMPTY_INDEX)
+    {
+        DVASSERT_MSG(false, DAVA::Format("Commands changed to wrong index(%d)", newIndex).c_str());
     }
 }

@@ -72,7 +72,7 @@ public:
     {
     public:
         virtual void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
-        virtual void Exec(DAVA::Command::Pointer&& command) = 0;
+        virtual void Exec(std::unique_ptr<DAVA::Command>&& command) = 0;
         virtual void EndBatch() = 0;
     };
 

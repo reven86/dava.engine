@@ -8,7 +8,7 @@ class RECommandStack : public DAVA::CommandStack, public CommandNotifyProvider
 {
 public:
     RECommandStack();
-    ~RECommandStack() override = default;
+    ~RECommandStack() override;
 
     void Clear();
     void RemoveCommands(DAVA::uint32 commandId);
@@ -18,5 +18,8 @@ public:
     bool IsUncleanCommandExists(DAVA::uint32 commandId) const;
 
 private:
+    std::unique_ptr<DAVA::CommandBatch> CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) override;
+
     void RemoveCommand(DAVA::uint32 index);
+    void CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex);
 };

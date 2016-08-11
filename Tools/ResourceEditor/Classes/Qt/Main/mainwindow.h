@@ -14,6 +14,7 @@
 #include <QDockWidget>
 #include <QPointer>
 
+class RECommandNotificationObject;
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
@@ -221,7 +222,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
-    void SceneCommandExecuted(SceneEditor2* scene, const RECommand* command, bool redo);
+    void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
@@ -256,7 +257,7 @@ private:
     void EnableProjectActions(bool enable);
     void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
-    void UpdateWayEditor(const RECommand* command, bool redo);
+    void UpdateWayEditor(const RECommandNotificationObject& commandNotification);
 
     void LoadViewState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);

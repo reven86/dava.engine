@@ -111,12 +111,12 @@ bool QtPropertyKeyedArchiveMember::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-DAVA::Command::Pointer QtPropertyKeyedArchiveMember::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyKeyedArchiveMember::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return DAVA::Command::Create<KeyeadArchiveSetValueCommand>(*lastCommand);
+        return std::unique_ptr<DAVA::Command>(new KeyeadArchiveSetValueCommand(*lastCommand));
     }
 
-    return DAVA::Command::Pointer();
+    return std::unique_ptr<DAVA::Command>();
 }

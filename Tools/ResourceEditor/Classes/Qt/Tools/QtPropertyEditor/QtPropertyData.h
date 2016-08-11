@@ -163,7 +163,7 @@ public:
     void EmitDataChanged(ValueChangeReason reason);
 
     // edit command
-    virtual DAVA::Command::Pointer CreateLastCommand() const;
+    virtual std::unique_ptr<DAVA::Command> CreateLastCommand() const;
 
     // Merging
     bool IsMergedDataEqual() const;
