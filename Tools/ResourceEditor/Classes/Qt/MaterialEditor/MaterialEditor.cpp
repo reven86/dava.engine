@@ -707,19 +707,13 @@ void MaterialEditor::SetCurMaterial(const QList<DAVA::NMaterial*>& materials)
 void MaterialEditor::sceneActivated(SceneEditor2* scene)
 {
     activeScene = scene;
-    if (isVisible())
-    {
-        SetCurMaterial(QList<DAVA::NMaterial*>());
-        ui->materialTree->SetScene(scene);
-        autoExpand();
-    }
+    UpdateContent(activeScene);
 }
 
 void MaterialEditor::sceneDeactivated(SceneEditor2* scene)
 {
     activeScene = nullptr;
-    ui->materialTree->SetScene(nullptr);
-    SetCurMaterial(QList<DAVA::NMaterial*>());
+    UpdateContent(activeScene);
 }
 
 void MaterialEditor::materialSelected(const QItemSelection& selected, const QItemSelection& deselected)
@@ -895,14 +889,13 @@ void MaterialEditor::onCurrentExpandModeChange(bool mode)
 void MaterialEditor::showEvent(QShowEvent* event)
 {
     FillTemplates(QList<DAVA::NMaterial*>());
-    sceneActivated(activeScene);
+    UpdateContent(activeScene);
 }
 
 void MaterialEditor::closeEvent(QCloseEvent* event)
 {
-    curMaterials.clear();
+    UpdateContent(activeScene);
     RefreshMaterialProperties();
-    sceneActivated(nullptr);
     QDialog::closeEvent(event);
 }
 
@@ -1657,4 +1650,14 @@ void MaterialEditor::onTabContextMenuRequested(const QPoint& pos)
     QObject::connect(createEmpty, &QAction::triggered, [this]() { onCreateConfig(-1); });
     contextMenu->addAction(createEmpty);
     contextMenu->exec(ui->tabbar->mapToGlobal(pos));
+}
+
+void MaterialEditor::UpdateContent(SceneEditor2* scene)
+{
+    if (isVisible() || scene == nullptr)
+    {
+        SetCurMaterial(QList<DAVA::NMaterial*>());
+        ui->materialTree->SetScene(scene);
+        autoExpand();
+    }
 }
