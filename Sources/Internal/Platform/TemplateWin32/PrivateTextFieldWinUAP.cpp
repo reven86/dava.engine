@@ -523,8 +523,9 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
         if (auto self = self_weak.lock())
             OnLostFocus();
     });
-    auto layoutUpdated = ref new Windows::Foundation::EventHandler<Platform::Object ^>([this](Platform::Object ^, Platform::Object ^ ) {
-        OnLayoutUpdated();
+    auto layoutUpdated = ref new Windows::Foundation::EventHandler<Platform::Object ^>([this, self_weak](Platform::Object ^, Platform::Object ^ ) {
+        if (auto self = self_weak.lock())
+            OnLayoutUpdated();
     });
     nativeControl->LayoutUpdated += layoutUpdated;
     nativeControl->KeyDown += keyDown;
