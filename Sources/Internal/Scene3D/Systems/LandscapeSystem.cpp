@@ -66,7 +66,7 @@ void LandscapeSystem::RemoveEntity(Entity* entity)
 
 void LandscapeSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("LandscapeSystem::Process");
+    PROFILER_TIMING("LandscapeSystem::Process");
 
     for (Entity* e : landscapeEntities)
     {

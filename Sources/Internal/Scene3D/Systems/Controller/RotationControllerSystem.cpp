@@ -47,6 +47,8 @@ void RotationControllerSystem::RemoveEntity(Entity* entity)
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("RotationControllerSystem::Process")
+
     Camera* camera = GetScene()->GetDrawCamera();
     if (camera != oldCamera)
     {

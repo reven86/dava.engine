@@ -58,6 +58,8 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity* entity)
 
 void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("SnapToLandscapeControllerSystem::Process")
+
     const uint32 size = static_cast<uint32>(entities.size());
     if (0 == size)
         return;

@@ -61,7 +61,7 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("SoundUpdateSystem::Process")
+    PROFILER_TIMING("SoundUpdateSystem::Process")
 
     Camera* activeCamera = GetScene()->GetCurrentCamera();
 

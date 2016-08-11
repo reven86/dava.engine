@@ -70,7 +70,7 @@ void FoliageSystem::RemoveEntity(Entity* entity)
 
 void FoliageSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("FoliageSystem::Process");
+    PROFILER_TIMING("FoliageSystem::Process");
 
     if (GetScene()->GetRenderSystem()->GetMainCamera() == nullptr)
     {

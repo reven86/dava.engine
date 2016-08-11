@@ -39,6 +39,8 @@ void WASDControllerSystem::RemoveEntity(Entity* entity)
 
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("WASDControllerSystem::Process")
+
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
 
     const uint32 size = static_cast<uint32>(entities.size());

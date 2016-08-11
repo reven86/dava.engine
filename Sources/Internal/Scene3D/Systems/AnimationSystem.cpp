@@ -28,7 +28,7 @@ AnimationSystem::~AnimationSystem()
 
 void AnimationSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("AnimationSystem::Process");
+    PROFILER_TIMING("AnimationSystem::Process");
 
     int componentsCount = static_cast<int32>(activeComponents.size());
     for (int i = 0; i < componentsCount; i++)

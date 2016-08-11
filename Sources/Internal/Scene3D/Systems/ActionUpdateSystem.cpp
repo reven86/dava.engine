@@ -46,7 +46,7 @@ void ActionUpdateSystem::RemoveEntity(Entity* entity)
 
 void ActionUpdateSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("ActionUpdateSystem::Process");
+    PROFILER_TIMING("ActionUpdateSystem::Process");
 
     DelayedDeleteActions();
 

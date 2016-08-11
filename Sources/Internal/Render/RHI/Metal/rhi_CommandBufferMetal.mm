@@ -1807,7 +1807,7 @@ metal_SyncObject_IsSignaled(Handle obj)
 static void
 metal_Present(Handle syncObject)
 {
-    PROFILER_SCOPED_TIMING("rhi::Present");
+    PROFILER_TIMING("rhi::Present");
 
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);

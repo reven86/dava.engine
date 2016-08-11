@@ -89,7 +89,7 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("StaticOcclusionSystem::Process")
+    PROFILER_TIMING("StaticOcclusionSystem::Process")
 
     SetCamera(GetScene()->GetCurrentCamera());
 

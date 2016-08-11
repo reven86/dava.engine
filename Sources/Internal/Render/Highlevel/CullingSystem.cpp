@@ -8,6 +8,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -49,6 +50,8 @@ void CullingSystem::SetCamera(Camera* _camera)
 
 void CullingSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("CullingSystem::Process")
+
     int32 objectsCulled = 0;
 
     //Frustum * frustum = camera->GetFrustum();

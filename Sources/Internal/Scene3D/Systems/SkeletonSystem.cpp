@@ -47,6 +47,8 @@ void SkeletonSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SkeletonSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("SkeletonSystem::Process")
+
     for (int32 i = 0, sz = static_cast<int32>(entities.size()); i < sz; ++i)
     {
         SkeletonComponent* component = GetSkeletonComponent(entities[i]);

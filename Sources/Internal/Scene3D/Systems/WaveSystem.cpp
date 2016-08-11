@@ -61,7 +61,7 @@ void WaveSystem::ImmediateEvent(Component* component, uint32 event)
 
 void WaveSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WaveSystem::Process");
+    PROFILER_TIMING("WaveSystem::Process");
 
     int32 index = 0;
     int32 size = static_cast<int32>(waves.size());

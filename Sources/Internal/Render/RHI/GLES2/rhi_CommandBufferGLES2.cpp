@@ -2269,7 +2269,7 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL(GLCommand* command, uint32 cmdCount)
 {
-    //PROFILER_TIMING("rhi::ExecuteImmidiateCmds");
+    PROFILER_TIMING("rhi::ExecuteImmidiateCmds");
 
     int err = GL_NO_ERROR;
 

@@ -254,7 +254,8 @@ void ParticleEffectSystem::ImmediateEvent(Component* component, uint32 event)
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("ParticleEffectSystem::Process");
+    PROFILER_TIMING("ParticleEffectSystem::Process");
+
     if (timeElapsed == 0.f)
     {
         timeElapsed = 0.000001f;

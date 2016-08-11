@@ -257,6 +257,8 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
+    PROFILER_TIMING("StaticOcclusionBuildSystem::Process")
+
     if (activeIndex == static_cast<uint32>(-1))
         return;
 

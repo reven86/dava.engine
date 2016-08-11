@@ -70,7 +70,7 @@ void WindSystem::RemoveEntity(Entity* entity)
 
 void WindSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WindSystem::Process")
+    PROFILER_TIMING("WindSystem::Process")
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
