@@ -6,11 +6,7 @@ class SceneEditor2;
 class ActiveSceneHolder
 {
 public:
-    ActiveSceneHolder();
-
     SceneEditor2* GetScene() const;
-
-private:
-    SceneEditor2* activeScene = nullptr;
-    QtConnections connections;
+    static void Init();
+    static void Deinit();
 };

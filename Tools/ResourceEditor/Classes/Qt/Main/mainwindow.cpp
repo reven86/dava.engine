@@ -177,6 +177,7 @@ QtMainWindow::QtMainWindow(wgt::IComponentContext& ngtContext_, QWidget* parent)
     , propertyPanel(new PropertyPanel())
 #endif
 {
+    ActiveSceneHolder::Init();
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
     spritesPacker = std::make_unique<SpritesPackerModule>(globalOperations);
 
@@ -278,6 +279,7 @@ QtMainWindow::~QtMainWindow()
 
     std::static_pointer_cast<MainWindowDetails::GlobalOperationsProxy>(globalOperations)->Reset();
     globalOperations.reset();
+    ActiveSceneHolder::Deinit();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
