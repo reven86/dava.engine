@@ -345,7 +345,7 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const Va
         }
 
         if (member->Name() == PROPERTY_NAME_TEXT)
-            member->SetValue(currentObject, VariantType(LocalizedString(value.AsWideString())));
+            member->SetValue(currentObject, VariantType(LocalizedUtf8String(value.AsString())));
         else
             member->SetValue(currentObject, value);
     }
