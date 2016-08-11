@@ -13,19 +13,15 @@ namespace DAVA
 {
 namespace Profiler
 {
-void EnsureInited(uint32 counterCount = 10 * 1024);
-
 void Start();
 void Stop();
 
 uint64 GetLastCounterTime(const char* counterName);
 
-void Dump();
 void Dump(const char* fileName);
 void DumpLast(const char* counterName, uint32 counterCount = 1);
 void DumpAverage(const char* counterName, uint32 counterCount);
 
-struct TimeCounter;
 class ScopedCounter
 {
 public:
@@ -33,7 +29,7 @@ public:
     ~ScopedCounter();
 
 private:
-    TimeCounter* counter = nullptr;
+    uint64* endTime = nullptr;
 };
 
 } //ns Profiler

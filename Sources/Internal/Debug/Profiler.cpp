@@ -12,6 +12,20 @@ static inline uint64 CurTimeUs()
     return static_cast<DAVA::uint64>(DAVA::SystemTimer::Instance()->GetAbsoluteUs());
 }
 
+static bool NameEquals(const char* name1, const char* name2)
+{
+    if (name1 == name2)
+        return true;
+
+    std::size_t n1len = strlen(name1);
+    std::size_t n2len = strlen(name2);
+
+    if (n1len != n2len)
+        return false;
+
+    return memcmp(name1, name2, n1len) == 0;
+}
+
 namespace DAVA
 {
 namespace Profiler
@@ -24,21 +38,10 @@ struct TimeCounter
     Thread::Id tid = 0;
 };
 
-static bool profilerInited = false;
+using CounterArray = RingArray<TimeCounter, std::atomic<uint32>, 4096>;
+
+static CounterArray counters;
 static bool profilerStarted = false;
-
-static size_t countersHeadIndex = 0;
-static Vector<TimeCounter> counters;
-static Mutex countersSync;
-
-void EnsureInited(uint32 counterCount)
-{
-    if (!profilerInited)
-    {
-        counters.resize(counterCount);
-        profilerInited = true;
-    }
-}
 
 void Start()
 {
@@ -54,17 +57,10 @@ ScopedCounter::ScopedCounter(const char* counterName)
 {
     if (profilerStarted)
     {
-        countersSync.Lock();
-
-        TimeCounter& c = counters[countersHeadIndex++];
-        if (countersHeadIndex >= counters.size())
-            countersHeadIndex = 0;
-
-        countersSync.Unlock();
-
+        TimeCounter& c = counters.next();
         DVASSERT(((c.startTime == 0 && c.endTime == 0) || c.endTime != 0) && "Too few counters in array");
 
-        counter = &c;
+        endTime = &c.endTime;
         c.startTime = CurTimeUs();
         c.endTime = 0;
         c.name = counterName;
@@ -74,68 +70,215 @@ ScopedCounter::ScopedCounter(const char* counterName)
 
 ScopedCounter::~ScopedCounter()
 {
-    if (profilerStarted && counter)
+    if (profilerStarted && endTime)
     {
-        DVASSERT(counter->endTime == 0 && "Profiler counter ended but not started");
-        counter->endTime = CurTimeUs();
+        DVASSERT(*endTime == 0 && "Profiler counter ended but not started");
+        *endTime = CurTimeUs();
     }
-}
-
-bool NameEquals(const char* name1, const char* name2)
-{
-    if (name1 == name2)
-        return true;
-
-    std::size_t n1len = strlen(name1);
-    std::size_t n2len = strlen(name2);
-
-    if (n1len != n2len)
-        return false;
-
-    return Memcmp(name1, name2, n1len) == 0;
 }
 
 uint64 GetLastCounterTime(const char* counterName)
 {
-    LockGuard<Mutex> guard(countersSync);
-
     uint64 timeDelta = 0;
-    size_t lastIndex = countersHeadIndex ? (countersHeadIndex - 1) : (counters.size() - 1);
-    for (size_t i = lastIndex; i != countersHeadIndex; --i)
+    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    for (; it != itEnd; it++)
     {
-        const TimeCounter& c = counters[i];
+        const TimeCounter& c = *it;
         if (c.endTime != 0 && NameEquals(counterName, c.name))
         {
             timeDelta = c.endTime - c.startTime;
             break;
-        }
-
-        if (i == 0)
-        {
-            i = counters.size();
         }
     }
 
     return timeDelta;
 }
 
+void DumpInternal(CounterArray::iterator begin)
+{
+    Thread::Id threadID = begin->tid;
+    uint64 endTime = begin->endTime;
+    Vector<uint64> parents;
+
+    char buf[1024];
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; ++it)
+    {
+        const TimeCounter& c = *it;
+
+        if (c.tid != threadID)
+            continue;
+
+        if (c.startTime > endTime || c.endTime == 0)
+            break;
+
+        if (c.tid == threadID)
+        {
+            while (parents.size() && (c.startTime >= parents.back()) && c.startTime != c.endTime)
+                parents.pop_back();
+
+            Snprintf(buf, countof(buf), "%*s%s", parents.size() * 2, "", c.name);
+            Logger::Info("%s [%llu us]", buf, c.endTime - c.startTime);
+
+            parents.push_back(c.endTime);
+        }
+    }
+}
+
 void DumpLast(const char* counterName, uint32 counterCount)
 {
+    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    for (; it != itEnd; it++)
+    {
+        if (NameEquals(counterName, it->name))
+        {
+            DumpInternal(CounterArray::iterator(it));
+            counterCount--;
+        }
+
+        if (counterCount == 0)
+            break;
+    }
 }
+
+void DumpAverage(const char* counterName, uint32 counterCount)
+{
+    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    for (; it != itEnd; it++)
+    {
+        if (NameEquals(counterName, it->name))
+            counterCount--;
+
+        if (counterCount == 0)
+            break;
+    }
+
+    //TODO
+}
+
+void Dump(const char* fileName)
+{
+    File* json = File::Create(fileName, File::CREATE | File::WRITE);
+    json->WriteLine("{ \"traceEvents\": [ ");
+
+    char buf[1024];
+    CounterArray::iterator it = counters.begin(), itEnd = counters.end();
+    CounterArray::iterator last(counters.rbegin());
+    for (; it != itEnd; it++)
+    {
+        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 0, uint64(it->tid), it->startTime, "B", "", it->name, ", ");
+
+        json->WriteLine(buf);
+
+        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 0, uint64(it->tid), it->endTime ? it->endTime : it->startTime, "E", "", it->name, (it == last) ? "" : ", ");
+
+        json->WriteLine(buf);
+    }
+
+    json->WriteLine("] }");
+    json->Release();
+}
+
+#if 0 
+void LastChildLeaf(CounterArray::iterator begin, CounterArray::iterator& lastChild, CounterArray::iterator& lastLeaf)
+{
+    Thread::Id threadID = begin->tid;
+    Vector<CounterArray::iterator> parents;
+
+    uint64 endTime = begin->endTime;
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; it++)
+    {
+        const TimeCounter& c = *it;
+        if (c.tid == threadID)
+        {
+            if (c.endTime == 0)
+                break;
+
+            if (c.startTime <= endTime)
+                lastLeaf = it;
+            else
+                break;
+
+            while (parents.size() && (c.startTime >= parents.back()->endTime) && c.startTime != c.endTime)
+                parents.pop_back();
+
+            parents.push_back(it);
+        }
+    }
+
+    DVASSERT(parents.size());
+
+    if (parents.size() > 1)
+        lastChild = parents[1];
+    else
+        lastChild = begin;
+}
+
+void DumpInternal2(CounterArray::iterator begin)
+{
+    struct CounterNote
+    {
+        CounterNote(TimeCounter* _counter, CounterNote* _parent)
+            : counter(_counter)
+            , parent(_parent)
+        {}
+        ~CounterNote()
+        {
+            for (CounterNote* c : children)
+                SafeDelete(c);
+        }
+
+        TimeCounter* counter = nullptr;
+        CounterNote* parent = nullptr;
+        Vector<CounterNote*> children;
+        uint64 dumpMask = 0;
+    };
+
+    static uint64 lastLeafMask = 1 << 63;
+    uint32 treeDepth = 0;
+
+    CounterNote* root = new CounterNote(nullptr, nullptr);
+    CounterNote* current = root;
+
+    Thread::Id threadID = begin->tid;
+    uint64 endTime = begin->endTime;
+
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; ++it)
+    {
+        TimeCounter* c = &(*it);
+        if (c->tid != threadID)
+            continue;
+
+        if (c->startTime > endTime || c->endTime == 0)
+            break;
+
+        while (current->counter && (c->startTime >= current->counter->endTime) && c->startTime != c->endTime)
+        {
+            current = current->parent;
+        }
+
+        current->children.push_back(new CounterNote(c, current));
+        current = current->children.back();
+        ++treeDepth;
+    }
+
+
+
+    SafeDelete(root);
+}
+
 
 void Dump()
 {
-    LockGuard<Mutex> guard(countersSync);
-
-    if (!counters.size())
-        return;
-
     Set<Thread::Id> threadsToProcess;
     Set<Thread::Id> threadsProcessed;
 
-    size_t lastCounter = countersHeadIndex ? (countersHeadIndex - 1) : (counters.size() - 1);
-    if (counters[lastCounter].tid)
-        threadsToProcess.insert(counters[lastCounter].tid);
+    if ((*counters.rbegin()).tid)
+        threadsToProcess.insert((*counters.rbegin()).tid);
 
     while (threadsToProcess.size())
     {
@@ -144,14 +287,10 @@ void Dump()
         Logger::Info("Thread %lld =================================", uint64(threadID));
 
         Stack<const TimeCounter*> parentStack;
-        for (size_t i = countersHeadIndex; i != lastCounter; i++)
+        CounterArray::iterator it = counters.begin(), itEnd = counters.end();
+        for (; it != itEnd; it++)
         {
-            if (i == counters.size())
-            {
-                i = 0;
-            }
-
-            const TimeCounter& c = counters[i];
+            const TimeCounter& c = *it;
 
             if (threadsProcessed.find(c.tid) != threadsProcessed.end())
                 continue;
@@ -161,7 +300,7 @@ void Dump()
 
             if (c.tid == threadID)
             {
-                while (parentStack.size() && (c.startTime >= parentStack.top()->endTime))
+                while (parentStack.size() && (c.startTime >= parentStack.top()->endTime) && c.startTime != c.endTime)
                     parentStack.pop();
 
                 Logger::Info("%*s%s    %llu us", parentStack.size(), "", c.name, c.endTime - c.startTime);
@@ -178,53 +317,7 @@ void Dump()
         threadsProcessed.insert(threadID);
     }
 }
-
-void Dump(const char* fileName)
-{
-    //File* json = File::Create(fileName, File::CREATE | File::WRITE);
-    //json->WriteLine("{ \"traceEvents\": [ ");
-
-    //eventsSync.Lock();
-    //char buf[1024];
-    //for (size_t i = 0; i < events.size(); ++i)
-    //{
-    //    size_t eventIndex = (headIndex + i) % events.size();
-    //    const CounterEvent& e = events[eventIndex];
-
-    //    const char* ph = "";
-
-    //    switch (e.phase)
-    //    {
-    //    case CounterEvent::PHASE_BEGIN:
-    //        ph = "B";
-    //        break;
-    //    case CounterEvent::PHASE_END:
-    //        ph = "E";
-    //        break;
-    //    case CounterEvent::PHASE_NONE:
-    //        break;
-    //    }
-    //    Snprintf(buf, 1024,
-    //             "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-    //             0,
-    //             uint64(e.tid),
-    //             e.time,
-    //             ph,
-    //             "",
-    //             e.name,
-    //             (i != events.size() - 1) ? ", " : "");
-    //    json->WriteLine(buf);
-    //}
-
-    //eventsSync.Unlock();
-
-    //json->WriteLine("] }");
-    //json->Release();
-}
-
-void DumpAverage(const char* eventName, uint32 count)
-{
-}
+#endif
 
 } //ns Profiler
 
