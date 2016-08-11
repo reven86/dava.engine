@@ -1,6 +1,7 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Core/Core.h"
 
-#if !defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN32__)
 
 int APIENTRY WinMain(HINSTANCE hInstance,
