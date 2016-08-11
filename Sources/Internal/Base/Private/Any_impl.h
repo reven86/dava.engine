@@ -170,7 +170,7 @@ inline const T& Any::Get(const T& defaultValue) const
 }
 
 template <typename T>
-static void Any::RegisterDefaultOPs()
+void Any::RegisterDefaultOPs()
 {
     if (nullptr == anyOPsMap)
     {
@@ -186,7 +186,7 @@ static void Any::RegisterDefaultOPs()
 }
 
 template <typename T>
-static void Any::RegisterOPs(AnyOPs&& ops)
+void Any::RegisterOPs(AnyOPs&& ops)
 {
     if (nullptr == anyOPsMap)
     {
