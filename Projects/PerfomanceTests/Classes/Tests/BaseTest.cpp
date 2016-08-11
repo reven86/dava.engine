@@ -119,14 +119,14 @@ uint32 BaseTest::GetAllocatedMemory()
 }
 void BaseTest::OnStart()
 {
-    Logger::Info(TeamcityTestsOutput::FormatTestStarted(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestStarted(GetSceneName()).c_str());
 }
 
 void BaseTest::OnFinish()
 {
     PrintStatistic(GetFramesInfo());
 
-    Logger::Info(TeamcityTestsOutput::FormatTestFinished(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestFinished(GetSceneName()).c_str());
 }
 
 void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
@@ -135,54 +135,54 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
 
     for (const auto& frameInfo : frames)
     {
-        Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                     TeamcityTestsOutput::FRAME_DELTA,
+        Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                     TeamcityPerformanceTestsOutput::FRAME_DELTA,
                      DAVA::Format("%f", frameInfo.delta))
                      .c_str());
     }
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MIN_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MIN_DELTA,
                  DAVA::Format("%f", minDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_DELTA,
                  DAVA::Format("%f", maxDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::AVERAGE_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::AVERAGE_DELTA,
                  DAVA::Format("%f", overallTestTime / framesCount))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_FPS,
                  DAVA::Format("%f", 1.0f / minDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MIN_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MIN_FPS,
                  DAVA::Format("%f", 1.0f / maxDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::AVERAGE_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::AVERAGE_FPS,
                  DAVA::Format("%f", 1.0f / (overallTestTime / framesCount)))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::TEST_TIME,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::TEST_TIME,
                  DAVA::Format("%f", overallTestTime))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::TIME_ELAPSED,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::TIME_ELAPSED,
                  DAVA::Format("%f", elapsedTime / 1000.0f))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_MEM_USAGE,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_MEM_USAGE,
                  DAVA::Format("%d", maxAllocatedMemory))
                  .c_str());
 }

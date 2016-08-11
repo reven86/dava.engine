@@ -39,7 +39,7 @@ public:
      * \param format PixelFormat
      * \return target texture
      */
-    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha = false);
+    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha = false, bool updateControl = true);
 
     /**
      * \brief Render control to texture and call callback when it will rendered
@@ -48,7 +48,7 @@ public:
      * \param format PixelFormat
      * \param callback function which be called after render
      */
-    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha = false);
+    RefPtr<Texture> MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha = false, bool updateControl = true);
 
     /**
      * \brief Render control to target texture
@@ -56,7 +56,7 @@ public:
      * \param control pointer to source UIControl
      * \param screenshot pointer to target Texture
      */
-    void MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha = false);
+    void MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha = false, bool updateControl = true);
 
     /**
     * \brief Render control to target texture
@@ -65,7 +65,7 @@ public:
     * \param screenshot pointer to target Texture
     * \param callback function which be called after render
     */
-    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha = false, const rhi::Viewport& viewport = rhi::Viewport());
+    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha = false, bool updateControl = true, const rhi::Viewport& viewport = rhi::Viewport());
 
     /**
      * \brief Unsubscribe callback by texture pointer after making screenshot 
@@ -82,7 +82,7 @@ private:
         Function<void(Texture*)> callback;
     };
 
-    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, const rhi::Viewport& viewport = rhi::Viewport());
+    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl, const rhi::Viewport& viewport = rhi::Viewport());
 
     List<ScreenshotWaiter> waiters;
 };

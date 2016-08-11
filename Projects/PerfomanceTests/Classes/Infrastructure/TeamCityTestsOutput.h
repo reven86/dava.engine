@@ -5,7 +5,7 @@
 
 namespace DAVA
 {
-class TeamcityTestsOutput : public TeamcityOutput
+class TeamcityPerformanceTestsOutput : public TeamcityOutput
 {
 public:
     virtual void Output(Logger::eLogLevel ll, const char8* text);

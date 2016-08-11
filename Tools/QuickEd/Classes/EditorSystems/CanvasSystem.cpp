@@ -20,7 +20,7 @@ class ColorControl : public UIControl
 {
 public:
     ColorControl();
-    ~ColorControl() override = default;
+    ~ColorControl() override;
 
 private:
     uint32 GetBackgroundColorIndex() const;
@@ -102,6 +102,11 @@ void GridControl::Draw(const UIGeometricData& geometricData)
 ColorControl::ColorControl()
 {
     background->SetDrawType(UIControlBackground::DRAW_FILL);
+}
+
+ColorControl::~ColorControl()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this); // TODO: fix REGISTER_PREFERENCES for unregistring preferences
 }
 
 Color ColorControl::GetBackgroundColor0() const
@@ -540,7 +545,7 @@ void CanvasSystem::LayoutCanvas()
     systemsManager->CanvasSizeChanged.Emit();
 }
 
-void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
+void CanvasSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
 {
     Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
     Set<PackageBaseNode*> newNodes;

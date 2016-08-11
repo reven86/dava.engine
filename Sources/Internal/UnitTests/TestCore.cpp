@@ -23,7 +23,7 @@ TestCore::TestClassInfo::TestClassInfo(TestClassInfo&& other)
     : name(std::move(other.name))
     , runTest(other.runTest)
     , factory(std::move(other.factory))
-    , testedClasses(std::move(other.testedClasses))
+    , testedFiles(std::move(other.testedFiles))
 {
 }
 
@@ -163,8 +163,8 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 testClassFinishedCallback(curTestClassName);
 
                 if (curTestClass->TestCount() > 0)
-                { // Get and save class names which are covered by test only if test class has tests
-                    testClasses[curTestClassIndex].testedClasses = curTestClass->ClassesCoveredByTests();
+                { // Get and save files names which are covered by test only if test files has tests
+                    testClasses[curTestClassIndex].testedFiles = curTestClass->FilesCoveredByTests();
                 }
 
                 SafeDelete(curTestClass);
@@ -186,9 +186,9 @@ Map<String, Vector<String>> TestCore::GetTestCoverage()
     Map<String, Vector<String>> result;
     for (TestClassInfo& x : testClasses)
     {
-        if (!x.testedClasses.empty())
+        if (!x.testedFiles.empty())
         {
-            result.emplace(x.name, std::move(x.testedClasses));
+            result.emplace(x.name, std::move(x.testedFiles));
         }
         x.runTest = x.runTest;
     }
