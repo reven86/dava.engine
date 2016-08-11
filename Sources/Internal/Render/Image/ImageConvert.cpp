@@ -304,7 +304,7 @@ void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32
     }
 }
 
-void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
+bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize)
 {
@@ -368,8 +368,11 @@ void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else
     {
-        Logger::Debug("Downscale from %s to %s is not implemented", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
+        Logger::Error("Downscale from %s to %s is not implemented", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
+        return false;
     }
+
+    return true;
 }
 
 Image* DownscaleTwiceBillinear(const Image* source)

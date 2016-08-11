@@ -163,21 +163,34 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
             newHeight >>= 1;
 
         Image* halfSizeImg = Image::Create(newWidth, newHeight, format);
-        Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
-
-        ImageConvert::DownscaleTwiceBillinear(format, format,
-                                              image0->data, imageWidth, imageHeight, imageWidth * formatSize,
-                                              halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
-
-        halfSizeImg->cubeFaceID = image0->cubeFaceID;
-        halfSizeImg->mipmapLevel = curMipMapLevel;
         imageSet.push_back(halfSizeImg);
 
-        imageWidth = newWidth;
-        imageHeight = newHeight;
+        Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
 
-        image0 = halfSizeImg;
-        curMipMapLevel++;
+        bool downScaled = ImageConvert::DownscaleTwiceBillinear(format, format,
+                                                                image0->data, imageWidth, imageHeight, imageWidth * formatSize,
+                                                                halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
+
+        if (downScaled)
+        {
+            halfSizeImg->cubeFaceID = image0->cubeFaceID;
+            halfSizeImg->mipmapLevel = curMipMapLevel;
+
+            imageWidth = newWidth;
+            imageHeight = newHeight;
+
+            image0 = halfSizeImg;
+            curMipMapLevel++;
+        }
+        else
+        {
+            for (Image* img : imageSet)
+            {
+                img->Release();
+            }
+            imageSet.clear();
+            break;
+        }
     }
 
     return imageSet;
