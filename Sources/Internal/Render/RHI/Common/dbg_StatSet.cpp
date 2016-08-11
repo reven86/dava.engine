@@ -75,7 +75,7 @@ StatSet::AddStat(const char* full_name, const char* short_name, unsigned parent_
     stat.value = 0;
     stat.is_permanent = false;
 
-    id = _Stat.size() - 1;
+	id = static_cast<unsigned>(_Stat.size()) - 1;
 
 #endif
 
@@ -107,7 +107,7 @@ StatSet::AddPermanentStat(const char* full_name, const char* short_name, unsigne
     stat.value = 0;
     stat.is_permanent = true;
 
-    id = _Stat.size() - 1;
+	id = static_cast<unsigned>(_Stat.size()) - 1;
 
 #endif
 
@@ -209,7 +209,7 @@ StatSet::StatID(const char* name)
     {
         if (strcmp(name, s->full_name) == 0)
         {
-            id = s - _Stat.begin();
+			id = static_cast<unsigned>(s - _Stat.begin());
             break;
         }
     }
