@@ -77,6 +77,12 @@ public:
     //! return true if end of file reached and false in another case
     bool IsEof() const override;
 
+    /**
+    \brief Truncate a file to a specified length
+    \param size A size, that file is going to be truncated to
+    */
+    bool Truncate(int32 size) override;
+
 protected:
     uint32 currentPtr;
     Vector<uint8> data;
