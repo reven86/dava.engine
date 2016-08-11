@@ -565,7 +565,6 @@ void Core::SystemProcessFrame()
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
     Stats::Instance()->BeginFrame();
-    TIME_PROFILE("Core::SystemProcessFrame");
 
 #if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
@@ -623,12 +622,8 @@ void Core::SystemProcessFrame()
 
         JobManager::Instance()->Update();
 
-        {
-            PROFILER_TIMING("Core::Update")
-
-            updated.Emit(frameDelta);
-            core->Update(frameDelta);
-        }
+        updated.Emit(frameDelta);
+        core->Update(frameDelta);
 
         InputSystem::Instance()->OnAfterUpdate();
 

@@ -337,8 +337,6 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 
 void RenderSystem::Render()
 {
-    TIME_PROFILE("RenderSystem::Render");
-
     mainRenderPass->Draw(this);
 }
 };

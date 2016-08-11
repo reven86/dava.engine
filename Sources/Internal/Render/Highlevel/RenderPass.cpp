@@ -106,7 +106,7 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
-    PROFILER_TIMING("MainRenderPass::PrepareVisibilityArrays")
+    PROFILER_TIMING("RenderPass::PrepareVisibilityArrays")
 
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))

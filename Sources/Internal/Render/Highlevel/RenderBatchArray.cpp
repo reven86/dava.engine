@@ -19,8 +19,6 @@ bool RenderBatchArray::MaterialCompareFunction(const RenderBatch* a, const Rende
 
 void RenderBatchArray::Sort(Camera* camera)
 {
-    TIME_PROFILE("RenderBatchArray::Sort");
-
     // Need sort
     sortFlags |= SORT_REQUIRED;
 

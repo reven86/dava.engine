@@ -22,6 +22,7 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Debug/Profiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -1167,6 +1168,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    PROFILER_TIMING("Landscape::PrepareToRender")
 
     RenderObject::PrepareToRender(camera);
 
@@ -1174,8 +1176,6 @@ void Landscape::PrepareToRender(Camera* camera)
     {
         return;
     }
-
-    TIME_PROFILE("Landscape.PrepareToRender");
 
     if (!subdivision->GetLevelCount() || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {

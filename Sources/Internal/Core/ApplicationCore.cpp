@@ -32,7 +32,8 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    TIME_PROFILE("ApplicationCore::Update");
+    PROFILER_TIMING("Core::Update")
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
@@ -61,7 +62,6 @@ void ApplicationCore::Draw()
 
     Renderer::GetRenderStats().Reset();
 
-    TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
 
     UIControlSystem::Instance()->Draw();
