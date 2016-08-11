@@ -254,6 +254,7 @@ void GameCore::RegisterTests()
     new MultilineTest(this);
     new StaticTextTest(this);
     new StaticWebViewTest(this);
+    new MicroWebBrowserTest(this);
     new UIMovieTest(this);
     new FontTest(this);
     new WebViewTest(this);
