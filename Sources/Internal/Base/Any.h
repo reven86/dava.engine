@@ -7,6 +7,8 @@
 #include "Type.h"
 #include "Private/AutoStorage.h"
 
+// #define ANY_EXPERIMENTAL_CAST_IMPL
+
 namespace DAVA
 {
 class Any final
@@ -27,12 +29,7 @@ public:
 
     using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
 
-    // TODO:
-    // review cast OPs implementation
-    // ...
-    //
-    // -->
-    //
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
     struct CastOPKey
     {
         const Type* from;
@@ -46,9 +43,7 @@ public:
 
     using CastOP = void (*)(const void* from, void* to);
     using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKey>;
-    //
-    // <--
-    //
+#endif
 
     struct Exception : public std::runtime_error
     {
@@ -118,23 +113,20 @@ public:
     template <typename T>
     static void RegisterOPs(AnyOPs&& ops);
 
-    // TODO:
-    // review cast OPs implementation
-    // ...
-    // -->
-    //
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
     template <typename From, typename To>
     static void RegisterCastOP(CastOP& castOP);
-    //
-    // <--
-    //
+#endif
 
 private:
     const Type* type = nullptr;
     AnyStorage anyStorage;
 
     static std::unique_ptr<AnyOPsMap> anyOPsMap;
+
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
     static std::unique_ptr<CastOPsMap> castOPsMap;
+#endif
 };
 
 } // namespace DAVA

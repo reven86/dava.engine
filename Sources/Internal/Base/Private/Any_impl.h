@@ -112,8 +112,12 @@ bool Any::CanCast() const
     if (CanGet<T>())
         return true;
 
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
     CastOPKey castOPKey{ type, Type::Instance<T>() };
     return (castOPsMap->count(castOPKey) > 0);
+#else
+    return false;
+#endif
 }
 
 template <typename T>
@@ -122,13 +126,7 @@ T Any::Cast() const
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 
-    // TODO:
-    // review cast OPs implementation
-    // ...
-    //
-    // -->
-    //
-
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
     CastOPKey castOPKey{ type, Type::Instance<T>() };
 
     auto it = castOPsMap->find(castOPKey);
@@ -142,11 +140,10 @@ T Any::Cast() const
 
     castOP(anyStorage.GetData(), &ret);
 
-    //
-    // <--
-    //
-
     return ret;
+#else
+    throw Exception(Exception::BadCast, "Value can't be casted into requested T");
+#endif
 }
 
 template <typename T>
@@ -200,6 +197,8 @@ static void Any::RegisterOPs(AnyOPs&& ops)
     anyOPsMap->operator[](type) = std::move(ops);
 }
 
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+
 template <typename From, typename To>
 static void Any::RegisterCastOP(CastOP& castOP)
 {
@@ -212,5 +211,7 @@ static void Any::RegisterCastOP(CastOP& castOP)
     const Type* toType = Type::Instance<To>();
     castOPsMap->operator[](CastOPKey{ fromType, toType }) = castOP;
 }
+
+#endif
 
 } // namespace DAVA
