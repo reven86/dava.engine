@@ -18,7 +18,6 @@ void Stop();
 
 uint64 GetLastCounterTime(const char* counterName);
 
-void Dump();
 void Dump(const char* fileName);
 void DumpLast(const char* counterName, uint32 counterCount = 1);
 void DumpAverage(const char* counterName, uint32 counterCount);

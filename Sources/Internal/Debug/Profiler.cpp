@@ -94,6 +94,94 @@ uint64 GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
+void DumpInternal(CounterArray::iterator begin)
+{
+    Thread::Id threadID = begin->tid;
+    uint64 endTime = begin->endTime;
+    Vector<uint64> parents;
+
+    char buf[1024];
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; ++it)
+    {
+        const TimeCounter& c = *it;
+
+        if (c.tid != threadID)
+            continue;
+
+        if (c.startTime > endTime || c.endTime == 0)
+            break;
+
+        if (c.tid == threadID)
+        {
+            while (parents.size() && (c.startTime >= parents.back()) && c.startTime != c.endTime)
+                parents.pop_back();
+
+            Snprintf(buf, countof(buf), "%*s%s", parents.size() * 2, "", c.name);
+            Logger::Info("%s [%llu us]", buf, c.endTime - c.startTime);
+
+            parents.push_back(c.endTime);
+        }
+    }
+}
+
+void DumpLast(const char* counterName, uint32 counterCount)
+{
+    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    for (; it != itEnd; it++)
+    {
+        if (NameEquals(counterName, it->name))
+        {
+            DumpInternal(CounterArray::iterator(it));
+            counterCount--;
+        }
+
+        if (counterCount == 0)
+            break;
+    }
+}
+
+void DumpAverage(const char* counterName, uint32 counterCount)
+{
+    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    for (; it != itEnd; it++)
+    {
+        if (NameEquals(counterName, it->name))
+            counterCount--;
+
+        if (counterCount == 0)
+            break;
+    }
+
+    //TODO
+}
+
+void Dump(const char* fileName)
+{
+    File* json = File::Create(fileName, File::CREATE | File::WRITE);
+    json->WriteLine("{ \"traceEvents\": [ ");
+
+    char buf[1024];
+    CounterArray::iterator it = counters.begin(), itEnd = counters.end();
+    CounterArray::iterator last(counters.rbegin());
+    for (; it != itEnd; it++)
+    {
+        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 0, uint64(it->tid), it->startTime, "B", "", it->name, ", ");
+
+        json->WriteLine(buf);
+
+        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
+                 0, uint64(it->tid), it->endTime ? it->endTime : it->startTime, "E", "", it->name, (it == last) ? "" : ", ");
+
+        json->WriteLine(buf);
+    }
+
+    json->WriteLine("] }");
+    json->Release();
+}
+
+#if 0 
 void LastChildLeaf(CounterArray::iterator begin, CounterArray::iterator& lastChild, CounterArray::iterator& lastLeaf)
 {
     Thread::Id threadID = begin->tid;
@@ -129,47 +217,60 @@ void LastChildLeaf(CounterArray::iterator begin, CounterArray::iterator& lastChi
         lastChild = begin;
 }
 
-void DumpInternal(CounterArray::iterator it)
+void DumpInternal2(CounterArray::iterator begin)
 {
-    Thread::Id threadID = it->tid;
-    Vector<uint64> parents;
-
-    CounterArray::iterator lastChild, lastLeaf;
-    LastChildLeaf(it, lastChild, lastLeaf);
-    for (; it != lastLeaf + 1; it++)
+    struct CounterNote
     {
-        const TimeCounter& c = *it;
+        CounterNote(TimeCounter* _counter, CounterNote* _parent)
+            : counter(_counter)
+            , parent(_parent)
+        {}
+        ~CounterNote()
+        {
+            for (CounterNote* c : children)
+                SafeDelete(c);
+        }
 
-        if (c.endTime == 0)
+        TimeCounter* counter = nullptr;
+        CounterNote* parent = nullptr;
+        Vector<CounterNote*> children;
+        uint64 dumpMask = 0;
+    };
+
+    static uint64 lastLeafMask = 1 << 63;
+    uint32 treeDepth = 0;
+
+    CounterNote* root = new CounterNote(nullptr, nullptr);
+    CounterNote* current = root;
+
+    Thread::Id threadID = begin->tid;
+    uint64 endTime = begin->endTime;
+
+    CounterArray::iterator end = counters.end();
+    for (CounterArray::iterator it = begin; it != end; ++it)
+    {
+        TimeCounter* c = &(*it);
+        if (c->tid != threadID)
             continue;
 
-        if (c.tid == threadID)
-        {
-            while (parents.size() && (c.startTime >= parents.back()) && c.startTime != c.endTime)
-                parents.pop_back();
-
-            Logger::Info("%*s%s    %llu us", parents.size(), "", c.name, c.endTime - c.startTime);
-
-            parents.push_back(c.endTime);
-        }
-    }
-}
-
-void DumpLast(const char* counterName, uint32 counterCount)
-{
-    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
-    for (; it != itEnd; it++)
-    {
-        if (NameEquals(counterName, it->name))
-        {
-            DumpInternal(CounterArray::iterator(it));
-            counterCount--;
-        }
-
-        if (counterCount == 0)
+        if (c->startTime > endTime || c->endTime == 0)
             break;
+
+        while (current->counter && (c->startTime >= current->counter->endTime) && c->startTime != c->endTime)
+        {
+            current = current->parent;
+        }
+
+        current->children.push_back(new CounterNote(c, current));
+        current = current->children.back();
+        ++treeDepth;
     }
+
+
+
+    SafeDelete(root);
 }
+
 
 void Dump()
 {
@@ -216,36 +317,7 @@ void Dump()
         threadsProcessed.insert(threadID);
     }
 }
-
-void DumpAverage(const char* eventName, uint32 count)
-{
-}
-
-void Dump(const char* fileName)
-{
-    File* json = File::Create(fileName, File::CREATE | File::WRITE);
-    json->WriteLine("{ \"traceEvents\": [ ");
-
-    char buf[1024];
-    CounterArray::iterator it = counters.begin(), itEnd = counters.end();
-    CounterArray::iterator last(counters.rbegin());
-    for (; it != itEnd; it++)
-    {
-        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-                 0, uint64(it->tid), it->startTime, "B", "", it->name, ", ");
-
-        json->WriteLine(buf);
-
-        Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
-                 0, uint64(it->tid), it->endTime ? it->endTime : it->startTime, "E", "", it->name, (it == last) ? "" : ", ");
-
-        json->WriteLine(buf);
-    }
-
-    json->WriteLine("] }");
-    json->Release();
-}
-
+#endif
 
 } //ns Profiler
 
