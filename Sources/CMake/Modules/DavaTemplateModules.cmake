@@ -364,6 +364,9 @@ macro( setup_main_module )
             endif()
 
         endif()
+
+        set_property( GLOBAL PROPERTY MODULES_NAME "${NAME_MODULE}" )
+
     endif()
 
 endmacro ()
