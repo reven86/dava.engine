@@ -2,7 +2,9 @@
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
 
-#include "Engine/Engine.h"
+#include "Engine/Public/Engine.h"
+#include "Engine/Public/Window.h"
+#include "Engine/Public/WindowNativeService.h"
 #include "Functional/Function.h"
 
 #include "Debug/DVAssert.h"
@@ -39,7 +41,6 @@ void Core::SetControllerModule(ControllerModule* module)
 
 void Core::OnFrame()
 {
-    DAVA::Logger::Info("On Frame call");
     for (DataWrapper& wrapper : wrappers)
     {
         wrapper.Sync(true);
@@ -58,7 +59,7 @@ void Core::OnLoopStarted()
 
     for (ClientModule* module : modules)
     {
-        module->PostInit();
+        module->PostInit(uiManager);
     }
 }
 
@@ -139,6 +140,13 @@ DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor, bool 
     return wrapper;
 }
 
+DAVA::EngineContext& Core::GetEngine()
+{
+    DAVA::EngineContext* engineContext = engine.GetContext();
+    DVASSERT(engineContext);
+    return *engineContext;
+}
+
 DataContext::ContextID Core::CreateContext()
 {
     contexts.push_back(std::make_unique<DataContext>());
@@ -209,6 +217,11 @@ void Core::ActivateContext(DataContext* context)
     {
         wrapper.SetContext(activeContext);
     }
+}
+
+DAVA::RenderWidget* Core::GetRenderWidget() const
+{
+    return engine.PrimaryWindow()->GetNativeService()->GetRenderWidget();
 }
 
 }

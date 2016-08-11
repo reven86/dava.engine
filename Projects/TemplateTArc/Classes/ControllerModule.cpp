@@ -1,7 +1,11 @@
 #include "ControllerModule.h"
 
 #include "SharedData.h"
+
+#include "WindowSubSystem/UI.h"
 #include "TArcCore/ContextAccessor.h"
+
+#include <QListWidget>
 
 void TemplateControllerModule::OnContextCreated(tarc::DataContext& context)
 {
@@ -12,12 +16,16 @@ void TemplateControllerModule::OnContextDeleted(tarc::DataContext& context)
 {
 }
 
-void TemplateControllerModule::PostInit()
+void TemplateControllerModule::PostInit(tarc::UI& ui)
 {
-    contextID = GetContextManager().CreateContext();
-    GetContextManager().ActivateContext(contextID);
+    tarc::ContextManager& manager = GetContextManager();
+    contextID = manager.CreateContext();
+    manager.ActivateContext(contextID);
     wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
     wrapper.AddListener(this);
+
+    tarc::CentralPanelInfo info;
+    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info), manager.GetRenderWidget());
 }
 
 void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&)

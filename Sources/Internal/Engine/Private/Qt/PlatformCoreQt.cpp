@@ -53,12 +53,12 @@ void PlatformCore::Run()
                          }
                      });
 
-    engineBackend->OnGameLoopStarted();
     windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
     if (windowBackend == nullptr)
     {
         return;
     }
+    engineBackend->OnGameLoopStarted();
     timer.start(16.0);
 
     QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()

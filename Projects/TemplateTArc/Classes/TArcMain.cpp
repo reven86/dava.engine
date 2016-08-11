@@ -3,7 +3,7 @@
 
 #include "TArcCore/TArcCore.h"
 
-#include "Engine/Engine.h"
+#include "Engine/Public/Engine.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"

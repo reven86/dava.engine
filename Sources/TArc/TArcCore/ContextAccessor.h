@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/Public/EngineContext.h"
+
 #include "DataProcessing/DataContext.h"
 #include "DataProcessing/DataWrapper.h"
 
@@ -23,6 +25,8 @@ public:
 
     virtual DataWrapper CreateWrapper(const DAVA::Type* type, bool listenRecursive = false) = 0;
     virtual DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive = false) = 0;
+
+    virtual DAVA::EngineContext& GetEngine() = 0;
 };
 
 }

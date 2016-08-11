@@ -2,11 +2,16 @@
 
 #include "TArcCore/ContextAccessor.h"
 #include "TArcCore/ContextManager.h"
+#include "WindowSubSystem/Private/UIManager.h"
 
-#include "Engine/EngineFwd.h"
 #include "Base/BaseTypes.h"
 
 #include <memory>
+
+namespace DAVA
+{
+class Engine;
+}
 
 namespace tarc
 {
@@ -48,6 +53,7 @@ private:
     bool HasActiveContext() const override;
     DataWrapper CreateWrapper(const DAVA::Type* type, bool listenRecursive = false) override;
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive = false) override;
+    DAVA::EngineContext& GetEngine() override;
 
     // Inherited via ContextManager
     DataContext::ContextID CreateContext() override;
@@ -55,6 +61,7 @@ private:
     void ActivateContext(DataContext::ContextID contextID) override;
 
     void ActivateContext(DataContext* context);
+    DAVA::RenderWidget* GetRenderWidget() const;
 
 private:
     DAVA::Engine& engine;
@@ -66,6 +73,8 @@ private:
     ControllerModule* controllerModule = nullptr;
 
     DAVA::Vector<DataWrapper> wrappers;
+
+    UIManager uiManager;
 };
 
 }

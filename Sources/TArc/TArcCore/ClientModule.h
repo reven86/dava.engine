@@ -3,6 +3,7 @@
 namespace tarc
 {
 
+class UI;
 class DataContext;
 class ContextAccessor;
 
@@ -14,7 +15,7 @@ protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
 
-    virtual void PostInit() = 0;
+    virtual void PostInit(UI& ui) = 0;
     ContextAccessor& GetAccessor();
 
 private:
