@@ -37,6 +37,5 @@ extern void (*RejectFrame)(CommonImpl::Frame&&); //should also handle command bu
 
 extern bool (*PresntBuffer)();
 extern void (*ResetBlock)();
-extern int test;
 }
 }

@@ -1,16 +1,17 @@
 #include "rhi_DX9.h"
-    #include "../Common/rhi_Impl.h"
-    
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Core/Core.h"
+#include "../Common/rhi_Impl.h"
+#include "../Common/CommonImpl.h"
+
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
-    #include "_dx9.h"
-    #include "../rhi_Type.h"
-    #include "../Common/dbg_StatSet.h"
+#include "_dx9.h"
+#include "../rhi_Type.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include <vector>
+#include <vector>
 
 
 #define E_MINSPEC (-3) // Error code for gfx-card that doesn't meet min.spec
@@ -158,7 +159,7 @@ dx9_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
-void _InitDX9()
+void InitContext()
 {
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
@@ -335,12 +336,18 @@ void _InitDX9()
     }
 }
 
+void AcquireContext()
+{
+}
+void ReleaseContext()
+{
+}
+
 //------------------------------------------------------------------------------
 
 void dx9_Initialize(const InitParam& param)
 {
     _DX9_InitParam = param;
-    InitializeRenderThreadDX9((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 
     VertexBufferDX9::SetupDispatch(&DispatchDX9);
     IndexBufferDX9::SetupDispatch(&DispatchDX9);
@@ -362,6 +369,10 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_DeviceCaps = &dx9_DeviceCaps;
 
     SetDispatchTable(DispatchDX9);
+
+    DispatchPlatform::InitContext = &InitContext;
+    DispatchPlatform::AcquireContext = &AcquireContext;
+    DispatchPlatform::ReleaseContext = &ReleaseContext;
 
     if (param.maxVertexBufferCount)
         VertexBufferDX9::Init(param.maxVertexBufferCount);

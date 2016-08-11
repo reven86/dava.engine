@@ -15,6 +15,9 @@ static bool frameStarted = false;
 static bool renderContextReady = false;
 static bool resetPending = false;
 
+static uint32 framesWithRestoreAttempt = 0;
+const uint32 maxFramesWithRestoreAttempt = 15;
+
 void RejectFrames()
 {
     frameSync.Lock();
@@ -42,8 +45,12 @@ void ProcessFrame()
         RejectFrames();
         return;
     }*/
-
     bool presentResult = false;
+    if (NeedRestoreResources())
+    {
+        RejectFrames();
+    }
+
     if (!resetPending)
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
@@ -53,9 +60,12 @@ void ProcessFrame()
         CommonImpl::Frame currFrame = std::move(frames.front());
         frames.erase(frames.begin());
         frameSync.Unlock();
-
         currFrame.frameNumber = currFrameNumber;
-        DispatchPlatform::ExecuteFrame(std::move(currFrame));
+
+        if (NeedRestoreResources())
+            DispatchPlatform::RejectFrame(std::move(currFrame));
+        else
+            DispatchPlatform::ExecuteFrame(std::move(currFrame));
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");

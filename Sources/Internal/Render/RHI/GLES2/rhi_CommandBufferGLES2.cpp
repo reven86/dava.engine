@@ -1428,9 +1428,7 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {
     StatSet::ResetAll();
 
-    Trace("rhi-gl.exec-queued-cmd\n");
     std::vector<RenderPassGLES2_t*> pass;
-    std::vector<Handle> pass_h;
     unsigned frame_n = 0;
 
     for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
@@ -1452,7 +1450,6 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
             pass.push_back(pp);
     }
 
-    pass_h = frame.pass;
     frame_n = frame.frameNumber;
 
     if (frame.sync != InvalidHandle)
@@ -1488,7 +1485,7 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
             CommandBufferPoolGLES2::Free(cb_h);
         }
     }
-    for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
+    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
         RenderPassPoolGLES2::Free(*p);
 
     //update sync objects for gl
@@ -1995,7 +1992,6 @@ void SetupDispatch(Dispatch* dispatch)
     DispatchPlatform::PresntBuffer = _GLES2_PresentBuffer;
     DispatchPlatform::ResetBlock = _GLES2_ResetBlock;
     DispatchPlatform::InvalidateFrameCache = _GLES2_InvalidateFrameCache;
-    DispatchPlatform::test = 11;
 }
 }
 

@@ -132,6 +132,10 @@ void InitializeRenderLoop(uint32 frameCount)
         //        renderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH); //think - may be threading priority should be somehow configurable
         renderThredStartedSync.Wait();
     }
+    else
+    {
+        DispatchPlatform::InitContext();
+    }
 }
 
 void SuspendRender()

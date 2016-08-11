@@ -213,8 +213,6 @@ public:
     void Begin();
     void End();
 
-    RingBuffer* text = nullptr;
-
     template <class T>
     inline T* allocCmd()
     {
@@ -233,6 +231,7 @@ public:
     uint8* cmdData = nullptr;
     uint32 cmdDataSize = 0;
     uint32 curUsedSize = 0;
+    RingBuffer* text = nullptr;
 };
 
 struct SoftwareCommandBufferUnpacked
@@ -248,6 +247,8 @@ public:
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
     void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
+    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7);
+    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8);
 
     std::vector<uint64> _cmd;
     static const uint64 EndCmd = 0xFFFFFFFF;

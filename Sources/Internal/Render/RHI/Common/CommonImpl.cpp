@@ -17,7 +17,5 @@ void (*RejectFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command
 
 bool (*PresntBuffer)() = nullptr;
 void (*ResetBlock)() = nullptr;
-
-int test;
 }
 }
