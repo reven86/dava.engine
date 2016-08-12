@@ -62,6 +62,7 @@ public:
     inline uint32 GetWidth() const;
     inline uint32 GetHeight() const;
     inline uint8* GetData() const;
+    inline uint32 GetDataSize() const;
     inline PixelFormat GetPixelFormat() const;
 
 #ifdef __DAVAENGINE_IPHONE__
@@ -187,14 +188,22 @@ uint32 Image::GetWidth() const
 {
     return width;
 }
+
 uint32 Image::GetHeight() const
 {
     return height;
 }
+
 uint8* Image::GetData() const
 {
     return data;
 }
+
+uint32 Image::GetDataSize() const
+{
+    return dataSize;
+}
+
 PixelFormat Image::GetPixelFormat() const
 {
     return format;
