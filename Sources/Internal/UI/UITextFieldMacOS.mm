@@ -378,6 +378,7 @@ public:
 
         nsTextView = [[CustomTextView alloc] initWithFrame:CGRectMake(0.f, 0.f, 0.f, 0.f)];
         [nsTextView setWantsLayer:YES]; // need to be visible over opengl view
+        [nsTextView setRichText:NO]; // disable rich text support (copy from clipboard)
 
         objcDelegate = [[MultilineDelegate alloc] init];
         if (nullptr != davaText_)
