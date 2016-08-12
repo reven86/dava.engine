@@ -1,4 +1,5 @@
 #include "Tests/MicroWebBrowserTest.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 MicroWebBrowserTest::MicroWebBrowserTest()
     : BaseScreen("MicroWebBrowserTest")
