@@ -15,8 +15,8 @@ struct RemoteServerParams
     RemoteServerParams() = default;
     RemoteServerParams(DAVA::String _ip, DAVA::uint16 _port, bool _enabled);
 
+    void SetEmpty();
     bool IsEmpty() const;
-    bool EquivalentTo(const DAVA::Net::Endpoint& right) const;
 
     bool operator==(const RemoteServerParams& right) const;
     bool operator<(const RemoteServerParams& right) const;
@@ -24,6 +24,76 @@ struct RemoteServerParams
     DAVA::String ip = "";
     DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
     bool enabled = false;
+};
+
+using ServerID = DAVA::uint32;
+using PoolID = DAVA::uint32;
+
+struct SharedPoolParams
+{
+    PoolID poolID;
+    DAVA::String name;
+    DAVA::String description;
+};
+
+struct SharedServerParams
+{
+    ServerID serverID;
+    PoolID poolID;
+    DAVA::String ip;
+    DAVA::uint16 port;
+    DAVA::String name;
+};
+
+struct SharedServer
+{
+    ServerID serverID = 0;
+    PoolID poolID = 0;
+    DAVA::String serverName;
+    RemoteServerParams remoteParams;
+};
+
+struct SharedPool
+{
+    PoolID poolID = 0;
+    DAVA::String poolName;
+    DAVA::String poolDescription;
+    bool enabled = false;
+    DAVA::Map<ServerID, SharedServer> servers;
+};
+
+struct EnabledRemote
+{
+    enum Type
+    {
+        POOL,
+        POOL_SERVER,
+        CUSTOM_SERVER,
+        NONE
+    } type = NONE;
+    union
+    {
+        SharedPool* pool = nullptr;
+        SharedServer* server;
+        RemoteServerParams* customServer;
+    };
+
+    EnabledRemote() = default;
+    EnabledRemote(SharedPool* pool)
+        : type(POOL)
+        , pool(pool)
+    {
+    }
+    EnabledRemote(SharedServer* server)
+        : type(POOL_SERVER)
+        , server(server)
+    {
+    }
+    EnabledRemote(RemoteServerParams* server)
+        : type(CUSTOM_SERVER)
+        , customServer(server)
+    {
+    }
 };
 
 //TODO: we need one code for settings in different projects
@@ -43,6 +113,7 @@ private:
     static const bool DEFAULT_AUTO_START;
     static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
     static const bool DEFAULT_RESTART_ON_CRASH;
+    static const bool DEFAULT_SHARED_FOR_OTHERS;
 
 public:
     void Save() const;
@@ -77,12 +148,30 @@ public:
     const bool IsRestartOnCrash() const;
     void SetRestartOnCrash(bool);
 
-    const DAVA::List<RemoteServerParams>& GetServers() const;
-    void ResetServers();
-    void AddServer(const RemoteServerParams& server);
-    void RemoveServer(const RemoteServerParams& server);
+    bool IsSharedForOthers() const;
+    void SetSharedForOthers(bool);
 
-    RemoteServerParams GetCurrentServer() const;
+    ServerID OwnID() const;
+    void SetOwnID(ServerID);
+
+    void UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
+    const DAVA::Map<PoolID, SharedPool>& GetSharedPools() const;
+    void EnableSharedPool(PoolID poolID);
+    void EnableSharedServer(PoolID poolID, ServerID serverID);
+
+    //     void AddSharedPool(const SharedPool& pool);
+    //     void AddSharedServer(const SharedServer& server);
+    //     void RemoveSharedPool(const SharedPool& pool);
+    //     void RemoveSharedServer(const SharedServer& server);
+
+    const DAVA::List<RemoteServerParams>& GetCustomServers() const;
+    void AddCustomServer(const RemoteServerParams& server);
+    void RemoveCustomServer(const RemoteServerParams& server);
+    void ClearCustomServers();
+
+    DAVA::List<RemoteServerParams> GetEnabledRemoteServers();
+    EnabledRemote GetEnabledRemote();
+    void DisableRemote();
 
 signals:
     void SettingsUpdated(const ApplicationSettings* settings) const;
@@ -101,7 +190,11 @@ public:
     bool autoStart = DEFAULT_AUTO_START;
     bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
     bool restartOnCrash = DEFAULT_RESTART_ON_CRASH;
-    DAVA::List<RemoteServerParams> remoteServers;
+    bool sharedForOthers = DEFAULT_SHARED_FOR_OTHERS;
+    ServerID ownID = 0;
+
+    DAVA::Map<PoolID, SharedPool> sharedPools;
+    DAVA::List<RemoteServerParams> customServers;
 
     bool isFirstLaunch = true;
 };

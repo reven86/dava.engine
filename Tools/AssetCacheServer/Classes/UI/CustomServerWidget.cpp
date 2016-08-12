@@ -1,26 +1,26 @@
-#include "RemoteServerWidget.h"
-#include "ui_RemoteServerWidget.h"
+#include "CustomServerWidget.h"
+#include "ui_CustomServerWidget.h"
 
 #include <QValidator>
 
-RemoteServerWidget::RemoteServerWidget(QWidget* parent)
+CustomServerWidget::CustomServerWidget(QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::RemoteServerWidget)
+    , ui(new Ui::CustomServerWidget)
 {
     ui->setupUi(this);
 
     ui->ipLineEdit->setText(DAVA::AssetCache::GetLocalHost().c_str());
 
     connect(ui->removeServerButton, &QPushButton::clicked,
-            this, &RemoteServerWidget::RemoveLater);
+            this, &CustomServerWidget::RemoveLater);
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &RemoteServerWidget::OnParametersChanged);
+            this, &CustomServerWidget::OnParametersChanged);
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
-RemoteServerWidget::RemoteServerWidget(const RemoteServerParams& newServer, QWidget* parent)
-    : RemoteServerWidget(parent)
+CustomServerWidget::CustomServerWidget(const RemoteServerParams& newServer, QWidget* parent)
+    : CustomServerWidget(parent)
 {
     ui->enabledCheckBox->setChecked(newServer.enabled);
     ui->ipLineEdit->setText(newServer.ip.c_str());
@@ -28,37 +28,37 @@ RemoteServerWidget::RemoteServerWidget(const RemoteServerParams& newServer, QWid
     ui->portSpinBox->setEnabled(true);
 }
 
-RemoteServerWidget::~RemoteServerWidget()
+CustomServerWidget::~CustomServerWidget()
 {
     delete ui;
 }
 
-RemoteServerParams RemoteServerWidget::GetServerData() const
+RemoteServerParams CustomServerWidget::GetServerData() const
 {
     return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
 }
 
-bool RemoteServerWidget::IsCorrectData()
+bool CustomServerWidget::IsCorrectData()
 {
     return true;
 }
 
-void RemoteServerWidget::OnParametersChanged()
+void CustomServerWidget::OnParametersChanged()
 {
     emit ParametersChanged();
 }
 
-void RemoteServerWidget::OnChecked(int val)
+void CustomServerWidget::OnChecked(int val)
 {
     emit ServerChecked(val == Qt::Checked);
 }
 
-bool RemoteServerWidget::IsChecked() const
+bool CustomServerWidget::IsChecked() const
 {
     return ui->enabledCheckBox->isChecked();
 }
 
-void RemoteServerWidget::SetChecked(bool checked)
+void CustomServerWidget::SetChecked(bool checked)
 {
     ui->enabledCheckBox->setChecked(checked);
 }

@@ -6,6 +6,7 @@
 #include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
+#include "SharedDataRequester.h"
 
 #include <atomic>
 #include <QObject>
@@ -22,6 +23,7 @@ class ServerCore : public QObject,
     static const DAVA::uint32 UPDATE_INTERVAL_MS = 1;
     static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
     static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 1; // 5 * 60;
 
 public:
     enum class State
@@ -76,6 +78,7 @@ private slots:
     void OnTimerUpdate();
     void OnConnectTimeout();
     void OnReattemptTimer();
+    void OnSharedDataUpdateTimer();
 
 private:
     void StartListening();
@@ -85,6 +88,8 @@ private:
     bool VerifyRemote();
     void DisconnectRemote();
     void ReconnectRemoteLater();
+    void UseNextRemote();
+    void ResetRemotesList();
 
 private:
     AssetCacheHttpServer httpServer;
@@ -100,11 +105,16 @@ private:
 
     DAVA::String appPath;
 
-    RemoteServerParams remoteServerData;
+    DAVA::Vector<RemoteServerParams> remoteServers;
+    DAVA::int32 remoteServerIndex = -1;
+    RemoteServerParams currentRemoteServer;
 
-    QTimer* updateTimer;
-    QTimer* connectTimer;
-    QTimer* reconnectWaitTimer;
+    SharedDataRequester sharedDataRequester;
+
+    QTimer* updateTimer = nullptr;
+    QTimer* connectTimer = nullptr;
+    QTimer* reconnectWaitTimer = nullptr;
+    QTimer* sharedDataUpdateTimer = nullptr;
 };
 
 inline ServerCore::State ServerCore::GetState() const

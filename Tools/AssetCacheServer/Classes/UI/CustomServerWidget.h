@@ -1,22 +1,21 @@
-#ifndef __REMOTE_ASSET_CACHE_SERVER_H__
-#define __REMOTE_ASSET_CACHE_SERVER_H__
+#pragma once
 
 #include <QWidget>
 #include "ApplicationSettings.h"
 
 namespace Ui
 {
-class RemoteServerWidget;
+class CustomServerWidget;
 }
 
-class RemoteServerWidget : public QWidget
+class CustomServerWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RemoteServerWidget(QWidget* parent = nullptr);
-    explicit RemoteServerWidget(const RemoteServerParams& newServer, QWidget* parent = nullptr);
-    ~RemoteServerWidget() override;
+    explicit CustomServerWidget(QWidget* parent = nullptr);
+    explicit CustomServerWidget(const RemoteServerParams& newServer, QWidget* parent = nullptr);
+    ~CustomServerWidget() override;
 
     RemoteServerParams GetServerData() const;
 
@@ -35,7 +34,5 @@ private slots:
     void OnChecked(int val);
 
 private:
-    Ui::RemoteServerWidget* ui;
+    Ui::CustomServerWidget* ui;
 };
-
-#endif // __REMOTE_ASSET_CACHE_SERVER_H__

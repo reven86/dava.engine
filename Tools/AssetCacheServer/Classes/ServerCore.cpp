@@ -33,7 +33,17 @@ ServerCore::ServerCore()
     reconnectWaitTimer->setSingleShot(true);
     QObject::connect(reconnectWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
 
+    sharedDataUpdateTimer = new QTimer(this);
+    sharedDataUpdateTimer->setInterval(SHARED_UPDATE_INTERVAL_SEC * 1000);
+    sharedDataUpdateTimer->setSingleShot(false);
+    sharedDataUpdateTimer->start();
+    QObject::connect(sharedDataUpdateTimer, &QTimer::timeout, this, &ServerCore::OnSharedDataUpdateTimer);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::SharedDataReceived, &settings, &ApplicationSettings::UpdateSharedPools);
+
     settings.Load();
+
+    ResetRemotesList();
+    UseNextRemote();
 }
 
 ServerCore::~ServerCore()
@@ -47,7 +57,6 @@ void ServerCore::Start()
     {
         StartListening();
 
-        remoteServerData = settings.GetCurrentServer();
         ConnectRemote();
 
         updateTimer->start(UPDATE_INTERVAL_MS);
@@ -90,9 +99,9 @@ bool ServerCore::ConnectRemote()
 {
     DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT)
 
-    if (!remoteServerData.ip.empty())
+    if (!currentRemoteServer.IsEmpty())
     {
-        bool created = clientProxy.Connect(remoteServerData.ip, remoteServerData.port);
+        bool created = clientProxy.Connect(currentRemoteServer.ip, currentRemoteServer.port);
         if (created)
         {
             connectTimer->start();
@@ -127,8 +136,39 @@ void ServerCore::DisconnectRemote()
 void ServerCore::ReconnectRemoteLater()
 {
     DisconnectRemote();
+    UseNextRemote();
     remoteState = RemoteState::WAITING_REATTEMPT;
     reconnectWaitTimer->start();
+}
+
+void ServerCore::UseNextRemote()
+{
+    if (remoteServerIndex == -1)
+    {
+        if (remoteServers.empty() == false)
+        {
+            remoteServerIndex = 0;
+            currentRemoteServer = remoteServers.front();
+        }
+        else
+        {
+            currentRemoteServer.SetEmpty();
+        }
+    }
+    else
+    {
+        DVASSERT(remoteServerIndex < remoteServers.size());
+        if (++remoteServerIndex == remoteServers.size())
+            remoteServerIndex = 0;
+        currentRemoteServer = remoteServers[remoteServerIndex];
+    }
+}
+
+void ServerCore::ResetRemotesList()
+{
+    DAVA::List<RemoteServerParams> remotes = settings.GetEnabledRemoteServers();
+    remoteServers.assign(std::make_move_iterator(std::begin(remotes)), std::make_move_iterator(std::end(remotes)));
+    remoteServerIndex = -1;
 }
 
 void ServerCore::OnTimerUpdate()
@@ -152,6 +192,11 @@ void ServerCore::OnReattemptTimer()
 {
     ConnectRemote();
     emit ServerStateChanged(this);
+}
+
+void ServerCore::OnSharedDataUpdateTimer()
+{
+    sharedDataRequester.RequestSharedData(settings.OwnID());
 }
 
 void ServerCore::OnClientProxyStateChanged()
@@ -201,7 +246,16 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
     auto sizeGb = settings.GetCacheSizeGb();
     auto count = settings.GetFilesCount();
     auto autoSaveTimeoutMin = settings.GetAutoSaveTimeoutMin();
-    const auto remoteServer = settings.GetCurrentServer();
+
+    bool remoteChanged = false;
+
+    ResetRemotesList();
+    auto found = std::find(remoteServers.begin(), remoteServers.end(), currentRemoteServer);
+    if (found == remoteServers.end())
+    {
+        remoteChanged = true;
+        UseNextRemote();
+    }
 
     bool needServerRestart = false;
     bool needClientRestart = false;
@@ -214,8 +268,8 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
             StopListening();
         }
 
-        if ((remoteState != RemoteState::STOPPED && !(remoteServerData == remoteServer)) ||
-            (remoteState == RemoteState::STOPPED && !remoteServer.ip.empty()))
+        if ((remoteState != RemoteState::STOPPED && remoteChanged) ||
+            (remoteState == RemoteState::STOPPED && !currentRemoteServer.IsEmpty()))
         {
             needClientRestart = true;
             DisconnectRemote();
@@ -240,7 +294,6 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
 
     if (state == State::STARTED && needClientRestart)
     {
-        remoteServerData = remoteServer;
         ConnectRemote();
     }
 
