@@ -38,7 +38,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 # set included libraries
 LOCAL_STATIC_LIBRARIES := libInternal

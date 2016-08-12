@@ -28,7 +28,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) )
 
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 ifeq ($(MEMORY_SANITIZE), true)
 LOCAL_ARM_MODE := arm

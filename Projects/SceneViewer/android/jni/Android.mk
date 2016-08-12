@@ -28,7 +28,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) )
 
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 # set included libraries
 LOCAL_STATIC_LIBRARIES := libInternal

@@ -24,7 +24,7 @@ LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/*/*.cpp))
 
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 # set included libraries
 LOCAL_WHOLE_STATIC_LIBRARIES := libInternal
