@@ -3,6 +3,7 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
+#include "Concurrency/Thread.h"
 
 //==============================================================================
 
@@ -69,7 +70,7 @@ ScopedCounter::ScopedCounter(const char* counterName)
 
 ScopedCounter::~ScopedCounter()
 {
-    if (profilerStarted && endTime)
+    if (endTime)
     {
         DVASSERT(*endTime == 0 && "Profiler counter ended but not started");
         *endTime = CurTimeUs();
@@ -136,7 +137,7 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file)
     CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
     for (; it != itEnd; it++)
     {
-        if (NameEquals(counterName, it->name))
+        if (it->endTime != 0 && NameEquals(counterName, it->name))
         {
             DumpInternal(CounterArray::iterator(it), file);
             counterCount--;
@@ -152,7 +153,7 @@ void DumpAverage(const char* counterName, uint32 counterCount, File* file)
     CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
     for (; it != itEnd; it++)
     {
-        if (NameEquals(counterName, it->name))
+        if (NameEquals(counterName, it->name) && it->endTime != 0)
             counterCount--;
 
         if (counterCount == 0)
