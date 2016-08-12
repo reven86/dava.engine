@@ -365,7 +365,7 @@ public:
 protected:
     std::array<T, _Size> elements;
     uint32 mask = _Size - 1;
-    _HeadType head = 0;
+    _HeadType head = { 0 };
 };
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
