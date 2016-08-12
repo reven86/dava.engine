@@ -4,6 +4,7 @@
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
+#include "Utils/Utils.h"
 
 //==============================================================================
 

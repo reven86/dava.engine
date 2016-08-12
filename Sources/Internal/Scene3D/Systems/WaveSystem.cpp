@@ -8,7 +8,7 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA

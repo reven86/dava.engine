@@ -2,7 +2,7 @@
 #include "Scene3D/Components/UpdatableComponent.h"
 #include "Scene3D/Entity.h"
 #include "Platform/SystemTimer.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

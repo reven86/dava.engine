@@ -10,7 +10,7 @@
 
 #include "Render/Highlevel/Camera.h"
 #include "Render/RenderHelper.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA

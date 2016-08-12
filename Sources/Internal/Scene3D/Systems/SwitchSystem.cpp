@@ -4,7 +4,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"

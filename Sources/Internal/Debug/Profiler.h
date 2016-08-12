@@ -7,7 +7,6 @@ using DAVA::uint64;
 
 #define PROFILER_ENABLED 1
 
-
 namespace DAVA
 {
 class File;

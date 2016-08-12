@@ -7,7 +7,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "Platform/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
-#include "Debug/Stats.h"
 #include "Debug/Profiler.h"
 #include "Scene3D/Systems/EventSystem.h"
 

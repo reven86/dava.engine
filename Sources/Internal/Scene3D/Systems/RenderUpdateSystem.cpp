@@ -16,7 +16,7 @@
 #include "Render/Highlevel/RenderSystem.h"
 #include "Scene3D/Scene.h"
 #include "Platform/SystemTimer.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

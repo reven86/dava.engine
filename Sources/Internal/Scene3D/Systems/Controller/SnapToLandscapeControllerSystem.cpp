@@ -10,6 +10,8 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 
+#include "Debug/Profiler.h"
+
 namespace DAVA
 {
 SnapToLandscapeControllerSystem::SnapToLandscapeControllerSystem(Scene* scene)

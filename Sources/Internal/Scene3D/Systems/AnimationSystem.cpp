@@ -5,7 +5,7 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"

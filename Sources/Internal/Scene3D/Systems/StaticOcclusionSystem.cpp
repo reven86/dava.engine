@@ -17,7 +17,7 @@
 #include "Scene3D/Lod/LodSystem.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

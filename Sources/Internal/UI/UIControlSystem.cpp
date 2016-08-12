@@ -5,7 +5,6 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
-#include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"

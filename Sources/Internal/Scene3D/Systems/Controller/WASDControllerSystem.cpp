@@ -12,6 +12,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

@@ -3,7 +3,7 @@
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

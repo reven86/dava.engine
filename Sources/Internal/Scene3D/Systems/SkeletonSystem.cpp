@@ -4,6 +4,7 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

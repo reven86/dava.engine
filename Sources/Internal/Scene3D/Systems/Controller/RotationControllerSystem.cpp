@@ -12,6 +12,8 @@
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 
+#include "Debug/Profiler.h"
+
 namespace DAVA
 {
 const float32 RotationControllerSystem::maxViewAngle = 89.0f;

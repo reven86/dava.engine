@@ -7,7 +7,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {

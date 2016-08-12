@@ -33,6 +33,8 @@
 
 #include "Job/JobManager.h"
 
+#include "Debug/Profiler.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on

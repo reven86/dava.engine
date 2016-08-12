@@ -9,7 +9,6 @@
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
-#include "Debug/Stats.h"
 
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"

@@ -10,7 +10,7 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
-#include "Debug/Stats.h"
+#include "Debug/Profiler.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
