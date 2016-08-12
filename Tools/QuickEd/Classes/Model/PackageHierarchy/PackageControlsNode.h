@@ -40,6 +40,12 @@ public:
 
     ControlNode* FindControlNodeByName(const DAVA::String& name) const;
 
+    DAVA::Vector<ControlNode*>::const_iterator begin() const override;
+    DAVA::Vector<ControlNode*>::const_iterator end() const override;
+
+    DAVA::Vector<ControlNode*>::iterator begin() override;
+    DAVA::Vector<ControlNode*>::iterator end() override;
+
 private:
     DAVA::Vector<ControlNode*> nodes;
 };

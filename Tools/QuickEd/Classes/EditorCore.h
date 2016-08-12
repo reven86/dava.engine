@@ -51,6 +51,7 @@ private slots:
 
     void OnExit();
     void OnNewProject();
+    void OnProjectOpenChanged(bool arg);
 
 private:
     void OpenProject(const QString& path);
