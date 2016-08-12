@@ -66,8 +66,6 @@ public:
                   //maximum size of projects history
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
-
-    REGISTER_PREFERENCES(Project)
 };
 
 #endif // QUICKED__PROJECT_H__

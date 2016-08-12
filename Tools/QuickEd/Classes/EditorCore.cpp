@@ -81,6 +81,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
@@ -89,6 +91,8 @@ EditorCore::~EditorCore()
     {
         cacheClient->Disconnect();
     }
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 MainWindow* EditorCore::GetMainWindow() const

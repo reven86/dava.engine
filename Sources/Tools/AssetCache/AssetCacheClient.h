@@ -13,11 +13,11 @@ class AssetCacheClient final : public AssetCache::ClientNetProxyListener
 public:
     struct ConnectionParams : InspBase
     {
+        ConnectionParams();
+        ~ConnectionParams();
         String ip = AssetCache::GetLocalHost();
         uint16 port = AssetCache::ASSET_SERVER_PORT;
         uint64 timeoutms = 60 * 1000;
-
-        REGISTER_PREFERENCES(ConnectionParams)
 
         INTROSPECTION(ConnectionParams,
                       MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_PREFERENCE)

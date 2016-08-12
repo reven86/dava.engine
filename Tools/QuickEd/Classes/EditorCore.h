@@ -70,7 +70,6 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
-    REGISTER_PREFERENCES(EditorCore)
 
 public:
     INTROSPECTION(EditorCore,
