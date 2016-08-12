@@ -177,4 +177,9 @@ Vector<UIStyleSheetSelector>::const_reverse_iterator UIStyleSheetSelectorChain::
 {
     return selectors.rend();
 }
+    
+int32 UIStyleSheetSelectorChain::GetSize() const
+{
+    return selectors.size();
+}
 }

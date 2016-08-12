@@ -20,6 +20,8 @@ public:
     UIStyleSheetPropertyDataBase();
 
     uint32 GetStyleSheetPropertyIndex(const FastName& name) const;
+    uint32 GetStyleSheetVisiblePropertyIndex() const { return visiblePropertyIndex; }
+    
     bool IsValidStyleSheetProperty(const FastName& name) const;
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
     int32 FindStyleSheetPropertyByMember(const InspMember* memberInfo) const;
@@ -40,6 +42,8 @@ private:
     Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties; // have to be after groups declaration
 
     UnorderedMap<FastName, uint32> propertyNameToIndexMap;
+    
+    uint32 visiblePropertyIndex;
 };
 
 typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;

@@ -26,7 +26,12 @@ public:
     void ResetGlobalTaggedClass(const FastName& tag);
     void ClearGlobalClasses();
 
+    void ClearStats();
+    void DumpStats();
+    
 private:
+    void ProcessControl(UIControl* control, int32 distanceFromDirty);
+    
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);
 
@@ -34,6 +39,11 @@ private:
     void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
 
     UIStyleSheetClassSet globalClasses;
+    
+    uint64 statsTime = 0;
+    int32 statsProcessedControls = 0;
+    int32 statsMatches = 0;
+    int32 statsStyleSheetCount = 0;
 };
 };
 

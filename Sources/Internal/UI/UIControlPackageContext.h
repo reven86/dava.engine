@@ -23,9 +23,12 @@ public:
 
     const Vector<UIPriorityStyleSheet>& GetSortedStyleSheets();
 
+    int32 GetMaxStyleSheetHierarchyDepth() const;
+    
 private:
     Vector<UIPriorityStyleSheet> styleSheets;
     bool styleSheetsSorted;
+    int32 maxStyleSheetHierarchyDepth;
 };
 };
 
