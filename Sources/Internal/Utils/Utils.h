@@ -160,11 +160,19 @@ protected:
     std::size_t currentIndex = 0;
 };
 
-template <class T, class _HeadType, uint32 _Size>
+template <class T, uint32 _Size>
 class RingArray
 {
 public:
     static_assert(((_Size - 1) & _Size) == 0 && _Size != 0, "Size of RingArray should be pow of two");
+
+    RingArray() = default;
+    RingArray(const RingArray& a)
+    {
+        memcpy(elements.data(), a.elements.data(), elements.size() * sizeof(T));
+        mask = a.mask;
+        head = a.head.load();
+    }
 
     class iterator;
     class reverse_iterator;
@@ -365,7 +373,7 @@ public:
 protected:
     std::array<T, _Size> elements;
     uint32 mask = _Size - 1;
-    _HeadType head = { 0 };
+    std::atomic<uint32> head = { 0 };
 };
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

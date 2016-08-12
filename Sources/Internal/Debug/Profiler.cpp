@@ -38,10 +38,12 @@ struct TimeCounter
     Thread::Id tid = 0;
 };
 
-using CounterArray = RingArray<TimeCounter, std::atomic<uint32>, 1024>;
+using CounterArray = RingArray<TimeCounter, 1024>;
 
 static CounterArray counters;
 static bool profilerStarted = false;
+
+Vector<CounterArray> snapshots;
 
 void Start()
 {
@@ -58,7 +60,6 @@ ScopedCounter::ScopedCounter(const char* counterName)
     if (profilerStarted)
     {
         TimeCounter& c = counters.next();
-        DVASSERT(((c.startTime == 0 && c.endTime == 0) || c.endTime != 0) && "Too few counters in array");
 
         endTime = &c.endTime;
         c.startTime = CurTimeUs();
@@ -70,11 +71,21 @@ ScopedCounter::ScopedCounter(const char* counterName)
 
 ScopedCounter::~ScopedCounter()
 {
-    if (endTime)
+    if (profilerStarted && endTime)
     {
-        DVASSERT(*endTime == 0 && "Profiler counter ended but not started");
         *endTime = CurTimeUs();
     }
+}
+
+int32 MakeSnapshot()
+{
+    snapshots.push_back(counters);
+    return int32(snapshots.size() - 1);
+}
+
+void DeleteSnapshots()
+{
+    snapshots.clear();
 }
 
 uint64 GetLastCounterTime(const char* counterName)
@@ -94,14 +105,14 @@ uint64 GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
-void DumpInternal(CounterArray::iterator begin, File* file)
+void DumpInternal(CounterArray::iterator begin, CounterArray& array, File* file)
 {
     Thread::Id threadID = begin->tid;
     uint64 endTime = begin->endTime;
     Vector<uint64> parents;
 
     char buf[1024];
-    CounterArray::iterator end = counters.end();
+    CounterArray::iterator end = array.end();
     for (CounterArray::iterator it = begin; it != end; ++it)
     {
         const TimeCounter& c = *it;
@@ -117,7 +128,7 @@ void DumpInternal(CounterArray::iterator begin, File* file)
             while (parents.size() && (c.startTime >= parents.back()) && c.startTime != c.endTime)
                 parents.pop_back();
 
-            Snprintf(buf, countof(buf), "%*s%s [%llu us]", parents.size() * 2, "", c.name, c.endTime - c.startTime);
+            Snprintf(buf, countof(buf), "%*s%s [%llu us]", int(parents.size() * 2), "", c.name, c.endTime - c.startTime);
             if (file)
             {
                 file->WriteLine(buf);
@@ -132,14 +143,21 @@ void DumpInternal(CounterArray::iterator begin, File* file)
     }
 }
 
-void DumpLast(const char* counterName, uint32 counterCount, File* file)
+void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 snapshot)
 {
-    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    CounterArray* array = &counters;
+    if (snapshot != -1)
+    {
+        DVASSERT(snapshot < int32(snapshots.size()));
+        array = &snapshots[snapshot];
+    }
+
+    CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
     for (; it != itEnd; it++)
     {
         if (it->endTime != 0 && NameEquals(counterName, it->name))
         {
-            DumpInternal(CounterArray::iterator(it), file);
+            DumpInternal(CounterArray::iterator(it), *array, file);
             counterCount--;
         }
 
@@ -148,28 +166,25 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file)
     }
 }
 
-void DumpAverage(const char* counterName, uint32 counterCount, File* file)
+void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32 snapshot)
 {
-    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
-    for (; it != itEnd; it++)
-    {
-        if (NameEquals(counterName, it->name) && it->endTime != 0)
-            counterCount--;
-
-        if (counterCount == 0)
-            break;
-    }
-
     //TODO
 }
 
-void DumpJSON(File* file)
+void DumpJSON(File* file, int32 snapshot)
 {
+    CounterArray* array = &counters;
+    if (snapshot != -1)
+    {
+        DVASSERT(snapshot < int32(snapshots.size()));
+        array = &snapshots[snapshot];
+    }
+
     file->WriteLine("{ \"traceEvents\": [ ");
 
     char buf[1024];
-    CounterArray::iterator it = counters.begin(), itEnd = counters.end();
-    CounterArray::iterator last(counters.rbegin());
+    CounterArray::iterator it = array->begin(), itEnd = array->end();
+    CounterArray::iterator last(array->rbegin());
     for (; it != itEnd; it++)
     {
         Snprintf(buf, 1024, "{ \"pid\":%u, \"tid\":%llu, \"ts\":%llu, \"ph\":\"%s\", \"cat\":\"%s\", \"name\":\"%s\" }%s",
