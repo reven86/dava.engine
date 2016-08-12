@@ -25,7 +25,8 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
     wrapper.AddListener(this);
 
     tarc::CentralPanelInfo info;
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info), manager.GetRenderWidget());
+    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "RenderWidget", info), manager.GetRenderWidget());
+    manager.GetRenderWidget()->show();
 }
 
 void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&)

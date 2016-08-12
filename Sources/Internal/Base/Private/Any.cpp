@@ -97,7 +97,15 @@ bool Any::operator==(const Any& any) const
         return true;
     }
 
-    auto op = operations.find(type);
+    UnorderedMap<const Type*, Any::AnyOP>::const_iterator op;
+    if (type->IsPointer())
+    {
+        op = operations.find(Type::Instance<void*>());
+    }
+    else
+    {
+        op = operations.find(type);
+    }
 
     if (op == operations.end() || nullptr == op->second.compare)
         throw Exception(Exception::BadOperation, Format("Couldn't compare values of type \"%s\". Compare operation wasn't registered", type->GetName()));

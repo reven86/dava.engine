@@ -12,14 +12,18 @@ class UIManager final: public UI
 {
 public:
     UIManager();
+    ~UIManager();
+
     void AddView(const WindowKey& key, QWidget* widget) override;
+    void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) override;
 
 private:
     QMainWindow* FindOrCreateWindow(const DAVA::FastName& appID);
+    QWidget* LoadView(const DAVA::String& name, const DAVA::String& resourceName, DataWrapper data);
 
 private:
-    DAVA::Array<DAVA::Function<void(const WindowKey&, QWidget*, QMainWindow*)>, WindowKey::TypesCount> addFunctions;
-    DAVA::UnorderedMap<DAVA::FastName, QMainWindow*> windows;
+    struct Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 }

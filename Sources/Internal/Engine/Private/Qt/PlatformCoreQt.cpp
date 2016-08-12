@@ -8,6 +8,7 @@
 #include "Engine/Private/WindowBackend.h"
 #include "Engine/Public/Qt/NativeServiceQt.h"
 #include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Public/Window.h"
 
 #include <QTimer>
 #include <QApplication>
@@ -58,6 +59,7 @@ void PlatformCore::Run()
     {
         return;
     }
+
     engineBackend->OnGameLoopStarted();
     timer.start(16.0);
 

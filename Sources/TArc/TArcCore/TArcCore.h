@@ -2,7 +2,6 @@
 
 #include "TArcCore/ContextAccessor.h"
 #include "TArcCore/ContextManager.h"
-#include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
 
@@ -18,6 +17,7 @@ namespace tarc
 
 class ClientModule;
 class ControllerModule;
+class UIManager;
 
 class Core final : private ContextAccessor, private ContextManager
 {
@@ -74,7 +74,7 @@ private:
 
     DAVA::Vector<DataWrapper> wrappers;
 
-    UIManager uiManager;
+    std::unique_ptr<UIManager> uiManager;
 };
 
 }

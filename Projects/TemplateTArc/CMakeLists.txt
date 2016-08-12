@@ -33,7 +33,12 @@ else()
     message(FATAL_ERROR "TArc supports only Win and Mac")
 endif()
 
-define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
+file(GLOB RCC_LIST "Resources/*.qrc")
+file(GLOB QML_LIST "Resources/*.qml")
+qt5_add_resources(RCC_APP_SRCS  ${RCC_LIST})
+set(ADDED_SRC ${RCC_APP_SRCS})
+
+define_source (SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} "Resources")
 
 set( APP_DATA                       ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )

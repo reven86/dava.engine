@@ -16,13 +16,6 @@ namespace DAVA
 RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
 {
-//configure Qt Scene Graph to single thread mode
-#ifdef Q_OS_WIN
-    _putenv_s("QSG_RENDER_LOOP", "basic");
-#else
-    setenv("QSG_RENDER_LOOP", "basic", 1);
-#endif
-
     setAcceptDrops(true);
     setMouseTracking(true);
 

@@ -75,6 +75,7 @@ private:
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
     RenderWidget* renderWidget = nullptr;
+    bool creationFinished = false;
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;

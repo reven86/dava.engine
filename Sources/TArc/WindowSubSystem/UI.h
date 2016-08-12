@@ -3,6 +3,8 @@
 #include "Base/FastName.h"
 #include "Base/Any.h"
 
+#include "DataProcessing/DataWrapper.h"
+
 #include <Qt>
 
 class QWidget;
@@ -23,14 +25,14 @@ struct CentralPanelInfo
 class WindowKey
 {
 public:
-    WindowKey(DAVA::FastName appID_, const DockPanelInfo& info_)
+    WindowKey(DAVA::FastName appID_, const DAVA::String& viewName, const DockPanelInfo& info_)
         : appID(appID_)
         , type(DockPanel)
         , info(info_)
     {
     }
 
-    WindowKey(DAVA::FastName appID_, const CentralPanelInfo& info_)
+    WindowKey(DAVA::FastName appID_, const DAVA::String& viewName, const CentralPanelInfo& info_)
         : appID(appID_)
         , type(CentralPanel)
         , info(info_)
@@ -50,6 +52,7 @@ private:
     };
 
     DAVA::FastName appID;
+    DAVA::String viewName;
     Type type;
     DAVA::Any info;
 };
@@ -63,6 +66,7 @@ public:
     virtual ~UI() {}
 
     virtual void AddView(const WindowKey& key, QWidget* widget) = 0;
+    virtual void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) = 0;
 };
 
 }

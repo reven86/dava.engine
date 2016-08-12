@@ -50,6 +50,7 @@ public:
 
 private:
     friend class Core;
+    friend class QtReflected;
     DataWrapper(const DAVA::Type* type, bool listenRecursive = false);
     DataWrapper(const DataAccessor& accessor, bool listenRecursive = false);
 

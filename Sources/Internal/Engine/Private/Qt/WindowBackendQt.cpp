@@ -179,6 +179,8 @@ bool WindowBackend::Create(float32 width, float32 height)
 {
     renderWidget = new RenderWidget(this, static_cast<uint32>(width), static_cast<uint32>(height));
     renderWidget->show();
+    renderWidget->hide();
+    creationFinished = true;
     return true;
 }
 
@@ -276,7 +278,10 @@ void WindowBackend::OnDestroyed()
 
 void WindowBackend::OnFrame()
 {
-    engine->OnFrame();
+    if (creationFinished == true)
+    {
+        engine->OnFrame();
+    }
 }
 
 void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)

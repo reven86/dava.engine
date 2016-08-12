@@ -1,6 +1,7 @@
 #include "TArcCore/TArcCore.h"
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
+#include "WindowSubSystem/Private/UIManager.h"
 
 #include "Engine/Public/Engine.h"
 #include "Engine/Public/Window.h"
@@ -49,6 +50,7 @@ void Core::OnFrame()
 
 void Core::OnLoopStarted()
 {
+    uiManager.reset(new UIManager());
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
     controllerModule->SetContextManager(this);
 
@@ -59,7 +61,7 @@ void Core::OnLoopStarted()
 
     for (ClientModule* module : modules)
     {
-        module->PostInit(uiManager);
+        module->PostInit(*uiManager);
     }
 }
 

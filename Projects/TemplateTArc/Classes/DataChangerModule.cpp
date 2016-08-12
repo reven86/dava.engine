@@ -7,9 +7,39 @@
 #include "Base/Type.h"
 
 #include <QListWidget>
+#include <QFileSystemModel>
+
+class FileSystemData : public tarc::DataNode
+{
+    DAVA_DECLARE_TYPE_INITIALIZER
+    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
+
+public:
+    ~FileSystemData()
+    {
+        delete model;
+    }
+
+    IMPLEMENT_TYPE(FileSystemData);
+
+    QFileSystemModel* model = nullptr;
+};
+
+DAVA_TYPE_INITIALIZER(FileSystemData)
+{
+    DAVA::ReflectionRegistrator<FileSystemData>::Begin()
+    .Base<DataNode>()
+    .Field("fileSystemModel", &FileSystemData::model)
+    .End();
+}
 
 void DataChangerModule::OnContextCreated(tarc::DataContext& context)
 {
+    std::unique_ptr<FileSystemData> data = std::make_unique<FileSystemData>();
+    data->model = new QFileSystemModel();
+    data->model->setRootPath(QDir::currentPath());
+
+    context.CreateData(std::move(data));
 }
 
 void DataChangerModule::OnContextDeleted(tarc::DataContext& context)
@@ -32,7 +62,7 @@ void DataChangerModule::PostInit(tarc::UI& ui)
 
     tarc::DockPanelInfo info;
     info.tittle = "Customers";
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info), customerList);
+    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "Customers", info), customerList);
 
     QListWidget* paragraphs = new QListWidget();
     paragraphs->addItems(QStringList()
@@ -44,7 +74,13 @@ void DataChangerModule::PostInit(tarc::UI& ui)
                          << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
     info.tittle = "Paragraphs";
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info), paragraphs);
+    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "Paragraphs", info), paragraphs);
+
+    info.area = Qt::LeftDockWidgetArea;
+    info.tabbed = false;
+    info.tittle = "Library";
+    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info.tittle, info), "qrc:/Library.qml",
+               GetAccessor().CreateWrapper(DAVA::Type::Instance<FileSystemData>()));
 }
 
 void DataChangerModule::OnDataChanged(const tarc::DataWrapper& wrapper_)

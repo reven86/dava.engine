@@ -9,6 +9,7 @@ set( INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}" )
 
 find_package(QT5 REQUIRED)
 
-include_directories ( ${DAVA_INCLUDE_DIR} ) 
+include_directories(${DAVA_INCLUDE_DIR})
+include_directories(${Qt5Core_PRIVATE_INCLUDE_DIRS})
 
 setup_main_module()
