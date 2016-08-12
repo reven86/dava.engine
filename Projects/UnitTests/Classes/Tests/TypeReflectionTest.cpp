@@ -1,3 +1,6 @@
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_ANDROID__
+
 #include <iostream>
 
 #include "Base/Result.h"
@@ -6,8 +9,6 @@
 #include "Logger/Logger.h"
 
 using namespace DAVA;
-
-#if !defined(__DAVAENGINE_ANDROID__)
 
 struct SimpleStruct
 {

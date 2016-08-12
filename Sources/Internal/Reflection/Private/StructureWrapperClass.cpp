@@ -1,3 +1,6 @@
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_ANDROID__
+
 #include "Reflection/Private/StructureWrapperClass.h"
 #include "Reflection/Public/ReflectedType.h"
 #include "Reflection/Public/ReflectedObject.h"
@@ -239,3 +242,5 @@ ReflectedObject StructureWrapperClass::ClassBase::GetBaseObject(const ReflectedO
 }
 
 } // namespace DAVA
+
+#endif

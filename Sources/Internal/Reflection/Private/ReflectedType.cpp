@@ -1,3 +1,6 @@
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_ANDROID__
+
 #include "Reflection/Public/ReflectedType.h"
 #include "Reflection/Public/Wrappers.h"
 
@@ -110,3 +113,5 @@ const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
 }
 
 } // namespace DAVA
+
+#endif
