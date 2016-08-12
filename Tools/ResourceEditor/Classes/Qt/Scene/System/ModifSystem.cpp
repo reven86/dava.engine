@@ -43,8 +43,6 @@ ST_Axis EntityModificationSystem::GetModifAxis() const
 void EntityModificationSystem::SetTransformType(Selectable::TransformType mode)
 {
     transformType = mode;
-    UpdateTransformableSelection();
-
     hoodSystem->SetTransformType(mode);
 }
 
@@ -114,18 +112,6 @@ bool EntityModificationSystem::InCloneState() const
 bool EntityModificationSystem::InCloneDoneState() const
 {
     return (cloneState == CLONE_DONE);
-}
-
-void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
-{
-    SceneSelectionSystem* selectionSystem = static_cast<SceneEditor2*>(GetScene())->selectionSystem;
-    const SelectableGroup& selection = selectionSystem->GetSelection();
-
-    if (selection != currentSelection)
-    {
-        currentSelection = selection;
-        UpdateTransformableSelection();
-    }
 }
 
 void EntityModificationSystem::Input(DAVA::UIEvent* event)
@@ -1126,7 +1112,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
     for (const Selectable& item : selection.GetContent())
     {
-        float32 scaleValue = axisScaleValue;
+        DAVA::float32 scaleValue = axisScaleValue;
 
         DAVA::Matrix4 origMatrix = item.GetLocalTransform();
 
@@ -1157,24 +1143,36 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
     sceneEditor->EndBatch();
 }
 
-void EntityModificationSystem::UpdateTransformableSelection()
+void EntityModificationSystem::UpdateTransformableSelection() const
 {
     SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
     SceneSelectionSystem* selectionSystem = sc->selectionSystem;
-
-    transformableSelection.Clear();
-    for (const Selectable& item : currentSelection.GetContent())
+    if (selectionSystem == nullptr)
     {
-        if (item.SupportsTransformType(transformType))
-        {
-            transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
-        }
+        return;
     }
 
-    transformableSelection.RebuildIntegralBoundingBox();
+    const SelectableGroup& selection = selectionSystem->GetSelection();
+
+    if (selection != currentSelection)
+    {
+        currentSelection = selection;
+
+        transformableSelection.Clear();
+        for (const Selectable& item : currentSelection.GetContent())
+        {
+            if (item.SupportsTransformType(transformType))
+            {
+                transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
+            }
+        }
+
+        transformableSelection.RebuildIntegralBoundingBox();
+    }
 }
 
 const SelectableGroup& EntityModificationSystem::GetTransformableSelection() const
 {
+    UpdateTransformableSelection();
     return transformableSelection;
 }

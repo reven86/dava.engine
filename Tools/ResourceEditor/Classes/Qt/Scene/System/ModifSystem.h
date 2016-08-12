@@ -48,7 +48,6 @@ public:
     bool ModifCanStartByMouse(const SelectableGroup& objects) const;
 
     void RemoveEntity(DAVA::Entity* entity) override;
-    void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent* event) override;
 
     void AddDelegate(EntityModificationSystemDelegate* delegate);
@@ -111,7 +110,7 @@ private:
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
-    void UpdateTransformableSelection();
+    void UpdateTransformableSelection() const;
 
 private:
     SceneCollisionSystem* collisionSystem = nullptr;
@@ -123,8 +122,8 @@ private:
     DAVA::Vector<DAVA::Entity*> clonedEntities;
     DAVA::List<EntityModificationSystemDelegate*> delegates;
 
-    SelectableGroup currentSelection;
-    SelectableGroup transformableSelection;
+    mutable SelectableGroup currentSelection;
+    mutable SelectableGroup transformableSelection;
 
     // values calculated, when starting modification
     DAVA::Vector3 modifEntitiesCenter;

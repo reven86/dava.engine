@@ -20,7 +20,7 @@ public:
     void LayoutCanvas();
 
 private:
-    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_);
+    void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
     void OnPackageNodeChanged(PackageNode* node);
     void OnTransformStateChanged(bool inTransformState);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;

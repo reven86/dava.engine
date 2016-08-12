@@ -43,7 +43,7 @@ public:
     virtual bool IsInsertingControlsSupported() const;
     virtual bool IsInsertingPackagesSupported() const;
     virtual bool IsInsertingStylesSupported() const;
-    virtual bool CanInsertControl(ControlNode* node, DAVA::int32 pos) const;
+    virtual bool CanInsertControl(const ControlNode* node, DAVA::int32 pos) const;
     virtual bool CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const;
     virtual bool CanInsertImportedPackage(PackageNode* package) const;
     virtual bool CanRemove() const;
@@ -54,6 +54,10 @@ private:
     PackageBaseNode* parent;
 };
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
+//comparator to sort nodes by their hierarchy
+bool CompareByLCA(const PackageBaseNode* left, const PackageBaseNode* right);
+
+//automatically sort all nodes by their hierarchy using CompareByLCA function
+using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(const PackageBaseNode*, const PackageBaseNode*)>>;
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
