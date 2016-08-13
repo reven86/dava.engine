@@ -8,6 +8,7 @@
 
 #include <QListWidget>
 #include <QFileSystemModel>
+#include <QTimer>
 
 class FileSystemData : public tarc::DataNode
 {
@@ -23,6 +24,7 @@ public:
     IMPLEMENT_TYPE(FileSystemData);
 
     QFileSystemModel* model = nullptr;
+    DAVA::String sampleText;
 };
 
 DAVA_TYPE_INITIALIZER(FileSystemData)
@@ -30,6 +32,7 @@ DAVA_TYPE_INITIALIZER(FileSystemData)
     DAVA::ReflectionRegistrator<FileSystemData>::Begin()
     .Base<DataNode>()
     .Field("fileSystemModel", &FileSystemData::model)
+    .Field("sampleText", &FileSystemData::sampleText)
     .End();
 }
 
@@ -38,8 +41,15 @@ void DataChangerModule::OnContextCreated(tarc::DataContext& context)
     std::unique_ptr<FileSystemData> data = std::make_unique<FileSystemData>();
     data->model = new QFileSystemModel();
     data->model->setRootPath(QDir::currentPath());
+    data->sampleText = "Hello cruel World";
 
     context.CreateData(std::move(data));
+
+    QTimer::singleShot(5000, [&context]()
+                       {
+                           FileSystemData& data = context.GetData<FileSystemData>();
+                           data.sampleText = "new text";
+                       });
 }
 
 void DataChangerModule::OnContextDeleted(tarc::DataContext& context)
@@ -83,7 +93,7 @@ void DataChangerModule::PostInit(tarc::UI& ui)
                GetAccessor().CreateWrapper(DAVA::Type::Instance<FileSystemData>()));
 }
 
-void DataChangerModule::OnDataChanged(const tarc::DataWrapper& wrapper_)
+void DataChangerModule::OnDataChanged(const tarc::DataWrapper& dataWrapper, const DAVA::Set<DAVA::String>& fields)
 {
     if (wrapper.HasData())
     {

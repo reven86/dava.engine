@@ -51,14 +51,13 @@ public:
 private:
     friend class Core;
     friend class QtReflected;
-    DataWrapper(const DAVA::Type* type, bool listenRecursive = false);
-    DataWrapper(const DataAccessor& accessor, bool listenRecursive = false);
+    DataWrapper(const DAVA::Type* type);
+    DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
 
     void Sync(bool notifyListeners);
-    void SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA::Any>& values);
-    void NotifyListeners();
+    void NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields = DAVA::Set<DAVA::String>());
     DAVA::Reflection GetData() const;
 
     static DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::Type* type);
@@ -72,7 +71,7 @@ class DataListener
 {
 public:
     virtual ~DataListener();
-    virtual void OnDataChanged(const DataWrapper& wrapper) = 0;
+    virtual void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) = 0;
 
 private:
     friend class DataWrapper;

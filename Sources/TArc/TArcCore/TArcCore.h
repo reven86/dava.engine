@@ -51,8 +51,8 @@ private:
     DataContext& GetContext(DataContext::ContextID contextID) override;
     DataContext& GetActiveContext() override;
     bool HasActiveContext() const override;
-    DataWrapper CreateWrapper(const DAVA::Type* type, bool listenRecursive = false) override;
-    DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive = false) override;
+    DataWrapper CreateWrapper(const DAVA::Type* type) override;
+    DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override;
     DAVA::EngineContext& GetEngine() override;
 
     // Inherited via ContextManager

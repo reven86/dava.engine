@@ -126,17 +126,17 @@ bool Core::HasActiveContext() const
     return activeContext != nullptr;
 }
 
-DataWrapper Core::CreateWrapper(const DAVA::Type* type, bool listenRecursive)
+DataWrapper Core::CreateWrapper(const DAVA::Type* type)
 {
-    DataWrapper wrapper(type, listenRecursive);
+    DataWrapper wrapper(type);
     wrapper.SetContext(activeContext);
     wrappers.push_back(wrapper);
     return wrapper;
 }
 
-DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor, bool listenRecursive)
+DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor)
 {
-    DataWrapper wrapper(accessor, listenRecursive);
+    DataWrapper wrapper(accessor);
     wrapper.SetContext(activeContext);
     wrappers.push_back(wrapper);
     return wrapper;

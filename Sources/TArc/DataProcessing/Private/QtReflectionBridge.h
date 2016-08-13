@@ -26,8 +26,11 @@ private:
     QtReflected(QtReflectionBridge* reflectionBridge, DataWrapper wrapper, QObject* parent);
 
 private:
-    void OnDataChanged(const DataWrapper& wrapper) override;
+    void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
     void CreateMetaObject();
+
+    void FirePropertySignal(const DAVA::String& propertyName);
+    void FirePropertySignal(int signalId);
 
 private:
     QPointer<QtReflectionBridge> reflectionBridge;
@@ -39,7 +42,7 @@ class QtReflectionBridge final: public QObject
 {
 public:
     ~QtReflectionBridge();
-    QtReflected* createQtReflected(DataWrapper wrapper, QObject* parent);
+    QtReflected* CreateQtReflected(DataWrapper wrapper, QObject* parent);
 
 private:
     friend class QtReflected;

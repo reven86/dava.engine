@@ -29,7 +29,7 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
     manager.GetRenderWidget()->show();
 }
 
-void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&)
+void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&, const DAVA::Set<DAVA::String>& fields)
 {
     tarc::DataContext::ContextID newContext = tarc::DataContext::Empty;
     if (wrapper.HasData())

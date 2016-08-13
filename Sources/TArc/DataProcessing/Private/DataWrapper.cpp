@@ -6,23 +6,21 @@ namespace tarc
 struct DataWrapper::Impl
 {
     DataContext* activeContext = nullptr;
-    bool listenRecursive = false;
     DataAccessor dataAccessor;
     DAVA::Vector<DAVA::Any> cachedValues;
 
     DAVA::Set<DataListener*> listeners;
 };
 
-DataWrapper::DataWrapper(const DAVA::Type* type, bool listenRecursive)
-    : DataWrapper(DAVA::Bind(&DataWrapper::GetDataDefault, std::placeholders::_1, type), listenRecursive)
+DataWrapper::DataWrapper(const DAVA::Type* type)
+    : DataWrapper(DAVA::Bind(&DataWrapper::GetDataDefault, std::placeholders::_1, type))
 {
 }
 
-DataWrapper::DataWrapper(const DataAccessor& accessor, bool listenRecursive_)
+DataWrapper::DataWrapper(const DataAccessor& accessor)
     : impl(new Impl())
 {
     impl->dataAccessor = accessor;
-    impl->listenRecursive = listenRecursive_;
 }
 
 DataWrapper::DataWrapper(DataWrapper&& other)
@@ -95,16 +93,46 @@ void DataWrapper::Sync(bool notifyListeners)
     DVASSERT(impl != nullptr);
     if (HasData())
     {
-        DAVA::Vector<DAVA::Any> newValues;
-        SyncImpl(impl->dataAccessor(*impl->activeContext), newValues);
+        DAVA::Reflection reflection = GetData();
+        const DAVA::StructureWrapper* wrapper = reflection.GetStructure();
+        DAVA::Ref::FieldsList fields = wrapper->GetFields(reflection.GetValueObject());
 
-        if (impl->cachedValues.size() != newValues.size() ||
-            std::equal(impl->cachedValues.begin(), impl->cachedValues.end(), newValues.begin()) == false)
+        if (impl->cachedValues.size() != fields.size())
         {
-            impl->cachedValues = std::move(newValues);
-            if (notifyListeners == true)
+            impl->cachedValues.clear();
+            for (const DAVA::Ref::Field& field : fields)
             {
-                NotifyListeners();
+                impl->cachedValues.push_back(field.valueRef.GetValue());
+            }
+            NotifyListeners(notifyListeners);
+        }
+        else
+        {
+            DAVA::Set<DAVA::String> fieldNames;
+            std::function<void(const DAVA::String&)> nameInserter;
+            if (notifyListeners)
+            {
+                nameInserter = [&fieldNames](const DAVA::String& name) { fieldNames.insert(name); };
+            }
+            else
+            {
+                nameInserter = [](const DAVA::String&) {};
+            }
+
+            for (size_t i = 0; i < fields.size(); ++i)
+            {
+                const DAVA::Ref::Field& field = fields[i];
+                DAVA::Any newValue = field.valueRef.GetValue();
+                if (impl->cachedValues[i] != newValue)
+                {
+                    impl->cachedValues[i] = newValue;
+                    nameInserter(field.key.Cast<DAVA::String>());
+                }
+            }
+
+            if (!fieldNames.empty())
+            {
+                NotifyListeners(notifyListeners, fieldNames);
             }
         }
     }
@@ -113,38 +141,19 @@ void DataWrapper::Sync(bool notifyListeners)
         if (!impl->cachedValues.empty())
         {
             impl->cachedValues.clear();
-            if (notifyListeners == true)
-            {
-                NotifyListeners();
-            }
+            NotifyListeners(notifyListeners);
         }
     }
 }
 
-void DataWrapper::SyncImpl(const DAVA::Reflection& reflection, DAVA::Vector<DAVA::Any>& values)
+void DataWrapper::NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields)
 {
-    DVASSERT(impl != nullptr);
-    const DAVA::StructureWrapper* wrapper = reflection.GetStructure();
-    DAVA::Ref::FieldsList fields = wrapper->GetFields(reflection.GetValueObject());
-    values.reserve(values.size() + fields.size());
-    for (const DAVA::Ref::Field& field : fields)
-    {
-        values.push_back(field.valueRef.GetValue());
-    }
+    if (sendNotify == false)
+        return;
 
-    if (impl->listenRecursive)
-    {
-        for (const DAVA::Ref::Field& field : fields)
-        {
-            SyncImpl(field.valueRef, values);
-        }
-    }
-}
-
-void DataWrapper::NotifyListeners()
-{
     DVASSERT(impl != nullptr);
-    std::for_each(impl->listeners.begin(), impl->listeners.end(), std::bind(&DataListener::OnDataChanged, std::placeholders::_1, std::cref(*this)));
+    auto fn = std::bind(&DataListener::OnDataChanged, std::placeholders::_1, std::cref(*this), std::cref(fields));
+    std::for_each(impl->listeners.begin(), impl->listeners.end(), fn);
 }
 
 DAVA::Reflection DataWrapper::GetData() const

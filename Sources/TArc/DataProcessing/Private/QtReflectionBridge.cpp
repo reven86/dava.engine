@@ -40,6 +40,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
         break;
     }
     case QMetaObject::ReadProperty:
+    case QMetaObject::WriteProperty:
     {
         int propertyCount = qtMetaObject->propertyCount() - qtMetaObject->propertyOffset();
         if (wrapper.HasData())
@@ -48,20 +49,34 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
             const DAVA::StructureWrapper* structWrapper = reflection.GetStructure();
             DAVA::Ref::FieldsList fields = structWrapper->GetFields(reflection.GetValueObject());
             const DAVA::Ref::Field& field = fields[id];
-            QVariant* returnValue = reinterpret_cast<QVariant*>(argv[0]);
-            *returnValue = QVariant::fromValue(field.valueRef.GetValue().Get<QFileSystemModel*>());
+            QVariant* value = reinterpret_cast<QVariant*>(argv[0]);
+            DAVA::Any davaValue = field.valueRef.GetValue();
+            if (c == QMetaObject::ReadProperty)
+            {
+                if (davaValue.CanGet<QFileSystemModel*>())
+                    *value = QVariant::fromValue(davaValue.Get<QFileSystemModel*>());
+                else
+                    *value = QVariant::fromValue(QString::fromStdString(davaValue.Get<DAVA::String>()));
+            }
+            else
+            {
+                DAVA::Any newValue;
+                if (value->canConvert<QFileSystemModel*>())
+                    newValue = DAVA::Any(value->value<QFileSystemModel*>());
+                else
+                    newValue = DAVA::Any(value->value<QString>().toStdString());
+
+                if (newValue != davaValue)
+                {
+                    field.valueRef.SetValue(newValue);
+                    wrapper.Sync(false);
+                }
+            }
         }
 
         id -= propertyCount;
     }
     break;
-    case QMetaObject::WriteProperty:
-    {
-
-    }
-    break;
-    default:
-        break;
     }
 
     return id;
@@ -76,7 +91,7 @@ void QtReflected::Init()
     }
 }
 
-void QtReflected::OnDataChanged(const DataWrapper&)
+void QtReflected::OnDataChanged(const DataWrapper& dataWrapper, const DAVA::Set<DAVA::String>& fields)
 {
     if (qtMetaObject == nullptr)
     {
@@ -87,6 +102,25 @@ void QtReflected::OnDataChanged(const DataWrapper&)
         }
 
         CreateMetaObject();
+    }
+
+    if (fields.empty())
+    {
+        for (int i = qtMetaObject->methodOffset(); i < qtMetaObject->methodCount(); ++i)
+        {
+            QMetaMethod method = qtMetaObject->method(i);
+            if (method.methodType() == QMetaMethod::Signal)
+            {
+                FirePropertySignal(i);
+            }
+        }
+    }
+    else
+    {
+        for (const DAVA::String& fieldName : fields)
+        {
+            FirePropertySignal(fieldName);
+        }
     }
 }
 
@@ -103,17 +137,38 @@ void QtReflected::CreateMetaObject()
     // TODO with new reflection
     builder.setClassName(reflectionData.GetValueType()->GetName());
     builder.setSuperClass(&QObject::staticMetaObject);
+    DAVA::Set<DAVA::String> signalNames;
     for (const DAVA::Ref::Field& f : fields)
     {
         QByteArray propertyName = QByteArray(f.key.Cast<DAVA::String>().c_str());
         QMetaPropertyBuilder propertybuilder = builder.addProperty(propertyName, "QVariant");
-        propertybuilder.setWritable(f.valueRef.IsReadonly());
+        propertybuilder.setWritable(!f.valueRef.IsReadonly());
 
-        QByteArray notifySignal = propertyName + "Changed(QVariant)";
+        QByteArray notifySignal = propertyName + "Changed";
+        signalNames.insert(notifySignal.toStdString());
         propertybuilder.setNotifySignal(builder.addSignal(notifySignal));
     }
     qtMetaObject = builder.toMetaObject();
+
+    // TODO
+    //reflectionBridge->metaObjects.emplace();
     metaObjectCreated.Emit();
+}
+
+void QtReflected::FirePropertySignal(const DAVA::String& propertyName)
+{
+    DAVA::String signalName = propertyName + "Changed";
+    int id = qtMetaObject->indexOfSignal(signalName.c_str());
+    FirePropertySignal(id);
+}
+
+void QtReflected::FirePropertySignal(int signalId)
+{
+    if (signalId != -1)
+    {
+        void* argv[] = { nullptr };
+        qtMetaObject->activate(this, signalId, argv);
+    }
 }
 
 QtReflectionBridge::~QtReflectionBridge()
@@ -124,7 +179,7 @@ QtReflectionBridge::~QtReflectionBridge()
     }
 }
 
-QtReflected* QtReflectionBridge::createQtReflected(DataWrapper wrapper, QObject* parent)
+QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper wrapper, QObject* parent)
 {
     return new QtReflected(this, wrapper, parent);
 }

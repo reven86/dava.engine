@@ -138,7 +138,7 @@ QWidget* UIManager::LoadView(const DAVA::String& name, const DAVA::String& resou
     view->setObjectName(QString::fromStdString(name));
     view->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    QPointer<QtReflected> qtReflected = impl->reflectionBridge.createQtReflected(data, view);
+    QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(data, view);
     qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
     {
         if (qtReflected != nullptr && view != nullptr)

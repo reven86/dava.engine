@@ -4,6 +4,8 @@
 #include "DataProcessing/DataContext.h"
 #include "DataProcessing/DataWrapper.h"
 
+#include "Base/BaseTypes.h"
+
 class TemplateControllerModule : public tarc::ControllerModule, public tarc::DataListener
 {
 protected:
@@ -11,7 +13,7 @@ protected:
     void OnContextDeleted(tarc::DataContext& context) override;
     void PostInit(tarc::UI& ui) override;
 
-    void OnDataChanged(const tarc::DataWrapper& wrapper) override;
+    void OnDataChanged(const tarc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
 
 private:
     tarc::DataWrapper wrapper;
