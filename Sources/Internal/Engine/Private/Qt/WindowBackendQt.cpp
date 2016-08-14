@@ -6,6 +6,7 @@
 
 #include "Engine/Public/Window.h"
 
+#include "Engine/Public/Engine.h"
 #include "Engine/Public/Qt/NativeServiceQt.h"
 #include "Engine/Public/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
@@ -168,6 +169,8 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     };
 
     qtEventListener = new QtEventListener(triggered, destroyed, engine->GetNativeService()->GetApplication());
+
+    engine->GetEngine()->beforeTerminate.Connect(DAVA::MakeFunction(this, &WindowBackend::OnBeforeTerminate));
 }
 
 WindowBackend::~WindowBackend()
@@ -272,6 +275,7 @@ void WindowBackend::OnCreated()
 
 void WindowBackend::OnDestroyed()
 {
+    window->PostWindowDestroyed();
     OGLContextBinder::Instance()->Release();
     renderWidget = nullptr;
 }
@@ -446,6 +450,11 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
     e.keyEvent.key = virtKey;
     e.keyEvent.isRepeated = qtEvent->isAutoRepeat();
     dispatcher->PostEvent(e);
+}
+
+void WindowBackend::OnBeforeTerminate()
+{
+    delete renderWidget;
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)

@@ -7,31 +7,11 @@
 namespace tarc
 {
 
+template<typename T> class DataEditor;
 class DataListener;
 class DataWrapper
 {
 public:
-    template<typename T>
-    class Editor
-    {
-    public:
-        Editor(DataWrapper& holder, DAVA::Reflection reflection);
-        ~Editor();
-
-        Editor(const Editor& other) = delete;
-        Editor& operator=(const Editor& other) = delete;
-
-        Editor(Editor&& other);
-        Editor& operator=(Editor&& other);
-
-        T* operator->();
-
-    private:
-        DAVA::Reflection reflection;
-        T* dataCopy;
-        DataWrapper holder;
-    };
-
     using DataAccessor = DAVA::Function<DAVA::Reflection(const DataContext&)>;
 
     DataWrapper() = default;
@@ -46,11 +26,12 @@ public:
     void RemoveListener(DataListener* listener);
 
     template<typename T>
-    Editor<T> CreateEditor();
+    DataEditor<T> CreateEditor();
 
 private:
     friend class Core;
     friend class QtReflected;
+    template<typename T> friend class DataEditor;
     DataWrapper(const DAVA::Type* type);
     DataWrapper(const DataAccessor& accessor);
 
@@ -65,6 +46,27 @@ private:
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;
+};
+    
+template<typename T>
+class DataEditor
+{
+public:
+    DataEditor(DataWrapper& holder, DAVA::Reflection reflection);
+    ~DataEditor();
+    
+    DataEditor(const DataEditor& other) = delete;
+    DataEditor& operator=(const DataEditor& other) = delete;
+    
+    DataEditor(DataEditor&& other);
+    DataEditor& operator=(DataEditor&& other);
+    
+    T* operator->();
+    
+private:
+    DAVA::Reflection reflection;
+    T* dataPtr;
+    DataWrapper holder;
 };
 
 class DataListener

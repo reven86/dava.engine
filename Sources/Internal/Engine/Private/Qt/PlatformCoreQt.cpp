@@ -17,9 +17,6 @@ namespace DAVA
 {
 namespace Private
 {
-std::unique_ptr<QApplication> globalApplication;
-Vector<char*> qtCommandLine;
-int qtArgc = 0;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
@@ -31,15 +28,16 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    DVASSERT(globalApplication == nullptr);
-    qtCommandLine = engineBackend->GetCommandLineAsArgv();
-    qtArgc = static_cast<int>(qtCommandLine.size());
-    globalApplication.reset(new QApplication(qtArgc, qtCommandLine.data()));
 }
 
 void PlatformCore::Run()
 {
-    DVASSERT(globalApplication);
+    Vector<char*> qtCommandLine = engineBackend->GetCommandLineAsArgv();
+    int qtArgc = qtCommandLine.size();
+    ;
+
+    QApplication app(qtArgc, qtCommandLine.data());
+
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
@@ -63,19 +61,18 @@ void PlatformCore::Run()
     engineBackend->OnGameLoopStarted();
     timer.start(16.0);
 
-    QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()
+    QObject::connect(&app, &QApplication::aboutToQuit, [this]()
                      {
                          engineBackend->OnGameLoopStopped();
                          engineBackend->OnBeforeTerminate();
                      });
 
-    globalApplication->exec();
+    app.exec();
 }
 
 void PlatformCore::Quit()
 {
-    DVASSERT(globalApplication);
-    globalApplication->quit();
+    DVASSERT(false);
 }
 
 WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
@@ -92,7 +89,7 @@ WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float3
 
 QApplication* PlatformCore::GetApplication()
 {
-    return globalApplication.get();
+    return qApp;
 }
 
 } // namespace Private

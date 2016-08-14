@@ -34,7 +34,7 @@ void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&, const DAV
     tarc::DataContext::ContextID newContext = tarc::DataContext::Empty;
     if (wrapper.HasData())
     {
-        tarc::DataWrapper::Editor<SharedData> editor = wrapper.CreateEditor<SharedData>();
+        tarc::DataEditor<SharedData> editor = wrapper.CreateEditor<SharedData>();
         DAVA::Logger::Info("Data changed. New value : %d", editor->GetValue());
     }
     else

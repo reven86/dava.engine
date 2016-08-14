@@ -97,7 +97,7 @@ void DataChangerModule::OnDataChanged(const tarc::DataWrapper& dataWrapper, cons
 {
     if (wrapper.HasData())
     {
-        tarc::DataWrapper::Editor<SharedData> editor = wrapper.CreateEditor<SharedData>();
+        tarc::DataEditor<SharedData> editor = wrapper.CreateEditor<SharedData>();
         DAVA::Logger::Info("Changer %d", editor->GetValue());
         editor->SetValue(editor->GetValue() + 1);
     }

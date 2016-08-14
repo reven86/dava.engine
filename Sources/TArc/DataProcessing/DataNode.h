@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Functional\Signal.h"
-#include "Reflection\Reflection.h"
+#include "Functional/Signal.h"
+#include "Reflection/Reflection.h"
 
 #define IMPLEMENT_TYPE(className) \
     const DAVA::Type* GetType() const override { return DAVA::Type::Instance<className>(); }
