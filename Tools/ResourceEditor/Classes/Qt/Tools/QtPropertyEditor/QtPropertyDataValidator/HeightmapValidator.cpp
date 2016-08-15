@@ -3,10 +3,8 @@
 #include <QMessageBox>
 
 HeightMapValidator::HeightMapValidator(const QStringList& value)
-    :
-    PathValidator(value)
-    ,
-    notifyMessage("")
+    : PathValidator(value)
+    , notifyMessage("")
 {
 }
 

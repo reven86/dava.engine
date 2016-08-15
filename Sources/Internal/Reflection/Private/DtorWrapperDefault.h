@@ -1,7 +1,5 @@
 #pragma once
-#include "Reflection/ReflectionWrappers.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Reflection/Public/Wrappers.h"
 
 namespace DAVA
 {
@@ -33,5 +31,3 @@ public:
 };
 
 } // namespace DAVA
-
-#endif

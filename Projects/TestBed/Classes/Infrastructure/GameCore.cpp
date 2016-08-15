@@ -10,6 +10,7 @@
 #include "Tests/MultilineTest.h"
 #include "Tests/StaticTextTest.h"
 #include "Tests/StaticWebViewTest.h"
+#include "Tests/MicroWebBrowserTest.h"
 #include "Tests/UIMovieTest.h"
 #include "Tests/FontTest.h"
 #include "Tests/WebViewTest.h"
@@ -25,6 +26,7 @@
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
+#include "Tests/AssertTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -50,6 +52,7 @@ void GameCore::RegisterTests()
     new MultilineTest();
     new StaticTextTest();
     new StaticWebViewTest();
+    new MicroWebBrowserTest();
     new UIMovieTest();
     new FontTest();
     new WebViewTest();
@@ -64,6 +67,7 @@ void GameCore::RegisterTests()
     new GPUTest();
     new FloatingPointExceptionTest();
     new PackManagerTest();
+    new AssertTest();
     //$UNITTEST_CTOR
 }
 
@@ -72,6 +76,8 @@ using namespace DAVA::Net;
 
 void GameCore::OnAppStarted()
 {
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
 

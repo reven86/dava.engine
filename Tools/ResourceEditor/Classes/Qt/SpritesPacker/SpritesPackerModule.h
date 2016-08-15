@@ -17,13 +17,14 @@ class AssetCacheClient;
 class SpritesPacker;
 class QAction;
 class QDialog;
+class GlobalOperations;
 
 class SpritesPackerModule final : public QObject
 {
     Q_OBJECT
 
 public:
-    SpritesPackerModule();
+    SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations);
     ~SpritesPackerModule() override;
 
     QAction* GetReloadAction() const;
@@ -59,8 +60,7 @@ private:
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     QAction* reloadSpritesAction = nullptr;
-
-    QDialog* waitDialog = nullptr;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
 
 #endif // __SPRITES_PACKER_MODULE_H__

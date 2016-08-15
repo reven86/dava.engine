@@ -9,6 +9,7 @@
 
 #include "Main/Guards.h"
 #include "Main/mainwindow.h"
+#include "Classes/Qt/GlobalOperations.h"
 #include "PlaneLODDialog/PlaneLODDialog.h"
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
@@ -50,6 +51,11 @@ LODEditor::LODEditor(QWidget* parent)
 }
 
 LODEditor::~LODEditor() = default;
+
+void LODEditor::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
+}
 
 void LODEditor::SetupSceneSignals()
 {
@@ -283,8 +289,9 @@ void LODEditor::DeleteLOD()
 void LODEditor::SceneActivated(SceneEditor2* scene)
 {
     DVASSERT(scene);
-    scene->editorLODSystem->AddDelegate(this);
-    scene->editorStatisticsSystem->AddDelegate(this);
+    activeScene = scene;
+    activeScene->editorLODSystem->AddDelegate(this);
+    activeScene->editorStatisticsSystem->AddDelegate(this);
 }
 
 void LODEditor::SceneDeactivated(SceneEditor2* scene)
@@ -297,6 +304,8 @@ void LODEditor::SceneDeactivated(SceneEditor2* scene)
     {
         UpdatePanelsUI(nullptr);
     }
+
+    activeScene = nullptr;
 }
 
 void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
@@ -332,9 +341,8 @@ void LODEditor::CreatePlaneLODClicked()
     PlaneLODDialog dialog(lodData->GetLODLayersCount(), defaultTexturePath, this);
     if (dialog.exec() == QDialog::Accepted)
     {
-        QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
+        WaitDialogGuard guard(globalOperations, "Creating Plane LOD", "Please wait...");
         system->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
-        QtMainWindow::Instance()->WaitStop();
     }
 }
 
@@ -383,14 +391,14 @@ void LODEditor::UpdateForceUI(EditorLODSystem* forSystem, const ForceValues& for
 void LODEditor::UpdateForceSliderRange()
 {
     DAVA::float32 maxDistanceValue = DAVA::LodComponent::MAX_LOD_DISTANCE;
-    bool fitSlidersActivated = SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool();
-    if (fitSlidersActivated)
+    EditorLODSystem* system = GetCurrentEditorLODSystem();
+    if (system != nullptr)
     {
-        EditorLODSystem* system = GetCurrentEditorLODSystem();
-        if (system != nullptr)
+        const LODComponentHolder* lodData = system->GetActiveLODData();
+        const DAVA::Vector<DAVA::float32>& distances = lodData->GetDistances();
+
+        if (EditorLODSystem::IsFitModeEnabled(distances))
         {
-            const LODComponentHolder* lodData = system->GetActiveLODData();
-            const DAVA::Vector<DAVA::float32>& distances = lodData->GetDistances();
             for (DAVA::float32 dist : distances)
             {
                 if (fabs(dist - EditorLODSystem::LOD_DISTANCE_INFINITY) < DAVA::EPSILON)
@@ -401,6 +409,7 @@ void LODEditor::UpdateForceSliderRange()
             }
         }
     }
+
     ui->forceSlider->setRange(LodComponent::INVALID_DISTANCE, maxDistanceValue);
 
     QString text = QString("%1 to %2").arg(DAVA::LodComponent::MIN_LOD_DISTANCE).arg(maxDistanceValue);
@@ -455,12 +464,9 @@ void LODEditor::UpdateTrianglesUI(EditorStatisticsSystem* forSystem)
 
 EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (scene != nullptr)
+    if (activeScene != nullptr)
     {
-        return scene->editorLODSystem;
+        return activeScene->editorLODSystem;
     }
 
     return nullptr;
@@ -468,12 +474,9 @@ EditorLODSystem* LODEditor::GetCurrentEditorLODSystem() const
 
 EditorStatisticsSystem* LODEditor::GetCurrentEditorStatisticsSystem() const
 {
-    DVASSERT(QtMainWindow::Instance());
-
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (scene != nullptr)
+    if (activeScene != nullptr)
     {
-        return scene->editorStatisticsSystem;
+        return activeScene->editorStatisticsSystem;
     }
 
     return nullptr;

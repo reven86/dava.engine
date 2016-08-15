@@ -51,8 +51,8 @@ void CopyLastLODToLod0Command::Redo()
         ro->SetRenderBatchLODIndex(ri, lodIndex + 1);
     }
 
-    uint32 newBatchCount = newBatches.size();
-    for (uint32 ri = 0; ri < newBatchCount; ++ri)
+    size_t newBatchCount = newBatches.size();
+    for (size_t ri = 0; ri < newBatchCount; ++ri)
     {
         ro->AddRenderBatch(newBatches[ri], 0, switchIndices[ri]);
     }
@@ -66,9 +66,11 @@ void CopyLastLODToLod0Command::Undo()
     RenderObject* ro = GetRenderObject(GetEntity());
     DVASSERT(ro);
 
-    uint32 newBatchCount = newBatches.size();
-    for (uint32 ri = 0; ri < newBatchCount; ++ri)
+    size_t newBatchCount = newBatches.size();
+    for (size_t ri = 0; ri < newBatchCount; ++ri)
+    {
         ro->RemoveRenderBatch(newBatches[ri]);
+    }
 
     uint32 batchCount = ro->GetRenderBatchCount();
     int32 lodIndex, switchIndex;

@@ -27,6 +27,12 @@ public:
 
     PackageNode* FindPackageByName(const DAVA::String& name) const;
 
+    DAVA::Vector<PackageNode*>::const_iterator begin() const;
+    DAVA::Vector<PackageNode*>::const_iterator end() const;
+
+    DAVA::Vector<PackageNode*>::iterator begin();
+    DAVA::Vector<PackageNode*>::iterator end();
+
 protected:
     virtual bool IsReadOnly() const override;
 
