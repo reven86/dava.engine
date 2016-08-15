@@ -209,16 +209,7 @@ void EditorParticlesSystem::AddEntity(DAVA::Entity* entity)
 
 void EditorParticlesSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    int size = entities.size();
-    for (int i = 0; i < size; ++i)
-    {
-        if (entities[i] == entity)
-        {
-            entities[i] = entities[size - 1];
-            entities.pop_back();
-            return;
-        }
-    }
+    DAVA::FindAndRemoveExchangingWithLast(entities, entity);
 }
 
 void EditorParticlesSystem::RestartParticleEffects()
@@ -240,7 +231,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
         return;
 
     // Notify that the Particles-related value is changed.
-    SceneEditor2* activeScene = (SceneEditor2*)GetScene();
+    SceneEditor2* activeScene = static_cast<SceneEditor2*>(GetScene());
     switch (command->GetId())
     {
     case CMDID_BATCH:
@@ -278,7 +269,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     }
     case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
     {
-        QtMainWindow::Instance()->RestartParticleEffects();
+        RestartParticleEffects();
 
         const CommandChangeLayerMaterialProperties* cmd = static_cast<const CommandChangeLayerMaterialProperties*>(command);
         SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, cmd->GetLayer());

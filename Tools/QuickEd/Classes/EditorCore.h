@@ -51,6 +51,7 @@ private slots:
 
     void OnExit();
     void OnNewProject();
+    void OnProjectOpenChanged(bool arg);
 
 private:
     void OpenProject(const QString& path);
@@ -70,7 +71,6 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
-    REGISTER_PREFERENCES(EditorCore)
 
 public:
     INTROSPECTION(EditorCore,

@@ -5,6 +5,7 @@
 #include <DLC/Downloader/DownloadManager.h>
 #include <Core/Core.h>
 #include <Platform/DeviceInfo.h>
+#include <Concurrency/Thread.h>
 
 #include "UnitTests/UnitTests.h"
 

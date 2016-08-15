@@ -39,6 +39,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+    connect(project, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
@@ -81,6 +82,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
@@ -89,6 +92,8 @@ EditorCore::~EditorCore()
     {
         cacheClient->Disconnect();
     }
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 MainWindow* EditorCore::GetMainWindow() const
@@ -310,6 +315,18 @@ void EditorCore::OnNewProject()
     else if (result.type == Result::RESULT_ERROR)
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
+    }
+}
+
+void EditorCore::OnProjectOpenChanged(bool isOpen)
+{
+    if (isOpen)
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
+    }
+    else
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
     }
 }
 

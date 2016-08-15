@@ -9,12 +9,13 @@ namespace Ui
 class QtTreeImportDialog;
 }
 
+class GlobalOperations;
 class SpeedTreeImportDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    SpeedTreeImportDialog(QWidget* parent = 0);
+    SpeedTreeImportDialog(const std::shared_ptr<GlobalOperations>& globalOperations, QWidget* parent = 0);
     ~SpeedTreeImportDialog();
 
 public slots:
@@ -34,6 +35,7 @@ private:
 
     DAVA::Vector<DAVA::FilePath> xmlFiles;
     DAVA::FilePath sc2FolderPath;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
 
 #endif // __RESOURCEEDITORQT__SPEEDTREEIMPORTDIALOG__
