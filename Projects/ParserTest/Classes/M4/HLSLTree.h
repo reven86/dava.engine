@@ -734,7 +734,7 @@ public:
     HLSLFunction* FindFunction(const char* name, HLSLStatement** parent = NULL);
     unsigned FindFunctionCall(const char* name, Array<HLSLFunctionCall*>* call);
     HLSLDeclaration* FindGlobalDeclaration(const char* name);
-    HLSLStruct* FindGlobalStruct(const char* name);
+    HLSLStruct* FindGlobalStruct(const char* name) const;
     HLSLTechnique* FindTechnique(const char* name);
     HLSLPipeline* FindFirstPipeline();
     HLSLPipeline* FindNextPipeline(HLSLPipeline* current);

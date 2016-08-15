@@ -158,7 +158,7 @@ HLSLDeclaration* HLSLTree::FindGlobalDeclaration(const char* name)
     return NULL;
 }
 
-HLSLStruct* HLSLTree::FindGlobalStruct(const char* name)
+HLSLStruct* HLSLTree::FindGlobalStruct(const char* name) const
 {
     HLSLStatement* statement = m_root->statement;
     while (statement != NULL)
