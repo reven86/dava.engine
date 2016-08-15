@@ -1,5 +1,4 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include "Base/Result.h"
 #include "Reflection/Registrator.h"
