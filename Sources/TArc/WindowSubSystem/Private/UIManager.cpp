@@ -1,4 +1,5 @@
 #include "WindowSubSystem/Private/UIManager.h"
+#include "WindowSubSystem/ActionPlacementUtils.h"
 #include "DataProcessing/Private/QtReflectionBridge.h"
 
 #include "Base/Any.h"
@@ -9,6 +10,7 @@
 #include <QDockWidget>
 #include <QQmlEngine>
 #include <QQmlContext>
+#include <QMenuBar>
 
 #include <QQuickWidget>
 
@@ -115,6 +117,49 @@ void UIManager::AddView(const WindowKey& key, QWidget* widget)
 void UIManager::AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data)
 {
     AddView(key, LoadView(key.viewName, resourceName, data));
+}
+    
+void UIManager::AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action)
+{
+    QMainWindow* window = FindOrCreateWindow(appID);
+    if (placement.scheme() == menuScheme)
+    {
+        QMenuBar* menuBar = window->menuBar();
+        menuBar->setNativeMenuBar(false);
+        menuBar->setVisible(true);
+        if (menuBar == nullptr)
+        {
+            window->setMenuBar(new QMenuBar(window));
+            menuBar = window->menuBar();
+        }
+        
+        QStringList path = placement.path().split("/");
+        DVASSERT(!path.isEmpty());
+        QString topLevelTitle = path.front();
+        QMenu* topLevelMenu = menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
+        if (topLevelMenu == nullptr)
+        {
+            topLevelMenu = menuBar->addMenu(topLevelTitle);
+            topLevelMenu->setObjectName(topLevelTitle);
+            menuBar->addMenu(topLevelMenu);
+        }
+        
+        QMenu* currentLevelMenu = topLevelMenu;
+        for (int i = 1; i < path.size(); ++i)
+        {
+            QString currentLevelTittle = path[i];
+            QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
+            if (menu == nullptr)
+            {
+                menu = new QMenu(currentLevelTittle, currentLevelMenu);
+                menu->setObjectName(currentLevelTittle);
+                currentLevelMenu->addMenu(menu);
+            }
+            currentLevelMenu = menu;
+        }
+        
+        currentLevelMenu->addAction(action);
+    }
 }
 
 QMainWindow* UIManager::FindOrCreateWindow(const DAVA::FastName& appID)

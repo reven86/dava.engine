@@ -16,6 +16,7 @@ public:
 
     void AddView(const WindowKey& key, QWidget* widget) override;
     void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) override;
+    void AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action) override;
 
 private:
     QMainWindow* FindOrCreateWindow(const DAVA::FastName& appID);

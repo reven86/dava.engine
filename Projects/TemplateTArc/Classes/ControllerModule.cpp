@@ -5,7 +5,8 @@
 #include "WindowSubSystem/UI.h"
 #include "TArcCore/ContextAccessor.h"
 
-#include <QListWidget>
+#include <QAction>
+#include <QUrl>
 
 void TemplateControllerModule::OnContextCreated(tarc::DataContext& context)
 {
@@ -24,9 +25,19 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
     wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
     wrapper.AddListener(this);
 
+    DAVA::FastName appID("TemplateTArc");
+
     tarc::CentralPanelInfo info;
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "RenderWidget", info), manager.GetRenderWidget());
+    ui.AddView(tarc::WindowKey(appID, "RenderWidget", info), manager.GetRenderWidget());
     manager.GetRenderWidget()->show();
+
+    QAction* action = new QAction(QString("DAE"), nullptr);
+    QObject::connect(action, &QAction::triggered, []()
+                     {
+                         DAVA::Logger::Info("Action triggered");
+                     });
+
+    ui.AddAction(appID, QUrl("menu:File/Export"), action);
 }
 
 void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&, const DAVA::Set<DAVA::String>& fields)

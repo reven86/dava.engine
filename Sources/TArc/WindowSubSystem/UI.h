@@ -8,6 +8,8 @@
 #include <Qt>
 
 class QWidget;
+class QUrl;
+class QAction;
 namespace tarc
 {
 
@@ -67,6 +69,7 @@ public:
 
     virtual void AddView(const WindowKey& key, QWidget* widget) = 0;
     virtual void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) = 0;
+    virtual void AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action) = 0;
 };
 
 }
