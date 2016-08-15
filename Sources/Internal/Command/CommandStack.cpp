@@ -1,5 +1,6 @@
 #include "Command/CommandStack.h"
 #include "Command/CommandBatch.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -54,7 +55,7 @@ void CommandStack::BeginBatch(const String& name, uint32 commandsCount)
     }
 }
 
-std::unique_ptr<CommandBatch> CommandStack::CreateCommmandBatch(const String& name, uint32 commandsCount)
+std::unique_ptr<CommandBatch> CommandStack::CreateCommmandBatch(const String& name, uint32 commandsCount) const
 {
     return std::unique_ptr<CommandBatch>(new CommandBatch(name, commandsCount));
 }

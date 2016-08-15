@@ -34,10 +34,11 @@ signals:
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
+    // Quality
+    void QualityChanged();
+
     // entities
     void SelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-
-    void SolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value);
     // mouse
     void MouseOver(SceneEditor2* scene, const SelectableGroup* objects);
     void MouseOverSelection(SceneEditor2* scene, const SelectableGroup* objects);
@@ -113,14 +114,15 @@ public:
     {
         emit SelectionChanged(scene, selected, deselected);
     }
-    void EmitSolidChanged(SceneEditor2* scene, const DAVA::Entity* entity, bool value)
-    {
-        emit SolidChanged(scene, entity, value);
-    }
 
     void EmitModifyStatusChanged(SceneEditor2* scene, bool modified)
     {
         emit ModifyStatusChanged(scene, modified);
+    }
+
+    void EmitQualityChanged()
+    {
+        emit QualityChanged();
     }
 
     void EmitLandscapeEditorToggled(SceneEditor2* scene)

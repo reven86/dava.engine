@@ -180,14 +180,15 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 
 void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = sceneHolder.GetScene();
+    if (curScene == nullptr)
+    {
+        return;
+    }
 
     QtPropertyData* data = propEditor->GetProperty(index);
     std::unique_ptr<DAVA::Command> command = data->CreateLastCommand();
-    if (command && nullptr != curScene)
-    {
-        curScene->Exec(std::move(command));
-    }
+    curScene->Exec(std::move(command));
 }
 
 void BaseAddEntityDialog::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)

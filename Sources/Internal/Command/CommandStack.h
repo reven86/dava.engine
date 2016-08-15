@@ -32,7 +32,7 @@ public:
     Signal<int32, int32> currentIndexChanged;
 
 protected:
-    virtual std::unique_ptr<CommandBatch> CreateCommmandBatch(const String& name, uint32 commandsCount);
+    virtual std::unique_ptr<CommandBatch> CreateCommmandBatch(const String& name, uint32 commandsCount) const;
 
     void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand);
 

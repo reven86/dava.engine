@@ -1,8 +1,8 @@
 #ifndef __DAVA_SIGNAL_BASE_H__
 #define __DAVA_SIGNAL_BASE_H__
 
+#include <atomic>
 #include "Base/BaseTypes.h"
-#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
@@ -17,7 +17,7 @@ public:
 
     static SigConnectionID GetUniqueConnectionID()
     {
-        static Atomic<SigConnectionID> counter = { 0 };
+        static std::atomic<SigConnectionID> counter = { 0 };
         return ++counter;
     }
 };

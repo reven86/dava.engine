@@ -147,8 +147,9 @@ QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
     return extList;
 }
 
-void LibraryWidget::SetupSignals()
+void LibraryWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
 {
+    globalOperations = globalOperations_;
     QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &LibraryWidget::ProjectOpened);
     QObject::connect(ProjectManager::Instance(), &ProjectManager::ProjectClosed, this, &LibraryWidget::ProjectClosed);
 
@@ -290,7 +291,8 @@ void LibraryWidget::fileDoubleClicked(const QModelIndex& index)
         QFileInfo fileInfo = filesModel->fileInfo(index);
         if (0 == fileInfo.suffix().compare("sc2", Qt::CaseInsensitive))
         {
-            QtMainWindow::Instance()->OpenScene(fileInfo.absoluteFilePath());
+            DVASSERT(globalOperations != nullptr);
+            globalOperations->CallAction(GlobalOperations::OpenScene, fileInfo.absoluteFilePath().toStdString());
         }
     }
 }
@@ -325,18 +327,6 @@ void LibraryWidget::ShowContextMenu(const QPoint& point)
         QAction* actionConvert = contextMenu.addAction("Convert", this, SLOT(OnConvertDae()));
         actionConvert->setData(fileInfoAsVariant);
     }
-    //TODO: disabled for future realization of this code
-    //    else if(pathname.IsEqualToExtension(".tex"))
-    //    {
-    //        QAction * actionEdit = contextMenu.addAction("Edit", this, SLOT(OnEditTextureDescriptor()));
-    //        actionEdit->setData(fileInfoAsVariant);
-    //    }
-    //    else if(pathname.IsEqualToExtension(".png"))
-    //    {
-    //        QAction * actionEdit = contextMenu.addAction("Edit", this, SLOT(OnEditTextureDescriptor()));
-    //        actionEdit->setData(fileInfoAsVariant);
-    //    }
-    //ENDOFTODO
 
     contextMenu.addSeparator();
     QAction* actionRevealAt = contextMenu.addAction("Reveal at folder", this, SLOT(OnRevealAtFolder()));
@@ -373,17 +363,14 @@ void LibraryWidget::ProjectClosed()
 
 void LibraryWidget::OnAddModel()
 {
-    QVariant indexAsVariant = ((QAction*)sender())->data();
+    QVariant indexAsVariant = qobject_cast<QAction*>(sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneHolder.GetScene();
     if (nullptr != scene)
     {
-        QtMainWindow::Instance()->WaitStart("Add object to scene", fileInfo.absoluteFilePath());
-
+        WaitDialogGuard guard(globalOperations, "Add object to scene", fileInfo.absoluteFilePath().toStdString());
         scene->structureSystem->Add(fileInfo.absoluteFilePath().toStdString());
-
-        QtMainWindow::Instance()->WaitStop();
     }
 }
 
@@ -392,7 +379,8 @@ void LibraryWidget::OnEditModel()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    QtMainWindow::Instance()->OpenScene(fileInfo.absoluteFilePath());
+    DVASSERT(globalOperations != nullptr);
+    globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(fileInfo.absoluteFilePath().toStdString()));
 }
 
 void LibraryWidget::OnConvertDae()
@@ -400,17 +388,11 @@ void LibraryWidget::OnConvertDae()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    QtMainWindow::Instance()->WaitStart("DAE to SC2 conversion", fileInfo.absoluteFilePath());
+    WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString());
 
     DAEConvertAction* daeCmd = new DAEConvertAction(fileInfo.absoluteFilePath().toStdString());
     daeCmd->Redo();
     delete daeCmd;
-
-    QtMainWindow::Instance()->WaitStop();
-}
-
-void LibraryWidget::OnEditTextureDescriptor()
-{
 }
 
 void LibraryWidget::OnRevealAtFolder()
@@ -423,14 +405,14 @@ void LibraryWidget::OnRevealAtFolder()
 
 void LibraryWidget::HidePreview() const
 {
-    SceneTabWidget* widget = QtMainWindow::Instance()->GetSceneWidget();
-    widget->HideScenePreview();
+    DVASSERT(globalOperations != nullptr);
+    globalOperations->CallAction(GlobalOperations::HideScenePreview, DAVA::Any());
 }
 
 void LibraryWidget::ShowPreview(const QString& pathname) const
 {
-    SceneTabWidget* widget = QtMainWindow::Instance()->GetSceneWidget();
-    widget->ShowScenePreview(pathname.toStdString());
+    DVASSERT(globalOperations != nullptr);
+    globalOperations->CallAction(GlobalOperations::ShowScenePreview, DAVA::Any(pathname.toStdString()));
 }
 
 void LibraryWidget::OnTreeDragStarted()

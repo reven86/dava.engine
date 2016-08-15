@@ -6,6 +6,7 @@
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/RecentMenuItems.h"
+#include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
@@ -26,7 +27,7 @@ class PropertyPanel;
 #endif
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
+class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
 
@@ -50,7 +51,6 @@ public:
     bool SaveSceneAs(SceneEditor2* scene);
 
     void SetGPUFormat(DAVA::eGPUFamily gpu);
-    DAVA::eGPUFamily GetGPUFormat();
 
     void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
     void WaitSetMessage(const QString& messsage);
@@ -66,6 +66,13 @@ public:
     bool CanBeClosed();
 
     bool ParticlesArePacking() const;
+
+    void CallAction(ID id, DAVA::Any&& args) override;
+    QWidget* GetGlobalParentWidget() const override;
+    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100) override;
+    bool IsWaitDialogVisible() const override;
+    void HideWaitDialog() override;
+    void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
 
     // qt actions slots
 public slots:
@@ -116,7 +123,7 @@ public slots:
     void OnCenterPivotPoint();
     void OnZeroPivotPoint();
 
-    void OnMaterialEditor();
+    void OnMaterialEditor(DAVA::NMaterial* material = nullptr);
     void OnTextureBrowser();
     void OnSceneLightMode();
 
@@ -191,6 +198,7 @@ public slots:
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
     void closeEvent(QCloseEvent* event);
+    void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
     void SetupToolBars();
@@ -290,6 +298,8 @@ private:
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
+    std::shared_ptr<GlobalOperations> globalOperations;
+    DAVA::LoggerOutput* errorLoggerOutput = nullptr;
 
 private:
     struct EmitterDescriptor

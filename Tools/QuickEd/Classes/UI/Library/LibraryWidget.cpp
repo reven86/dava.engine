@@ -10,11 +10,16 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 {
     setupUi(this);
     treeView->setModel(libraryModel);
-    treeView->expandToDepth(0);
 }
 
 void LibraryWidget::OnDocumentChanged(Document* document)
 {
     libraryModel->SetPackageNode(nullptr != document ? document->GetPackage() : nullptr);
-    treeView->expandToDepth(0);
+    treeView->expandAll();
+    treeView->collapse(libraryModel->GetDefaultControlsModelIndex());
+}
+
+void LibraryWidget::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages)
+{
+    libraryModel->SetLibraryPackages(libraryPackages);
 }

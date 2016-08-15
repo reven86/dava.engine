@@ -71,7 +71,7 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
     return false;
 }
 
-std::unique_ptr<DAVA::CommandBatch> RECommandStack::CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount)
+std::unique_ptr<DAVA::CommandBatch> RECommandStack::CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const
 {
     return std::unique_ptr<DAVA::CommandBatch>(new RECommandBatch(name, commandsCount));
 }

@@ -7,8 +7,6 @@
 #include "TextureCompression/PVRConverter.h"
 #include "TextureCache.h"
 
-#include "Tools/LoggerOutput/ErrorDialogOutput.h"
-
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/RunGuard/RunGuard.h"
 #include "QtTools/Utils/Themes/Themes.h"
@@ -170,11 +168,14 @@ void REApplication::RunWindow()
     QTimer::singleShot(0, [] { DAVA::QtLayer::RestoreMenuBar(); });
 #endif
 
-    DAVA::Logger::AddCustomOutput(new ErrorDialogOutput());
-
     // create and init UI
     ResourceEditorLauncher launcher;
     mainWindow = new QtMainWindow();
+    QObject::connect(&launcher, &ResourceEditorLauncher::LaunchFinished, [this]()
+                     {
+                         mainWindow->SetupTitle();
+                         mainWindow->OnSceneNew();
+                     });
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
@@ -183,7 +184,7 @@ void REApplication::RunWindow()
     mainWindow->show();
     exec();
 
-    DAVA::SafeRelease(mainWindow);
+    DAVA::SafeDelete(mainWindow);
     ControlsFactory::ReleaseFonts();
 }
 

@@ -18,6 +18,7 @@
 #include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Qt/GlobalOperations.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -207,7 +208,7 @@ protected:
         return treeWidget->selectionModel()->selectedRows().size();
     }
 
-    QWidget* GetParentWidget()
+    SceneTree* GetParentWidget()
     {
         return treeWidget;
     }
@@ -366,7 +367,9 @@ private:
                 DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (DAVA::FileSystem::Instance()->Exists(entityRefPath))
                 {
-                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+                    std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+                    DVASSERT(globalOperations != nullptr);
+                    globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(DAVA::String(entityRefPath.GetAbsolutePathname().c_str())));
                 }
                 else
                 {
@@ -524,7 +527,10 @@ private:
         const SelectableGroup& selection = GetScene()->selectionSystem->GetSelection();
         DVASSERT(selection.GetSize() == 1);
         DVASSERT(selection.GetFirst().CanBeCastedTo<DAVA::Entity>());
-        QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(selection.GetFirst().AsEntity()->GetName().c_str());
+
+        std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+        DVASSERT(globalOperations != nullptr);
+        globalOperations->CallAction(GlobalOperations::SetNameAsFilter, DAVA::Any(DAVA::String(selection.GetFirst().AsEntity()->GetName().c_str())));
     }
 
     void SetCurrentCamera()
@@ -811,6 +817,11 @@ SceneTree::~SceneTree()
 {
     delete filteringProxyModel;
     delete treeModel;
+}
+
+void SceneTree::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
 }
 
 void SceneTree::SetFilter(const QString& filter)

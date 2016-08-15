@@ -76,19 +76,6 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
         header()->resizeSection(0, v.AsInt32());
     }
 
-    Ui::MainWindow* mainUi = QtMainWindow::Instance()->GetUI();
-    connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
-    connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
-    connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
-    connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
-    connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
-    connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
-    connect(mainUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
-    connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
-    connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
-    connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
-    connect(mainUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
-
     SetUpdateTimeout(5000);
     SetEditTracking(true);
     setMouseTracking(true);
@@ -102,6 +89,22 @@ PropertyEditor::~PropertyEditor()
     posSaver.SaveValue("splitPos", v);
 
     ClearCurrentNodes();
+}
+
+void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
+    connect(mainWindowUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
+    connect(mainWindowUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
+    connect(mainWindowUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
+    connect(mainWindowUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
+    connect(mainWindowUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
+    connect(mainWindowUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
+    connect(mainWindowUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
+    connect(mainWindowUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
+    connect(mainWindowUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
+    connect(mainWindowUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
+    connect(mainWindowUi->actionAddVisibilityComponent, SIGNAL(triggered()), SLOT(OnAddVisibilityComponent()));
 }
 
 void PropertyEditor::SetEntities(const SelectableGroup* selected)
@@ -820,7 +823,7 @@ void PropertyEditor::OnItemEdited(const QModelIndex& index) // TODO: fix undo/re
 {
     QtPropertyEditor::OnItemEdited(index);
 
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = sceneHolder.GetScene();
     if (curScene == nullptr)
         return;
 
@@ -928,7 +931,7 @@ void PropertyEditor::ActionEditComponent()
         editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
         editor.exec();
 
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = sceneHolder.GetScene();
         SetEntities(&curScene->selectionSystem->GetSelection());
 
         if (editor.IsModified())
@@ -948,7 +951,7 @@ void PropertyEditor::ConvertToShadow()
     if (data == nullptr)
         return;
 
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = sceneHolder.GetScene();
     if (curScene == nullptr)
         return;
 
@@ -988,7 +991,7 @@ void PropertyEditor::RebuildTangentSpace()
     if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = sceneHolder.GetScene();
         if (nullptr != data && nullptr != curScene)
         {
             DAVA::RenderBatch* batch = static_cast<DAVA::RenderBatch*>(data->object);
@@ -1004,7 +1007,7 @@ void PropertyEditor::DeleteRenderBatch()
     if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = sceneHolder.GetScene();
         DAVA::Entity* node = curNodes.GetFirst().AsEntity();
 
         if (data != nullptr && curScene != nullptr && node != nullptr)
@@ -1060,8 +1063,8 @@ void PropertyEditor::ActionEditMaterial()
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
         if (NULL != data)
         {
-            QtMainWindow::Instance()->OnMaterialEditor();
-            MaterialEditor::Instance()->SelectMaterial((DAVA::NMaterial*)data->object);
+            DVASSERT(globalOperations != nullptr);
+            globalOperations->CallAction(GlobalOperations::ShowMaterial, DAVA::Any(static_cast<DAVA::NMaterial*>(data->object)));
         }
     }
 }
@@ -1071,7 +1074,7 @@ void PropertyEditor::ActionEditSoundComponent()
     if (curNodes.GetSize() != 1)
         return;
 
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneHolder.GetScene();
     if (scene == nullptr)
         return;
 
@@ -1080,7 +1083,7 @@ void PropertyEditor::ActionEditSoundComponent()
 
     scene->BeginBatch("Edit Sound Component", 1);
     {
-        SoundComponentEditor editor(scene, QtMainWindow::Instance());
+        SoundComponentEditor editor(scene, globalOperations->GetGlobalParentWidget());
         editor.SetEditableEntity(node);
         editor.exec();
     }
@@ -1367,7 +1370,7 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
         {
             DAVA::RenderObject* renderObject = (DAVA::RenderObject*)data->object;
 
-            SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+            SceneEditor2* curScene = sceneHolder.GetScene();
             if (curScene && renderObject)
             {
                 curScene->Exec(std::unique_ptr<DAVA::Command>(new CloneLastBatchCommand(renderObject)));
@@ -1378,8 +1381,8 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 
 void PropertyEditor::OnAddComponent(DAVA::Component::eType type)
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if (curNodes.IsEmpty())
+    SceneEditor2* curScene = sceneHolder.GetScene();
+    if (curScene == nullptr || curNodes.IsEmpty())
         return;
 
     curScene->BeginBatch(Format("Add Component: %d", type), curNodes.GetSize());
@@ -1394,10 +1397,10 @@ void PropertyEditor::OnAddComponent(DAVA::Component::eType type)
 void PropertyEditor::OnAddComponent(DAVA::Component* component)
 {
     DVASSERT(component);
-    if (curNodes.IsEmpty())
+    SceneEditor2* curScene = sceneHolder.GetScene();
+    if (curScene == nullptr || curNodes.IsEmpty())
         return;
 
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     curScene->BeginBatch(DAVA::Format("Add Component: %d", component->GetType()), curNodes.GetSize());
 
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
@@ -1444,10 +1447,10 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    if (curNodes.IsEmpty())
+    SceneEditor2* curScene = sceneHolder.GetScene();
+    if (curScene == nullptr || curNodes.IsEmpty())
         return;
 
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
     curScene->BeginBatch(DAVA::Format("Add Component: %d", DAVA::Component::PATH_COMPONENT), curNodes.GetSize());
 
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
@@ -1495,7 +1498,7 @@ void PropertyEditor::OnRemoveComponent()
     if (nullptr != btn)
     {
         QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
-        SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+        SceneEditor2* curScene = sceneHolder.GetScene();
 
         if (nullptr != data && nullptr != curScene)
         {
@@ -1542,7 +1545,7 @@ QString PropertyEditor::GetDefaultFilePath()
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
-    SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* editor = sceneHolder.GetScene();
     if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()))
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
