@@ -31,7 +31,7 @@ APP_LDFLAGS  := -fsanitize=address
 endif
 
 APP_ABI := armeabi-v7a
-#APP_ABI += x86
+APP_ABI += x86
 APP_PLATFORM := android-14
 
 # we have to use last ndk10e with clang3.6, clang - point to clang3.6 in ndk10e
