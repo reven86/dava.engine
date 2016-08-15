@@ -26,7 +26,7 @@ private:
 struct DockPanelInfo
 {
     Qt::DockWidgetArea area = Qt::RightDockWidgetArea;
-    DAVA::String tittle;
+    QString title;
     bool tabbed = true;
 };
 
@@ -44,17 +44,17 @@ public:
         TypesCount
     };
     
-    PanelKey(const DAVA::String& viewName, const DockPanelInfo& info);
-    PanelKey(const DAVA::String& viewName, const CentralPanelInfo& info);
+    PanelKey(const QString& viewName, const DockPanelInfo& info);
+    PanelKey(const QString& viewName, const CentralPanelInfo& info);
 
-    const DAVA::String& GetViewName() const;
+    const QString& GetViewName() const;
     Type GetType() const;
     const DAVA::Any& GetInfo() const;
 
 private:
-    PanelKey(Type t, const DAVA::String& viewName, const DAVA::Any& info);
+    PanelKey(Type t, const QString& viewName, const DAVA::Any& info);
 
-    DAVA::String viewName;
+    QString viewName;
     Type type;
     DAVA::Any info;
 };
@@ -72,6 +72,25 @@ private:
     DAVA::Vector<QUrl> urls;
 };
 
+struct WaitDialogParams
+{
+    QString message = QStringLiteral("Please wait, while current operation will be finished");
+    DAVA::uint32 min = 0; // if min and max value equal 0, than progress bar will be infinite
+    DAVA::uint32 max = 0;
+    bool needProgressBar = true;
+};
+
+class WaitHandle
+{
+public:
+    virtual ~WaitHandle() {}
+
+    virtual void SetMessage(const QString& msg) = 0;
+    virtual void SetRange(DAVA::uint32 min, DAVA::uint32 max) = 0;
+    virtual void SetProgressValue(DAVA::uint32 progress) = 0;
+    virtual void Update() = 0;
+};
+
 class UI
 {
 public:
@@ -81,8 +100,13 @@ public:
     virtual ~UI() {}
 
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
-    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const DAVA::String& resourceName, DataWrapper data) = 0;
+    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper data) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
+
+    virtual void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) = 0;
+    virtual void ClearMessage(const WindowKey& windowKey) = 0;
+
+    virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
 };
 
 }

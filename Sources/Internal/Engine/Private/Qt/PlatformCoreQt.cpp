@@ -52,7 +52,7 @@ void PlatformCore::Run()
                          }
                      });
 
-    windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+    windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 180.0f, 180.0f);
     if (windowBackend == nullptr)
     {
         return;

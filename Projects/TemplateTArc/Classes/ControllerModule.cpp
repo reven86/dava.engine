@@ -3,6 +3,7 @@
 #include "SharedData.h"
 
 #include "WindowSubSystem/UI.h"
+#include "WindowSubSystem/ActionUtils.h"
 #include "TArcCore/ContextAccessor.h"
 
 #include <QAction>
@@ -17,8 +18,9 @@ void TemplateControllerModule::OnContextDeleted(tarc::DataContext& context)
 {
 }
 
-void TemplateControllerModule::PostInit(tarc::UI& ui)
+void TemplateControllerModule::PostInit()
 {
+    tarc::UI& ui = GetUI();
     tarc::ContextManager& manager = GetContextManager();
     contextID = manager.CreateContext();
     manager.ActivateContext(contextID);
@@ -29,7 +31,6 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
 
     tarc::CentralPanelInfo info;
     ui.AddView(windowKey, tarc::PanelKey("RenderWidget", info), manager.GetRenderWidget());
-    manager.GetRenderWidget()->show();
 
     QAction* action = new QAction(QString("DAE"), nullptr);
     QObject::connect(action, &QAction::triggered, []()
@@ -37,23 +38,39 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
                          DAVA::Logger::Info("Action triggered");
                      });
 
-    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File")), new QAction(QString("Open"), nullptr));
-    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File/Export")), action);
-    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File/Export")), new QAction(QString("SC2"), nullptr));
+    {
+        tarc::ActionPlacementInfo openFilePlacement;
+        openFilePlacement.AddPlacementPoint(tarc::CreateMenuPoint("File"));
+        openFilePlacement.AddPlacementPoint(tarc::CreateToolbarPoint("FileToolBar"));
+        openFilePlacement.AddPlacementPoint(tarc::CreateStatusbarPoint(true));
+
+        QAction* action = new QAction(QString("Open"), nullptr);
+        QObject::connect(action, &QAction::triggered, []()
+                         {
+                             DAVA::Logger::Info("Open triggered");
+                         });
+
+        ui.AddAction(windowKey, openFilePlacement, action);
+    }
+    {
+        tarc::ActionPlacementInfo exportPlacement;
+        exportPlacement.AddPlacementPoint(tarc::CreateMenuPoint("File/Export"));
+        exportPlacement.AddPlacementPoint(tarc::CreateToolbarPoint("ExportToolBar"));
+        ui.AddAction(windowKey, exportPlacement, action);
+        ui.AddAction(windowKey, exportPlacement, new QAction(QString("SC2"), nullptr));
+    }
 }
 
 void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&, const DAVA::Set<DAVA::String>& fields)
 {
-    tarc::DataContext::ContextID newContext = tarc::DataContext::Empty;
     if (wrapper.HasData())
     {
         tarc::DataEditor<SharedData> editor = wrapper.CreateEditor<SharedData>();
-        DAVA::Logger::Info("Data changed. New value : %d", editor->GetValue());
+        QString msg = QString("Most longest message that i could imagine in my cruel life. Sorry for that! Data changed. New value : %1").arg(editor->GetValue());
+        GetUI().ShowMessage(tarc::WindowKey(DAVA::FastName("TemplateTArc")), msg);
     }
     else
     {
-        DAVA::Logger::Info("Data changed. New value : empty");
-        newContext = contextID;
+        GetUI().ShowMessage(tarc::WindowKey(DAVA::FastName("TemplateTArc")), "Data changed. New value : empty", 1000);
     }
-    //GetContextManager().ActivateContext(newContext);
 }

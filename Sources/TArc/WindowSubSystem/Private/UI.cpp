@@ -15,24 +15,24 @@ const DAVA::FastName& WindowKey::GetAppID() const
     return appID;
 }
 
-PanelKey::PanelKey(const DAVA::String& viewName_, const DockPanelInfo& info_)
+PanelKey::PanelKey(const QString& viewName_, const DockPanelInfo& info_)
     : PanelKey(DockPanel, viewName_, info_)
 {
 }
 
-PanelKey::PanelKey(const DAVA::String& viewName_, const CentralPanelInfo& info_)
+PanelKey::PanelKey(const QString& viewName_, const CentralPanelInfo& info_)
     : PanelKey(CentralPanel, viewName_, info_)
 {
 }
 
-PanelKey::PanelKey(Type t, const DAVA::String& viewName_, const DAVA::Any& info_)
+PanelKey::PanelKey(Type t, const QString& viewName_, const DAVA::Any& info_)
     : type(t)
     , viewName(viewName_)
     , info(info_)
 {
 }
 
-const DAVA::String& PanelKey::GetViewName() const
+const QString& PanelKey::GetViewName() const
 {
     return viewName;
 }

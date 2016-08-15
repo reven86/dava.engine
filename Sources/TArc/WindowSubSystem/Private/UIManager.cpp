@@ -1,5 +1,6 @@
 #include "WindowSubSystem/Private/UIManager.h"
-#include "WindowSubSystem/ActionPlacementUtils.h"
+#include "WindowSubSystem/ActionUtils.h"
+#include "WindowSubSystem/Private/WaitDialog.h"
 #include "DataProcessing/Private/QtReflectionBridge.h"
 
 #include "Base/Any.h"
@@ -11,6 +12,9 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QMenuBar>
+#include <QToolBar>
+#include <QStatusBar>
+#include <QToolButton>
 
 #include <QQuickWidget>
 
@@ -29,7 +33,7 @@ void AddDockPanel(const PanelKey& key, QWidget* widget, QMainWindow* mainWindow)
 {
     DVASSERT(key.GetType() == PanelKey::DockPanel);
     const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
-    QDockWidget* newDockWidget = new QDockWidget(QString::fromStdString(info.tittle), mainWindow);
+    QDockWidget* newDockWidget = new QDockWidget(info.title, mainWindow);
     newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
     newDockWidget->setWidget(widget);
 
@@ -120,6 +124,44 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     currentLevelMenu->addAction(action);
 }
 
+void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    QString toolbarName = url.path();
+    QToolBar* toolbar = windowInfo.window->findChild<QToolBar*>(toolbarName);
+    if (toolbar == nullptr)
+    {
+        toolbar = new QToolBar(toolbarName, windowInfo.window);
+        toolbar->setObjectName(toolbarName);
+        windowInfo.window->addToolBar(toolbar);
+    }
+
+    toolbar->addAction(action);
+}
+
+void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    bool isPermanent = url.path() == permanentStatusbarAction;
+    int stretchFactor = url.fragment().toInt();
+    QWidget* widget = action->data().value<QWidget*>();
+    if (widget == nullptr)
+    {
+        QToolButton* toolButton= new QToolButton();
+        toolButton->setDefaultAction(action);
+        widget = toolButton;
+    }
+
+    //action->setParent(widget);
+    QStatusBar* statusBar = windowInfo.window->statusBar();
+    if (isPermanent)
+    {
+        statusBar->addPermanentWidget(widget, stretchFactor);
+    }
+    else
+    {
+        statusBar->addWidget(widget, stretchFactor);
+    }
+}
+
 }
 
 struct UIManager::Impl
@@ -128,6 +170,15 @@ struct UIManager::Impl
     DAVA::UnorderedMap<DAVA::FastName, UIManagerDetails::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
+    bool initializationFinished = false;
+
+    ~Impl()
+    {
+        for (auto& window : windows)
+        {
+            delete window.second.window;
+        }
+    }
 
     UIManagerDetails::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
     {
@@ -161,11 +212,20 @@ UIManager::UIManager()
 
 UIManager::~UIManager() = default;
 
+void UIManager::InitializationFinished()
+{
+    impl->initializationFinished = true;
+    for (auto& windowIter : impl->windows)
+    {
+        windowIter.second.window->show();
+    }
+}
+
 void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
     DVASSERT(widget != nullptr);
     
-    widget->setObjectName(QString::fromStdString(panelKey.GetViewName()));
+    widget->setObjectName(panelKey.GetViewName());
     QMainWindow* window = impl->FindOrCreateWindow(windowKey).window;
     DVASSERT(window != nullptr);
 
@@ -174,13 +234,13 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
     
     impl->addFunctions[type](panelKey, widget, window);
 
-    if (!window->isVisible())
+    if (!window->isVisible() && impl->initializationFinished)
     {
         window->show();
     }
 }
 
-void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const DAVA::String& resourceName, DataWrapper data)
+void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper data)
 {
     AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, data));
 }
@@ -190,17 +250,26 @@ void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo&
     UIManagerDetails::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     for (const QUrl& url : placement.urls)
     {
-        if (url.scheme() == menuScheme)
+        QString scheme = url.scheme();
+        if (scheme == menuScheme)
         {
             UIManagerDetails::AddMenuPoint(url, action, windowInfo);
+        }
+        else if (scheme == toolbarScheme)
+        {
+            UIManagerDetails::AddToolbarPoint(url, action, windowInfo);
+        }
+        else if (scheme == statusbarScheme)
+        {
+            UIManagerDetails::AddStatusbarPoint(url, action, windowInfo);
         }
     }
 }
 
-QWidget* UIManager::LoadView(const DAVA::String& name, const DAVA::String& resourceName, DataWrapper data)
+QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper data)
 {
     QPointer<QQuickWidget> view = new QQuickWidget(impl->qmlEngine.get(), nullptr);
-    view->setObjectName(QString::fromStdString(name));
+    view->setObjectName(name);
     view->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
     QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(data, view);
@@ -209,11 +278,11 @@ QWidget* UIManager::LoadView(const DAVA::String& name, const DAVA::String& resou
         if (qtReflected != nullptr && view != nullptr)
         {
             view->rootContext()->setContextProperty("context", qtReflected);
-            view->setSource(QUrl(resourceName.c_str()));
+            view->setSource(QUrl(resourceName));
 
             if (view->status() != QQuickWidget::Ready)
             {
-                DAVA::Logger::Warning("!!! QML %s has not been loaded !!!", resourceName.c_str());
+                DAVA::Logger::Warning("!!! QML %s has not been loaded !!!", resourceName);
                 foreach(QQmlError error, view->errors())
                 {
                     DAVA::Logger::Warning("Error : %s", error.toString().toStdString().c_str());
@@ -226,6 +295,24 @@ QWidget* UIManager::LoadView(const DAVA::String& name, const DAVA::String& resou
     qtReflected->Init();
 
     return view;
+}
+
+void UIManager::ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration)
+{
+    impl->FindOrCreateWindow(windowKey).window->statusBar()->showMessage(message, duration);
+}
+
+void UIManager::ClearMessage(const WindowKey& windowKey)
+{
+    impl->FindOrCreateWindow(windowKey).window->statusBar()->clearMessage();
+}
+
+std::unique_ptr<tarc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
+{
+    UIManagerDetails::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
+    dlg->Show();
+    return std::move(dlg);
 }
 
 }

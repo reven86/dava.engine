@@ -5,16 +5,23 @@
 namespace tarc
 {
 
-tarc::ContextAccessor& ClientModule::GetAccessor()
+ContextAccessor& ClientModule::GetAccessor()
 {
     DVASSERT(contextAccessor != nullptr);
     return *contextAccessor;
 }
 
-void ClientModule::Init(ContextAccessor* contextAccessor_)
+UI& ClientModule::GetUI()
+{
+    DVASSERT(ui != nullptr);
+    return *ui;
+}
+
+void ClientModule::Init(ContextAccessor* contextAccessor_, UI* ui_)
 {
     DVASSERT(contextAccessor == nullptr);
     contextAccessor = contextAccessor_;
+    ui = ui_;
 }
 
 }

@@ -56,13 +56,15 @@ void Core::OnLoopStarted()
 
     for (ClientModule* module : modules)
     {
-        module->Init(this);
+        module->Init(this, uiManager.get());
     }
 
     for (ClientModule* module : modules)
     {
-        module->PostInit(*uiManager);
+        module->PostInit();
     }
+
+    uiManager->InitializationFinished();
 }
 
 void Core::OnLoopStopped()
@@ -86,6 +88,7 @@ void Core::OnLoopStopped()
 
     modules.clear();
     wrappers.clear();
+    uiManager.reset();
 }
 
 void Core::ForEachContext(const DAVA::Function<void(DataContext&)>& functor)

@@ -10,6 +10,8 @@
 #include <QFileSystemModel>
 #include <QTimer>
 
+#include <thread>
+
 class FileSystemData : public tarc::DataNode
 {
     DAVA_DECLARE_TYPE_INITIALIZER
@@ -40,24 +42,21 @@ void DataChangerModule::OnContextCreated(tarc::DataContext& context)
 {
     std::unique_ptr<FileSystemData> data = std::make_unique<FileSystemData>();
     data->model = new QFileSystemModel();
-    data->model->setRootPath(QDir::currentPath());
+    data->model->setNameFilters(QStringList() << "*.sc2");
+    data->model->setNameFilterDisables(false);
+    data->model->setRootPath(QDir::rootPath());
     data->sampleText = "Hello cruel World";
 
     context.CreateData(std::move(data));
-
-    QTimer::singleShot(5000, [&context]()
-                       {
-                           FileSystemData& data = context.GetData<FileSystemData>();
-                           data.sampleText = "new text";
-                       });
 }
 
 void DataChangerModule::OnContextDeleted(tarc::DataContext& context)
 {
 }
 
-void DataChangerModule::PostInit(tarc::UI& ui)
+void DataChangerModule::PostInit()
 {
+    tarc::UI& ui = GetUI();
     wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
     wrapper.AddListener(this);
 
@@ -73,8 +72,8 @@ void DataChangerModule::PostInit(tarc::UI& ui)
     tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
 
     tarc::DockPanelInfo info;
-    info.tittle = "Customers";
-    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), customerList);
+    info.title = "Customers";
+    ui.AddView(windowKey, tarc::PanelKey(info.title, info), customerList);
 
     QListWidget* paragraphs = new QListWidget();
     paragraphs->addItems(QStringList()
@@ -85,13 +84,13 @@ void DataChangerModule::PostInit(tarc::UI& ui)
                          << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
                          << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
-    info.tittle = "Paragraphs";
-    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), paragraphs);
+    info.title = "Paragraphs";
+    ui.AddView(windowKey, tarc::PanelKey(info.title, info), paragraphs);
 
     info.area = Qt::LeftDockWidgetArea;
     info.tabbed = false;
-    info.tittle = "Library";
-    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), "qrc:/Library.qml",
+    info.title = "Library";
+    ui.AddView(windowKey, tarc::PanelKey(info.title, info), "qrc:/Library.qml",
                GetAccessor().CreateWrapper(DAVA::Type::Instance<FileSystemData>()));
 }
 

@@ -11,7 +11,7 @@ class TemplateControllerModule : public tarc::ControllerModule, public tarc::Dat
 protected:
     void OnContextCreated(tarc::DataContext& context) override;
     void OnContextDeleted(tarc::DataContext& context) override;
-    void PostInit(tarc::UI& ui) override;
+    void PostInit() override;
 
     void OnDataChanged(const tarc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
 

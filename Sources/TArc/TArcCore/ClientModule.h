@@ -15,16 +15,18 @@ protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
 
-    virtual void PostInit(UI& ui) = 0;
+    virtual void PostInit() = 0;
     ContextAccessor& GetAccessor();
+    UI& GetUI();
 
 private:
-    void Init(ContextAccessor* contextAccessor);
+    void Init(ContextAccessor* contextAccessor, UI* ui);
 
 private:
     friend class Core;
 
     ContextAccessor* contextAccessor = nullptr;
+    UI* ui = nullptr;
 };
 
 }
