@@ -74,7 +74,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 DAVA::Private::AndroidBridge* androidBridge = nullptr;
 
-jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 {
     JNIEnv* env = nullptr;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
