@@ -1513,14 +1513,10 @@ QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
     SceneEditor2* editor = sceneHolder.GetScene();
     if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()) && withScenePath)
     {
-        SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-        if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()))
+        DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
+        if (DAVA::String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
         {
-            DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
-            if (DAVA::String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
-            {
-                defaultPath = scenePath.c_str();
-            }
+            defaultPath = scenePath.c_str();
         }
     }
 
