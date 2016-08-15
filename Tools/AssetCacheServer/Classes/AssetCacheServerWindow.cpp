@@ -352,7 +352,7 @@ void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
 
 void AssetCacheServerWindow::OnAddServerClicked()
 {
-    AddRemoteServer(RemoteServerParams(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
+    AddRemoteServer(RemoteServerParams(DEFAULT_REMOTE_IP, false));
     VerifyData();
 }
 

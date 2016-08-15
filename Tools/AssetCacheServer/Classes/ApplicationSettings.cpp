@@ -3,9 +3,8 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 
-RemoteServerParams::RemoteServerParams(DAVA::String _ip, DAVA::uint16 _port, bool _enabled)
+RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
     : ip(_ip)
-    , port(_port)
     , enabled(_enabled)
 {
 }
@@ -17,21 +16,12 @@ bool RemoteServerParams::IsEmpty() const
 
 bool RemoteServerParams::operator==(const RemoteServerParams& right) const
 {
-    return (ip == right.ip) && (port == right.port);
+    return (ip == right.ip);
 }
 
 bool RemoteServerParams::EquivalentTo(const DAVA::Net::Endpoint& right) const
 {
-    return (ip == right.Address().ToString()) && (port == right.Port());
-}
-
-bool RemoteServerParams::operator<(const RemoteServerParams& right) const
-{
-    if (ip == right.ip)
-    {
-        return port < right.port;
-    }
-    return ip < right.ip;
+    return (ip == right.Address().ToString());
 }
 
 const DAVA::String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
@@ -103,7 +93,6 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     for (auto& sd : remoteServers)
     {
         archive->SetString(DAVA::Format("Server_%d_ip", index), sd.ip);
-        archive->SetUInt32(DAVA::Format("Server_%d_port", index), sd.port);
         archive->SetBool(DAVA::Format("Server_%d_enabled", index), sd.enabled);
         ++index;
     }
@@ -128,7 +117,6 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     {
         RemoteServerParams sd;
         sd.ip = archive->GetString(DAVA::Format("Server_%d_ip", i));
-        sd.port = archive->GetUInt32(DAVA::Format("Server_%d_port", i));
         sd.enabled = archive->GetBool(DAVA::Format("Server_%d_enabled", i), false);
 
         remoteServers.push_back(sd);

@@ -15,7 +15,6 @@ RemoteServerWidget::RemoteServerWidget(QWidget* parent)
             this, &RemoteServerWidget::RemoveLater);
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
             this, &RemoteServerWidget::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
@@ -24,8 +23,6 @@ RemoteServerWidget::RemoteServerWidget(const RemoteServerParams& newServer, QWid
 {
     ui->enabledCheckBox->setChecked(newServer.enabled);
     ui->ipLineEdit->setText(newServer.ip.c_str());
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(true);
 }
 
 RemoteServerWidget::~RemoteServerWidget()
@@ -35,7 +32,7 @@ RemoteServerWidget::~RemoteServerWidget()
 
 RemoteServerParams RemoteServerWidget::GetServerData() const
 {
-    return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
+    return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->enabledCheckBox->isChecked());
 }
 
 bool RemoteServerWidget::IsCorrectData()
