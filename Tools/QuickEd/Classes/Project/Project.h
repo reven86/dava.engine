@@ -26,6 +26,7 @@ public:
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
     static const QString& GetScreensRelativePath();
     static const QString& GetProjectFileName();
     QString CreateNewProject(DAVA::Result* result = nullptr);
@@ -56,6 +57,7 @@ private:
 
     bool isOpen = false;
     DAVA::FilePath projectPath;
+    DAVA::Vector<DAVA::FilePath> libraryPackages;
     QString projectName;
     DAVA::String projectsHistory;
     DAVA::uint32 projectsHistorySize;
