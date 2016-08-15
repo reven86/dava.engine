@@ -7,12 +7,6 @@ UIControlPackageContext::~UIControlPackageContext()
 {
 }
 
-UIControlPackageContext::UIControlPackageContext()
-    : styleSheetsSorted(false)
-    , maxStyleSheetHierarchyDepth(0)
-{
-}
-
 void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet& styleSheet)
 {
     styleSheetsSorted = false;
