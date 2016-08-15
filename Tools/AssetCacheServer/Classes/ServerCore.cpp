@@ -39,6 +39,8 @@ ServerCore::ServerCore()
     sharedDataUpdateTimer->start();
     QObject::connect(sharedDataUpdateTimer, &QTimer::timeout, this, &ServerCore::OnSharedDataUpdateTimer);
     QObject::connect(&sharedDataRequester, &SharedDataRequester::SharedDataReceived, &settings, &ApplicationSettings::UpdateSharedPools);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerShared, &settings, &ApplicationSettings::SetOwnID);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerUnshared, &settings, &ApplicationSettings::ResetOwnID);
 
     settings.Load();
 
@@ -196,7 +198,7 @@ void ServerCore::OnReattemptTimer()
 
 void ServerCore::OnSharedDataUpdateTimer()
 {
-    sharedDataRequester.RequestSharedData(settings.OwnID());
+    sharedDataRequester.RequestSharedData(settings.GetOwnID());
 }
 
 void ServerCore::OnClientProxyStateChanged()

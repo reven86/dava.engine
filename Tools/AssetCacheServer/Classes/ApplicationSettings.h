@@ -151,18 +151,23 @@ public:
     bool IsSharedForOthers() const;
     void SetSharedForOthers(bool);
 
-    ServerID OwnID() const;
+    ServerID GetOwnID() const;
     void SetOwnID(ServerID);
+    void ResetOwnID();
+
+    void SetOwnPoolID(PoolID);
+    PoolID GetOwnPoolID() const;
+
+    void SetOwnName(DAVA::String);
+    const DAVA::String& GetOwnName() const;
+
+    void SetShareEnabled(bool);
+    bool IsSharedEnabled() const;
 
     void UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
     const DAVA::Map<PoolID, SharedPool>& GetSharedPools() const;
     void EnableSharedPool(PoolID poolID);
     void EnableSharedServer(PoolID poolID, ServerID serverID);
-
-    //     void AddSharedPool(const SharedPool& pool);
-    //     void AddSharedServer(const SharedServer& server);
-    //     void RemoveSharedPool(const SharedPool& pool);
-    //     void RemoveSharedServer(const SharedServer& server);
 
     const DAVA::List<RemoteServerParams>& GetCustomServers() const;
     void AddCustomServer(const RemoteServerParams& server);
@@ -192,6 +197,8 @@ public:
     bool restartOnCrash = DEFAULT_RESTART_ON_CRASH;
     bool sharedForOthers = DEFAULT_SHARED_FOR_OTHERS;
     ServerID ownID = 0;
+    PoolID ownPoolID = 0;
+    DAVA::String ownName;
 
     DAVA::Map<PoolID, SharedPool> sharedPools;
     DAVA::List<RemoteServerParams> customServers;

@@ -31,7 +31,6 @@ private slots:
     void OnGetServersFinished();
     void OnAddServerFinished();
     void OnRemoveServerFinished();
-    void Replied(QNetworkReply* reply);
 
 private:
     QNetworkAccessManager* networkManager = nullptr;

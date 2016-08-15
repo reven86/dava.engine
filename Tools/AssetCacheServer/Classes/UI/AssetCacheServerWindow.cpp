@@ -63,11 +63,8 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
-    //connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
-    //connect(ui->httpPortSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnHttpPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnAutoStartToggled(bool)));
     connect(ui->restartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRestartToggled(bool)));
-    //connect(ui->advancedLabel, &QLabel::linkActivated, this, &AssetCacheServerWindow::OnAdvancedLinkActivated);
     connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnAddServerClicked);
     connect(ui->poolComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPoolChanged(int)));
     connect(ui->serverNameEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnServerNameTextChanged);
@@ -88,7 +85,6 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     QObject::connect(ui->scrollArea->verticalScrollBar(), SIGNAL(rangeChanged(int, int)), this, SLOT(OnServersAreaRangeChanged(int, int)));
 
-    //ShowAdvancedSettings(showAdvanced);
     CreateTrayMenu();
 
     ChangeSettingsState(NOT_EDITED);
@@ -342,53 +338,6 @@ void AssetCacheServerWindow::OnRestartToggled(bool)
     VerifyChanges();
 }
 
-void AssetCacheServerWindow::OnAdvancedLinkActivated(const QString& link)
-{
-    ShowAdvancedSettings(!showAdvanced);
-}
-
-void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
-{
-    //     ui->emptyLabel->setVisible(show);
-    //
-    //     ui->numberOfFilesLabel->setVisible(show);
-    //     ui->numberOfFilesLabel2->setVisible(show);
-    //     ui->numberOfFilesSpinBox->setVisible(show);
-    //
-    //     ui->autoSaveLabel->setVisible(show);
-    //     ui->autoSaveLabel2->setVisible(show);
-    //     ui->autoSaveTimeoutSpinBox->setVisible(show);
-    //
-    //     ui->portLabel->setVisible(show);
-    //     ui->portLabel2->setVisible(show);
-    //     ui->portSpinBox->setVisible(show);
-    //
-    //     ui->httpPortLabel->setVisible(show);
-    //     ui->httpPortLabel2->setVisible(show);
-    //     ui->httpPortSpinBox->setVisible(show);
-    //
-    //     ui->autoStartLabel->setVisible(show);
-    //     ui->autoStartLabel2->setVisible(show);
-    //     ui->autoStartCheckBox->setVisible(show);
-    //
-    // #if defined(__DAVAENGINE_MACOS__) // restart functionality supported on macos platform only
-    //     ui->restartLabel->setVisible(show);
-    //     ui->restartLabel2->setVisible(show);
-    //     ui->restartLabel3->setVisible(show);
-    //     ui->restartCheckBox->setVisible(show);
-    // #else
-    //     ui->restartLabel->setVisible(false);
-    //     ui->restartLabel2->setVisible(false);
-    //     ui->restartLabel3->setVisible(false);
-    //     ui->restartCheckBox->setVisible(false);
-    // #endif
-
-    //     ui->advancedLabel->setText(
-    //     QString("<html><head/><body><p><a href=\"adv\"><span style=\" text - decoration: underline; color:#0000ff; \">%1 advanced settings</span></a></p></body></html>")
-    //     .arg(show ? "Hide" : "Show"));
-    //     showAdvanced = show;
-}
-
 void AssetCacheServerWindow::OnServersAreaRangeChanged(int min, int max)
 {
     if (customServerManuallyAdded)
@@ -410,16 +359,6 @@ void AssetCacheServerWindow::OnCustomServerRemoved()
     CustomServerWidget* serverWidget = qobject_cast<CustomServerWidget*>(sender());
     customServersWidgets.remove(serverWidget);
 
-    //     if (checkedWidget.type == CheckedWidget::CUSTOM_SERVER && checkedWidget.customServerWidget == serverWidget)
-    //     {
-    //         checkedWidget.type = CheckedWidget::NONE;
-    //     }
-    //
-    //     if (checkedWidgetOnLoad.type == CheckedWidget::CUSTOM_SERVER && checkedWidgetOnLoad.customServerWidget == serverWidget)
-    //     {
-    //         checkedWidgetOnLoad.type = CheckedWidget::NONE;
-    //     }
-
     serverWidget->deleteLater();
     VerifyChanges();
 }
@@ -436,8 +375,6 @@ void AssetCacheServerWindow::OnSharedPoolChecked(bool checked)
         SharedPoolWidget* poolWidget = qobject_cast<SharedPoolWidget*>(sender());
         ClearAllChecks();
         poolWidget->SetChecked(true);
-        //checkedWidget.type = CheckedWidget::POOL;
-        //checkedWidget.poolWidget = poolWidget;
     }
 
     VerifyChanges();
@@ -450,8 +387,6 @@ void AssetCacheServerWindow::OnSharedServerChecked(bool checked)
         SharedServerWidget* serverWidget = qobject_cast<SharedServerWidget*>(sender());
         ClearAllChecks();
         serverWidget->SetChecked(true);
-        //checkedWidget.type = CheckedWidget::POOL_SERVER;
-        //checkedWidget.serverWidget = serverWidget;
     }
 
     VerifyChanges();
@@ -464,8 +399,6 @@ void AssetCacheServerWindow::OnCustomServerChecked(bool checked)
         CustomServerWidget* serverWidget = qobject_cast<CustomServerWidget*>(sender());
         ClearAllChecks();
         serverWidget->SetChecked(true);
-        //checkedWidget.type = CheckedWidget::CUSTOM_SERVER;
-        //checkedWidget.customServerWidget = serverWidget;
     }
 
     VerifyChanges();
@@ -473,20 +406,6 @@ void AssetCacheServerWindow::OnCustomServerChecked(bool checked)
 
 void AssetCacheServerWindow::ClearAllChecks()
 {
-    //     switch (checkedWidget.type)
-    //     {
-    //     case CheckedWidget::POOL:
-    //         checkedWidget.poolWidget->SetChecked(false);
-    //         break;
-    //     case CheckedWidget::POOL_SERVER:
-    //         checkedWidget.serverWidget->SetChecked(false);
-    //         break;
-    //     case CheckedWidget::CUSTOM_SERVER:
-    //         checkedWidget.customServerWidget->SetChecked(false);
-    //         break;
-    //     }
-    //
-    //     checkedWidget.type = CheckedWidget::NONE;
     for_each(sharedPoolsWidgets.begin(), sharedPoolsWidgets.end(), [](SharedPoolWidget* w) { w->SetChecked(false); });
     for_each(sharedServersWidgets.begin(), sharedServersWidgets.end(), [](SharedServerWidget* w) { w->SetChecked(false); });
     for_each(customServersWidgets.begin(), customServersWidgets.end(), [](CustomServerWidget* w) { w->SetChecked(false); });
@@ -581,44 +500,10 @@ void AssetCacheServerWindow::SelectedRemoteSetText()
         break;
     }
     }
-
-    //     const DAVA::Map<PoolID, SharedPool>& sharedPools = serverCore.Settings().GetSharedPools();
-    //     for (const auto& poolPair : sharedPools)
-    //     {
-    //         const SharedPool& pool = poolPair.second;
-    //         if (pool.enabled)
-    //         {
-    //             ui->selectedRemoteLineEdit->setText(DAVA::Format("'%s' pool", pool.poolName.c_str()).c_str());
-    //             return;
-    //         }
-    //         const DAVA::Map<ServerID, SharedServer>& servers = pool.servers;
-    //         for (const auto& serverPair : servers)
-    //         {
-    //             const SharedServer& server = serverPair.second;
-    //             if (server.params.enabled)
-    //             {
-    //                 ui->selectedRemoteLineEdit->setText(DAVA::Format("%s / %s", pool.poolName.c_str(), server.serverName.c_str()).c_str());
-    //                 return;
-    //             }
-    //         }
-    //     }
-    //
-    //     const DAVA::List<RemoteServerParams>& customServers = serverCore.Settings().GetCustomServers();
-    //     for (const RemoteServerParams& server : customServers)
-    //     {
-    //         if (server.enabled)
-    //         {
-    //             ui->selectedRemoteLineEdit->setText(DAVA::Format("%s:%u", server.ip.c_str(), server.port).c_str());
-    //             return;
-    //         }
-    //     }
-    //
-    //     ui->selectedRemoteLineEdit->setText("none");
 }
 
 void AssetCacheServerWindow::ReconstructServersList()
 {
-    //checkedWidget.type = CheckedWidget::NONE;
     ReconstructSharedServersList();
     ReconstructCustomServersList();
 }
@@ -631,27 +516,23 @@ void AssetCacheServerWindow::ReconstructSharedServersList()
     {
         ui->poolComboBox->removeItem(0);
     }
+    comboBoxIDs.clear();
 
     const DAVA::Map<PoolID, SharedPool>& pools = serverCore.Settings().GetSharedPools();
+    comboBoxIDs.reserve(pools.size());
+
     for (auto& poolEntry : pools)
     {
         const SharedPool& pool = poolEntry.second;
         AddSharedPool(pool);
 
-        ui->poolComboBox->addItem(pool.poolName.c_str());
+        ui->poolComboBox->addItem(pool.poolID == 0 ? "none" : pool.poolName.c_str());
+        comboBoxIDs.push_back(pool.poolID);
     }
 }
 
 void AssetCacheServerWindow::RemoveSharedServers()
 {
-    /*QLayoutItem* item;
-         while ((item = sharedServersLayout->takeAt(0)) != nullptr)
-         {
-             DAVA::Logger::Debug("remove layout");
-             sharedServersLayout->removeItem(item);
-             delete item;
-         }*/
-
     while (!sharedPoolsWidgets.empty())
     {
         DAVA::Logger::Debug("remove pool widget");
@@ -667,41 +548,20 @@ void AssetCacheServerWindow::RemoveSharedServers()
         sharedServersWidgets.front()->deleteLater();
         sharedServersWidgets.pop_front();
     }
-
-    //sharedServersLayout->deleteLater();
-    //serversLayout->removeItem(sharedServersLayout);
-    //
-    //sharedServersLayout = new QVBoxLayout();
-    //serversLayout->insertLayout(0, sharedServersLayout);
 }
 
 void AssetCacheServerWindow::AddSharedPool(const SharedPool& pool)
 {
-    //DAVA::Logger::Debug("adding pool %u", pool.poolID);
     if (pool.poolID == 0)
     {
-        DAVA::Logger::Debug("adding nullable pool");
-        /*
-                 QHBoxLayout* hbox = new QHBoxLayout(this);
-                 QLabel* label = new QLabel("Shared servers without pools:", this);
-                 hbox->addWidget(label);
-                 hbox->addStretch();
-        sharedServersLayout->addLayout(hbox);*/
         //sharedServersLayout->addWidget(new QLabel("Shared servers without pools:", this));
     }
     else
     {
-        DAVA::Logger::Debug("adding pool %u '%s' widget", pool.poolID, pool.poolName.c_str());
         SharedPoolWidget* poolWidget = new SharedPoolWidget(pool, this);
         connect(poolWidget, SIGNAL(PoolChecked(bool)), this, SLOT(OnSharedPoolChecked(bool)));
         sharedServersLayout->addWidget(poolWidget);
         sharedPoolsWidgets.push_back(poolWidget);
-
-        //         if (poolWidget->IsChecked())
-        //         {
-        //             checkedWidget.type = CheckedWidget::POOL;
-        //             checkedWidget.poolWidget = poolWidget;
-        //         }
     }
 
     for (auto serverEntry : pool.servers)
@@ -712,20 +572,13 @@ void AssetCacheServerWindow::AddSharedPool(const SharedPool& pool)
         connect(serverWidget, SIGNAL(ServerChecked(bool)), this, SLOT(OnSharedServerChecked(bool)));
         sharedServersLayout->addWidget(serverWidget);
         sharedServersWidgets.push_back(serverWidget);
-
-        //         if (serverWidget->IsChecked())
-        //         {
-        //             checkedWidget.type = CheckedWidget::POOL_SERVER;
-        //             checkedWidget.serverWidget = serverWidget;
-        //         }
     }
-    /*
-    DAVA::Logger::Debug("adding line widget");
-    QFrame* horizontalLine = new QFrame(this);
-    horizontalLine->setFrameShape(QFrame::HLine);
-    sharedServersLayout->addSpacing(10);
-    sharedServersLayout->addWidget(horizontalLine);
-    sharedServersLayout->addSpacing(10);*/
+
+    //     QFrame* horizontalLine = new QFrame(this);
+    //     horizontalLine->setFrameShape(QFrame::HLine);
+    //     sharedServersLayout->addSpacing(10);
+    //     sharedServersLayout->addWidget(horizontalLine);
+    //     sharedServersLayout->addSpacing(10);
 }
 
 void AssetCacheServerWindow::ReconstructCustomServersList()
@@ -758,12 +611,6 @@ void AssetCacheServerWindow::AddCustomServer(const RemoteServerParams& newServer
     connect(serverWidget, SIGNAL(ServerChecked(bool)), this, SLOT(OnCustomServerChecked(bool)));
 
     customServersLayout->addWidget(serverWidget);
-
-    //     if (serverWidget->IsChecked())
-    //     {
-    //         checkedWidget.type = CheckedWidget::CUSTOM_SERVER;
-    //         checkedWidget.customServerWidget = serverWidget;
-    //     }
 
     VerifyChanges();
 }
@@ -816,8 +663,6 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetCacheSizeGb(ui->cacheSizeSpinBox->value());
     serverCore.Settings().SetFilesCount(ui->numberOfFilesSpinBox->value());
     serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
-    //serverCore.Settings().SetPort(ui->portSpinBox->value());
-    //serverCore.Settings().SetHttpPort(ui->httpPortSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
     serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
     serverCore.Settings().SetRestartOnCrash(ui->restartCheckBox->isChecked());
@@ -836,9 +681,9 @@ void AssetCacheServerWindow::SaveSettings()
     else if (checkedRemote.type == CheckedRemote::POOL_SERVER)
         serverCore.Settings().EnableSharedServer(checkedRemote.poolID, checkedRemote.serverID);
 
-    serverCore.Settings().SetSelectedPool(PoolIndexToPoolID(ui->poolComboBox->currentIndex()));
-    serverCore.Settings().SetServerName(ui->serverNameEdit->text().toStdString());
-    serverCore.Settings().SetShareEnabled(ui->shareCheckBox->isChecked());
+    serverCore.Settings().SetOwnPoolID(comboBoxIDs[ui->poolComboBox->currentIndex()]);
+    serverCore.Settings().SetOwnName(ui->serverNameEdit->text().toStdString());
+    serverCore.Settings().SetSharedForOthers(ui->shareCheckBox->isChecked());
 
     serverCore.Settings().Save();
 
@@ -854,8 +699,6 @@ void AssetCacheServerWindow::LoadSettings()
     ui->cacheSizeSpinBox->setValue(serverCore.Settings().GetCacheSizeGb());
     ui->numberOfFilesSpinBox->setValue(serverCore.Settings().GetFilesCount());
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
-    //ui->portSpinBox->setValue(serverCore.Settings().GetPort());
-    //ui->httpPortSpinBox->setValue(serverCore.Settings().GetHttpPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
     ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
     ui->restartCheckBox->setEnabled(serverCore.Settings().IsLaunchOnSystemStartup());
@@ -863,8 +706,8 @@ void AssetCacheServerWindow::LoadSettings()
 
     ReconstructServersList();
     SelectedRemoteSetText();
-    ui->serverNameEdit->setText(serverCore.Settings().GetServerName().c_str());
-    ui->shareCheckBox->setChecked(serverCore.Settings().IsShareEnabled());
+    ui->serverNameEdit->setText(serverCore.Settings().GetOwnName().c_str());
+    ui->shareCheckBox->setChecked(serverCore.Settings().IsSharedForOthers());
 
     blockSignals(blocked);
 

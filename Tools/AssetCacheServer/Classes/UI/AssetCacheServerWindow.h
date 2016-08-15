@@ -48,7 +48,6 @@ private slots:
     void OnAutoStartToggled(bool);
     void OnSystemStartupToggled(bool);
     void OnRestartToggled(bool);
-    void OnAdvancedLinkActivated(const QString&);
     void OnServerNameTextChanged();
     void OnPoolChanged(int);
 
@@ -68,17 +67,6 @@ private slots:
     void UpdateUsageProgressbar(DAVA::uint64, DAVA::uint64);
 
 private:
-    //     struct CheckedWidget
-    //     {
-    //         enum Type { POOL, POOL_SERVER, CUSTOM_SERVER, NONE } type = NONE;
-    //         union
-    //         {
-    //             SharedPoolWidget* poolWidget = nullptr;
-    //             SharedServerWidget* serverWidget;
-    //             CustomServerWidget* customServerWidget;
-    //         };
-    //     };
-
     struct CheckedRemote
     {
         enum Type
@@ -120,8 +108,6 @@ private:
 
     void SelectedRemoteSetText();
 
-    void ShowAdvancedSettings(bool show);
-
     void SetupLaunchOnStartup(bool toLaunchOnStartup, bool toRestartOnCrash);
 
     void VerifyChanges();
@@ -154,8 +140,7 @@ private:
     DAVA::List<CustomServerWidget*> customServersWidgets;
     DAVA::List<SharedPoolWidget*> sharedPoolsWidgets;
     DAVA::List<SharedServerWidget*> sharedServersWidgets;
-
-    //CheckedWidget checkedWidget;
+    DAVA::Vector<PoolID> comboBoxIDs;
 
     ServerCore& serverCore;
 

@@ -51,7 +51,7 @@
     <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pageStorage">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -647,8 +647,8 @@ QProgressBar::chunk {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>620</width>
-             <height>227</height>
+             <width>636</width>
+             <height>260</height>
             </rect>
            </property>
           </widget>

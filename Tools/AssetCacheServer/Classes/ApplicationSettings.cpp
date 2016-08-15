@@ -194,50 +194,6 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
             server.remoteParams.enabled = archive->GetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex));
         }
     }
-
-    //     SharedPool& pool1 = sharedPools[1];
-    //     pool1.enabled = true;
-    //     pool1.poolID = 1;
-    //     pool1.poolName = "dava team";
-    //     pool1.poolDescription = "used by dava dev & QA";
-    //
-    //     SharedServer& server1 = pool1.servers[1];
-    //     server1.poolID = 1;
-    //     server1.serverID = 1;
-    //     server1.serverName = "Stas";
-    //     server1.remoteParams.ip = "127.0.0.1";
-    //     server1.remoteParams.port = 44236;
-    //
-    //     SharedServer& server2 = pool1.servers[2];
-    //     server2.poolID = 1;
-    //     server2.serverID = 2;
-    //     server2.serverName = "Stas mac";
-    //     server2.remoteParams.ip = "127.0.0.1";
-    //     server2.remoteParams.port = 44234;
-    //
-    //     SharedPool& pool7 = sharedPools[7];
-    //     pool7.enabled = false;
-    //     pool7.poolID = 7;
-    //     pool7.poolName = "blitz team";
-    //     pool7.poolDescription = "used by blitz dev & QA";
-    //
-    //     SharedServer& server71 = pool7.servers[71];
-    //     server71.poolID = 7;
-    //     server71.serverID = 71;
-    //     server71.serverName = "M";
-    //     server71.remoteParams.ip = "127.0.0.1";
-    //
-    //     SharedPool& pool0 = sharedPools[0];
-    //     pool0.enabled = false;
-    //     pool0.poolID = 0;
-    //     pool0.poolName = "void team";
-    //     pool0.poolDescription = "bla bla";
-    //
-    //     SharedServer& server99 = pool0.servers[99];
-    //     server99.poolID = 0;
-    //     server99.serverID = 99;
-    //     server99.serverName = "Free server";
-    //     server99.remoteParams.ip = "127.0.0.9";
 }
 
 const DAVA::FilePath& ApplicationSettings::GetFolder() const
@@ -340,7 +296,7 @@ void ApplicationSettings::SetSharedForOthers(bool val)
     sharedForOthers = val;
 }
 
-ServerID ApplicationSettings::OwnID() const
+ServerID ApplicationSettings::GetOwnID() const
 {
     return ownID;
 }
@@ -348,6 +304,31 @@ ServerID ApplicationSettings::OwnID() const
 void ApplicationSettings::SetOwnID(ServerID val)
 {
     ownID = val;
+}
+
+void ApplicationSettings::ResetOwnID()
+{
+    ownID = 0;
+}
+
+void ApplicationSettings::SetOwnPoolID(PoolID val)
+{
+    ownPoolID = val;
+}
+
+PoolID ApplicationSettings::GetOwnPoolID() const
+{
+    return ownPoolID;
+}
+
+void ApplicationSettings::SetOwnName(DAVA::String val)
+{
+    ownName = val;
+}
+
+const DAVA::String& ApplicationSettings::GetOwnName() const
+{
+    return ownName;
 }
 
 const DAVA::Map<PoolID, SharedPool>& ApplicationSettings::GetSharedPools() const
@@ -365,44 +346,10 @@ const DAVA::List<RemoteServerParams>& ApplicationSettings::GetCustomServers() co
     return customServers;
 }
 
-// void ApplicationSettings::AddSharedPool(const SharedPool& pool)
-// {
-//     auto insertedResult = sharedPools.emplace(pool.poolID, pool);
-//     DVASSERT(insertedResult.second == true);
-// }
-//
-// void ApplicationSettings::AddSharedServer(const SharedServer& server)
-// {
-//     auto poolIter = sharedPools.find(server.poolID);
-//     DVASSERT(poolIter != sharedPools.end());
-//     SharedPool& pool = poolIter->second;
-//
-//     auto insertedResult = pool.servers.emplace(server.serverID, server);
-//     DVASSERT(insertedResult.second == true);
-// }
-//
-
 void ApplicationSettings::AddCustomServer(const RemoteServerParams& server)
 {
     customServers.push_back(server);
 }
-
-//
-// void ApplicationSettings::RemoveSharedPool(const SharedPool& pool)
-// {
-//     size_t erasedCount = sharedPools.erase(pool.poolID);
-//     DVASSERT(erasedCount == 1);
-// }
-//
-// void ApplicationSettings::RemoveSharedServer(const SharedServer& server)
-// {
-//     auto poolIter = sharedPools.find(server.poolID);
-//     DVASSERT(poolIter != sharedPools.end());
-//     SharedPool& pool = poolIter->second;
-//
-//     size_t erasedCount = pool.servers.erase(server.serverID);
-//     DVASSERT(erasedCount == 1);
-// }
 
 void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers)
 {

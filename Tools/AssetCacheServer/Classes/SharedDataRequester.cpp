@@ -8,7 +8,6 @@
 SharedDataRequester::SharedDataRequester(QWidget* parent)
     : networkManager(new QNetworkAccessManager(this))
 {
-    connect(networkManager, &QNetworkAccessManager::finished, this, &SharedDataRequester::Replied);
 }
 
 void SharedDataRequester::RequestSharedData(ServerID ownID_)
@@ -95,11 +94,11 @@ void SharedDataRequester::OnAddServerFinished()
     QNetworkReply::NetworkError error = shareRequest->error();
     if (error != QNetworkReply::NoError)
     {
-        DAVA::Logger::Error("Can't add server: %s", getServersRequest->errorString().toStdString().c_str());
+        DAVA::Logger::Error("Can't add server: %s", shareRequest->errorString().toStdString().c_str());
         return;
     }
 
-    emit SharedIDReceived(SharedDataParser::ParseAddReply());
+    emit ServerShared(SharedDataParser::ParseAddReply(shareRequest->readAll()));
 }
 
 void SharedDataRequester::RemoveSharedServer(ServerID serverID)
@@ -122,5 +121,5 @@ void SharedDataRequester::OnRemoveServerFinished()
         return;
     }
 
-    emit UnshareReceived();
+    emit ServerUnshared();
 }
