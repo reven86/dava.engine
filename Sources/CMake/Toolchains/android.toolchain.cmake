@@ -1222,6 +1222,9 @@ endif()
 # Generic flags
 set( ANDROID_CXX_FLAGS "${ANDROID_CXX_FLAGS} -g -DANDROID -funwind-tables -fstack-protector-strong" )
 
+# Turn on ld.bfd linker, because ld can fails with big object files
+set ( ANDROID_CXX_FLAGS "${ANDROID_CXX_FLAGS} -fuse-ld=bfd" )
+
 # NDK flags
 if (ARM64_V8A )
  set( ANDROID_CXX_FLAGS         "${ANDROID_CXX_FLAGS} -funwind-tables" )
