@@ -19,8 +19,15 @@ namespace tarc
 
 namespace UIManagerDetails
 {
-void AddDockPanel(const WindowKey& key, QWidget* widget, QMainWindow* mainWindow)
+struct MainWindowInfo
 {
+    QMainWindow* window = nullptr;
+    QMenuBar* menuBar = nullptr;
+};
+
+void AddDockPanel(const PanelKey& key, QWidget* widget, QMainWindow* mainWindow)
+{
+    DVASSERT(key.GetType() == PanelKey::DockPanel);
     const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
     QDockWidget* newDockWidget = new QDockWidget(QString::fromStdString(info.tittle), mainWindow);
     newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -54,7 +61,7 @@ void AddDockPanel(const WindowKey& key, QWidget* widget, QMainWindow* mainWindow
     }
 }
 
-void AddCentralPanel(const WindowKey& key, QWidget* widget, QMainWindow* mainWindow)
+void AddCentralPanel(const PanelKey& key, QWidget* widget, QMainWindow* mainWindow)
 {
     QWidget* centralWidget = mainWindow->centralWidget();
     if (centralWidget == nullptr)
@@ -73,21 +80,79 @@ void AddCentralPanel(const WindowKey& key, QWidget* widget, QMainWindow* mainWin
 
     tabWidget->addTab(widget, widget->objectName());
 }
+
+void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    if (windowInfo.menuBar == nullptr)
+    {
+        windowInfo.menuBar = new QMenuBar();
+        windowInfo.window->setMenuBar(windowInfo.menuBar);
+        windowInfo.menuBar->setObjectName("menu");
+        windowInfo.menuBar->setNativeMenuBar(true);
+        windowInfo.menuBar->setVisible(true);
+    }
+
+    QStringList path = url.path().split("/");
+    DVASSERT(!path.isEmpty());
+    QString topLevelTitle = path.front();
+    QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
+    if (topLevelMenu == nullptr)
+    {
+        topLevelMenu = windowInfo.menuBar->addMenu(topLevelTitle);
+        topLevelMenu->setObjectName(topLevelTitle);
+        windowInfo.menuBar->addMenu(topLevelMenu);
+    }
+
+    QMenu* currentLevelMenu = topLevelMenu;
+    for (int i = 1; i < path.size(); ++i)
+    {
+        QString currentLevelTittle = path[i];
+        QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
+        if (menu == nullptr)
+        {
+            menu = new QMenu(currentLevelTittle, currentLevelMenu);
+            menu->setObjectName(currentLevelTittle);
+            currentLevelMenu->addMenu(menu);
+        }
+        currentLevelMenu = menu;
+    }
+
+    currentLevelMenu->addAction(action);
+}
+
 }
 
 struct UIManager::Impl
 {
-    DAVA::Array<DAVA::Function<void(const WindowKey&, QWidget*, QMainWindow*)>, WindowKey::TypesCount> addFunctions;
-    DAVA::UnorderedMap<DAVA::FastName, QMainWindow*> windows;
+    DAVA::Array<DAVA::Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
+    DAVA::UnorderedMap<DAVA::FastName, UIManagerDetails::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
+
+    UIManagerDetails::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
+    {
+        const DAVA::FastName& appID = windowKey.GetAppID();
+        auto iter = windows.find(appID);
+        if (iter == windows.end())
+        {
+            QMainWindow* window = new QMainWindow();
+            window->setObjectName(appID.c_str());
+            UIManagerDetails::MainWindowInfo info;
+            info.window = window;
+            auto emplacePair = windows.emplace(appID, info);
+            DVASSERT(emplacePair.second == true);
+            iter = emplacePair.first;
+        }
+
+        return iter->second;
+    }
 };
 
 UIManager::UIManager()
     : impl(new Impl())
 {
-    impl->addFunctions[WindowKey::DockPanel] = DAVA::MakeFunction(&UIManagerDetails::AddDockPanel);
-    impl->addFunctions[WindowKey::CentralPanel] = DAVA::MakeFunction(&UIManagerDetails::AddCentralPanel);
+    impl->addFunctions[PanelKey::DockPanel] = DAVA::MakeFunction(&UIManagerDetails::AddDockPanel);
+    impl->addFunctions[PanelKey::CentralPanel] = DAVA::MakeFunction(&UIManagerDetails::AddCentralPanel);
 
     impl->qmlEngine.reset(new QQmlEngine());
     impl->qmlEngine->addImportPath("qrc:/");
@@ -96,17 +161,18 @@ UIManager::UIManager()
 
 UIManager::~UIManager() = default;
 
-void UIManager::AddView(const WindowKey& key, QWidget* widget)
+void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
     DVASSERT(widget != nullptr);
     
-    widget->setObjectName(QString::fromStdString(key.viewName));
-    QMainWindow* window = FindOrCreateWindow(key.appID);
-
+    widget->setObjectName(QString::fromStdString(panelKey.GetViewName()));
+    QMainWindow* window = impl->FindOrCreateWindow(windowKey).window;
     DVASSERT(window != nullptr);
-    DVASSERT(impl->addFunctions[key.type] != nullptr);
+
+    PanelKey::Type type = panelKey.GetType();
+    DVASSERT(impl->addFunctions[type] != nullptr);
     
-    impl->addFunctions[key.type](key, widget, window);
+    impl->addFunctions[type](panelKey, widget, window);
 
     if (!window->isVisible())
     {
@@ -114,67 +180,21 @@ void UIManager::AddView(const WindowKey& key, QWidget* widget)
     }
 }
 
-void UIManager::AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data)
+void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const DAVA::String& resourceName, DataWrapper data)
 {
-    AddView(key, LoadView(key.viewName, resourceName, data));
-}
-    
-void UIManager::AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action)
-{
-    QMainWindow* window = FindOrCreateWindow(appID);
-    if (placement.scheme() == menuScheme)
-    {
-        QMenuBar* menuBar = window->menuBar();
-        menuBar->setNativeMenuBar(false);
-        menuBar->setVisible(true);
-        if (menuBar == nullptr)
-        {
-            window->setMenuBar(new QMenuBar(window));
-            menuBar = window->menuBar();
-        }
-        
-        QStringList path = placement.path().split("/");
-        DVASSERT(!path.isEmpty());
-        QString topLevelTitle = path.front();
-        QMenu* topLevelMenu = menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
-        if (topLevelMenu == nullptr)
-        {
-            topLevelMenu = menuBar->addMenu(topLevelTitle);
-            topLevelMenu->setObjectName(topLevelTitle);
-            menuBar->addMenu(topLevelMenu);
-        }
-        
-        QMenu* currentLevelMenu = topLevelMenu;
-        for (int i = 1; i < path.size(); ++i)
-        {
-            QString currentLevelTittle = path[i];
-            QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
-            if (menu == nullptr)
-            {
-                menu = new QMenu(currentLevelTittle, currentLevelMenu);
-                menu->setObjectName(currentLevelTittle);
-                currentLevelMenu->addMenu(menu);
-            }
-            currentLevelMenu = menu;
-        }
-        
-        currentLevelMenu->addAction(action);
-    }
+    AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, data));
 }
 
-QMainWindow* UIManager::FindOrCreateWindow(const DAVA::FastName& appID)
+void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
-    auto iter = impl->windows.find(appID);
-    if (iter == impl->windows.end())
+    UIManagerDetails::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    for (const QUrl& url : placement.urls)
     {
-        QMainWindow* window = new QMainWindow();
-        window->setObjectName(appID.c_str());
-        auto emplacePair = impl->windows.emplace(appID, window);
-        DVASSERT(emplacePair.second == true);
-        iter = emplacePair.first;
+        if (url.scheme() == menuScheme)
+        {
+            UIManagerDetails::AddMenuPoint(url, action, windowInfo);
+        }
     }
-
-    return iter->second;
 }
 
 QWidget* UIManager::LoadView(const DAVA::String& name, const DAVA::String& resourceName, DataWrapper data)

@@ -70,9 +70,11 @@ void DataChangerModule::PostInit(tarc::UI& ui)
                            << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
                            << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
+    tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
+
     tarc::DockPanelInfo info;
     info.tittle = "Customers";
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "Customers", info), customerList);
+    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), customerList);
 
     QListWidget* paragraphs = new QListWidget();
     paragraphs->addItems(QStringList()
@@ -84,12 +86,12 @@ void DataChangerModule::PostInit(tarc::UI& ui)
                          << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
     info.tittle = "Paragraphs";
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), "Paragraphs", info), paragraphs);
+    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), paragraphs);
 
     info.area = Qt::LeftDockWidgetArea;
     info.tabbed = false;
     info.tittle = "Library";
-    ui.AddView(tarc::WindowKey(DAVA::FastName("TemplateTArc"), info.tittle, info), "qrc:/Library.qml",
+    ui.AddView(windowKey, tarc::PanelKey(info.tittle, info), "qrc:/Library.qml",
                GetAccessor().CreateWrapper(DAVA::Type::Instance<FileSystemData>()));
 }
 

@@ -16,7 +16,7 @@ DataEditor<T>::DataEditor(DataWrapper& holder_, DAVA::Reflection reflection_)
 }
 
 template<typename T>
-DataEditor<T>::~DataEditor<T>()
+DataEditor<T>::~DataEditor()
 {
     holder.Sync(false);
 }

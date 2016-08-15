@@ -14,12 +14,11 @@ public:
     UIManager();
     ~UIManager();
 
-    void AddView(const WindowKey& key, QWidget* widget) override;
-    void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) override;
-    void AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action) override;
+    void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) override;
+    void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const DAVA::String& resourceName, DataWrapper data) override;
+    void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
 
 private:
-    QMainWindow* FindOrCreateWindow(const DAVA::FastName& appID);
     QWidget* LoadView(const DAVA::String& name, const DAVA::String& resourceName, DataWrapper data);
 
 private:

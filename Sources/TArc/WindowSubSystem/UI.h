@@ -6,12 +6,22 @@
 #include "DataProcessing/DataWrapper.h"
 
 #include <Qt>
+#include <QUrl>
 
 class QWidget;
-class QUrl;
 class QAction;
 namespace tarc
 {
+
+class WindowKey
+{
+public:
+    WindowKey(DAVA::FastName appID);
+    const DAVA::FastName& GetAppID() const;
+
+private:
+    DAVA::FastName appID;
+};
 
 struct DockPanelInfo
 {
@@ -24,39 +34,42 @@ struct CentralPanelInfo
 {
 };
 
-class WindowKey
+class PanelKey
 {
 public:
-    WindowKey(DAVA::FastName appID_, const DAVA::String& viewName, const DockPanelInfo& info_)
-        : appID(appID_)
-        , type(DockPanel)
-        , info(info_)
-    {
-    }
-
-    WindowKey(DAVA::FastName appID_, const DAVA::String& viewName, const CentralPanelInfo& info_)
-        : appID(appID_)
-        , type(CentralPanel)
-        , info(info_)
-    {
-    }
-
-    const DAVA::Any& GetInfo() const { return info; }
-
-private:
-    friend class UIManager;
-
     enum Type
     {
         DockPanel,
         CentralPanel,
         TypesCount
     };
+    
+    PanelKey(const DAVA::String& viewName, const DockPanelInfo& info);
+    PanelKey(const DAVA::String& viewName, const CentralPanelInfo& info);
 
-    DAVA::FastName appID;
+    const DAVA::String& GetViewName() const;
+    Type GetType() const;
+    const DAVA::Any& GetInfo() const;
+
+private:
+    PanelKey(Type t, const DAVA::String& viewName, const DAVA::Any& info);
+
     DAVA::String viewName;
     Type type;
     DAVA::Any info;
+};
+
+class ActionPlacementInfo
+{
+public:
+    ActionPlacementInfo() = default;
+    ActionPlacementInfo(const QUrl& url);
+
+    void AddPlacementPoint(const QUrl& url);
+
+private:
+    friend class UIManager;
+    DAVA::Vector<QUrl> urls;
 };
 
 class UI
@@ -67,9 +80,9 @@ public:
     UI& operator=(const UI& other) = delete;
     virtual ~UI() {}
 
-    virtual void AddView(const WindowKey& key, QWidget* widget) = 0;
-    virtual void AddView(const WindowKey& key, const DAVA::String& resourceName, DataWrapper data) = 0;
-    virtual void AddAction(const DAVA::FastName& appID, const QUrl& placement, QAction* action) = 0;
+    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
+    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const DAVA::String& resourceName, DataWrapper data) = 0;
+    virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
 };
 
 }

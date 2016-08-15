@@ -25,10 +25,10 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
     wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
     wrapper.AddListener(this);
 
-    DAVA::FastName appID("TemplateTArc");
+    tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
 
     tarc::CentralPanelInfo info;
-    ui.AddView(tarc::WindowKey(appID, "RenderWidget", info), manager.GetRenderWidget());
+    ui.AddView(windowKey, tarc::PanelKey("RenderWidget", info), manager.GetRenderWidget());
     manager.GetRenderWidget()->show();
 
     QAction* action = new QAction(QString("DAE"), nullptr);
@@ -37,7 +37,9 @@ void TemplateControllerModule::PostInit(tarc::UI& ui)
                          DAVA::Logger::Info("Action triggered");
                      });
 
-    ui.AddAction(appID, QUrl("menu:File/Export"), action);
+    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File")), new QAction(QString("Open"), nullptr));
+    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File/Export")), action);
+    ui.AddAction(windowKey, tarc::ActionPlacementInfo(QUrl("menu:File/Export")), new QAction(QString("SC2"), nullptr));
 }
 
 void TemplateControllerModule::OnDataChanged(const tarc::DataWrapper&, const DAVA::Set<DAVA::String>& fields)
