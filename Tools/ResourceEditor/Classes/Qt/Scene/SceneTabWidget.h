@@ -1,5 +1,8 @@
-#ifndef __SCENE_TAB_WIDGET_H__
-#define __SCENE_TAB_WIDGET_H__
+#pragma once
+
+#include "UI/UI3DView.h"
+
+#include "FileSystem/FilePath.h"
 
 #include <QMap>
 #include <QTabBar>
@@ -8,9 +11,7 @@
 #include <QMimeData>
 #include <QUrl>
 
-#include "UI/UI3DView.h"
-
-#include "FileSystem/FilePath.h"
+#include <memory>
 
 namespace DAVA
 {
@@ -25,15 +26,17 @@ class DavaGLWidget;
 class ScenePreviewDialog;
 class Request;
 class SelectableGroup;
+class GlobalOperations;
 
-class SceneTabWidget
-: public QWidget
+class SceneTabWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit SceneTabWidget(QWidget* parent);
     ~SceneTabWidget();
+
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
     int OpenTab();
     int OpenTab(const DAVA::FilePath& scenePath);
@@ -53,7 +56,6 @@ public:
     DavaGLWidget* GetDavaWidget() const;
 
 signals:
-
     void CloseTabRequest(int index, Request* closeRequest);
     void Escape();
 
@@ -104,6 +106,7 @@ private:
 
     int newSceneCounter = 0;
     SceneEditor2* curScene = nullptr;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
 
 // tabBar widged to handle drop actions and emit signal about it
@@ -121,5 +124,3 @@ protected:
     void dropEvent(QDropEvent* de) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
 };
-
-#endif // __SCENE_TAB_WIDGET_H__

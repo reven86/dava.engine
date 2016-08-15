@@ -31,6 +31,12 @@ public:
         return TYPE_HEADER;
     }
 
+    typename DAVA::Vector<ValueType*>::const_iterator begin() const;
+    typename DAVA::Vector<ValueType*>::const_iterator end() const;
+
+    typename DAVA::Vector<ValueType*>::iterator begin();
+    typename DAVA::Vector<ValueType*>::iterator end();
+
 protected:
     DAVA::Vector<ValueType*> children;
     DAVA::String name;
@@ -138,6 +144,30 @@ ValueType* SectionProperty<ValueType>::FindProperty(const DAVA::InspMember* memb
             return child;
     }
     return nullptr;
+}
+
+template <typename ValueType>
+typename DAVA::Vector<ValueType*>::const_iterator SectionProperty<ValueType>::begin() const
+{
+    return children.begin();
+}
+
+template <typename ValueType>
+typename DAVA::Vector<ValueType*>::const_iterator SectionProperty<ValueType>::end() const
+{
+    return children.end();
+}
+
+template <typename ValueType>
+typename DAVA::Vector<ValueType*>::iterator SectionProperty<ValueType>::begin()
+{
+    return children.begin();
+}
+
+template <typename ValueType>
+typename DAVA::Vector<ValueType*>::iterator SectionProperty<ValueType>::end()
+{
+    return children.end();
 }
 
 #endif // __QUICKED_SECTION_PROPERTY_H__

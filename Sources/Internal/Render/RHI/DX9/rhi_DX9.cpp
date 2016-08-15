@@ -321,6 +321,8 @@ void _InitDX9()
         {
             if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
             {
+                Memcpy(_DeviceCapsDX9.deviceDescription, info.Description, DAVA::Min(countof(_DeviceCapsDX9.deviceDescription), strlen(info.Description) + 1));
+
                 Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),
