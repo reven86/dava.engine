@@ -1,8 +1,10 @@
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_ANDROID__
+
 #include <iostream>
 
 #include "Base/Result.h"
-#include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
 
@@ -21,21 +23,53 @@ struct SimpleStruct
 
     int a = -38;
     int b = 1024;
+
+    DAVA_REFLECTION(SimpleStruct)
+    {
+        ReflectionRegistrator<SimpleStruct>::Begin()
+        .Field("a", &SimpleStruct::a)
+        .Field("b", &SimpleStruct::b)
+        .End();
+    }
 };
 
-class BaseBase : public VirtualReflection
+class BaseBase : public DAVA::ReflectedBase
 {
-    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
-
 public:
     int basebase = 99;
+
+    DAVA_VIRTUAL_REFLECTION(BaseBase)
+    {
+        ReflectionRegistrator<BaseBase>::Begin()
+        .Field("basebase", &BaseBase::basebase)
+        .End();
+    }
+};
+
+template <typename T>
+struct ValueRange
+{
+    ValueRange(const T& from_, const T& to_)
+        : from(from_)
+        , to(to_)
+    {
+    }
+
+    T from;
+    T to;
+};
+
+template <typename T>
+struct ValueValidator
+{
+    bool IsValid()
+    {
+        return true;
+    }
 };
 
 class TestBaseClass : public BaseBase
 {
-    DAVA_DECLARE_TYPE_INITIALIZER;
-    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
-
 public:
     enum TestEnum
     {
@@ -135,6 +169,46 @@ protected:
     SimpleStruct* simpleNull = nullptr;
     std::vector<std::string> strVec;
     std::vector<SimpleStruct*> simVec;
+
+    DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
+    {
+        ReflectionRegistrator<TestBaseClass>::Begin()
+        .Constructor()
+        .Constructor<int, int, int>()
+        .Destructor()
+        .Field("staticInt", &TestBaseClass::staticInt)
+        [
+        DAVA::Meta<ValueRange<int>>(100, 200),
+        DAVA::Meta<ValueValidator<int>>()
+        ]
+        .Field("staticIntConst", &TestBaseClass::staticIntConst)
+        .Field("staticCustom", &TestBaseClass::staticCustom)
+        .Field("baseInt", &TestBaseClass::baseInt)
+        .Field("baseStr", &TestBaseClass::baseStr)
+        .Field("s1", &TestBaseClass::s1)
+        .Field("simple", &TestBaseClass::simple)
+        .Field("simpleNull", &TestBaseClass::simpleNull)
+        .Field("intVec", &TestBaseClass::intVec)
+        .Field("strVec", &TestBaseClass::strVec)
+        .Field("simVec", &TestBaseClass::simVec)
+        .Field("GetStaticIntFn", &TestBaseClass::GetStaticIntFn, nullptr)
+        .Field("GetStaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
+        .Field("GetStaticCustomRefFn", &TestBaseClass::GetStaticCustomRefFn, nullptr)
+        .Field("GetStaticCustomPtrFn", &TestBaseClass::GetStaticCustomPtrFn, nullptr)
+        .Field("GetStaticCustomRefConstFn", &TestBaseClass::GetStaticCustomRefConstFn, nullptr)
+        .Field("GetStaticCustomPtrConstFn", &TestBaseClass::GetStaticCustomPtrConstFn, nullptr)
+        .Field("GetIntFn", &TestBaseClass::GetIntFn, nullptr)
+        .Field("GetIntFnConst", &TestBaseClass::GetIntFnConst, nullptr)
+        .Field("GetCustomFn", &TestBaseClass::GetCustomFn, nullptr)
+        .Field("GetCustomRefFn", &TestBaseClass::GetCustomRefFn, nullptr)
+        .Field("GetCustomPtrFn", &TestBaseClass::GetCustomPtrFn, nullptr)
+        .Field("GetCustomRefConstFn", &TestBaseClass::GetCustomRefConstFn, nullptr)
+        .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
+        .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
+        .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
+        .Field("Lambda", Function<int()>([]() { return 1088; }), nullptr)
+        .End();
+    }
 };
 
 int TestBaseClass::staticInt = 222;
@@ -166,74 +240,30 @@ TestBaseClass::TestBaseClass()
     simple = &sss;
 }
 
-DAVA_TYPE_INITIALIZER(TestBaseClass)
-{
-    ReflectionRegistrator<BaseBase>::Begin()
-    .Field("basebase", &BaseBase::basebase)
-    .End();
-
-    ReflectionRegistrator<TestBaseClass>::Begin()
-    .Base<BaseBase>()
-    .Constructor()
-    .Constructor<int, int, int>()
-    .Destructor()
-    .Field("staticInt", &TestBaseClass::staticInt)
-    .Field("staticIntConst", &TestBaseClass::staticIntConst)
-    .Field("staticCustom", &TestBaseClass::staticCustom)
-    .Field("baseInt", &TestBaseClass::baseInt)
-    .Field("baseStr", &TestBaseClass::baseStr)
-    .Field("s1", &TestBaseClass::s1)
-    .Field("simple", &TestBaseClass::simple)
-    .Field("simpleNull", &TestBaseClass::simpleNull)
-    .Field("intVec", &TestBaseClass::intVec)
-    .Field("strVec", &TestBaseClass::strVec)
-    .Field("simVec", &TestBaseClass::simVec)
-    .Field("GetStaticIntFn", &TestBaseClass::GetStaticIntFn, nullptr)
-    .Field("GetStaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
-    .Field("GetStaticCustomRefFn", &TestBaseClass::GetStaticCustomRefFn, nullptr)
-    .Field("GetStaticCustomPtrFn", &TestBaseClass::GetStaticCustomPtrFn, nullptr)
-    .Field("GetStaticCustomRefConstFn", &TestBaseClass::GetStaticCustomRefConstFn, nullptr)
-    .Field("GetStaticCustomPtrConstFn", &TestBaseClass::GetStaticCustomPtrConstFn, nullptr)
-    .Field("GetIntFn", &TestBaseClass::GetIntFn, nullptr)
-    .Field("GetIntFnConst", &TestBaseClass::GetIntFnConst, nullptr)
-    .Field("GetCustomFn", &TestBaseClass::GetCustomFn, nullptr)
-    .Field("GetCustomRefFn", &TestBaseClass::GetCustomRefFn, nullptr)
-    .Field("GetCustomPtrFn", &TestBaseClass::GetCustomPtrFn, nullptr)
-    .Field("GetCustomRefConstFn", &TestBaseClass::GetCustomRefConstFn, nullptr)
-    .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
-    .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
-    .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
-    .Field("Lambda", Function<int()>([]() { return 1088; }), nullptr)
-    .End();
-
-    ReflectionRegistrator<SimpleStruct>::Begin()
-    .Field("a", &SimpleStruct::a)
-    .Field("b", &SimpleStruct::b)
-    .End();
-}
-
 DAVA_TESTCLASS (TypeReflection)
 {
     DAVA_TEST (DumpTest)
     {
-        DAVA_TYPE_REGISTER(TestBaseClass);
-
         TestBaseClass t;
-        Reflection t_ref = Reflection::Reflect(&t);
+        Reflection t_ref = Reflection::Create(&t).ref;
 
         t_ref.Dump(std::cout);
     }
 
     DAVA_TEST (CtorDtorTest)
     {
-        const ReflectionDB* db = Type::Instance<TestBaseClass>()->GetReflectionDB();
-        if (nullptr != db)
+        const ReflectedType* rtype = ReflectedType::Get<TestBaseClass>();
+        if (nullptr != rtype)
         {
-            auto ctor = db->GetCtor();
-            auto dtor = db->GetDtor();
+            // TODO:
+            // ...
+            /*
+            auto ctor = rtype->GetCtor();
+            auto dtor = rtype->GetDtor();
 
             Any a = ctor->Create();
             dtor->Destroy(std::move(a));
+            */
         }
     }
 };

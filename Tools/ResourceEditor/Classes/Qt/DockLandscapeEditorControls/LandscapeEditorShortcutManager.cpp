@@ -1,7 +1,8 @@
 #include "LandscapeEditorShortcutManager.h"
 #include "../Main/mainwindow.h"
 
-LandscapeEditorShortcutManager::LandscapeEditorShortcutManager()
+LandscapeEditorShortcutManager::LandscapeEditorShortcutManager(QWidget* shortcutsWidget_)
+    : shortcutsWidget(shortcutsWidget_)
 {
     InitDefaultShortcuts();
 }
@@ -27,7 +28,7 @@ QShortcut* LandscapeEditorShortcutManager::CreateOrUpdateShortcut(const DAVA::St
     QShortcut* shortcut = GetShortcutByName(name);
     if (shortcut == NULL)
     {
-        shortcut = new QShortcut(QKeySequence(keySequence), QtMainWindow::Instance(), 0, 0, Qt::ApplicationShortcut);
+        shortcut = new QShortcut(QKeySequence(keySequence), shortcutsWidget.data(), 0, 0, Qt::ApplicationShortcut);
         shortcutsMap[name] = shortcut;
     }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "Reflection/ReflectionWrappers.h"
+#include "Reflection/Public/Wrappers.h"
 
 namespace DAVA
 {
@@ -9,14 +9,22 @@ class CtorWrapperDefault : public CtorWrapper
 public:
     CtorWrapperDefault()
     {
-        auto tp = std::integral_constant<bool, 0 != sizeof...(Args)>();
-        Fill<Args...>(tp);
+        argsList.Init<void, Args...>();
     }
 
-    const Vector<const Type*>& GetParamsList() const override
+    const AnyFn::InvokeParams& GetInvokeParams() const override
     {
-        return paramsList;
+        return argsList;
     };
+
+    // TODO:
+    // Create policy should be added
+    // Policies can be:
+    //      as pointer,
+    //      as value,
+    //      possible as unique_ptr
+    //      or shared_ptr
+    // ...
 
     Any Create() const override
     {
@@ -42,22 +50,20 @@ public:
         return CreateImpl(tp, a1, a2, a3);
     }
 
+    Any Create(const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
+    {
+        auto tp = std::integral_constant<bool, 4 == sizeof...(Args)>();
+        return CreateImpl(tp, a1, a2, a3, a4);
+    }
+
+    Any Create(const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
+    {
+        auto tp = std::integral_constant<bool, 5 == sizeof...(Args)>();
+        return CreateImpl(tp, a1, a2, a3, a4, a5);
+    }
+
 protected:
-    Vector<const Type*> paramsList;
-
-    template <typename... A>
-    void Fill(std::false_type)
-    {
-    }
-
-    template <typename T, typename... A>
-    void Fill(std::true_type)
-    {
-        paramsList.push_back(Type::Instance<T>());
-
-        auto tp = std::integral_constant<bool, 0 != sizeof...(A)>();
-        Fill<A...>(tp);
-    }
+    AnyFn::InvokeParams argsList;
 
     template <typename... A>
     Any CreateInvoke(A&&... args) const

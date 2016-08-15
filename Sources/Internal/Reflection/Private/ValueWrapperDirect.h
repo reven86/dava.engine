@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Reflection/ReflectionWrappers.h"
+#include "Reflection/Public/Wrappers.h"
 
 namespace DAVA
 {
@@ -50,8 +49,8 @@ public:
         if (!IsReadonly() && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            const Type* inType = object.GetType()->GetIndirectionType();
-            value.SaveValue(ptr, inType->GetSize());
+            const Type* inType = object.GetType()->Deref();
+            value.StoreValue(ptr, inType->GetSize());
 
             ret = true;
         }
