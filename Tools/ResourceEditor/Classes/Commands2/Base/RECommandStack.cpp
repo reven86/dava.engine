@@ -19,7 +19,7 @@ void RECommandStack::Clear()
 
 void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
 {
-    for (DAVA::uint32 index = 0; index < commands.size(); ++index)
+    for (DAVA::int32 index = commands.size() - 1; index >= 0; --index)
     {
         DAVA::Command* commandPtr = commands.at(index).get();
         if (DAVA::IsCommandBatch(commandPtr))
@@ -50,8 +50,8 @@ void RECommandStack::Activate()
 
 bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
 {
-    int beginIndex = std::max(cleanIndex, 0);
-    for (DAVA::uint32 index = std::max(cleanIndex, 0), size = commands.size(); index < size; ++index)
+    DAVA::uint32 beginIndex = std::max(cleanIndex, 0);
+    for (DAVA::uint32 index = beginIndex, size = commands.size(); index < size; ++index)
     {
         const DAVA::Command* commandPtr = commands.at(index).get();
         if (IsRECommand(commandPtr))
