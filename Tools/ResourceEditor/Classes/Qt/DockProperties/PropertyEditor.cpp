@@ -5,7 +5,6 @@
 #include <QPushButton>
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
 
 #include "DockProperties/PropertyEditor.h"
 #include "MaterialEditor/MaterialEditor.h"
@@ -477,6 +476,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                     variantData->SetValidator(new PathValidator(pathList));
                     break;
                 case PathDescriptor::PATH_SCENE:
+                    pathList.append(GetDefaultFilePath(false));
                     variantData->SetValidator(new ScenePathValidator(pathList));
                     break;
 
@@ -1501,7 +1501,7 @@ void PropertyEditor::OnTriggerWaveComponent()
     }
 }
 
-QString PropertyEditor::GetDefaultFilePath()
+QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
 {
     QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
@@ -1509,13 +1509,18 @@ QString PropertyEditor::GetDefaultFilePath()
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
+
     SceneEditor2* editor = sceneHolder.GetScene();
-    if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()))
+    if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()) && withScenePath)
     {
-        DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
-        if (DAVA::String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
+        SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
+        if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()))
         {
-            defaultPath = scenePath.c_str();
+            DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
+            if (DAVA::String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
+            {
+                defaultPath = scenePath.c_str();
+            }
         }
     }
 
