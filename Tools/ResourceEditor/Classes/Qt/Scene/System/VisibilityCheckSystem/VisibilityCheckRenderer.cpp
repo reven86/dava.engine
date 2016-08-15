@@ -83,7 +83,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     distanceMapConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     distanceMapConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
 
-    reprojectionMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Reprojection.material"));
+    reprojectionMaterial->SetFXName(DAVA::FastName("~res:/ResourceEditor/LandscapeEditor/Materials/Distance.Reprojection.material"));
     reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->AddProperty(MaterialParamCurrentFrameMatrixInverse, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
     reprojectionMaterial->AddProperty(MaterialParamFixedFrameMatrix, DAVA::Matrix4::IDENTITY.data, rhi::ShaderProp::TYPE_FLOAT4X4);
@@ -91,11 +91,11 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     reprojectionMaterial->AddProperty(MaterialParamViewportSize, DAVA::Vector2().data, rhi::ShaderProp::Type::TYPE_FLOAT2);
     reprojectionMaterial->AddProperty(MaterialParamCurrentFrameCompleteness, &frameCompleteness, rhi::ShaderProp::Type::TYPE_FLOAT1);
 
-    prerenderMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Prerender.material"));
+    prerenderMaterial->SetFXName(DAVA::FastName("~res:/ResourceEditor/LandscapeEditor/Materials/Distance.Prerender.material"));
 
-    distanceMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Encode.material"));
+    distanceMaterial->SetFXName(DAVA::FastName("~res:/ResourceEditor/LandscapeEditor/Materials/Distance.Encode.material"));
 
-    visibilityMaterial->SetFXName(DAVA::FastName("~res:/LandscapeEditor/Materials/Distance.Decode.material"));
+    visibilityMaterial->SetFXName(DAVA::FastName("~res:/ResourceEditor/LandscapeEditor/Materials/Distance.Decode.material"));
     visibilityMaterial->AddFlag(DAVA::NMaterialFlagName::FLAG_BLENDING, DAVA::BLENDING_ADDITIVE);
     visibilityMaterial->AddProperty(DAVA::NMaterialParamName::PARAM_FLAT_COLOR, DAVA::Vector4().data, rhi::ShaderProp::TYPE_FLOAT4);
     visibilityMaterial->AddProperty(MaterialParamTransformedNormal, DAVA::Vector3().data, rhi::ShaderProp::TYPE_FLOAT3);

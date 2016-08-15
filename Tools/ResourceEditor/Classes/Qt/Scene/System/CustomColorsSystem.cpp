@@ -14,7 +14,7 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.tex")
 {
     SetColor(colorIndex);
 }
@@ -68,7 +68,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     if (!toolImageTexture)
     {
-        CreateToolImage("~res:/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
+        CreateToolImage("~res:/ResourceEditor/LandscapeEditor/Tools/customcolorsbrush/circle.tex");
     }
 
     enabled = true;

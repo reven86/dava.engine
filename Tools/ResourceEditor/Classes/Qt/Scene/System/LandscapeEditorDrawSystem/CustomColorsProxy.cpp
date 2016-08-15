@@ -28,7 +28,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
     RenderHelper::CreateClearPass(customColorsRenderTarget->handle, rhi::HTexture(), PRIORITY_SERVICE_2D + 1, DAVA::Color::Clear, rhi::Viewport(0, 0, size, size));
 
     brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
-    brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
+    brushMaterial->SetFXName(FastName("~res:/ResourceEditor/LandscapeEditor/Materials/CustomColors.material"));
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 

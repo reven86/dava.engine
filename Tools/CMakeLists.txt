@@ -83,7 +83,7 @@ if(TARGETS STREQUAL "all")
 
 	add_tool     ( ResourceEditor   )
 	add_tool     ( QuickEd          )
-	add_tool     ( ResourcePacker   )
+	#[[add_tool     ( ResourcePacker   )
 	add_tool     ( ResourcePatcher  )
 	add_tool     ( ImageUnpacker    )
 	add_tool     ( AssetCacheClient )
@@ -96,7 +96,7 @@ if(TARGETS STREQUAL "all")
 	if ( WIN32 )
 	    add_tool ( UWPRunner )
 	endif ()
-
+]]
 elseif(TARGETS STREQUAL "tools")	
 
 	project      ( Tools )

@@ -10,10 +10,12 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
-set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}" )
 
 include ( CMake-common )
 include ( NGTMacro )
+include ( CopyDataMacro )
 
 if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
@@ -132,7 +134,6 @@ set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
 
-set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
@@ -157,11 +158,13 @@ set ( MAC_DISABLE_BUNDLE true )
 
 setup_main_executable()
 
-add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
-       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodevent.dylib ${TOOL_OUTPUT_DIR}
-       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libfmodex.dylib ${TOOL_OUTPUT_DIR}
-       COMMAND ${CMAKE_COMMAND} -E copy ${APP_DATA}/libTextureConverter.dylib ${TOOL_OUTPUT_DIR}
-       COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${TOOL_OUTPUT_DIR}/Data)
+copy_at_post_build( ${DAVA_ROOT_DIR}/Tools/Data ${TOOL_OUTPUT_DIR}/Data )
+copy_at_post_build( ${CMAKE_CURRENT_LIST_DIR}/Data ${TOOL_OUTPUT_DIR}/Data/${PROJECT_NAME} )
+if (MACOS)
+  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodevent.dylib ${TOOL_OUTPUT_DIR} )
+  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodex.dylib ${TOOL_OUTPUT_DIR} )
+  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libTextureConverter.dylib ${TOOL_OUTPUT_DIR} )
+endif()
 
 if (DEPLOY)
     if (NOT WIN32)

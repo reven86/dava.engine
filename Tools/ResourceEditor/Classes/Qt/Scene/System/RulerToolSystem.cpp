@@ -11,7 +11,7 @@
 #include "../SceneSignals.h"
 
 RulerToolSystem::RulerToolSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.tex")
     , curToolSize(0)
     , previewEnabled(true)
 {

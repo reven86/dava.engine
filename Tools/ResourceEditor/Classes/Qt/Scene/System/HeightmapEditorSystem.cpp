@@ -15,7 +15,7 @@
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(DAVA::Scene* scene)
-    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.tex")
     , copyPasteFrom(-1.f, -1.f)
     , copyPasteTo(-1.f, -1.f)
 {
