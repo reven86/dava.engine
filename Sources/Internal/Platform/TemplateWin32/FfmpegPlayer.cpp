@@ -1,4 +1,6 @@
 #include "FfmpegPlayer.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
