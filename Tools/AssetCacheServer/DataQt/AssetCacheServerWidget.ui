@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>337</height>
+    <height>386</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -51,7 +51,7 @@
     <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="pageStorage">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -647,11 +647,10 @@ QProgressBar::chunk {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>636</width>
-             <height>211</height>
+             <width>620</width>
+             <height>227</height>
             </rect>
            </property>
-           <zorder>addNewServerButton</zorder>
           </widget>
          </widget>
         </item>
@@ -698,7 +697,7 @@ QProgressBar::chunk {
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="shareCheckBox">
           <property name="text">
            <string>share this server</string>
           </property>
@@ -717,7 +716,7 @@ QProgressBar::chunk {
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="poolComboBox"/>
           </item>
           <item row="0" column="2">
            <spacer name="horizontalSpacer_4">
@@ -740,7 +739,7 @@ QProgressBar::chunk {
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="serverNameEdit">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>

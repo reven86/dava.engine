@@ -735,7 +735,7 @@ DAVA::List<SharedServerParams> ParseServersReply(const QByteArray& data)
     QJsonDocument document = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError)
     {
-        DAVA::Logger::Error("Not a valid JSON document");
+        DAVA::Logger::Error("Not a valid JSON document '%s'", data.data());
         return DAVA::List<SharedServerParams>();
     }
     QJsonObject rootObj = document.object();

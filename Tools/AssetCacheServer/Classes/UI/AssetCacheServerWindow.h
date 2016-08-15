@@ -49,6 +49,8 @@ private slots:
     void OnSystemStartupToggled(bool);
     void OnRestartToggled(bool);
     void OnAdvancedLinkActivated(const QString&);
+    void OnServerNameTextChanged();
+    void OnPoolChanged(int);
 
     void OnServersAreaRangeChanged(int, int);
     void OnAddServerClicked();
@@ -114,7 +116,7 @@ private:
     void AddCustomServer(const RemoteServerParams& newServer);
 
     void ClearAllChecks();
-    CheckedRemote AssetCacheServerWindow::GetCheckedRemote() const;
+    CheckedRemote GetCheckedRemote() const;
 
     void SelectedRemoteSetText();
 

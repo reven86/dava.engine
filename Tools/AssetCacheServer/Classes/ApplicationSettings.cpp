@@ -419,12 +419,13 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
 
     for (const SharedServerParams& server : servers)
     {
-        auto& poolIter = updatedPools.find(server.poolID);
+        auto poolIter = updatedPools.find(server.poolID);
         if (poolIter != updatedPools.end())
         {
             SharedServer& updatedServer = poolIter->second.servers[server.serverID];
             updatedServer.serverID = server.serverID;
             updatedServer.poolID = server.poolID;
+            updatedServer.serverName = server.name;
             updatedServer.remoteParams.ip = server.ip;
             updatedServer.remoteParams.port = server.port;
         }
@@ -437,7 +438,7 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
     EnabledRemote currentEnabledRemote = GetEnabledRemote();
     if (currentEnabledRemote.type == EnabledRemote::POOL)
     {
-        auto& poolIter = updatedPools.find(currentEnabledRemote.pool->poolID);
+        auto poolIter = updatedPools.find(currentEnabledRemote.pool->poolID);
         if (poolIter != updatedPools.end())
         {
             SharedPool& pool = poolIter->second;
@@ -446,11 +447,11 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
     }
     else if (currentEnabledRemote.type == EnabledRemote::POOL_SERVER)
     {
-        auto& poolIter = updatedPools.find(currentEnabledRemote.server->poolID);
+        auto poolIter = updatedPools.find(currentEnabledRemote.server->poolID);
         if (poolIter != updatedPools.end())
         {
             SharedPool& pool = poolIter->second;
-            auto& serverIter = pool.servers.find(currentEnabledRemote.server->serverID);
+            auto serverIter = pool.servers.find(currentEnabledRemote.server->serverID);
             if (serverIter != pool.servers.end())
             {
                 SharedServer& server = serverIter->second;
@@ -555,7 +556,7 @@ void ApplicationSettings::EnableSharedPool(PoolID poolID)
 {
     DVASSERT(GetEnabledRemote().type == EnabledRemote::NONE);
 
-    auto& pairFound = sharedPools.find(poolID);
+    auto pairFound = sharedPools.find(poolID);
     if (pairFound != sharedPools.end())
     {
         SharedPool& pool = pairFound->second;
@@ -571,11 +572,11 @@ void ApplicationSettings::EnableSharedServer(PoolID poolID, ServerID serverID)
 {
     DVASSERT(GetEnabledRemote().type == EnabledRemote::NONE);
 
-    auto& pairFound = sharedPools.find(poolID);
+    auto pairFound = sharedPools.find(poolID);
     if (pairFound != sharedPools.end())
     {
         SharedPool& pool = pairFound->second;
-        auto& serverPairFound = pool.servers.find(serverID);
+        auto serverPairFound = pool.servers.find(serverID);
         if (serverPairFound != pool.servers.end())
         {
             SharedServer& server = serverPairFound->second;
