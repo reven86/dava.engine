@@ -18,9 +18,6 @@ struct InitParam;
 
 D3DFORMAT DX9_TextureFormat(TextureFormat format);
 
-void InitializeRenderThreadDX9(uint32 frameCount);
-void UninitializeRenderThreadDX9();
-
 void AcquireDevice();
 void ScheduleDeviceReset();
 void ReleaseDevice();
@@ -33,5 +30,6 @@ extern IDirect3DSurface9* _D3D9_DepthBuf;
 
 extern InitParam _DX9_InitParam;
 extern D3DPRESENT_PARAMETERS _DX9_PresentParam;
+extern DAVA::Mutex _DX9_ResetParamsMutex;
 
 } // namespace rhi

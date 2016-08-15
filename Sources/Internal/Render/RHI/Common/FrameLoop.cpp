@@ -10,7 +10,9 @@ namespace FrameLoop
 {
 static uint32 currFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
+static uint32 frameCount = 0;
 static DAVA::Spinlock frameSync;
+
 static bool frameStarted = false;
 static bool renderContextReady = false;
 static bool resetPending = false;
@@ -27,6 +29,7 @@ void RejectFrames()
         {
             DispatchPlatform::RejectFrame(std::move(*f));
             f = frames.erase(f);
+            frameCount--;
         }
         else
         {
@@ -45,33 +48,33 @@ void ProcessFrame()
         RejectFrames();
         return;
     }*/
+
+    currFrameNumber++;
     bool presentResult = false;
     if (NeedRestoreResources())
     {
         RejectFrames();
     }
-
-    if (!resetPending)
+    else
     {
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-        currFrameNumber++;
-
         frameSync.Lock();
         CommonImpl::Frame currFrame = std::move(frames.front());
         frames.erase(frames.begin());
         frameSync.Unlock();
         currFrame.frameNumber = currFrameNumber;
+        DispatchPlatform::ExecuteFrame(std::move(currFrame));
 
-        if (NeedRestoreResources())
-            DispatchPlatform::RejectFrame(std::move(currFrame));
-        else
-            DispatchPlatform::ExecuteFrame(std::move(currFrame));
+        frameSync.Lock();
+        frameCount--;
+        frameSync.Unlock();
+
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
-        presentResult = DispatchPlatform::PresntBuffer();
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
     }
+
+    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+    presentResult = DispatchPlatform::PresntBuffer();
+    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
 
     if (!presentResult)
     {
@@ -93,9 +96,8 @@ bool FinishFrame(Handle sync)
         frames.back().readyToExecute = true;
         frames.back().sync = sync;
     }
-    frameSync.Unlock();
-
     frameStarted = false;
+    frameSync.Unlock();
 
     return frame_cnt != 0;
 }
@@ -111,17 +113,17 @@ bool FrameReady()
 uint32 FramesCount()
 {
     frameSync.Lock();
-    uint32 frame_cnt = static_cast<uint32>(frames.size());
+    uint32 frame_cnt = frameCount; // <uint32>(frames.size());
     frameSync.Unlock();
     return frame_cnt;
 }
 void AddPass(Handle pass, uint32 priority)
 {
-    int v = DispatchPlatform::test;
     frameSync.Lock();
     if (!frameStarted)
     {
         frames.push_back(CommonImpl::Frame());
+        frameCount++;
         frameStarted = true;
         DispatchPlatform::InvalidateFrameCache();
     }

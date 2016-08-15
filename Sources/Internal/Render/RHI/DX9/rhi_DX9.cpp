@@ -115,7 +115,6 @@ static void
 dx9_Uninitialize()
 {
     QueryBufferDX9::ReleaseQueryPool();
-    UninitializeRenderThreadDX9();
 }
 
 //------------------------------------------------------------------------------
@@ -124,7 +123,8 @@ static void
 dx9_Reset(const ResetParam& param)
 {
     UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-
+    bool paramsChanged = false;
+    _DX9_ResetParamsMutex.Lock();
     if (param.width != _DX9_PresentParam.BackBufferWidth
         || param.height != _DX9_PresentParam.BackBufferHeight
         || param.fullScreen != !_DX9_PresentParam.Windowed
@@ -136,8 +136,12 @@ dx9_Reset(const ResetParam& param)
         _DX9_PresentParam.Windowed = !param.fullScreen;
         _DX9_PresentParam.PresentationInterval = interval;
 
-        ScheduleDeviceReset();
+        paramsChanged = true;
     }
+    _DX9_ResetParamsMutex.Unlock();
+
+    if (paramsChanged)
+        RenderLoop::SetResetPending();
 }
 
 //------------------------------------------------------------------------------
@@ -159,7 +163,7 @@ dx9_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
-void InitContext()
+void dx9_InitContext()
 {
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
@@ -336,10 +340,13 @@ void InitContext()
     }
 }
 
-void AcquireContext()
+void dx9_AcquireContext()
 {
 }
-void ReleaseContext()
+void dx9_ReleaseContext()
+{
+}
+void dx9_CheckSurface()
 {
 }
 
@@ -370,9 +377,10 @@ void dx9_Initialize(const InitParam& param)
 
     SetDispatchTable(DispatchDX9);
 
-    DispatchPlatform::InitContext = &InitContext;
-    DispatchPlatform::AcquireContext = &AcquireContext;
-    DispatchPlatform::ReleaseContext = &ReleaseContext;
+    DispatchPlatform::InitContext = &dx9_InitContext;
+    DispatchPlatform::AcquireContext = &dx9_AcquireContext;
+    DispatchPlatform::ReleaseContext = &dx9_ReleaseContext;
+    DispatchPlatform::CheckSurface = &dx9_CheckSurface;
 
     if (param.maxVertexBufferCount)
         VertexBufferDX9::Init(param.maxVertexBufferCount);

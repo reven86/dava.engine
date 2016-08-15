@@ -27,8 +27,6 @@ extern void _InitDX9();
 namespace rhi
 {
 //==============================================================================
-static std::atomic<bool> _DX9_ResetPending{ false };
-static std::atomic<bool> _DX9_ResetScheduled{ false };
 
 static uint32 _DX9_FramesWithRestoreAttempt = 0;
 const uint32 _DX9_MaxFramesWithRestoreAttempt = 15;
@@ -104,7 +102,6 @@ class CommandBufferDX9_t : public SoftwareCommandBufferUnpacked
 {
 public:
     CommandBufferDX9_t();
-    ~CommandBufferDX9_t();
 
     void Execute();
 
@@ -130,7 +127,6 @@ RHI_IMPL_POOL(CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descri
 RHI_IMPL_POOL(RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-const uint64 CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
 
 static Handle
 dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
@@ -908,6 +904,7 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
         SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(frame.sync);
         s->is_signaled = true;
         s->is_used = true;
+        Logger::Debug(" *** frame _DX9_RejectFrame sync %x **", frame.sync);
     }
     for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
     {
@@ -979,6 +976,7 @@ _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 
     if (frame.sync != InvalidHandle)
     {
+        Logger::Debug(" *** frame _DX9_ExecuteQueuedCommands sync %x **", frame.sync);
         SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(frame.sync);
         sync->frame = frame_n;
         sync->is_signaled = false;
@@ -1042,54 +1040,41 @@ bool _DX9_PresentBuffer()
 
 void _DX9_ResetBlock()
 {
-    while (_DX9_ResetPending)
+    TextureDX9::ReleaseAll();
+    VertexBufferDX9::ReleaseAll();
+    IndexBufferDX9::ReleaseAll();
+
+    for (;;)
     {
-        _RejectAllFrames();
-
-        TextureDX9::ReleaseAll();
-        VertexBufferDX9::ReleaseAll();
-        IndexBufferDX9::ReleaseAll();
-
-        for (;;)
+        HRESULT hr = _D3D9_Device->TestCooperativeLevel();
+        if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
         {
-            HRESULT hr = _D3D9_Device->TestCooperativeLevel();
-            if ((hr == D3DERR_DEVICENOTRESET) || SUCCEEDED(hr))
+            Logger::Info("[DX9 RESET] actually reseting device...");
+            _DX9_ResetParamsMutex.Lock();
+            D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
+            param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
+            hr = _D3D9_Device->Reset(&param);
+            _DX9_ResetParamsMutex.Unlock();
+            if (SUCCEEDED(hr))
             {
-                Logger::Info("[DX9 RESET] actually reseting device...");
-                D3DPRESENT_PARAMETERS param = _DX9_PresentParam;
-                param.BackBufferFormat = (_DX9_PresentParam.Windowed) ? D3DFMT_UNKNOWN : D3DFMT_A8B8G8R8;
-                hr = _D3D9_Device->Reset(&param);
-                if (SUCCEEDED(hr))
-                {
-                    break;
-                }
-
-                Logger::Error("[DX9 RESET] Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-            else
-            {
-                Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                break;
             }
 
-            _DX9_FramesWithRestoreAttempt = 0;
+            Logger::Error("[DX9 RESET] Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        else
+        {
+            Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        TextureDX9::ReCreateAll();
-        VertexBufferDX9::ReCreateAll();
-        IndexBufferDX9::ReCreateAll();
-
-        Logger::Info("[DX9 RESET] end, scheduled state: %d", int(_DX9_ResetScheduled.load()));
-
-        _DX9_ResetPending.store(_DX9_ResetScheduled.load());
-        _DX9_ResetScheduled = false;
+        _DX9_FramesWithRestoreAttempt = 0;
     }
-}
 
-void _GLES2_InvalidateFrameCache()
-{
-    ConstBufferDX9::InvalidateAllConstBufferInstances();
+    TextureDX9::ReCreateAll();
+    VertexBufferDX9::ReCreateAll();
+    IndexBufferDX9::ReCreateAll();
 }
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
@@ -1501,26 +1486,6 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceImmediate)
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 
-
-
-
-
-void ScheduleDeviceReset()
-{
-    if (_DX9_ResetPending)
-    {
-        _DX9_ResetScheduled = true;
-    }
-    else
-    {
-        _DX9_ResetPending = true;
-        _DX9_ResetScheduled = false;
-    }
-
-    DAVA::Logger::Info("Reset scheduled, pending comands: %u", _DX9_PendingImmediateCmdCount);
-    SetEvent(_DX9_FramePreparedEvent);
-}
-
 namespace CommandBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -1551,8 +1516,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Create = &dx9_SyncObject_Create;
     dispatch->impl_SyncObject_Delete = &dx9_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &dx9_SyncObject_IsSignaled;
-
-    dispatch->impl_Present = &dx9_Present; //TODO: delete
 
     DispatchPlatform::ProcessImmediateCommand = _DX9_ExecImmediateCommand;
     DispatchPlatform::ExecuteFrame = _DX9_ExecuteQueuedCommands;

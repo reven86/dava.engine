@@ -25,6 +25,8 @@ static std::atomic<bool> renderThreadSuspended(false);
 
 static std::atomic<bool> renderThreadExitPending(false);
 
+static std::atomic<bool> resetPending(false);
+
 static std::atomic<CommonImpl::ImmediateCommand*> pendingImmediateCmd(nullptr);
 static DAVA::Mutex pendingImmediateCmdSync;
 
@@ -35,8 +37,12 @@ void Present(Handle syncHandle) // called from main thread
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 
     bool res = FrameLoop::FinishFrame(syncHandle);
+    //Logger::Debug(" *** frame finished sync %x **", syncHandle);
     if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
+    {
+        Logger::Debug(" *** empty frame finished **");
         return;
+    }
 
     uint32 frame_cnt = 0;
     if (renderThreadFrameCount == 0) //single thread render
@@ -103,7 +109,18 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
         }
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
-        if (frameReady)
+        if (resetPending.load(std::memory_order_relaxed))
+        {
+            do
+            {
+                Logger::Debug(" *-***** reset **** ");
+                resetPending = false;
+                FrameLoop::RejectFrames();
+                DispatchPlatform::ResetBlock();
+            } while (resetPending.load());
+            frameDoneEvent.Signal();
+        }
+        else if (frameReady)
         {
             FrameLoop::ProcessFrame();
             frameDoneEvent.Signal();
@@ -185,6 +202,20 @@ void UninitializeRenderLoop()
         Logger::Info("UninitializeRenderThread join begin");
         renderThread->Join();
         Logger::Info("UninitializeRenderThread join end");
+    }
+}
+
+void SetResetPending()
+{
+    if (renderThreadFrameCount == 0)
+    {
+        FrameLoop::RejectFrames();
+        DispatchPlatform::ResetBlock();
+    }
+    else
+    {
+        resetPending = true;
+        framePreparedEvent.Signal();
     }
 }
 
