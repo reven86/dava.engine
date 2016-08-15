@@ -86,11 +86,11 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control)
 {
-#if STYLESHEET_TIME_STATS
+#if STYLESHEET_STATS
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteUs();
 #endif
     ProcessControl(control, 0);
-#if STYLESHEET_TIME_STATS
+#if STYLESHEET_STATS
     frameTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
 #endif
 }
@@ -107,13 +107,17 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
 
     if (packageContext && distanceFromDirty < packageContext->GetMaxStyleSheetHierarchyDepth())
     {
+#if STYLESHEET_STATS
         ++statsProcessedControls;
+#endif
 
         UIStyleSheetPropertySet cascadeProperties;
         const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
         const Vector<UIPriorityStyleSheet>& styleSheets = packageContext->GetSortedStyleSheets();
-
+        
+#if STYLESHEET_STATS
         statsStyleSheetCount += styleSheets.size();
+#endif
 
         Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources = {};
 
@@ -222,7 +226,9 @@ void UIStyleSheetSystem::DumpStats()
 
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
+#if STYLESHEET_STATS
     ++statsMatches;
+#endif
 
     const UIControl* currentControl = control;
 
