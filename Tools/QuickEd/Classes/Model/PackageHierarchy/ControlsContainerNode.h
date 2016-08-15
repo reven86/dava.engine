@@ -10,6 +10,12 @@ class ControlsContainerNode : public PackageBaseNode
 public:
     ControlsContainerNode(PackageBaseNode* parent);
 
+    virtual DAVA::Vector<ControlNode*>::const_iterator begin() const = 0;
+    virtual DAVA::Vector<ControlNode*>::const_iterator end() const = 0;
+
+    virtual DAVA::Vector<ControlNode*>::iterator begin() = 0;
+    virtual DAVA::Vector<ControlNode*>::iterator end() = 0;
+
 protected:
     virtual ~ControlsContainerNode();
 

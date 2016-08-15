@@ -1,4 +1,7 @@
 #include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
+#include "Render/GPUFamilyDescriptor.h"
 
 using namespace DAVA;
 
@@ -11,6 +14,7 @@ const FastName Settings::General_ReloadParticlesOnPojectOpening = FastName("Gene
 const FastName Settings::General_PreviewEnabled = FastName("General/PreviewEnabled");
 const FastName Settings::General_OpenByDBClick = FastName("General/OpenByDoubleClick");
 const FastName Settings::General_CompressionQuality = FastName("General/CompressionQuality");
+const FastName Settings::General_ShowErrorDialog = FastName("General/ShowDialogOnError");
 const FastName Settings::General_MaterialEditor_SwitchColor0 = FastName("General/MaterialEditor/SwitchColor0");
 const FastName Settings::General_MaterialEditor_SwitchColor1 = FastName("General/MaterialEditor/SwitchColor1");
 const FastName Settings::General_MaterialEditor_LodColor0 = FastName("General/MaterialEditor/LodColor0");
@@ -23,6 +27,7 @@ const FastName Settings::General_LODEditor_LodColor1 = FastName("General/LODEdit
 const FastName Settings::General_LODEditor_LodColor2 = FastName("General/LODEditor/LodColor2");
 const FastName Settings::General_LODEditor_LodColor3 = FastName("General/LODEditor/LodColor3");
 const FastName Settings::General_LODEditor_InactiveColor = FastName("General/LODEditor/InactiveColor");
+const FastName Settings::General_LODEditor_FitSliders = FastName("General/LODEditor/FitSlidersToMaximumDistance");
 
 const FastName Settings::General_HeighMaskTool_Color0 = FastName("General/HeighMaskTool/Color0");
 const FastName Settings::General_HeighMaskTool_Color1 = FastName("General/HeighMaskTool/Color1");
@@ -58,6 +63,7 @@ const FastName Settings::Scene_AutoselectNewEntities = FastName("Scene/Autoselec
 const FastName Settings::Scene_RememberForceParameters = FastName("Scene/RememberForceParameters");
 const FastName Settings::Scene_SaveEmitters = FastName("Scene/SaveEmittersWithScene");
 const FastName Settings::Scene_SaveStaticOcclusion = FastName("Scene/SaveAfterStaticOcclusion");
+const FastName Settings::Scene_DefaultCustomColorIndex = FastName("Scene/DefaultCustomColorIndex");
 const FastName Settings::Scene_Sound_SoundObjectDraw = FastName("Scene/Sound/SoundObjectDraw");
 const FastName Settings::Scene_Sound_SoundObjectBoxColor = FastName("Scene/Sound/SoundObjectBoxColor");
 const FastName Settings::Scene_Sound_SoundObjectSphereColor = FastName("Scene/Sound/SoundObjectSphereColor");
@@ -82,3 +88,8 @@ const FastName Settings::Internal_ImageSplitterPath = FastName("Internal/ImageSp
 const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal/ImageSplitterPath_specular");
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
+
+DAVA::eGPUFamily Settings::GetGPUFormat()
+{
+    return static_cast<DAVA::eGPUFamily>(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+}

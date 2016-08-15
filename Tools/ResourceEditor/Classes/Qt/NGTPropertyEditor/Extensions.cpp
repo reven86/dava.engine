@@ -6,7 +6,6 @@
 #include "NgtTools/Reflection/NGTCollectionsImpl.h"
 #include "NgtTools/Common/GlobalContext.h"
 
-#include "Commands2/Actions/ShowMaterialAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/KeyedArchiveCommand.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
@@ -374,14 +373,14 @@ void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
 
     DAVA::NMaterial* material = wgt::reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
-    delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
+    //delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* item)
 {
     INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
-    AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
+    /*AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
     w->ValueReady.Connect([this, item, &defManager](const DAVA::String& name, const DAVA::VariantType& value)
                           {
                               const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
@@ -403,7 +402,7 @@ void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* it
                               delegateObj.EndBatch();
                           });
     w->show();
-    w->move(300, 300);
+    w->move(300, 300);*/
 }
 
 AddCustomPropertyWidget::AddCustomPropertyWidget(int defaultType, QWidget* parent /* = NULL */)

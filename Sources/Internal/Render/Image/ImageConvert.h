@@ -569,7 +569,7 @@ struct PackRGBA16161616
 
 struct UnpackRGBA32323232
 {
-    inline void operator()(const RGBA32323232* input, uint32& r, uint32& g, uint32& b, uint32& a)
+    inline void operator()(const RGBA32323232* input, uint64& r, uint64& g, uint64& b, uint64& a)
     {
         r = input->r;
         g = input->g;
@@ -580,12 +580,12 @@ struct UnpackRGBA32323232
 
 struct PackRGBA32323232
 {
-    inline void operator()(uint32& r, uint32& g, uint32& b, uint32& a, RGBA32323232* out)
+    inline void operator()(uint64& r, uint64& g, uint64& b, uint64& a, RGBA32323232* out)
     {
-        out->r = r;
-        out->g = g;
-        out->b = b;
-        out->a = a;
+        out->r = static_cast<uint32>(r);
+        out->g = static_cast<uint32>(g);
+        out->b = static_cast<uint32>(b);
+        out->a = static_cast<uint32>(a);
     }
 };
 
@@ -811,8 +811,8 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat);
 void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage = nullptr);
 void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr);
 
-Image* DownscaleTwiceBillinear(const Image* source);
-void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap = false);
+bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);
 

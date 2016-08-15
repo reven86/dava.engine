@@ -20,7 +20,7 @@ private:
     struct HUD;
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
-    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
+    void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
     void OnNodesHovered(const DAVA::Vector<ControlNode*>& node);
@@ -47,12 +47,12 @@ private:
     DAVA::UIControl* selectionRectControl = nullptr;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
-    EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
+    SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     SelectionContainer selectionContainer;
     DAVA::Map<ControlNode*, DAVA::RefPtr<DAVA::UIControl>> hoveredNodes;
     bool inEmulationMode = false;
-    EditorSystemsManager::SortedPackageBaseNodeSet rootControls;
+    SortedPackageBaseNodeSet rootControls;
     bool isPlacedOnScreen = false;
 };
 

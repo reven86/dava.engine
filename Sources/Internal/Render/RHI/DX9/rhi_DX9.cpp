@@ -144,9 +144,15 @@ dx9_Reset(const ResetParam& param)
 static bool
 dx9_NeedRestoreResources()
 {
-    bool needRestore = (TextureDX9::NeedRestoreCount() || VertexBufferDX9::NeedRestoreCount() || IndexBufferDX9::NeedRestoreCount());
+    uint32 pendingTextures = TextureDX9::NeedRestoreCount();
+    uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
+    uint32 pendingIndexBuffers = IndexBufferDX9::NeedRestoreCount();
+
+    bool needRestore = (pendingTextures || pendingVertexBuffers || pendingIndexBuffers);
     if (needRestore)
-        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", TextureDX9::NeedRestoreCount(), VertexBufferDX9::NeedRestoreCount(), IndexBufferDX9::NeedRestoreCount());
+    {
+        Logger::Debug("NeedRestore %d TEX, %d VB, %d IB", pendingTextures, pendingVertexBuffers, pendingIndexBuffers);
+    }
     return needRestore;
 }
 
@@ -177,6 +183,11 @@ void _InitDX9()
 
         if (SUCCEEDED(hr))
         {
+            if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+            {
+                _DeviceCapsDX9.maxAnisotropy = caps.MaxAnisotropy;
+            }
+
             if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
             {
                 vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
@@ -310,6 +321,8 @@ void _InitDX9()
         {
             if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
             {
+                Memcpy(_DeviceCapsDX9.deviceDescription, info.Description, DAVA::Min(countof(_DeviceCapsDX9.deviceDescription), strlen(info.Description) + 1));
+
                 Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),

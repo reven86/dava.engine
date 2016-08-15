@@ -230,6 +230,11 @@ void REApplication::RunWindow()
     // create and init UI
     ResourceEditorLauncher launcher;
     mainWindow = new QtMainWindow(GetComponentContext());
+    QObject::connect(&launcher, &ResourceEditorLauncher::LaunchFinished, [this]()
+                     {
+                         mainWindow->SetupTitle();
+                         mainWindow->OnSceneNew();
+                     });
 
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
@@ -237,7 +242,7 @@ void REApplication::RunWindow()
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
     StartApplication(mainWindow);
 
-    DAVA::SafeRelease(mainWindow);
+    DAVA::SafeDelete(mainWindow);
     ControlsFactory::ReleaseFonts();
 }
 

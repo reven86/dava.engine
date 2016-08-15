@@ -82,6 +82,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
 
+    DVASSERT(request->targetTexture == nullptr);
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
     request->depthTexture = rhi::CreateTexture(descriptor);
     request->RegisterRenderCallback();
@@ -238,12 +239,9 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     }
     planePG->BuildBuffers();
 
-    Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
-
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
     material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
-    material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
@@ -351,6 +349,7 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 {
     completed = true;
 
+    DVASSERT(planeImage == nullptr);
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
 

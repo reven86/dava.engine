@@ -18,6 +18,7 @@
 #include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Qt/GlobalOperations.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -174,7 +175,7 @@ protected:
 
         if (!commands.empty())
         {
-            sceneEditor->BeginBatch(text, commands.size());
+            sceneEditor->BeginBatch(text, static_cast<DAVA::uint32>(commands.size()));
             sceneEditor->selectionSystem->SetSelection(currentGroup);
             static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
             for (Command2::Pointer& command : commands)
@@ -206,7 +207,7 @@ protected:
         return treeWidget->selectionModel()->selectedRows().size();
     }
 
-    QWidget* GetParentWidget()
+    SceneTree* GetParentWidget()
     {
         return treeWidget;
     }
@@ -365,11 +366,13 @@ private:
                 DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (DAVA::FileSystem::Instance()->Exists(entityRefPath))
                 {
-                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+                    std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+                    DVASSERT(globalOperations != nullptr);
+                    globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(DAVA::String(entityRefPath.GetAbsolutePathname().c_str())));
                 }
                 else
                 {
-                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                    DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname()).c_str());
                 }
             }
         }
@@ -415,7 +418,7 @@ private:
             }
             if (!wrongPathes.empty())
             {
-                ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
+                DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes).c_str());
             }
             SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
             sceneEditor->selectionSystem->SetSelection(newSelection);
@@ -523,7 +526,10 @@ private:
         const SelectableGroup& selection = GetScene()->selectionSystem->GetSelection();
         DVASSERT(selection.GetSize() == 1);
         DVASSERT(selection.GetFirst().CanBeCastedTo<DAVA::Entity>());
-        QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(selection.GetFirst().AsEntity()->GetName().c_str());
+
+        std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+        DVASSERT(globalOperations != nullptr);
+        globalOperations->CallAction(GlobalOperations::SetNameAsFilter, DAVA::Any(DAVA::String(selection.GetFirst().AsEntity()->GetName().c_str())));
     }
 
     void SetCurrentCamera()
@@ -812,6 +818,11 @@ SceneTree::~SceneTree()
     delete treeModel;
 }
 
+void SceneTree::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
+}
+
 void SceneTree::SetFilter(const QString& filter)
 {
     treeModel->SetFilter(filter);
@@ -1071,6 +1082,12 @@ void SceneTree::TreeItemDoubleClicked(const QModelIndex& index)
 
 void SceneTree::ShowContextMenu(const QPoint& pos)
 {
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (curScene == nullptr || curScene->selectionSystem->GetSelection().IsEmpty())
+    {
+        return;
+    }
+
     QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
     if (!index.isValid())
     {

@@ -27,7 +27,7 @@ function assertEq(arg1, arg2, errorMsg)
         Log(string.format("Assert failed: '%s' is not equals to '%s'", tostring(arg1), tostring(arg2)), "ERROR")
         OnError(tostring(errorMsg)) 
     end
-	return true
+    return true
 end
 
 local function toboolean(condition)
@@ -251,15 +251,15 @@ end
 function WaitForDevice(name)
     Log("Wait while " .. name .. " device become Ready")
     Yield()
-	local currentStatus = ""
+    local currentStatus = ""
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-		currentStatus = ReadState(name)
+        currentStatus = ReadState(name)
         if currentStatus == MP_STATE['READY'] then
-			Log("Device " .. name .. " is ready")
+            Log("Device " .. name .. " is ready")
             return true
         elseif currentStatus == MP_STATE['NO_DEVICE'] then
-			OnError("Could not find device " .. name)
-		end
+            OnError("Could not find device " .. name)
+        end
         Wait(1)
     end
     OnError("Device " .. name .. " is not ready during timeout")
@@ -284,7 +284,7 @@ end
 
 function WaitJob(name)
     Log("Wait for job on slave " .. name)
-	local state
+    local state
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
         state = ReadState(name)
         if state == "execution_completed" then
@@ -398,8 +398,11 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- Check states
 ------------------------------------------------------------------------------------------------------------------------
-function IsVisible(controlName, background)
-    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+function IsVisible(controlName, background, no_log)
+    local control = GetControl(controlName)
+    if no_log then
+        return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
+    end
     if not control then
         Log("Control " .. controlName .. " not found")
         return false
@@ -413,11 +416,6 @@ function IsVisible(controlName, background)
         return false
     end
     return true
-end
-
-local function __IsVisibleNoLog(controlName, background)
-    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
-    return toboolean(control and control:GetVisibilityFlag() and control:IsVisible() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
@@ -494,7 +492,7 @@ function Wait(waitTime)
     waitTime = waitTime or DELAY
     local count, elapsedTime = 0, 0.0
     while elapsedTime < waitTime do
-        elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
+        elapsedTime = elapsedTime + GetTimeElapsed()
         coroutine.yield()
         count = count + 1
     end
@@ -505,7 +503,7 @@ function WaitUntil(time, func, ...)
     local waitTime, err = time or TIMEOUT, nil
     local elapsedTime, status = 0.0, nil
     while elapsedTime < waitTime do
-        elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
+        elapsedTime = elapsedTime + GetTimeElapsed()
         coroutine.yield()
         status, err = copcall(func, ...)
         if status and err then
@@ -515,83 +513,77 @@ function WaitUntil(time, func, ...)
     return nil
 end
 
-function WaitControl(name, time)
-    local waitTime, aSys = time or TIMEOUT, autotestingSystem
-    Log("WaitControl name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
-	local result = WaitUntil(waitTime, find_control_lua, name)
-    if not result then
-        Log("Control not found " .. name, "DEBUG")
+local function __IfAny(func, param, ...)
+    if type(param) == 'table' then
+        for _, x in pairs(param) do
+            res = func(x, ...)
+            if res then return res end
+        end
+    else
+        return func(param, ...)
     end
-    return result
 end
 
-function WaitControls(controls, waitAll, waitTime)
-    waitTime = waitTime or TIMEOUT
-    if waitAll == nil then
-        waitAll = true
+local function __LogControls(name)
+    if type(name) == 'string' then
+        return name
     end
-    Log((waitAll and 'Wait all controls' or 'Wait one control form list'), "DEBUG")
-    local find_controls_lua = function(controls, waitAll)
-        local loadedControls = 0
-        for _, control in pairs(controls)do
-            if autotestingSystem:FindControl(control) or autotestingSystem:FindControlOnPopUp(control) then
-                if not waitAll then
-                   return true
-                end
-                loadedControls = loadedControls + 1
-            end
-        end
-        return table.getn(controls) == loadedControls
-    end
-    local result = WaitUntil(waitTime, find_controls_lua, controls, waitAll)
+    return table.concat(name, ", ")
+end
+
+function WaitControl(name, time)
+    local waitTime = time or TIMEOUT
+    Log("WaitControl name=" .. __LogControls(name) .. " time=" .. tostring(waitTime), "DEBUG")
+    local find_controls_lua = function(x) return __IfAny(GetControl, x) end
+    local result = WaitUntil(waitTime, find_controls_lua, name)
     if not result then
-        Log((waitAll and 'One or more controls not found' or 'Nothing found'), "DEBUG")
+        Log("Control(s) not found " .. __LogControls(name), "DEBUG")
     end
     return result
 end
 
 function WaitControlDisappeared(name, time)
     local waitTime, aSys = time or TIMEOUT, autotestingSystem
-    Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
-    local result = WaitUntil(waitTime, not_find_control_lua, name)
-	if not result then
-        Log("Control still on the screen: " .. name, "DEBUG")
+    Log("WaitControlDisappeared name= " .. __LogControls(name) .. " time=" .. tostring(waitTime), "DEBUG")
+    local not_find_control_lua = function(x) return not __IfAny(GetControl, x) end
+    local result = WaitUntil(waitTime, not_find_control_lua, name) 
+    if not result then
+        Log("Control still on the screen: " .. __LogControls(name), "DEBUG")
     end
     return result
 end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
-    Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local result = WaitUntil(waitTime, __IsVisibleNoLog, name)
-	if not result then
-        Log("Control not found " .. name, "DEBUG")
+    Log("WaitControlBecomeVisible name=" .. __LogControls(name) .. " time=" .. tostring(waitTime), "DEBUG")
+    local no_log = true
+    local visible_control_lua = function(x) return __IfAny(IsVisible, x, nil, no_log) end
+    local result = WaitUntil(waitTime, visible_control_lua, name)
+    if not result then
+        Log("Control(s) not found " .. __LogControls(name), "DEBUG")
     end
     return result
 end
 
 function WaitControlBecomeNotVisible(name, time)
     local waitTime = time or TIMEOUT
-    local control = GetControl(name)
-    Log("WaitControlBecomeNotVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local not_visible_control_lua = function() return not (control and
-            control:GetVisibilityFlag() and control:IsVisible()) end
+    Log("WaitControlBecomeNotVisible name=" .. __LogControls(name) .. " time=" .. tostring(waitTime), "DEBUG")
+    local no_log = true
+    local not_visible_control_lua = function(x) return not __IfAny(IsVisible, x, nil, no_log) end
     local result = WaitUntil(waitTime, not_visible_control_lua, name)
     if not result then
-        Log("Control is still visible: " .. name, "DEBUG")
+        Log("Control(s) is still visible: " .. __LogControls(name), "DEBUG")
     end
     return result
 end
 
 function WaitUntilControlBecomeEnabled(name, time)
     local waitTime = time or TIMEOUT
-    Log("WaitUntilControlBecomeEnabled name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
-    local is_enabled = function(x) return not IsDisabled(x) end
+    Log("WaitUntilControlBecomeEnabled name=" .. __LogControls(name) .. " time=" .. tostring(waitTime), "DEBUG")
+    local is_enabled = function(x) return not __IfAny(IsDisabled, x) end
     local result = WaitUntil(waitTime, is_enabled, name)
-	if not result then
-        Log("Control is disabled " .. name, "DEBUG")
+    if not result then
+        Log("Control(s) is disabled " .. __LogControls(name), "DEBUG")
     end
     return result
 end
@@ -692,16 +684,16 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         end
         return false
     end
-	local oldPosition = Vector.Vector2()
-	local function __isChanged(newPosition)
-		local result = true
-		if (oldPosition.x == newPosition.x) and (oldPosition.y == newPosition.y) then
-			result = false
-		end
-		oldPosition.x = newPosition.x
-		oldPosition.y = newPosition.y
-		return result
-	end
+    local oldPosition = Vector.Vector2()
+    local function __isChanged(newPosition)
+        local result = true
+        if (oldPosition.x == newPosition.x) and (oldPosition.y == newPosition.y) then
+            result = false
+        end
+        oldPosition.x = newPosition.x
+        oldPosition.y = newPosition.y
+        return result
+    end
 
     if __click() then
         return true
@@ -709,13 +701,13 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
     local containerCtrl, invert = GetControl(containerName)
 
     local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
-	oldPosition = __getPosition()
+    oldPosition = __getPosition()
     -- move to start of list and check cell
     for _ = 0, MAX_LIST_COUNT do -- move to up side
         VerticalScroll(containerName, true, notInCenter)
-		if not __isChanged(__getPosition()) then
-			break
-		end
+        if not __isChanged(__getPosition()) then
+            break
+        end
         if __click() then
             return true
         end
@@ -723,9 +715,9 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
     -- move to left side
     for _ = 0, MAX_LIST_COUNT do
         HorizontalScroll(containerName, true)
-		if not __isChanged(__getPosition()) then
-			break
-		end
+        if not __isChanged(__getPosition()) then
+            break
+        end
         if __click() then
             return true
         end
@@ -736,17 +728,17 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         -- move to right/left side
         for __ = 0, MAX_LIST_COUNT do
             HorizontalScroll(containerName, invert)
-			if not __isChanged(__getPosition()) then
-				break
-			end
+            if not __isChanged(__getPosition()) then
+                break
+            end
             if __click() then
                 return true
             end
         end
         VerticalScroll(containerName, false, notInCenter)
-		if not __isChanged(__getPosition()) then
-				break
-		end
+        if not __isChanged(__getPosition()) then
+                break
+        end
         if __click() then
             return true
         end

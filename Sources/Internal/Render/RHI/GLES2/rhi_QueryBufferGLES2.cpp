@@ -54,8 +54,6 @@ RHI_IMPL_POOL(QueryBufferGLES2_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor
 
 std::vector<GLuint> QueryObjectGLES2Pool;
 
-#define GLES2_MAX_PENDING_QUERIES 256
-
 //==============================================================================
 
 static Handle
@@ -114,35 +112,50 @@ gles2_QueryBuffer_Delete(Handle handle)
 static void
 gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
 {
-    GLCommand cmd[GLES2_MAX_PENDING_QUERIES];
-    uint32 results[GLES2_MAX_PENDING_QUERIES];
+    if (buf->pendingQueries.empty())
+        return;
+
+    const uint32 GLES2_MAX_PENDING_QUERIES = 256;
+
+    GLCommand smallCmdBuffer[GLES2_MAX_PENDING_QUERIES];
+    static DAVA::Vector<GLCommand> largeCmdBuffer;
+
+    uint32 smallResultsBuffer[GLES2_MAX_PENDING_QUERIES];
+    static DAVA::Vector<uint32> largeResultsBuffer;
+
     uint32 cmdCount = uint32(buf->pendingQueries.size());
 
-    if (cmdCount)
+    GLCommand* cmd = smallCmdBuffer;
+    uint32* results = smallResultsBuffer;
+    if (cmdCount > GLES2_MAX_PENDING_QUERIES)
     {
-        DVASSERT(cmdCount < GLES2_MAX_PENDING_QUERIES);
+        largeCmdBuffer.resize(cmdCount);
+        cmd = largeCmdBuffer.data();
 
-        for (uint32 q = 0; q < cmdCount; ++q)
+        largeResultsBuffer.resize(cmdCount);
+        results = largeResultsBuffer.data();
+    }
+
+    for (uint32 q = 0; q < cmdCount; ++q)
+    {
+        results[q] = uint32(-1);
+        cmd[q] = { GLCommand::GET_QUERY_RESULT_NO_WAIT, { uint64(buf->pendingQueries[q].first), uint64(&results[q]) } };
+    }
+
+    ExecGL(cmd, cmdCount);
+
+    for (int32 q = cmdCount - 1; q >= 0; --q)
+    {
+        uint32 resultIndex = buf->pendingQueries[q].second;
+        if (results[q] != uint32(-1))
         {
-            results[q] = uint32(-1);
-            cmd[q] = { GLCommand::GET_QUERY_RESULT_NO_WAIT, { uint64(buf->pendingQueries[q].first), uint64(&results[q]) } };
-        }
+            if (resultIndex < buf->results.size())
+                buf->results[resultIndex] = results[q];
 
-        ExecGL(cmd, cmdCount);
+            QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
 
-        for (int32 q = cmdCount - 1; q >= 0; --q)
-        {
-            uint32 resultIndex = buf->pendingQueries[q].second;
-            if (results[q] != uint32(-1))
-            {
-                if (resultIndex < buf->results.size())
-                    buf->results[resultIndex] = results[q];
-
-                QueryObjectGLES2Pool.push_back(buf->pendingQueries[q].first);
-
-                buf->pendingQueries[q] = buf->pendingQueries.back();
-                buf->pendingQueries.pop_back();
-            }
+            buf->pendingQueries[q] = buf->pendingQueries.back();
+            buf->pendingQueries.pop_back();
         }
     }
 }

@@ -22,7 +22,7 @@ bool TestClass::TestComplete(const String& testName) const
     return true;
 }
 
-Vector<String> TestClass::ClassesCoveredByTests() const
+Vector<String> TestClass::FilesCoveredByTests() const
 {
     return Vector<String>();
 }

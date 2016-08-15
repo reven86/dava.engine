@@ -879,6 +879,11 @@ void NMaterial::RebuildBindings()
 
 void NMaterial::RebuildTextureBindings()
 {
+    const AnisotropyQuality* anisotropicQuality =
+    QualitySettingsSystem::Instance()->GetAnisotropyQuality(QualitySettingsSystem::Instance()->GetCurAnisotropyQuality());
+
+    uint32_t anisotropyLevel = (anisotropicQuality == nullptr) ? 1 : std::min(anisotropicQuality->maxAnisotropy, rhi::DeviceCaps().maxAnisotropy);
+
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
@@ -921,6 +926,7 @@ void NMaterial::RebuildTextureBindings()
                 textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetDynamicTexture(textureSemantic);
                 samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetDynamicTextureSamplerState(textureSemantic);
             }
+            samplerDescr.fragmentSampler[i].anisotropyLevel = anisotropyLevel;
             DVASSERT(textureDescr.fragmentTexture[i].IsValid());
         }
 

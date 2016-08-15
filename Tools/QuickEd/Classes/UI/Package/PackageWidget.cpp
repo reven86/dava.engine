@@ -34,7 +34,7 @@ struct PackageContext : WidgetContext
 template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    DAVA::Set<PackageBaseNode*> sortedNodes;
+    SortedPackageBaseNodeSet sortedNodes(CompareByLCA);
     std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
         return (dynamic_cast<NodeType*>(node) != nullptr);
     });
@@ -553,7 +553,7 @@ void PackageWidget::MoveNodeUpDown(bool up)
     });
     PackageBaseNode* nextNode = up ? *(--iter) : *(++iter);
     DVASSERT(nullptr != nextNode);
-    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr) || (dynamic_cast<StyleSheetsNode*>(node) != nullptr && dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
+    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr) || (dynamic_cast<StyleSheetNode*>(node) != nullptr && dynamic_cast<const StyleSheetNode*>(nextNode) != nullptr));
     PackageBaseNode* nextNodeParent = nextNode->GetParent();
     DVASSERT(nextNodeParent != nullptr);
     int destIndex = nextNodeParent->GetIndex(nextNode);
