@@ -20,5 +20,12 @@ public:
 public slots:
     void paint();
 };
+class RenderContextGuard
+{
+public:
+    RenderContextGuard();
+    ~RenderContextGuard();
+};
+
 
 #endif //__QTTOOLS_DAVARENDERER_H__

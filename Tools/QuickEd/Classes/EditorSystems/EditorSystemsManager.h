@@ -88,12 +88,11 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
-    using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
-
     explicit EditorSystemsManager();
     ~EditorSystemsManager();
 
     DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetInputLayerControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
     bool OnInput(DAVA::UIEvent* currentInput);
@@ -127,7 +126,7 @@ public:
     std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
 private:
-    class RootControl;
+    class InputLayerControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <class OutIt, class Predicate>
@@ -139,7 +138,8 @@ private:
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
 
-    DAVA::RefPtr<RootControl> rootControl;
+    DAVA::RefPtr<DAVA::UIControl> rootControl;
+    DAVA::RefPtr<InputLayerControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;

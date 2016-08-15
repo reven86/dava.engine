@@ -5,6 +5,7 @@
 #include "Base/FastNameMap.h"
 #include "Math/Vector.h"
 #include "Scene3D/Systems/ParticlesQualitySettings.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -20,6 +21,12 @@ struct MaterialQuality
 {
     FastName qualityName;
     size_t weight;
+};
+
+struct AnisotropyQuality
+{
+    uint32 weight;
+    uint32 maxAnisotropy;
 };
 
 struct LandscapeQuality
@@ -68,6 +75,15 @@ public:
     void SetCurTextureQuality(const FastName& name);
 
     const TextureQuality* GetTxQuality(const FastName& name) const;
+
+    // anisotropy quality
+    size_t GetAnisotropyQualityCount() const;
+    FastName GetAnisotropyQualityName(size_t index) const;
+
+    FastName GetCurAnisotropyQuality() const;
+    void SetCurAnisotropyQuality(const FastName& name);
+
+    const AnisotropyQuality* GetAnisotropyQuality(const FastName& name) const;
 
     // materials quality
     size_t GetMaterialQualityGroupCount() const;
@@ -121,6 +137,14 @@ public:
     void SetKeepUnusedEntities(bool keep);
     bool GetKeepUnusedEntities();
 
+    //metal preview is set in resource editor for artist to see correct picture
+    void SetMetalPreview(bool preview);
+    bool GetMetalPreview();
+    bool GetAllowMetalFeatures();
+
+    void SetRuntimeQualitySwitching(bool enabled);
+    bool GetRuntimeQualitySwitching();
+
     void UpdateEntityVisibility(Entity* e);
 
 protected:
@@ -131,6 +155,12 @@ protected:
     {
         FastName name;
         TextureQuality quality;
+    };
+
+    struct ANQ
+    {
+        FastName name;
+        AnisotropyQuality quality;
     };
 
     struct MAGrQ
@@ -152,27 +182,32 @@ protected:
     };
 
     // textures
-    int32 curTextureQuality;
+    int32 curTextureQuality = 0;
     Vector<TXQ> textureQualities;
+
+    // anisotropy
+    int32 curAnisotropyQuality = 0;
+    Vector<ANQ> anisotropyQualities;
 
     // materials
     FastNameMap<MAGrQ> materialGroups;
 
-    //sounds
-    int32 curSoundQuality;
+    // sounds
+    int32 curSoundQuality = 0;
     Vector<SFXQ> soundQualities;
 
-    //landscape
-    int32 curLandscapeQuality;
+    // landscape
+    int32 curLandscapeQuality = 0;
     Vector<LCQ> landscapeQualities;
 
     FastNameMap<bool> qualityOptions;
 
     ParticlesQualitySettings particlesQualitySettings;
 
-    bool cutUnusedVertexStreams;
-
-    bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
+    bool cutUnusedVertexStreams = false;
+    bool keepUnusedQualityEntities = false; //for editor to prevent cutting entities with unused quality
+    bool metalPreviewEnabled = false;
+    bool runtimeQualitySwitching = false;
 };
 
 inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
@@ -183,6 +218,30 @@ inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
 inline bool QualitySettingsSystem::GetKeepUnusedEntities()
 {
     return keepUnusedQualityEntities;
+}
+
+inline void QualitySettingsSystem::SetMetalPreview(bool preview)
+{
+    metalPreviewEnabled = preview;
+}
+inline bool QualitySettingsSystem::GetMetalPreview()
+{
+    return metalPreviewEnabled;
+}
+
+inline void QualitySettingsSystem::SetRuntimeQualitySwitching(bool enabled)
+{
+    runtimeQualitySwitching = enabled;
+}
+inline bool QualitySettingsSystem::GetRuntimeQualitySwitching()
+{
+    return runtimeQualitySwitching;
+}
+
+inline bool QualitySettingsSystem::GetAllowMetalFeatures()
+{
+    //metal is turned on in 3 cases: preview metal in editor, preview metal in render option or metal renderer backend initialized
+    return metalPreviewEnabled || (Renderer::IsInitialized() && (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PREVIEW_METAL_ON_GL) || (Renderer::GetAPI() == rhi::RHI_METAL)));
 }
 }
 

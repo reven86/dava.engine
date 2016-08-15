@@ -59,6 +59,7 @@ public:
     // autotesting system api
     void OnError(const String& errorMessage);
     void OnTestFinished();
+    void OnTestSkipped();
 
     size_t GetUsedMemory() const;
 
@@ -100,6 +101,7 @@ public:
     void KeyPress(int32 keyChar);
 
     void ProcessInput(const UIEvent& input);
+    void ClickSystemBack();
 
     // helpers
     bool SetText(const String& path, const String& text); // lua uses ansi strings

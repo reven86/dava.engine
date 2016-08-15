@@ -101,7 +101,7 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     Q_ASSERT(documentGroup != nullptr);
     documentGroup->AttachSaveAction(actionSaveDocument);
-    documentGroup->AttachSaveAllAction(actionSaveAllDocuments);
+    documentGroup->AttachSaveAllAction(actionForceSaveAllDocuments);
 
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));

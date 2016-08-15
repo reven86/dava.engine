@@ -170,6 +170,25 @@ while continue_process_stdout:
         sys.stdout.write(err.message)
         sys.stdout.flush()
 
+
+if sys.platform == "darwin":
+    pathScriptDir        = os.path.dirname(os.path.realpath(__file__))
+    pathCoverageDir      = os.path.realpath( os.path.join(pathScriptDir, '../../../RepoTools/coverage') )
+    pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_report.py' )   
+    pathBuild            = os.path.realpath( os.path.join( os.getcwd(), '../' ) )
+    pathExecut           = os.path.realpath( os.path.join( os.getcwd(), '{0}.app'.format( PRJ_NAME_BASE ) ) )
+    pathReportOut        = os.path.join( pathBuild, 'Coverage')    
+
+    params = [  'python', pathHtmlReportScript,
+                '--pathBuild', pathBuild,  
+                '--pathExecut', pathExecut,                   
+                '--pathReportOut', pathReportOut,
+                '--buildConfig', 'Release',
+                '--teamcityMode', 'true'
+                 ]
+
+    subprocess.call(params)
+
 if app_exit_code is None:
     app_exit_code = sub_process.poll()
 

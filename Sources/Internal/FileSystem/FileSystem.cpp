@@ -212,9 +212,8 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
     return !error;
 }
 
-bool FileSystem::CopyDirectory(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
+bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting /* = false */)
 {
-    DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
 
     bool ret = true;
@@ -321,6 +320,34 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     return fileCount;
 }
 
+Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, bool isRecursive)
+{
+    ScopedPtr<FileList> fileList(new FileList(path));
+    Vector<FilePath> result;
+
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsNavigationDirectory(i))
+        {
+            continue;
+        }
+        else if (fileList->IsDirectory(i))
+        {
+            if (isRecursive)
+            {
+                Vector<FilePath> subDirList = EnumerateFilesInDirectory(fileList->GetPathname(i));
+                std::move(subDirList.begin(), subDirList.end(), std::back_inserter(result));
+            }
+        }
+        else
+        {
+            result.push_back(fileList->GetPathname(i));
+        }
+    }
+
+    return result;
+}
+
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
     return File::CreateFromSystemPath(frameworkPath, attributes);
@@ -420,13 +447,12 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     }
 #endif
 
-    struct stat s;
-
-    const String& cs = pathToCheck.GetAbsolutePathname();
-    int result = stat(cs.c_str(), &s);
+    FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
+    FileAPI::Stat fileStat;
+    int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
     if (result == 0)
     {
-        return (0 != (s.st_mode & S_IFREG));
+        return (0 != (fileStat.st_mode & S_IFREG));
     }
     else
     {
@@ -737,7 +763,29 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
 
     SafeRelease(fp);
     return bytes;
-};
+}
+
+bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer)
+{
+    ScopedPtr<File> fp(File::Create(pathname, File::OPEN | File::READ));
+    if (!fp)
+    {
+        Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    uint32 fileSize = fp->GetSize();
+    buffer.resize(fileSize);
+    uint32 dataRead = fp->Read(buffer.data(), fileSize);
+
+    if (dataRead != fileSize)
+    {
+        Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    return true;
+}
 
 void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
@@ -971,5 +1019,35 @@ bool FileSystem::Exists(const FilePath& filePath) const
     }
 
     return IsFile(filePath);
+}
+
+bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
+{
+    DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
+    DVASSERT(dst.GetType() != FilePath::PATH_IN_RESOURCES);
+
+    CreateDirectory(dst, true);
+
+    bool retCode = true;
+    ScopedPtr<FileList> fileList(new FileList(src));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                retCode = retCode && RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
+            }
+        }
+        else
+        {
+            const FilePath destinationPath = dst + fileList->GetFilename(i);
+            if (!CopyFile(fileList->GetPathname(i), destinationPath, false))
+            {
+                retCode = false;
+            }
+        }
+    }
+    return retCode;
 }
 }

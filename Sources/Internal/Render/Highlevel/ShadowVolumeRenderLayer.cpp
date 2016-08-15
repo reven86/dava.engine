@@ -30,7 +30,7 @@ std::array<Vector3, VERTEX_COUNT> quad =
 
 void ShadowVolumeRenderLayer::Restore()
 {
-    if (rhi::NeedRestoreVertexBuffer(quadBuffer))
+    if ((quadBuffer != rhi::InvalidHandle) && rhi::NeedRestoreVertexBuffer(quadBuffer))
     {
         rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(Vector3) * VERTEX_COUNT);
     }
@@ -60,12 +60,13 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
 
 void ShadowVolumeRenderLayer::Draw(Camera* camera, const RenderBatchArray& renderBatchArray, rhi::HPacketList packetList)
 {
-    if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
+    if (!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW) ||
+        !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW))
     {
         return;
     }
 
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW) && renderBatchArray.GetRenderBatchCount())
+    if (renderBatchArray.GetRenderBatchCount())
     {
         RenderLayer::Draw(camera, renderBatchArray, packetList);
 

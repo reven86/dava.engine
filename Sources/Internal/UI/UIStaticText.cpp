@@ -11,6 +11,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -92,9 +93,19 @@ void UIStaticText::SetText(const WideString& _string, const Vector2& requestedTe
     SetLayoutDirty();
 }
 
-void UIStaticText::SetTextWithoutRect(const WideString& text)
+void UIStaticText::SetUtf8Text(const String& utf8String, const Vector2& requestedTextRectSize /*= Vector2::Zero*/)
 {
-    SetText(text, Vector2(0.0f, 0.0f));
+    SetText(UTF8Utils::EncodeToWideString(utf8String), requestedTextRectSize);
+}
+
+void UIStaticText::SetUtf8TextWithoutRect(const String& utf8String)
+{
+    SetUtf8Text(utf8String, Vector2::Zero);
+}
+
+String UIStaticText::GetUtf8Text() const
+{
+    return UTF8Utils::EncodeToUTF8(GetText());
 }
 
 void UIStaticText::SetFittingOption(int32 fittingType)
@@ -569,7 +580,9 @@ void UIStaticText::RecalculateDebugColoring()
         if (!text.empty())
         {
             WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
-            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
+            // StringUtils::IsWhitespace function has 2 overloads and compiler cannot deduce predicate parameter for std::remove_if
+            // So help compiler to choose correct overload of StringUtils::IsWhitespace function using static_cast
+            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), static_cast<bool (*)(WideString::value_type)>(&StringUtils::IsWhitespace));
             textNoSpaces.erase(res, textNoSpaces.end());
 
             WideString concatinatedStringsNoSpaces = L"";
@@ -577,7 +590,7 @@ void UIStaticText::RecalculateDebugColoring()
                  string != strings.end(); string++)
             {
                 WideString toFilter = *string;
-                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), StringUtils::IsWhitespace), toFilter.end());
+                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), static_cast<bool (*)(WideString::value_type)>(&StringUtils::IsWhitespace)), toFilter.end());
                 concatinatedStringsNoSpaces += toFilter;
             }
 

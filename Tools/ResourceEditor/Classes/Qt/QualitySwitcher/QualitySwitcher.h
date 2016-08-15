@@ -1,22 +1,18 @@
-#ifndef __QUALITY_SWITCHER_H__
-#define __QUALITY_SWITCHER_H__
+#pragma once
 
-#include <QDialog>
 #include "Scene3D/Entity.h"
+#include <QDialog>
 
+class GlobalOperations;
 class QualitySwitcher : public QDialog
 {
     Q_OBJECT
 
 public:
-    static void ShowDialog();
-
-signals:
-    void QualityChanged();
-    void ParticlesQualityChanged();
+    static void ShowDialog(std::shared_ptr<GlobalOperations> globalOperations);
 
 protected:
-    QualitySwitcher(QWidget* parent = nullptr);
+    QualitySwitcher(const std::shared_ptr<GlobalOperations>& globalOperations);
     ~QualitySwitcher();
 
     void ApplyTx();
@@ -30,6 +26,7 @@ protected:
 
 protected slots:
     void OnTxQualitySelect(int index);
+    void OnAnQualitySelect(int index);
     void OnMaQualitySelect(int index);
     void OnOptionClick(bool);
     void OnParticlesQualityChanged(int index);
@@ -41,7 +38,6 @@ protected slots:
 
 private:
     bool settingsDirty = false;
+    std::shared_ptr<GlobalOperations> globalOperations;
     static QualitySwitcher* switcherDialog;
 };
-
-#endif // __QUALITY_SWITCHER_H__

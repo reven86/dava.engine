@@ -24,7 +24,7 @@ public:
 
 struct ImageInfo
 {
-    bool isEmpty() const
+    bool IsEmpty() const
     {
         return (0 == width || 0 == height);
     }
@@ -34,17 +34,9 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
-    bool operator==(const ImageInfo& another) const
-    {
-        return (
-        width == another.width &&
-        height == another.height &&
-        format == another.format);
-    }
-
     uint32 width = 0;
     uint32 height = 0;
-    PixelFormat format = FORMAT_INVALID;
+    PixelFormat format = PixelFormat::FORMAT_INVALID;
     uint32 dataSize = 0;
     uint32 mipmapsCount = 0;
     uint32 faceCount = 0;
@@ -70,6 +62,7 @@ public:
     inline uint32 GetWidth() const;
     inline uint32 GetHeight() const;
     inline uint8* GetData() const;
+    inline uint32 GetDataSize() const;
     inline PixelFormat GetPixelFormat() const;
 
 #ifdef __DAVAENGINE_IPHONE__
@@ -90,7 +83,7 @@ public:
     void ResizeCanvas(uint32 newWidth, uint32 newHeight);
 
     // changes size of image to required size (without any filtration)
-    void ResizeImage(uint32 newWidth, uint32 newHeight);
+    bool ResizeImage(uint32 newWidth, uint32 newHeight);
 
     static Image* CopyImageRegion(const Image* imageToCopy,
                                   uint32 newWidth, uint32 newHeight,
@@ -195,14 +188,22 @@ uint32 Image::GetWidth() const
 {
     return width;
 }
+
 uint32 Image::GetHeight() const
 {
     return height;
 }
+
 uint8* Image::GetData() const
 {
     return data;
 }
+
+uint32 Image::GetDataSize() const
+{
+    return dataSize;
+}
+
 PixelFormat Image::GetPixelFormat() const
 {
     return format;

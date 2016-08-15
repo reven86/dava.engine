@@ -44,21 +44,21 @@ bool ConvertImage(const Image* srcImage, Image* dstImage)
     PixelFormat dstFormat = dstImage->format;
 
     Function<bool(const Image*, Image*)> decompressFn = nullptr;
-    if (LibDdsHelper::CanCompressAndDecompress(srcFormat))
+    if (LibDdsHelper::CanDecompressFrom(srcFormat))
     {
         decompressFn = &LibDdsHelper::DecompressToRGBA;
     }
-    else if (LibPVRHelper::CanCompressAndDecompress(srcFormat))
+    else if (LibPVRHelper::CanDecompressFrom(srcFormat))
     {
         decompressFn = &LibPVRHelper::DecompressToRGBA;
     }
 
     Function<bool(const Image*, Image*)> compressFn = nullptr;
-    if (LibDdsHelper::CanCompressAndDecompress(dstFormat))
+    if (LibDdsHelper::CanCompressTo(dstFormat))
     {
         compressFn = &LibDdsHelper::CompressFromRGBA;
     }
-    else if (LibPVRHelper::CanCompressAndDecompress(dstFormat))
+    else if (LibPVRHelper::CanCompressTo(dstFormat))
     {
         compressFn = &LibPVRHelper::CompressFromRGBA;
     }
@@ -209,8 +209,8 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat)
 
 bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
 {
-    bool inCompressed = LibDdsHelper::CanCompressAndDecompress(inFormat) || LibPVRHelper::CanCompressAndDecompress(inFormat);
-    bool outCompressed = LibDdsHelper::CanCompressAndDecompress(outFormat) || LibPVRHelper::CanCompressAndDecompress(outFormat);
+    bool inCompressed = LibDdsHelper::CanDecompressFrom(inFormat) || LibPVRHelper::CanDecompressFrom(inFormat);
+    bool outCompressed = LibDdsHelper::CanCompressTo(outFormat) || LibPVRHelper::CanCompressTo(outFormat);
 
     if (!inCompressed && !outCompressed)
     {
@@ -304,7 +304,7 @@ void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32
     }
 }
 
-void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
+bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize)
 {
@@ -353,7 +353,7 @@ void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else if ((inFormat == FORMAT_RGBA32323232) && (outFormat == FORMAT_RGBA32323232))
     {
-        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, uint32, UnpackRGBA32323232, PackRGBA32323232> convert;
+        ConvertDownscaleTwiceBillinear<RGBA32323232, RGBA32323232, uint64, UnpackRGBA32323232, PackRGBA32323232> convert;
         convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
     }
     else if ((inFormat == FORMAT_RGBA16F) && (outFormat == FORMAT_RGBA16F))
@@ -368,24 +368,35 @@ void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
     }
     else
     {
-        Logger::Debug("Downscale from %s to %s is not implemented", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
+        Logger::Error("Downscale from %s to %s is not implemented", PixelFormatDescriptor::GetPixelFormatString(inFormat), PixelFormatDescriptor::GetPixelFormatString(outFormat));
+        return false;
     }
+
+    return true;
 }
 
-Image* DownscaleTwiceBillinear(const Image* source)
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap /*= false*/)
 {
-    if (source->GetPixelFormat() == FORMAT_RGBA8888)
+    DVASSERT(source != nullptr);
+
+    PixelFormat pixelFormat = source->GetPixelFormat();
+    uint32 sWidth = source->GetWidth();
+    uint32 sHeigth = source->GetHeight();
+    uint32 dWidth = sWidth >> 1;
+    uint32 dHeigth = sHeigth >> 1;
+
+    Image* destination = Image::Create(dWidth, dHeigth, pixelFormat);
+    if (destination != nullptr)
     {
-        Image* destination = Image::Create(source->GetWidth() / 2, source->GetHeight() / 2, source->GetPixelFormat());
-        if (destination)
+        uint32 pitchMultiplier = PixelFormatDescriptor::GetPixelFormatSizeInBits(pixelFormat);
+        bool downscaled = DownscaleTwiceBillinear(pixelFormat, pixelFormat, source->GetData(), sWidth, sHeigth, sWidth * pitchMultiplier / 8, destination->GetData(), dWidth, dHeigth, dWidth * pitchMultiplier / 8, isNormalMap);
+        if (downscaled == false)
         {
-            ConvertDownscaleTwiceBillinear<uint32, uint32, uint32, UnpackRGBA8888, PackRGBA8888> convertFunc;
-            convertFunc(source->GetData(), source->GetWidth(), source->GetHeight(), source->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(source->GetPixelFormat()),
-                        destination->GetData(), destination->GetWidth(), destination->GetHeight(), destination->GetWidth() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(destination->GetPixelFormat()));
+            SafeRelease(destination);
         }
-        return destination;
     }
-    return 0;
+
+    return destination;
 }
 
 void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2)

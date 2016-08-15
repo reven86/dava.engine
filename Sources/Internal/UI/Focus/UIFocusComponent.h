@@ -8,17 +8,9 @@
 
 namespace DAVA
 {
-class UIControl;
-
 class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
 {
 public:
-    enum ePolicy
-    {
-        FOCUSABLE,
-        FOCUSABLE_GROUP,
-    };
-
     UIFocusComponent();
     UIFocusComponent(const UIFocusComponent& src);
 
@@ -37,47 +29,14 @@ public:
     bool IsRequestFocus() const;
     void SetRequestFocus(bool value);
 
-    ePolicy GetPolicy() const;
-    void SetPolicy(ePolicy policy);
-
-    const String& GetNextFocusLeft() const;
-    void SetNextFocusLeft(const String& val);
-
-    const String& GetNextFocusRight() const;
-    void SetNextFocusRight(const String& val);
-
-    const String& GetNextFocusUp() const;
-    void SetNextFocusUp(const String& val);
-
-    const String& GetNextFocusDown() const;
-    void SetNextFocusDown(const String& val);
-
-    const String& GetNextControlPathInDirection(FocusHelpers::Direction dir);
-
-    int32 GetTabOrder() const;
-    void SetTabOrder(int32 val);
-
 private:
-    int32 GetPolicyAsInt() const;
-    void SetPolicyFromInt(int32 policy);
-
-private:
-    int32 tabOrder = 0;
-    ePolicy policy = FOCUSABLE;
-    String nextFocusPath[FocusHelpers::DIRECTION_COUNT];
     bool enabled = true;
     bool requestFocus = false;
 
 public:
     INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
                          PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("policy", InspDesc("Policy", GlobalEnumMap<ePolicy>::Instance(), InspDesc::T_ENUM), GetPolicyAsInt, SetPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("left", "Next Focus Left", GetNextFocusLeft, SetNextFocusLeft, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("right", "Next Focus Right", GetNextFocusRight, SetNextFocusRight, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("up", "Next Focus Up", GetNextFocusUp, SetNextFocusUp, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("down", "Next Focus Down", GetNextFocusDown, SetNextFocusDown, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("tab", "Tab Order", GetTabOrder, SetTabOrder, I_SAVE | I_VIEW | I_EDIT));
+                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

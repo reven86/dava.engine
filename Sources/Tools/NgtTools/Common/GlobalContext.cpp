@@ -1,11 +1,11 @@
 #include "GlobalContext.h"
 
-#include "core_common/platform_env.hpp"
+#include <core_common/platform_env.hpp>
 
 namespace NGTLayer
 {
-static IComponentContext* s_context = nullptr;
-void SetGlobalContext(IComponentContext* context)
+static wgt::IComponentContext* s_context = nullptr;
+void SetGlobalContext(wgt::IComponentContext* context)
 {
     s_context = context;
 
@@ -41,15 +41,15 @@ void SetGlobalContext(IComponentContext* context)
             --i;
         }
 
-        Environment::setValue(ENV_VAR_NAME, buf + i);
+        wgt::Environment::setValue(ENV_VAR_NAME, buf + i);
     }
     else
     {
-        Environment::unsetValue(ENV_VAR_NAME);
+        wgt::Environment::unsetValue(ENV_VAR_NAME);
     }
 }
 
-IComponentContext* GetGlobalContext()
+wgt::IComponentContext* GetGlobalContext()
 {
     return s_context;
 }

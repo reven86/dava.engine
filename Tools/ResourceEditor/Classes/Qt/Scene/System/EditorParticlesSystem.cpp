@@ -16,6 +16,7 @@
 // particles-related commands
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/ParticleLayerCommands.h"
+#include "Commands2/Base/CommandBatch.h"
 
 EditorParticlesSystem::EditorParticlesSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
@@ -30,6 +31,7 @@ void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 
     DAVA::AABBox3 worldBox;
     DAVA::AABBox3 collBox = collisionSystem->GetBoundingBox(effectEntity);
+    DVASSERT(!collBox.IsEmpty());
     collBox.GetTransformedBox(effectEntity->GetWorldTransform(), worldBox);
     DAVA::float32 radius = (collBox.max - collBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(worldBox.GetCenter(), radius, DAVA::Color(0.9f, 0.9f, 0.9f, 0.35f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
@@ -46,6 +48,7 @@ void EditorParticlesSystem::DrawEmitter(DAVA::ParticleEmitterInstance* emitter, 
     center += owner->GetWorldTransform().GetTranslationVector();
 
     DAVA::AABBox3 boundingBox = collisionSystem->GetBoundingBox(owner);
+    DVASSERT(!boundingBox.IsEmpty());
     DAVA::float32 radius = (boundingBox.max - boundingBox.min).Length() / 3;
     GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(center, radius, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
 
@@ -206,16 +209,7 @@ void EditorParticlesSystem::AddEntity(DAVA::Entity* entity)
 
 void EditorParticlesSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    int size = entities.size();
-    for (int i = 0; i < size; ++i)
-    {
-        if (entities[i] == entity)
-        {
-            entities[i] = entities[size - 1];
-            entities.pop_back();
-            return;
-        }
-    }
+    DAVA::FindAndRemoveExchangingWithLast(entities, entity);
 }
 
 void EditorParticlesSystem::RestartParticleEffects()
@@ -237,7 +231,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
         return;
 
     // Notify that the Particles-related value is changed.
-    SceneEditor2* activeScene = (SceneEditor2*)GetScene();
+    SceneEditor2* activeScene = static_cast<SceneEditor2*>(GetScene());
     switch (command->GetId())
     {
     case CMDID_BATCH:
@@ -275,7 +269,7 @@ void EditorParticlesSystem::ProcessCommand(const Command2* command, bool redo)
     }
     case CMDID_PARTICLE_LAYER_CHANGED_MATERIAL_VALUES:
     {
-        QtMainWindow::Instance()->RestartParticleEffects();
+        RestartParticleEffects();
 
         const CommandChangeLayerMaterialProperties* cmd = static_cast<const CommandChangeLayerMaterialProperties*>(command);
         SceneSignals::Instance()->EmitParticleLayerValueChanged(activeScene, cmd->GetLayer());

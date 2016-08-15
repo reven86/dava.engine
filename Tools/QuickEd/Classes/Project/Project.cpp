@@ -24,6 +24,12 @@ Project::Project(QObject* parent)
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
+    PreferencesStorage::Instance()->RegisterPreferences(this);
+}
+
+Project::~Project()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 bool Project::Open(const QString& path)
@@ -109,6 +115,15 @@ bool Project::OpenInternal(const QString& path)
             QString currentLocale = QString::fromStdString(localeNode->AsString());
             editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
         }
+        const YamlNode* libraryNode = projectRoot->Get("Library");
+        libraryPackages.clear();
+        if (libraryNode != nullptr)
+        {
+            for (uint32 i = 0; i < libraryNode->GetCount(); i++)
+            {
+                libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
+            }
+        }
     }
 
     return true;
@@ -122,6 +137,11 @@ bool Project::CanOpenProject(const QString& projectPath) const
     }
     QFileInfo fileInfo(projectPath);
     return fileInfo.exists() && fileInfo.isFile();
+}
+
+const Vector<FilePath>& Project::GetLibraryPackages() const
+{
+    return libraryPackages;
 }
 
 EditorFontSystem* Project::GetEditorFontSystem() const

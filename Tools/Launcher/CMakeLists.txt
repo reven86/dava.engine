@@ -6,7 +6,11 @@ project               ( Launcher )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
+set                   ( DAVA_USE_QT_WIDGETS    true )
+
 find_package          ( QT5 REQUIRED  COMPONENTS Network )
+find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaTools  REQUIRED )
 
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
 
@@ -33,8 +37,7 @@ qt5_add_resources     ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                   ( Generated  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
-define_source_folders          ( SRC_ROOT "Classes"  )
-generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
+define_source ( SOURCE    "Classes" "DataQt" )
 
 if ( MACOS )
 	set( APP_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
@@ -48,7 +51,8 @@ set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 set( LIBRARIES            yaml-cpp  )
 set( LIBRARIES_RELEASE    ${LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${LIB_DEBUG} )
-set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()
 

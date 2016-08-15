@@ -92,8 +92,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
     //scene->Update(0.1f);
 
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
-    Set<String> dummy_needBeRefactored;
-    SceneValidator::Instance()->ValidateScene(scene, fileName, dummy_needBeRefactored);
+    SceneValidator::Instance()->ValidateScene(scene, fileName);
 
     {
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::IncludeNullTextures);
@@ -178,7 +177,7 @@ void SceneSaver::CopyTexture(const FilePath& texturePathname)
         Vector<FilePath> faceNames;
 
         desc->GetFacePathnames(faceNames);
-        for (auto& faceName : faceNames)
+        for (const FilePath& faceName : faceNames)
         {
             if (!faceName.IsEmpty())
                 sceneUtils.AddFile(faceName);
@@ -202,8 +201,12 @@ void SceneSaver::CopyTexture(const FilePath& texturePathname)
                 continue;
             }
 
-            FilePath imagePathname = desc->CreatePathnameForGPU(gpu);
-            sceneUtils.AddFile(imagePathname);
+            Vector<FilePath> imagePathnames;
+            desc->CreateLoadPathnamesForGPU(gpu, imagePathnames);
+            for (const FilePath& path : imagePathnames)
+            {
+                sceneUtils.AddFile(path);
+            }
         }
     }
 
@@ -258,7 +261,7 @@ void SceneSaver::CopyAllParticlesEmitters(ParticleEmitterInstance* instance)
     const Set<FilePath>& paths = EnumAlternativeEmittersFilepaths(instance->GetFilePath());
     for (const FilePath& alternativeFilepath : paths)
     {
-        auto emitter = instance->GetEmitter();
+        ParticleEmitter* emitter = instance->GetEmitter();
         if (alternativeFilepath == emitter->configPath)
         {
             CopyEmitter(emitter);

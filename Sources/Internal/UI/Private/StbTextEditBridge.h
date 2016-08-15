@@ -2,10 +2,11 @@
 #define __DAVA_UITEXTFIELDSTBBRIDGE_H__
 
 #include "Base/BaseTypes.h"
-#include "Render/2D/TextBlock.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
+class TextBox;
 struct StbState;
 
 /**
@@ -66,16 +67,10 @@ public:
         virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
 
         /**
-        * \brief Service function for getting information about lines in text
-        * \return vector of lines information
+        * \brief Service function for getting instance of TextBox from field
+        * \return pointer to TextBox
         */
-        virtual const Vector<TextBlock::Line>& GetMultilineInfo() = 0;
-
-        /**
-        * \brief Service function for getting information of characters sizes
-        * \return vector of characters sizes
-        */
-        virtual const Vector<float32>& GetCharactersSizes() = 0;
+        virtual const TextBox* GetTextBox() = 0;
 
         /**
         * \brief Service function for getting text length
@@ -117,18 +112,18 @@ public:
      * \brief Send key to STB text edit
      * \param[in] codePoint key code
      */
-    virtual void SendKey(uint32 codePoint);
+    virtual bool SendKey(uint32 codePoint);
 
     /**
      * \brief Cut (delete) selected text
      */
-    virtual void Cut();
+    virtual bool Cut();
 
     /**
      * \brief Insert (replace selected) new text in field
      * \param[in] str string to pasting
      */
-    virtual void Paste(const WideString& str);
+    virtual bool Paste(const WideString& str);
 
     /**
      * \brief Send mouse click to STB text edit
@@ -141,6 +136,11 @@ public:
      * \param[in] point mouse point (x,y) in control's local coordinates
      */
     virtual void Drag(const Vector2& point);
+
+    /**
+     * \brief Clear STB text edit undo stack
+     */
+    virtual void ClearUndoStack();
 
     /**
      * \brief Returns character index of selection start

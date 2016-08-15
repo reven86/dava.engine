@@ -13,7 +13,6 @@
 #include "Debug/Replay.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "Input/InputSystem.h"
 #include "Platform/DPIHelper.h"
 #include "Base/AllocatorFactory.h"
 #include "Render/2D/FTFont.h"
@@ -23,7 +22,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Render/OcclusionQuery.h"
+#include "PackManager/PackManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -33,10 +32,6 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
-
-#if defined(__DAVAENGINE_STEAM__)
-#include "Platform/Steam.h"
-#endif
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -187,7 +182,7 @@ void DisableFloatingPointExceptions()
 // on iOS fpu exceptions disables by default
 #endif
 }
-#endif 
+#endif
 #endif // not DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS
 } // end namespace debug_details
 
@@ -240,7 +235,6 @@ void Core::CreateSingletons()
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-    new FrameOcclusionQueryManager();
 
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
@@ -248,7 +242,7 @@ void Core::CreateSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
-    
+
 #if defined __DAVAENGINE_IPHONE__
 // not used
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -262,15 +256,13 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+    packManager.reset(new PackManager());
+
     new LocalNotificationController();
 
     RegisterDAVAClasses();
 
     new Net::NetCore();
-
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Init();
-#endif
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
@@ -314,9 +306,6 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-#if defined(__DAVAENGINE_STEAM__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
-    Steam::Deinit();
-#endif
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -327,7 +316,6 @@ void Core::ReleaseSingletons()
 #endif
 
     LocalNotificationController::Instance()->Release();
-    DownloadManager::Instance()->Release();
     PerformanceSettings::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
@@ -342,9 +330,11 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    FrameOcclusionQueryManager::Instance()->Release();
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
+
+    packManager.reset();
+    DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
     JobManager::Instance()->Release();
@@ -364,7 +354,7 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
     SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
-    
+
 #if defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
@@ -552,6 +542,7 @@ void Core::SystemAppFinished()
 {
     Logger::Info("Core::SystemAppFinished in");
 
+    systemAppFinished.Emit();
     if (core != nullptr)
     {
         #if TRACER_ENABLED
@@ -599,7 +590,7 @@ void Core::SystemProcessFrame()
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
-    
+
 #if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
@@ -676,12 +667,14 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        packManager->Update();
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
         JobManager::Instance()->Update();
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "JobManager::Update")
 
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
+        updated.Emit(frameDelta);
         core->Update(frameDelta);
         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "Core::Update")
 
@@ -704,7 +697,7 @@ void Core::SystemProcessFrame()
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;
-    
+
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
@@ -752,6 +745,8 @@ void Core::GoForeground()
 
 void Core::FocusLost()
 {
+    UIControlSystem::Instance()->CancelAllInputs();
+    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
     if (core)
     {
         core->OnFocusLost();
@@ -968,6 +963,12 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+PackManager& Core::GetPackManager()
+{
+    DVASSERT(packManager);
+    return *packManager;
 }
 
 } // namespace DAVA

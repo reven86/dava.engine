@@ -1,6 +1,7 @@
 #include "DynamicBufferAllocator.h"
 #include "Render/RenderCallbacks.h"
 #include "Functional/Function.h"
+#include <queue>
 
 namespace DAVA
 {
@@ -92,34 +93,37 @@ struct BufferAllocator
     {
         DVASSERT(size);
 
-        uint32 requiredSize = (size * count);
-        if (requiredSize > pageSize)
-        {
-            count = pageSize / size;
-            requiredSize = size * count;
-        }
-
+        uint32 requiredSize = size * count;
         uint32 base = ((currentlyUsedSize + size - 1) / size);
         uint32 offset = base * size;
-        //cant fit - start new
+
+        // cant fit - start new
         if ((!currentlyMappedBuffer) || ((offset + requiredSize) > currentlyMappedBuffer->allocatedSize))
         {
-            if (currentlyMappedBuffer) //unmap it
+            if (currentlyMappedBuffer) // unmap it
             {
                 buffersToUnmap.push_back(currentlyMappedBuffer);
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
-            if (freeBuffers.size())
-            {
-                currentlyMappedBuffer = *freeBuffers.begin();
-                freeBuffers.pop_front();
-            }
-            else
+
+            if (freeBuffers.empty())
             {
                 currentlyMappedBuffer = new BufferInfo();
                 currentlyMappedBuffer->allocatedSize = pageSize;
                 currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
             }
+            else
+            {
+                currentlyMappedBuffer = freeBuffers.front();
+                freeBuffers.pop_front();
+            }
+
+            if (requiredSize > currentlyMappedBuffer->allocatedSize)
+            {
+                count = currentlyMappedBuffer->allocatedSize / size;
+                requiredSize = size * count;
+            }
+
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
             offset = 0;
@@ -143,20 +147,21 @@ struct BufferAllocator
         {
             BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
         }
-        for (auto b : freeBuffers)
-        {
-            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
-            SafeDelete(b);
-        }
+        buffersToUnmap.clear();
+
         for (auto b : usedBuffers)
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
             SafeDelete(b);
         }
-
-        freeBuffers.clear();
         usedBuffers.clear();
-        buffersToUnmap.clear();
+
+        for (auto b : freeBuffers)
+        {
+            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
+            SafeDelete(b);
+        }
+        freeBuffers.clear();
     }
 
     void BeginFrame()
@@ -199,9 +204,9 @@ private:
     BufferInfo* currentlyMappedBuffer = nullptr;
     uint8* currentlyMappedData = nullptr;
     uint32 currentlyUsedSize = 0;
+    Vector<BufferInfo*> usedBuffers;
+    Vector<BufferInfo*> buffersToUnmap;
     List<BufferInfo*> freeBuffers;
-    List<BufferInfo*> usedBuffers;
-    List<BufferInfo*> buffersToUnmap;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
@@ -304,6 +309,7 @@ void Clear()
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
+
 void SetPageSize(uint32 size)
 {
     pageSize = size;

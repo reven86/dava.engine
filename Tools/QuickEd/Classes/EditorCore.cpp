@@ -29,7 +29,6 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
-    qApp->installEventFilter(this);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
     mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
@@ -40,6 +39,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+    connect(project, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
@@ -82,6 +82,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
@@ -90,6 +92,8 @@ EditorCore::~EditorCore()
     {
         cacheClient->Disconnect();
     }
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 MainWindow* EditorCore::GetMainWindow() const
@@ -127,7 +131,7 @@ void EditorCore::OnReloadSpritesFinished()
         cacheClient.reset();
     }
 
-    Sprite::ReloadSprites();
+    Sprite::ReloadSprites(Texture::GetDefaultGPU());
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -314,6 +318,18 @@ void EditorCore::OnNewProject()
     }
 }
 
+void EditorCore::OnProjectOpenChanged(bool isOpen)
+{
+    if (isOpen)
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
+    }
+    else
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
+    }
+}
+
 bool EditorCore::IsUsingAssetCache() const
 {
     return assetCacheEnabled;
@@ -355,17 +371,4 @@ void EditorCore::DisableCacheClient()
         cacheClient->Disconnect();
         cacheClient.reset();
     }
-}
-
-bool EditorCore::eventFilter(QObject* obj, QEvent* event)
-{
-    if (obj == mainWindow.get() && event->type() == QEvent::Close)
-    {
-        if (!CloseProject())
-        {
-            event->ignore();
-        }
-    }
-
-    return QObject::eventFilter(obj, event);
 }

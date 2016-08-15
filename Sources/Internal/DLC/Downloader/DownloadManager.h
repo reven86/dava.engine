@@ -1,9 +1,8 @@
-#ifndef __DATA_DOWNLOAD_MANAGER_H__
-#define __DATA_DOWNLOAD_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Functional/Function.h"
+#include "Functional/Signal.h"
 
 #include "DownloaderCommon.h"
 
@@ -17,9 +16,6 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    using NotifyFunctor = Function<void(const uint32&, const DownloadStatus&)>;
-
-public:
     DownloadManager() = default;
     virtual ~DownloadManager();
 
@@ -27,15 +23,36 @@ public:
     void SetDownloader(Downloader* _downloader);
     Downloader* GetDownloader();
 
-    // Callback functor for tasks status reporting
-    void SetNotificationCallback(NotifyFunctor callbackFn);
-    NotifyFunctor GetNotificationCallback() const;
-
     // Checks tasks status and determine current task and handles tasks queues
     void Update();
 
-    // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String& srcUrl, const FilePath& storeToFilePath, const DownloadType downloadMode = RESUMED, const int16 partsCount = -1, int32 timeout = 30, int32 retriesCount = 3);
+    // Schedule download content or get content size (indicated by downloadMode)
+    uint32 Download(const String& srcUrl,
+                    const FilePath& storeToFilePath,
+                    DownloadType downloadMode = RESUMED,
+                    int16 partsCount = -1,
+                    int32 timeout = 30,
+                    int32 retriesCount = 3,
+                    uint64 downloadOffset = 0,
+                    uint64 downloadSize = 0);
+    // Handy method to download file part
+    uint32 DownloadRange(const String& srcUrl,
+                         const FilePath& storeToFilePath,
+                         uint64 downloadOffset,
+                         uint64 downloadSize,
+                         DownloadType downloadMode = RESUMED,
+                         int16 partsCount = -1,
+                         int32 timeout = 30,
+                         int32 retriesCount = 3);
+    // Schedule download content into memory buffer
+    uint32 DownloadIntoBuffer(const String& url,
+                              void* buffer,
+                              uint32 bufSize,
+                              uint64 downloadOffset = 0,
+                              uint64 downloadSize = 0,
+                              int16 partsCount = -1,
+                              int32 timeout = 30,
+                              int32 retriesCount = 3);
 
     // Retry finished download
     void Retry(const uint32& taskId);
@@ -61,10 +78,14 @@ public:
     bool GetProgress(const uint32& taskId, uint64& progress);
     bool GetError(const uint32& taskId, DownloadError& error);
     bool GetFileErrno(const uint32& taskId, int32& fileErrno);
+    bool GetBuffer(uint32 taskId, void*& buffer, uint32& nread);
     DownloadStatistics GetStatistics();
     void SetDownloadSpeedLimit(uint64 limit);
     void SetPreferredDownloadThreadsCount(uint8 count);
     void ResetPreferredDownloadThreadsCount();
+
+    // Signal about download task state changing
+    Signal<uint32, DownloadStatus> downloadTaskStateChanged;
 
 private:
     struct CallbackData
@@ -75,7 +96,6 @@ private:
         DownloadStatus status;
     };
 
-private:
     void SetTaskStatus(DownloadTaskDescription* task, const DownloadStatus& status);
 
     void StartProcessingThread();
@@ -95,6 +115,7 @@ private:
 
     DownloadError Download();
     DownloadError TryDownload();
+    DownloadError TryDownloadIntoBuffer();
     void Interrupt();
     bool IsInterrupting();
     void MakeFullDownload();
@@ -102,7 +123,6 @@ private:
     void ResetRetriesCount();
     void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
-private:
     Thread* thisThread = nullptr;
     bool isThreadStarted = false;
 
@@ -118,10 +138,7 @@ private:
     Downloader* downloader = nullptr;
     const uint8 defaultDownloadThreadsCount = 4;
     uint8 preferredDownloadThreadsCount = defaultDownloadThreadsCount;
-    NotifyFunctor callNotify;
 
     uint64 downloadedTotal = 0;
 };
 }
-
-#endif

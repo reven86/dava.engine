@@ -2,55 +2,43 @@
 #include "filedownloader.h"
 #include <QObject>
 
-FileDownloader::FileDownloader(QNetworkAccessManager* accessManager)
-    :
-    networkManager(accessManager)
-    ,
-    currentDownload(0)
-    ,
-    lastErrorCode(0)
+FileDownloader::FileDownloader(QObject* parent)
+    : QObject(parent)
+    , networkManager(new QNetworkAccessManager(this))
 {
 }
 
-FileDownloader::~FileDownloader()
-{
-}
-
-void FileDownloader::Download(QUrl url)
+void FileDownloader::Download(const QUrl& url)
 {
     Cancel();
 
     currentDownload = networkManager->get(QNetworkRequest(url));
 
-    connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-    connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+    connect(currentDownload, &QNetworkReply::finished, this, &FileDownloader::DownloadFinished);
 }
 
 void FileDownloader::Cancel()
 {
-    if (currentDownload)
+    if (currentDownload != nullptr)
     {
         currentDownload->abort();
+        currentDownload = nullptr;
     }
-}
-
-void FileDownloader::NetworkError(QNetworkReply::NetworkError code)
-{
-    lastErrorCode = code;
-    lastErrorDesc = currentDownload->errorString();
 }
 
 void FileDownloader::DownloadFinished()
 {
-    if (lastErrorCode)
-    {
-        emit Finished(QByteArray(), QList<QPair<QByteArray, QByteArray>>(), lastErrorCode, lastErrorDesc);
-    }
-    else if (currentDownload)
-    {
-        emit Finished(currentDownload->readAll(), currentDownload->rawHeaderPairs(), lastErrorCode, lastErrorDesc);
+    QNetworkReply* download = qobject_cast<QNetworkReply*>(sender());
+    download->deleteLater();
 
-        currentDownload->deleteLater();
-        currentDownload = 0;
+    if (download->error() != QNetworkReply::NoError)
+    {
+        emit Finished(QByteArray(), QList<QPair<QByteArray, QByteArray>>(), download->error(), download->errorString());
     }
+    else
+    {
+        emit Finished(download->readAll(), download->rawHeaderPairs(), download->error(), download->errorString());
+    }
+    //clear current download state
+    currentDownload = nullptr;
 }

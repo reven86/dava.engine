@@ -18,6 +18,7 @@ void Init(uint32 maxCount);
 void SetToRHI(Handle vb, unsigned stream_i, unsigned offset, unsigned stride);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -28,6 +29,7 @@ void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle vb);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -35,8 +37,11 @@ namespace QueryBufferDX9
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void BeginQuery(Handle buf, uint32 objectIndex);
-void EndQuery(Handle buf, uint32 objectIndex);
+void SetQueryIndex(Handle buf, uint32 objectIndex);
+void QueryComplete(Handle buf);
+bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryPool();
 }
 
 namespace PerfQuerySetDX9
@@ -71,6 +76,7 @@ void SetAsRenderTarget(Handle tex);
 void SetAsDepthStencil(Handle tex);
 void ReleaseAll();
 void ReCreateAll();
+void LogUnrestoredBacktraces();
 unsigned NeedRestoreCount();
 }
 
@@ -126,7 +132,7 @@ DX9Command
 
         CREATE_TEXTURE = 41,
         CREATE_CUBE_TEXTURE = 42,
-        GET_TEXTURE_SURFACE_LEVEl = 43,
+        GET_TEXTURE_SURFACE_LEVEL = 43,
         SET_TEXTURE_AUTOGEN_FILTER_TYPE = 44,
         LOCK_TEXTURE_RECT = 45,
         UNLOCK_TEXTURE_RECT = 46,
@@ -143,7 +149,10 @@ DX9Command
         GET_QUERY_DATA = 61,
 
         QUERY_INTERFACE = 101,
-        RELEASE = 102
+        RELEASE = 102,
+
+        READ_TEXTURE_LEVEL,
+        READ_CUBETEXTURE_LEVEL,
     };
 
     Func func;
@@ -151,7 +160,7 @@ DX9Command
     long retval;
 };
 
-void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate = false);
+void ExecDX9(DX9Command* cmd, uint32 cmdCount, bool force_immediate);
 
 //==============================================================================
 }

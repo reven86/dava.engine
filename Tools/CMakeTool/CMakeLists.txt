@@ -1,14 +1,19 @@
-﻿cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.0)
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( CMakeTool )
 
+set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set                   ( DAVA_USE_QT_WIDGETS    true )
+
 include               ( CMake-common )
 
 
 find_package          ( QT5           REQUIRED )
+find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
@@ -22,7 +27,7 @@ endif()
 file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
-define_source_folders         ( SRC_ROOT "Classes" ERASE_FOLDERS "_build"    )
+define_source ( SOURCE "Classes" )
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
@@ -31,6 +36,7 @@ set( ADDED_SRC            ${RCC_APP_SRCS}  CMakeTool.rc )
 
 set( QML_SCAN_DIR				${CMAKE_CURRENT_LIST_DIR} )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
 setup_main_executable()

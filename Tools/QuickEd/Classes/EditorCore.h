@@ -31,6 +31,7 @@ public:
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
     void Start();
+    bool CloseProject();
 
 private slots:
 
@@ -48,15 +49,14 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
-    bool CloseProject();
     void OnExit();
     void OnNewProject();
+    void OnProjectOpenChanged(bool arg);
 
 private:
     void OpenProject(const QString& path);
 
     bool IsUsingAssetCache() const;
-    bool eventFilter(QObject* object, QEvent* event) override;
     void SetUsingAssetCacheEnabled(bool enabled);
 
     void EnableCacheClient();
@@ -71,7 +71,6 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
-    REGISTER_PREFERENCES(EditorCore)
 
 public:
     INTROSPECTION(EditorCore,

@@ -11,6 +11,7 @@ class LandscapeToolsToggleCommand : public Command2
 {
 public:
     LandscapeToolsToggleCommand(DAVA::int32 identifier, SceneEditor2* sceneEditor,
+                                const DAVA::String& commandDescr, bool isEnabling,
                                 DAVA::uint32 allowedTools, DAVA::String disablingError);
     DAVA::Entity* GetEntity() const override;
 
@@ -50,7 +51,7 @@ class LandscapeToolsReverseCommand : public ForwardCommand
 public:
     template <typename... Args>
     LandscapeToolsReverseCommand(SceneEditor2* sceneEditor, Args... a)
-        : ForwardCommand(sceneEditor, a...)
+        : ForwardCommand(sceneEditor, a..., false)
     {
     }
 
@@ -71,7 +72,7 @@ public:
 class EnableHeightmapEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor);
+    EnableHeightmapEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 
 private:
     void OnDisabled() override;
@@ -81,28 +82,28 @@ using DisableHeightmapEditorCommand = LandscapeToolsReverseCommand<EnableHeightm
 class EnableNotPassableCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableNotPassableCommand(SceneEditor2* forSceneEditor);
+    EnableNotPassableCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableNotPassableCommand = LandscapeToolsReverseCommand<EnableNotPassableCommand>;
 
 class EnableRulerToolCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableRulerToolCommand(SceneEditor2* forSceneEditor);
+    EnableRulerToolCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableRulerToolCommand = LandscapeToolsReverseCommand<EnableRulerToolCommand>;
 
 class EnableTilemaskEditorCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor);
+    EnableTilemaskEditorCommand(SceneEditor2* forSceneEditor, bool isEnabling = true);
 };
 using DisableTilemaskEditorCommand = LandscapeToolsReverseCommand<EnableTilemaskEditorCommand>;
 
 class EnableCustomColorsCommand : public LandscapeToolsToggleCommand
 {
 public:
-    EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool saveChanges);
+    EnableCustomColorsCommand(SceneEditor2* forSceneEditor, bool saveChanges, bool isEnabling = true);
 
 private:
     void OnEnabled() override;

@@ -3,7 +3,7 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Scene/SceneHelper.h"
-
+#include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 
 using namespace DAVA;
@@ -18,13 +18,25 @@ CreatePlaneLODCommand::CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::
 void CreatePlaneLODCommand::Redo()
 {
     CreateTextureFiles();
-    request->planeBatch->GetMaterial()->GetEffectiveTexture(NMaterialTextureName::TEXTURE_ALBEDO)->Reload();
+
+    ScopedPtr<Texture> fileTexture(Texture::CreateFromFile(request->texturePath));
+    NMaterial* material = request->planeBatch->GetMaterial();
+    if (material != nullptr)
+    {
+        if (material->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
+        {
+            material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+        }
+        else
+        {
+            material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+        }
+        fileTexture->Reload();
+    }
 
     auto entity = GetEntity();
     auto renderObject = DAVA::GetRenderObject(entity);
-    float lodDistance = 2.0f * request->lodComponent->GetLodLayerDistance(request->newLodIndex - 1);
     renderObject->AddRenderBatch(request->planeBatch, request->newLodIndex, -1);
-    request->lodComponent->SetLodLayerDistance(request->newLodIndex, lodDistance);
 }
 
 void CreatePlaneLODCommand::Undo()
@@ -34,15 +46,6 @@ void CreatePlaneLODCommand::Undo()
     //restore batches
     ro->RemoveRenderBatch(request->planeBatch);
 
-    //restore distances
-    request->lodComponent->lodLayersArray = request->savedDistances;
-
-    // fix visibility settings
-    DAVA::int32 maxLodIndex = ro->GetMaxLodIndex();
-    if (request->lodComponent->forceLodLayer > maxLodIndex)
-        request->lodComponent->forceLodLayer = maxLodIndex;
-
-    request->lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
     DeleteTextureFiles();
 }
 

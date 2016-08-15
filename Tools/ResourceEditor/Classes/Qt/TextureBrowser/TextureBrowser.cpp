@@ -1,19 +1,19 @@
-#include "TextureBrowser/TextureBrowser.h"
-#include "TextureBrowser/TextureListModel.h"
-#include "TextureBrowser/TextureListDelegate.h"
-#include "TextureBrowser/TextureConvertor.h"
-#include "TextureBrowser/TextureCache.h"
-#include "Main/QtUtils.h"
-#include "Main/mainwindow.h"
-#include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/LibDdsHelper.h"
+#include "Qt/TextureBrowser/TextureBrowser.h"
+#include "Qt/TextureBrowser/TextureListModel.h"
+#include "Qt/TextureBrowser/TextureListDelegate.h"
+#include "Qt/TextureBrowser/TextureConvertor.h"
+#include "Qt/TextureBrowser/TextureCache.h"
+#include "Qt/Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Scene/SceneHelper.h"
-#include "CubemapEditor/CubemapUtils.h"
+#include "Qt/Scene/SceneHelper.h"
+#include "Qt/CubemapEditor/CubemapUtils.h"
 
 #include "Classes/Constants.h"
-
 #include "ui_texturebrowser.h"
+
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibDdsHelper.h"
 
 #include <QComboBox>
 #include <QAbstractItemModel>
@@ -64,10 +64,10 @@ TextureBrowser::TextureBrowser(QWidget* parent)
     QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor*, const DAVA::eGPUFamily, const TextureInfo&)));
 
     setupStatusBar();
+    setupTextureToolbar();
     setupTexturesList();
     setupImagesScrollAreas();
     setupTextureListToolbar();
-    setupTextureToolbar();
     setupTextureListFilter();
     setupTextureProperties();
     setupTextureViewTabBar();
@@ -104,7 +104,7 @@ void TextureBrowser::Close()
     hide();
 
     TextureConvertor::Instance()->CancelConvert();
-    TextureConvertor::Instance()->WaitConvertedAll();
+    TextureConvertor::Instance()->WaitConvertedAll(this);
 
     setScene(nullptr);
 
@@ -609,7 +609,7 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture* texture, const DAVA::Te
 {
     if (NULL != descriptor && NULL != texture)
     {
-        DAVA::eGPUFamily curEditorImageGPUForTextures = QtMainWindow::Instance()->GetGPUFormat();
+        DAVA::eGPUFamily curEditorImageGPUForTextures = Settings::GetGPUFormat();
 
         // reload only when editor view format is the same as given texture format
         // or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
@@ -702,12 +702,20 @@ void TextureBrowser::textureBgMaskPressed(bool checked)
 
 void TextureBrowser::texturePropertyChanged(int type)
 {
+    DVASSERT(ui->textureProperties->getTextureDescriptor() == curDescriptor);
+
     // settings that need texture to reconvert
     if (type == TextureProperties::PROP_FORMAT ||
         type == TextureProperties::PROP_MIPMAP ||
         type == TextureProperties::PROP_NORMALMAP ||
         type == TextureProperties::PROP_SIZE)
     {
+        if (type == TextureProperties::PROP_FORMAT)
+        { // add ImageFormat by pixel format
+            DAVA::PixelFormat format = static_cast<DAVA::PixelFormat>(curDescriptor->compression[curTextureView].format);
+            curDescriptor->compression[curTextureView].imageFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(curTextureView, format);
+        }
+
         // set current Texture view and force texture conversion
         // new texture will be applied to scene after conversion (by signal)
         setTextureView(curTextureView, getConvertMode(CONVERT_FORCE));
@@ -922,7 +930,7 @@ void TextureBrowser::ConvertMultipleTextures(eTextureConvertMode convertMode)
         return;
     }
 
-    DAVA::Scene* activeScene = QtMainWindow::Instance()->GetCurrentScene();
+    DAVA::Scene* activeScene = curScene;
     if (NULL != activeScene)
     {
         QMessageBox msgBox(this);

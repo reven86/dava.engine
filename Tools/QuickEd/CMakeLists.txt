@@ -8,6 +8,7 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
+set                   ( NO_CEF true)
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -72,8 +73,7 @@ file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
-define_source_folders         ( SRC_ROOT "Classes" ERASE_FOLDERS "_build"    )
-generate_source_groups_project( SRC_ROOT "Classes" FOLDERS Generated UiList )
+define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
  
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
@@ -81,11 +81,10 @@ set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 set( LIBRARIES                  NgtTools)
 
-if ( WIN32 AND X64_MODE )
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN64}/bin )
-else ()
-	set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
-endif ()
+ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
+set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
+
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
 
 set ( MAC_DISABLE_BUNDLE true )
 
@@ -99,4 +98,4 @@ if (MACOS)
   copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libTextureConverter.dylib ${TOOL_OUTPUT_DIR} )
 endif()
 
-execute_process( COMMAND python convert_graphics.py  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+convert_graphics()

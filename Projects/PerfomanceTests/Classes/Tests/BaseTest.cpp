@@ -100,24 +100,33 @@ void BaseTest::UpdateUI()
     framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", GetTestFrameNumber())));
 }
 
-size_t BaseTest::GetAllocatedMemory()
+uint32 BaseTest::GetAllocatedMemory()
 {
+    uint32 memory = 0;
+    
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    return MemoryManager::Instance()->GetTrackedMemoryUsage();
-#else
-    return 0;
+    memory = MemoryManager::Instance()->GetTrackedMemoryUsage();
+#elif defined(__DAVAENGINE_APPLE__)
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
+    if (KERN_SUCCESS == task_info(mach_task_self(), MACH_TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &size))
+    {
+        memory = static_cast<uint32>(info.resident_size);
+    }
 #endif
+
+    return memory;
 }
 void BaseTest::OnStart()
 {
-    Logger::Info(TeamcityTestsOutput::FormatTestStarted(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestStarted(GetSceneName()).c_str());
 }
 
 void BaseTest::OnFinish()
 {
     PrintStatistic(GetFramesInfo());
 
-    Logger::Info(TeamcityTestsOutput::FormatTestFinished(GetSceneName()).c_str());
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatTestFinished(GetSceneName()).c_str());
 }
 
 void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
@@ -126,61 +135,61 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
 
     for (const auto& frameInfo : frames)
     {
-        Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                     TeamcityTestsOutput::FRAME_DELTA,
+        Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                     TeamcityPerformanceTestsOutput::FRAME_DELTA,
                      DAVA::Format("%f", frameInfo.delta))
                      .c_str());
     }
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MIN_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MIN_DELTA,
                  DAVA::Format("%f", minDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_DELTA,
                  DAVA::Format("%f", maxDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::AVERAGE_DELTA,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::AVERAGE_DELTA,
                  DAVA::Format("%f", overallTestTime / framesCount))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_FPS,
                  DAVA::Format("%f", 1.0f / minDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MIN_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MIN_FPS,
                  DAVA::Format("%f", 1.0f / maxDelta))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::AVERAGE_FPS,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::AVERAGE_FPS,
                  DAVA::Format("%f", 1.0f / (overallTestTime / framesCount)))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::TEST_TIME,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::TEST_TIME,
                  DAVA::Format("%f", overallTestTime))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::TIME_ELAPSED,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::TIME_ELAPSED,
                  DAVA::Format("%f", elapsedTime / 1000.0f))
                  .c_str());
 
-    Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                 TeamcityTestsOutput::MAX_MEM_USAGE,
+    Logger::Info(TeamcityPerformanceTestsOutput::FormatBuildStatistic(
+                 TeamcityPerformanceTestsOutput::MAX_MEM_USAGE,
                  DAVA::Format("%d", maxAllocatedMemory))
                  .c_str());
 }
 
 void BaseTest::SystemUpdate(float32 timeElapsed)
 {
-    size_t allocatedMem = GetAllocatedMemory();
+    uint32 allocatedMem = GetAllocatedMemory();
     if (allocatedMem > maxAllocatedMemory)
     {
         maxAllocatedMemory = allocatedMem;

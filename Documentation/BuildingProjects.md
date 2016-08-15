@@ -127,11 +127,7 @@ Qt 5 можно установить через online installer (рекомен
 
  
 
-> QT5\_PATH\_WIN = c:\\Qt\\5.6\\msvc2013
->
-> QT5\_PATH\_WIN64 = c:\\Qt\\5.6\\msvc2013\_64\_opengl
->
-> QT5\_PATH\_MAC = $ENV{HOME}/Qt/5.6/clang\_64
+> QT\_PATH = [path\_to\_qt5.6] (например c:\\Qt\\5.6\\msvc2013\_64)
 >
 > ANDROID\_ANT  = d:\\apache-ant-1.9.4  
 > ANDROID\_NDK  = d:\\android-ndk-r10

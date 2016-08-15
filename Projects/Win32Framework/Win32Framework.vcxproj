@@ -689,7 +689,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\MipmapReplacer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\OcclusionQuery.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PVRDefines.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\RenderBase.h" />
@@ -1144,7 +1143,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\MipmapReplacer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\OcclusionQuery.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RenderBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RenderCallbacks.cpp" />

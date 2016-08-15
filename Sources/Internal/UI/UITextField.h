@@ -15,6 +15,12 @@ class TextFieldPlatformImpl;
 class UITextFieldDelegate
 {
 public:
+    enum class eReason
+    {
+        USER = 0,
+        CODE = 1,
+    };
+
     virtual ~UITextFieldDelegate() = default;
 
     /**
@@ -51,8 +57,14 @@ public:
         return true;
     }
 
-    virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+    DAVA_DEPRECATED(virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
+                    {
+                    });
+
+    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
     {
+        DVASSERT(newText != oldText);
+        TextFieldOnTextChanged(textField, newText, oldText);
     }
 
     /*
@@ -178,8 +190,11 @@ public:
 
     void SetSpriteAlign(int32 align) override;
 
-    const WideString& GetText();
-    virtual void SetText(const WideString& text);
+    DAVA_DEPRECATED(const WideString& GetText());
+    DAVA_DEPRECATED(virtual void SetText(const WideString& text));
+
+    String GetUtf8Text();
+    void SetUtf8Text(const String& text);
 
     WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString& replacementString);
 
@@ -399,7 +414,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
-                         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("text", "Text", GetUtf8Text, SetUtf8Text, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("selectioncolor", "Selection color", GetSelectionColor, SetSelectionColor, I_SAVE | I_VIEW | I_EDIT)

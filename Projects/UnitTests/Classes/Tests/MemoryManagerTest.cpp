@@ -9,8 +9,6 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (MemoryManagerTest)
 {
-    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
-
     volatile uint32 capturedTag = 0;
     volatile uint32 capturedCheckpoint = 0;
 
@@ -88,7 +86,7 @@ DAVA_TESTCLASS (MemoryManagerTest)
             uint32 allocDelta = 0;
             uint32 blockDelta = 0;
 
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_WIN_UAP__) && !(defined(_WIN64))
             // For now memory profiler intercepts only operators new/delete but not functions malloc/free
             // TODO: remove define after full memory profiler implementation on win10
             void* volatile ptr1 = malloc(222);
@@ -103,7 +101,7 @@ DAVA_TESTCLASS (MemoryManagerTest)
             TEST_VERIFY(oldAllocByApp + allocDelta == poolStat[ALLOC_POOL_BULLET].allocByApp);
             TEST_VERIFY(oldBlockCount + blockDelta == poolStat[ALLOC_POOL_BULLET].blockCount);
 
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_WIN_UAP__) && !(defined(_WIN64))
             free(ptr1);
 #endif
             delete[] ptr2;

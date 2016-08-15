@@ -12,7 +12,7 @@ class UIControlPackageContext;
 class UIPackage : public BaseObject
 {
 public:
-    static const int32 CURRENT_VERSION = 3;
+    static const int32 CURRENT_VERSION = 4;
 
     UIPackage();
 
@@ -43,6 +43,12 @@ public:
     UIControlPackageContext* GetControlPackageContext();
 
     RefPtr<UIPackage> Clone() const;
+
+    Vector<UIControl*>::const_iterator begin() const;
+    Vector<UIControl*>::const_iterator end() const;
+
+    Vector<UIControl*>::iterator begin();
+    Vector<UIControl*>::iterator end();
 
 private:
     Vector<UIControl*> controls;

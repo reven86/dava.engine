@@ -2,19 +2,23 @@
 #include "NgtTools/Common/GlobalContext.h"
 
 #include "Debug/DVAssert.h"
+#include "Core/Core.h"
 
-#include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
-#include "core_generic_plugin/interfaces/i_application.hpp"
-#include "core_generic_plugin/generic_plugin.hpp"
-#include "core_variant/variant.hpp"
-#include "core_ui_framework/i_ui_application.hpp"
-#include "core_qt_common/i_qt_framework.hpp"
+#include <core_generic_plugin/interfaces/i_plugin_context_manager.hpp>
+#include <core_generic_plugin/interfaces/i_application.hpp>
+#include <core_generic_plugin/generic_plugin.hpp>
+#include <core_variant/variant.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_qt_common/i_qt_framework.hpp>
 
-#include "core_qt_common/qt_window.hpp"
+#include <core_qt_common/qt_window.hpp>
 
 #include <QMainWindow>
 #include <QFileInfo>
+#include <QApplication>
 
+namespace wgt
+{
 /// Hack to avoid linker errors
 /// This function must be implememted if you want link with core_generic_plugin
 /// In this case we need to link with core_qt_common that require linkage with core_generic_plugin
@@ -22,6 +26,8 @@ PluginMain* createPlugin(IComponentContext& contextManager)
 {
     return nullptr;
 }
+
+} // namespace wgt
 
 namespace NGTLayer
 {
@@ -33,11 +39,13 @@ BaseApplication::BaseApplication(int argc, char** argv)
 
 BaseApplication::~BaseApplication()
 {
+    OnPreUnloadPlugins();
     NGTLayer::SetGlobalContext(nullptr);
 }
 
 void BaseApplication::LoadPlugins()
 {
+    ConfigureLineCommand(commandLineParser);
     DAVA::Vector<DAVA::WideString> pluginList;
     GetPluginsForLoad(pluginList);
 
@@ -48,36 +56,88 @@ void BaseApplication::LoadPlugins()
                        return plugindFolder + pluginPath;
                    });
 
-    pluginManager.getContextManager().getGlobalContext()->registerInterface<ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
+    pluginManager.getContextManager().getGlobalContext()->registerInterface<wgt::ICommandLineParser>(&commandLineParser, false /* transferOwnership*/);
     pluginManager.loadPlugins(pluginList);
     NGTLayer::SetGlobalContext(pluginManager.getContextManager().getGlobalContext());
-    Variant::setMetaTypeManager(NGTLayer::queryInterface<IMetaTypeManager>());
+    wgt::Variant::setMetaTypeManager(NGTLayer::queryInterface<wgt::IMetaTypeManager>());
 
-    OnPostLoadPugins();
+    OnPostLoadPlugins();
 }
 
-IComponentContext& BaseApplication::GetComponentContext()
+wgt::IComponentContext& BaseApplication::GetComponentContext()
 {
-    IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
+    wgt::IComponentContext* context = pluginManager.getContextManager().getGlobalContext();
     DVASSERT(context != nullptr);
     return *context;
 }
 
 int BaseApplication::StartApplication(QMainWindow* appMainWindow)
 {
-    IQtFramework* framework = pluginManager.queryInterface<IQtFramework>();
+    wgt::IQtFramework* framework = pluginManager.queryInterface<wgt::IQtFramework>();
     DVASSERT(framework != nullptr);
 
-    std::unique_ptr<QtWindow> window(new QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    std::unique_ptr<wgt::QtWindow> window(new wgt::QtWindow(*framework, std::unique_ptr<QMainWindow>(appMainWindow)));
+    wgt::Connection tryCloseSignalConnetion = window->signalTryClose.connect(std::bind(&BaseApplication::OnMainWindowTryClose, this, std::placeholders::_1));
+    wgt::Connection closeSignalConnection = window->signalClose.connect(std::bind(&BaseApplication::OnMainWindowClosed, this));
 
-    IUIApplication* app = pluginManager.queryInterface<IUIApplication>();
+    wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
     DVASSERT(app != nullptr);
     window->show();
     app->addWindow(*window);
     int result = app->startApplication();
+    app->removeWindow(*window);
     window->releaseWindow();
 
     return result;
+}
+
+int BaseApplication::StartApplication()
+{
+    wgt::IUIApplication* app = pluginManager.queryInterface<wgt::IUIApplication>();
+    DVASSERT(app != nullptr);
+    return app->startApplication();
+}
+
+void BaseApplication::OnPostLoadPlugins()
+{
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
+    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
+                     {
+                         DAVA::Core* core = DAVA::Core::Instance();
+                         if (core == nullptr)
+                         {
+                             return;
+                         }
+                         if (state == Qt::ApplicationActive)
+                         {
+                             core->FocusReceived();
+                         }
+                         else
+                         {
+                             core->FocusLost();
+                         }
+                     });
+}
+
+void BaseApplication::OnPreUnloadPlugins()
+{
+}
+
+bool BaseApplication::OnRequestCloseApp()
+{
+    return true;
+}
+
+void BaseApplication::ConfigureLineCommand(NGTCmdLineParser& lineParser)
+{
+}
+
+const NGTLayer::NGTCmdLineParser& BaseApplication::GetCommandLine() const
+{
+    return commandLineParser;
 }
 
 DAVA::WideString BaseApplication::GetPluginsFolder() const
@@ -88,4 +148,15 @@ DAVA::WideString BaseApplication::GetPluginsFolder() const
 
     return pluginsBasePath_.toStdWString();
 }
+
+void BaseApplication::OnMainWindowTryClose(bool& result)
+{
+    result = OnRequestCloseApp();
+}
+
+void BaseApplication::OnMainWindowClosed()
+{
+    qApp->quit();
+}
+
 } // namespace NGTLayer

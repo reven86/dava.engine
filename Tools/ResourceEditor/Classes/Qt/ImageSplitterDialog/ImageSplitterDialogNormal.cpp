@@ -1,7 +1,10 @@
 #include "ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
+#include "Render/PixelFormatDescriptor.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
 #include "ImageTools/ImageTools.h"
 #include "Main/mainwindow.h"
-#include "Scene3D/Components/ComponentHelpers.h"
 #include "Main/QtUtils.h"
 
 #include <QMessageBox>
@@ -35,8 +38,13 @@ ImageSplitterDialogNormal::~ImageSplitterDialogNormal()
 
 void ImageSplitterDialogNormal::OnSaveClicked()
 {
-    auto scene = QtMainWindow::Instance()->GetCurrentScene();
-    auto landscape = DAVA::FindLandscape(scene);
+    SceneEditor2* scene = sceneHolder.GetScene();
+    DAVA::Landscape* landscape = nullptr;
+    if (scene != nullptr)
+    {
+        landscape = DAVA::FindLandscape(scene);
+    }
+
     if (nullptr == landscape)
     {
         QMessageBox::warning(this, "Save error", "Scene has no landscape. Cannot create normals.", QMessageBox::Ok);

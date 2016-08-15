@@ -1,11 +1,13 @@
-#ifndef __RESOURCEEDITOR_PROPERTYPANEL_H__
-#define __RESOURCEEDITOR_PROPERTYPANEL_H__
+#pragma once
 
-#include "core_ui_framework/i_view.hpp"
-#include "core_ui_framework/i_ui_framework.hpp"
-#include "core_ui_framework/i_ui_application.hpp"
-#include "core_reflection/reflected_object.hpp"
-#include "core_data_model/i_tree_model.hpp"
+#include "Extensions.h"
+
+#include "QtTools/WarningGuard/QtWarningsHandler.h"
+
+#include <core_ui_framework/i_view.hpp>
+#include <core_ui_framework/i_ui_framework.hpp>
+#include <core_ui_framework/i_ui_application.hpp>
+#include <core_reflection/reflected_object.hpp>
 
 #include <memory>
 #include <QObject>
@@ -19,34 +21,52 @@ class InspInfo;
 class SceneEditor2;
 class SelectableGroup;
 
-class PropertyPanel : public QObject, public IViewEventListener
+namespace wgt
 {
+class ReflectedPropertyModel;
+}
+
+class PropertyPanel : public QObject, public wgt::IViewEventListener, public EntityInjectDataExtension::Delegate
+{
+    PUSH_QT_WARNING_SUPRESSOR
     Q_OBJECT
+    POP_QT_WARNING_SUPRESSOR
     DECLARE_REFLECTED
+
 public:
     PropertyPanel();
     ~PropertyPanel();
 
-    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
-    void Finalize();
+    void Initialize(wgt::IUIFramework& uiFramework, wgt::IUIApplication& uiApplication);
+    void Finalize(wgt::IUIApplication& uiApplication);
 
-    ObjectHandle GetPropertyTree() const;
-    void SetPropertyTree(const ObjectHandle& dummyTree);
+    wgt::ObjectHandle GetPropertyTree() const;
+    void SetPropertyTree(const wgt::ObjectHandle& dummyTree);
 
     Q_SLOT void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void SetObject(DAVA::InspBase* object);
+    void SetObject(const std::vector<DAVA::InspBase*>& object);
+
+protected:
+    void timerEvent(QTimerEvent* e) override;
 
 private:
-    void onFocusIn(IView* view) override;
-    void onFocusOut(IView* view) override;
+    void onFocusIn(wgt::IView* view) override;
+    void onFocusOut(wgt::IView* view) override;
+    void onLoaded(wgt::IView* view) override;
+
+    void UpdateModel();
+
+    void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) override;
+    void Exec(Command2::Pointer&& command) override;
+    void EndBatch() override;
 
 private:
-    std::unique_ptr<IView> view;
-    std::shared_ptr<ITreeModel> model;
+    std::unique_ptr<wgt::IView> view;
+    std::unique_ptr<wgt::ReflectedPropertyModel> model;
+
+    int updateTimerId = -1;
 
     bool visible = false;
     bool isSelectionDirty = false;
-    DAVA::InspBase* selectedObject = nullptr;
+    DAVA::Vector<DAVA::InspBase*> selectedObjects;
 };
-
-#endif // __RESOURCEEDITOR_PROPERTYPANEL_H__

@@ -1,7 +1,7 @@
-#ifndef __HEIGHTMAPPATH_TOOL_H__
-#define __HEIGHTMAPPATH_TOOL_H__
+#pragma once
 
 #include "DAVAEngine.h"
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
 
 #include <QWidget>
 #include <QScopedPointer>
@@ -20,24 +20,14 @@ public:
     explicit HeightDeltaTool(QWidget* p = NULL);
     ~HeightDeltaTool();
 
-    void SetDefaultDir(const QString& path);
-    void SetOutputTemplate(const QString& prefix, const QString& suffix);
-
 private slots:
-    void OnBrowse();
     void OnRun();
-    void OnValueChanged();
+    void OnValueChanged(double v = 0);
 
 private:
     double GetThresholdInMeters(double unitSize);
 
     QScopedPointer<Ui::HeightDeltaTool> ui;
-    QString defaultDir;
-    QString outTemplate;
-    QString inPath;
-    QString outPath;
-    QString outName;
+    QString outputFilePath;
+    ActiveSceneHolder sceneholder;
 };
-
-
-#endif // __HEIGHTMAPPATH_TOOL_H__

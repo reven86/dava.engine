@@ -408,6 +408,11 @@ public:
         return (invoker != nullptr);
     }
 
+    Function& operator*() const
+    {
+        return *this;
+    }
+
     friend bool operator<(const Function& fnL, const Function& fnR)
     {
         return (fnL.invoker < fnR.invoker);

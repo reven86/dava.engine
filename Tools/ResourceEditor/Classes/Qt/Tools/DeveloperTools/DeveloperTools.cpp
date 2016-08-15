@@ -2,27 +2,29 @@
 #include "Main/mainwindow.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Commands2/EntityAddCommand.h"
-#include "Scene3D/Components/SkeletonComponent.h"
-#include "Render/Highlevel/SkinnedMesh.h"
 
-#include "QtTools/SpyWidget/SpySearch/SpySearch.h"
 #include "Qt/ImageSplitterDialog/ImageSplitterDialogNormal.h"
+
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
 
-#include <QInputDialog>
+#include "Render/Highlevel/SkinnedMesh.h"
 
 #include "DAVAEngine.h"
+
+#include <QInputDialog>
+
 using namespace DAVA;
 
-DeveloperTools::DeveloperTools(QObject* parent)
+DeveloperTools::DeveloperTools(QWidget* parent)
     : QObject(parent)
 {
 }
 
 void DeveloperTools::OnDebugFunctionsGridCopy()
 {
-    SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* currentScene = sceneHolder.GetScene();
     float32 z = 0;
     const float32 xshift = 10.0;
     const float32 yshift = 10.0;
@@ -75,7 +77,7 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
 
 void DeveloperTools::OnDebugCreateTestSkinnedObject()
 {
-    SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* currentScene = sceneHolder.GetScene();
     if (!currentScene)
         return;
     ScopedPtr<Entity> entity(new Entity());
@@ -163,14 +165,8 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
 
 void DeveloperTools::OnImageSplitterNormals()
 {
-    ImageSplitterDialogNormal dlg(QtMainWindow::Instance());
+    ImageSplitterDialogNormal dlg(GetParentWidget());
     dlg.exec();
-}
-
-void DeveloperTools::OnSpyWidget()
-{
-    auto spySearch = new SpySearch(this);
-    spySearch->show();
 }
 
 void DeveloperTools::OnReplaceTextureMipmap()
@@ -182,20 +178,27 @@ void DeveloperTools::OnReplaceTextureMipmap()
     << QString(NMaterialTextureName::TEXTURE_NORMAL.c_str());
 
     bool isOk;
-    QString item = QInputDialog::getItem(QtMainWindow::Instance(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);
+    QString item = QInputDialog::getItem(GetParentWidget(), "Replace mipmaps", "Textures:", items, 0, true, &isOk);
     if (isOk)
     {
-        MipMapReplacer::ReplaceMipMaps(QtMainWindow::Instance()->GetCurrentScene(), FastName(item.toStdString().c_str()));
+        MipMapReplacer::ReplaceMipMaps(sceneHolder.GetScene(), FastName(item.toStdString().c_str()));
     }
 }
 
 void DeveloperTools::OnToggleLandscapeInstancing()
 {
-    SceneEditor2* currentScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* currentScene = sceneHolder.GetScene();
 
     for (Landscape* l : currentScene->landscapeSystem->GetLandscapeObjects())
     {
         l->SetUseInstancing(!l->IsUseInstancing());
         Logger::FrameworkDebug("Landscape uses instancing: %s", l->IsUseInstancing() ? "true" : "false");
     }
+}
+
+QWidget* DeveloperTools::GetParentWidget()
+{
+    QWidget* parentWidget = qobject_cast<QWidget*>(parent());
+    DVASSERT(parentWidget);
+    return parentWidget;
 }

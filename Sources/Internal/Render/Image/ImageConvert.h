@@ -307,6 +307,22 @@ struct ConvertABGR4444toRGBA4444
     }
 };
 
+struct ConvertRGBA4444toABGR4444
+{
+    inline void operator()(const uint16* input, uint16* output)
+    {
+        const uint8* in = reinterpret_cast<const uint8*>(input);
+        uint8* out = reinterpret_cast<uint8*>(output);
+
+        //rrrr gggg bbbb aaaa --> aaaa bbbb gggg rrrr
+        uint8 rg = in[0];
+        uint8 ba = in[1];
+
+        out[0] = ((ba & 0x0f) << 4) | ((ba & 0xf0) >> 4); //ab
+        out[1] = ((rg & 0x0f) << 4) | ((rg & 0xf0) >> 4); //gr
+    }
+};
+
 struct ConvertARGB4444toRGBA4444
 {
     inline void operator()(const uint16* input, uint16* output)
@@ -354,6 +370,22 @@ struct ConvertABGR1555toRGBA5551
         uint16 a = (in & 0x0001) << 15;
 
         *output = r | g | b | a;
+    }
+};
+
+struct ConvertRGBA5551toABGR1555
+{
+    inline void operator()(const uint16* input, uint16* output)
+    { //-----based on ConvertABGR1555toRGBA5551
+        //rrrr rggg ggbb bbba --> abbb bbgg gggr rrrr
+        const uint16 in = *input;
+
+        uint16 a = (in >> 15) & 0x01;
+        uint16 b = (in >> 10) & 0x1F;
+        uint16 g = (in >> 5) & 0x1F;
+        uint16 r = (in >> 0) & 0x1F;
+
+        *output = a | (b << 1) | (g << 6) | (r << 11);
     }
 };
 
@@ -537,7 +569,7 @@ struct PackRGBA16161616
 
 struct UnpackRGBA32323232
 {
-    inline void operator()(const RGBA32323232* input, uint32& r, uint32& g, uint32& b, uint32& a)
+    inline void operator()(const RGBA32323232* input, uint64& r, uint64& g, uint64& b, uint64& a)
     {
         r = input->r;
         g = input->g;
@@ -548,12 +580,12 @@ struct UnpackRGBA32323232
 
 struct PackRGBA32323232
 {
-    inline void operator()(uint32& r, uint32& g, uint32& b, uint32& a, RGBA32323232* out)
+    inline void operator()(uint64& r, uint64& g, uint64& b, uint64& a, RGBA32323232* out)
     {
-        out->r = r;
-        out->g = g;
-        out->b = b;
-        out->a = a;
+        out->r = static_cast<uint32>(r);
+        out->g = static_cast<uint32>(g);
+        out->b = static_cast<uint32>(b);
+        out->a = static_cast<uint32>(a);
     }
 };
 
@@ -779,8 +811,8 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat);
 void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage = nullptr);
 void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr);
 
-Image* DownscaleTwiceBillinear(const Image* source);
-void DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
+Image* DownscaleTwiceBillinear(const Image* source, bool isNormalMap = false);
+bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);
 

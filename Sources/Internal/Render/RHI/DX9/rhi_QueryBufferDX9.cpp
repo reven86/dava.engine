@@ -16,38 +16,38 @@ class
 QueryBufferDX9_t
 {
 public:
-    QueryBufferDX9_t();
-    ~QueryBufferDX9_t();
+    QueryBufferDX9_t()
+        : curObjectIndex(DAVA::InvalidIndex)
+        , bufferCompleted(false){};
+    ~QueryBufferDX9_t(){};
 
-    std::vector<IDirect3DQuery9*> query;
+    std::vector<std::pair<IDirect3DQuery9*, uint32>> pendingQueries;
+    std::vector<uint32> results;
+    uint32 curObjectIndex;
+    uint32 bufferCompleted : 1;
 };
 
 typedef ResourcePool<QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false> QueryBufferDX9Pool;
 RHI_IMPL_POOL(QueryBufferDX9_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
+std::vector<IDirect3DQuery9*> QueryDX9Pool;
+
+#define DX9_MAX_PENDING_QUERIES 256
+
 //==============================================================================
-
-QueryBufferDX9_t::QueryBufferDX9_t()
-{
-}
-
-//------------------------------------------------------------------------------
-
-QueryBufferDX9_t::~QueryBufferDX9_t()
-{
-}
 
 static Handle
 dx9_QueryBuffer_Create(uint32 maxObjectCount)
 {
     Handle handle = QueryBufferDX9Pool::Alloc();
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf)
-    {
-        buf->query.resize(maxObjectCount);
-        memset(&(buf->query[0]), 0, sizeof(buf->query[0]) * buf->query.size());
-    }
+    buf->results.resize(maxObjectCount);
+    memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
+    buf->pendingQueries.clear();
+    buf->curObjectIndex = DAVA::InvalidIndex;
+    buf->bufferCompleted = false;
 
     return handle;
 }
@@ -56,20 +56,14 @@ static void
 dx9_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf)
+    if (buf->pendingQueries.size())
     {
-        std::vector<DX9Command> cmd;
+        for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
+            QueryDX9Pool.push_back(buf->pendingQueries[q].first);
 
-        for (std::vector<IDirect3DQuery9 *>::iterator q = buf->query.begin(), q_end = buf->query.end(); q != q_end; ++q)
-        {
-            DX9Command c = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
-
-            cmd.push_back(c);
-        }
-
-        ExecDX9(&cmd[0], static_cast<uint32>(cmd.size()));
-        buf->query.clear();
+        buf->pendingQueries.clear();
     }
 
     QueryBufferDX9Pool::Free(handle);
@@ -79,32 +73,91 @@ static void
 dx9_QueryBuffer_Reset(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf)
+    memset(buf->results.data(), 0, sizeof(uint32) * buf->results.size());
+
+    if (buf->pendingQueries.size())
     {
+        for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
+            QueryDX9Pool.push_back(buf->pendingQueries[q].first);
+
+        buf->pendingQueries.clear();
+    }
+
+    buf->curObjectIndex = DAVA::InvalidIndex;
+    buf->bufferCompleted = false;
+}
+
+static void
+dx9_Check_Query_Results(QueryBufferDX9_t* buf)
+{
+    DX9Command cmd[DX9_MAX_PENDING_QUERIES];
+    DWORD results[DX9_MAX_PENDING_QUERIES] = {};
+    uint32 cmdCount = uint32(buf->pendingQueries.size());
+
+    if (cmdCount)
+    {
+        DVASSERT(cmdCount < DX9_MAX_PENDING_QUERIES);
+
+        for (uint32 q = 0; q < cmdCount; ++q)
+        {
+            cmd[q] = { DX9Command::GET_QUERY_DATA, { uint64_t(buf->pendingQueries[q].first), uint64_t(&results[q]), sizeof(DWORD), 0 } }; // DO NOT flush
+        }
+
+        ExecDX9(cmd, cmdCount, false);
+
+        for (int32 q = cmdCount - 1; q >= 0; --q)
+        {
+            uint32 resultIndex = buf->pendingQueries[q].second;
+            if (cmd[q].retval == S_OK)
+            {
+                if (resultIndex < uint32(buf->results.size()))
+                    buf->results[resultIndex] = results[q];
+
+                QueryDX9Pool.push_back(buf->pendingQueries[q].first);
+
+                buf->pendingQueries[q] = buf->pendingQueries.back();
+                buf->pendingQueries.pop_back();
+            }
+        }
     }
 }
 
 static bool
-dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
+dx9_QueryBuffer_IsReady(Handle handle)
 {
     bool ready = false;
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf->bufferCompleted)
     {
-        IDirect3DQuery9* iq = buf->query[objectIndex];
+        dx9_Check_Query_Results(buf);
+        ready = (buf->pendingQueries.size() == 0);
+    }
 
-        if (iq)
+    return ready;
+}
+
+static bool
+dx9_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
+{
+    bool ready = false;
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
+
+    if (buf->bufferCompleted)
+    {
+        dx9_Check_Query_Results(buf);
+
+        ready = true;
+        for (size_t q = 0; q < buf->pendingQueries.size(); ++q)
         {
-            DWORD val;
-            DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-
-            ExecDX9(&cmd, 1);
-
-            if (SUCCEEDED(cmd.retval))
+            if (buf->pendingQueries[q].second == objectIndex)
             {
-                ready = cmd.retval == S_OK;
+                ready = false;
+                break;
             }
         }
     }
@@ -115,28 +168,17 @@ dx9_QueryBuffer_IsReady(Handle handle, uint32 objectIndex)
 static int
 dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
-    int value = 0;
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf && objectIndex < buf->query.size())
+    dx9_Check_Query_Results(buf);
+
+    if (objectIndex < uint32(buf->results.size()))
     {
-        IDirect3DQuery9* iq = buf->query[objectIndex];
-
-        if (iq)
-        {
-            DWORD val = 0;
-            DX9Command cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-
-            ExecDX9(&cmd, 1);
-
-            if (cmd.retval == S_OK)
-            {
-                value = val;
-            }
-        }
+        return buf->results[objectIndex];
     }
 
-    return value;
+    return 0;
 }
 
 namespace QueryBufferDX9
@@ -147,49 +189,79 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_QueryBuffer_Reset = &dx9_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete = &dx9_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady = &dx9_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_ObjectIsReady = &dx9_QueryBuffer_ObjectIsReady;
     dispatch->impl_QueryBuffer_Value = &dx9_QueryBuffer_Value;
 }
 
-void BeginQuery(Handle handle, uint32 objectIndex)
+void SetQueryIndex(Handle handle, uint32 objectIndex)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf->curObjectIndex != objectIndex)
     {
-        IDirect3DQuery9* iq = buf->query[objectIndex];
-
-        if (!iq)
+        if (buf->curObjectIndex != DAVA::InvalidIndex)
         {
-            HRESULT hr = _D3D9_Device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &iq);
+            buf->pendingQueries.back().first->Issue(D3DISSUE_END);
+            buf->curObjectIndex = DAVA::InvalidIndex;
+        }
 
-            if (SUCCEEDED(hr))
+        if (objectIndex != DAVA::InvalidIndex)
+        {
+            IDirect3DQuery9* iq = nullptr;
+            if (QueryDX9Pool.size())
             {
-                buf->query[objectIndex] = iq;
+                iq = QueryDX9Pool.back();
+                QueryDX9Pool.pop_back();
             }
             else
             {
-                iq = nullptr;
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &iq);
             }
-        }
 
-        if (iq)
-        {
-            iq->Issue(D3DISSUE_BEGIN);
+            if (iq)
+            {
+                iq->Issue(D3DISSUE_BEGIN);
+                buf->pendingQueries.push_back(std::make_pair(iq, objectIndex));
+
+                buf->curObjectIndex = objectIndex;
+            }
         }
     }
 }
 
-void EndQuery(Handle handle, uint32 objectIndex)
+void QueryComplete(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
 
-    if (buf && objectIndex < buf->query.size())
+    if (buf->curObjectIndex != DAVA::InvalidIndex)
     {
-        IDirect3DQuery9* iq = buf->query[objectIndex];
-
-        DVASSERT(iq);
-        iq->Issue(D3DISSUE_END);
+        buf->pendingQueries.back().first->Issue(D3DISSUE_END);
+        buf->curObjectIndex = DAVA::InvalidIndex;
     }
+
+    buf->bufferCompleted = true;
+}
+
+bool QueryIsCompleted(Handle handle)
+{
+    QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
+    DVASSERT(buf);
+
+    return buf->bufferCompleted;
+}
+
+void ReleaseQueryPool()
+{
+    std::vector<DX9Command> cmd;
+    for (IDirect3DQuery9* iq : QueryDX9Pool)
+    {
+        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
+    }
+    ExecDX9(cmd.data(), uint32(cmd.size()), false);
+
+    QueryDX9Pool.clear();
 }
 }
 

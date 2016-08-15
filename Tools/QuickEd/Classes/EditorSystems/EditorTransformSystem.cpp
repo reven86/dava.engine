@@ -87,6 +87,13 @@ EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
 {
     systemsManager->ActiveAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
     systemsManager->SelectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
+}
+
+EditorTransformSystem::~EditorTransformSystem()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)

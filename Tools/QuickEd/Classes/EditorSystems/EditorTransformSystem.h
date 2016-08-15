@@ -20,6 +20,7 @@ class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
+    ~EditorTransformSystem() override;
 
 private:
     enum eDirections
@@ -104,8 +105,6 @@ public:
                   MEMBER(angleSegment, "Control Transformations/Rotate section angle", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(shiftInverted, "Control Transformations/Invert shift button", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
-
-    REGISTER_PREFERENCES(EditorTransformSystem)
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

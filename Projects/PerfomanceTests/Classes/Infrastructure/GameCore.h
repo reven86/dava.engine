@@ -37,6 +37,8 @@ public:
     void BeginFrame() override;
     void EndFrame() override;
 
+    void Quit();
+
 private:
     void InitScreenController();
     void RegisterTests();
@@ -48,7 +50,7 @@ private:
     Vector<BaseTest*> testChain;
     std::unique_ptr<TestFlowController> testFlowController;
 
-    TeamcityTestsOutput teamCityOutput;
+    TeamcityPerformanceTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;
 };
 

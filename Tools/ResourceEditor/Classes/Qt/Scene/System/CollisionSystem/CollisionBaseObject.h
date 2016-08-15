@@ -36,7 +36,7 @@ public:
     virtual ~CollisionBaseObject() = default;
 
     virtual ClassifyPlaneResult ClassifyToPlane(const DAVA::Plane& plane) = 0;
-    virtual ClassifyPlanesResult ClassifyToPlanes(DAVA::Plane* plane, size_t numPlanes) = 0;
+    virtual ClassifyPlanesResult ClassifyToPlanes(const DAVA::Vector<DAVA::Plane>& planes) = 0;
 
     CollisionBaseObject::ClassifyPlaneResult ClassifyBoundingBoxToPlane(const DAVA::AABBox3& bbox, const DAVA::Plane& plane) const;
     DAVA::Plane TransformPlaneToLocalSpace(const DAVA::Plane& plane) const;

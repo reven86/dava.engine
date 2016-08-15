@@ -419,6 +419,13 @@ static int stb_text_locate_coord(STB_TEXTEDIT_STRING *str, float x, float y)
       k = i;
       prev_x = r.x0;
       for (i=0; i < r.num_chars; ++i) {
+#if defined(STB_DAVA_TEXTEDIT_LAYOUTCHAR)
+         float x0,x1;
+         STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, k, i, &x0, &x1);
+         if (x >= x0 && x <= x1) {
+            return k+i;
+         }
+#else
          float w = STB_TEXTEDIT_GETWIDTH(str, k, i);
          if (x < prev_x+w) {
             if (x < prev_x+w/2)
@@ -427,6 +434,7 @@ static int stb_text_locate_coord(STB_TEXTEDIT_STRING *str, float x, float y)
                return k+i+1;
          }
          prev_x += w;
+#endif
       }
       // shouldn't happen, but if it does, fall through to end-of-line case
    }
@@ -480,6 +488,7 @@ static void stb_textedit_find_charpos(StbFindState *find, STB_TEXTEDIT_STRING *s
 {
    StbTexteditRow r;
    int prev_start = 0;
+   int prev_first = 0;
    int z = STB_TEXTEDIT_STRINGLEN(str);
    int i=0, first;
 
@@ -494,17 +503,22 @@ static void stb_textedit_find_charpos(StbFindState *find, STB_TEXTEDIT_STRING *s
          find->height = r.ymax - r.ymin;
          find->x = r.x1;
       } else {
-         find->y = 0;
-         find->x = 0;
-         find->height = 1;
-         while (i < z) {
-            STB_TEXTEDIT_LAYOUTROW(&r, str, i);
-            prev_start = i;
-            i += r.num_chars;
+         if (z == 0) {
+             STB_TEXTEDIT_LAYOUTROW(&r, str, 0);
+         } else {
+             while (i < z) {
+                STB_TEXTEDIT_LAYOUTROW(&r, str, i);
+                prev_first = prev_start;
+                prev_start = i;
+                i += r.num_chars;
+             }
          }
-         find->first_char = i;
-         find->length = 0;
-         find->prev_first = prev_start;
+         find->y = r.ymin;
+         find->x = r.x1;
+         find->height = r.ymax - r.ymin;
+         find->first_char = prev_start;
+         find->length = r.num_chars;
+         find->prev_first = prev_first;
       }
       return;
    }
@@ -527,10 +541,14 @@ static void stb_textedit_find_charpos(StbFindState *find, STB_TEXTEDIT_STRING *s
    find->prev_first = prev_start;
 
    // now scan to find xpos
+#if defined(STB_DAVA_TEXTEDIT_LAYOUTCHAR)
+   STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, first, n - first, &find->x, 0);
+#else
    find->x = r.x0;
    i = 0;
    for (i=0; first+i < n; ++i)
       find->x += STB_TEXTEDIT_GETWIDTH(str, first, i);
+#endif
 }
 
 #define STB_TEXT_HAS_SELECTION(s)   ((s)->select_start != (s)->select_end)
@@ -666,18 +684,28 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
    stb_textedit_clamp(str, state);
    stb_textedit_delete_selection(str,state);
    // try to insert the characters
-   if (STB_TEXTEDIT_INSERTCHARS(str, state->cursor, text, len)) {
+   len = STB_TEXTEDIT_INSERTCHARS(str, state->cursor, text, len);
+   if (len > 0) {
       stb_text_makeundo_insert(state, state->cursor, len);
       state->cursor += len;
       state->has_preferred_x = 0;
       return 1;
    }
+#if 0 // DAVA: Wrong logic. Not need remove undo state because we didn't add it. Delete state we should store!
+   // remove the undo since we didn't actually insert the characters
+   if (state->undostate.undo_point)
+      --state->undostate.undo_point;
    return 0;
+#else // DAVA: Always return 1 because we can delete selected text and text will be changed
+   return 1; 
+#endif
+   
 }
 
 // API key: process a keyboard input
-static void stb_textedit_key(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int key)
+static int stb_textedit_key(STB_TEXTEDIT_STRING *str, STB_TexteditState *state, int key)
 {
+    int ret = 0;
 retry:
    switch (key) {
       default: {
@@ -695,6 +723,7 @@ retry:
                if (STB_TEXTEDIT_INSERTCHARS(str, state->cursor, &ch, 1)) {
                   ++state->cursor;
                   state->has_preferred_x = 0;
+                  ret = 1; // Content was changed
                }
             } else {
                stb_textedit_delete_selection(str,state); // implicity clamps
@@ -702,6 +731,7 @@ retry:
                   stb_text_makeundo_insert(state, state->cursor, 1);
                   ++state->cursor;
                   state->has_preferred_x = 0;
+                  ret = 1; // Content was changed
                }
             }
          }
@@ -716,12 +746,16 @@ retry:
          
       case STB_TEXTEDIT_K_UNDO:
          stb_text_undo(str, state);
+         stb_textedit_clamp(str, state);
          state->has_preferred_x = 0;
+         ret = 1; // Content was changed
          break;
 
       case STB_TEXTEDIT_K_REDO:
          stb_text_redo(str, state);
+         stb_textedit_clamp(str, state);
          state->has_preferred_x = 0;
+         ret = 1; // Content was changed
          break;
 
       case STB_TEXTEDIT_K_LEFT:
@@ -824,6 +858,12 @@ retry:
          stb_textedit_clamp(str, state);
          stb_textedit_find_charpos(&find, str, state->cursor, state->single_line);
 
+         // if last line don't move
+         if (find.first_char + find.length >= STB_TEXTEDIT_STRINGLEN(str))
+         {
+             break;
+         }
+
          // now find character position down a row
          if (find.length) {
             float goal_x = state->has_preferred_x ? state->preferred_x : find.x;
@@ -833,6 +873,14 @@ retry:
             STB_TEXTEDIT_LAYOUTROW(&row, str, state->cursor);
             x = row.x0;
             for (i=0; i < row.num_chars; ++i) {
+#ifdef STB_DAVA_TEXTEDIT_LAYOUTCHAR
+               float x0,x1;
+               STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, start, i, &x0, &x1);
+               state->cursor = start + i;
+               if (x0 <= goal_x && goal_x < x1) {
+                   break;
+               }
+#else
                float dx = STB_TEXTEDIT_GETWIDTH(str, start, i);
                #ifdef STB_TEXTEDIT_GETWIDTH_NEWLINE
                if (dx == STB_TEXTEDIT_GETWIDTH_NEWLINE)
@@ -842,6 +890,7 @@ retry:
                if (x > goal_x)
                   break;
                ++state->cursor;
+#endif
             }
             stb_textedit_clamp(str, state);
 
@@ -884,6 +933,14 @@ retry:
             STB_TEXTEDIT_LAYOUTROW(&row, str, state->cursor);
             x = row.x0;
             for (i=0; i < row.num_chars; ++i) {
+#ifdef STB_DAVA_TEXTEDIT_LAYOUTCHAR
+               float x0,x1;
+               STB_DAVA_TEXTEDIT_LAYOUTCHAR(str, find.prev_first, i, &x0, &x1);
+               state->cursor = find.prev_first + i;
+               if (x0 <= goal_x && goal_x < x1) {
+                   break;
+               }
+#else
                float dx = STB_TEXTEDIT_GETWIDTH(str, find.prev_first, i);
                #ifdef STB_TEXTEDIT_GETWIDTH_NEWLINE
                if (dx == STB_TEXTEDIT_GETWIDTH_NEWLINE)
@@ -893,6 +950,7 @@ retry:
                if (x > goal_x)
                   break;
                ++state->cursor;
+#endif
             }
             stb_textedit_clamp(str, state);
 
@@ -915,8 +973,9 @@ retry:
                stb_textedit_delete(str, state, state->cursor, 1);
          }
          state->has_preferred_x = 0;
+         ret = 1; // Content was changed
          break;
-
+         
       case STB_TEXTEDIT_K_BACKSPACE:
       case STB_TEXTEDIT_K_BACKSPACE | STB_TEXTEDIT_K_SHIFT:
          if (STB_TEXT_HAS_SELECTION(state))
@@ -929,6 +988,7 @@ retry:
             }
          }
          state->has_preferred_x = 0;
+         ret =  1; // Content was changed
          break;
          
 #ifdef STB_TEXTEDIT_K_TEXTSTART2
@@ -965,7 +1025,6 @@ retry:
          state->cursor = state->select_end = STB_TEXTEDIT_STRINGLEN(str);
          state->has_preferred_x = 0;
          break;
-
 
 #ifdef STB_TEXTEDIT_K_LINESTART2
       case STB_TEXTEDIT_K_LINESTART2:
@@ -1024,11 +1083,12 @@ retry:
          state->select_end = state->cursor;
          break;
       }
-
 // @TODO:
 //    STB_TEXTEDIT_K_PGUP      - move cursor up a page
 //    STB_TEXTEDIT_K_PGDOWN    - move cursor down a page
    }
+
+   return ret;
 }
 
 /////////////////////////////////////////////////////////////////////////////

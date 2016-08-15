@@ -2,6 +2,7 @@
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/Steam.h"
 
 #import <AppKit/NSApplication.h>
 #import "Platform/TemplateMacOS/HelperAppDelegate.h"
@@ -287,6 +288,9 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)createWindows
 {
     FrameworkDidLaunched();
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::Init();
+#endif
 
     core = Core::GetApplicationCore();
 
@@ -399,7 +403,6 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 - (void)windowDidResignKey:(NSNotification*)notification
 {
     Core::Instance()->FocusLost();
-    InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification

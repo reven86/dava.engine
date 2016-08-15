@@ -21,7 +21,7 @@ class UIScreen;
 class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIFocusSystem;
-class UIKeyInputSystem;
+class UIInputSystem;
 class UIScreenshoter;
 
 class ScreenSwitchListener
@@ -44,8 +44,6 @@ public:
 		ControlSystem works with th UIScreenManager to process screen setting and switching.
 		Also ControlSystem processed all user input events to the controls.
 	 */
-
-extern const FastName FRAME_QUERY_UI_DRAW;
 
 class UIControlSystem : public Singleton<UIControlSystem>
 {
@@ -175,7 +173,7 @@ public:
 	 \brief Returns all currently active inputs.
 	 \returns all inputs active in the system
 	 */
-    const Vector<UIEvent>& GetAllInputs();
+    const Vector<UIEvent>& GetAllInputs() const;
 
     /**
 	 \brief Sets requested control as a exclusive input locker.
@@ -189,7 +187,7 @@ public:
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
 	 \returns exclusive input locker
 	 */
-    UIControl* GetExclusiveInputLocker();
+    UIControl* GetExclusiveInputLocker() const;
 
     /**
 	 \brief Returns base geometric data seted in the system.
@@ -233,19 +231,20 @@ public:
     /**
 	 \brief Returns control hovered by the mnouse for now
 	 */
-    UIControl* GetHoveredControl(UIControl* newHovered);
+    UIControl* GetHoveredControl() const;
 
     /**
 	 \brief Called by the control to set himself as the focused control
 	 */
     void SetFocusedControl(UIControl* newFocused);
 
-    void ControlBecomeInvisible(UIControl* control);
+    void OnControlVisible(UIControl* control);
+    void OnControlInvisible(UIControl* control);
 
     /**
 	 \brief Returns currently focused control
 	 */
-    UIControl* GetFocusedControl();
+    UIControl* GetFocusedControl() const;
 
     void AddScreenSwitchListener(ScreenSwitchListener* listener);
     void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
@@ -273,7 +272,9 @@ public:
     bool IsHostControl(const UIControl* control) const;
 
     UILayoutSystem* GetLayoutSystem() const;
+    UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
+
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
@@ -281,7 +282,10 @@ public:
     void SetUseClearPass(bool useClearPass);
 
     void SetDefaultTapCountSettings();
-    void SetTapCountSettings(float32 time, int32 radius);
+    void SetTapCountSettings(float32 time, float32 inch);
+
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
 
 private:
     void ProcessScreenLogic();
@@ -295,12 +299,10 @@ private:
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
-    UIFocusSystem* focusSystem = nullptr;
-    UIKeyInputSystem* keyInputSystem = nullptr;
+    UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
-    Vector<UIEvent> touchEvents;
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIScreen> nextScreen;
@@ -313,21 +315,16 @@ private:
     int32 screenLockCount = 0;
     int32 frameSkip = 0;
 
-    UIControl* exclusiveInputLocker = nullptr;
-    UIControl* hovered = nullptr;
-    UIControl* focusedControlWhenTouchBegan = nullptr;
-    Vector2 positionOfTouchWhenTouchBegan;
-
     UIGeometricData baseGeometricData;
     Rect fullscreenRect;
 
     bool removeCurrentScreen = false;
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
-    int32 doubleClickRadiusSquared = 0;
+    float32 doubleClickRadiusSquared = 0.f;
     float32 doubleClickTime = 0.f;
     const float32 defaultDoubleClickTime = 0.5f; // seconds
-    int32 defaultDoubleClickRadiusSquared = 0; // calculate in constructor
+    float32 defaultDoubleClickRadiusSquared = 0.f; // calculate in constructor
     struct LastClickData
     {
         uint32 touchId = 0;
@@ -337,6 +334,9 @@ private:
         bool lastClickEnded = false;
     };
     LastClickData lastClickData;
+
+    int32 ui3DViewCount = 0;
+    bool needClearMainPass = true;
 };
 };
 

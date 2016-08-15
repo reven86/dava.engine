@@ -26,10 +26,10 @@ public:
 
     String GetCountryCode() const;
 
-    WideString GetLocalizedString(const WideString& key) const;
-    WideString GetLocalizedString(const WideString& key, const String& langId) const;
-    void SetLocalizedString(const WideString& key, const WideString& value);
-    void RemoveLocalizedString(const WideString& key);
+    String GetLocalizedString(const String& utf8Key) const;
+    String GetLocalizedString(const String& utf8Key, const String& langId) const;
+    void SetLocalizedString(const String& utf8Key, const String& utf8Value);
+    void RemoveLocalizedString(const String& utf8Key);
 
     void SetDirectory(const FilePath& dirPath);
     const FilePath& GetDirectoryPath() const;
@@ -38,7 +38,7 @@ public:
 
     // Access to the whole strings list for the current locale.
     // Returns FALSE if no strings found.
-    bool GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const;
+    bool GetStringsForCurrentLocale(Map<String, String>& utf8Strings) const;
 
     // Save the current localization data to the files they were loaded from.
     bool SaveLocalizedStrings();
@@ -61,7 +61,7 @@ private:
     {
         FilePath pathName;
         String langId;
-        Map<WideString, WideString> strings;
+        Map<String, String> strings;
     };
     List<StringFile*> stringsList;
 
@@ -72,14 +72,12 @@ private:
     YamlParser::YamlDataHolder* dataHolder;
 };
 
-inline WideString LocalizedString(const WideString& key)
+inline String LocalizedUtf8String(const String& utf8Key)
 {
-    return LocalizationSystem::Instance()->GetLocalizedString(key);
+    return LocalizationSystem::Instance()->GetLocalizedString(utf8Key);
 }
-inline WideString LocalizedString(const String& key)
-{
-    return LocalizationSystem::Instance()->GetLocalizedString(WideString(key.begin(), key.end()));
-}
+DAVA_DEPRECATED(WideString LocalizedString(const WideString& key));
+DAVA_DEPRECATED(WideString LocalizedString(const String& utf8Key));
 };
 
 #endif // __DAVAENGINE_LOCALIZATION_SYSTEM_H__

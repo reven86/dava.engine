@@ -18,6 +18,7 @@
 #include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Qt/GlobalOperations.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -141,6 +142,51 @@ protected:
         return treeWidget->filteringProxyModel;
     }
 
+    struct RemoveInfo
+    {
+        RemoveInfo(Command2::Pointer&& command_, Selectable::Object* selectedObject_)
+            : command(std::move(command_))
+            , selectedObject(selectedObject_)
+        {
+        }
+
+        RemoveInfo(RemoveInfo&& info)
+            : command(std::move(info.command))
+            , selectedObject(info.selectedObject)
+        {
+        }
+
+        Command2::Pointer command;
+        Selectable::Object* selectedObject;
+    };
+
+    void RemoveCommandsHelper(const DAVA::String& text, SceneTreeItem::eItemType type, const DAVA::Function<RemoveInfo(SceneTreeItem*)>& callback)
+    {
+        SceneEditor2* sceneEditor = GetScene();
+        SelectableGroup currentGroup = sceneEditor->selectionSystem->GetSelection();
+        DAVA::Vector<Command2::Pointer> commands;
+        commands.reserve(GetSelectedItemsCount());
+        ForEachSelectedByType(type, [&commands, &currentGroup, callback](SceneTreeItem* item)
+                              {
+                                  RemoveInfo info = callback(item);
+                                  currentGroup.Remove(info.selectedObject);
+                                  commands.push_back(std::move(info.command));
+                              });
+
+        if (!commands.empty())
+        {
+            sceneEditor->BeginBatch(text, static_cast<DAVA::uint32>(commands.size()));
+            sceneEditor->selectionSystem->SetSelection(currentGroup);
+            static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
+            for (Command2::Pointer& command : commands)
+            {
+                sceneEditor->Exec(std::move(command));
+            }
+            MarkStructureChanged();
+            sceneEditor->EndBatch();
+        }
+    }
+
     void ForEachSelectedByType(SceneTreeItem::eItemType type, const DAVA::Function<void(SceneTreeItem*)>& callback)
     {
         foreach (QModelIndex index, treeWidget->selectionModel()->selectedRows())
@@ -156,12 +202,12 @@ protected:
         }
     }
 
-    bool IsMultiselect() const
+    DAVA::uint32 GetSelectedItemsCount() const
     {
-        return treeWidget->selectionModel()->selectedRows().size() > 1;
+        return treeWidget->selectionModel()->selectedRows().size();
     }
 
-    QWidget* GetParentWidget()
+    SceneTree* GetParentWidget()
     {
         return treeWidget;
     }
@@ -206,7 +252,7 @@ protected:
 
             if ((camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
         }
         else
@@ -220,7 +266,7 @@ protected:
             menu.addSeparator();
             if (entity->GetLocked() == false && (camera != scene->GetCurrentCamera()) && (entity->GetNotRemovable() == false))
             {
-                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { RemoveSelection(scene); });
+                Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), QStringLiteral("Remove entity")), [scene] { ::RemoveSelection(scene); });
             }
 
             menu.addSeparator();
@@ -320,11 +366,13 @@ private:
                 DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
                 if (DAVA::FileSystem::Instance()->Exists(entityRefPath))
                 {
-                    QtMainWindow::Instance()->OpenScene(entityRefPath.GetAbsolutePathname().c_str());
+                    std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+                    DVASSERT(globalOperations != nullptr);
+                    globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(DAVA::String(entityRefPath.GetAbsolutePathname().c_str())));
                 }
                 else
                 {
-                    ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname());
+                    DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + entityRefPath.GetAbsolutePathname()).c_str());
                 }
             }
         }
@@ -370,7 +418,7 @@ private:
             }
             if (!wrongPathes.empty())
             {
-                ShowErrorDialog(ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes);
+                DAVA::Logger::Error((ResourceEditor::SCENE_TREE_WRONG_REF_TO_OWNER + wrongPathes).c_str());
             }
             SelectableGroup newSelection = sceneEditor->structureSystem->ReloadEntities(selection, lightmapsChBox->isChecked());
             sceneEditor->selectionSystem->SetSelection(newSelection);
@@ -478,7 +526,10 @@ private:
         const SelectableGroup& selection = GetScene()->selectionSystem->GetSelection();
         DVASSERT(selection.GetSize() == 1);
         DVASSERT(selection.GetFirst().CanBeCastedTo<DAVA::Entity>());
-        QtMainWindow::Instance()->GetUI()->sceneTreeFilterEdit->setText(selection.GetFirst().AsEntity()->GetName().c_str());
+
+        std::shared_ptr<GlobalOperations>& globalOperations = GetParentWidget()->globalOperations;
+        DVASSERT(globalOperations != nullptr);
+        globalOperations->CallAction(GlobalOperations::SetNameAsFilter, DAVA::Any(DAVA::String(selection.GetFirst().AsEntity()->GetName().c_str())));
     }
 
     void SetCurrentCamera()
@@ -519,7 +570,7 @@ protected:
     void FillActions(QMenu& menu) override
     {
         Connect(menu.addAction(SharedIcon(":/QtIcons/clone.png"), QStringLiteral("Clone Layer")), this, &ParticleLayerContextMenu::CloneLayer);
-        QString removeLayerText = IsMultiselect() == false ? QStringLiteral("Remove Layer") : QStringLiteral("Remove Layers");
+        QString removeLayerText = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove Layer") : QStringLiteral("Remove Layers");
         Connect(menu.addAction(SharedIcon(":/QtIcons/remove_layer.png"), removeLayerText), this, &ParticleLayerContextMenu::RemoveLayer);
         menu.addSeparator();
         Connect(menu.addAction(SharedIcon(":/QtIcons/force.png"), QStringLiteral("Add Force")), this, &ParticleLayerContextMenu::AddForce);
@@ -534,17 +585,12 @@ private:
 
     void RemoveLayer()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedLayers = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Layer, [&sceneEditor, &hasSelectedLayers](SceneTreeItem* item)
-                              {
-                                  hasSelectedLayers = true;
-                                  SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
-                                  sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layerItem->GetLayer()));
-                              });
-
-        DVASSERT(hasSelectedLayers == true);
-        MarkStructureChanged();
+        RemoveCommandsHelper("Remove layers", SceneTreeItem::EIT_Layer, [](SceneTreeItem* item) -> RemoveInfo
+                             {
+                                 SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
+                                 DAVA::ParticleLayer* layer = layerItem->GetLayer();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
+                             });
     }
 
     void AddForce()
@@ -570,23 +616,19 @@ public:
 protected:
     void FillActions(QMenu& menu) override
     {
-        QString removeForce = IsMultiselect() == false ? QStringLiteral("Remove Forces") : QStringLiteral("Remove Force");
+        QString removeForce = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove Forces") : QStringLiteral("Remove Force");
         Connect(menu.addAction(SharedIcon(":/QtIcons/remove_force.png"), removeForce), this, &ParticleForceContextMenu::RemoveForce);
     }
 
 private:
     void RemoveForce()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedForces = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Force, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item)
-                              {
-                                  hasSelectedForces = true;
-                                  SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
-                                  sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, forceItem->GetForce()));
-                              });
-
-        MarkStructureChanged();
+        RemoveCommandsHelper("Remove forces", SceneTreeItem::EIT_Force, [](SceneTreeItem* item)
+                             {
+                                 SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
+                                 DAVA::ParticleForce* force = forceItem->GetForce();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
+                             });
     }
 };
 
@@ -616,7 +658,7 @@ protected:
     {
         if (IsRemovable())
         {
-            QString removeEmitterText = IsMultiselect() == false ? QStringLiteral("Remove emitter") : QStringLiteral("Remove emitters");
+            QString removeEmitterText = GetSelectedItemsCount() < 2 ? QStringLiteral("Remove emitter") : QStringLiteral("Remove emitters");
             Connect(menu.addAction(SharedIcon(":/QtIcons/remove.png"), removeEmitterText), this, &ParticleEmitterContextMenu::RemoveEmitter);
             menu.addSeparator();
         }
@@ -629,13 +671,12 @@ protected:
 
     void RemoveEmitter()
     {
-        SceneEditor2* sceneEditor = GetScene();
-        bool hasSelectedForces = false;
-        ForEachSelectedByType(SceneTreeItem::EIT_Emitter, [&sceneEditor, &hasSelectedForces](SceneTreeItem* item) {
-            hasSelectedForces = true;
-            SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
-            sceneEditor->Exec(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterItem->GetEmitterInstance()));
-        });
+        RemoveCommandsHelper("Remove Emitters", SceneTreeItem::EIT_Emitter, [](SceneTreeItem* item)
+                             {
+                                 SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
+                                 DAVA::ParticleEmitterInstance* emitterInstance = emitterItem->GetEmitterInstance();
+                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterInstance), emitterInstance);
+                             });
     }
 
     void AddLayer()
@@ -763,6 +804,23 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
     QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
+
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &SceneTree::RemoveSelection);
+    addAction(deleteSelection);
+}
+
+SceneTree::~SceneTree()
+{
+    delete filteringProxyModel;
+    delete treeModel;
+}
+
+void SceneTree::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
 }
 
 void SceneTree::SetFilter(const QString& filter)
@@ -777,11 +835,21 @@ void SceneTree::SetFilter(const QString& filter)
     }
 }
 
+void SceneTree::RemoveSelection()
+{
+    ::RemoveSelection(treeModel->GetScene());
+}
+
 void SceneTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row, int& col)
 {
     row = -1;
     col = -1;
     index = indexAt(pos);
+    if (!visualRect(index).contains(pos))
+    {
+        index = QModelIndex();
+        return;
+    }
 
     switch (dropIndicatorPosition())
     {
@@ -944,7 +1012,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
 
     if (command->MatchCommandIDs(idsForUpdate))
     {
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        UpdateModel();
         treeUpdater->Update();
     }
 }
@@ -1003,7 +1071,7 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
     if (itemLayer->hasInnerEmmiter != needEmmiter)
     {
         itemLayer->hasInnerEmmiter = needEmmiter;
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+        UpdateModel();
     }
 }
 
@@ -1014,6 +1082,12 @@ void SceneTree::TreeItemDoubleClicked(const QModelIndex& index)
 
 void SceneTree::ShowContextMenu(const QPoint& pos)
 {
+    SceneEditor2* curScene = treeModel->GetScene();
+    if (curScene == nullptr || curScene->selectionSystem->GetSelection().IsEmpty())
+    {
+        return;
+    }
+
     QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
     if (!index.isValid())
     {
@@ -1030,7 +1104,7 @@ void SceneTree::ShowContextMenu(const QPoint& pos)
         menu.Show(globalPos);
         if (menu.IsStructureChanged())
         {
-            treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+            UpdateModel();
         }
     };
 
@@ -1174,6 +1248,9 @@ void SceneTree::SyncSelectionToTree()
     if (toSelect.empty())
         return;
 
+    QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::Current | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+    QItemSelection itemSelection;
+
     for (TSelectionMap::value_type& selectionNode : toSelect)
     {
         DAVA::Vector<QModelIndex>& indexes = selectionNode.second;
@@ -1192,22 +1269,27 @@ void SceneTree::SyncSelectionToTree()
             {
                 DVASSERT(currentRow - lastRow > 0);
                 lastRow = currentRow;
-                lastIndex = i;
+                lastIndex = static_cast<DAVA::int32>(i);
             }
             else
             {
-                QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-                selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-                startIndex = i;
+                QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+                itemSelection.merge(subRange, selectionMode);
+                startIndex = static_cast<DAVA::int32>(i);
                 lastIndex = startIndex;
                 lastRow = indexes[lastIndex].row();
             }
         }
-        QItemSelection selection(indexes[startIndex], indexes[lastIndex]);
-        selectModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        QItemSelection subRange(indexes[startIndex], indexes[lastIndex]);
+        itemSelection.merge(subRange, selectionMode);
     }
 
-    scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    selectModel->select(itemSelection, selectionMode);
+    if (lastValidIndex.isValid())
+    {
+        selectModel->setCurrentIndex(lastValidIndex, QItemSelectionModel::Current);
+        scrollTo(lastValidIndex, QAbstractItemView::EnsureVisible);
+    }
 }
 
 void SceneTree::SyncSelectionFromTree()
@@ -1235,7 +1317,6 @@ void SceneTree::SyncSelectionFromTree()
         curScene->selectionSystem->ForceEmitSignals();
     }
 }
-
 void SceneTree::EmitParticleSignals()
 {
     QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -1297,6 +1378,11 @@ void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelInd
 void SceneTree::UpdateTree()
 {
     dataChanged(QModelIndex(), QModelIndex());
+}
+
+void SceneTree::UpdateModel()
+{
+    treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
 }
 
 void SceneTree::PropagateSolidFlag()

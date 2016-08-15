@@ -199,6 +199,7 @@ private:
     Rect rectInWindowSpace;
 
     WideString curText;
+    WideString lastProgrammaticText;
     TextFieldProperties properties;
     bool programmaticTextChange = false;
 };

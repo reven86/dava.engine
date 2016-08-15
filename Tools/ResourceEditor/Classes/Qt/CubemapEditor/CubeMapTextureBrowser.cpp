@@ -309,17 +309,17 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
         if (failedToRemove.size() > 0)
         {
             DAVA::String fileList;
-            int count = failedToRemove.size();
-            for (int i = 0; i < count; ++i)
+
+            for (const DAVA::String& pathstr : failedToRemove)
             {
-                fileList += failedToRemove[i];
+                fileList += pathstr;
                 fileList += "\n";
             }
 
             DAVA::String message = "Failed to remove the following files. Please delete them manually.\n";
             message += fileList;
 
-            ShowErrorDialog(message);
+            DAVA::Logger::Error(message.c_str());
         }
 
         QString path = ui->textRootPath->text();

@@ -1,6 +1,5 @@
 #include "Tests/NotificationTest.h"
 #include "Base/Message.h"
-#include "UI/UISlider.h"
 
 using namespace DAVA;
 
@@ -24,10 +23,6 @@ void NotificationScreen::LoadResources()
     DVASSERT(font);
 
     font->SetSize(30);
-
-    UISlider* slide = new UISlider(Rect(50, 400, 300, 50));
-    slide->SetDebugDraw(true);
-    AddControl(slide);
 
     showNotificationText = new UIButton(Rect(10, 10, 450, 60));
     showNotificationText->SetStateFont(0xFF, font);

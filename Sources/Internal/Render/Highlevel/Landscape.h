@@ -38,6 +38,7 @@ public:
     static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+    static const int32 CUSTOM_COLOR_TEXTURE_SIZE = 2048;
 
     const static FastName PARAM_TEXTURE_TILING;
     const static FastName PARAM_TILE_COLOR0;
@@ -156,15 +157,18 @@ protected:
         enum eBufferType
         {
             RESTORE_BUFFER_VERTEX,
-            RESTORE_BUFFER_INDEX
+            RESTORE_BUFFER_INDEX,
+            RESTORE_TEXTURE
         };
 
         rhi::Handle buffer;
         uint8* data;
         uint32 dataSize;
+        uint32 level;
         eBufferType bufferType;
     };
 
+    Mutex restoreDataMutex;
     Vector<RestoreBufferData> bufferRestoreData;
 
     FilePath heightmapPath;
@@ -261,8 +265,8 @@ protected:
 
     void AllocateGeometryDataInstancing();
 
-    static Texture* CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode);
-    static Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode);
+    Texture* CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode);
+    Vector<Image*> CreateHeightTextureData(Heightmap* heightmap, RenderMode renderMode);
 
     Texture* CreateTangentTexture();
     Vector<Image*> CreateTangentBasisTextureData();

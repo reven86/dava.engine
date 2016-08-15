@@ -19,19 +19,9 @@ class SceneInfo : public QtPropertyEditor
 protected:
     struct SpeedTreeInfo
     {
-        SpeedTreeInfo()
-            :
-            leafsSquare(0.f)
-            ,
-            leafsSquareDivX(0.f)
-            ,
-            leafsSquareDivY(0.f)
-        {
-        }
-
-        DAVA::float32 leafsSquare;
-        DAVA::float32 leafsSquareDivX;
-        DAVA::float32 leafsSquareDivY;
+        DAVA::float32 leafsSquare = 0.0f;
+        DAVA::float32 leafsSquareDivX = 0.0f;
+        DAVA::float32 leafsSquareDivY = 0.0f;
     };
 
 public:
@@ -50,6 +40,7 @@ protected slots:
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool isRedo);
+    void OnThemeChanged();
 
 private:
     void showEvent(QShowEvent* event) override;

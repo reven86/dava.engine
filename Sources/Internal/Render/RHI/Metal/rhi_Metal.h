@@ -18,12 +18,12 @@ void metal_Initialize(const InitParam& param);
 
 namespace VertexBufferMetal
 {
-id<MTLBuffer> GetBuffer(Handle ib);
+id<MTLBuffer> GetBuffer(Handle ib, unsigned* base);
 }
 
 namespace IndexBufferMetal
 {
-id<MTLBuffer> GetBuffer(Handle ib);
+id<MTLBuffer> GetBuffer(Handle ib, unsigned* base);
 MTLIndexType GetType(Handle ib);
 }
 
@@ -42,7 +42,7 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc);
 
 namespace PipelineStateMetal
 {
-uint32 SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce);
+uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce);
 uint32 VertexStreamCount(Handle ps);
 }
 
@@ -62,6 +62,8 @@ void InitializeRingBuffer(uint32 size);
 void InvalidateAllInstances();
 
 void SetToRHI(Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce);
+unsigned Instance(Handle buf);
+void SetToRHI(Handle buf, unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce);
 }
 
 
@@ -81,10 +83,17 @@ namespace QueryBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch);
 }
+namespace PerfQuerySetMetal
+{
+void SetupDispatch(Dispatch* dispatch);
+}
 namespace TextureMetal
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
+unsigned NeedRestoreCount();
+void MarkAllNeedRestore();
+void ReCreateAll();
 }
 namespace SamplerStateMetal
 {
@@ -102,6 +111,7 @@ namespace ConstBufferMetal
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
+void ResetRingBuffer();
 }
 namespace RenderPassMetal
 {

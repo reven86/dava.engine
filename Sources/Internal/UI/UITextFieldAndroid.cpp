@@ -6,6 +6,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/FocusHelpers.h"
 #include "Utils/UTF8Utils.h"
+#include "Concurrency/LockGuard.h"
 
 using namespace DAVA;
 
@@ -235,6 +236,7 @@ void TextFieldPlatformImpl::SetText(const WideString& string)
 {
     if (text.compare(string) != 0)
     {
+        programmaticTextChange = true;
         text = TruncateText(string, textField->GetMaxLength());
 
         String utfText = UTF8Utils::EncodeToUTF8(text);
@@ -412,10 +414,16 @@ bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLo
 
 void TextFieldPlatformImpl::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
 {
+    UITextFieldDelegate::eReason type = UITextFieldDelegate::eReason::USER;
+    if (programmaticTextChange)
+    {
+        programmaticTextChange = false;
+        type = UITextFieldDelegate::eReason::CODE;
+    }
     UITextFieldDelegate* delegate = textField->GetDelegate();
     if (delegate)
     {
-        delegate->TextFieldOnTextChanged(textField, newText, oldText);
+        delegate->TextFieldOnTextChanged(textField, newText, oldText, type);
     }
 }
 

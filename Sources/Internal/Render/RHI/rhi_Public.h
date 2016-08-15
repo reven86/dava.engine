@@ -97,22 +97,31 @@ ResetParam
     }
 };
 
-struct
-RenderDeviceCaps
+struct RenderDeviceCaps
 {
+    uint32 maxAnisotropy = 1;
+    char deviceDescription[128];
+
     bool is32BitIndicesSupported = false;
     bool isVertexTextureUnitsSupported = false;
     bool isFramebufferFetchSupported = false;
-
     bool isUpperLeftRTOrigin = false;
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
-
     bool isInstancingSupported = false;
 
-    char deviceDescription[128];
+    RenderDeviceCaps()
+    {
+        memset(deviceDescription, 0, sizeof(deviceDescription));
+    }
+
+    bool isAnisotropicFilteringSupported() const
+    {
+        return maxAnisotropy > 1;
+    }
 };
 
+bool ApiIsSupported(Api api);
 void Initialize(Api api, const InitParam& param);
 void Uninitialize();
 void Reset(const ResetParam& param);
@@ -128,8 +137,6 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
-
-void TakeScreenshot(ScreenShotCallback callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -199,6 +206,7 @@ HQueryBuffer CreateQueryBuffer(unsigned maxObjectCount);
 void ResetQueryBuffer(HQueryBuffer buf);
 void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
+bool QueryBufferIsReady(HQueryBuffer buf);
 bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex);
 int QueryValue(HQueryBuffer buf, uint32 objectIndex);
 
@@ -313,6 +321,7 @@ void SetFramePerfQuerySet(HPerfQuerySet hset);
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
+bool NeedInvertProjection(const RenderPassConfig& passDesc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // rendering

@@ -173,13 +173,9 @@ int TextureConvertor::Reconvert(DAVA::Scene* scene, eTextureConvertMode convertM
 
 void TextureConvertor::WaitConvertedAll(QWidget* parent)
 {
+    DVASSERT(parent != nullptr);
     if (convertJobQueueSize > 0)
     {
-        if (nullptr == parent)
-        {
-            parent = QtMainWindow::Instance();
-        }
-
         waitDialog = new QtWaitDialog(parent);
         bool hasCancel = false;
 
@@ -465,8 +461,6 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
             gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT &&
             descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
         {
-            DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
-
             DAVA::ImageFormat compressedFormat = DAVA::GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
             if (compressedFormat == DAVA::IMAGE_FORMAT_PVR || compressedFormat == DAVA::IMAGE_FORMAT_DDS)
             {
@@ -485,7 +479,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem* item)
 
             result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
 
-            result.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
+            result.fileSize = QFileInfo(descriptor->CreateMultiMipPathnameForGPU(gpu).GetAbsolutePathname().c_str()).size();
 
             if (convertedImages.size() && convertedImages[0])
             {

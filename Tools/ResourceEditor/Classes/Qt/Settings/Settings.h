@@ -1,7 +1,8 @@
-#ifndef __RESOURCEEDITOR__SETTINGS_H__
-#define __RESOURCEEDITOR__SETTINGS_H__
+#pragma once
 
 #include "Base/FastName.h"
+
+#include "Render/RenderBase.h"
 
 class Settings
 {
@@ -11,9 +12,11 @@ public:
     static const DAVA::FastName General_DesinerName;
     static const DAVA::FastName General_RecentFilesCount;
     static const DAVA::FastName General_RecentProjectsCount;
+    static const DAVA::FastName General_ReloadParticlesOnPojectOpening;
     static const DAVA::FastName General_PreviewEnabled;
     static const DAVA::FastName General_OpenByDBClick;
     static const DAVA::FastName General_CompressionQuality;
+    static const DAVA::FastName General_ShowErrorDialog;
 
     static const DAVA::FastName General_MaterialEditor_SwitchColor0;
     static const DAVA::FastName General_MaterialEditor_SwitchColor1;
@@ -21,6 +24,13 @@ public:
     static const DAVA::FastName General_MaterialEditor_LodColor1;
     static const DAVA::FastName General_MaterialEditor_LodColor2;
     static const DAVA::FastName General_MaterialEditor_LodColor3;
+
+    static const DAVA::FastName General_LODEditor_LodColor0;
+    static const DAVA::FastName General_LODEditor_LodColor1;
+    static const DAVA::FastName General_LODEditor_LodColor2;
+    static const DAVA::FastName General_LODEditor_LodColor3;
+    static const DAVA::FastName General_LODEditor_InactiveColor;
+    static const DAVA::FastName General_LODEditor_FitSliders;
 
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;
@@ -57,9 +67,10 @@ public:
     static const DAVA::FastName Scene_DebugBoxWaypointScale;
     static const DAVA::FastName Scene_DragAndDropWithShift;
     static const DAVA::FastName Scene_AutoselectNewEntities;
-    static const DAVA::FastName Scene_RefreshLodForNonSolid;
     static const DAVA::FastName Scene_RememberForceParameters;
     static const DAVA::FastName Scene_SaveEmitters;
+    static const DAVA::FastName Scene_SaveStaticOcclusion;
+    static const DAVA::FastName Scene_DefaultCustomColorIndex;
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw;
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor;
@@ -83,15 +94,14 @@ public:
     static const DAVA::FastName Internal_MaterialsLightViewMode;
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas;
     static const DAVA::FastName Internal_LicenceAccepted;
-    static const DAVA::FastName Internal_LODEditorMode;
+    static const DAVA::FastName Internal_LODEditor_Mode;
+    static const DAVA::FastName Internal_LODEditor_Recursive;
+
     static const DAVA::FastName Internal_ImageSplitterPath;
     static const DAVA::FastName Internal_ImageSplitterPathSpecular;
 
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
 
+    static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings
-
-
-
-#endif //__RESOURCEEDITOR__SETTINGS_H__

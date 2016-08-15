@@ -45,8 +45,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source_folders( SRC_ROOT "Classes" "iOSSpecific" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
-generate_source_groups_project( )
+define_source ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 
@@ -71,53 +70,57 @@ set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
 
-if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
-    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")       
-else()            
-    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
+if( NOT DAVA_MEGASOLUTION )
+
+    if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+        set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")       
+    else()            
+        set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
+    endif()
+
+    set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
+
+    message( "--Performance test data folder: " ${PERFORMANCE_TEST_DATA_SVN} )
+
+    if( NOT EXISTS ${PERFORMANCE_TEST_DATA_SVN})
+        message( "Error !!!: Please checkout performance.test"  )
+        message( " " )
+        exit()
+    endif()
+
+    if( NOT RES_EDITOR_PATH )
+        message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
+        message( " " )
+        exit()
+    endif()
+
+    if( NOT GPU_PARAM)
+        set(GPU_PARAM   "PowerVR_iOS")
+    endif()
+
+
+    configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D.in
+                        ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d.py @ONLY )
+
+    configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D_FX.in
+                        ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_FX.py @ONLY )
+
+    configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3DTanks.in
+                        ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_tanks.py @ONLY )
+
+    message( "============================ Copy resources ============================"  )
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/Data ${APP_DATA} )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/DataSource ${APP_DATA}/../DataSource )
+
+    message( "============================Convert resources ============================"  )
+
+    execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+    execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
+
 endif()
-
-set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
-
-message( "--Performance test data folder: " ${PERFORMANCE_TEST_DATA_SVN} )
-
-if( NOT EXISTS ${PERFORMANCE_TEST_DATA_SVN})
-    message( "Error !!!: Please checkout performance.test"  )
-    message( " " )
-    exit()
-endif()
-
-if( NOT RES_EDITOR_PATH )
-    message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
-    message( " " )
-    exit()
-endif()
-
-if( NOT GPU_PARAM)
-    set(GPU_PARAM   "PowerVR_iOS")
-endif()
-
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D.in
-                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d.py @ONLY )
-
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3D_FX.in
-                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_FX.py @ONLY )
-
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/scripts/TemplateConvert3DTanks.in
-                    ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_3d_tanks.py @ONLY )
-
-message( "============================ Copy resources ============================"  )
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Materials ${APP_DATA}/Materials )
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${RES_EDITOR_DATA}/Shaders ${APP_DATA}/Shaders )
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/Data ${APP_DATA} )
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PERFORMANCE_TEST_DATA_SVN}/DataSource ${APP_DATA}/../DataSource )
-
-message( "============================Convert resources ============================"  )
-
-execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
-execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
-
 
 setup_main_executable()

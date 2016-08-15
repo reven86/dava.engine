@@ -50,7 +50,6 @@ RenderVariantInstance::RenderVariantInstance()
 
 RenderVariantInstance::~RenderVariantInstance()
 {
-    rhi::ReleaseDepthStencilState(depthState);
     rhi::ReleaseTextureSet(textureSet);
     rhi::ReleaseSamplerState(samplerState);
 }
@@ -736,7 +735,7 @@ void NMaterial::RebuildRenderVariants()
     {
         RenderVariantInstance* variant = new RenderVariantInstance();
         variant->renderLayer = variantDescr.renderLayer;
-        variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
+        variant->depthState = variantDescr.depthStencilState;
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
         variant->wireFrame = variantDescr.wireframe;
@@ -880,6 +879,11 @@ void NMaterial::RebuildBindings()
 
 void NMaterial::RebuildTextureBindings()
 {
+    const AnisotropyQuality* anisotropicQuality =
+    QualitySettingsSystem::Instance()->GetAnisotropyQuality(QualitySettingsSystem::Instance()->GetCurAnisotropyQuality());
+
+    uint32_t anisotropyLevel = (anisotropicQuality == nullptr) ? 1 : std::min(anisotropicQuality->maxAnisotropy, rhi::DeviceCaps().maxAnisotropy);
+
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;
@@ -922,6 +926,7 @@ void NMaterial::RebuildTextureBindings()
                 textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetDynamicTexture(textureSemantic);
                 samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetDynamicTextureSamplerState(textureSemantic);
             }
+            samplerDescr.fragmentSampler[i].anisotropyLevel = anisotropyLevel;
             DVASSERT(textureDescr.fragmentTexture[i].IsValid());
         }
 
@@ -963,12 +968,11 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader->IsValid());
     if (activeVariantName != passName)
     {
-        RenderVariantInstance* targetVariant = renderVariants[passName];
-
-        if (targetVariant != nullptr)
+        auto it = renderVariants.find(passName); // [passName];
+        if (it != renderVariants.end())
         {
             activeVariantName = passName;
-            activeVariantInstance = targetVariant;
+            activeVariantInstance = it->second;
 
             res = (activeVariantInstance->shader->IsValid());
         }

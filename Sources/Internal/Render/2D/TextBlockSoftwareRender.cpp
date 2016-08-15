@@ -7,12 +7,11 @@
 namespace DAVA
 {
 TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
-    :
-    TextBlockRender(textBlock)
+    : TextBlockRender(textBlock)
+    , ftFont(static_cast<FTFont*>(textBlock->font))
 {
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
-    buf = NULL;
-    ftFont = static_cast<FTFont*>(textBlock->font);
+
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
     textOffsetTL.y = std::numeric_limits<float32>::max();
@@ -20,16 +19,28 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
     textOffsetBR.y = 0;
 #endif
 }
+
 TextBlockSoftwareRender::~TextBlockSoftwareRender()
 {
     RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    SafeRelease(currentTexture);
 }
+
+TextBlockRender* TextBlockSoftwareRender::Clone()
+{
+    TextBlockSoftwareRender* result = new TextBlockSoftwareRender(textBlock);
+    result->sprite = SafeRetain(sprite);
+    result->currentTexture = SafeRetain(currentTexture);
+    return result;
+}
+
 void TextBlockSoftwareRender::Prepare()
 {
     TextBlockRender::Prepare();
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
+	
 #if defined(LOCALIZATION_DEBUG)
     bufHeight = height;
     bufWidth = width;
@@ -38,11 +49,11 @@ void TextBlockSoftwareRender::Prepare()
     textOffsetBR.x = 0;
     textOffsetBR.y = 0;
 #endif
-    int32 bsz = width * height;
-    buf = new int8[bsz];
-    memset(buf, 0, bsz * sizeof(int8));
 
+    Vector<uint8> buffer(width * height, 0);
+    buf = reinterpret_cast<int8*>(buffer.data());
     DrawText();
+    buf = nullptr;
 
     String addInfo;
     if (!textBlock->isMultilineEnabled)
@@ -61,34 +72,20 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    Texture* tex = Texture::CreateTextFromData(FORMAT_A8, reinterpret_cast<uint8*>(buf), width, height, false, addInfo.c_str());
-    sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
-    SafeRelease(tex);
-
-    SafeDeleteArray(buf);
+    SafeRelease(currentTexture);
+    currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
+    sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
 }
 
 void TextBlockSoftwareRender::Restore()
 {
-    if (!sprite)
-        return;
-    Texture* tex = sprite->GetTexture();
-    if (!tex)
-        return;
-    if (!rhi::NeedRestoreTexture(tex->handle))
-        return;
-
-    int32 width = Max(textBlock->cacheDx, 1);
-    int32 height = Max(textBlock->cacheDy, 1);
-    int32 bsz = width * height;
-    buf = new int8[bsz];
-    memset(buf, 0, bsz * sizeof(int8));
-
-    DrawText();
-
-    tex->ReloadFromData(FORMAT_A8, reinterpret_cast<uint8*>(buf), width, height);
-
-    SafeDeleteArray(buf);
+    if ((currentTexture != nullptr) && rhi::NeedRestoreTexture(currentTexture->handle))
+    {
+        Vector<int8> buffer(currentTexture->width * currentTexture->height, 0);
+        currentTexture->TexImage(0, currentTexture->width, currentTexture->height, buffer.data(),
+                                 static_cast<uint32>(buffer.size()), Texture::INVALID_CUBEMAP_FACE);
+        textBlock->NeedPrepare();
+    }
 }
 
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

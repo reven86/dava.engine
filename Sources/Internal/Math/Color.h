@@ -218,6 +218,8 @@ inline Color operator/(float32 _f, const Color& _v)
 }
 
 Color ClampToUnityRange(Color color);
+
+Color MakeGrayScale(const Color& colorRGB);
 };
 
 

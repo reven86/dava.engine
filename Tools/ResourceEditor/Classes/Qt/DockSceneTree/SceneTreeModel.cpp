@@ -72,7 +72,6 @@ void SceneTreeModel::SetSolid(const QModelIndex& index, bool solid)
     if (NULL != entity)
     {
         entity->SetSolid(solid);
-        SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
     }
 }
 
@@ -162,7 +161,7 @@ int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
                 DAVA::LodComponent* lodComp = GetLodComponent(emitter);
                 if (NULL != lodComp)
                 {
-                    if (!layer->IsLodActive(lodComp->currentLod))
+                    if (!layer->IsLodActive(lodComp->GetCurrentLod()))
                     {
                         ret |= CF_Invisible;
                     }
@@ -716,7 +715,7 @@ int SceneTreeModel::GetDropType(const QMimeData* data) const
         {
             ret = DropingEntity;
         }
-        else if (MimeDataHelper2<DAVA::ParticleEmitter>::IsValid(data))
+        else if (MimeDataHelper2<DAVA::ParticleEmitterInstance>::IsValid(data))
         {
             ret = DropingEmitter;
         }

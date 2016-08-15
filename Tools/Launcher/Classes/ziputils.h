@@ -49,7 +49,6 @@ QString GetArchiverPath();
 bool IsArchiveValid(const QString& archivePath, ZipError* err = nullptr);
 bool LaunchArchiver(const QStringList& arguments, ReadyReadCallback callback = ReadyReadCallback(), ZipError* err = nullptr);
 bool GetFileList(const QString& archivePath, CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
-bool TestZipArchive(const QString& archivePath, const CompressedFilesAndSizes& files, ZipOperationFunctor& functor);
 bool UnpackZipArchive(const QString& archivePath, const QString& outDir, const CompressedFilesAndSizes& files, ZipOperationFunctor& onProgress);
 }
 

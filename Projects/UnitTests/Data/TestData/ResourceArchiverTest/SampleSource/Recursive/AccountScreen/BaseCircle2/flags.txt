@@ -1,0 +1,1 @@
+--add0pixel --adreno RGBA8888 --mali RGBA8888 --tegra RGBA8888 --PowerVR_iOS RGBA8888 webp 90 --PowerVR_Android RGBA8888
