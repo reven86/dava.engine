@@ -146,26 +146,14 @@ void PropertyPanel::UpdateModel()
 
 void PropertyPanel::BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount)
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->BeginBatch(name, commandCount);
 }
 
 void PropertyPanel::Exec(DAVA::Command::Pointer&& command)
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->Exec(std::move(command));
 }
 
 void PropertyPanel::EndBatch()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->EndBatch();
 }
 
 void PropertyPanel::onLoaded(wgt::IView* view)

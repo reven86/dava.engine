@@ -78,7 +78,7 @@ void MaterialTree::SelectMaterial(DAVA::NMaterial* material)
 
 void MaterialTree::SelectEntities(const QList<DAVA::NMaterial*>& materials)
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = treeModel->GetScene();
 
     if (nullptr != curScene && materials.size() > 0)
     {
@@ -204,7 +204,7 @@ void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const RECommand* comma
         return;
     }
 
-    if (QtMainWindow::Instance()->GetCurrentScene() == scene)
+    if (treeModel->GetScene() == scene)
     {
         if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
@@ -255,7 +255,7 @@ void MaterialTree::OnStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 
 void MaterialTree::OnSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
-    if (QtMainWindow::Instance()->GetCurrentScene() == scene)
+    if (treeModel->GetScene() == scene)
     {
         treeModel->SetSelection(selected);
         treeModel->invalidate();

@@ -71,7 +71,7 @@ private:
     QMap<QString, int> textureListSortModes;
     QMap<int, DAVA::eGPUFamily> tabIndexToViewMode;
 
-    SceneEditor2* curScene;
+    SceneEditor2* curScene = nullptr;
     DAVA::eGPUFamily curTextureView;
 
     DAVA::Texture* curTexture;

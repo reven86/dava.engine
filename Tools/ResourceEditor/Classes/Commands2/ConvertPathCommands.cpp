@@ -17,9 +17,9 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
     // create waypoint entities (waypoint entity + waypoint component) and entity add commands
     MapWaypoint2Entity mapWaypoint2Entity;
     const DAVA::Vector<DAVA::PathComponent::Waypoint*>& waypoints = pathComponent->GetPoints();
-    DAVA::uint32 waypointsCount = waypoints.size();
+    size_t waypointsCount = waypoints.size();
     entityAddCommands.reserve(waypointsCount);
-    for (DAVA::uint32 wpIdx = 0; wpIdx < waypointsCount; ++wpIdx)
+    for (size_t wpIdx = 0; wpIdx < waypointsCount; ++wpIdx)
     {
         DAVA::PathComponent::Waypoint* waypoint = waypoints[wpIdx];
         DVASSERT(waypoint);
@@ -39,10 +39,8 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
         DVASSERT(waypoint);
         DVASSERT(wpEntity);
 
-        DAVA::uint32 edgesCount = waypoint->edges.size();
-        for (DAVA::uint32 edgeIdx = 0; edgeIdx < edgesCount; ++edgeIdx)
+        for (DAVA::PathComponent::Edge* edge : waypoint->edges)
         {
-            DAVA::PathComponent::Edge* edge = waypoint->edges[edgeIdx];
             DVASSERT(edge);
 
             DAVA::PathComponent::Waypoint* destination = edge->destination;
@@ -64,10 +62,9 @@ ExpandPathCommand::~ExpandPathCommand()
 {
     SafeRelease(pathEntity);
 
-    DAVA::uint32 count = entityAddCommands.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (EntityAddCommand* command : entityAddCommands)
     {
-        DAVA::SafeDelete(entityAddCommands[i]);
+        DAVA::SafeDelete(command);
     }
 }
 
@@ -98,7 +95,7 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
 
 void ExpandPathCommand::Undo()
 {
-    DAVA::uint32 count = entityAddCommands.size();
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entityAddCommands.size());
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
         entityAddCommands[i]->Undo();
@@ -107,10 +104,9 @@ void ExpandPathCommand::Undo()
 
 void ExpandPathCommand::Redo()
 {
-    DAVA::uint32 count = entityAddCommands.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (EntityAddCommand* command : entityAddCommands)
     {
-        entityAddCommands[i]->Redo();
+        command->Redo();
     }
 }
 
@@ -227,10 +223,9 @@ CollapsePathCommand::~CollapsePathCommand()
     DAVA::SafeDelete(addNextComponent);
     DAVA::SafeDelete(removePrevComponent);
 
-    DAVA::uint32 count = entityRemoveCommands.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (EntityRemoveCommand* command : entityRemoveCommands)
     {
-        DAVA::SafeDelete(entityRemoveCommands[i]);
+        DAVA::SafeDelete(command);
     }
 }
 
@@ -245,10 +240,9 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 
 void CollapsePathCommand::Redo()
 {
-    DAVA::uint32 count = entityRemoveCommands.size();
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (EntityRemoveCommand* command : entityRemoveCommands)
     {
-        entityRemoveCommands[i]->Redo();
+        command->Redo();
     }
     addNextComponent->Redo();
     removePrevComponent->Redo();
@@ -258,7 +252,7 @@ void CollapsePathCommand::Undo()
 {
     removePrevComponent->Undo();
     addNextComponent->Undo();
-    DAVA::uint32 count = entityRemoveCommands.size();
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entityRemoveCommands.size());
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
         entityRemoveCommands[i]->Undo();

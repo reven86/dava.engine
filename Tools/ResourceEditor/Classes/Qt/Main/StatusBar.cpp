@@ -52,16 +52,15 @@ void StatusBar::ResetDistanceToCamera()
 
 void StatusBar::UpdateDistanceToCamera()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (!scene)
+    if (!activeScene)
     {
         ResetDistanceToCamera();
         return;
     }
 
-    if (scene->selectionSystem->GetSelectionCount() > 0)
+    if (activeScene->selectionSystem->GetSelectionCount() > 0)
     {
-        DAVA::float32 distanceToCamera = scene->cameraSystem->GetDistanceToCamera();
+        DAVA::float32 distanceToCamera = activeScene->cameraSystem->GetDistanceToCamera();
         SetDistanceToCamera(distanceToCamera);
     }
     else
@@ -74,6 +73,7 @@ void StatusBar::SceneActivated(SceneEditor2* scene)
 {
     DVASSERT(scene != nullptr);
     scene->selectionSystem->AddDelegate(this);
+    activeScene = scene;
 
     UpdateDistanceToCamera();
     UpdateSelectionBoxSize(scene);
@@ -83,6 +83,7 @@ void StatusBar::SceneDeactivated(SceneEditor2* scene)
 {
     DVASSERT(scene != nullptr);
     scene->selectionSystem->RemoveDelegate(this);
+    activeScene = nullptr;
 }
 
 void StatusBar::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
@@ -129,12 +130,11 @@ void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)
 
 void StatusBar::UpdateFPS()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
     DAVA::uint32 frames = 0;
-    if (scene != nullptr)
+    if (activeScene != nullptr)
     {
-        frames = scene->GetFramesCount();
-        scene->ResetFramesCount();
+        frames = activeScene->GetFramesCount();
+        activeScene->ResetFramesCount();
     }
 
     DAVA::uint64 currentTimeMS = DAVA::SystemTimer::Instance()->AbsoluteMS();

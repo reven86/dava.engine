@@ -97,6 +97,8 @@ private:
     void initTemplates();
     void setTemplatePlaceholder(const QString& text);
 
+    void UpdateContent(SceneEditor2* scene);
+
     void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
                                DAVA::SerializationContext* context) const;
     void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
@@ -124,6 +126,7 @@ private:
     class PropertiesBuilder;
 
     Ui::MaterialEditor* ui = nullptr;
+    SceneEditor2* activeScene = nullptr;
 
     QtPosSaver posSaver;
     QList<DAVA::NMaterial*> curMaterials;

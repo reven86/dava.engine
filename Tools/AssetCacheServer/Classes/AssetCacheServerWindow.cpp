@@ -30,10 +30,12 @@
 #include <QXmlStreamReader>
 #endif
 
+using namespace DAVA;
+
 namespace
 {
-const DAVA::String DEFAULT_REMOTE_IP = DAVA::AssetCache::GetLocalHost();
-const DAVA::uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+const String DEFAULT_REMOTE_IP = AssetCache::GetLocalHost();
+const uint16 DEFAULT_REMOTE_PORT = AssetCache::ASSET_SERVER_PORT;
 }
 
 AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent)
@@ -87,7 +89,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     OnServerStateChanged(&serverCore);
 
-    DAVA::uint64 occupied, overall;
+    uint64 occupied, overall;
     serverCore.GetStorageSpaceUsage(occupied, overall);
     UpdateUsageProgressbar(occupied, overall);
 }
@@ -566,10 +568,10 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
     }
 }
 
-void AssetCacheServerWindow::UpdateUsageProgressbar(DAVA::uint64 occupied, DAVA::uint64 overall)
+void AssetCacheServerWindow::UpdateUsageProgressbar(uint64 occupied, uint64 overall)
 {
-    DAVA::float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
-    int val = static_cast<int>(p * static_cast<DAVA::float64>(occupied));
+    float64 p = overall ? (100. / static_cast<float64>(overall)) : 0;
+    int val = static_cast<int>(p * static_cast<float64>(occupied));
     ui->occupiedSizeBar->setRange(0, 100);
     ui->occupiedSizeBar->setValue(val);
 }

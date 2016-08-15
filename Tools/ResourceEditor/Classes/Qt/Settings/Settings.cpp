@@ -1,4 +1,7 @@
 #include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
+#include "Render/GPUFamilyDescriptor.h"
 
 using namespace DAVA;
 
@@ -85,3 +88,8 @@ const FastName Settings::Internal_ImageSplitterPath = FastName("Internal/ImageSp
 const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal/ImageSplitterPath_specular");
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
+
+DAVA::eGPUFamily Settings::GetGPUFormat()
+{
+    return static_cast<DAVA::eGPUFamily>(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+}

@@ -1,5 +1,6 @@
 #include "Command/CommandStack.h"
 #include "Command/CommandBatch.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
