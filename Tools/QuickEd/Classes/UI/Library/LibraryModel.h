@@ -2,6 +2,7 @@
 #define __UI_EDITOR_LIBRARY_MODEL_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include <QStandardItemModel>
 
@@ -18,27 +19,30 @@ class LibraryModel : public QStandardItemModel, PackageListener
     enum
     {
         POINTER_DATA = Qt::UserRole + 1,
-        INNER_NAME_DATA
+        PROTOTYPE
     };
 
 public:
     LibraryModel(QObject* parent = nullptr);
     ~LibraryModel() override;
 
+    void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
+
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     void SetPackageNode(PackageNode* package);
+
+    QModelIndex GetDefaultControlsModelIndex() const;
 
 private:
     QVariant data(const QModelIndex& index, int role) const override;
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
     void BuildModel();
-    void AddControl(ControlNode* node);
-    void AddImportedControl(PackageNode* node);
-    void CreateControlsRootItem();
-    void CreateImportPackagesRootItem();
+    void AddControl(ControlNode* node, QStandardItem* rootItem, bool haveToMakeInstance);
+    void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool haveToMakeInstance);
+    QStandardItem* CreatePackageControlsItem(PackageNode* package, bool haveToMakeInstance);
 
     //Package Signals
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -47,8 +51,16 @@ private:
     void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
     void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
     PackageNode* package = nullptr;
-    QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
+
+    DAVA::Vector<PackageNode*> libraryPackages;
+    DAVA::Vector<QStandardItem*> libraryRootItems;
+
+    QStandardItem* defaultControlsRootItem = nullptr;
+    QStandardItem* controlsRootItem = nullptr;
+    QStandardItem* importedPackageRootItem = nullptr;
+
     DAVA::Vector<ControlNode*> defaultControls;
+    DAVA::Vector<DAVA::FilePath> libraryPackagePaths;
 };
 
 #endif // __UI_EDITOR_LIBRARY_MODEL_H__

@@ -341,14 +341,6 @@ VariantType YamlNode::AsVariantType() const
         {
             retValue.SetUInt32(it->second->AsUInt32());
         }
-        else if (innerTypeName == DAVA::VariantType::TYPENAME_INT32)
-        {
-            retValue.SetInt32(it->second->AsInt32());
-        }
-        else if (innerTypeName == DAVA::VariantType::TYPENAME_UINT32)
-        {
-            retValue.SetUInt32(it->second->AsUInt32());
-        }
         else if (innerTypeName == DAVA::VariantType::TYPENAME_INT64)
         {
             retValue.SetInt64(it->second->AsInt64());

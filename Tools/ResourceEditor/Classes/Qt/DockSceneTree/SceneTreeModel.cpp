@@ -72,7 +72,6 @@ void SceneTreeModel::SetSolid(const QModelIndex& index, bool solid)
     if (NULL != entity)
     {
         entity->SetSolid(solid);
-        SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
     }
 }
 

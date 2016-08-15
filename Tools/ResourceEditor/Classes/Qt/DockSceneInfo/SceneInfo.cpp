@@ -1,27 +1,24 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
-
-#include "Main/QtUtils.h"
-
-#include "Render/TextureDescriptor.h"
+#include "Qt/Project/ProjectManager.h"
+#include "Qt/Main/QtUtils.h"
+#include "Qt/Scene/SceneSignals.h"
+#include "Qt/Scene/SceneEditor2.h"
+#include "Qt/Scene/SceneHelper.h"
+#include "Qt/Scene/System/EditorStatisticsSystem.h"
+#include "Qt/Scene/System/EditorVegetationSystem.h"
 
 #include "ImageTools/ImageTools.h"
 
-#include "Scene/SceneSignals.h"
-#include "Scene/SceneEditor2.h"
-#include "Scene/SceneHelper.h"
-#include "Scene/System/EditorStatisticsSystem.h"
-#include "Main/mainwindow.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
+#include "Render/TextureDescriptor.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
-
-#include "Render/Material/NMaterialNames.h"
-
-#include "Scene3D/Components/ComponentHelpers.h"
 
 using namespace DAVA;
 
@@ -37,6 +34,7 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
     connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
     connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
+    connect(signalDispatcher, &SceneSignals::QualityChanged, this, &SceneInfo::OnQualityChanged);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -768,125 +766,170 @@ void SceneInfo::RefreshVegetationInfoSection()
 {
     if (activeScene != NULL)
     {
-        VegetationRenderObject* renderObj = FindVegetation(activeScene);
+        DAVA::Vector<DAVA::VegetationRenderObject*> activeVegetationObjects;
+        activeScene->editorVegetationSystem->GetActiveVegetation(activeVegetationObjects);
 
-        if (renderObj != NULL)
+        DAVA::uint32 activeObjectsSize = static_cast<DAVA::uint32>(activeVegetationObjects.size());
+        QtPropertyData* header = GetInfoHeader("Vegetation Info");
+
+        VegetationMetrics metrics;
+        if (activeObjectsSize == 1)
         {
-            QtPropertyData* header = GetInfoHeader("Vegetation Info");
-
-            VegetationMetrics metrics;
+            VegetationRenderObject* renderObj = activeVegetationObjects[0];
             renderObj->CollectMetrics(metrics);
+        }
 
-            if (metrics.isValid)
+        if (metrics.isValid)
+        {
+            static const char* INSTANCE_PER_LOD_HEADER[] =
             {
-                static const char* INSTANCE_PER_LOD_HEADER[] =
-                {
-                  "Instance count in LOD #0",
-                  "Instance count in LOD #1",
-                  "Instance count in LOD #2"
-                };
+              "Instance count in LOD #0",
+              "Instance count in LOD #1",
+              "Instance count in LOD #2"
+            };
 
-                static const char* INSTANCE_PER_LAYER_HEADER[] =
-                {
-                  "Instance count in layer #0",
-                  "Instance count in layer #1",
-                  "Instance count in layer #2",
-                  "Instance count in layer #3"
-                };
+            static const char* INSTANCE_PER_LAYER_HEADER[] =
+            {
+              "Instance count in layer #0",
+              "Instance count in layer #1",
+              "Instance count in layer #2",
+              "Instance count in layer #3"
+            };
 
-                static const char* POLY_PER_LOD_HEADER[] =
-                {
-                  "Poly count in LOD #0",
-                  "Poly count in LOD #1",
-                  "Poly count in LOD #2"
-                };
+            static const char* POLY_PER_LOD_HEADER[] =
+            {
+              "Poly count in LOD #0",
+              "Poly count in LOD #1",
+              "Poly count in LOD #2"
+            };
 
-                static const char* POLY_PER_LAYER_HEADER[] =
-                {
-                  "Poly count in layer #0",
-                  "Poly count in layer #1",
-                  "Poly count in layer #2",
-                  "Poly count in layer #3"
-                };
+            static const char* POLY_PER_LAYER_HEADER[] =
+            {
+              "Poly count in layer #0",
+              "Poly count in layer #1",
+              "Poly count in layer #2",
+              "Poly count in layer #3"
+            };
 
-                static const char* QUADTREELEAF_PER_LOD_HEADER[] =
-                {
-                  "Quadtree leaf count in LOD #0",
-                  "Quadtree leaf count in LOD #1",
-                  "Quadtree leaf count in LOD #2"
-                };
+            static const char* QUADTREELEAF_PER_LOD_HEADER[] =
+            {
+              "Quadtree leaf count in LOD #0",
+              "Quadtree leaf count in LOD #1",
+              "Quadtree leaf count in LOD #2"
+            };
 
-                static const char* POLY_PER_LOD_PER_LAYER_HEADER[] =
-                {
-                  "Poly count in LODs in layer #0",
-                  "Poly count in LODs in layer #1",
-                  "Poly count in LODs in layer #2",
-                  "Poly count in LODs in layer #3"
-                };
+            static const char* POLY_PER_LOD_PER_LAYER_HEADER[] =
+            {
+              "Poly count in LODs in layer #0",
+              "Poly count in LODs in layer #1",
+              "Poly count in LODs in layer #2",
+              "Poly count in LODs in layer #3"
+            };
 
-                uint32 totalInstanceCount = 0;
-                for (uint32 lodIndex = 0; lodIndex < COUNT_OF(INSTANCE_PER_LOD_HEADER); ++lodIndex)
+            uint32 totalInstanceCount = 0;
+            for (uint32 lodIndex = 0; lodIndex < COUNT_OF(INSTANCE_PER_LOD_HEADER); ++lodIndex)
+            {
+                if (metrics.visibleInstanceCountPerLOD.size() > lodIndex)
                 {
-                    if (metrics.visibleInstanceCountPerLOD.size() > lodIndex)
-                    {
-                        totalInstanceCount += metrics.visibleInstanceCountPerLOD[lodIndex];
-                    }
-
-                    SetChild(INSTANCE_PER_LOD_HEADER[lodIndex], metrics.visibleInstanceCountPerLOD[lodIndex], header);
-                }
-                SetChild("Instance count", totalInstanceCount, header);
-
-                for (uint32 layerIndex = 0; layerIndex < COUNT_OF(INSTANCE_PER_LAYER_HEADER); ++layerIndex)
-                {
-                    if (metrics.visibleInstanceCountPerLayer.size() > layerIndex)
-                    {
-                        SetChild(INSTANCE_PER_LAYER_HEADER[layerIndex], metrics.visibleInstanceCountPerLayer[layerIndex], header);
-                    }
+                    totalInstanceCount += metrics.visibleInstanceCountPerLOD[lodIndex];
                 }
 
-                uint32 totalPolyCount = 0;
-                for (uint32 lodIndex = 0; lodIndex < COUNT_OF(POLY_PER_LOD_HEADER); ++lodIndex)
+                SetChild(INSTANCE_PER_LOD_HEADER[lodIndex], metrics.visibleInstanceCountPerLOD[lodIndex], header);
+            }
+            SetChild("Instance count", totalInstanceCount, header);
+
+            for (uint32 layerIndex = 0; layerIndex < COUNT_OF(INSTANCE_PER_LAYER_HEADER); ++layerIndex)
+            {
+                if (metrics.visibleInstanceCountPerLayer.size() > layerIndex)
                 {
-                    if (metrics.visiblePolyCountPerLOD.size() > lodIndex)
-                    {
-                        totalPolyCount += metrics.visiblePolyCountPerLOD[lodIndex];
-                    }
-
-                    SetChild(POLY_PER_LOD_HEADER[lodIndex], metrics.visiblePolyCountPerLOD[lodIndex], header);
-                }
-                SetChild("Poly count", totalPolyCount, header);
-
-                for (uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LAYER_HEADER); ++layerIndex)
-                {
-                    if (metrics.visiblePolyCountPerLayer.size() > layerIndex)
-                    {
-                        SetChild(POLY_PER_LAYER_HEADER[layerIndex], metrics.visiblePolyCountPerLayer[layerIndex], header);
-                    }
-                }
-
-                uint32 totalLeafCount = 0;
-                for (uint32 lodIndex = 0; lodIndex < COUNT_OF(QUADTREELEAF_PER_LOD_HEADER); ++lodIndex)
-                {
-                    if (metrics.quadTreeLeafCountPerLOD.size() > lodIndex)
-                    {
-                        totalLeafCount += metrics.quadTreeLeafCountPerLOD[lodIndex];
-                    }
-
-                    SetChild(QUADTREELEAF_PER_LOD_HEADER[lodIndex], metrics.quadTreeLeafCountPerLOD[lodIndex], header);
-                }
-                SetChild("Quadtree leaf count", totalLeafCount, header);
-
-                SetChild("RenderBatch count", metrics.renderBatchCount, header);
-
-                for (uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LOD_PER_LAYER_HEADER); ++layerIndex)
-                {
-                    if (metrics.polyCountPerLayerPerLod.size() > layerIndex)
-                    {
-                        String str = Format("%d / %d / %d", metrics.polyCountPerLayerPerLod[layerIndex][0], metrics.polyCountPerLayerPerLod[layerIndex][1], metrics.polyCountPerLayerPerLod[layerIndex][2]);
-                        SetChild(POLY_PER_LOD_PER_LAYER_HEADER[layerIndex], str.c_str(), header);
-                    }
+                    SetChild(INSTANCE_PER_LAYER_HEADER[layerIndex], metrics.visibleInstanceCountPerLayer[layerIndex], header);
                 }
             }
+
+            uint32 totalPolyCount = 0;
+            for (uint32 lodIndex = 0; lodIndex < COUNT_OF(POLY_PER_LOD_HEADER); ++lodIndex)
+            {
+                if (metrics.visiblePolyCountPerLOD.size() > lodIndex)
+                {
+                    totalPolyCount += metrics.visiblePolyCountPerLOD[lodIndex];
+                }
+
+                SetChild(POLY_PER_LOD_HEADER[lodIndex], metrics.visiblePolyCountPerLOD[lodIndex], header);
+            }
+            SetChild("Poly count", totalPolyCount, header);
+
+            for (uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LAYER_HEADER); ++layerIndex)
+            {
+                if (metrics.visiblePolyCountPerLayer.size() > layerIndex)
+                {
+                    SetChild(POLY_PER_LAYER_HEADER[layerIndex], metrics.visiblePolyCountPerLayer[layerIndex], header);
+                }
+            }
+
+            uint32 totalLeafCount = 0;
+            for (uint32 lodIndex = 0; lodIndex < COUNT_OF(QUADTREELEAF_PER_LOD_HEADER); ++lodIndex)
+            {
+                if (metrics.quadTreeLeafCountPerLOD.size() > lodIndex)
+                {
+                    totalLeafCount += metrics.quadTreeLeafCountPerLOD[lodIndex];
+                }
+
+                SetChild(QUADTREELEAF_PER_LOD_HEADER[lodIndex], metrics.quadTreeLeafCountPerLOD[lodIndex], header);
+            }
+            SetChild("Quadtree leaf count", totalLeafCount, header);
+
+            SetChild("RenderBatch count", metrics.renderBatchCount, header);
+
+            for (uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LOD_PER_LAYER_HEADER); ++layerIndex)
+            {
+                if (metrics.polyCountPerLayerPerLod.size() > layerIndex)
+                {
+                    String str = Format("%d / %d / %d", metrics.polyCountPerLayerPerLod[layerIndex][0], metrics.polyCountPerLayerPerLod[layerIndex][1], metrics.polyCountPerLayerPerLod[layerIndex][2]);
+                    SetChild(POLY_PER_LOD_PER_LAYER_HEADER[layerIndex], str.c_str(), header);
+                }
+            }
+        }
+        else
+        {
+            QString dummy;
+            if (activeObjectsSize > 1)
+            {
+                dummy = "error";
+            }
+
+            SetChild("Poly count", dummy, header);
+            SetChild("Instance count", dummy, header);
+
+            SetChild("Poly count in LOD #0", dummy, header);
+            SetChild("Poly count in LOD #1", dummy, header);
+            SetChild("Poly count in LOD #2", dummy, header);
+
+            SetChild("Instance count in LOD #0", dummy, header);
+            SetChild("Instance count in LOD #1", dummy, header);
+            SetChild("Instance count in LOD #2", dummy, header);
+
+            SetChild("Poly count in layer #0", dummy, header);
+            SetChild("Poly count in layer #1", dummy, header);
+            SetChild("Poly count in layer #2", dummy, header);
+            SetChild("Poly count in layer #3", dummy, header);
+
+            SetChild("Instance count in layer #0", dummy, header);
+            SetChild("Instance count in layer #1", dummy, header);
+            SetChild("Instance count in layer #2", dummy, header);
+            SetChild("Instance count in layer #3", dummy, header);
+
+            SetChild("Poly count in LODs in layer #0", dummy, header);
+            SetChild("Poly count in LODs in layer #1", dummy, header);
+            SetChild("Poly count in LODs in layer #2", dummy, header);
+            SetChild("Poly count in LODs in layer #3", dummy, header);
+
+            SetChild("Quadtree leaf count", dummy, header);
+
+            SetChild("Quadtree leaf count in LOD #0", dummy, header);
+            SetChild("Quadtree leaf count in LOD #1", dummy, header);
+            SetChild("Quadtree leaf count in LOD #2", dummy, header);
+
+            SetChild("RenderBatch count", dummy, header);
         }
     }
 }
@@ -925,14 +968,8 @@ void SceneInfo::RefreshLayersSection()
 
 EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
 {
-    if (QtMainWindow::Instance() != nullptr)
-    {
-        SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-        if (scene != nullptr)
-        {
-            return scene->editorStatisticsSystem;
-        }
-    }
+    if (activeScene == nullptr)
+        return nullptr;
 
-    return nullptr;
+    return activeScene->editorStatisticsSystem;
 }

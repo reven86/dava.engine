@@ -1,4 +1,3 @@
-#import <UIKit/UIKit.h>
 #include "DAVAEngine.h"
 
 //using namespace DAVA;
