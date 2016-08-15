@@ -803,10 +803,10 @@ void QtPropertyData::SetOWViewport(QWidget* viewport)
     }
 }
 
-DAVA::Command::Pointer QtPropertyData::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyData::CreateLastCommand() const
 {
     // can be re-implemented by sub-class
-    return DAVA::Command::Pointer();
+    return std::unique_ptr<DAVA::Command>();
 }
 
 QVariant QtPropertyData::GetValueInternal() const

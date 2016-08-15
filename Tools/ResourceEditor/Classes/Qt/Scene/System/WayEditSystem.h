@@ -20,7 +20,7 @@
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/ModifSystem.h"
 
-class RECommand;
+class RECommandNotificationObject;
 class SceneEditor2;
 
 class WayEditSystem : public DAVA::SceneSystem,
@@ -51,7 +51,7 @@ public:
 protected:
     void Draw();
 
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
 

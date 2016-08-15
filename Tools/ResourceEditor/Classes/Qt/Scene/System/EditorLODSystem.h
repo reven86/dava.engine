@@ -11,7 +11,7 @@ class Entity;
 class RenderObject;
 }
 
-class RECommand;
+class RECommandNotificationObject;
 class SelectableGroup;
 
 struct ForceValues
@@ -142,7 +142,7 @@ public:
     static bool IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances);
 
 protected:
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
 private:
     void RecalculateData();

@@ -4,8 +4,7 @@
 #include "DAVAEngine.h"
 #include "Base/Introspection.h"
 
-class RECommand;
-
+class RECommandNotificationObject;
 class EditorMaterialSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
@@ -64,7 +63,7 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     void AddMaterials(DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);

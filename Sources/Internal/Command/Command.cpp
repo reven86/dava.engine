@@ -1,5 +1,4 @@
 #include "Command/Command.h"
-#include <functional>
 
 namespace DAVA
 {

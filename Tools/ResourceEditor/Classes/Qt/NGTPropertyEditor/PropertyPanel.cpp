@@ -148,7 +148,7 @@ void PropertyPanel::BeginBatch(const DAVA::String& name, DAVA::uint32 commandCou
 {
 }
 
-void PropertyPanel::Exec(DAVA::Command::Pointer&& command)
+void PropertyPanel::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
 }
 

@@ -10,6 +10,7 @@
 #include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Math/AABBox3.h"
 #include "Utils/Utils.h"
 
@@ -83,7 +84,7 @@ void WayEditSystem::DidRemoved(DAVA::Entity* removedPoint)
         edge = FindEdgeComponent(waypoint, removedPoint);
         if (edge)
         {
-            sceneEditor->Exec(DAVA::Command::Create<RemoveComponentCommand>(waypoint, edge));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(waypoint, edge)));
             srcPoints.push_back(waypoint);
         }
     }
@@ -128,7 +129,7 @@ void WayEditSystem::DidRemoved(DAVA::Entity* removedPoint)
             DAVA::EdgeComponent* newEdge = new DAVA::EdgeComponent();
             newEdge->SetNextEntity(breachPoint);
 
-            sceneEditor->Exec(DAVA::Command::Create<AddComponentCommand>(srcPoint, newEdge));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(srcPoint, newEdge)));
         }
     }
 }
@@ -142,7 +143,7 @@ void WayEditSystem::RemoveEdge(DAVA::Entity* srcWaypoint, DAVA::EdgeComponent* e
     DAVA::Set<DAVA::Entity*> passedPoints;
     if (IsAccessible(startPoint, breachPoint, nullptr /*no excluding point*/, edgeComponent, passedPoints))
     {
-        sceneEditor->Exec(DAVA::Command::Create<RemoveComponentCommand>(srcWaypoint, edgeComponent));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(srcWaypoint, edgeComponent)));
     }
 }
 
@@ -292,7 +293,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
 
                     sceneEditor->selectionSystem->SetLocked(true);
                     sceneEditor->BeginBatch("Add Waypoint", 1 + validPrevPoints.GetSize());
-                    sceneEditor->Exec(DAVA::Command::Create<EntityAddCommand>(newWaypoint, currentWayParent));
+                    sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(newWaypoint, currentWayParent)));
                     if (!validPrevPoints.IsEmpty())
                     {
                         AddEdges(validPrevPoints, newWaypoint);
@@ -364,7 +365,7 @@ void WayEditSystem::AddEdges(const SelectableGroup& group, DAVA::Entity* nextEnt
     {
         DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
         edge->SetNextEntity(nextEntity);
-        sceneEditor->Exec(DAVA::Command::Create<AddComponentCommand>(entity, edge));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, edge)));
     }
 }
 
@@ -407,17 +408,17 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 
     return waypoint;
 }
 
-void WayEditSystem::ProcessCommand(const RECommand* command, bool redo)
+void WayEditSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
-    if (command->MatchCommandID(CMDID_ENABLE_WAYEDIT))
+    if (commandNotification.MatchCommandID(CMDID_ENABLE_WAYEDIT))
     {
-        DVASSERT(command->MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
-        EnableWayEdit(redo);
+        DVASSERT(commandNotification.MatchCommandID(CMDID_DISABLE_WAYEDIT) == false);
+        EnableWayEdit(commandNotification.redo);
     }
-    else if (command->MatchCommandID(CMDID_DISABLE_WAYEDIT))
+    else if (commandNotification.MatchCommandID(CMDID_DISABLE_WAYEDIT))
     {
-        DVASSERT(command->MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
-        EnableWayEdit(!redo);
+        DVASSERT(commandNotification.MatchCommandID(CMDID_ENABLE_WAYEDIT) == false);
+        EnableWayEdit(!commandNotification.redo);
     }
 }
 
@@ -507,7 +508,7 @@ void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEnt
             newEntity->SetNotRemovable(false);
         }
 
-        sceneEditor->Exec(DAVA::Command::Create<AddComponentCommand>(originalEntity, edge));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(originalEntity, edge)));
     }
 }
 

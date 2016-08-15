@@ -17,7 +17,7 @@ public:
 
     void Redo() override;
     void Undo() override;
-    bool IsModifying() const override;
+    bool IsClean() const override;
 
     void SaveEnabledToolsState();
     void ApplySavedState();
@@ -40,9 +40,9 @@ protected:
     DisableFunction disableFunction;
 };
 
-inline bool LandscapeToolsToggleCommand::IsModifying() const
+inline bool LandscapeToolsToggleCommand::IsClean() const
 {
-    return false;
+    return true;
 }
 
 template <typename ForwardCommand>

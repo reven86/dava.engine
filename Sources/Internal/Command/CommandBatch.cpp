@@ -26,7 +26,7 @@ void CommandBatch::Undo()
     }
 }
 
-void CommandBatch::AddAndRedo(Pointer&& command)
+void CommandBatch::AddAndRedo(std::unique_ptr<Command>&& command)
 {
     DVASSERT(command);
 
@@ -35,8 +35,14 @@ void CommandBatch::AddAndRedo(Pointer&& command)
     actualCommand->Redo();
 }
 
-bool IsCommandBatch(const DAVA::Command* command)
+void CommandBatch::Add(std::unique_ptr<Command>&& command)
 {
-    return dynamic_cast<const DAVA::CommandBatch*>(command) != nullptr;
+    DVASSERT(command);
+    commandList.emplace_back(std::move(command));
+}
+
+bool IsCommandBatch(const Command* command)
+{
+    return dynamic_cast<const CommandBatch*>(command) != nullptr;
 }
 }

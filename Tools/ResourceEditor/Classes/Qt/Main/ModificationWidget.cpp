@@ -1,5 +1,6 @@
 #include "ModificationWidget.h"
 #include "Commands2/TransformCommand.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Math/MathHelpers.h"
 
 #include <QKeyEvent>
@@ -236,7 +237,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const DAVA::Command* command, bool redo)
+void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     if (curScene == scene)
     {

@@ -6,7 +6,7 @@
 
 #include "Render/UniqueStateSet.h"
 
-class RECommand;
+class RECommandNotificationObject;
 class QComboBox;
 class QRadioButton;
 class SliderWidget;
@@ -52,7 +52,7 @@ private slots:
     void PrevTool();
     void NextTool();
 
-    void OnCommandExecuted(SceneEditor2* scene, const class RECommand* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
 protected:
     virtual bool GetEditorEnabled();

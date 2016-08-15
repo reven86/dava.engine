@@ -12,7 +12,7 @@ public:
     \param[in] text command batch text description to be displayed in widgets / network packets / log texts.
     \param[in] commandsCoubnt commands count to reserve memory to optimize memory allocation count.
     */
-    CommandBatch(const String& description = "", uint32 commandsCount = 0);
+    CommandBatch(const String& description = "", uint32 commandsCount = 1);
 
     /**
     \brief Calls Redo to the all commands in batch.
@@ -25,9 +25,14 @@ public:
     void Undo() override;
 
     /**
-    \brief Moves command to the batch and calls Execute to the moved command.
+    \brief Moves command to the batch and calls Redo to the moved command.
     */
-    virtual void AddAndRedo(Pointer&& command);
+    void AddAndRedo(std::unique_ptr<Command>&& command);
+
+    /**
+    \brief Moves command to the batch.
+    */
+    void Add(std::unique_ptr<Command>&& command);
 
     /**
     \brief Returns whether the batch is empty (i.e. whether its size is 0)
@@ -42,7 +47,7 @@ public:
     uint32 Size() const;
 
 protected:
-    using CommandsContainer = Vector<Pointer>;
+    using CommandsContainer = Vector<std::unique_ptr<Command>>;
     CommandsContainer commandList;
 };
 
@@ -56,5 +61,5 @@ inline uint32 CommandBatch::Size() const
     return static_cast<uint32>(commandList.size());
 }
 
-bool IsCommandBatch(const DAVA::Command* command);
+bool IsCommandBatch(const Command* command);
 }

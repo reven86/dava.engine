@@ -238,21 +238,21 @@ void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String
     }
 }
 
-DAVA::Command::Pointer QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
         if (CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetID())
         {
-            return DAVA::Command::Create<KeyeadArchiveRemValueCommand>(*((KeyeadArchiveRemValueCommand*)lastCommand));
+            return std::unique_ptr<DAVA::Command>(new KeyeadArchiveRemValueCommand(*((KeyeadArchiveRemValueCommand*)lastCommand)));
         }
         else if (CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetID())
         {
-            return DAVA::Command::Create<KeyedArchiveAddValueCommand>(*((KeyedArchiveAddValueCommand*)lastCommand));
+            return std::unique_ptr<DAVA::Command>(new KeyedArchiveAddValueCommand(*((KeyedArchiveAddValueCommand*)lastCommand)));
         }
     }
 
-    return DAVA::Command::Pointer();
+    return std::unique_ptr<DAVA::Command>();
 }
 
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()

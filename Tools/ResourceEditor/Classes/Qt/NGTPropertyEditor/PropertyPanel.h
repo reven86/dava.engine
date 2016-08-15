@@ -58,7 +58,7 @@ private:
     void UpdateModel();
 
     void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) override;
-    void Exec(DAVA::Command::Pointer&& command) override;
+    void Exec(std::unique_ptr<DAVA::Command>&& command) override;
     void EndBatch() override;
 
 private:

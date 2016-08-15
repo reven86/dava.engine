@@ -63,12 +63,12 @@ bool QtPropertyDataMetaObject::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-DAVA::Command::Pointer QtPropertyDataMetaObject::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyDataMetaObject::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return DAVA::Command::Create<MetaObjModifyCommand>(*lastCommand);
+        return std::unique_ptr<DAVA::Command>(new MetaObjModifyCommand(*lastCommand));
     }
 
-    return DAVA::Command::Pointer();
+    return std::unique_ptr<DAVA::Command>();
 }

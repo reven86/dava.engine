@@ -4,6 +4,7 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Commands2/Base/RECommandStack.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
@@ -342,7 +343,7 @@ void SceneEditor2::ActivateCommandStack()
     commandStack->Activate();
 }
 
-void SceneEditor2::Exec(DAVA::Command::Pointer&& command)
+void SceneEditor2::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
     if (command)
     {
@@ -438,36 +439,33 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const RECommand* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& commandNotification)
 {
-    if (command == nullptr)
+    if (commandNotification.IsEmpty())
     {
         return;
     }
 
     if (collisionSystem)
     {
-        collisionSystem->ProcessCommand(command, redo);
+        collisionSystem->ProcessCommand(commandNotification);
     }
-
     if (structureSystem)
     {
-        structureSystem->ProcessCommand(command, redo);
+        structureSystem->ProcessCommand(commandNotification);
     }
 
-    particlesSystem->ProcessCommand(command, redo);
-
-    materialSystem->ProcessCommand(command, redo);
+    particlesSystem->ProcessCommand(commandNotification);
+    materialSystem->ProcessCommand(commandNotification);
 
     if (landscapeEditorDrawSystem)
     {
-        landscapeEditorDrawSystem->ProcessCommand(command, redo);
+        landscapeEditorDrawSystem->ProcessCommand(commandNotification);
     }
 
-    pathSystem->ProcessCommand(command, redo);
-    wayEditSystem->ProcessCommand(command, redo);
-
-    editorLODSystem->ProcessCommand(command, redo);
+    pathSystem->ProcessCommand(commandNotification);
+    wayEditSystem->ProcessCommand(commandNotification);
+    editorLODSystem->ProcessCommand(commandNotification);
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)
@@ -487,12 +485,12 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const RECommand* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const RECommandNotificationObject& commandNotification)
 {
     if (nullptr != editor)
     {
-        editor->EditorCommandProcess(command, redo);
-        SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
+        editor->EditorCommandProcess(commandNotification);
+        SceneSignals::Instance()->EmitCommandExecuted(editor, commandNotification);
     }
 }
 

@@ -15,8 +15,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Functional/Function.h"
 
-class RECommand;
-
+class RECommandNotificationObject;
 class StructureSystem : public DAVA::SceneSystem
 {
 public:
@@ -52,7 +51,7 @@ private:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const RECommand* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
